@@ -994,6 +994,67 @@ class CanonicalCoordinationTests(unittest.TestCase):
             policy.canonical_selection(self.env())
         self.assertNotIn("ci-coordination-decision", self.artifacts[200])
 
+    def test_current_identity_contradiction_rechecks_before_selecting(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.jobs[200][0].update(status="completed")) as sleep:
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+        self.assertEqual(sleep.call_count, 1)
+
+    def test_persistent_current_identity_contradiction_is_bounded_and_refuses(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_job_status_inconsistent") as error:
+            policy.canonical_selection(self.env())
+        self.assertNotIsInstance(error.exception, policy.PublicationPending)
+        self.assertEqual(sleep.call_count, 2)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_terminal_historical_identity_job_cannot_escape_as_pending(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.jobs[100][0].update(status="in_progress", conclusion=None)
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_job_status_inconsistent") as error:
+            policy.canonical_selection(self.env())
+        self.assertNotIsInstance(error.exception, policy.PublicationPending)
+        self.assertEqual(sleep.call_count, 2)
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_historical_identity_recovery_still_blocks_matching_failed_peer(self):
+        self.runs[100]["conclusion"] = "failure"
+        self.jobs[100][0].update(status="in_progress", conclusion="success")
+        with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.jobs[100][0].update(status="completed")), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_identity_status_retry_preserves_attempt_and_step_provenance(self):
+        for scenario in ["attempt changed", "failed upload"]:
+            self.runs[200]["run_attempt"] = 1
+            self.jobs[200][0] = self.job(policy.IDENTITY_JOB, steps=policy.IDENTITY_STEPS)
+            self.jobs[200][0].update(status="in_progress", conclusion="success")
+            def transition(_):
+                self.jobs[200][0]["status"] = "completed"
+                if scenario == "attempt changed":
+                    self.runs[200]["run_attempt"] = 2
+                else:
+                    self.jobs[200][0]["steps"][-1]["conclusion"] = "failure"
+            reason = "run_or_attempt_changed" if scenario == "attempt changed" else "identity_or_decision_step_not_successful"
+            with self.subTest(scenario=scenario), self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: copy.deepcopy(self.api(endpoint, **kwargs))), patch.object(policy.time, "sleep", side_effect=transition), self.assertRaisesRegex(policy.CoordinationRefusal, reason):
+                policy.canonical_selection(self.env())
+            self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_contradictory_status_never_retries_a_failed_publication_step(self):
+        self.jobs[200][0].update(status="in_progress", conclusion="success")
+        self.jobs[200][0]["steps"][-1]["conclusion"] = "failure"
+        with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+            policy.canonical_selection(self.env())
+        sleep.assert_not_called()
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_nonterminal_identity_with_failed_conclusion_never_waits_or_succeeds(self):
+        for conclusion in ["failure", "cancelled", "skipped", "timed_out"]:
+            self.jobs[200][0].update(status="in_progress", conclusion=conclusion)
+            with self.subTest(conclusion=conclusion), self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_job_not_successful"):
+                policy.canonical_selection(self.env())
+            sleep.assert_not_called()
+
     def test_protocol_scope_native_tree_parents_and_publication_provenance_controls(self):
         original = copy.deepcopy((self.artifacts, self.commits, self.jobs))
         for scenario in ["scope", "protocol", "attempt", "repository", "native tree", "native parents", "failed identity upload", "malformed identity"]:
