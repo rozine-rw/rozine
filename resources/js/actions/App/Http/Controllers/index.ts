@@ -15,6 +15,9 @@ import InvestorVerificationController from './InvestorVerificationController'
 import StaffInvestorDirectoryController from './StaffInvestorDirectoryController'
 import StaffBusinessDirectoryController from './StaffBusinessDirectoryController'
 import StaffAuditorDirectoryController from './StaffAuditorDirectoryController'
+import StaffDashboardController from './StaffDashboardController'
+import StaffDirectoryController from './StaffDirectoryController'
+import StaffActivityController from './StaffActivityController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
@@ -53,6 +56,9 @@ const Controllers = {
     StaffInvestorDirectoryController: Object.assign(StaffInvestorDirectoryController, StaffInvestorDirectoryController),
     StaffBusinessDirectoryController: Object.assign(StaffBusinessDirectoryController, StaffBusinessDirectoryController),
     StaffAuditorDirectoryController: Object.assign(StaffAuditorDirectoryController, StaffAuditorDirectoryController),
+    StaffDashboardController: Object.assign(StaffDashboardController, StaffDashboardController),
+    StaffDirectoryController: Object.assign(StaffDirectoryController, StaffDirectoryController),
+    StaffActivityController: Object.assign(StaffActivityController, StaffActivityController),
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),
