@@ -737,6 +737,88 @@ const fr: Catalog = {
     'admin.nav.group.capital': 'Capital',
     'admin.nav.group.treasury': 'Trésorerie',
     'admin.nav.group.console': 'Console',
+    'admin.nav.notes': 'Notes',
+    'admin.section.notes.title': 'Notes',
+    'admin.section.notes.subtitle':
+        'Toutes les notes de la plateforme et leur état',
+    'admin.section.notes.search':
+        'Rechercher une note par entreprise ou identifiant…',
+    'admin.nav.primary_market': 'Marché primaire',
+    'admin.section.primary_market.title': 'Marché primaire',
+    'admin.section.primary_market.subtitle':
+        'Les levées en cours et leur remplissage',
+    'admin.section.primary_market.search':
+        'Rechercher une levée par entreprise ou note…',
+    'admin.nav.secondary_market': 'Marché secondaire',
+    'admin.section.secondary_market.title': 'Marché secondaire',
+    'admin.section.secondary_market.subtitle':
+        'Échanges de notes émises entre investisseurs',
+    'admin.section.secondary_market.search':
+        'Rechercher un ordre par note ou investisseur…',
+    'admin.nav.risk': 'Centre des risques',
+    'admin.section.risk.title': 'Centre des risques',
+    'admin.section.risk.subtitle':
+        'Retards de paiement, risque de défaut et concentration',
+    'admin.section.risk.search': 'Rechercher un cas par entreprise ou note…',
+    'admin.nav.compliance': 'Conformité',
+    'admin.section.compliance.title': 'Conformité',
+    'admin.section.compliance.subtitle': 'Contrôles KYC, KYB et réglementaires',
+    'admin.section.compliance.search':
+        'Rechercher un dossier par nom ou référence…',
+    'admin.nav.payments': 'Paiements',
+    'admin.section.payments.title': 'Paiements',
+    'admin.section.payments.subtitle': "Les flux d'argent entrant et sortant",
+    'admin.section.payments.search':
+        'Rechercher un paiement par partie ou référence…',
+    'admin.nav.ratings': 'Notations',
+    'admin.section.ratings.title': 'Notations',
+    'admin.section.ratings.subtitle':
+        'Notations des entreprises issues du modèle de souscription',
+    'admin.section.ratings.search': 'Rechercher une notation par entreprise…',
+    'admin.nav.deferrals': "Reports d'échéance",
+    'admin.section.deferrals.title': "Reports d'échéance",
+    'admin.section.deferrals.subtitle':
+        "Demandes de report d'une date de remboursement",
+    'admin.section.deferrals.search':
+        'Rechercher un report par entreprise ou note…',
+    'admin.nav.plus': 'Rozine Plus',
+    'admin.section.plus.title': 'Rozine Plus',
+    'admin.section.plus.subtitle': 'Abonnements Plus et leurs avantages',
+    'admin.section.plus.search': 'Rechercher un membre par nom…',
+    'admin.nav.finance': 'Finances',
+    'admin.section.finance.title': 'Finances',
+    'admin.section.finance.subtitle':
+        'Revenus, frais et trésorerie de la plateforme',
+    'admin.section.finance.search': 'Rechercher une écriture…',
+    'admin.nav.messaging': 'Messagerie',
+    'admin.section.messaging.title': 'Messagerie',
+    'admin.section.messaging.subtitle': 'Messages et annonces aux utilisateurs',
+    'admin.section.messaging.search': 'Rechercher un message…',
+    'admin.nav.academies': 'Académies',
+    'admin.section.academies.title': 'Académies',
+    'admin.section.academies.subtitle':
+        'Contenus de formation pour investisseurs et entreprises',
+    'admin.section.academies.search': 'Rechercher une leçon…',
+    'admin.nav.app_control': 'Contrôle des applications',
+    'admin.section.app_control.title': 'Contrôle des applications',
+    'admin.section.app_control.subtitle':
+        'Versions, fonctionnalités et maintenance',
+    'admin.section.app_control.search': 'Rechercher un réglage…',
+    'admin.nav.policies': 'Politiques',
+    'admin.section.policies.title': 'Politiques',
+    'admin.section.policies.subtitle':
+        'Le registre des politiques de la plateforme',
+    'admin.section.policies.search': 'Rechercher une politique…',
+    'admin.nav.system_health': 'État du système',
+    'admin.section.system_health.title': 'État du système',
+    'admin.section.system_health.subtitle':
+        "Services, files d'attente et intégrations",
+    'admin.section.system_health.search': 'Rechercher un service…',
+    'admin.nav.group.oversight': 'Supervision',
+    'admin.nav.group.engagement': 'Engagement',
+    'admin.pending.title': "Rien pour l'instant",
+    'admin.pending.body':
+        "Cette partie de la console n'est pas encore connectée. Elle affichera les données dès que la plateforme les enregistrera.",
     'admin.nav.today': 'Tableau de bord',
     'admin.nav.businesses': 'Entreprises',
     'admin.nav.investors': 'Investisseurs',

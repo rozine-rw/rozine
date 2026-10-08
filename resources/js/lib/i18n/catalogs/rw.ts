@@ -736,6 +736,86 @@ const rw: Catalog = {
     'admin.nav.group.capital': 'Imari',
     'admin.nav.group.treasury': "Ububiko bw'imari",
     'admin.nav.group.console': 'Konsole',
+    'admin.nav.notes': 'Inoti',
+    'admin.section.notes.title': 'Inoti',
+    'admin.section.notes.subtitle': "Inoti zose ziri ku rubuga n'aho zigeze",
+    'admin.section.notes.search':
+        'Shakisha inoti ukoresheje ikigo cyangwa nimero yayo…',
+    'admin.nav.primary_market': "Isoko ry'ibanze",
+    'admin.section.primary_market.title': "Isoko ry'ibanze",
+    'admin.section.primary_market.subtitle':
+        "Ishoramari riri gukorwa n'uko rigenda ryuzura",
+    'admin.section.primary_market.search':
+        'Shakisha ishoramari ukoresheje ikigo cyangwa inoti…',
+    'admin.nav.secondary_market': 'Isoko rya kabiri',
+    'admin.section.secondary_market.title': 'Isoko rya kabiri',
+    'admin.section.secondary_market.subtitle':
+        "Ubucuruzi bw'inoti hagati y'abashoramari",
+    'admin.section.secondary_market.search':
+        'Shakisha itegeko ukoresheje inoti cyangwa umushoramari…',
+    'admin.nav.risk': "Ikigo cy'ingaruka",
+    'admin.section.risk.title': "Ikigo cy'ingaruka",
+    'admin.section.risk.subtitle':
+        "Ubwishyu butinze, ibyago byo kutishyura n'ubwibumbe",
+    'admin.section.risk.search':
+        'Shakisha ikibazo ukoresheje ikigo cyangwa inoti…',
+    'admin.nav.compliance': 'Kubahiriza amategeko',
+    'admin.section.compliance.title': 'Kubahiriza amategeko',
+    'admin.section.compliance.subtitle': "Igenzura rya KYC, KYB n'amategeko",
+    'admin.section.compliance.search':
+        'Shakisha dosiye ukoresheje izina cyangwa nimero…',
+    'admin.nav.payments': 'Ubwishyu',
+    'admin.section.payments.title': 'Ubwishyu',
+    'admin.section.payments.subtitle': "Amafaranga yinjira n'asohoka ku rubuga",
+    'admin.section.payments.search':
+        'Shakisha ubwishyu ukoresheje uruhande cyangwa nimero…',
+    'admin.nav.ratings': 'Amanota',
+    'admin.section.ratings.title': 'Amanota',
+    'admin.section.ratings.subtitle':
+        "Amanota y'ibigo ava mu isuzuma ry'inguzanyo",
+    'admin.section.ratings.search': 'Shakisha amanota ukoresheje ikigo…',
+    'admin.nav.deferrals': 'Gusubika',
+    'admin.section.deferrals.title': 'Gusubika',
+    'admin.section.deferrals.subtitle':
+        'Ubusabe bwo kwimura itariki yo kwishyura',
+    'admin.section.deferrals.search':
+        'Shakisha ubusabe ukoresheje ikigo cyangwa inoti…',
+    'admin.nav.plus': 'Rozine Plus',
+    'admin.section.plus.title': 'Rozine Plus',
+    'admin.section.plus.subtitle': "Abanyamuryango ba Plus n'inyungu zabo",
+    'admin.section.plus.search': 'Shakisha umunyamuryango ukoresheje izina…',
+    'admin.nav.finance': 'Imari',
+    'admin.section.finance.title': 'Imari',
+    'admin.section.finance.subtitle':
+        "Inyungu, amafaranga y'serivisi n'umutungo w'urubuga",
+    'admin.section.finance.search': 'Shakisha ibyanditswe…',
+    'admin.nav.messaging': 'Ubutumwa',
+    'admin.section.messaging.title': 'Ubutumwa',
+    'admin.section.messaging.subtitle': "Ubutumwa n'amatangazo ku bakoresha",
+    'admin.section.messaging.search': 'Shakisha ubutumwa…',
+    'admin.nav.academies': 'Amasomo',
+    'admin.section.academies.title': 'Amasomo',
+    'admin.section.academies.subtitle': "Amasomo agenewe abashoramari n'ibigo",
+    'admin.section.academies.search': 'Shakisha isomo…',
+    'admin.nav.app_control': 'Igenzura rya porogaramu',
+    'admin.section.app_control.title': 'Igenzura rya porogaramu',
+    'admin.section.app_control.subtitle':
+        "Verisiyo, ibikorwa n'isuzuma rya porogaramu",
+    'admin.section.app_control.search': 'Shakisha igenamiterere…',
+    'admin.nav.policies': 'Politiki',
+    'admin.section.policies.title': 'Politiki',
+    'admin.section.policies.subtitle':
+        'Igitabo cya politiki urubuga rugenderaho',
+    'admin.section.policies.search': 'Shakisha politiki…',
+    'admin.nav.system_health': 'Ubuzima bwa sisitemu',
+    'admin.section.system_health.title': 'Ubuzima bwa sisitemu',
+    'admin.section.system_health.subtitle': "Serivisi, imirongo n'ihuzwa",
+    'admin.section.system_health.search': 'Shakisha serivisi…',
+    'admin.nav.group.oversight': 'Igenzura',
+    'admin.nav.group.engagement': 'Imikoranire',
+    'admin.pending.title': 'Nta kintu kirahari',
+    'admin.pending.body':
+        "Iki gice cya konsole ntikirahuzwa. Kizerekana amakuru akimara kwandikwa n'urubuga.",
     'admin.nav.today': 'Imbonerahamwe',
     'admin.nav.businesses': 'Ibigo',
     'admin.nav.investors': 'Abashoramari',

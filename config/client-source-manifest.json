@@ -69,7 +69,9 @@
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffInvestorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -173,6 +175,7 @@
         "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/api/v1/staff/investor-verifications/index.ts",
+        "resources/js/routes/api/v1/staff/investors/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
         "resources/js/routes/audit/seals/index.ts",
@@ -250,6 +253,8 @@
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
+        "resources/js/routes/staff/investors/index.ts",
+        "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
@@ -295,6 +300,7 @@
         "resources/js/components/admin/format.ts",
         "resources/js/components/admin/kind-meta.ts",
         "resources/js/components/admin/kyc-documents.tsx",
+        "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
@@ -599,6 +605,7 @@
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/reports.tsx",
+        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
@@ -657,10 +664,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 629,
-        "generated": 237,
+        "totalTrackedSources": 636,
+        "generated": 242,
         "declarationOnly": 18,
-        "authoredExecutable": 374
+        "authoredExecutable": 376
     },
-    "coverageSetSha256": "59c1d41ff0e04323159f95c463eb5ed100d70f7b4169a934d058c3fe5bd87455"
+    "coverageSetSha256": "c66697a2eb4561798f8e540e8ef7df0c8755d5be496290ff13bb2a10a636226b"
 }

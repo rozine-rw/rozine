@@ -237,6 +237,120 @@ describe('Party 360', () => {
         ).toBeInTheDocument();
     });
 
+    it('opens a live investor waiting for review on Controls, shows their documents and decides back to the directory', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '9b2f6f5c-6c1e-4f2b-8a37-2f1c6f4b9d10',
+        );
+        const link = (url: string) => ({ url, method: 'get' as const });
+        const detail: PartyDetail = {
+            ...party(overdueFixture),
+            actions: {},
+            verification: {
+                id: 'case-a',
+                revision: 6,
+                status: 'submitted',
+                submitted_at: '2026-10-06T08:00:00+00:00',
+                account: { name: 'Marie Mugisha', email: 'marie@example.rw' },
+                date_of_birth: '01 / 05 / 1990',
+                id_type: 'national_id',
+                id_number: '1199080012345678',
+                decision: null,
+                documents: [
+                    {
+                        id: 'doc-front',
+                        slot: 'front',
+                        filename: 'front.png',
+                        media_type: 'image/png',
+                        size_bytes: 1500,
+                        sha256: 'b'.repeat(64),
+                        uploaded_at: '2026-10-06T07:10:00+00:00',
+                        current: true,
+                        link: link(
+                            '/admin/investor-verifications/case-a/documents/doc-front',
+                        ),
+                        view: link(
+                            '/admin/investor-verifications/case-a/documents/doc-front?disposition=inline',
+                        ),
+                    },
+                ],
+                history: [
+                    {
+                        revision: 6,
+                        status: 'submitted',
+                        command: 'verification.submit',
+                        reason: null,
+                        at: '2026-10-06T08:00:00+00:00',
+                    },
+                ],
+                links: { close: link('/admin/investors') },
+                actions: {
+                    approve: {
+                        url: '/admin/investor-verifications/case-a/approve',
+                        method: 'post',
+                    },
+                },
+            },
+        };
+        const { user } = renderWithUser(
+            <AdminParties {...props(overdueFixture)} party={detail} />,
+        );
+
+        expect(screen.getByRole('tab', { name: 'Controls' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        const submission = screen.getByRole('region', {
+            name: 'Identity submission',
+        });
+        expect(
+            within(submission).getByRole('button', { name: 'View ID front' }),
+        ).toBeInTheDocument();
+        expect(
+            within(submission).queryByRole('button', { name: 'Reject' }),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            within(submission).getByRole('button', { name: 'Approve' }),
+        );
+        const stage = screen.getByRole('form', {
+            name: 'Approve this identity',
+        });
+        await user.type(
+            within(stage).getByRole('textbox'),
+            'Photo, number and selfie match.',
+        );
+        await user.click(
+            within(stage).getByRole('button', { name: 'Approve identity' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/investor-verifications/case-a/approve',
+                data: {
+                    reason: 'Photo, number and selfie match.',
+                    request_id: '9b2f6f5c-6c1e-4f2b-8a37-2f1c6f4b9d10',
+                    expected_revision: 6,
+                    return_to: 'directory',
+                },
+            },
+        ]);
+    });
+
+    it('opens a live investor without a waiting submission on Overview', () => {
+        renderWithUser(
+            <AdminParties
+                {...props(overdueFixture)}
+                party={{ ...party(overdueFixture), verification: null }}
+            />,
+        );
+
+        expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+    });
+
     it('verifies or rejects an Audit Partner licence with a reason', async () => {
         const { user } = renderWithUser(
             <AdminParties {...props(licenceFixture)} />,

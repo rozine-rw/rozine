@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1a798edfcd3dab61a94f60a13a1e698dd9fddcfc2606a5bf43ba3e3655054a84",
-    "coverageSetSha256": "59c1d41ff0e04323159f95c463eb5ed100d70f7b4169a934d058c3fe5bd87455",
+    "sourceManifestSha256": "aabfc1ab7330a12118a8bcaaac488651d5021c7f957f500d3a8e11cca337470f",
+    "coverageSetSha256": "c66697a2eb4561798f8e540e8ef7df0c8755d5be496290ff13bb2a10a636226b",
     "thresholds": {
         "critical": {
             "global": {
@@ -62,6 +62,7 @@
         "resources/js/components/admin/format.ts",
         "resources/js/components/admin/kind-meta.ts",
         "resources/js/components/admin/kyc-documents.tsx",
+        "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
@@ -366,6 +367,7 @@
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/reports.tsx",
+        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",

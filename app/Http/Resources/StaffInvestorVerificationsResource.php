@@ -58,7 +58,7 @@ class StaffInvestorVerificationsResource extends JsonResource
      * @param  array{url: string, method: string}  $close
      * @return array<string, mixed>
      */
-    private static function review(array $review, array $close, string $prefix): array
+    public static function review(array $review, array $close, string $prefix): array
     {
         $action = fn (string $name): array => ['url' => route($prefix.'staff.investor-verifications.'.$name, ['verification' => $review['id']], false), 'method' => 'post'];
 
