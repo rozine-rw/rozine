@@ -556,6 +556,8 @@ export type PartyDetail = {
     release_blocked: 'LEGAL_HOLD' | null;
     /** Every freeze and release on this account, newest first. */
     restrictions: (TrailEntry & { kind: 'freeze' | 'release' })[];
+    /** An Investor's identity submission, reviewed in the 360; absent for other parties. */
+    verification?: InvestorVerificationReview | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;

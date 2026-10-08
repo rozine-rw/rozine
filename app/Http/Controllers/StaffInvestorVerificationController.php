@@ -99,6 +99,9 @@ class StaffInvestorVerificationController extends Controller
             throw ValidationException::withMessages(['form' => [self::MESSAGES[$result['code']] ?? 'We could not record this decision. Try again.']]);
         }
 
-        return redirect()->route('staff.investor-verifications.index', ['verification' => (string) $request->route('verification')]);
+        // A decision taken from the Investor directory returns to that person's 360 there.
+        $route = $request->input('return_to') === 'directory' ? 'staff.investors.index' : 'staff.investor-verifications.index';
+
+        return redirect()->route($route, ['verification' => (string) $request->route('verification')]);
     }
 }

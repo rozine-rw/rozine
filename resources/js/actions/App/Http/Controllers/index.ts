@@ -12,6 +12,7 @@ import InvestorDealsController from './InvestorDealsController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorPrimaryController from './InvestorPrimaryController'
 import InvestorVerificationController from './InvestorVerificationController'
+import StaffInvestorDirectoryController from './StaffInvestorDirectoryController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
@@ -45,6 +46,7 @@ const Controllers = {
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorPrimaryController: Object.assign(InvestorPrimaryController, InvestorPrimaryController),
     InvestorVerificationController: Object.assign(InvestorVerificationController, InvestorVerificationController),
+    StaffInvestorDirectoryController: Object.assign(StaffInvestorDirectoryController, StaffInvestorDirectoryController),
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),

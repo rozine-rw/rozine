@@ -17,7 +17,7 @@ class StaffNavigationResource extends JsonResource
 {
     /** @var array<string, array{permission: string, route: string}> */
     private const SECTIONS = [
-        'investors' => ['permission' => 'investors.verify', 'route' => 'staff.investor-verifications.index'],
+        'investors' => ['permission' => 'investors.verify', 'route' => 'staff.investors.index'],
         'applications' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],
         'disbursements' => ['permission' => 'disbursements.view', 'route' => 'staff.disbursements.index'],
     ];
