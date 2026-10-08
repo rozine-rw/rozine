@@ -873,8 +873,12 @@ export type BusinessReportsProps = {
     reports: Record<ReportStatus, ReportRow[]>;
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
-    /** Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. */
-    policy: { seal_day: number; cosign_day: number };
+    /**
+     * Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. Null when
+     * no such day is published (the live monthly review closes a fixed time after delivery): the
+     * guide then names no day.
+     */
+    policy: { seal_day: number; cosign_day: number } | null;
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -917,6 +921,31 @@ export type LinkedAccount = {
     unlink: RouteAction | null;
 };
 
+/** A role a person holds on the business's verified mandate. */
+export type MandateRole =
+    | 'owner'
+    | 'beneficial_owner'
+    | 'controller'
+    | 'director'
+    | 'signatory'
+    | 'representative';
+
+/**
+ * What the business's verified profile and current mandate hold, read-only. Live Profile shows
+ * this while no contact, address or certificate record exists to edit.
+ */
+export type CompanyRegistration = {
+    name: string;
+    /** RDB company code; null for a verified sole trader, and no line is shown. */
+    company_code: string | null;
+    industry: string;
+    district: string;
+    established_year: number | null;
+    /** Everyone on the mandate; `signatory` marks the people whose signature is required. */
+    people: { name: string; roles: MandateRole[]; signatory: boolean }[];
+    signatories_required: number;
+};
+
 /** A versioned legal document, as the business accepted it. */
 export type LegalDocument = {
     version: string;
@@ -929,12 +958,15 @@ export type BusinessProfileProps = {
         name: string;
         address_line: string;
         verified: boolean;
-        rating: BusinessRating;
+        /** Null until a rating is published; no score is shown. */
+        rating: BusinessRating | null;
     };
     section: ProfileSection;
     /** True at the bare Profile URL: a phone shows only the menu, a wide screen opens `section`. */
     landing: boolean;
-    company: CompanyProfile;
+    /** The editable contact record; null while none is held, and `registration` shows instead. */
+    company: CompanyProfile | null;
+    registration: CompanyRegistration | null;
     /** Provinces and the districts in each, for the address pickers. */
     provinces: {
         value: string;
@@ -945,10 +977,12 @@ export type BusinessProfileProps = {
     legal: LegalDocument | null;
     links: BusinessAppLinks & {
         back: RouteLink;
-        sections: Record<ProfileSection, RouteLink>;
+        /** A section with no read open to the business is null and left out of the menu. */
+        sections: Record<ProfileSection, RouteLink | null>;
         sign_out: RouteAction;
     };
-    actions: { save_company: RouteAction };
+    /** Null while there is no profile command: nothing is editable. */
+    actions: { save_company: RouteAction | null };
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1117,12 +1151,13 @@ export type BusinessRatingProps = {
     /** Published factor scores out of 100, when the engine publishes them. */
     factors: { key: RatingFactorKey; score: number }[] | null;
     sizing: CapacitySizing | null;
+    /** Audited financials the rating rests on; null while none is published, and none is shown. */
     financials: {
         avg_monthly_revenue: Money;
         ebitda_month: Money;
         net_margin_percent: string;
         outstanding: Money;
-    };
+    } | null;
     links: { close: RouteLink; raise: RouteLink | null };
 };
 
@@ -1251,6 +1286,20 @@ export type BusinessRepaymentsProps = BusinessServicingPageContract & {
     actions: { pay: RouteAction | null };
     preview_outcome?: C3PreviewOutcome<'repayment.pay'>;
 };
+
+/**
+ * `business.repayments.show` while no note of the business is servicing: no note, servicing or
+ * pay panel, and no Pay. The sheet shows its empty state over Home.
+ */
+export type BusinessRepaymentsEmptyProps = Omit<
+    BusinessRepaymentsProps,
+    'note' | 'servicing' | 'pay'
+> & { note: null; servicing: null; pay: null };
+
+/** What the Repayments page receives: a servicing note's sheet, or its empty state. */
+export type BusinessRepaymentsPageProps =
+    | BusinessRepaymentsProps
+    | BusinessRepaymentsEmptyProps;
 
 /* ------------------------------------------------------------------------------------------ */
 /* Audit prep (MVP-BUSINESS-SCR-07, design L1006–1057)                                         */

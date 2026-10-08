@@ -3,10 +3,16 @@ import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import BusinessProfile from '@/pages/business/profile';
-import type { BusinessProfileProps } from '@/types/business';
+import type {
+    BusinessProfileProps,
+    CompanyProfile,
+    CompanyRegistration,
+} from '@/types/business';
 import expiredFixture from '../../../resources/fixtures/ui/business-profile-company-expired.json';
 import companyFixture from '../../../resources/fixtures/ui/business-profile-company.json';
 import linkedFixture from '../../../resources/fixtures/ui/business-profile-linked.json';
+import recordCompanyFixture from '../../../resources/fixtures/ui/business-profile-on-record-company.json';
+import recordFixture from '../../../resources/fixtures/ui/business-profile-on-record.json';
 import privacyFixture from '../../../resources/fixtures/ui/business-profile-privacy.json';
 import termsFixture from '../../../resources/fixtures/ui/business-profile-terms.json';
 import landingFixture from '../../../resources/fixtures/ui/business-profile.json';
@@ -201,7 +207,7 @@ describe('Company information', () => {
         const user = userEvent.setup();
         const page = props(companyFixture);
 
-        page.company.address.province = 'unknown';
+        (page.company as CompanyProfile).address.province = 'unknown';
         render(<BusinessProfile {...page} />);
 
         expect(
@@ -349,5 +355,90 @@ describe('Legal documents', () => {
         render(<BusinessProfile {...page} />);
 
         expect(screen.queryByText(/Last updated/)).not.toBeInTheDocument();
+    });
+});
+
+describe('Company information on record', () => {
+    it('shows the verified registration and mandate read-only, with only the sections the server opens', () => {
+        render(<BusinessProfile {...props(recordFixture)} />);
+
+        expect(screen.queryByText(/^Score/u)).not.toBeInTheDocument();
+        expect(screen.getByText('✓ Verified')).toBeInTheDocument();
+        expect(
+            within(screen.getByRole('navigation', { name: 'Profile menu' }))
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Company information›']);
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Save changes' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('RDB certificate')).not.toBeInTheDocument();
+
+        expect(screen.getByText('On record')).toBeInTheDocument();
+        expect(screen.getByText('RDB company code')).toBeInTheDocument();
+        expect(screen.getByText('RDB-104512')).toBeInTheDocument();
+        expect(screen.getByText('Agriculture')).toBeInTheDocument();
+        expect(screen.getByText('Established')).toBeInTheDocument();
+        expect(screen.getByText('2019')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'From your verified registration and mandate. They change only when Rozine verifies new records.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByText('People on the mandate')).toBeInTheDocument();
+        expect(
+            screen.getByText('3 on the mandate · need 2+'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Controller · Owner · Signatory'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Director · Signatory')).toBeInTheDocument();
+        expect(screen.getByText('Representative')).toBeInTheDocument();
+        expect(screen.getAllByText('Required signatory')).toHaveLength(2);
+    });
+
+    it('opens the record as its own page on a phone, and leaves out what is not on file', () => {
+        const page = props(recordCompanyFixture);
+        const registration = page.registration as CompanyRegistration;
+
+        registration.company_code = null;
+        registration.established_year = null;
+        registration.people = [
+            {
+                name: 'Claudine Ingabire',
+                roles: ['beneficial_owner', 'owner', 'signatory'],
+                signatory: true,
+            },
+        ];
+        registration.signatories_required = 1;
+        render(<BusinessProfile {...page} />);
+
+        expect(page.landing).toBe(false);
+        expect(
+            screen.getByRole('heading', { name: 'Company information' }),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('RDB company code')).not.toBeInTheDocument();
+        expect(screen.queryByText('Established')).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Beneficial owner · Owner · Signatory'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('1 on the mandate · need 1+'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows contact details read-only when the server offers no save', () => {
+        const page = props(companyFixture);
+
+        page.actions.save_company = null;
+        render(<BusinessProfile {...page} />);
+
+        expect(
+            screen.queryByRole('button', { name: 'Save changes' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(screen.getByText('RDB/2019/004512')).toBeInTheDocument();
+        expect(screen.queryByText('On record')).not.toBeInTheDocument();
     });
 });

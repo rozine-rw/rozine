@@ -621,6 +621,10 @@ const fr: Catalog = {
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
         "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+    'business.reports.guide.visit.body_undated':
+        "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
+    'business.reports.guide.cosign.body_undated':
+        "Une fois l'audit scellé, vous l'examinez et le cosignez pendant la période de revue, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
@@ -701,6 +705,19 @@ const fr: Catalog = {
     'business.profile.records.signatories': 'Signataires',
     'business.profile.records.mandate':
         '{count} au mandat · {required}+ requis',
+    'business.profile.registration.title': 'Au dossier',
+    'business.profile.registration.established': 'Année de création',
+    'business.profile.registration.note':
+        'Issus de votre immatriculation et de votre mandat vérifiés. Ils ne changent que lorsque Rozine vérifie de nouveaux documents.',
+    'business.profile.registration.people': 'Personnes au mandat',
+    'business.profile.registration.required': 'Signataire requis',
+    'business.profile.registration.role.owner': 'Propriétaire',
+    'business.profile.registration.role.beneficial_owner':
+        'Bénéficiaire effectif',
+    'business.profile.registration.role.controller': 'Contrôleur',
+    'business.profile.registration.role.director': 'Administrateur',
+    'business.profile.registration.role.signatory': 'Signataire',
+    'business.profile.registration.role.representative': 'Représentant',
     'business.profile.linked.unlink': 'Dissocier',
     'business.profile.linked.unlink_named': 'Dissocier {name}',
     'business.profile.linked.add': '+ Lier un compte de versement',
@@ -2094,6 +2111,9 @@ const fr: Catalog = {
     'business.repayments.total': 'Total',
     'business.repayments.schedule': 'Échéancier',
     'business.repayments.late.title': 'En cas de retard de paiement',
+    'business.repayments.none.title': 'Rien à rembourser pour le moment',
+    'business.repayments.none.body':
+        "Les remboursements commencent une fois qu'une levée est financée et que les fonds vous sont versés. Son échéancier, les montants dus et chaque paiement apparaîtront ici.",
     'business.servicing.repay.state.current': 'À jour',
     'business.servicing.repay.state.due_today': "Dû aujourd'hui",
     'business.servicing.repay.state.overdue': 'En retard',
