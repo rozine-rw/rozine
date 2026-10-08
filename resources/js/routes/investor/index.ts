@@ -248,6 +248,249 @@ verificationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'
 verification.form = verificationForm
 
 /**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+export const verified = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verified.url(options),
+    method: 'get',
+})
+
+verified.definition = {
+    methods: ["get","head"],
+    url: '/investor/verified',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+verified.url = (options?: RouteQueryOptions) => {
+    return verified.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+verified.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verified.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+verified.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: verified.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+const verifiedForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verified.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+verifiedForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verified.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::verified
+* @see app/Http/Controllers/InvestorProfileController.php:39
+* @route '/investor/verified'
+*/
+verifiedForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: verified.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+verified.form = verifiedForm
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+export const portfolio = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: portfolio.url(options),
+    method: 'get',
+})
+
+portfolio.definition = {
+    methods: ["get","head"],
+    url: '/investor/portfolio',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+portfolio.url = (options?: RouteQueryOptions) => {
+    return portfolio.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+portfolio.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: portfolio.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+portfolio.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: portfolio.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+const portfolioForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: portfolio.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+portfolioForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: portfolio.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorPortfolioController::portfolio
+* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @route '/investor/portfolio'
+*/
+portfolioForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: portfolio.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+portfolio.form = portfolioForm
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: profile.url(options),
+    method: 'get',
+})
+
+profile.definition = {
+    methods: ["get","head"],
+    url: '/investor/profile',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+profile.url = (options?: RouteQueryOptions) => {
+    return profile.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: profile.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: profile.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProfileController::profile
+* @see app/Http/Controllers/InvestorProfileController.php:26
+* @route '/investor/profile'
+*/
+profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+profile.form = profileForm
+
+/**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
 * @see app/Http/Controllers/InvestorWalletController.php:25
 * @route '/investor/wallet'
@@ -332,6 +575,9 @@ const investor = {
     home: Object.assign(home, home),
     deals: Object.assign(deals, dealsC9d3dc),
     verification: Object.assign(verification, verificationAf8c0f),
+    verified: Object.assign(verified, verified),
+    portfolio: Object.assign(portfolio, portfolio),
+    profile: Object.assign(profile, profile),
     wallet: Object.assign(wallet, wallet0fdd46),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),
