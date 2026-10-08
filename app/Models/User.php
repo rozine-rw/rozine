@@ -61,7 +61,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new OneTimeCode(
-            app(EmailVerificationCode::class)->issue($this->id),
+            app(EmailVerificationCode::class)->issue($this->id, $this->getEmailForVerification()),
             EmailVerificationCode::EXPIRES_IN_MINUTES,
         ));
     }

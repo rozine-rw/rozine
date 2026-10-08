@@ -12,7 +12,8 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 /**
  * Confirms a new account's email with the six-digit code it was sent, then continues exactly as
- * Fortify's verification link does. A refused code returns as a form error on the code field.
+ * Fortify's verification link does. The code must have been sent to the account's current
+ * address. A refused code returns as a form error on the code field.
  */
 class EmailVerificationCodeController extends Controller
 {
@@ -30,7 +31,11 @@ class EmailVerificationCodeController extends Controller
         $user = $request->user();
 
         if ($user !== null && ! $user->hasVerifiedEmail()) {
-            $refusal = $this->codes->confirm((int) $user->getAuthIdentifier(), (string) $request->validated('code'));
+            $refusal = $this->codes->confirm(
+                (int) $user->getAuthIdentifier(),
+                $user->getEmailForVerification(),
+                (string) $request->validated('code'),
+            );
 
             if ($refusal !== null) {
                 throw ValidationException::withMessages(['code' => self::MESSAGES[$refusal]]);

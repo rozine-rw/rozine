@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Notification;
 /**
  * Sign-up confirms the email address with the six-digit onboarding code: registration and every
  * "send a new code" issue one, and the verification page accepts it once, within ten minutes,
- * with at most five tries in fifteen minutes.
+ * with at most five tries in fifteen minutes, and only for the address it was sent to.
  */
 function emailCodeFor(User $user): string
 {
@@ -135,26 +135,122 @@ test('five tries in fifteen minutes is the limit, even for the right code', func
 
 test('a code works once', function () {
     $codes = app(EmailVerificationCode::class);
-    $code = $codes->issue(41);
+    $code = $codes->issue(41, 'aline@example.test');
 
-    expect($codes->confirm(41, $code))->toBeNull()
-        ->and($codes->confirm(41, $code))->toBe('EMAIL_CODE_EXPIRED');
+    expect($codes->confirm(41, 'aline@example.test', $code))->toBeNull()
+        ->and($codes->confirm(41, 'aline@example.test', $code))->toBe('EMAIL_CODE_EXPIRED');
 });
 
 test('a code belongs to the account it was issued for', function () {
     $codes = app(EmailVerificationCode::class);
-    $code = $codes->issue(41);
+    $code = $codes->issue(41, 'aline@example.test');
 
     do {
-        $other = $codes->issue(42);
+        $other = $codes->issue(42, 'aline@example.test');
     } while ($other === $code);
 
-    expect($codes->confirm(42, $code))->toBe('EMAIL_CODE_INVALID')
-        ->and($codes->confirm(41, $code))->toBeNull();
+    expect($codes->confirm(42, 'aline@example.test', $code))->toBe('EMAIL_CODE_INVALID')
+        ->and($codes->confirm(41, 'aline@example.test', $code))->toBeNull();
+});
+
+test('a code proves only the address it was sent to', function () {
+    $codes = app(EmailVerificationCode::class);
+    $code = $codes->issue(41, 'aline@example.test');
+
+    expect($codes->confirm(41, 'other@example.test', $code))->toBe('EMAIL_CODE_INVALID')
+        ->and($codes->confirm(41, ' Aline@Example.TEST ', $code))->toBeNull();
+});
+
+test('a withdrawn code is no longer accepted', function () {
+    $codes = app(EmailVerificationCode::class);
+    $code = $codes->issue(41, 'aline@example.test');
+
+    $codes->revoke(41);
+
+    expect($codes->confirm(41, 'aline@example.test', $code))->toBe('EMAIL_CODE_EXPIRED');
+});
+
+test('changing the email refuses the code sent to the earlier address until a code reaches the new one', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $first = emailCodeFor($user);
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), ['name' => $user->name, 'email' => 'second@example.test'])
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.code'), ['code' => $first])
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHasErrors('code');
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+
+    $this->actingAs($user)->post(route('verification.send'))->assertRedirect();
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => emailCodeFor($user)])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh())
+        ->email->toBe('second@example.test')
+        ->hasVerifiedEmail()->toBeTrue();
+});
+
+test('a code is refused once the address changes, however it was changed', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $first = emailCodeFor($user);
+
+    $user->forceFill(['email' => 'second@example.test'])->save();
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => $first])
+        ->assertSessionHasErrors(['code' => 'That code is not right. Check the latest email from Rozine and try again.']);
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('changing the email withdraws the pending code, even if the address is changed back', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $first = emailCodeFor($user);
+
+    foreach (['second@example.test', 'first@example.test'] as $email) {
+        $this->actingAs($user)
+            ->patch(route('profile.update'), ['name' => $user->name, 'email' => $email])
+            ->assertSessionHasNoErrors();
+    }
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => $first])
+        ->assertSessionHasErrors(['code' => 'That code has expired. Send a new code and enter it within 10 minutes.']);
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('saving the profile without changing the email keeps the pending code', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+
+    $this->actingAs($user)
+        ->patch(route('profile.update'), ['name' => 'Aline Uwase', 'email' => 'first@example.test'])
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => emailCodeFor($user)])
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 });
 
 test('only a keyed digest of the code is kept', function () {
-    $code = app(EmailVerificationCode::class)->issue(41);
+    $code = app(EmailVerificationCode::class)->issue(41, 'aline@example.test');
     $stored = Cache::get('identity:email-verification-code:41');
 
     expect($stored)->toBeString()
