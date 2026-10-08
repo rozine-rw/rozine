@@ -294,6 +294,7 @@
         "resources/js/components/admin/drawer.tsx",
         "resources/js/components/admin/format.ts",
         "resources/js/components/admin/kind-meta.ts",
+        "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
@@ -656,10 +657,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 628,
+        "totalTrackedSources": 629,
         "generated": 237,
         "declarationOnly": 18,
-        "authoredExecutable": 373
+        "authoredExecutable": 374
     },
-    "coverageSetSha256": "bb25ab0eb44e43d7f1f980267b099e28d18bbbbc180b7938ac552f64971936cf"
+    "coverageSetSha256": "59c1d41ff0e04323159f95c463eb5ed100d70f7b4169a934d058c3fe5bd87455"
 }
