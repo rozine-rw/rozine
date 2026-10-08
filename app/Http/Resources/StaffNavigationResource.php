@@ -20,6 +20,7 @@ class StaffNavigationResource extends JsonResource
         'investors' => ['permission' => 'investors.verify', 'route' => 'staff.investor-verifications.index'],
         'applications' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],
         'disbursements' => ['permission' => 'disbursements.view', 'route' => 'staff.disbursements.index'],
+        'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */
@@ -34,6 +35,6 @@ class StaffNavigationResource extends JsonResource
                 ? ['url' => route($prefix.$source['route'], [], false), 'method' => 'get'] : null;
         }
 
-        return [...$links, 'repayments' => null, 'businesses' => null, 'auditors' => null, 'staff' => null, 'ledger' => null, 'events' => null];
+        return [...$links, 'repayments' => null, 'businesses' => null, 'auditors' => null, 'staff' => null, 'events' => null];
     }
 }

@@ -15,6 +15,9 @@ import { formatCount, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { AdminLedgerProps } from '@/types/admin';
 
+/** A new search starts from the newest entry with no entry open. */
+const SEARCH_QUERY = { param: 'search', clears: ['before', 'entry'] };
+
 const GRID =
     'grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,1fr)] gap-3 px-5';
 
@@ -28,7 +31,11 @@ export default function AdminLedger(props: AdminLedgerProps) {
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         router.reload({
-            data: { q: new FormData(event.currentTarget).get('q') },
+            data: {
+                search: new FormData(event.currentTarget).get('search'),
+                before: undefined,
+                entry: undefined,
+            },
         });
     };
 
@@ -36,6 +43,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
         <AdminFrame
             section="ledger"
             {...props}
+            searchQuery={SEARCH_QUERY}
             overlay={
                 props.entry && (
                     <EntryDrawer key={props.entry.id} entry={props.entry} />
@@ -98,7 +106,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
                         </svg>
                         <input
                             type="search"
-                            name="q"
+                            name="search"
                             defaultValue={props.search}
                             aria-label={t('admin.ledger.search_label')}
                             placeholder={t('admin.ledger.search_placeholder')}

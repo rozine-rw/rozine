@@ -801,6 +801,8 @@ const fr: Catalog = {
     'admin.role.access.superadmin': 'Accès complet',
     'admin.role.compliance': 'Conformité',
     'admin.role.access.compliance': 'Accès conformité',
+    'admin.role.treasury': 'Trésorerie',
+    'admin.role.access.treasury': 'Accès trésorerie',
     'admin.kyc.intro':
         "Demandes de vérification d'identité de personnes qui souhaitent investir. Ouvrez-en une pour vérifier ses documents, puis approuvez-la ou rejetez-la avec un motif.",
     'admin.kyc.tabs': 'États de vérification',
@@ -928,6 +930,10 @@ const fr: Catalog = {
     'admin.ledger.kind.secondary': 'Transaction secondaire',
     'admin.ledger.kind.secondary_fee': 'Frais secondaires',
     'admin.ledger.kind.contra': 'Contre-passation',
+    'admin.ledger.kind.hold': 'Blocage de réservation',
+    'admin.ledger.kind.release': 'Blocage levé',
+    'admin.ledger.kind.refund': 'Remboursement',
+    'admin.ledger.kind.issue': 'Titres émis',
     'admin.today.commands': 'Commandes rapides',
     'admin.today.command.review_queue': "File d'examen",
     'admin.today.command.release_queue': 'File de versement',
@@ -1464,8 +1470,11 @@ const fr: Catalog = {
     'admin.ledger.fact.from': 'De',
     'admin.ledger.fact.to': 'À',
     'admin.ledger.fact.reference': 'Référence',
-    'admin.ledger.fact.operation': 'Opération',
-    'admin.ledger.posted_by': 'Passée par {actor} · {at}',
+    'admin.ledger.fact.operation': 'Opération d’origine',
+    'admin.ledger.origin':
+        'Opération d’origine lancée par {actor} · {at}. Un mouvement ultérieur du même flux garde cette origine.',
+    'admin.ledger.origin_none':
+        'Aucune opération n’est enregistrée pour cette écriture.',
     'admin.ledger.postings': 'Écritures',
     'admin.ledger.total': 'Total',
     'admin.ledger.balanced': 'Équilibrée',

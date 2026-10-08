@@ -45,8 +45,48 @@ describe('Ledger', () => {
             screen.getByRole('searchbox', { name: 'Search the ledger' }),
             'contra{Enter}',
         );
-        expect(inertia.reload).toEqual([{ data: { q: 'contra' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { search: 'contra', before: undefined, entry: undefined } },
+        ]);
     });
+
+    it('sends a top-bar search as the server parameter and leaves the open entry and cursor behind', async () => {
+        const { user } = renderWithUser(
+            <AdminLedger {...ledgerProps(entryFixture)} />,
+        );
+
+        await user.type(
+            screen.getByRole('searchbox', { name: 'Search this page' }),
+            'RZL-01{Enter}',
+        );
+        expect(inertia.reload).toEqual([
+            { data: { search: 'RZL-01', before: undefined, entry: undefined } },
+        ]);
+    });
+
+    it.each([
+        ['treasury', 'Treasury', 'Treasury access'],
+        ['compliance', 'Compliance', 'Compliance access'],
+    ] as const)(
+        'shows a %s viewer their own role',
+        async (role, label, access) => {
+            const fixture = ledgerProps(ledgerFixture);
+            const { user } = renderWithUser(
+                <AdminLedger
+                    {...fixture}
+                    viewer={{ ...fixture.viewer, role }}
+                />,
+            );
+
+            await user.click(
+                screen.getByRole('button', {
+                    name: `Account, ${fixture.viewer.name}`,
+                }),
+            );
+            expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+            expect(screen.getByText(access)).toBeInTheDocument();
+        },
+    );
 
     it('says when nothing is in range or the search found nothing', () => {
         const { unmount } = render(
@@ -88,10 +128,14 @@ describe('Ledger', () => {
         ).toBeInTheDocument();
         expect(within(drawer).getByText('op_7f3c21a9e4')).toBeInTheDocument();
         expect(
+            within(drawer).getByText('Origin operation'),
+        ).toBeInTheDocument();
+        expect(
             within(drawer).getByText(
-                'Posted by System · disbursement dsb_0598 · 2026-09-23 16:20:37',
+                'Origin operation started by System · disbursement dsb_0598 · 2026-09-23 16:20:37. A later movement in the same flow keeps this origin.',
             ),
         ).toBeInTheDocument();
+        expect(within(drawer).queryByText(/Posted by/)).not.toBeInTheDocument();
         const postings = within(drawer).getByRole('table', {
             name: 'Postings',
         });
@@ -110,6 +154,49 @@ describe('Ledger', () => {
         ).toHaveAttribute('href', '/preview/admin-events');
     });
 
+    it('shows the live ledger: Primary kinds, no operation and no event-log link', () => {
+        const fixture = ledgerProps(entryFixture);
+
+        if (fixture.entry === null) {
+            throw new Error('fixture has an entry');
+        }
+
+        fixture.entries = fixture.entries.map((row, index) => ({
+            ...row,
+            kind: (['hold', 'release', 'refund', 'issue'] as const)[index % 4],
+        }));
+        fixture.entry = {
+            ...fixture.entry,
+            kind: 'refund',
+            operation_id: null,
+            origin: null,
+            links: { ...fixture.entry.links, events: null },
+        };
+        render(<AdminLedger {...fixture} />);
+
+        for (const label of [
+            'Reservation hold',
+            'Hold released',
+            'Notes issued',
+        ]) {
+            expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+        }
+
+        const drawer = screen.getByRole('dialog', {
+            name: `Ledger entry ${fixture.entry.id}`,
+        });
+
+        expect(within(drawer).getAllByText('Refund').length).toBeGreaterThan(0);
+        expect(
+            within(drawer).queryByText('op_7f3c21a9e4'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(drawer).queryByRole('link', {
+                name: 'See this entry in the event log →',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a contra entry, a reasoned posting and an unbalanced entry', () => {
         const fixture = ledgerProps(entryFixture);
 
@@ -120,7 +207,7 @@ describe('Ledger', () => {
         fixture.entry = {
             ...fixture.entry,
             balanced: false,
-            posted_by: {
+            origin: {
                 actor: 'Eric Ndoli',
                 at: '2026-09-23T13:31:45+02:00',
                 reason: 'Duplicate credit',

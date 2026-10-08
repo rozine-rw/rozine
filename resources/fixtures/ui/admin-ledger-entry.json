@@ -211,7 +211,7 @@
                 "method": "get"
             },
             "operation_id": "op_7f3c21a9e4",
-            "posted_by": {
+            "origin": {
                 "actor": "System · disbursement dsb_0598",
                 "at": "2026-09-23T16:20:37+02:00",
                 "reason": null

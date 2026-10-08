@@ -117,6 +117,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
     {
         public function __construct(private OperationRecords $real) {}
 
+        public function attribution(string $operationId): ?array
+        {
+            return $this->real->attribution($operationId);
+        }
+
         public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array
         {
             return $command === 'primary.confirm' ? [] : $this->real->forTarget($actorKey, $command, $targetType, $targetId);
@@ -125,6 +130,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
     'two refunds' => [fn (OperationRecords $real): OperationRecords => new class($real) implements OperationRecords
     {
         public function __construct(private OperationRecords $real) {}
+
+        public function attribution(string $operationId): ?array
+        {
+            return $this->real->attribution($operationId);
+        }
 
         public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array
         {

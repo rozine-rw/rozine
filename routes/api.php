@@ -27,6 +27,7 @@ use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffLedgerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -88,6 +89,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/identity')->nam
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
 });
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->get('v1/staff/ledger', [StaffLedgerController::class, 'index'])
+    ->name('api.v1.staff.ledger.index');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/disbursements')->name('api.v1.staff.disbursements.')->group(function (): void {
     Route::get('/', [StaffDisbursementController::class, 'index'])->name('index');

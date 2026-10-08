@@ -68,6 +68,7 @@
         "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffLedgerController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -171,6 +172,7 @@
         "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/api/v1/staff/investor-verifications/index.ts",
+        "resources/js/routes/api/v1/staff/ledger/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
         "resources/js/routes/audit/seals/index.ts",
@@ -247,6 +249,7 @@
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
+        "resources/js/routes/staff/ledger/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
@@ -653,8 +656,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 625,
-        "generated": 234,
+        "totalTrackedSources": 628,
+        "generated": 237,
         "declarationOnly": 18,
         "authoredExecutable": 373
     },

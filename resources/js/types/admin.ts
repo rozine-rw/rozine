@@ -33,7 +33,12 @@ export type AdminSection =
     | 'ledger'
     | 'events';
 
-export type StaffRole = 'analyst' | 'approver' | 'compliance' | 'superadmin';
+export type StaffRole =
+    | 'analyst'
+    | 'approver'
+    | 'compliance'
+    | 'superadmin'
+    | 'treasury';
 
 /** The signed-in operator. Privileged staff accounts are separate from Party logins (CFG-01). */
 export type StaffViewer = {
@@ -204,7 +209,12 @@ export type LedgerKind =
     | 'withdrawal'
     | 'secondary'
     | 'secondary_fee'
-    | 'contra';
+    | 'contra'
+    /** Wallet-internal Primary movements: cash held for, released from, refunded or issued as notes. */
+    | 'hold'
+    | 'release'
+    | 'refund'
+    | 'issue';
 
 export type ActivityItem = {
     id: string;
@@ -647,8 +657,14 @@ export type Posting = {
 };
 
 export type LedgerEntryDetail = LedgerRow & {
-    operation_id: string;
-    posted_by: Attribution;
+    /**
+     * The operation the entry's money flow started in; null for an entry no operation recorded. A
+     * later movement (a confirmation, release, refund or issue) keeps its reservation's origin, so
+     * this is never who posted the entry; `at` is when it was posted.
+     */
+    operation_id: string | null;
+    /** Who started the origin operation and when; null when no operation is recorded. */
+    origin: Attribution | null;
     postings: Posting[];
     totals: { debit: Money; credit: Money };
     /** Debits equal credits, as the core verified on posting. */
@@ -656,7 +672,8 @@ export type LedgerEntryDetail = LedgerRow & {
     /** A correction is a contra entry, never an edit (AC-02). */
     contra_of: { id: string; link: RouteLink } | null;
     contra_by: { id: string; link: RouteLink } | null;
-    links: { close: RouteLink; events: RouteLink };
+    /** `events` is null until the event log has a live route. */
+    links: { close: RouteLink; events: RouteLink | null };
 };
 
 export type AdminLedgerProps = AdminShellProps & {

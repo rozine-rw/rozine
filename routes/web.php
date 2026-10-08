@@ -33,6 +33,7 @@ use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffLedgerController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use Illuminate\Support\Facades\Route;
@@ -202,6 +203,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/application-operations/{request_id}', [StaffApplicationReleaseController::class, 'operation'])
         ->whereUuid('request_id')->name('staff.applications.operations.show');
     Route::get('admin/applications', [StaffApplicationReleaseController::class, 'index'])->name('staff.applications.index');
+    Route::get('admin/ledger', [StaffLedgerController::class, 'index'])->name('staff.ledger.index');
     Route::get('admin/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
         ->whereUlid('application')->name('staff.applications.show');
     Route::post('admin/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])

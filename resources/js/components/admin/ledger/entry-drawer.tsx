@@ -20,12 +20,16 @@ const GRID =
 export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
     const { t } = useTranslation();
     const meta = KIND_META[entry.kind];
-    const facts = [
-        ['from', entry.from],
-        ['to', entry.to],
-        ['reference', entry.reference],
-        ['operation', entry.operation_id],
-    ] as const;
+    const facts = (
+        [
+            ['from', entry.from],
+            ['to', entry.to],
+            ['reference', entry.reference],
+            ['operation', entry.operation_id],
+        ] as const
+    ).filter(
+        (fact): fact is readonly [(typeof fact)[0], string] => fact[1] !== null,
+    );
 
     return (
         <Drawer
@@ -87,12 +91,15 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                     ))}
                 </dl>
                 <p className={cn('mt-3 text-[12px]', EXPLAIN)}>
-                    {t('admin.ledger.posted_by', {
-                        actor: entry.posted_by.actor,
-                        at: formatTimestamp(entry.posted_by.at),
-                    })}
-                    {entry.posted_by.reason !== null &&
-                        ` · ${t('admin.trail.reason', { reason: entry.posted_by.reason })}`}
+                    {entry.origin === null
+                        ? t('admin.ledger.origin_none')
+                        : t('admin.ledger.origin', {
+                              actor: entry.origin.actor,
+                              at: formatTimestamp(entry.origin.at),
+                          })}
+                    {entry.origin !== null &&
+                        entry.origin.reason !== null &&
+                        ` · ${t('admin.trail.reason', { reason: entry.origin.reason })}`}
                 </p>
 
                 <h3 className="mt-5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
@@ -240,12 +247,14 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                 <p className="mt-3.5 flex items-center gap-2 rounded-xl border border-[#dde6f3] bg-[rgba(30,58,255,.07)] px-3.5 py-2.5 text-[12.5px] text-[#5f6fc8] dark:border-rz-border dark:text-[#99a3ff]">
                     {t('admin.ledger.immutable')}
                 </p>
-                <Link
-                    href={entry.links.events}
-                    className="mt-3.5 block w-full rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-center text-[13px] font-bold text-rz-accent-app-text"
-                >
-                    {t('admin.ledger.open_events')}
-                </Link>
+                {entry.links.events !== null && (
+                    <Link
+                        href={entry.links.events}
+                        className="mt-3.5 block w-full rounded-[11px] border border-rz-hairline bg-rz-surface p-[11px] text-center text-[13px] font-bold text-rz-accent-app-text"
+                    >
+                        {t('admin.ledger.open_events')}
+                    </Link>
+                )}
             </div>
         </Drawer>
     );
