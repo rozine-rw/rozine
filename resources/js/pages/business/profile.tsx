@@ -1,7 +1,10 @@
 import { Link } from '@inertiajs/react';
 import { BusinessShell } from '@/components/business/business-shell';
 import { CompanyForm } from '@/components/business/profile/company-form';
-import { CompanyRecords } from '@/components/business/profile/company-records';
+import {
+    CompanyRecords,
+    CompanyRegistrationRecord,
+} from '@/components/business/profile/company-records';
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
@@ -14,13 +17,15 @@ const COLUMN =
 
 /**
  * Profile (MVP-BUSINESS-SCR-09, design L1460–1479 and L1718–1891). A phone shows the menu, then
- * each section as its own page; a wide screen keeps the menu beside the open section.
+ * each section as its own page; a wide screen keeps the menu beside the open section. Company
+ * details are editable only with a save action; otherwise the record on file shows read-only.
  */
 export default function BusinessProfile({
     business,
     section,
     landing,
     company,
+    registration,
     provinces,
     linked,
     legal,
@@ -76,12 +81,22 @@ export default function BusinessProfile({
                     </div>
                     {section === 'company' && (
                         <>
-                            <CompanyForm
-                                company={company}
-                                provinces={provinces}
-                                action={actions.save_company}
-                            />
-                            <CompanyRecords company={company} />
+                            {company !== null &&
+                                actions.save_company !== null && (
+                                    <CompanyForm
+                                        company={company}
+                                        provinces={provinces}
+                                        action={actions.save_company}
+                                    />
+                                )}
+                            {company !== null && (
+                                <CompanyRecords company={company} />
+                            )}
+                            {registration !== null && (
+                                <CompanyRegistrationRecord
+                                    registration={registration}
+                                />
+                            )}
                         </>
                     )}
                     {section === 'linked' && linked !== null && (

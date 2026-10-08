@@ -619,6 +619,10 @@ const rw: Catalog = {
     'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
     'business.reports.guide.cosign.body':
         'Iyo igenzura rifunzwe, wongeraho incamake ugashyiraho umukono bitarenze tariki ya {day}, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+    'business.reports.guide.visit.body_undated':
+        "CPA wagenewe asura aho ukorera agasuzuma inyandiko, agahuza amafaranga yinjira n'asohoka, hanyuma agafunga raporo.",
+    'business.reports.guide.cosign.body_undated':
+        'Iyo igenzura rifunzwe, urayisuzuma ugashyiraho umukono mu gihe cyagenewe isuzuma, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',
@@ -700,6 +704,18 @@ const rw: Catalog = {
     'business.profile.records.signatories': 'Abashyira umukono',
     'business.profile.records.mandate':
         '{count} ku bubasha · hakenewe {required}+',
+    'business.profile.registration.title': 'Ibyanditswe',
+    'business.profile.registration.established': 'Cyashinzwe',
+    'business.profile.registration.note':
+        "Bivuye ku iyandikwa n'ububasha byawe byemejwe. Bihinduka gusa iyo Rozine yemeje inyandiko nshya.",
+    'business.profile.registration.people': 'Abari ku bubasha',
+    'business.profile.registration.required': 'Agomba gushyiraho umukono',
+    'business.profile.registration.role.owner': "Nyir'ikigo",
+    'business.profile.registration.role.beneficial_owner': "Nyir'inyungu",
+    'business.profile.registration.role.controller': 'Ugenzura',
+    'business.profile.registration.role.director': 'Umuyobozi',
+    'business.profile.registration.role.signatory': 'Ushyiraho umukono',
+    'business.profile.registration.role.representative': 'Uhagarariye',
     'business.profile.linked.unlink': 'Kuraho',
     'business.profile.linked.unlink_named': 'Kuraho {name}',
     'business.profile.linked.add': '+ Huza konti yakiriraho',
@@ -2456,6 +2472,9 @@ const rw: Catalog = {
     'business.repayments.total': 'Igiteranyo',
     'business.repayments.schedule': 'Gahunda yo kwishyura',
     'business.repayments.late.title': 'Iyo ubwishyu butinze',
+    'business.repayments.none.title': 'Nta kwishyura birahari',
+    'business.repayments.none.body':
+        "Kwishyura bitangira iyo amafaranga wakusanyije amaze kuzura no kukugeraho. Ingengabihe, ibigomba kwishyurwa n'ubwishyu bwose bizagaragara hano.",
     'business.servicing.repay.state.current': 'Biri ku gihe',
     'business.servicing.repay.state.due_today': 'Bigomba kwishyurwa uyu munsi',
     'business.servicing.repay.state.overdue': 'Byarengeje igihe',

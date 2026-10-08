@@ -39,7 +39,7 @@ class BusinessPublicationResource extends JsonResource
             'links' => ['close' => $home, 'operation' => self::lookup($request, $page['identity_context_revision']),
                 'review' => $page['prerequisites']['quote_current'] && $page['prerequisites']['terms_current']
                     ? null : ['url' => route($prefix.'business.applications.show', $parameters, false), 'method' => 'get']],
-            'home' => null, 'shell_links' => ['home' => $home, 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], 'reports' => null, 'profile' => null]];
+            'home' => null, 'shell_links' => ['home' => $home, 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], ...BusinessHomeResource::tabs($request, $application['business_id'])]];
     }
 
     /** @return array{url: string, method: string} */

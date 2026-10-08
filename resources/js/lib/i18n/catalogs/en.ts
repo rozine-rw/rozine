@@ -603,6 +603,10 @@ const en = {
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
         'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+    'business.reports.guide.visit.body_undated':
+        'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report.',
+    'business.reports.guide.cosign.body_undated':
+        'When the audit is sealed you review it and co-sign it within the review window, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
@@ -681,6 +685,18 @@ const en = {
     'business.profile.records.signatories': 'Signatories',
     'business.profile.records.mandate':
         '{count} on the mandate · need {required}+',
+    'business.profile.registration.title': 'On record',
+    'business.profile.registration.established': 'Established',
+    'business.profile.registration.note':
+        'From your verified registration and mandate. They change only when Rozine verifies new records.',
+    'business.profile.registration.people': 'People on the mandate',
+    'business.profile.registration.required': 'Required signatory',
+    'business.profile.registration.role.owner': 'Owner',
+    'business.profile.registration.role.beneficial_owner': 'Beneficial owner',
+    'business.profile.registration.role.controller': 'Controller',
+    'business.profile.registration.role.director': 'Director',
+    'business.profile.registration.role.signatory': 'Signatory',
+    'business.profile.registration.role.representative': 'Representative',
     'business.profile.linked.unlink': 'Unlink',
     'business.profile.linked.unlink_named': 'Unlink {name}',
     'business.profile.linked.add': '+ Link a payout account',
@@ -2375,6 +2391,9 @@ const en = {
     'business.repayments.total': 'Total',
     'business.repayments.schedule': 'Repayment schedule',
     'business.repayments.late.title': 'If a payment is late',
+    'business.repayments.none.title': 'Nothing to repay yet',
+    'business.repayments.none.body':
+        'Repayments start once a raise is funded and paid out to you. Its schedule, what is due and every payment will show here.',
     'business.servicing.repay.state.current': 'Current',
     'business.servicing.repay.state.due_today': 'Due today',
     'business.servicing.repay.state.overdue': 'Overdue',
