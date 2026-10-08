@@ -23,6 +23,8 @@ import RoleHomeController from './RoleHomeController'
 import AuditorHomeController from './AuditorHomeController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
+import InvestorProfileController from './InvestorProfileController'
+import InvestorPortfolioController from './InvestorPortfolioController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
@@ -59,6 +61,8 @@ const Controllers = {
     AuditorHomeController: Object.assign(AuditorHomeController, AuditorHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
+    InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
+    InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),

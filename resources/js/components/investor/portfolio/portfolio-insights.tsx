@@ -286,7 +286,8 @@ const RISK_BAR: Record<InvestorRatingBand, string> = {
 
 /**
  * Concentration (crosswalk AC-05): industry mix, rating mix and the concentration call-out, all
- * from the server's exposure figures (design L1247–1300).
+ * from the server's exposure figures (design L1247–1300). With nothing held there is no mix to
+ * show, so each empty breakdown is left out rather than drawn as an empty card.
  */
 export function Exposure({
     industries,
@@ -302,86 +303,94 @@ export function Exposure({
 
     return (
         <>
-            <section
-                aria-label={t('investor.portfolio.diversification')}
-                className="mt-5"
-            >
-                <h2 className={HEADING}>
-                    {t('investor.portfolio.diversification')}
-                </h2>
-                <div className="mt-[11px] rounded-2xl border border-rz-border bg-rz-surface p-4">
-                    <div className="flex h-3 gap-0.5 overflow-hidden rounded-[10px]">
-                        {industries.map((entry) => (
-                            <span
-                                key={entry.name}
-                                style={{
-                                    width: `${entry.share_pct}%`,
-                                    background: ACCENT_FILL[entry.accent],
-                                }}
-                            />
-                        ))}
-                    </div>
-                    <ul className="mt-3.5 flex flex-col gap-[11px]">
-                        {industries.map((entry) => (
-                            <li
-                                key={entry.name}
-                                className="flex items-center gap-2.5"
-                            >
+            {industries.length > 0 && (
+                <section
+                    aria-label={t('investor.portfolio.diversification')}
+                    className="mt-5"
+                >
+                    <h2 className={HEADING}>
+                        {t('investor.portfolio.diversification')}
+                    </h2>
+                    <div className="mt-[11px] rounded-2xl border border-rz-border bg-rz-surface p-4">
+                        <div className="flex h-3 gap-0.5 overflow-hidden rounded-[10px]">
+                            {industries.map((entry) => (
                                 <span
-                                    className="size-2.5 shrink-0 rounded-[3px]"
+                                    key={entry.name}
                                     style={{
+                                        width: `${entry.share_pct}%`,
                                         background: ACCENT_FILL[entry.accent],
                                     }}
                                 />
-                                <span className="flex-1 text-[13px] font-semibold text-rz-ink">
-                                    {entry.name}
-                                </span>
-                                <span className="text-xs font-semibold text-rz-secondary">
-                                    {formatCompact(entry.amount)}
-                                </span>
-                                <span className="w-[38px] text-right text-[13px] font-bold text-rz-ink">
-                                    {entry.share_pct}%
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            <section
-                aria-label={t('investor.portfolio.risk_balance')}
-                className="mt-5"
-            >
-                <h2 className={HEADING}>
-                    {t('investor.portfolio.risk_balance')}
-                </h2>
-                <div className="mt-[11px] flex gap-2.5 rounded-2xl border border-rz-border bg-rz-surface p-4">
-                    {risk.map((entry) => (
-                        <div key={entry.band} className="flex-1 text-center">
-                            <p
-                                className={cn(
-                                    'text-[22px] font-bold',
-                                    RATING_STYLE[entry.band].text,
-                                )}
-                            >
-                                {entry.share_pct}%
-                            </p>
-                            <div className="mt-[5px] h-[5px] overflow-hidden rounded-[3px] bg-rz-page">
-                                <div
-                                    className={cn(
-                                        'h-full',
-                                        RISK_BAR[entry.band],
-                                    )}
-                                    style={{ width: `${entry.share_pct}%` }}
-                                />
-                            </div>
-                            <p className="mt-[7px] text-[11px] font-semibold text-rz-secondary">
-                                {t(`investor.rating.${entry.band}`)}
-                            </p>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </section>
+                        <ul className="mt-3.5 flex flex-col gap-[11px]">
+                            {industries.map((entry) => (
+                                <li
+                                    key={entry.name}
+                                    className="flex items-center gap-2.5"
+                                >
+                                    <span
+                                        className="size-2.5 shrink-0 rounded-[3px]"
+                                        style={{
+                                            background:
+                                                ACCENT_FILL[entry.accent],
+                                        }}
+                                    />
+                                    <span className="flex-1 text-[13px] font-semibold text-rz-ink">
+                                        {entry.name}
+                                    </span>
+                                    <span className="text-xs font-semibold text-rz-secondary">
+                                        {formatCompact(entry.amount)}
+                                    </span>
+                                    <span className="w-[38px] text-right text-[13px] font-bold text-rz-ink">
+                                        {entry.share_pct}%
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
+            )}
+
+            {risk.length > 0 && (
+                <section
+                    aria-label={t('investor.portfolio.risk_balance')}
+                    className="mt-5"
+                >
+                    <h2 className={HEADING}>
+                        {t('investor.portfolio.risk_balance')}
+                    </h2>
+                    <div className="mt-[11px] flex gap-2.5 rounded-2xl border border-rz-border bg-rz-surface p-4">
+                        {risk.map((entry) => (
+                            <div
+                                key={entry.band}
+                                className="flex-1 text-center"
+                            >
+                                <p
+                                    className={cn(
+                                        'text-[22px] font-bold',
+                                        RATING_STYLE[entry.band].text,
+                                    )}
+                                >
+                                    {entry.share_pct}%
+                                </p>
+                                <div className="mt-[5px] h-[5px] overflow-hidden rounded-[3px] bg-rz-page">
+                                    <div
+                                        className={cn(
+                                            'h-full',
+                                            RISK_BAR[entry.band],
+                                        )}
+                                        style={{ width: `${entry.share_pct}%` }}
+                                    />
+                                </div>
+                                <p className="mt-[7px] text-[11px] font-semibold text-rz-secondary">
+                                    {t(`investor.rating.${entry.band}`)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {concentration?.status === 'concentrated' && (
                 <div className="mt-4 flex gap-3 rounded-2xl border border-[#f3dfbf] bg-[#fff8ee] p-3.5 dark:border-[rgba(240,160,96,.3)] dark:bg-[rgba(240,160,96,.08)]">
