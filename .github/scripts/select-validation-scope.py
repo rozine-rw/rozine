@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 FULL_JOBS = [
@@ -374,6 +375,7 @@ def canonical_selection(env):
     retry = int(current["run_attempt"]) > 1 or current["event"] == "workflow_dispatch"
     retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
     inventory = coordination_artifact_index(repository)
+    failed_peers = []
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
@@ -383,13 +385,20 @@ def canonical_selection(env):
             continue
         if inventory[name] != run["id"]:
             raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
-        try:
-            failed_identity = coordination_identity(repository, run)
-        except MissingEvidence:
-            raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
-        if failed_identity["tree_sha"] == tree:
-            diagnostic("canonical_peer_unsuccessful", run)
-            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+        failed_peers.append(run)
+    # Each immutable identity still receives all native tree/job/attempt checks.
+    # Bound independent reads instead of serially downloading every old proof.
+    try:
+        with ThreadPoolExecutor(max_workers=4) as readers:
+            for start in range(0, len(failed_peers), 4):
+                batch = failed_peers[start:start + 4]
+                identities = readers.map(lambda run: coordination_identity(repository, run), batch)
+                for run, failed_identity in zip(batch, identities):
+                    if failed_identity["tree_sha"] == tree:
+                        diagnostic("canonical_peer_unsuccessful", run)
+                        raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+    except MissingEvidence:
+        raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
     deadline = time.monotonic() + 45
     while True:
         try:

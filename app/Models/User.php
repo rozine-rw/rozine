@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Application\Identity\EmailVerificationCode;
 use App\Notifications\Account\OneTimeCode;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -52,6 +53,25 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    /**
+     * The MustVerifyEmail boundary also serves existing signed verification links. Refuse a
+     * stale address, and let an already-verified duplicate continue without another event.
+     */
+    public function markEmailAsVerified(): bool
+    {
+        $email = $this->getEmailForVerification();
+
+        if ($this->markEmailAsVerifiedFor($email)) {
+            return true;
+        }
+
+        if (! $this->refresh()->isVerifiedAt($email)) {
+            throw new AuthorizationException('EMAIL_VERIFICATION_ADDRESS_CHANGED');
+        }
+
+        return false;
     }
 
     /**
