@@ -33,7 +33,12 @@ export type AdminSection =
     | 'ledger'
     | 'events';
 
-export type StaffRole = 'analyst' | 'approver' | 'compliance' | 'superadmin';
+export type StaffRole =
+    | 'analyst'
+    | 'approver'
+    | 'compliance'
+    | 'treasury'
+    | 'superadmin';
 
 /** The signed-in operator. Privileged staff accounts are separate from Party logins (CFG-01). */
 export type StaffViewer = {
@@ -180,6 +185,8 @@ export type TodayKpiKey =
     | 'secondary_volume';
 
 export type TodayKpi =
+    /** A figure the platform does not record yet; the console shows it as not tracked. */
+    | { key: TodayKpiKey; value: null }
     | {
           key: Exclude<TodayKpiKey, 'treasury_position' | 'default_rate'>;
           value: StatValue;
@@ -208,7 +215,8 @@ export type AttentionKey =
 
 export type AttentionTile = {
     key: AttentionKey;
-    count: number;
+    /** Null while the platform does not record this queue. */
+    count: number | null;
     /** Null while the screen that works this queue is not built yet. */
     link: RouteLink | null;
 };
@@ -257,10 +265,15 @@ export type FunnelStage =
     | 'matured'
     | 'failed';
 
-export type AdminTodayProps = AdminShellProps & {
+/**
+ * The live Operations Center sends only the destinations the viewer may open, and null for every
+ * panel or figure the platform does not record yet; the console shows those as not tracked.
+ */
+export type AdminTodayProps = AdminFrameShellProps & {
     kpis: TodayKpi[];
     attention: AttentionTile[];
-    breaks: ReconciliationBreak[];
+    /** Null while reconciliation breaks are not tracked; empty when none is open. */
+    breaks: ReconciliationBreak[] | null;
     capital_raised: {
         from: string | null;
         to: string | null;
@@ -272,27 +285,32 @@ export type AdminTodayProps = AdminShellProps & {
         healthy: { count: number; pct: number };
         watch: { count: number; pct: number };
         distressed: { count: number; pct: number };
-    };
-    activity: ActivityItem[];
-    funnel: { stage: FunnelStage; count: number; width_pct: number }[];
+    } | null;
+    /** Null while the console has no ledger feed. */
+    activity: ActivityItem[] | null;
+    /** A stage the platform does not record yet has a null count. */
+    funnel: { stage: FunnelStage; count: number | null; width_pct: number }[];
     pending_applications: {
         id: string;
         business: string;
         requested: Money;
         rating: Rating | null;
-        link: RouteLink;
+        /** Null for a viewer who may not review applications. */
+        link: RouteLink | null;
     }[];
-    sector_exposure: {
-        sector: string;
-        outstanding: Money;
-        notes: number;
-        at_risk: boolean;
-    }[];
+    sector_exposure:
+        | {
+              sector: string;
+              outstanding: Money;
+              notes: number;
+              at_risk: boolean;
+          }[]
+        | null;
     treasury: {
-        invested: Money;
-        disbursed: Money;
-        platform_net: Money;
-        paid_to_investors: Money;
+        invested: Money | null;
+        disbursed: Money | null;
+        platform_net: Money | null;
+        paid_to_investors: Money | null;
     };
     collections: {
         in_repayment: number;
@@ -301,7 +319,7 @@ export type AdminTodayProps = AdminShellProps & {
         on_track: number;
         late: number;
         default_risk: number;
-    };
+    } | null;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -527,7 +545,8 @@ export type StaffPartyRow = {
     name: string;
     email: string;
     initials: string;
-    role: StaffRole;
+    /** The operator's most privileged role; null when they hold none. */
+    role: StaffRole | null;
     frozen: boolean;
     you: boolean;
     link: RouteLink;
@@ -572,7 +591,13 @@ export type PartyDetail = {
     kind: PartyKind;
     name: string;
     subtitle: string;
-    health: 'active' | 'healthy' | 'watch' | 'distressed' | 'kyc_pending';
+    health:
+        | 'active'
+        | 'healthy'
+        | 'watch'
+        | 'distressed'
+        | 'kyc_pending'
+        | 'frozen';
     stats: { key: PartyStatKey; value: StatValue }[];
     list: {
         key: 'active_notes' | 'holdings' | 'engagements';
@@ -653,7 +678,7 @@ export type DirectoryFilter = {
     options: { value: string; label: string }[];
 };
 
-export type AdminPartiesProps = AdminShellProps & {
+export type AdminPartiesProps = AdminFrameShellProps & {
     kind: PartyKind;
     policy: PolicyItem[];
     stats: { key: DirectoryStatKey; value: StatValue }[];
@@ -724,7 +749,7 @@ export type EventExport =
     | { state: 'running'; requested: Attribution }
     | { state: 'ready'; requested: Attribution; download: RouteLink };
 
-export type AdminEventsProps = AdminShellProps & {
+export type AdminEventsProps = AdminFrameShellProps & {
     events: EventRow[];
     total: number;
     filters: {

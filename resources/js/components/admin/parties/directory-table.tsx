@@ -339,9 +339,13 @@ function StaffRow({ row }: { row: StaffPartyRow }) {
                 </div>
             </div>
             <span role="cell">
-                <Chip tone="blue" className="text-[11px]">
-                    {t(`admin.role.${row.role}`)}
-                </Chip>
+                {row.role === null ? (
+                    <span className="text-[12.5px] text-rz-muted">—</span>
+                ) : (
+                    <Chip tone="blue" className="text-[11px]">
+                        {t(`admin.role.${row.role}`)}
+                    </Chip>
+                )}
             </span>
             <span role="cell">
                 <Chip
