@@ -84,7 +84,7 @@ type MenuItem = {
         | 'terms'
         | 'privacy';
     icon: IconName;
-    href: RouteLink;
+    href: RouteLink | null;
     active: boolean;
 };
 
@@ -92,7 +92,8 @@ type MenuItem = {
  * The profile menu (design L2800–2809). Built rows only: linked payout accounts (wallet readiness),
  * statements, identity verification and the legal documents. Personal-information editing, the
  * security centre, help centre, Rozine Plus, refer-and-earn and Investor Academy are not part of
- * this slice, so their rows are left out rather than shipped as dead ends.
+ * this slice, so their rows are left out rather than shipped as dead ends; so is a row whose page
+ * the server does not link yet.
  */
 export function ProfileMenu({
     section,
@@ -136,13 +137,16 @@ export function ProfileMenu({
         { key: 'terms', icon: 'document', href: links.terms, active: false },
         { key: 'privacy', icon: 'lock', href: links.privacy, active: false },
     ];
+    const shown = items.flatMap(({ href, ...item }) =>
+        href === null ? [] : [{ ...item, href }],
+    );
 
     return (
         <nav
             aria-label={t('investor.profile.menu')}
             className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
         >
-            {items.map((item) => (
+            {shown.map((item) => (
                 <Link
                     key={item.key}
                     href={item.href}
@@ -262,44 +266,11 @@ type LinkedProps = {
  * Linked payout accounts (design L3856–3923) — wallet readiness. Accounts arrive masked; linking
  * sends the details to the server, which verifies ownership (a one-off verification debit, and
  * payouts only to an account in the investor's own name) and answers with field errors. Cards are
- * not a payout rail in the MVP, so the design's debit-card option is left out.
+ * not a payout rail in the MVP, so the design's debit-card option is left out. Until the server
+ * links a link or unlink command, the accounts are listed without it and nothing invites linking.
  */
 export function LinkedAccounts({ linked, action }: LinkedProps) {
     const { t } = useTranslation();
-    const [open, setOpen] = useState(linked.accounts.length === 0);
-    const form = useForm<{
-        type: 'mobile' | 'bank';
-        network: 'mtn' | 'airtel';
-        bank: string;
-        number: string;
-    }>({
-        type: 'mobile',
-        network: 'mtn',
-        bank: linked.banks[0]?.code ?? '',
-        number: '',
-    });
-    const field =
-        'mt-[7px] box-border w-full rounded-xl border border-rz-border bg-[#f8fafc] px-[13px] py-3 text-sm font-semibold text-rz-ink outline-none dark:bg-rz-surface-sunken';
-    const label =
-        'mt-[13px] block text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase';
-    const choice = (on: boolean) =>
-        cn(
-            'flex items-center justify-center gap-2 rounded-xl border-[1.5px] px-2 py-2.5 text-[12.5px] font-semibold',
-            on
-                ? 'border-rz-accent-fill bg-rz-accent-soft text-rz-accent-app-text'
-                : 'border-rz-border bg-rz-surface text-rz-slate',
-        );
-
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        form.post(action.url, {
-            preserveScroll: true,
-            onSuccess: () => {
-                form.reset('number');
-                setOpen(false);
-            },
-        });
-    };
 
     return (
         <>
@@ -326,178 +297,227 @@ export function LinkedAccounts({ linked, action }: LinkedProps) {
                                 )}
                             </p>
                         </div>
-                        <Form
-                            action={account.unlink.url}
-                            method={account.unlink.method}
-                        >
-                            <button
-                                type="submit"
-                                className="text-[12.5px] font-semibold text-rz-danger-text"
+                        {account.unlink !== null && (
+                            <Form
+                                action={account.unlink.url}
+                                method={account.unlink.method}
                             >
-                                {t('investor.profile.linked.unlink')}
-                            </button>
-                        </Form>
+                                <button
+                                    type="submit"
+                                    className="text-[12.5px] font-semibold text-rz-danger-text"
+                                >
+                                    {t('investor.profile.linked.unlink')}
+                                </button>
+                            </Form>
+                        )}
                     </li>
                 ))}
                 {linked.accounts.length === 0 && (
                     <li className="rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-5 text-center text-[12.5px] text-rz-secondary dark:border-rz-border">
-                        {t('investor.profile.linked.none')}
+                        {t(
+                            action === null
+                                ? 'investor.profile.linked.empty'
+                                : 'investor.profile.linked.none',
+                        )}
                     </li>
                 )}
             </ul>
-            {open ? (
-                <form
-                    onSubmit={submit}
-                    aria-label={t('investor.profile.linked.new')}
-                    className="mt-3.5 rounded-2xl border-[1.5px] border-rz-accent-fill bg-rz-surface p-[15px] shadow-[0_16px_38px_-18px_rgba(20,45,95,.3)]"
-                >
-                    <div className="flex items-center justify-between">
-                        <p className="text-[13.5px] font-semibold text-rz-ink">
-                            {t('investor.profile.linked.new')}
-                        </p>
-                        {linked.accounts.length > 0 && (
-                            <button
-                                type="button"
-                                aria-label={t('app.sheet.close')}
-                                onClick={() => setOpen(false)}
-                                className="flex size-[26px] items-center justify-center rounded-[10px] border border-rz-border bg-[#f3f6fc] text-[13px] text-rz-secondary dark:bg-rz-surface-muted"
-                            >
-                                <span aria-hidden>✕</span>
-                            </button>
-                        )}
-                    </div>
-                    <p className={label}>{t('investor.profile.linked.type')}</p>
+            {action !== null && (
+                <LinkAccountForm
+                    banks={linked.banks}
+                    action={action}
+                    hasAccounts={linked.accounts.length > 0}
+                />
+            )}
+        </>
+    );
+}
+
+type LinkAccountFormProps = {
+    banks: LinkedProps['linked']['banks'];
+    action: NonNullable<LinkedProps['action']>;
+    hasAccounts: boolean;
+};
+
+/** The link-a-new-account form, open from the start while nothing is linked yet. */
+function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(!hasAccounts);
+    const form = useForm<{
+        type: 'mobile' | 'bank';
+        network: 'mtn' | 'airtel';
+        bank: string;
+        number: string;
+    }>({
+        type: 'mobile',
+        network: 'mtn',
+        bank: banks[0]?.code ?? '',
+        number: '',
+    });
+    const field =
+        'mt-[7px] box-border w-full rounded-xl border border-rz-border bg-[#f8fafc] px-[13px] py-3 text-sm font-semibold text-rz-ink outline-none dark:bg-rz-surface-sunken';
+    const label =
+        'mt-[13px] block text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase';
+    const choice = (on: boolean) =>
+        cn(
+            'flex items-center justify-center gap-2 rounded-xl border-[1.5px] px-2 py-2.5 text-[12.5px] font-semibold',
+            on
+                ? 'border-rz-accent-fill bg-rz-accent-soft text-rz-accent-app-text'
+                : 'border-rz-border bg-rz-surface text-rz-slate',
+        );
+
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        form.post(action.url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('number');
+                setOpen(false);
+            },
+        });
+    };
+
+    return open ? (
+        <form
+            onSubmit={submit}
+            aria-label={t('investor.profile.linked.new')}
+            className="mt-3.5 rounded-2xl border-[1.5px] border-rz-accent-fill bg-rz-surface p-[15px] shadow-[0_16px_38px_-18px_rgba(20,45,95,.3)]"
+        >
+            <div className="flex items-center justify-between">
+                <p className="text-[13.5px] font-semibold text-rz-ink">
+                    {t('investor.profile.linked.new')}
+                </p>
+                {hasAccounts && (
+                    <button
+                        type="button"
+                        aria-label={t('app.sheet.close')}
+                        onClick={() => setOpen(false)}
+                        className="flex size-[26px] items-center justify-center rounded-[10px] border border-rz-border bg-[#f3f6fc] text-[13px] text-rz-secondary dark:bg-rz-surface-muted"
+                    >
+                        <span aria-hidden>✕</span>
+                    </button>
+                )}
+            </div>
+            <p className={label}>{t('investor.profile.linked.type')}</p>
+            <div
+                role="radiogroup"
+                aria-label={t('investor.profile.linked.type')}
+                className="mt-[7px] grid grid-cols-2 gap-[7px]"
+            >
+                {(['mobile', 'bank'] as const).map((type) => (
+                    <button
+                        key={type}
+                        type="button"
+                        role="radio"
+                        aria-checked={form.data.type === type}
+                        onClick={() => form.setData('type', type)}
+                        className={choice(form.data.type === type)}
+                    >
+                        {t(`investor.profile.linked.type_${type}`)}
+                    </button>
+                ))}
+            </div>
+            {form.data.type === 'mobile' ? (
+                <>
+                    <p className={label}>
+                        {t('investor.profile.linked.network')}
+                    </p>
                     <div
                         role="radiogroup"
-                        aria-label={t('investor.profile.linked.type')}
+                        aria-label={t('investor.profile.linked.network')}
                         className="mt-[7px] grid grid-cols-2 gap-[7px]"
                     >
-                        {(['mobile', 'bank'] as const).map((type) => (
+                        {(['mtn', 'airtel'] as const).map((network) => (
                             <button
-                                key={type}
+                                key={network}
                                 type="button"
                                 role="radio"
-                                aria-checked={form.data.type === type}
-                                onClick={() => form.setData('type', type)}
-                                className={choice(form.data.type === type)}
+                                aria-checked={form.data.network === network}
+                                onClick={() => form.setData('network', network)}
+                                className={choice(
+                                    form.data.network === network,
+                                )}
                             >
-                                {t(`investor.profile.linked.type_${type}`)}
+                                <MethodMark kind={network} size="sm" />
+                                {t(`investor.profile.linked.${network}`)}
                             </button>
                         ))}
                     </div>
-                    {form.data.type === 'mobile' ? (
-                        <>
-                            <p className={label}>
-                                {t('investor.profile.linked.network')}
-                            </p>
-                            <div
-                                role="radiogroup"
-                                aria-label={t(
-                                    'investor.profile.linked.network',
-                                )}
-                                className="mt-[7px] grid grid-cols-2 gap-[7px]"
-                            >
-                                {(['mtn', 'airtel'] as const).map((network) => (
-                                    <button
-                                        key={network}
-                                        type="button"
-                                        role="radio"
-                                        aria-checked={
-                                            form.data.network === network
-                                        }
-                                        onClick={() =>
-                                            form.setData('network', network)
-                                        }
-                                        className={choice(
-                                            form.data.network === network,
-                                        )}
-                                    >
-                                        <MethodMark kind={network} size="sm" />
-                                        {t(
-                                            `investor.profile.linked.${network}`,
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <label htmlFor="link-bank" className={label}>
-                                {t('investor.profile.linked.bank')}
-                            </label>
-                            <select
-                                id="link-bank"
-                                value={form.data.bank}
-                                onChange={(event) =>
-                                    form.setData('bank', event.target.value)
-                                }
-                                className={field}
-                            >
-                                {linked.banks.map((bank) => (
-                                    <option key={bank.code} value={bank.code}>
-                                        {bank.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </>
-                    )}
-                    <label htmlFor="link-number" className={label}>
-                        {t(
-                            form.data.type === 'mobile'
-                                ? 'investor.profile.linked.mobile_number'
-                                : 'investor.profile.linked.account_number',
-                        )}
-                    </label>
-                    <input
-                        id="link-number"
-                        value={form.data.number}
-                        onChange={(event) =>
-                            form.setData(
-                                'number',
-                                event.target.value.replace(/[^0-9]/gu, ''),
-                            )
-                        }
-                        inputMode="numeric"
-                        aria-invalid={
-                            form.errors.number !== undefined || undefined
-                        }
-                        placeholder={t(
-                            form.data.type === 'mobile'
-                                ? 'investor.profile.linked.mobile_placeholder'
-                                : 'investor.profile.linked.account_placeholder',
-                        )}
-                        className={field}
-                    />
-                    {form.errors.number !== undefined && (
-                        <p
-                            role="alert"
-                            className="mt-[9px] text-[11.5px] font-semibold text-rz-danger-text"
-                        >
-                            {form.errors.number}
-                        </p>
-                    )}
-                    <button
-                        type="submit"
-                        disabled={form.processing || form.data.number === ''}
-                        aria-busy={form.processing || undefined}
-                        className="mt-[13px] h-12 w-full rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {t('investor.profile.linked.submit')}
-                    </button>
-                    <p className="mt-[9px] text-[10.5px] leading-[1.45] text-rz-secondary">
-                        {t('investor.profile.linked.footnote')}
-                    </p>
-                </form>
+                </>
             ) : (
-                <button
-                    type="button"
-                    onClick={() => setOpen(true)}
-                    className="mt-3.5 h-[50px] w-full rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
-                >
-                    {t('investor.profile.linked.add')}
-                </button>
+                <>
+                    <label htmlFor="link-bank" className={label}>
+                        {t('investor.profile.linked.bank')}
+                    </label>
+                    <select
+                        id="link-bank"
+                        value={form.data.bank}
+                        onChange={(event) =>
+                            form.setData('bank', event.target.value)
+                        }
+                        className={field}
+                    >
+                        {banks.map((bank) => (
+                            <option key={bank.code} value={bank.code}>
+                                {bank.name}
+                            </option>
+                        ))}
+                    </select>
+                </>
             )}
-        </>
+            <label htmlFor="link-number" className={label}>
+                {t(
+                    form.data.type === 'mobile'
+                        ? 'investor.profile.linked.mobile_number'
+                        : 'investor.profile.linked.account_number',
+                )}
+            </label>
+            <input
+                id="link-number"
+                value={form.data.number}
+                onChange={(event) =>
+                    form.setData(
+                        'number',
+                        event.target.value.replace(/[^0-9]/gu, ''),
+                    )
+                }
+                inputMode="numeric"
+                aria-invalid={form.errors.number !== undefined || undefined}
+                placeholder={t(
+                    form.data.type === 'mobile'
+                        ? 'investor.profile.linked.mobile_placeholder'
+                        : 'investor.profile.linked.account_placeholder',
+                )}
+                className={field}
+            />
+            {form.errors.number !== undefined && (
+                <p
+                    role="alert"
+                    className="mt-[9px] text-[11.5px] font-semibold text-rz-danger-text"
+                >
+                    {form.errors.number}
+                </p>
+            )}
+            <button
+                type="submit"
+                disabled={form.processing || form.data.number === ''}
+                aria-busy={form.processing || undefined}
+                className="mt-[13px] h-12 w-full rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                {t('investor.profile.linked.submit')}
+            </button>
+            <p className="mt-[9px] text-[10.5px] leading-[1.45] text-rz-secondary">
+                {t('investor.profile.linked.footnote')}
+            </p>
+        </form>
+    ) : (
+        <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="mt-3.5 h-[50px] w-full rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
+        >
+            {t('investor.profile.linked.add')}
+        </button>
     );
 }
 

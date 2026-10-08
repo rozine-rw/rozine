@@ -3199,6 +3199,7 @@ const en = {
     'investor.profile.linked.unverified': 'Verifying',
     'investor.profile.linked.none':
         'No payout account yet. Link one to deposit and receive payouts.',
+    'investor.profile.linked.empty': 'No payout account linked yet.',
     'investor.profile.linked.new': 'Link a new account',
     'investor.profile.linked.add': '+ Link a new account',
     'investor.profile.linked.type': 'TYPE',
