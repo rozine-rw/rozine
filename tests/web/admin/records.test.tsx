@@ -180,7 +180,7 @@ describe('Event log', () => {
             screen.getByRole('button', { name: 'Contra entry posted' }),
         );
         expect(
-            screen.getByText('No reason recorded — a system action.'),
+            screen.getByText('No reason recorded with this action.'),
         ).toBeInTheDocument();
         expect(screen.getByText('—')).toBeInTheDocument();
         await user.click(

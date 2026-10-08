@@ -24,7 +24,7 @@ class StaffHomeController extends Controller
 
         return Inertia::render('identity/staff-home', [
             'staff_access' => (new StaffAccessResource($access))->resolve($request),
-            'sections' => ['investors' => $nav['investors'], 'applications' => $nav['applications'], 'disbursements' => $nav['disbursements']],
+            'sections' => ['today' => $nav['today'], 'investors' => $nav['investors'], 'applications' => $nav['applications'], 'disbursements' => $nav['disbursements']],
             'staging_mail_testers' => $stagingMailTesters,
         ]);
     }
