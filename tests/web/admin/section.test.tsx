@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
 import en from '@/lib/i18n/catalogs/en';
+import type { MessageCode } from '@/lib/i18n/types';
 import AdminPendingSection from '@/pages/admin/section';
 import type { AdminPendingSectionProps } from '@/types/admin';
 import sectionFixture from '../../../resources/fixtures/ui/admin-section.json';
@@ -13,6 +14,9 @@ const props = (overrides: Partial<AdminPendingSectionProps> = {}) => ({
     ...(structuredClone(sectionFixture.props) as AdminPendingSectionProps),
     ...overrides,
 });
+
+/** The English text of a plain message code. */
+const text = (code: MessageCode): string => String(en[code]);
 
 const designed = Object.entries(SECTION_DESIGNS).flatMap(([section, design]) =>
     design === undefined
@@ -49,78 +53,94 @@ describe('A designed section that is not wired yet', () => {
         (section, design) => {
             render(<AdminPendingSection {...props({ section })} />);
 
-            const title = en[`admin.section.${section}.title`];
-            expect(screen.getByTestId('head')).toHaveTextContent(title);
-            const region = screen.getByRole('region', { name: title });
+            const title = text(`admin.section.${section}.title`);
 
-            for (const kpi of design.kpis ?? []) {
-                // A tile label is the bare span inside the tile's label line.
-                const labels = within(region)
-                    .getAllByText(en[kpi.label])
-                    .filter(
-                        (label) =>
-                            label.tagName === 'SPAN' &&
-                            !label.hasAttribute('role'),
-                    );
-                expect(labels).toHaveLength(1);
-                const tile = labels[0].parentElement?.parentElement;
-                expect(tile).toHaveTextContent('—');
+            expect(screen.getByTestId('head')).toHaveTextContent(title);
+
+            const region = screen.getByRole('region', { name: title });
+            const kpis = design.kpis ?? [];
+
+            // Every tile keeps its place with no figure in it.
+            expect(within(region).queryAllByText('—')).toHaveLength(
+                kpis.length,
+            );
+
+            for (const kpi of kpis) {
+                // A tile label is the one bare span carrying its text.
+                expect(
+                    within(region).getByText(text(kpi.label), {
+                        selector: 'span:not([role])',
+                    }),
+                ).toBeVisible();
+
                 if (kpi.sub !== undefined) {
-                    expect(tile).toHaveTextContent(en[kpi.sub]);
+                    expect(
+                        within(region).getByText(text(kpi.sub)),
+                    ).toBeVisible();
                 }
             }
 
             const tabs = within(region).queryAllByRole('tab');
+
             expect(tabs.map((tab) => tab.textContent)).toEqual(
-                (design.tabs ?? []).map((tab) => en[tab.label]),
+                (design.tabs ?? []).map((tab) => text(tab.label)),
             );
             expect(within(region).queryAllByRole('button')).toEqual([]);
             expect(within(region).queryAllByRole('link')).toEqual([]);
 
             const first = design.tabs?.[0]?.key;
+
             for (const block of design.blocks) {
                 if (block.tab !== undefined && block.tab !== first) {
                     expect(
-                        within(region).queryByText(en[block.empty]),
+                        within(region).queryByText(text(block.empty)),
                     ).not.toBeInTheDocument();
+
                     continue;
                 }
 
                 expect(
                     within(region).getByRole('heading', {
-                        name: en[block.title],
+                        name: text(block.title),
                     }),
                 ).toBeInTheDocument();
-                expect(within(region).getByText(en[block.empty])).toBeVisible();
+                expect(
+                    within(region).getByText(text(block.empty)),
+                ).toBeVisible();
+
                 if (block.sub !== undefined) {
                     expect(
-                        within(region).getByText(en[block.sub]),
+                        within(region).getByText(text(block.sub)),
                     ).toBeVisible();
                 }
+
                 if (block.chart === true) {
                     expect(
                         within(region).getByRole('region', {
-                            name: en[block.title],
+                            name: text(block.title),
                         }),
-                    ).toHaveTextContent(en[block.empty]);
-                } else {
-                    const table = within(region).getByRole('table', {
-                        name: en[block.title],
-                    });
-                    expect(
-                        within(table)
-                            .getAllByRole('columnheader')
-                            .map((head) => head.textContent),
-                    ).toEqual(
-                        (block.columns ?? []).map(
-                            (column) => en[`admin.design.col.${column}`],
-                        ),
-                    );
-                    expect(within(table).getAllByRole('row')).toHaveLength(1);
+                    ).toHaveTextContent(text(block.empty));
+
+                    continue;
                 }
+
+                const table = within(region).getByRole('table', {
+                    name: text(block.title),
+                });
+
+                expect(
+                    within(table)
+                        .getAllByRole('columnheader')
+                        .map((head) => head.textContent),
+                ).toEqual(
+                    (block.columns ?? []).map((column) =>
+                        text(`admin.design.col.${column}`),
+                    ),
+                );
+                expect(within(table).getAllByRole('row')).toHaveLength(1);
             }
 
-            expect(region.textContent).not.toMatch(/admin\.|RWF|%/u);
+            expect(region).not.toHaveTextContent(/admin\.|RWF|%/u);
         },
     );
 
