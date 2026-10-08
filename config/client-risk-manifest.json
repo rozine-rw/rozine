@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "59a24e4d8e702e0988c87526e7e9b92c455a1ea43c949bca1dbde91acb1ca110",
-    "coverageSetSha256": "2c62480d98e57c2aa94035b21ed53c09d2d6f330ea8c2a8851ffec360cf405ae",
+    "sourceManifestSha256": "4b155d90bceefe7907f3baaed22d62e1f8caa21c0d68fd4f2237c4ac887bbfa3",
+    "coverageSetSha256": "bb25ab0eb44e43d7f1f980267b099e28d18bbbbc180b7938ac552f64971936cf",
     "thresholds": {
         "critical": {
             "global": {
@@ -359,11 +359,13 @@
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
         "resources/js/pages/admin/exceptions.tsx",
+        "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/reports.tsx",
+        "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
