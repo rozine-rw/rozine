@@ -10,7 +10,9 @@ namespace App\Application\Identity\Contracts;
  * record for it. Reads only and never locks; the caller checks the staff permission.
  *
  * Wallet is the Party's available and held cash; portfolio is its committed cash plus the principal
- * of its issued holdings, so a commitment counts once whether or not its note has issued yet.
+ * of its issued holdings, so a commitment counts once whether or not its note has issued yet. The
+ * 360 counts holdings but does not list them: a holding's title is Business publication evidence,
+ * and holdings are read through the S3-C adapter once it exposes them.
  *
  * @phpstan-type DirectoryRow array{
  *     party_id: string, name: string, email: string, kyc: 'verified'|'pending'|'rejected',
@@ -19,8 +21,7 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Counts array{all: int, verified: int, pending: int, kyc_overdue: int, frozen: int, restricted: int}
  * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, awaiting_review: int, aum: string}
  * @phpstan-type Detail array{
- *     row: DirectoryRow, holdings: list<array{id: string, title: string, principal: string}>,
- *     restricted_since: string|null,
+ *     row: DirectoryRow, restricted_since: string|null,
  *     history: list<array{id: string, at: string, actor: string, command: string, reason: string|null}>
  * }
  */

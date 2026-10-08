@@ -130,8 +130,8 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
 
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => $holder->party_id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.kind', 'investor')->where('party.health', 'active')
-            ->where('party.list.key', 'holdings')->has('party.list.rows', 2)->where('party.list.rows.0.id', $holding->id)
-            ->where('party.list.rows.0.detail', ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => (string) $holding->principal]])
+            // The 360 counts both holdings but lists none until the S3-C adapter exposes them.
+            ->where('party.stats.2', ['key' => 'holdings', 'value' => ['kind' => 'count', 'value' => 2]])->where('party.list', null)
             ->where('party.verification', null)->where('party.history', []));
     expect($case->status)->toBe('submitted');
 });
@@ -143,7 +143,7 @@ test("a person's 360 carries their identity submission, its documents and histor
 
     $assert = fn (Assert $page) => $page->where('party.id', $person->party_id)->where('party.name', 'Aline Uwase')->where('party.subtitle', $person->email)
         ->where('party.health', 'kyc_pending')->where('party.kyc', ['state' => 'pending', 'due_on' => null])
-        ->where('party.restricted_since', fn ($since): bool => is_string($since))->where('party.list', ['key' => 'holdings', 'rows' => []])
+        ->where('party.restricted_since', fn ($since): bool => is_string($since))->where('party.list', null)
         ->where('party.history.0.action', ['code' => 'verification.submit', 'label' => 'Submitted for review', 'tone' => 'blue'])
         ->where('party.history.0.actor', 'Aline Uwase')->where('party.history.5.action.label', 'Saved a step')
         ->where('party.verification.id', $case->id)->where('party.verification.status', 'submitted')->has('party.verification.documents', 3)
