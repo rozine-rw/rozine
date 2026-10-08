@@ -66,6 +66,7 @@
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -247,6 +248,7 @@
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
         "resources/js/routes/staff/investors/index.ts",
+        "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
@@ -290,9 +292,9 @@
         "resources/js/components/admin/disbursements/panels.tsx",
         "resources/js/components/admin/drawer.tsx",
         "resources/js/components/admin/format.ts",
+        "resources/js/components/admin/kind-meta.ts",
         "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/kyc-review.tsx",
-        "resources/js/components/admin/kind-meta.ts",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/maker-checker.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
@@ -596,8 +598,8 @@
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
-        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/reports.tsx",
+        "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
@@ -656,10 +658,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 622,
-        "generated": 231,
+        "totalTrackedSources": 630,
+        "generated": 236,
         "declarationOnly": 18,
-        "authoredExecutable": 373
+        "authoredExecutable": 376
     },
-    "coverageSetSha256": "bb25ab0eb44e43d7f1f980267b099e28d18bbbbc180b7938ac552f64971936cf"
+    "coverageSetSha256": "c66697a2eb4561798f8e540e8ef7df0c8755d5be496290ff13bb2a10a636226b"
 }
