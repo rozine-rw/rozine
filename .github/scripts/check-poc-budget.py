@@ -16,6 +16,9 @@ def measure(jobs):
     by_name = {job["name"]: job for job in jobs}
     reused = any(job["name"] == "Reuse POC validation evidence" and job.get("conclusion") != "skipped" for job in jobs)
     names = ["Select CI scope", "Board sync offline tests"] + (["Reuse POC validation evidence"] if reused else ["POC PHP safety and static checks", "POC web safety and static checks"])
+    identity = "Identify CI validation tree"
+    if any(job["name"] == identity for job in jobs):
+        names.append(identity)
     seconds = {}
     ends = {}
     for name in names:
@@ -36,7 +39,7 @@ def measure(jobs):
             raise ValueError(f"budget refuses an unpassed job: {name}")
         seconds[name] = max(0, (end - stamp(job["started_at"])).total_seconds())
         ends[name] = end
-    critical = max(seconds[names[1]], seconds[names[0]] + max(seconds[name] for name in names[2:]))
+    critical = max(seconds[names[1]], seconds.get(identity, 0) + seconds[names[0]] + max(seconds[name] for name in names[2:] if name != identity))
     elapsed = (max(ends.values()) - min(stamp(by_name[name]["started_at"]) for name in names)).total_seconds()
     return critical, elapsed, sum(seconds.values())
 
