@@ -76,6 +76,23 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $verified;
     }
 
+    /** Whether the account, as loaded, is verified at exactly this address. */
+    public function isVerifiedAt(string $email): bool
+    {
+        return $this->hasVerifiedEmail() && $this->getEmailForVerification() === $email;
+    }
+
+    /**
+     * Replace the account's address and drop any proof of the old one in a single write, so a
+     * verification of the old address that commits while this request runs cannot carry over.
+     */
+    public function changeEmail(string $email): void
+    {
+        static::query()->whereKey($this->getKey())->update(['email' => $email, 'email_verified_at' => null]);
+
+        $this->forceFill(['email' => $email, 'email_verified_at' => null])->syncOriginalAttributes(['email', 'email_verified_at']);
+    }
+
     /**
      * Confirm the email address with a six-digit code rather than a link. Sign-up and every
      * "send a new code" request issue a fresh code, which replaces the last one.

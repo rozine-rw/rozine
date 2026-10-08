@@ -288,6 +288,36 @@ test('a submission that loses the write to another for the same address still co
     Event::assertNotDispatched(Verified::class);
 });
 
+test('a verification that commits while the email is being changed does not carry over to the new address', function () {
+    Notification::fake();
+    $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
+    $user->sendEmailVerificationNotification();
+    $code = emailCodeFor($user);
+    $loadedByProfileRequest = User::query()->findOrFail($user->id);
+
+    $this->actingAs($user)
+        ->post(route('verification.code'), ['code' => $code])
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($loadedByProfileRequest)
+        ->patch(route('profile.update'), ['name' => 'Aline Uwase', 'email' => 'second@example.test'])
+        ->assertSessionHasNoErrors();
+
+    $stored = User::query()->findOrFail($user->id);
+
+    expect($stored->name)->toBe('Aline Uwase')
+        ->and($stored->email)->toBe('second@example.test')
+        ->and($stored->hasVerifiedEmail())->toBeFalse();
+});
+
+test('verification at an address holds only for that exact address', function () {
+    $user = User::factory()->create(['email' => 'first@example.test']);
+
+    expect($user->isVerifiedAt('first@example.test'))->toBeTrue()
+        ->and($user->isVerifiedAt('second@example.test'))->toBeFalse()
+        ->and(User::factory()->unverified()->create(['email' => 'third@example.test'])->isVerifiedAt('third@example.test'))->toBeFalse();
+});
+
 test('the verification write only lands on the unverified address it names', function () {
     $user = User::factory()->unverified()->create(['email' => 'first@example.test']);
 

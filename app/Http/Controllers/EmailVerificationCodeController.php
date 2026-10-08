@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\EmailVerificationCode;
 use App\Http\Requests\Identity\VerifyEmailCodeRequest;
-use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
@@ -14,8 +13,9 @@ use Laravel\Fortify\Contracts\VerifyEmailResponse;
 /**
  * Confirms a new account's email with the six-digit code it was sent, then continues exactly as
  * Fortify's verification link does. The code must have been sent to the account's current
- * address, and the address is marked verified only if it is still that address when written.
- * A refused code returns as a form error on the code field.
+ * address, and the address is marked verified only if it is still that address when written;
+ * when nothing is written, only a duplicate submission for the same address may have won. A
+ * refused code returns as a form error on the code field.
  */
 class EmailVerificationCodeController extends Controller
 {
@@ -42,22 +42,11 @@ class EmailVerificationCodeController extends Controller
 
             if ($user->markEmailAsVerifiedFor($email)) {
                 event(new Verified($user));
-            } elseif (! $this->stillVerifiedAt($user, $email)) {
+            } elseif (! $user->refresh()->isVerifiedAt($email)) {
                 throw ValidationException::withMessages(['code' => self::MESSAGES['EMAIL_CODE_INVALID']]);
             }
         }
 
         return app(VerifyEmailResponse::class);
-    }
-
-    /**
-     * Whether the account is verified at the proven address anyway, as when a second submission of
-     * the same code won the write. Any other outcome means the address changed after the check.
-     */
-    private function stillVerifiedAt(User $user, string $email): bool
-    {
-        $user->refresh();
-
-        return $user->hasVerifiedEmail() && $user->getEmailForVerification() === $email;
     }
 }
