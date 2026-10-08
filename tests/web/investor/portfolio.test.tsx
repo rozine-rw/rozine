@@ -179,6 +179,33 @@ describe('Portfolio', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('renders the live empty portfolio with no empty breakdowns and no unlinked tab', () => {
+        const props = portfolio(portfolioMinimalFixture);
+
+        props.links.notifications = null;
+        props.idle = null;
+        render(<InvestorPortfolio {...props} />);
+
+        expect(screen.getByText('Nothing held yet')).toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('region', { name: 'TOTAL VALUE' }),
+            ).getByText('0 businesses'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('region', {
+                name: 'DIVERSIFICATION BY INDUSTRY',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('region', { name: 'RISK BALANCE' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('IDLE IN WALLET')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Browse opportunities' }),
+        ).toHaveAttribute('href', '/investor/deals');
+    });
+
     it('lists a fully repaid note on the matured tab, with no awaiting commitments', () => {
         render(<InvestorPortfolio {...portfolio(portfolioMaturedFixture)} />);
 

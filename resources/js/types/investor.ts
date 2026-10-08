@@ -662,7 +662,8 @@ export type ProfileSection =
 
 export type LinkedAccount = FundingMethod & {
     verified: boolean;
-    unlink: RouteAction;
+    /** Null until unlinking has a live command; the account is then listed without it. */
+    unlink: RouteAction | null;
 };
 
 export type StatementFile = {
@@ -691,17 +692,20 @@ export type InvestorProfileProps = {
         annual: StatementFile | null;
         monthly: StatementFile[];
     } | null;
-    links: InvestorAppLinks & {
+    /** A destination with no live route yet is null and its row hidden (C3InvestorShellLinks). */
+    links: C3InvestorShellLinks & {
+        deals: RouteLink;
         overview: RouteLink;
         linked: RouteLink;
         statements: RouteLink;
         /** Present only when the server offers the gated Auto-Deploy explainer. */
         automation?: RouteLink;
-        verification: RouteLink;
-        terms: RouteLink;
-        privacy: RouteLink;
+        verification: RouteLink | null;
+        terms: RouteLink | null;
+        privacy: RouteLink | null;
     };
-    actions: { link_account: RouteAction; logout: RouteAction };
+    /** `link_account` is null until linking has a live command; no form is offered then. */
+    actions: { link_account: RouteAction | null; logout: RouteAction };
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1375,9 +1379,15 @@ export type CommitmentSummary = Pick<
     'id' | 'deal_name' | 'units' | 'principal' | 'state' | 'closing' | 'link'
 >;
 
-/** Commitments are `confirmed` or `funded` only, and never counted as holdings. */
-export type C3InvestorPortfolioProps = InvestorPortfolioProps &
-    InvestorPageContract & { commitments: CommitmentSummary[] };
+/**
+ * Commitments are `confirmed` or `funded` only, and never counted as holdings. A destination with
+ * no live route yet is null (C3InvestorShellLinks); Deals always exists.
+ */
+export type C3InvestorPortfolioProps = Omit<InvestorPortfolioProps, 'links'> &
+    InvestorPageContract & {
+        commitments: CommitmentSummary[];
+        links: C3InvestorShellLinks & { deals: RouteLink };
+    };
 
 /** Servicing fields keep their C3 empty states; they are C4 facts. */
 export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
