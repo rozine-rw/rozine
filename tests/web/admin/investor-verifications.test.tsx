@@ -110,6 +110,9 @@ const review = (
             uploaded_at: '2026-10-06T07:00:00+00:00',
             current: false,
             link: link('/admin/investor-verifications/a/documents/old'),
+            view: link(
+                '/admin/investor-verifications/a/documents/old?disposition=inline',
+            ),
         },
         {
             id: 'doc-front',
@@ -121,6 +124,9 @@ const review = (
             uploaded_at: '2026-10-06T07:10:00+00:00',
             current: true,
             link: link('/admin/investor-verifications/a/documents/front'),
+            view: link(
+                '/admin/investor-verifications/a/documents/front?disposition=inline',
+            ),
         },
     ],
     history: [
@@ -269,17 +275,40 @@ describe('Compliance review drawer', () => {
         const documents = within(drawer).getByRole('region', {
             name: 'Documents',
         });
-        const [replaced, current] = within(documents).getAllByRole('listitem');
+        const current = within(documents).getByRole('list', {
+            name: 'Current documents',
+        });
+        const [front] = within(current).getAllByRole('listitem');
+        expect(within(front).getByText('ID front')).toBeInTheDocument();
+        expect(within(front).getByText('front.png · 2 KB')).toBeInTheDocument();
+        expect(
+            within(front).getByRole('button', { name: 'View ID front' }),
+        ).toContainHTML(
+            'src="/admin/investor-verifications/a/documents/front?disposition=inline"',
+        );
+        expect(
+            within(front).getByRole('link', { name: 'Download front.png' }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/investor-verifications/a/documents/front',
+        );
+        expect(
+            within(documents).getByText('Earlier uploads'),
+        ).toBeInTheDocument();
+        const [replaced] = within(documents)
+            .getAllByRole('listitem')
+            .filter((item) => !current.contains(item));
         expect(within(replaced).getByText('Replaced')).toBeInTheDocument();
         expect(
             within(replaced).getByText('blurred.png · 2 KB'),
         ).toBeInTheDocument();
-        expect(within(current).queryByText('Replaced')).not.toBeInTheDocument();
         expect(
-            within(current).getByRole('link', { name: 'Download front.png' }),
+            within(replaced).getByRole('link', {
+                name: 'Download blurred.png',
+            }),
         ).toHaveAttribute(
             'href',
-            '/admin/investor-verifications/a/documents/front',
+            '/admin/investor-verifications/a/documents/old',
         );
 
         const history = within(drawer).getByRole('region', { name: 'History' });
@@ -445,5 +474,153 @@ describe('Compliance review drawer', () => {
         expect(
             screen.queryByRole('button', { name: 'Reject' }),
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('Compliance document viewer', () => {
+    const pdf = {
+        id: 'doc-back',
+        slot: 'back' as const,
+        filename: 'back.pdf',
+        media_type: 'application/pdf',
+        size_bytes: 4096,
+        sha256: 'c'.repeat(64),
+        uploaded_at: '2026-10-06T07:20:00+00:00',
+        current: true,
+        link: link('/admin/investor-verifications/a/documents/back'),
+        view: link(
+            '/admin/investor-verifications/a/documents/back?disposition=inline',
+        ),
+    };
+
+    it('opens a document full size and steps through the case without closing it', async () => {
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications {...queue({ review: review() })} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'View ID front' }));
+        let viewer = screen.getByRole('dialog', { name: 'ID front' });
+        expect(within(viewer).getByText('1 of 2')).toBeInTheDocument();
+        expect(viewer).toContainHTML(
+            'src="/admin/investor-verifications/a/documents/front?disposition=inline"',
+        );
+        expect(
+            within(viewer).getByRole('link', { name: 'Open in new tab' }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/investor-verifications/a/documents/front?disposition=inline',
+        );
+        expect(
+            within(viewer).getByRole('link', { name: 'Download front.png' }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/investor-verifications/a/documents/front',
+        );
+
+        await user.click(
+            within(viewer).getByRole('button', { name: 'Next document' }),
+        );
+        viewer = screen.getByRole('dialog', { name: 'ID front Replaced' });
+        expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
+        expect(
+            within(viewer).getByText('blurred.png · 2 KB'),
+        ).toBeInTheDocument();
+
+        await user.keyboard('{ArrowRight}');
+        expect(
+            screen.getByRole('dialog', { name: 'ID front' }),
+        ).toBeInTheDocument();
+        await user.keyboard('{ArrowLeft}');
+        expect(
+            screen.getByRole('dialog', { name: 'ID front Replaced' }),
+        ).toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Previous document' }),
+        );
+        expect(
+            screen.getByRole('dialog', { name: 'ID front' }),
+        ).toBeInTheDocument();
+
+        await user.keyboard('{Escape}');
+        expect(
+            screen.queryByRole('dialog', { name: 'ID front' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: 'Identity submission' }),
+        ).toBeInTheDocument();
+        expect(inertia.visits).toEqual([]);
+    });
+
+    it('opens an earlier upload from its row and closes with the close button', async () => {
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications {...queue({ review: review() })} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'View blurred.png' }),
+        );
+        const viewer = screen.getByRole('dialog', {
+            name: 'ID front Replaced',
+        });
+        expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
+
+        await user.click(
+            within(viewer).getByRole('button', { name: 'Close viewer' }),
+        );
+        expect(
+            screen.queryByRole('dialog', { name: 'ID front Replaced' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows a PDF as a tile, and a single document without stepping', async () => {
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({ review: review({ documents: [pdf] }) })}
+            />,
+        );
+        const documents = screen.getByRole('region', { name: 'Documents' });
+        expect(
+            within(documents).queryByText('Earlier uploads'),
+        ).not.toBeInTheDocument();
+        const tile = within(documents).getByRole('button', {
+            name: 'View ID back',
+        });
+        expect(within(tile).getByText('PDF')).toBeInTheDocument();
+        expect(
+            within(tile).queryByRole('presentation'),
+        ).not.toBeInTheDocument();
+
+        await user.click(tile);
+        const viewer = screen.getByRole('dialog', { name: 'ID back' });
+        expect(within(viewer).getByText('1 of 1')).toBeInTheDocument();
+        expect(within(viewer).getByText('PDF')).toBeInTheDocument();
+        expect(
+            within(viewer).queryByRole('button', { name: 'Next document' }),
+        ).not.toBeInTheDocument();
+        await user.keyboard('{ArrowRight}');
+        expect(
+            screen.getByRole('dialog', { name: 'ID back' }),
+        ).toBeInTheDocument();
+        await user.keyboard('{Home}');
+        expect(within(viewer).getByText('1 of 1')).toBeInTheDocument();
+    });
+
+    it('lists no current documents when every upload was replaced', () => {
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    review: review({ documents: [{ ...pdf, current: false }] }),
+                })}
+            />,
+        );
+        const documents = screen.getByRole('region', { name: 'Documents' });
+        expect(
+            within(documents).queryByRole('list', {
+                name: 'Current documents',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(documents).getByText('Earlier uploads'),
+        ).toBeInTheDocument();
     });
 });

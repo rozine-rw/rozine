@@ -115,6 +115,7 @@ test('a selected case shows its answers, private document links and history', fu
             ->where('review.documents.0.slot', 'front')->where('review.documents.0.filename', 'front.png')
             ->where('review.documents.0.media_type', 'image/png')->where('review.documents.0.current', true)
             ->where('review.documents.0.link.url', '/admin/investor-verifications/'.$case->id.'/documents/'.$front->id)
+            ->where('review.documents.0.view.url', '/admin/investor-verifications/'.$case->id.'/documents/'.$front->id.'?disposition=inline')
             ->has('review.history', 6)->where('review.history.5.status', 'submitted')->where('review.history.5.command', 'verification.submit')
             ->where('review.links.close.url', '/admin/investor-verifications?tab=submitted')
             ->where('review.actions.approve.url', '/admin/investor-verifications/'.$case->id.'/approve')
@@ -138,6 +139,23 @@ test('a document is read privately under investors.verify and only through its o
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$other->id, $front->id]))->assertNotFound();
     $this->actingAs(reviewStaff(['approver']))->get(route('staff.investor-verifications.document', [$case->id, $front->id]))->assertForbidden();
+});
+
+test('a document can be served for viewing in place, and any other disposition still downloads', function (): void {
+    $case = reviewSubmitted($this->person);
+    $front = InvestorVerificationDocument::query()->where('investor_verification_id', $case->id)->where('slot', 'front')->sole();
+
+    $inline = $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$case->id, $front->id, 'disposition' => 'inline']))->assertOk();
+    expect($inline->getContent())->toBe("\x89PNG\r\n\x1a\nsynthetic identity image")
+        ->and($inline->headers->get('Content-Type'))->toBe('image/png')
+        ->and($inline->headers->get('Content-Disposition'))->toBe('inline; filename=front.png')
+        ->and($inline->headers->get('X-Content-Type-Options'))->toBe('nosniff')
+        ->and($inline->headers->get('Cache-Control'))->toContain('no-store');
+
+    $other = $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$case->id, $front->id, 'disposition' => 'render']))->assertOk();
+    expect($other->headers->get('Content-Disposition'))->toBe('attachment; filename=front.png');
+
+    $this->actingAs(reviewStaff(['approver']))->get(route('staff.investor-verifications.document', [$case->id, $front->id, 'disposition' => 'inline']))->assertForbidden();
 });
 
 test('approval verifies the person through the one writer and activates the Investor membership', function (): void {
