@@ -59,9 +59,10 @@ it('offers a released application for publication before anything is listed', fu
         ->and($props['business']['name'])->toBeString()->not->toBe('')
         ->and(array_keys($props['business']))->toBe(['name', 'company_code', 'industry', 'district'])
         ->and($props['links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
-            'reports' => null, 'profile' => null, 'wallet' => ['url' => "/business/{$business}/wallet", 'method' => 'get'],
+            'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
+            'wallet' => ['url' => "/business/{$business}/wallet", 'method' => 'get'],
             'deposit' => ['url' => "/business/{$business}/wallet?kind=deposit", 'method' => 'get'], 'withdraw' => null, 'notifications' => null,
-            'rating' => null, 'apply' => null]);
+            'rating' => ['url' => "/business/{$business}/rating", 'method' => 'get'], 'apply' => null]);
 });
 
 it('shows the live raise, then funded capital, from retained publication and funding facts only', function (): void {
@@ -117,6 +118,7 @@ it('serves the bearer transport with its own links and scoped abilities', functi
         ->assertJsonPath('data.links.home.url', "/api/v1/business/{$campaign->business_id}")
         ->assertJsonPath('data.links.launcher.url', '/api/v1/identity')
         ->assertJsonPath('data.notes.0.link.url', "/api/v1/business/{$campaign->business_id}/campaigns/{$campaign->id}")
+        ->assertJsonPath('data.links.reports', null)->assertJsonPath('data.links.profile', null)->assertJsonPath('data.links.rating', null)
         ->assertJsonPath('data.create_application', null);
     Sanctum::actingAs($user, ['business:command']);
     $this->getJson($url)->assertForbidden();

@@ -40,7 +40,7 @@ class BusinessAuditReportResource extends JsonResource
             'actions' => ['dispute' => $canDispute ? ['url' => route($prefix.'dispute', $parameters, false), 'method' => 'post'] : null, 'cosign' => $canSign ? ['url' => route($prefix.'cosign', $parameters, false), 'method' => 'post'] : null],
             'links' => ['current' => self::link($prefix.'show', $parameters), 'close' => $home, 'operation' => $operation],
             'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'),
-                'reports' => null, 'profile' => null]];
+                ...BusinessHomeResource::tabs($request, $page['business']['id'])]];
     }
 
     public static function prefix(Request $request): string

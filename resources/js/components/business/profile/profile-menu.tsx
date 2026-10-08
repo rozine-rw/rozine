@@ -7,7 +7,8 @@ import type { BusinessProfileProps, ProfileSection } from '@/types/business';
 
 /**
  * The design's menu also lists Security center, Permissions & roles and Support center; those are
- * beyond the MVP, so they are left out rather than shipped as dead ends.
+ * beyond the MVP, so they are left out rather than shipped as dead ends. A section the server
+ * sends no link for is left out the same way.
  */
 const ITEMS: { key: ProfileSection; icon: IconName }[] = [
     { key: 'company', icon: 'building' },
@@ -50,11 +51,13 @@ export function ProfileMenu({ business, section, links }: ProfileMenuProps) {
                                 {t('business.profile.verified')}
                             </span>
                         )}
-                        <span className="rounded-[10px] bg-rz-accent-soft px-2 py-[3px] text-[11px] font-semibold text-rz-accent-app-text">
-                            {t('business.profile.score', {
-                                score: business.rating.score,
-                            })}
-                        </span>
+                        {business.rating !== null && (
+                            <span className="rounded-[10px] bg-rz-accent-soft px-2 py-[3px] text-[11px] font-semibold text-rz-accent-app-text">
+                                {t('business.profile.score', {
+                                    score: business.rating.score,
+                                })}
+                            </span>
+                        )}
                     </p>
                 </div>
             </div>
@@ -62,10 +65,14 @@ export function ProfileMenu({ business, section, links }: ProfileMenuProps) {
                 aria-label={t('business.profile.menu')}
                 className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
             >
-                {ITEMS.map(({ key, icon }) => (
+                {ITEMS.flatMap(({ key, icon }) => {
+                    const href = links.sections[key];
+
+                    return href === null ? [] : [{ key, icon, href }];
+                }).map(({ key, icon, href }) => (
                     <Link
                         key={key}
-                        href={links.sections[key]}
+                        href={href}
                         aria-current={section === key ? 'page' : undefined}
                         className={cn(
                             'flex w-full items-center gap-[13px] border-b border-[#eef2f9] p-[15px] text-left last:border-b-0 dark:border-rz-divider',

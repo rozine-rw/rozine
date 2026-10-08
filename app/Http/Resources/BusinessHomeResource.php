@@ -9,8 +9,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * `BusinessHomeProps` for both transports. It shapes already authorized facts and adds real routes
- * only: a destination with no live route yet (withdraw, notifications, rating, reports, profile)
- * is null, and headroom, on-time share and unread notifications are not invented.
+ * only: a destination with no live route yet (withdraw, notifications) is null, as are Rating,
+ * Reports and Profile on the bearer transport, which has no such read; headroom, on-time share and
+ * unread notifications are not invented.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -43,8 +44,8 @@ class BusinessHomeResource extends JsonResource
             'notes' => $notes, 'headroom' => null,
             'links' => ['home' => self::link($request, 'business.show', ['business' => $business]),
                 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
-                'reports' => null, 'profile' => null, 'wallet' => $wallet(), 'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => null,
-                'notifications' => null, 'rating' => null,
+                ...self::tabs($request, $business), 'wallet' => $wallet(), 'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => null,
+                'notifications' => null, 'rating' => $request->routeIs('api.*') ? null : self::link($request, 'business.rating', ['business' => $business]),
                 'apply' => $draft === null ? null : self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])],
             'create_application' => $draft !== null || ! in_array('application.create', $allowed, true) ? null : [
                 'action' => ['url' => route(self::prefix($request).'business.applications.create', ['business' => $business], false), 'method' => 'post'],
@@ -53,10 +54,22 @@ class BusinessHomeResource extends JsonResource
     }
 
     /**
+     * The Business shell's Reports and Profile tabs for one business, for every Business page to
+     * share. Both are web pages only, so on the bearer transport they stay null and hidden.
+     *
+     * @return array{reports: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
+     */
+    public static function tabs(Request $request, string $business): array
+    {
+        return $request->routeIs('api.*') ? ['reports' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'profile' => self::link($request, 'business.profile', ['business' => $business])];
+    }
+
+    /**
      * @param  array<string, string>  $parameters
      * @return array{url: string, method: 'get'}
      */
-    private static function link(Request $request, string $name, array $parameters = []): array
+    public static function link(Request $request, string $name, array $parameters = []): array
     {
         return ['url' => route(self::prefix($request).$name, $parameters, false), 'method' => 'get'];
     }
