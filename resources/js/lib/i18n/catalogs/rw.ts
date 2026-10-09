@@ -880,6 +880,11 @@ const rw: Catalog = {
     'admin.design.col.points': "Amanota y'ishimwe",
     'admin.design.col.app': 'Porogaramu',
     'admin.design.col.status': 'Uko bihagaze',
+    'admin.design.col.assigned_cpa': 'CPA wahawe',
+    'admin.design.col.variance': 'V_total / D',
+    'admin.design.col.signed': 'Umukono',
+    'admin.design.col.period': 'Igihe',
+    'admin.design.col.audit_partner': 'Umufatanyabikorwa mu igenzura',
     'admin.design.col.features': 'Ibiranga',
     'admin.design.col.entity': 'Ikintu',
     'admin.design.col.input': 'Icyinjizwa',
@@ -937,6 +942,20 @@ const rw: Catalog = {
         "Inoti ziri mu kaga · imburira y'ibanze",
     'admin.design.risk.distressed.empty':
         'Nta noti ziri mu kaga zo kwerekana ubu.',
+    'admin.design.reports.kpi.published': 'Byagenzuwe kandi byatangajwe',
+    'admin.design.reports.kpi.awaiting': 'Bitegereje igenzura',
+    'admin.design.reports.kpi.breached': 'SLA yarenze',
+    'admin.design.reports.kpi.on_time': "Igipimo cy'igenzura ku gihe",
+    'admin.design.reports.field.title': 'Igenzura ryihuse ku butaka',
+    'admin.design.reports.field.sub':
+        "Buri gusura ku butaka n'umugenzuzi wabyo (CPA), ikinyuranyo, igihe byemejwe n'ibyagaragaye byasinywe.",
+    'admin.design.reports.field.empty':
+        'Nta gikorwa cya ISRS 4400 kiranditswe.',
+    'admin.design.reports.monthly.title':
+        "Ikurikirana ry'igenzura rya buri kwezi",
+    'admin.design.reports.monthly.sub':
+        "Raporo z'imari buri kwezi, zigenzurirwa aho ubucuruzi bukorera bitarenze ku itariki ya 7.",
+    'admin.design.reports.monthly.empty': 'Nta kiri muri iki gice.',
     'admin.design.compliance.kpi.kyc_completion': 'KYC yarangiye',
     'admin.design.compliance.kpi.aml_alerts': 'Imburira za AML',
     'admin.design.compliance.kpi.sanctions': "Abahuye n'ibihano",
@@ -1289,8 +1308,8 @@ const rw: Catalog = {
     'admin.ledger.kind.contra': 'Ikosora rinyuranye',
     'admin.today.commands': 'Amabwiriza yihuse',
     'admin.today.command.review_queue': 'Umurongo wo gusuzuma',
-    'admin.today.command.release_queue': 'Umurongo wo kwishyura',
-    'admin.today.command.audit_trail': "Ububiko bw'igenzura",
+    'admin.today.command.audit_desk': "Ibiro by'igenzura",
+    'admin.today.command.policies': 'Amabwiriza',
     'admin.today.kpi.capital_raised': 'Imari yose yakusanyijwe',
     'admin.today.kpi.capital_raised_trend': 'Mu nyandiko zose',
     'admin.today.kpi.active_businesses': 'Ibigo bikora',
@@ -4948,10 +4967,10 @@ const rw: Catalog = {
         'Abafatanyabikorwa b’igenzura n’igenzura rifunguye muri buri karere, n’uko akarere gafite ugakorera. Gusoma gusa.',
     'admin.section.coverage.search':
         'Shakisha ukoresheje akarere cyangwa intara…',
-    'admin.section.reports.title': 'Raporo',
+    'admin.section.reports.title': 'Raporo za buri kwezi',
     'admin.section.reports.subtitle':
-        'Raporo z’ugenzura, iz’inama y’ubuyobozi n’ibyoherezwa, buri kimwe ku gihe cyacyo kandi nk’uko imibare yacyo irangiye. Gusoma gusa.',
-    'admin.section.reports.search': 'Shakisha ukoresheje raporo cyangwa igihe…',
+        "Raporo z'imikorere y'ubucuruzi zitangarizwa abashoramari",
+    'admin.section.reports.search': 'Shakisha…',
     'admin.reconciliation.day_close.label': 'Gufunga umunsi',
     'admin.reconciliation.day_close.title': 'Gufunga umunsi · {date}',
     'admin.reconciliation.day_close.state.reconciled': 'Byahujwe',

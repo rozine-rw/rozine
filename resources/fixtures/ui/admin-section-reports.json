@@ -1,6 +1,5 @@
 {
-    "component": "admin/applications",
-    "synthetic": true,
+    "component": "admin/section",
     "props": {
         "viewer": {
             "id": "stf_01",
@@ -129,107 +128,6 @@
         },
         "search": "",
         "server_time": "2026-09-23T17:40:00+02:00",
-        "policy": [
-            {
-                "key": "target_dscr",
-                "value": "1.50×"
-            },
-            {
-                "key": "listing_audit",
-                "value": "Required on every deal"
-            },
-            {
-                "key": "audit_routing",
-                "value": "Request DSCR ≥ 1.25× · below rejects"
-            },
-            {
-                "key": "rate_band",
-                "value": "10–15%"
-            }
-        ],
-        "tabs": [
-            {
-                "key": "pending",
-                "count": 1,
-                "link": {
-                    "url": "/preview/admin-applications",
-                    "method": "get"
-                }
-            },
-            {
-                "key": "under_review",
-                "count": 5,
-                "link": {
-                    "url": "/preview/admin-applications",
-                    "method": "get"
-                }
-            },
-            {
-                "key": "escalated",
-                "count": 2,
-                "link": {
-                    "url": "/preview/admin-applications",
-                    "method": "get"
-                }
-            },
-            {
-                "key": "approved",
-                "count": 9,
-                "link": {
-                    "url": "/preview/admin-applications",
-                    "method": "get"
-                }
-            },
-            {
-                "key": "rejected",
-                "count": 4,
-                "link": {
-                    "url": "/preview/admin-applications-empty",
-                    "method": "get"
-                }
-            }
-        ],
-        "active_tab": "pending",
-        "applications": [
-            {
-                "id": "APP-20250091",
-                "business": "Kigali Motors",
-                "note_title": "Kigali Expansion",
-                "sector": "Hospitality",
-                "requested": {
-                    "currency": "RWF",
-                    "amount": "50000000"
-                },
-                "term_months": 6,
-                "rate_pct": "12.9",
-                "capacity_used_pct": 63,
-                "rating": {
-                    "band": "stable",
-                    "score": "3.5"
-                },
-                "submitted_at": "2026-09-02T10:00:00+02:00",
-                "state": "submitted",
-                "decision": {
-                    "code": "reject",
-                    "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
-                },
-                "link": {
-                    "url": "/preview/admin-applications-review",
-                    "method": "get"
-                },
-                "approve_link": {
-                    "url": "/preview/admin-applications-approve",
-                    "method": "get"
-                }
-            }
-        ],
-        "review": null,
-        "stage": null,
-        "links": {
-            "operation": {
-                "url": "/preview/admin-applications-operation-{request_id}",
-                "method": "get"
-            }
-        }
+        "section": "reports"
     }
 }
