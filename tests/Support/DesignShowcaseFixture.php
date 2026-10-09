@@ -156,14 +156,13 @@ final class DesignShowcaseFixture
     public static function pendingInvestor(string $name, string $email, string $password, string $dateOfBirth, string $nationalId): User
     {
         $user = User::factory()->create(['party_id' => Party::factory(), 'name' => $name, 'email' => $email, 'password' => $password]);
-        $image = "\x89PNG\r\n\x1a\nsynthetic identity image";
         $steps = [['personal', ['date_of_birth' => $dateOfBirth]], 'id_front', 'id_back',
             ['document', ['id_type' => 'national_id', 'id_number' => $nationalId]], 'selfie'];
         foreach ($steps as $step) {
             $revision = (int) InvestorVerification::query()->where('party_id', $user->party_id)->value('revision');
             is_array($step)
                 ? app(SaveInvestorVerification::class)->handle($user->id, 0, $revision, $step[0], $step[1], (string) Str::uuid())
-                : app(UploadInvestorVerificationDocument::class)->handle($user->id, 0, $revision, $step, $step.'.png', $image, (string) Str::uuid());
+                : app(UploadInvestorVerificationDocument::class)->handle($user->id, 0, $revision, $step, $step.'.png', self::identityImage($step), (string) Str::uuid());
         }
         $revision = (int) InvestorVerification::query()->where('party_id', $user->party_id)->value('revision');
         self::must(app(SubmitInvestorVerification::class)->handle($user->id, 0, $revision, (string) Str::uuid()), 'VERIFICATION_SUBMITTED');
@@ -400,6 +399,43 @@ final class DesignShowcaseFixture
         app(SelectActiveRole::class)->handle($user->id, $role, 0, (string) Str::uuid());
 
         return ['user' => $user->refresh(), 'secret' => $secret];
+    }
+
+    /**
+     * A small placeholder picture (no real document or face) for a KYC upload slot, encoded as a PNG
+     * without GD: an ID card's front or back, or a selfie silhouette.
+     */
+    private static function identityImage(string $slot): string
+    {
+        [$width, $height] = [240, 152];
+        $pixel = function (int $x, int $y) use ($slot, $height): string {
+            if ($slot === 'selfie') {
+                $head = (($x - 120) ** 2) + (($y - 58) ** 2) < 30 ** 2;
+                $shoulders = $y > 96 && (($x - 120) ** 2) / 4 + (($y - 152) ** 2) < 55 ** 2;
+
+                return $head || $shoulders ? "\x8a\x94\xa8" : "\xe8\xed\xf7";
+            }
+            if ($slot === 'id_back') {
+                return $y > 104 && $y < 136 && $x > 16 && $x < 224 && $x % 6 < 3 ? "\x16\x20\x2f" : "\xee\xf1\xf7";
+            }
+            if ($y < 26) {
+                return "\x1e\x3a\xff";
+            }
+            $photo = $x >= 16 && $x < 80 && $y >= 40 && $y < $height - 24;
+            $line = $x >= 96 && $x < 224 && in_array(intdiv($y - 44, 18), [0, 1, 2, 3], true) && ($y - 44) % 18 < 8;
+
+            return $photo ? "\xc3\xcb\xda" : ($line ? "\x9a\xa3\xb5" : "\xee\xf1\xf7");
+        };
+        $rows = '';
+        for ($y = 0; $y < $height; $y++) {
+            $rows .= "\0";
+            for ($x = 0; $x < $width; $x++) {
+                $rows .= $pixel($x, $y);
+            }
+        }
+        $chunk = fn (string $type, string $data): string => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+
+        return "\x89PNG\r\n\x1a\n".$chunk('IHDR', pack('NNCCCCC', $width, $height, 8, 2, 0, 0, 0)).$chunk('IDAT', (string) gzcompress($rows)).$chunk('IEND', '');
     }
 
     /** The account's current identity context revision, which every participant command must quote. */
