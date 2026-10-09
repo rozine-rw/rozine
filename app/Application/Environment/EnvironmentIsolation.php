@@ -194,9 +194,7 @@ class EnvironmentIsolation
             ],
             'filesystems.links' => [$this->app->publicPath('storage') => $root.'/public'],
             'mail.default' => $this->sendsStagingMail() ? 'smtp' : 'array',
-            'mail.mailers' => ['array' => ['transport' => 'array']] + ($this->sendsStagingMail()
-                ? ['smtp' => Arr::except($this->config->array('mail.mailers.smtp'), ['url'])]
-                : []),
+            'mail.mailers' => $this->isolatedMailers(),
             'services' => [],
             'logging.default' => 'isolated',
             'logging.channels' => ['isolated' => [
@@ -208,6 +206,22 @@ class EnvironmentIsolation
             ]],
             'app.maintenance' => ['driver' => 'file'],
         ]);
+    }
+
+    /**
+     * The mailers an isolated environment keeps: always the in-memory array mailer, plus the SMTP
+     * relay (without any URL form of it) only where staging sends real mail.
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function isolatedMailers(): array
+    {
+        $mailers = ['array' => ['transport' => 'array']];
+        if ($this->sendsStagingMail()) {
+            $mailers['smtp'] = Arr::except($this->config->array('mail.mailers.smtp'), ['url']);
+        }
+
+        return $mailers;
     }
 
     public function canSeed(): bool
