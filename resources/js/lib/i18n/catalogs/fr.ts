@@ -3146,6 +3146,8 @@ const fr: Catalog = {
     'investor.portfolio.tabs': 'Avoirs',
     'investor.portfolio.tab.active': 'Actifs',
     'investor.portfolio.tab.matured': 'Échus',
+    'investor.portfolio.tab.secondary': 'Secondaire',
+    'investor.portfolio.tab.saved': 'Enregistrés',
     'investor.portfolio.invested_line': 'Investi RWF {amount}',
     'investor.portfolio.matures_line':
         'Échéance {date} · {made}/{total} versements',
@@ -3157,6 +3159,11 @@ const fr: Catalog = {
     'investor.portfolio.empty.matured.title': "Rien pour l'instant",
     'investor.portfolio.empty.matured.body':
         'Les avoirs de cette catégorie apparaîtront ici.',
+    'investor.portfolio.empty.secondary.title': "Rien pour l'instant",
+    'investor.portfolio.empty.secondary.body':
+        'Les avoirs de cette catégorie apparaîtront ici.',
+    'investor.portfolio.empty.saved.title':
+        'Aucune opération enregistrée pour le moment',
     'investor.portfolio.browse_deals': 'Voir les opportunités',
     'investor.portfolio.total_value': 'VALEUR TOTALE',
     'investor.portfolio.businesses': '{count} entreprises',

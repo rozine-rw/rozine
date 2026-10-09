@@ -23,6 +23,22 @@
                     "url": "/preview/investor-portfolio-matured",
                     "method": "get"
                 }
+            },
+            {
+                "key": "secondary",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-secondary",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "saved",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-saved",
+                    "method": "get"
+                }
             }
         ],
         "earnings": {

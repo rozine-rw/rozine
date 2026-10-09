@@ -12,10 +12,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `GetInvestorPortfolio` read and adds real routes only. Nothing is held yet, so the holdings,
  * payout schedule, exposure and commitments awaiting issue are empty and every total is the zero
  * of an empty portfolio, never a projection; idle cash is the wallet's own figure. A destination
- * with no live route yet is null, and a person still being verified has no wallet to link.
+ * with no live route yet is null, and a person still being verified has no wallet to link. The
+ * design's four tabs are all linked: Secondary (holdings listed for resale) and Saved (the
+ * watchlist) have no read yet, so they open empty.
  */
 class InvestorPortfolioResource extends JsonResource
 {
+    /** The design's Portfolio tabs (Investor.dc.html L8073), in its order. */
+    private const TABS = ['active', 'matured', 'secondary', 'saved'];
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -26,7 +31,7 @@ class InvestorPortfolioResource extends JsonResource
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'tab' => $data['tab'],
-            'tabs' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $data['tab'], 'link' => $portfolio(['tab' => $key])], ['active', 'matured']),
+            'tabs' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $data['tab'], 'link' => $portfolio(['tab' => $key])], self::TABS),
             'totals' => ['businesses' => 0, 'value' => $zero, 'invested' => $zero, 'gain' => $zero, 'this_month' => $zero, 'projected_3m' => $zero, 'next_payout' => null,
                 'avg_monthly' => $zero],
             'holdings' => [], 'payouts' => [], 'industries' => [], 'risk' => [], 'concentration' => null, 'idle' => $data['idle'], 'commitments' => [],

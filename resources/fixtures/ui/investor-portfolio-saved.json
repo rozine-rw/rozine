@@ -2,17 +2,17 @@
     "component": "investor/portfolio",
     "synthetic": true,
     "props": {
-        "contract_version": "investor-servicing-v1",
-        "identity_context_revision": 1,
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 5,
         "server_time": "2026-09-23T09:00:00+02:00",
         "allowed_actions": [],
-        "tab": "active",
+        "tab": "saved",
         "tabs": [
             {
                 "key": "active",
-                "active": true,
+                "active": false,
                 "link": {
-                    "url": "/investor/portfolio?tab=active",
+                    "url": "/preview/investor-portfolio",
                     "method": "get"
                 }
             },
@@ -20,7 +20,7 @@
                 "key": "matured",
                 "active": false,
                 "link": {
-                    "url": "/investor/portfolio?tab=matured",
+                    "url": "/preview/investor-portfolio-matured",
                     "method": "get"
                 }
             },
@@ -28,68 +28,47 @@
                 "key": "secondary",
                 "active": false,
                 "link": {
-                    "url": "/investor/portfolio?tab=secondary",
+                    "url": "/preview/investor-portfolio-secondary",
                     "method": "get"
                 }
             },
             {
                 "key": "saved",
-                "active": false,
+                "active": true,
                 "link": {
-                    "url": "/investor/portfolio?tab=saved",
+                    "url": "/preview/investor-portfolio-saved",
                     "method": "get"
                 }
             }
         ],
-        "earnings": {
+        "totals": {
+            "businesses": 0,
+            "value": {
+                "currency": "RWF",
+                "amount": "0"
+            },
             "invested": {
                 "currency": "RWF",
                 "amount": "0"
             },
-            "outstanding_principal": {
+            "gain": {
                 "currency": "RWF",
                 "amount": "0"
             },
-            "realised": {
-                "principal": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "return": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "late_fees": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "fees": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "net_return": {
-                    "currency": "RWF",
-                    "amount": "0"
-                }
-            },
-            "projected": {
-                "remaining_return": {
-                    "currency": "RWF",
-                    "amount": "0"
-                },
-                "next_3m": {
-                    "currency": "RWF",
-                    "amount": "0"
-                }
-            },
-            "this_month_net": {
+            "this_month": {
                 "currency": "RWF",
                 "amount": "0"
             },
-            "avg_monthly_net": null,
-            "next_payout": null
+            "projected_3m": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "next_payout": null,
+            "avg_monthly": {
+                "currency": "RWF",
+                "amount": "0"
+            }
         },
-        "bases": {},
         "holdings": [],
         "payouts": [],
         "industries": [],
@@ -101,35 +80,35 @@
         },
         "links": {
             "deals": {
-                "url": "/investor/deals",
+                "url": "/preview/investor-deals",
                 "method": "get"
             },
             "portfolio": {
-                "url": "/investor/portfolio",
+                "url": "/preview/investor-portfolio",
                 "method": "get"
             },
             "market": {
-                "url": "/investor/market",
+                "url": "/preview/investor-market",
                 "method": "get"
             },
             "cart": {
-                "url": "/investor/cart",
+                "url": "/preview/investor-cart",
                 "method": "get"
             },
             "profile": {
-                "url": "/investor/profile",
+                "url": "/preview/investor-profile",
                 "method": "get"
             },
             "wallet": {
-                "url": "/investor/wallet",
+                "url": "/preview/investor-wallet",
                 "method": "get"
             },
             "notifications": {
-                "url": "/investor/notifications",
+                "url": "/preview/investor-deals",
                 "method": "get"
             },
             "launcher": {
-                "url": "/launcher",
+                "url": "/preview/launcher-ready",
                 "method": "get"
             }
         },
