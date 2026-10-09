@@ -77,9 +77,11 @@ describe('Market', () => {
             'aria-selected',
             'true',
         );
+
         for (const label of ['Performance', 'Status', 'Industry']) {
             expect(screen.getByText(label)).toBeInTheDocument();
         }
+
         expect(
             screen.getByText('No notes match these filters'),
         ).toBeInTheDocument();
