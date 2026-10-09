@@ -169,7 +169,29 @@ const fr: Catalog = {
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
+    'business.nav.market': 'Marché',
     'business.nav.profile': 'Profil',
+    'business.market.title': 'Aperçu du marché',
+    'business.market.subtitle':
+        'Comment vos notes se comportent sur le marché secondaire.',
+    'business.market.tile.demand': 'DEMANDE',
+    'business.market.tile.price': 'PRIX SECONDAIRE MOYEN',
+    'business.market.tile.volume': 'VOLUME (7 J)',
+    'business.market.tile.liquidity': 'SCORE DE LIQUIDITÉ',
+    'business.market.chart': 'Prix secondaire',
+    'business.market.range': 'Période du prix',
+    'business.market.range_7d': '7 J',
+    'business.market.range_14d': '14 J',
+    'business.market.range_30d': '30 J',
+    'business.market.chart_empty':
+        'Aucune transaction secondaire pour le moment.',
+    'business.market.high': 'PLUS HAUT',
+    'business.market.low': 'PLUS BAS',
+    'business.market.notes': 'Vos notes sur le marché',
+    'business.market.notes_empty_title':
+        "Aucune de vos notes ne s'échange encore",
+    'business.market.notes_empty_body':
+        "Les notes revendues par les investisseurs avant l'échéance apparaîtront ici avec leur prix.",
     'business.home.head_title': 'Accueil',
     'business.home.wallet_balance': 'Solde du portefeuille',
     'business.home.deposit': 'Déposer',
@@ -645,6 +667,39 @@ const fr: Catalog = {
     'business.profile.section.linked': 'Comptes liés',
     'business.profile.section.terms': 'Conditions générales',
     'business.profile.section.privacy': 'Note de confidentialité',
+    'business.profile.section.security': 'Centre de sécurité',
+    'business.profile.section.permissions': 'Autorisations et rôles',
+    'business.profile.section.support': "Centre d'assistance",
+    'business.profile.security.two_factor': 'Authentification à deux facteurs',
+    'business.profile.security.two_factor_on':
+        "Activée · code d'une application d'authentification à la connexion",
+    'business.profile.security.two_factor_off':
+        "Désactivée · ajoutez un code d'application d'authentification à la connexion",
+    'business.profile.security.password': 'Changer le mot de passe',
+    'business.profile.permissions.none':
+        'Aucune autorisation sur cette entreprise',
+    'business.profile.permissions.business.view': "Consulter l'entreprise",
+    'business.profile.permissions.application.create': 'Lancer des levées',
+    'business.profile.permissions.application.save': 'Modifier les demandes',
+    'business.profile.permissions.application.evaluate':
+        "Vérifier l'éligibilité",
+    'business.profile.permissions.application.sign': 'Signer les demandes',
+    'business.profile.permissions.report.cosign': 'Cosigner les rapports',
+    'business.profile.permissions.business.wallet.deposit':
+        'Alimenter le portefeuille',
+    'business.profile.permissions.repayment.pay': 'Payer les remboursements',
+    'business.profile.pending.linked_title': 'Aucun compte de versement',
+    'business.profile.pending.linked_body':
+        'Les comptes de versement liés à cette entreprise apparaîtront ici.',
+    'business.profile.pending.support_title': "Bientôt dans l'application",
+    'business.profile.pending.support_body':
+        'Les réponses aux questions les plus fréquentes des entreprises apparaîtront ici.',
+    'business.profile.pending.terms_title': "Bientôt dans l'application",
+    'business.profile.pending.terms_body':
+        'Les Conditions générales pourront être consultées ici dès leur publication.',
+    'business.profile.pending.privacy_title': "Bientôt dans l'application",
+    'business.profile.pending.privacy_body':
+        'La Note de confidentialité pourra être consultée ici dès sa publication.',
     'business.profile.sign_out': 'Se déconnecter',
     'business.profile.back': 'Retour au profil',
     'business.profile.company.name': "Nom de l'entreprise",

@@ -6,13 +6,15 @@ import { cn } from '@/lib/utils';
 import type { BusinessProfileProps, ProfileSection } from '@/types/business';
 
 /**
- * The design's menu also lists Security center, Permissions & roles and Support center; those are
- * beyond the MVP, so they are left out rather than shipped as dead ends. A section the server
- * sends no link for is left out the same way.
+ * The design's seven menu rows (Business.dc.html L5022–5028), in its order. A section the server
+ * sends no link for is left out.
  */
 const ITEMS: { key: ProfileSection; icon: IconName }[] = [
     { key: 'company', icon: 'building' },
+    { key: 'security', icon: 'lock' },
+    { key: 'permissions', icon: 'people' },
     { key: 'linked', icon: 'card' },
+    { key: 'support', icon: 'question' },
     { key: 'terms', icon: 'document' },
     { key: 'privacy', icon: 'lock-key' },
 ];

@@ -85,7 +85,7 @@ describe('Business Home', () => {
         expect(screen.queryByText(/^RDB/u)).not.toBeInTheDocument();
     });
 
-    it('marks the Home tab current in both the sidebar and the tab bar, without Market', () => {
+    it("marks the Home tab current in both the sidebar and the tab bar, with the design's four tabs", () => {
         render(<BusinessHome {...fixture} />);
 
         const navs = screen.getAllByRole('navigation', {
@@ -102,8 +102,13 @@ describe('Business Home', () => {
                 within(nav).getByRole('link', { name: 'Reports' }),
             ).not.toHaveAttribute('aria-current');
             expect(
-                within(nav).queryByRole('link', { name: 'Market' }),
-            ).not.toBeInTheDocument();
+                within(nav)
+                    .getAllByRole('link')
+                    .map((link) => link.textContent),
+            ).toEqual(['Home', 'Reports', 'Market', 'Profile']);
+            expect(
+                within(nav).getByRole('link', { name: 'Market' }),
+            ).toHaveAttribute('href', '/preview/business-market');
         }
     });
 
