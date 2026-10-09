@@ -29,7 +29,7 @@ it('keeps Admin entry independent from identity operator and marketplace permiss
     $this->get(route('dashboard'))->assertInertia(fn (Assert $page): Assert => $page->where('staff_access.can_open_admin', false));
     app(ConfigureStaffAccess::class)->handle($user->id, true, 'Approved console access.', (string) Str::uuid());
     $access = ['contract_version' => 'staff-access-v1', 'can_open_admin' => true, 'allowed_actions' => ['admin.open']];
-    $this->get(route('admin.home'))->assertInertia(fn (Assert $page): Assert => $page->component('identity/staff-home', false)->where('staff_access', $access));
+    $this->get(route('admin.home'))->assertRedirectToRoute('staff.dashboard');
     $this->get(route('dashboard'))->assertInertia(fn (Assert $page): Assert => $page->where('staff_access', $access)->where('identity.available_roles', []));
     $this->getJson(route('api.v1.staff-access.show'))->assertExactJson(['data' => $access]);
     $this->getJson(route('business.home'))->assertForbidden();
@@ -139,7 +139,7 @@ it('rolls back staff grants if immutable audit persistence fails', function (): 
     }
 });
 
-it('links the staff home and each console page to exactly the sections the account may open', function (string $role, array $sections): void {
+it('opens the console Dashboard from the staff entry and links each console page to exactly the sections the account may open', function (string $role, array $sections): void {
     $user = User::factory()->withTwoFactor()->create();
     app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console sections.', (string) Str::uuid(), [$role]);
     $urls = ['investors' => route('staff.investors.index', [], false), 'applications' => route('staff.applications.index', [], false),
@@ -147,10 +147,16 @@ it('links the staff home and each console page to exactly the sections the accou
     $expected = array_map(fn (string $section): ?array => in_array($section, $sections, true) ? ['url' => $urls[$section], 'method' => 'get'] : null,
         array_combine(array_keys($urls), array_keys($urls)));
 
-    // Every staff member opens the Operations Center first.
-    $this->actingAs($user)->get(route('admin.home'))->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/staff-home', false)
-            ->where('sections', ['today' => ['url' => route('staff.dashboard', [], false), 'method' => 'get'], ...$expected]));
+    // Every staff member opens the Operations Center first, with no page in between.
+    $this->actingAs($user)->get(route('admin.home'))->assertRedirectToRoute('staff.dashboard');
+    $this->get(route('staff.dashboard'))->assertOk()->assertInertia(function (Assert $page) use ($expected): Assert {
+        $page->where('nav.today', ['url' => route('staff.dashboard', [], false), 'method' => 'get']);
+        foreach ($expected as $key => $link) {
+            $page->where('nav.'.$key, $link);
+        }
+
+        return $page;
+    });
     foreach (array_diff(array_keys($urls), $sections) as $closed) {
         $this->getJson($urls[$closed])->assertForbidden();
     }

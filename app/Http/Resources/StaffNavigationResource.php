@@ -56,9 +56,13 @@ class StaffNavigationResource extends JsonResource
         }
         $compliance = in_array('investors.verify', $permissions, true)
             ? ['url' => route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pending['compliance'];
+        // The staging mail testers page exists only on staging (the `uat` isolation profile), for
+        // whoever may manage the list; it sits in the console group of the sidebar.
+        $mailTesters = $prefix === '' && app()->environment(['staging', 'uat']) && in_array('staging.mail.testers.manage', $permissions, true)
+            ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
             'payments' => $links['disbursements'] ?? $pending['payments'], 'compliance' => $compliance,
-            'repayments' => null, 'ledger' => null];
+            'repayments' => null, 'ledger' => null, 'mail_testers' => $mailTesters];
     }
 }

@@ -227,8 +227,6 @@
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/identity/access-denied.tsx",
-        "resources/js/pages/identity/role-home.tsx",
-        "resources/js/pages/identity/staff-home.tsx",
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",

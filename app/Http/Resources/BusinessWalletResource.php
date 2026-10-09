@@ -24,7 +24,7 @@ class BusinessWalletResource extends JsonResource
         $business = (string) $data['business']['id'];
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
         $movement = $data['history']['movement'];
-        $home = ['url' => route($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home', [], false), 'method' => 'get'];
+        $home = ['url' => $request->routeIs('api.*') ? route('api.v1.business.index', [], false) : route('business.show', ['business' => $business], false), 'method' => 'get'];
 
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => $request->routeIs('api.*') && ! $request->user()?->tokenCan('business:command') ? [] : $data['allowed_actions'],
