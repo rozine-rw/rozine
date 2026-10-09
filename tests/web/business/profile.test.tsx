@@ -499,6 +499,18 @@ describe('Business account sections', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('leaves out a section the server sends no link for', () => {
+        const page = props(landingFixture);
+
+        page.links.sections.support = null;
+        render(<BusinessProfile {...page} />);
+        expect(
+            within(screen.getByRole('navigation', { name: 'Profile menu' }))
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(MENU.filter((row) => row !== 'Support center›'));
+    });
+
     it('says when a person on the mandate holds no permission', () => {
         const page = props(permissionsFixture);
 
