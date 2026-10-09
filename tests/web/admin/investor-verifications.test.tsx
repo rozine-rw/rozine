@@ -13,7 +13,8 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 const link = (url: string) => ({ url, method: 'get' as const });
 
 const nav = {
-    investors: link('/admin/investor-verifications'),
+    investors: link('/admin/investors'),
+    compliance: link('/admin/investor-verifications'),
     launcher: link('/dashboard'),
     today: null,
     applications: null,
@@ -167,6 +168,23 @@ beforeEach(() => {
 });
 
 describe('Compliance identity queue', () => {
+    it('sits under Compliance in the console, which it lights and titles', () => {
+        renderWithUser(<AdminInvestorVerifications {...queue()} />);
+
+        expect(screen.getByTestId('head')).toHaveTextContent(
+            'Compliance Dashboard',
+        );
+        const console = screen.getByRole('navigation', {
+            name: 'Console navigation',
+        });
+        expect(
+            within(console).getByRole('link', { name: 'Compliance' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(console).getByRole('link', { name: 'Investors' }),
+        ).not.toHaveAttribute('aria-current');
+    });
+
     it('lists submissions with their document, age and state, and pages on', () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 

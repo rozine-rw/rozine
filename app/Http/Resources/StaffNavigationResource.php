@@ -48,14 +48,17 @@ class StaffNavigationResource extends JsonResource
         }
 
         // Every other design section opens its pending page until its screen is wired. Payments is
-        // the disbursement queue for whoever may see it. These are web pages, so they keep web URLs.
+        // the disbursement queue, and Compliance the investor identity review queue, for whoever may
+        // see them. These are web pages, so they keep web URLs.
         $pending = [];
         foreach (StaffSectionController::SECTIONS as $slug => $section) {
             $pending[$section] = ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
         }
+        $compliance = in_array('investors.verify', $permissions, true)
+            ? ['url' => route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pending['compliance'];
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['disbursements'] ?? ['url' => route('staff.sections.show', ['section' => 'payments'], false), 'method' => 'get'],
+            'payments' => $links['disbursements'] ?? $pending['payments'], 'compliance' => $compliance,
             'repayments' => null, 'ledger' => null];
     }
 }
