@@ -200,6 +200,23 @@ function useItemTitle(): (item: CalendarItem) => string {
     };
 }
 
+/**
+ * Where a day's entries open (design L2993): just under the picked day's row, or above it when
+ * that row is the month's last.
+ */
+const popoverPosition = (
+    lead: number,
+    daysInMonth: number,
+    picked: Day,
+): { top: string } | { bottom: string } => {
+    const rows = Math.ceil((lead + daysInMonth) / 7);
+    const row = Math.floor((lead + Number(picked.slice(8)) - 1) / 7);
+
+    return row + 1 < rows
+        ? { top: `calc((100% + 4px) * ${(row + 1) / rows})` }
+        : { bottom: `calc((100% + 4px) * ${(rows - row) / rows})` };
+};
+
 const weekdays = (locale: string): string[] => {
     const format = new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : locale, {
         weekday: 'short',
@@ -371,7 +388,8 @@ export function AuditCalendar({
                         <div
                             role="dialog"
                             aria-label={formatDate(picked, locale)}
-                            className="absolute inset-x-0 top-full z-10 mt-1 rounded-2xl border border-[#e0e7f2] bg-rz-surface p-3 shadow-[0_18px_38px_-18px_rgba(20,45,95,.45)] dark:border-rz-border"
+                            style={popoverPosition(lead, daysInMonth, picked)}
+                            className="absolute inset-x-0 z-10 rounded-2xl border border-[#e0e7f2] bg-rz-surface p-3 shadow-[0_18px_38px_-18px_rgba(20,45,95,.45)] dark:border-rz-border"
                         >
                             <div className="flex items-start gap-2.5">
                                 <div className="min-w-0 flex-1">

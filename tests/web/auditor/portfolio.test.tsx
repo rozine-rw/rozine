@@ -239,6 +239,7 @@ describe('Auditor Portfolio', () => {
         const day = screen.getByRole('dialog', { name: '7 Oct 2026' });
 
         expect(seventh).toHaveAttribute('aria-pressed', 'true');
+        expect(day).toHaveStyle({ top: 'calc(0.4 * (100% + 4px))' });
         expect(
             within(day).getByText('2 verifications due'),
         ).toBeInTheDocument();
@@ -339,6 +340,35 @@ describe('Auditor Portfolio', () => {
             expect(screen.getByRole('status')).toHaveTextContent(alert);
         },
     );
+
+    it("opens a day in the month's last row above it", async () => {
+        const base = props(emptyFixture);
+        const { user } = renderWithUser(
+            <AuditorPortfolio
+                {...base}
+                owed={[
+                    {
+                        id: 'as_late',
+                        business: 'Month-end file',
+                        district: 'Huye',
+                        kind: 'monthly',
+                        due_at: '2026-10-30T12:00:00Z',
+                        link: { url: '/auditor/jobs/as_late', method: 'get' },
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', {
+                name: '30 Oct 2026, 1 verification due',
+            }),
+        );
+
+        expect(screen.getByRole('dialog', { name: '30 Oct 2026' })).toHaveStyle(
+            { bottom: 'calc(0.2 * (100% + 4px))' },
+        );
+    });
 
     it('places a report with no recorded due date on the day it was filed', () => {
         const live = props(liveMinimalFixture);
