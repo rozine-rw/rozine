@@ -198,6 +198,10 @@ const rw: Catalog = {
     'business.today.approved.sub_free':
         'Yitangaze ku bashoramari. Nta mafaranga yo gutangaza asabwa.',
     'business.today.approved.cta_free': 'Tangaza',
+    'business.today.cosign.kicker': 'Raporo y’igenzura yiteguye',
+    'business.today.cosign.sub':
+        'CPA wawe yayifunze. Soma ibyabonetse mbere yo gushyiraho umukono.',
+    'business.today.cosign.cta': 'Yisuzume kandi uyishyireho umukono',
     'business.today.declined.kicker': 'Ubusabe bwanzwe',
     'business.today.declined.sub':
         'Birenze ubushobozi bwawe bwemejwe — tuvugishe mbere yo kongera gusaba.',

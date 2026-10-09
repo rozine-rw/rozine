@@ -12,6 +12,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * only: a destination with no live route yet (withdraw, notifications) is null, as are Rating,
  * Reports and Profile on the bearer transport, which has no such read; headroom, on-time share and
  * unread notifications are not invented.
+ *
+ * Today leads with the business's latest sealed audit report while it waits for co-signatures,
+ * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
+ * way in from the web app. The bearer transport keeps reaching it from its business list.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -33,13 +37,16 @@ class BusinessHomeResource extends JsonResource
         $draft = ($entry['application']['status'] ?? null) === 'draft' ? $entry['application']['id'] : null;
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
+        $report = $entry['audit_report'] ?? null;
+        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'],
+            'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
 
         return ['business' => ['name' => $profile['name'], 'company_code' => $profile['company_code'], 'industry' => $profile['industry'], 'district' => $profile['district']],
             'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => 0,
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
-                'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released']),
+            'today' => [...$cosign, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+                'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
             'notes' => $notes, 'headroom' => null,
             'links' => ['home' => self::link($request, 'business.show', ['business' => $business]),

@@ -193,6 +193,10 @@ const en = {
     'business.today.approved.sub_free':
         "Publish it to investors. There's no listing fee.",
     'business.today.approved.cta_free': 'Publish',
+    'business.today.cosign.kicker': 'Audit report ready',
+    'business.today.cosign.sub':
+        'Your CPA sealed it. Read the findings before you co-sign.',
+    'business.today.cosign.cta': 'Review & co-sign',
     'business.today.declined.kicker': 'Application declined',
     'business.today.declined.sub':
         'Outside your approved capacity — talk to us before resubmitting.',

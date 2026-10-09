@@ -196,6 +196,10 @@ const fr: Catalog = {
     'business.today.approved.sub_free':
         'Publiez-la auprès des investisseurs. Aucuns frais de publication.',
     'business.today.approved.cta_free': 'Publier',
+    'business.today.cosign.kicker': 'Rapport d’audit prêt',
+    'business.today.cosign.sub':
+        "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
+    'business.today.cosign.cta': 'Examiner et cosigner',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',

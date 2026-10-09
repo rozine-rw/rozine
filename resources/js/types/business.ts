@@ -96,6 +96,12 @@ export type BusinessTodo =
           link: RouteLink;
       }
     | {
+          /** The latest sealed audit report, waiting for the business's co-signatures. */
+          kind: 'audit_cosign';
+          report_kind: 'flash' | 'monthly';
+          link: RouteLink;
+      }
+    | {
           kind: 'application_declined';
           title: string;
           reason: string | null;

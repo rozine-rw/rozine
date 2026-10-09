@@ -65,6 +65,23 @@ it('offers a released application for publication before anything is listed', fu
             'rating' => ['url' => "/business/{$business}/rating", 'method' => 'get'], 'apply' => null]);
 });
 
+it('leads Today with a sealed audit report awaiting co-signatures, opening its co-sign page, until it is signed', function (string $kind): void {
+    $fixture = AuditSealingFixture::ready(kind: $kind);
+    AuditSealingFixture::seal($fixture);
+    $business = $fixture['audit']['business'];
+    $user = $fixture['audit']['authority']['users'][0];
+    $url = "/business/{$business}/audit-reports/{$fixture['report']->id}";
+
+    expect(($this->props)($user, $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind, 'link' => ['url' => $url, 'method' => 'get']]]);
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/audit-cosign')
+        ->where('report.id', $fixture['report']->id));
+    Sanctum::actingAs($user, ['business:read']);
+    $this->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()->assertJsonPath('data.today', []);
+
+    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed')
+        ->and(($this->props)($user, $business)['today'])->toBe([]);
+})->with(['flash', 'monthly']);
+
 it('shows the live raise, then funded capital, from retained publication and funding facts only', function (): void {
     InvestorWalletFixture::policy(maximum: null);
     $campaign = PrimaryReservationFixture::campaign();

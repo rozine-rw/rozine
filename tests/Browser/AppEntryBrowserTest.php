@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Str;
 use Tests\Support\AuditorFixture;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
@@ -14,7 +15,8 @@ use Tests\TestCase;
  * The launcher opens every app straight on its designed home, in a real browser: a verified
  * Investor lands on Deals, a Business member on their business's Home, an Auditor on the Auditor
  * Home and a staff member on the Admin console's Dashboard. No page sits between the launcher and
- * an app, and the bare app URLs (/investor, /business, /admin) go to the same places.
+ * an app, and the bare app URLs (/investor, /business, /admin) go to the same places. A sealed
+ * report waiting for the Business's co-signatures is reached from the Business Home's Today list.
  */
 
 uses(TestCase::class, DatabaseTruncation::class);
@@ -80,5 +82,28 @@ it('opens each app from the launcher straight on its designed home', function ()
             await shot('.$journey->shot('staff-dashboard').');
             await page.goto('.json_encode($journey->base.'/admin').');
             await page.waitForURL("**/admin/dashboard");');
+    });
+});
+
+it('opens a sealed flash report awaiting co-signature from the Business Home it launches into', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    $business = $fixture['audit']['business'];
+    $report = $fixture['report']->id;
+    $fixture['audit']['authority']['users'][0]->forceFill(['email' => 'ae-cosign@example.test', 'password' => AE_PASSWORD, 'two_factor_secret' => null,
+        'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null])->save();
+    expect($fixture['report']->refresh()->status)->toBe('sealed');
+
+    (new BrowserJourney('app-entry-cosign', AE_PORT))->within(function (BrowserJourney $journey) use ($business, $report): void {
+        $journey->login('ae5', 'ae-cosign@example.test', AE_PASSWORD);
+        $journey->code('ae5', '
+            await page.getByRole("button", {name:"Business", exact:true}).click();
+            await page.waitForURL("**/business/'.$business.'");'.aeNoInBetween().'
+            await page.getByText("Flash audit report", {exact:true}).first().waitFor();
+            await shot('.$journey->shot('business-home-cosign').');
+            await page.getByRole("link", {name:/Review & co-sign/}).first().click();
+            await page.waitForURL("**/business/'.$business.'/audit-reports/'.$report.'");
+            await page.getByRole("heading", {name:"Co-sign the audit report", exact:true}).first().waitFor();
+            await shot('.$journey->shot('flash-cosign').');');
     });
 });
