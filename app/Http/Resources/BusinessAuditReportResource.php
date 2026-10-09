@@ -23,7 +23,7 @@ class BusinessAuditReportResource extends JsonResource
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $operation = self::link($prefix.'operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
-        $home = self::link($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home');
+        $home = $request->routeIs('api.*') ? self::link('api.v1.business.index') : self::link('business.show', ['business' => $page['business']['id']]);
         $report['findings'] = array_map(function (array $finding): array {
             $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
 

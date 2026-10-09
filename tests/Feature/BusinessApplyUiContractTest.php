@@ -155,11 +155,11 @@ it('renders a just-created draft with the shape of the live-minimal fixture and 
         ->and($props['acceptance']['fee_on_approval'])->toBe(['currency' => 'RWF', 'amount' => '0'])
         ->and($props['allowed_actions'])->toBe(['application.save', 'application.evaluate'])
         ->and($props['links'])->toBe([
-            'close' => ['url' => '/business', 'method' => 'get'],
-            'back' => ['url' => '/business', 'method' => 'get'],
+            'close' => ['url' => "/business/{$business}", 'method' => 'get'],
+            'back' => ['url' => "/business/{$business}", 'method' => 'get'],
             'operation' => ['url' => '/business/application-operations/{request_id}', 'method' => 'get'],
         ])
-        ->and($props['shell_links'])->toBe(['home' => ['url' => '/business', 'method' => 'get'],
+        ->and($props['shell_links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'],
             'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'],
             'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get']])
         ->and($props['actions'])->toBe([
@@ -190,7 +190,7 @@ it('renders a saved Raise draft with its evidence window, and the earlier view b
     $earlier = applyUiProps($user, "{$path}?view_step=business");
     applyUiSameShape($earlier, $props);
     expect($earlier['step'])->toBe('business')
-        ->and($earlier['links']['back'])->toBe(['url' => '/business', 'method' => 'get'])
+        ->and($earlier['links']['back'])->toBe(['url' => '/business/'.$fixture['audit']['business'], 'method' => 'get'])
         ->and($earlier['application'])->toBe($props['application'])
         ->and($fixture['application']->refresh()->step)->toBe('raise');
 });

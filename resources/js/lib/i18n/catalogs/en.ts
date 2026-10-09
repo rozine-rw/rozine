@@ -26,23 +26,7 @@ const en = {
     'suite.refresh_access': 'Refresh access',
     'suite.admin': 'Open staff workspace',
     'suite.opening': 'Opening your app…',
-    'identity.home.investor': 'Investor workspace',
-    'identity.home.business': 'Business workspace',
-    'identity.home.auditor': 'Auditor workspace',
-    'identity.home.admin': 'Staff workspace',
-    'identity.home.overview': 'Overview',
-    'identity.home.access': 'Account access',
-    'identity.home.ready': 'Your account has access to this workspace.',
-    'identity.home.verified': 'Your identity is verified.',
-    'identity.home.staff_ready':
-        'Your staff account has permission to open this workspace.',
     'identity.home.back': 'Choose an app',
-    'identity.home.settings': 'Account settings',
-    'identity.home.staging_mail_testers': 'Staging mail testers',
-    'identity.home.auditor_nav': 'Your audit work',
-    'identity.home.saving': 'Saving your position…',
-    'identity.home.failed':
-        'We could not update your position. Return to the launcher to check your access.',
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
@@ -209,6 +193,10 @@ const en = {
     'business.today.approved.sub_free':
         "Publish it to investors. There's no listing fee.",
     'business.today.approved.cta_free': 'Publish',
+    'business.today.cosign.kicker': 'Audit report ready',
+    'business.today.cosign.sub':
+        'Your CPA sealed it. Read the findings before you co-sign.',
+    'business.today.cosign.cta': 'Review & co-sign',
     'business.today.declined.kicker': 'Application declined',
     'business.today.declined.sub':
         'Outside your approved capacity — talk to us before resubmitting.',
@@ -264,22 +252,6 @@ const en = {
     'business.note.continue_application': 'Continue application',
     'business.note.empty.title': 'No notes with this status',
     'business.note.empty.body': 'Start a raise to fund your business.',
-    'business.entries.title': 'Raise applications',
-    'business.entries.continue': 'Continue your application',
-    'business.entries.view': 'View your application',
-    'business.entries.saved_at': 'Saved at {step}',
-    'business.entries.submitted': 'Submitted · under review',
-    'business.entries.view_only':
-        'You can view this business, but starting a raise is not open to you.',
-    'business.entries.empty':
-        'No business you can act for is linked to this account yet.',
-    'business.entries.audit_report.pending':
-        'Audit report ready: review and co-sign',
-    'business.entries.audit_report.published': 'Audit report published',
-    'business.entries.audit_report.disputed': 'Your dispute is under review',
-    'business.entries.audit_report.escalated':
-        'Rozine staff are reviewing your dispute',
-    'business.entries.more': 'Show more',
     'business.grow.title': 'Grow',
     'business.grow.subtitle': "Raise more when you're ready.",
     'business.grow.headroom': 'Headroom available',

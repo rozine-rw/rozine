@@ -14,7 +14,7 @@ class BusinessCampaignResource extends JsonResource
     {
         /** @var array<string, mixed> $page */
         $page = $this->resource;
-        $home = ['url' => route($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home', [], false), 'method' => 'get'];
+        $home = ['url' => $request->routeIs('api.*') ? route('api.v1.business.index', [], false) : route('business.show', ['business' => $page['business_id']], false), 'method' => 'get'];
 
         $canCancel = $page['can_cancel'] && (! $request->routeIs('api.*') || $request->user()?->tokenCan('business:command'));
 

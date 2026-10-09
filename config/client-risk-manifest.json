@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "c64b53a51d373df6161ebac3ae0331830a4b984ba136e1f502e575e379ed411a",
-    "coverageSetSha256": "7d850a6835a5aa7d11774bd7f61c93e6cefe342033c6379f1cb2c32702cc46c3",
+    "sourceManifestSha256": "7a1d5b72e1d2e920fe685171534635deca8e194bd71552aafc571164e2949a8c",
+    "coverageSetSha256": "5b92aea0c04710fc5ad081e78bcd9a51387bb78e954ab97fcc875f97e3904a8b",
     "thresholds": {
         "critical": {
             "global": {
@@ -136,7 +136,6 @@
         "resources/js/components/auditor/tab-columns.tsx",
         "resources/js/components/auditor/ui.tsx",
         "resources/js/components/breadcrumbs.tsx",
-        "resources/js/components/business/application-entries.tsx",
         "resources/js/components/business/apply/carried-refusal.ts",
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
@@ -405,8 +404,6 @@
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/identity/access-denied.tsx",
-        "resources/js/pages/identity/role-home.tsx",
-        "resources/js/pages/identity/staff-home.tsx",
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",

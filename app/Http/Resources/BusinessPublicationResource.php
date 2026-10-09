@@ -18,7 +18,7 @@ class BusinessPublicationResource extends JsonResource
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $parameters = ['business' => $application['business_id'], 'application' => $application['id']];
         $cause = $page['cause'];
-        $home = ['url' => route($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home', [], false), 'method' => 'get'];
+        $home = ['url' => $request->routeIs('api.*') ? route('api.v1.business.index', [], false) : route('business.show', ['business' => $application['business_id']], false), 'method' => 'get'];
         $listing = $page['listing'];
         if ($listing !== null) {
             $listing = ['receipt' => [...$listing['receipt'], 'link' => self::lookup($request, $page['identity_context_revision'], $listing['receipt']['request_id'])],

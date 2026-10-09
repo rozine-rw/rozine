@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\SelectActiveRole;
-use App\Models\Party;
-use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -193,18 +190,4 @@ it('carries the live engagement summary the banners read on every Auditor entry 
 
     AuditEngagementFixture::release($fixture['staff'], 2, 'withdrawn');
     expect(engagementUiSummaries($user, $assignment->id))->toBe($expect('unavailable'));
-});
-
-it('renders no engagement summary on a role home that is not the Auditor\'s', function (): void {
-    $party = Party::factory()->verified()->create();
-    $user = User::factory()->withTwoFactor()->for($party)->create();
-    RoleMembership::factory()->for($party)->active()->create(['role' => 'business']);
-    app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
-
-    $props = engagementUiProps($user, '/business', 'identity/role-home');
-    expect($props)->toHaveKey('engagement')
-        ->and($props['engagement'])->toBeNull()
-        ->and(engagementUiFixture('role-home-business', 'identity/role-home')['engagement'])->toBeNull()
-        ->and(engagementUiFixture('role-home-auditor-engagement-required', 'identity/role-home')['engagement'])
-        ->toBe(['status' => 'required', 'link' => ['url' => '/preview/auditor-engagement', 'method' => 'get']]);
 });
