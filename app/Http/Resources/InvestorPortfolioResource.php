@@ -30,7 +30,7 @@ class InvestorPortfolioResource extends JsonResource
             'totals' => ['businesses' => 0, 'value' => $zero, 'invested' => $zero, 'gain' => $zero, 'this_month' => $zero, 'projected_3m' => $zero, 'next_payout' => null,
                 'avg_monthly' => $zero],
             'holdings' => [], 'payouts' => [], 'industries' => [], 'risk' => [], 'concentration' => null, 'idle' => $data['idle'], 'commitments' => [],
-            'links' => ['deals' => self::link('investor.deals'), 'portfolio' => $portfolio(), 'profile' => self::link('investor.profile'),
+            'links' => ['deals' => self::link('investor.deals'), 'portfolio' => $portfolio(), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => self::link('investor.profile'),
                 'wallet' => $data['verified'] ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard')]];
     }
 
