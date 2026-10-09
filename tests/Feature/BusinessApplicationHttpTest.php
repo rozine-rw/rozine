@@ -49,7 +49,7 @@ it('presents an honest empty draft over web and API without creating financial f
     $api = $this->getJson('/api/v1'.$path)->assertOk()->assertHeader('Cache-Control', 'no-store, private')
         ->assertJsonPath('data.allowed_actions', [])->assertJsonPath('data.acceptance.signatures_complete', false)->json('data');
     expect($api['application'])->toBe($web['application'])->and($api['acceptance'])->toBe($web['acceptance'])
-        ->and($web['links']['back']['url'])->toBe('/business')->and($web['shell_links']['launcher']['url'])->toBe('/dashboard')
+        ->and($web['links']['back']['url'])->toBe('/business/'.$fixture['business']->id)->and($web['shell_links']['launcher']['url'])->toBe('/dashboard')
         ->and($web['links']['operation']['url'])->toBe('/business/application-operations/{request_id}')
         ->and($api['actions']['save']['url'])->toBe('/api/v1'.$path.'/save')
         ->and($api['links']['operation']['url'])->toBe('/api/v1/business/application-operations/{request_id}')

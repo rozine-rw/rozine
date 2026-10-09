@@ -389,7 +389,6 @@
         "resources/js/components/auditor/tab-columns.tsx",
         "resources/js/components/auditor/ui.tsx",
         "resources/js/components/breadcrumbs.tsx",
-        "resources/js/components/business/application-entries.tsx",
         "resources/js/components/business/apply/carried-refusal.ts",
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
@@ -658,8 +657,6 @@
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
         "resources/js/pages/identity/access-denied.tsx",
-        "resources/js/pages/identity/role-home.tsx",
-        "resources/js/pages/identity/staff-home.tsx",
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",
@@ -680,10 +677,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 652,
+        "totalTrackedSources": 649,
         "generated": 257,
         "declarationOnly": 18,
-        "authoredExecutable": 377
+        "authoredExecutable": 374
     },
-    "coverageSetSha256": "7d850a6835a5aa7d11774bd7f61c93e6cefe342033c6379f1cb2c32702cc46c3"
+    "coverageSetSha256": "5b92aea0c04710fc5ad081e78bcd9a51387bb78e954ab97fcc875f97e3904a8b"
 }

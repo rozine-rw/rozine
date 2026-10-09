@@ -26,23 +26,7 @@ const fr: Catalog = {
     'suite.refresh_access': 'Actualiser l’accès',
     'suite.admin': 'Ouvrir l’espace personnel',
     'suite.opening': 'Ouverture de votre application…',
-    'identity.home.investor': 'Espace investisseur',
-    'identity.home.business': 'Espace entreprise',
-    'identity.home.auditor': 'Espace auditeur',
-    'identity.home.admin': 'Espace personnel',
-    'identity.home.overview': 'Vue générale',
-    'identity.home.access': 'Accès au compte',
-    'identity.home.ready': 'Votre compte a accès à cet espace.',
-    'identity.home.verified': 'Votre identité est vérifiée.',
-    'identity.home.staff_ready':
-        'Votre compte personnel est autorisé à ouvrir cet espace.',
     'identity.home.back': 'Choisir une application',
-    'identity.home.settings': 'Paramètres du compte',
-    'identity.home.staging_mail_testers': 'Testeurs e-mail de préproduction',
-    'identity.home.auditor_nav': "Votre travail d'audit",
-    'identity.home.saving': 'Enregistrement de votre position…',
-    'identity.home.failed':
-        'Impossible de mettre à jour votre position. Revenez au lanceur pour vérifier votre accès.',
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
@@ -212,6 +196,10 @@ const fr: Catalog = {
     'business.today.approved.sub_free':
         'Publiez-la auprès des investisseurs. Aucuns frais de publication.',
     'business.today.approved.cta_free': 'Publier',
+    'business.today.cosign.kicker': 'Rapport d’audit prêt',
+    'business.today.cosign.sub':
+        "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
+    'business.today.cosign.cta': 'Examiner et cosigner',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',
@@ -268,23 +256,6 @@ const fr: Catalog = {
     'business.note.empty.title': 'Aucune note avec ce statut',
     'business.note.empty.body':
         'Lancez une levée pour financer votre entreprise.',
-    'business.entries.title': 'Demandes de levée',
-    'business.entries.continue': 'Poursuivre votre demande',
-    'business.entries.view': 'Voir votre demande',
-    'business.entries.saved_at': 'Enregistrée à l’étape {step}',
-    'business.entries.submitted': 'Soumise · en cours d’examen',
-    'business.entries.view_only':
-        'Vous pouvez consulter cette entreprise, mais lancer une levée ne vous est pas ouvert.',
-    'business.entries.empty':
-        'Aucune entreprise pour laquelle vous pouvez agir n’est encore liée à ce compte.',
-    'business.entries.audit_report.pending':
-        'Rapport d’audit prêt : à examiner et cosigner',
-    'business.entries.audit_report.published': 'Rapport d’audit publié',
-    'business.entries.audit_report.disputed':
-        'Votre contestation est en cours d’examen',
-    'business.entries.audit_report.escalated':
-        'L’équipe Rozine examine votre contestation',
-    'business.entries.more': 'Afficher plus',
     'business.grow.title': 'Croître',
     'business.grow.subtitle': 'Levez davantage quand vous êtes prêt.',
     'business.grow.headroom': 'Marge disponible',

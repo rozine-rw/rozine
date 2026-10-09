@@ -28,22 +28,7 @@ const rw: Catalog = {
     'suite.refresh_access': 'Ongera ugenzure uburenganzira',
     'suite.admin': 'Fungura ahagenewe abakozi',
     'suite.opening': 'Gufungura porogaramu yawe…',
-    'identity.home.investor': 'Ahagenewe umushoramari',
-    'identity.home.business': 'Ahagenewe ubucuruzi',
-    'identity.home.auditor': 'Ahagenewe umugenzuzi',
-    'identity.home.admin': 'Ahagenewe abakozi',
-    'identity.home.overview': 'Incamake',
-    'identity.home.access': 'Uburenganzira bwa konti',
-    'identity.home.ready': 'Konti yawe yemerewe kwinjira hano.',
-    'identity.home.verified': 'Umwirondoro wawe waremejwe.',
-    'identity.home.staff_ready': 'Konti yawe y’umukozi yemerewe kwinjira hano.',
     'identity.home.back': 'Hitamo porogaramu',
-    'identity.home.settings': 'Igenamiterere rya konti',
-    'identity.home.staging_mail_testers': 'Abagerageza imeyili z’igerageza',
-    'identity.home.auditor_nav': "Akazi kawe k'igenzura",
-    'identity.home.saving': 'Kubika aho ugeze…',
-    'identity.home.failed':
-        'Ntitwashoboye kubika aho ugeze. Subira aho uhitamo porogaramu urebe uburenganzira bwawe.',
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
@@ -213,6 +198,10 @@ const rw: Catalog = {
     'business.today.approved.sub_free':
         'Yitangaze ku bashoramari. Nta mafaranga yo gutangaza asabwa.',
     'business.today.approved.cta_free': 'Tangaza',
+    'business.today.cosign.kicker': 'Raporo y’igenzura yiteguye',
+    'business.today.cosign.sub':
+        'CPA wawe yayifunze. Soma ibyabonetse mbere yo gushyiraho umukono.',
+    'business.today.cosign.cta': 'Yisuzume kandi uyishyireho umukono',
     'business.today.declined.kicker': 'Ubusabe bwanzwe',
     'business.today.declined.sub':
         'Birenze ubushobozi bwawe bwemejwe — tuvugishe mbere yo kongera gusaba.',
@@ -267,22 +256,6 @@ const rw: Catalog = {
     'business.note.continue_application': 'Komeza ubusabe',
     'business.note.empty.title': 'Nta rupapuro ruri muri iki cyiciro',
     'business.note.empty.body': "Tangira gushaka igishoro cy'ubucuruzi bwawe.",
-    'business.entries.title': 'Ubusabe bwo gushaka igishoro',
-    'business.entries.continue': 'Komeza ubusabe bwawe',
-    'business.entries.view': 'Reba ubusabe bwawe',
-    'business.entries.saved_at': 'Byabitswe kuri {step}',
-    'business.entries.submitted': 'Bwoherejwe · burasuzumwa',
-    'business.entries.view_only':
-        'Ushobora kureba ubu bucuruzi, ariko ntiwemerewe gutangiza ubusabe bw’igishoro.',
-    'business.entries.empty':
-        'Nta bucuruzi ushobora gukorera buhujwe n’iyi konti.',
-    'business.entries.audit_report.pending':
-        'Raporo y’igenzura yiteguye: yisuzume kandi uyishyireho umukono',
-    'business.entries.audit_report.published': 'Raporo y’igenzura yatangajwe',
-    'business.entries.audit_report.disputed': 'Ubujurire bwawe burasuzumwa',
-    'business.entries.audit_report.escalated':
-        'Abakozi ba Rozine barasuzuma ubujurire bwawe',
-    'business.entries.more': 'Erekana ibindi',
     'business.grow.title': 'Kwaguka',
     'business.grow.subtitle': 'Shaka igishoro kinini igihe witeguye.',
     'business.grow.headroom': 'Ubushobozi busigaye',

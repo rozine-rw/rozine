@@ -161,6 +161,11 @@ describe('Business Home', () => {
     it('renders every kind of Today item with its call to act', () => {
         const today: BusinessTodo[] = [
             {
+                kind: 'audit_cosign',
+                report_kind: 'flash',
+                link: link('/business/b1/audit-reports/r1'),
+            },
+            {
                 kind: 'application_declined',
                 title: 'Solar Roof',
                 reason: null,
@@ -190,6 +195,16 @@ describe('Business Home', () => {
 
         render(<BusinessHome {...fixture} today={today} />);
 
+        expect(screen.getByText('Audit report ready')).toBeInTheDocument();
+        expect(screen.getByText('Flash audit report')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your CPA sealed it. Read the findings before you co-sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review & co-sign/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
         expect(screen.getAllByText('Application declined')).toHaveLength(2);
         expect(
             screen.getByText(
