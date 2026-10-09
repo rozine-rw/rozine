@@ -1,5 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import { catalogFor } from '@/lib/i18n';
+import { I18nContext } from '@/lib/i18n/context';
 import AuditorPortfolio from '@/pages/auditor/portfolio';
 import type { AuditorPortfolioProps } from '@/types/auditor';
 import awaitingFixture from '../../../resources/fixtures/ui/auditor-portfolio-awaiting.json';
@@ -71,174 +73,346 @@ const props = (fixture: { props: unknown } = portfolioFixture) =>
 beforeEach(() => inertia.reset());
 
 describe('Auditor Portfolio', () => {
-    it('lists every filed report with its co-signature state', () => {
+    it("lays out the design's Portfolio with an empty state wherever there is no read yet", () => {
         render(<AuditorPortfolio {...props()} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent('Portfolio');
         expect(
             screen.getByRole('heading', { name: 'Portfolio' }),
         ).toBeInTheDocument();
-        expect(screen.getByText('5 total')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'You earn two ways: verification and monitoring on the files you grade, and origination commission on the deals you bring in.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /^Your CPA card/u }),
+        ).toHaveAttribute('href', '/preview/auditor-profile');
+        expect(screen.getByText('Proof you are ours')).toBeInTheDocument();
+        expect(screen.queryByText('List a deal')).not.toBeInTheDocument();
 
-        const filters = screen.getByRole('navigation', {
-            name: 'Filter reports',
+        const sourced = screen.getByRole('region', {
+            name: 'Deals you sourced',
         });
 
+        expect(within(sourced).getByText('Origination')).toBeInTheDocument();
         expect(
-            within(filters).getByRole('link', { name: /^All/ }),
-        ).toHaveAttribute('aria-current', 'true');
-        expect(
-            within(filters).getByRole('link', { name: /^Late/ }),
-        ).toHaveAttribute('href', '/preview/auditor-portfolio-late');
+            within(sourced).getByText(
+                /earn origination commission from repayments/u,
+            ),
+        ).toBeInTheDocument();
 
+        const earned = screen.getByRole('region', {
+            name: 'Verification earned · this month',
+        });
+
+        expect(within(earned).getAllByText('—')).toHaveLength(3);
+        expect(within(earned).getByText('Managed deals')).toBeInTheDocument();
+        expect(within(earned).getByText('Next payout')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: /Kivu Coffee Roasters/ }),
-        ).toHaveTextContent('Published');
-        expect(
-            screen.getByRole('link', { name: /Huye Motors/ }),
-        ).toHaveTextContent('Flash Audit');
-        expect(
-            screen.getByText('August 2026 report · filed 2 days late'),
+            screen.getByText(
+                'Yield-share payouts appear here once they are paid.',
+            ),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/cash count sheet attached is for July/),
+            screen.getByRole('region', { name: 'Managed deals' }),
+        ).toHaveTextContent(
+            "No managed deals yet. Pass a Flash Audit to become a business's account manager.",
+        );
+    });
+
+    it('lists what falls due this month: owed verifications by due date and filed reports with their state', () => {
+        render(<AuditorPortfolio {...props()} />);
+
+        expect(screen.getByText('October 2026')).toBeInTheDocument();
+        expect(
+            screen.getByText('Every monthly verification you owe, and when.'),
+        ).toBeInTheDocument();
+
+        const due = screen.getByRole('region', { name: 'Due in October' });
+
+        expect(within(due).getByText('3 deals')).toBeInTheDocument();
+        expect(
+            within(due)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual([
+            '2OCTHuye MotorsFlash Audit · filed 1 OctAwaiting co-sign',
+            '7OCTGreenLeaf AgroMonthly verificationIn 4 days',
+            '7OCTKivu Coffee RoastersSeptember 2026 report · filed 2 OctPublished',
+        ]);
+        expect(
+            within(due).getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveAttribute('href', '/preview/auditor-file');
+        expect(
+            within(due).getByRole('link', { name: /Kivu Coffee Roasters/u }),
+        ).toHaveAttribute('href', '/preview/auditor-audit-sealed-monthly');
+        expect(within(due).getAllByText('Your share')).toHaveLength(3);
+        expect(within(due).getAllByText('—')).toHaveLength(3);
+        expect(within(due).getByText('Rwamagana')).toBeInTheDocument();
+        expect(within(due).getAllByText('7 Oct')).toHaveLength(2);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            '1 verification due within 5 daysFile by the due date: GreenLeaf Agro, due 7 Oct.',
+        );
+        expect(
+            screen.getByRole('button', { name: '3 Oct 2026' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByRole('button', {
+                name: '7 Oct 2026, 2 verifications due',
+            }),
+        ).toBeEnabled();
+        expect(
+            screen.getByRole('button', {
+                name: '2 Oct 2026, 1 verification due',
+            }),
+        ).toBeEnabled();
+    });
+
+    it('browses the calendar month by month, with the late and rejected reports of September', async () => {
+        const { user } = renderWithUser(<AuditorPortfolio {...props()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Previous month' }),
+        );
+
+        const september = screen.getByRole('region', {
+            name: 'Due in September',
+        });
+
+        expect(screen.getByText('September 2026')).toBeInTheDocument();
+        expect(within(september).getByText('3 deals')).toBeInTheDocument();
+        expect(
+            within(september).getByText(
+                'August 2026 report · filed 2 days late',
+            ),
+        ).toBeInTheDocument();
+        expect(within(september).getByText('Late')).toBeInTheDocument();
+        expect(within(september).getByText('Rejected')).toBeInTheDocument();
+        expect(
+            within(september).getByText(
+                /cash count sheet attached is for July/u,
+            ),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Start a linked amendment →' }),
+            within(september).getByRole('link', {
+                name: 'Start a linked amendment →',
+            }),
         ).toHaveAttribute('href', '/preview/auditor-audit-count');
-        expect(screen.getAllByText('Rubavu')).toHaveLength(1);
-        expect(screen.getByText('2 Oct 2026')).toBeInTheDocument();
-        expect(screen.getAllByText('OCT', { selector: 'span' })).toHaveLength(
-            2,
+
+        await user.click(screen.getByRole('button', { name: 'Next month' }));
+        await user.click(screen.getByRole('button', { name: 'Next month' }));
+
+        const november = screen.getByRole('region', {
+            name: 'Due in November',
+        });
+
+        expect(within(november).getByText('1 deal')).toBeInTheDocument();
+        expect(
+            within(november).getByRole('link', { name: /Intare Supply/u }),
+        ).toHaveTextContent('In 35 days');
+
+        await user.click(screen.getByRole('button', { name: 'Next month' }));
+
+        const december = screen.getByRole('region', {
+            name: 'Due in December',
+        });
+
+        expect(within(december).getByText('0 deals')).toBeInTheDocument();
+        expect(
+            within(december).getByText('Nothing due in this month.'),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            '1 verification due within 5 days',
         );
-        expect(screen.getAllByText('SEP', { selector: 'span' })).toHaveLength(
-            3,
+    });
+
+    it("opens a day's entries from the grid and closes them again", async () => {
+        const { user } = renderWithUser(<AuditorPortfolio {...props()} />);
+        const seventh = screen.getByRole('button', {
+            name: '7 Oct 2026, 2 verifications due',
+        });
+
+        await user.click(seventh);
+
+        const day = screen.getByRole('dialog', { name: '7 Oct 2026' });
+
+        expect(seventh).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            within(day).getByText('2 verifications due'),
+        ).toBeInTheDocument();
+        expect(
+            within(day)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual([
+            'GreenLeaf AgroMonthly verification · RwamaganaIn 4 days',
+            'Kivu Coffee RoastersSeptember 2026 report · filed 2 Oct · RubavuPublished',
+        ]);
+
+        await user.click(seventh);
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: '2 Oct 2026, 1 verification due',
+            }),
         );
-        expect(screen.getAllByText('Awaiting co-sign')).toHaveLength(2);
+        expect(
+            within(
+                screen.getByRole('dialog', { name: '2 Oct 2026' }),
+            ).getByText('1 verification due'),
+        ).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Close' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(seventh);
+        await user.click(screen.getByRole('button', { name: 'Next month' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it.each([
         {
-            fixture: awaitingFixture,
-            filter: 'Awaiting co-sign',
-            shown: ['Huye Motors'],
+            name: 'overdue, due today and two coming up',
+            owed: [
+                ['2026-10-01T10:00:00Z', 'flash'],
+                ['2026-10-02T10:00:00Z', 'monthly'],
+                ['2026-10-03T12:00:00Z', 'monthly'],
+                ['2026-10-04T12:00:00Z', 'monthly'],
+                ['2026-10-05T12:00:00Z', 'monthly'],
+            ],
+            pills: [
+                'Overdue 2 days',
+                'Overdue 1 day',
+                'Due today',
+                'In 1 day',
+                'In 2 days',
+            ],
+            alert: '3 verifications due within 5 daysFile each by its due date. The first is File 2, due 3 Oct.',
         },
         {
-            fixture: publishedFixture,
-            filter: 'Published',
-            shown: ['Kivu Coffee Roasters', 'Intare Supply'],
+            name: 'only work further ahead',
+            owed: [['2026-10-20T12:00:00Z', 'monthly']],
+            pills: ['In 17 days'],
+            alert: 'Nothing due in the next five daysYou are clear. The next filing is File 0 on 20 Oct.',
         },
         {
-            fixture: rejectedFixture,
-            filter: 'Rejected',
-            shown: ['Isoko Energy'],
+            name: 'nothing owed',
+            owed: [],
+            pills: [],
+            alert: 'Nothing due in the next five daysYou are clear. The next filing is not scheduled yet.',
         },
     ])(
-        'lists only the $filter reports the server filtered',
-        ({ fixture, filter, shown }) => {
-            render(<AuditorPortfolio {...props(fixture)} />);
+        'says how far off each owed verification is: $name',
+        ({ owed, pills, alert }) => {
+            const base = props(emptyFixture);
 
-            const filters = screen.getByRole('navigation', {
-                name: 'Filter reports',
-            });
+            render(
+                <AuditorPortfolio
+                    {...base}
+                    owed={owed.map(([due_at, kind], index) => ({
+                        id: `as_${index}`,
+                        business: `File ${index}`,
+                        district: 'Gasabo',
+                        kind: kind as 'flash' | 'monthly',
+                        due_at,
+                        link: {
+                            url: `/auditor/jobs/as_${index}`,
+                            method: 'get',
+                        },
+                    }))}
+                />,
+            );
 
-            expect(
-                within(filters).getByRole('link', {
-                    name: new RegExp(`^${filter}`, 'u'),
-                }),
-            ).toHaveAttribute('aria-current', 'true');
-            expect(
-                within(filters).getByRole('link', { name: /^All/u }),
-            ).not.toHaveAttribute('aria-current');
-            expect(screen.getByText('5 total')).toBeInTheDocument();
+            const due = screen.getByRole('region', { name: 'Due in October' });
 
-            for (const business of [
-                'Kivu Coffee Roasters',
-                'Huye Motors',
-                'Musanze Traders',
-                'Isoko Energy',
-                'Intare Supply',
-            ]) {
-                const report = screen.queryByRole('link', {
-                    name: new RegExp(business, 'u'),
-                });
-
-                if (shown.includes(business)) {
-                    expect(report).toHaveTextContent(filter);
-                } else {
-                    expect(report).not.toBeInTheDocument();
-                }
+            for (const [index, pill] of pills.entries()) {
+                expect(
+                    within(due).getByRole('link', {
+                        name: new RegExp(`File ${index}`, 'u'),
+                    }),
+                ).toHaveTextContent(pill);
             }
+
+            expect(screen.getByRole('status')).toHaveTextContent(alert);
         },
     );
 
-    it('keeps the rejection reason and the linked amendment on a rejected report', () => {
-        render(<AuditorPortfolio {...props(rejectedFixture)} />);
-
-        expect(
-            screen.getByText(/cash count sheet attached is for July/u),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('link', { name: 'Start a linked amendment →' }),
-        ).toHaveAttribute('href', '/preview/auditor-audit-count');
-    });
-
-    it('filters on the server and offers a way back when nothing matches', () => {
-        const late = props(lateFixture);
-
-        render(<AuditorPortfolio {...late} reports={[]} />);
-
-        expect(
-            screen.getByText('No reports match this filter.'),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('link', { name: 'Show all reports' }),
-        ).toHaveAttribute('href', '/preview/auditor-portfolio');
-    });
-
-    it('explains an empty filter even without an all-reports link', () => {
-        const late = props(lateFixture);
+    it('places a report with no recorded due date on the day it was filed', () => {
+        const live = props(liveMinimalFixture);
+        const report = props().reports[1];
 
         render(
             <AuditorPortfolio
-                {...late}
-                reports={[]}
-                filters={late.filters.filter((item) => item.key !== 'all')}
+                {...live}
+                reports={[{ ...report, due_on: null }]}
             />,
         );
 
         expect(
-            screen.getByText(
-                'Nothing filed yet. Reports you seal appear here with their co-signature status.',
-            ),
-        ).toBeInTheDocument();
+            screen.getByRole('button', {
+                name: '1 Oct 2026, 1 verification due',
+            }),
+        ).toBeEnabled();
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Due in October' }),
+            ).getByRole('link', { name: /Huye Motors/u }),
+        ).toHaveTextContent('Awaiting co-sign');
+    });
+
+    it.each([
+        { fixture: awaitingFixture, shown: ['Huye Motors'] },
+        { fixture: publishedFixture, shown: ['Kivu Coffee Roasters'] },
+        { fixture: rejectedFixture, shown: [] },
+        { fixture: lateFixture, shown: [] },
+    ])('shows only the reports the server sends', ({ fixture, shown }) => {
+        render(<AuditorPortfolio {...props(fixture)} />);
+
+        const due = screen.getByRole('region', { name: 'Due in October' });
+
+        expect(
+            within(due)
+                .getAllByRole('link')
+                .map(
+                    (link) =>
+                        link.textContent?.match(
+                            /OCT(.+?)(Flash|September|Monthly)/u,
+                        )?.[1],
+                ),
+        ).toEqual(
+            ['GreenLeaf Agro', ...shown].sort((a, b) => {
+                const order = [
+                    'Huye Motors',
+                    'GreenLeaf Agro',
+                    'Kivu Coffee Roasters',
+                ];
+
+                return order.indexOf(a) - order.indexOf(b);
+            }),
+        );
     });
 
     it('explains a first month with nothing filed and nothing assigned', () => {
         render(<AuditorPortfolio {...props(emptyFixture)} />);
 
         expect(
-            screen.getByText(
-                'Nothing filed yet. Reports you seal appear here with their co-signature status.',
-            ),
+            screen.getByText('Nothing due in this month.'),
         ).toBeInTheDocument();
-        expect(
-            screen.queryByRole('navigation', { name: 'Filter reports' }),
-        ).not.toBeInTheDocument();
+        expect(screen.getByText('0 deals')).toBeInTheDocument();
         expect(
             screen.getByText('You have no files assigned to verify right now.'),
         ).toBeInTheDocument();
         expect(screen.queryByText('On the record')).not.toBeInTheDocument();
     });
 
-    it('renders the live empty Portfolio with only the filters the server counts', () => {
+    it('renders the live empty Portfolio with the Portfolio tab current', () => {
         render(<AuditorPortfolio {...props(liveMinimalFixture)} />);
 
-        expect(screen.getByText('0 total')).toBeInTheDocument();
         expect(
-            screen.getByText(
-                'Nothing filed yet. Reports you seal appear here with their co-signature status.',
-            ),
+            screen.getByText('Nothing due in this month.'),
         ).toBeInTheDocument();
         expect(
             screen.getByText('You have no files assigned to verify right now.'),
@@ -253,17 +427,32 @@ describe('Auditor Portfolio', () => {
         }
     });
 
+    it('names the weekdays, months and states in the reader’s language', () => {
+        render(
+            <I18nContext value={{ locale: 'fr', catalog: catalogFor('fr') }}>
+                <AuditorPortfolio {...props()} />
+            </I18nContext>,
+        );
+
+        expect(screen.getByText('octobre 2026')).toBeInTheDocument();
+        expect(screen.getByText('LUN')).toBeInTheDocument();
+
+        const due = screen.getByRole('region', { name: 'À rendre en octobre' });
+
+        expect(
+            within(due).getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveTextContent(
+            '7OCTGreenLeaf AgroVérification mensuelleDans 4 jours',
+        );
+    });
+
     it("declares through the file's own command and names a private record by its reference", async () => {
         const live = props(liveMinimalFixture);
         const report = props().reports[1];
         const { user } = renderWithUser(
             <AuditorPortfolio
                 {...live}
-                reports={[{ ...report, due_on: null }]}
-                filters={live.filters.map((filter) => ({
-                    ...filter,
-                    count: filter.key === 'published' ? 0 : 1,
-                }))}
+                reports={[report]}
                 conflicts={{
                     files: [
                         {
@@ -292,12 +481,6 @@ describe('Auditor Portfolio', () => {
             />,
         );
 
-        expect(
-            within(
-                screen.getByRole('navigation', { name: 'Filter reports' }),
-            ).getAllByRole('link'),
-        ).toHaveLength(3);
-        expect(screen.getByText('—')).toBeInTheDocument();
         expect(
             screen.getByText('Business on record · Ref. …7qk2m4'),
         ).toBeInTheDocument();

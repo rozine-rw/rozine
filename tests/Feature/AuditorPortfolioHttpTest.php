@@ -85,7 +85,7 @@ it('renders an empty Portfolio in the live contract shape with its empty states 
             'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(), 'allowed_actions' => [],
             'reports' => [], 'filter' => 'all', 'filters' => auditorPortfolioFilters(0, 0, 0),
             'conflicts' => ['files' => [], 'record' => [], 'declare' => ['url' => '/auditor/jobs/{assignment}/conflict', 'method' => 'post']],
-            'outcome' => null, 'open_jobs' => 0,
+            'owed' => [], 'outcome' => null, 'open_jobs' => 0,
             'links' => ['home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
                 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
                 'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
@@ -100,14 +100,17 @@ it('lists sealed reports as awaiting co-sign until published, with exact filter 
     $draft = auditorPortfolioProps($fixture['user']);
     expect($draft['reports'])->toBe([])->and($draft['filters'])->toBe(auditorPortfolioFilters(0, 0, 0))
         ->and($draft['conflicts']['files'])->toBe([['id' => $assignment->id, 'revision' => $assignment->revision,
-            'business' => 'Synthetic business', 'note_id' => null, 'allowed_actions' => ['conflict.declare']]]);
+            'business' => 'Synthetic business', 'note_id' => null, 'allowed_actions' => ['conflict.declare']]])
+        ->and($draft['owed'])->toBe([['id' => $assignment->id, 'business' => 'Synthetic business', 'district' => 'Gasabo', 'kind' => 'flash',
+            'due_at' => $assignment->state['complete_by'], 'link' => ['url' => '/auditor/jobs/'.$assignment->id, 'method' => 'get']]]);
     $sealed = AuditSealingFixture::seal($fixture)['data']['sealed'];
     $report = ['id' => $fixture['report']->id, 'business' => 'Synthetic business', 'kind' => 'flash', 'month' => null, 'district' => 'Gasabo',
         'filed_on' => $sealed['sealed_at'], 'due_on' => $assignment->state['complete_by'], 'status' => 'awaiting_cosign', 'late_days' => null,
         'rejection' => null, 'link' => ['url' => '/auditor/reports/'.$fixture['report']->id, 'method' => 'get']];
     expect($report['due_on'])->toBeString();
     $props = auditorPortfolioProps($fixture['user']);
-    expect($props['reports'])->toBe([$report])->and($props['filters'])->toBe(auditorPortfolioFilters(1, 1, 0));
+    expect($props['reports'])->toBe([$report])->and($props['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))
+        ->and($props['owed'])->toBe([]);
     expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [], 'filters' => auditorPortfolioFilters(1, 1, 0)]);
     $this->get($report['link']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/audit'));
     expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
@@ -135,13 +138,14 @@ it('declares an interest through the assigned file\'s own command and keeps only
     $partner = $fixture['partners'][0];
     AuditAssignmentFixture::respond($partner['user'], $assignment);
     $props = auditorPortfolioProps($partner['user']);
-    expect($props['conflicts']['files'])->toHaveCount(1)->and($props['conflicts']['files'][0]['id'])->toBe($assignment->id);
+    expect($props['conflicts']['files'])->toHaveCount(1)->and($props['conflicts']['files'][0]['id'])->toBe($assignment->id)
+        ->and(array_column($props['owed'], 'id'))->toBe([$assignment->id]);
     $url = str_replace('{assignment}', $assignment->id, $props['conflicts']['declare']['url']);
     $receipt = $this->postJson($url, ['identity_context_revision' => 1, 'expected_revision' => $assignment->refresh()->revision,
         'request_id' => (string) Str::uuid(), 'assignment_id' => $assignment->id, 'kind' => 'family_or_business', 'reason' => 'A private relationship.'])
         ->assertOk()->assertJsonPath('code', 'CONFLICT_RECORDED')->json('data.conflict');
     $props = auditorPortfolioProps($partner['user']);
-    expect($props['conflicts']['files'])->toBe([])->and($props['conflicts']['record'])->toBe([[
+    expect($props['conflicts']['files'])->toBe([])->and($props['owed'])->toBe([])->and($props['conflicts']['record'])->toBe([[
         'conflict_id' => $receipt['conflict_id'], 'assignment_id' => $assignment->id, 'business' => null, 'note_id' => null,
         'kind' => 'family_or_business', 'declared_on' => $receipt['declared_at'],
     ]]);

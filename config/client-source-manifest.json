@@ -376,8 +376,9 @@
         "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",
+        "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
-        "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/portfolio/earnings.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -678,10 +679,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 650,
+        "totalTrackedSources": 651,
         "generated": 257,
         "declarationOnly": 18,
-        "authoredExecutable": 375
+        "authoredExecutable": 376
     },
-    "coverageSetSha256": "56df485e7aad3d46354a10bf70da4fff19291b19b89348748d476c79ff349989"
+    "coverageSetSha256": "15a15164fab91dea897fec8640785c99295f4c81865d9cb00e34847d36480602"
 }
