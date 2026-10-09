@@ -35,4 +35,12 @@ interface InvestorVerificationStore
 
     /** @return array<string, mixed> */
     public function submit(int $userId, int $contextRevision, int $expectedRevision, string $requestId): array;
+
+    /**
+     * The identity document on the person's approved verification, for their own Profile. Null until
+     * staff approve a submission, and for a person verified without one.
+     *
+     * @return array{id_type: 'national_id'|'passport'|'drivers_license', id_number: string}|null
+     */
+    public function approvedDocument(int $userId): ?array;
 }
