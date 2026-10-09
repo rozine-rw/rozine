@@ -6,6 +6,7 @@ import awaitingFixture from '../../../resources/fixtures/ui/auditor-portfolio-aw
 import conflictFixture from '../../../resources/fixtures/ui/auditor-portfolio-conflict.json';
 import emptyFixture from '../../../resources/fixtures/ui/auditor-portfolio-empty.json';
 import lateFixture from '../../../resources/fixtures/ui/auditor-portfolio-late.json';
+import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-portfolio-live-minimal.json';
 import publishedFixture from '../../../resources/fixtures/ui/auditor-portfolio-published.json';
 import rejectedFixture from '../../../resources/fixtures/ui/auditor-portfolio-rejected.json';
 import scopedFixture from '../../../resources/fixtures/ui/auditor-portfolio-scoped.json';
@@ -228,6 +229,105 @@ describe('Auditor Portfolio', () => {
             screen.getByText('You have no files assigned to verify right now.'),
         ).toBeInTheDocument();
         expect(screen.queryByText('On the record')).not.toBeInTheDocument();
+    });
+
+    it('renders the live empty Portfolio with only the filters the server counts', () => {
+        render(<AuditorPortfolio {...props(liveMinimalFixture)} />);
+
+        expect(screen.getByText('0 total')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Nothing filed yet. Reports you seal appear here with their co-signature status.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('You have no files assigned to verify right now.'),
+        ).toBeInTheDocument();
+
+        for (const nav of screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        })) {
+            expect(
+                within(nav).getByRole('link', { name: /Portfolio/ }),
+            ).toHaveAttribute('aria-current', 'page');
+        }
+    });
+
+    it("declares through the file's own command and names a private record by its reference", async () => {
+        const live = props(liveMinimalFixture);
+        const report = props().reports[1];
+        const { user } = renderWithUser(
+            <AuditorPortfolio
+                {...live}
+                reports={[{ ...report, due_on: null }]}
+                filters={live.filters.map((filter) => ({
+                    ...filter,
+                    count: filter.key === 'published' ? 0 : 1,
+                }))}
+                conflicts={{
+                    files: [
+                        {
+                            id: '01k6zv7c4w3n8q5r2t9y6x1m0d',
+                            revision: 2,
+                            business: 'Synthetic business',
+                            note_id: null,
+                            allowed_actions: ['conflict.declare'],
+                        },
+                    ],
+                    record: [
+                        {
+                            conflict_id: 'cf_live',
+                            assignment_id: '01k6zv7c4w3n8q5r2t9y7qk2m4',
+                            business: null,
+                            note_id: null,
+                            kind: 'other',
+                            declared_on: '2026-10-02T09:00:00Z',
+                        },
+                    ],
+                    declare: {
+                        url: '/auditor/jobs/{assignment}/conflict',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Filter reports' }),
+            ).getAllByRole('link'),
+        ).toHaveLength(3);
+        expect(screen.getByText('—')).toBeInTheDocument();
+        expect(
+            screen.getByText('Business on record · Ref. …7qk2m4'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Other · 2 Oct 2026')).toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', { name: 'Synthetic business' }),
+        );
+        const sheet = screen.getByRole('dialog', {
+            name: 'Declare an interest in Synthetic business',
+        });
+
+        await user.click(within(sheet).getByRole('radio', { name: 'Other' }));
+        await user.click(
+            within(sheet).getByLabelText('Factual explanation (required)'),
+        );
+        await user.paste('A private relationship.');
+        await user.click(
+            within(sheet).getByRole('button', { name: 'Declare interest' }),
+        );
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/jobs/01k6zv7c4w3n8q5r2t9y6x1m0d/conflict',
+            body: {
+                assignment_id: '01k6zv7c4w3n8q5r2t9y6x1m0d',
+                expected_revision: 2,
+                kind: 'other',
+                reason: 'A private relationship.',
+            },
+        });
     });
 
     it('declares an interest on an assigned file after confirming its kind', async () => {

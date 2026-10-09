@@ -6,8 +6,13 @@ import { edit } from '@/routes/profile';
 import type { StaffAccess } from '@/types/identity';
 import type { RouteLink } from '@/types/routing';
 
-/** The live console sections, in the console's own order. */
-const SECTIONS = ['investors', 'applications', 'disbursements'] as const;
+/** The live console sections, in the console's own order, the Operations Center first. */
+const SECTIONS = [
+    'today',
+    'investors',
+    'applications',
+    'disbursements',
+] as const;
 
 export default function StaffHome({
     staff_access,

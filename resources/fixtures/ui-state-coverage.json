@@ -147,7 +147,10 @@
     },
     "MVP-AUDITOR-SCR-07-ST-01": {
         "name": "none yet",
-        "fixtures": ["auditor-portfolio-empty"]
+        "fixtures": [
+            "auditor-portfolio-empty",
+            "auditor-portfolio-live-minimal"
+        ]
     },
     "MVP-AUDITOR-SCR-07-ST-02": {
         "name": "one late",

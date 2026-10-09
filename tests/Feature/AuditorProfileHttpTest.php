@@ -120,7 +120,7 @@ it('renders a first-time Auditor profile from the protected facts with the contr
             'renew' => ['url' => '/auditor/accreditation/renewal', 'method' => 'post'],
             'withdraw' => ['url' => '/auditor/accreditation/withdrawal', 'method' => 'post']],
     ])->and($props['links'])->toBe([
-        'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'], 'portfolio' => null,
+        'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'], 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'],
         'profile' => ['url' => '/auditor/profile', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
         'sections' => ['accreditation' => ['url' => '/auditor/profile', 'method' => 'get'],
             'availability' => ['url' => '/auditor/profile?section=availability', 'method' => 'get']],

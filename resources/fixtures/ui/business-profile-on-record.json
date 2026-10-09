@@ -1,0 +1,80 @@
+{
+    "component": "business/profile",
+    "props": {
+        "business": {
+            "name": "GreenLeaf Agro",
+            "address_line": "Musanze",
+            "verified": true,
+            "rating": null
+        },
+        "section": "company",
+        "landing": true,
+        "company": null,
+        "registration": {
+            "name": "GreenLeaf Agro",
+            "company_code": "RDB-104512",
+            "industry": "Agriculture",
+            "district": "Musanze",
+            "established_year": 2019,
+            "people": [
+                {
+                    "name": "Robert Mugisha",
+                    "roles": ["controller", "owner", "signatory"],
+                    "signatory": true
+                },
+                {
+                    "name": "Aline Uwase",
+                    "roles": ["director", "signatory"],
+                    "signatory": true
+                },
+                {
+                    "name": "Eric Habimana",
+                    "roles": ["representative"],
+                    "signatory": false
+                }
+            ],
+            "signatories_required": 2
+        },
+        "provinces": [],
+        "linked": null,
+        "legal": null,
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile-on-record",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-profile-on-record",
+                "method": "get"
+            },
+            "sections": {
+                "company": {
+                    "url": "/preview/business-profile-on-record-company",
+                    "method": "get"
+                },
+                "linked": null,
+                "terms": null,
+                "privacy": null
+            },
+            "sign_out": {
+                "url": "/logout",
+                "method": "post"
+            }
+        },
+        "actions": {
+            "save_company": null
+        }
+    }
+}

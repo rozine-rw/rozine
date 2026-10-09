@@ -196,6 +196,19 @@ describe('Financial health', () => {
         expect(sheet.queryByRole('status')).not.toBeInTheDocument();
     });
 
+    it('draws no financials the server has not published', () => {
+        const page = props(pendingFixture);
+
+        page.financials = null;
+        render(<BusinessRating {...page} />);
+
+        const sheet = within(healthSheet());
+
+        expect(sheet.getByText('Pending audit')).toBeInTheDocument();
+        expect(sheet.queryByText('Financials')).not.toBeInTheDocument();
+        expect(sheet.queryByText('RWF 28M')).not.toBeInTheDocument();
+    });
+
     it('gives the engine’s reasons when it will not rate', () => {
         render(<BusinessRating {...props(refusedFixture)} />);
 

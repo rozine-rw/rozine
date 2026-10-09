@@ -1,7 +1,7 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults, validateParameters } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 const show740a1695eb98b7bf1b75e02eb6012df1 = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show740a1695eb98b7bf1b75e02eb6012df1.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 show740a1695eb98b7bf1b75e02eb6012df1.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show740a1695eb98b7bf1b75e02eb6012df1.url = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 show740a1695eb98b7bf1b75e02eb6012df1.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show740a1695eb98b7bf1b75e02eb6012df1.get = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 show740a1695eb98b7bf1b75e02eb6012df1.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show740a1695eb98b7bf1b75e02eb6012df1.head = (args: { business: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 const show740a1695eb98b7bf1b75e02eb6012df1Form = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const show740a1695eb98b7bf1b75e02eb6012df1Form = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 show740a1695eb98b7bf1b75e02eb6012df1Form.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ show740a1695eb98b7bf1b75e02eb6012df1Form.get = (args: { business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/api/v1/business/{business}'
 */
 show740a1695eb98b7bf1b75e02eb6012df1Form.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +99,7 @@ show740a1695eb98b7bf1b75e02eb6012df1Form.head = (args: { business: string | numb
 show740a1695eb98b7bf1b75e02eb6012df1.form = show740a1695eb98b7bf1b75e02eb6012df1Form
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 const showf2bed257a86e67ae119e02ff274e3020 = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ showf2bed257a86e67ae119e02ff274e3020.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 showf2bed257a86e67ae119e02ff274e3020.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ showf2bed257a86e67ae119e02ff274e3020.url = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 showf2bed257a86e67ae119e02ff274e3020.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ showf2bed257a86e67ae119e02ff274e3020.get = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 showf2bed257a86e67ae119e02ff274e3020.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ showf2bed257a86e67ae119e02ff274e3020.head = (args: { business: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 const showf2bed257a86e67ae119e02ff274e3020Form = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ const showf2bed257a86e67ae119e02ff274e3020Form = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 showf2bed257a86e67ae119e02ff274e3020Form.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,7 +181,7 @@ showf2bed257a86e67ae119e02ff274e3020Form.get = (args: { business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:16
+* @see app/Http/Controllers/BusinessHomeController.php:28
 * @route '/business/{business}'
 */
 showf2bed257a86e67ae119e02ff274e3020Form.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -206,6 +206,306 @@ export const show = {
     '/business/{business}': showf2bed257a86e67ae119e02ff274e3020,
 }
 
-const BusinessHomeController = { show }
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+export const reports = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: reports.url(args, options),
+    method: 'get',
+})
+
+reports.definition = {
+    methods: ["get","head"],
+    url: '/business/{business}/reports',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+reports.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return reports.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+reports.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: reports.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+reports.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: reports.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+const reportsForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: reports.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+reportsForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: reports.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::reports
+* @see app/Http/Controllers/BusinessHomeController.php:42
+* @route '/business/{business}/reports'
+*/
+reportsForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: reports.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+reports.form = reportsForm
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+export const profile = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: profile.url(args, options),
+    method: 'get',
+})
+
+profile.definition = {
+    methods: ["get","head"],
+    url: '/business/{business}/profile/{section?}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+profile.url = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            section: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    validateParameters(args, [
+        "section",
+    ])
+
+    const parsedArgs = {
+        business: args.business,
+        section: args.section,
+    }
+
+    return profile.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{section?}', parsedArgs.section?.toString() ?? '')
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+profile.get = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: profile.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+profile.head = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: profile.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+const profileForm = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+profileForm.get = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::profile
+* @see app/Http/Controllers/BusinessHomeController.php:50
+* @route '/business/{business}/profile/{section?}'
+*/
+profileForm.head = (args: { business: string | number, section?: string | number } | [business: string | number, section: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: profile.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+profile.form = profileForm
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+export const rating = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rating.url(args, options),
+    method: 'get',
+})
+
+rating.definition = {
+    methods: ["get","head"],
+    url: '/business/{business}/rating',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+rating.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return rating.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+rating.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: rating.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+rating.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: rating.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+const ratingForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rating.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+ratingForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rating.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessHomeController::rating
+* @see app/Http/Controllers/BusinessHomeController.php:35
+* @route '/business/{business}/rating'
+*/
+ratingForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: rating.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+rating.form = ratingForm
+
+const BusinessHomeController = { show, reports, profile, rating }
 
 export default BusinessHomeController

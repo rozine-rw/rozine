@@ -78,11 +78,12 @@ it('renders the Business wallet with real routes, the literal lookup token and n
         ->and($props['funding']['policy']['version'])->toBe($fixture['policy']->version)
         ->and($props['funding']['methods'])->toBe([['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']])
         ->and([$props['deposits'], $props['receipt'], $props['history']['items']])->toBe([[], null, []])
-        ->and($props['links'])->toMatchArray(['close' => ['url' => '/business', 'method' => 'get'], 'repayments' => null,
+        ->and($props['links'])->toMatchArray(['close' => ['url' => '/business', 'method' => 'get'], 'repayments' => ['url' => '/business/'.$business.'/repayments', 'method' => 'get'],
             'deposit' => ['url' => '/business/'.$business.'/wallet?kind=deposit', 'method' => 'get'],
             'operation' => ['url' => '/business/'.$business.'/wallet-operations/{request_id}?command=business.wallet.deposit&identity_context_revision=1', 'method' => 'get']])
         ->and($props['actions'])->toBe(['deposit' => ['url' => '/business/'.$business.'/wallet/deposits', 'method' => 'post']])
-        ->and($props['shell_links']['launcher'])->toBe(['url' => '/dashboard', 'method' => 'get'])
+        ->and($props['shell_links'])->toBe(['home' => ['url' => '/business', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
+            'reports' => ['url' => '/business/'.$business.'/reports', 'method' => 'get'], 'profile' => ['url' => '/business/'.$business.'/profile', 'method' => 'get']])
         ->and(json_encode($props, JSON_THROW_ON_ERROR))->not->toContain('/preview/')->not->toContain('syn_')
         ->and(BusinessWallet::query()->where('business_id', $business)->exists())->toBeFalse();
 });
@@ -162,7 +163,8 @@ it('serves the API with its abilities: no command without business:command', fun
     Sanctum::actingAs($fixture['depositor'], ['business:read']);
 
     $this->getJson(route('api.v1.business.wallet.show', $business))->assertOk()->assertJsonPath('data.allowed_actions', [])
-        ->assertJsonPath('data.actions.deposit.url', '/api/v1/business/'.$business.'/wallet/deposits');
+        ->assertJsonPath('data.actions.deposit.url', '/api/v1/business/'.$business.'/wallet/deposits')
+        ->assertJsonPath('data.links.repayments', null)->assertJsonPath('data.shell_links.reports', null)->assertJsonPath('data.shell_links.profile', null);
     $this->postJson(route('api.v1.business.wallet.deposit', $business), businessWalletDepositBody($fixture))->assertForbidden();
     Sanctum::actingAs($fixture['depositor'], ['business:read', 'business:command']);
     $this->postJson(route('api.v1.business.wallet.deposit', $business), businessWalletDepositBody($fixture))->assertOk()

@@ -40,6 +40,7 @@
             ],
             "signatories_required": 2
         },
+        "registration": null,
         "provinces": [
             {
                 "value": "kigali",

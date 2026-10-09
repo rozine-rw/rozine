@@ -1,0 +1,48 @@
+{
+    "component": "business/repayments",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": [],
+        "note": null,
+        "servicing": null,
+        "schedule": [],
+        "ladder": null,
+        "pay": null,
+        "receipt": null,
+        "recent": [],
+        "bases": {},
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": null,
+            "profile": null
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "top_up": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-repayments-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "pay": null
+        }
+    }
+}

@@ -109,6 +109,7 @@
             "record": [
                 {
                     "conflict_id": "cf_1",
+                    "assignment_id": "fa_rubavu",
                     "business": "Rubavu Foods",
                     "note_id": "RNP-2026-0097",
                     "kind": "family_or_business",

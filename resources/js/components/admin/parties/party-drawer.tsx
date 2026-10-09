@@ -54,6 +54,8 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     kyc_pending: 'amber',
+    frozen: 'red',
+    not_tracked: 'grey',
 };
 
 const SECTION =
@@ -96,14 +98,17 @@ export function PartyDrawer({
     const [tab, setTab] = useState<Tab>(
         party.verification?.status === 'submitted' ? 'controls' : 'overview',
     );
+    // Each opened stage is one request: a double submit replays it, a later decision is new.
     const [stage, setStage] = useState<{
         key: Command;
         action: RouteAction;
+        requestId: string;
     } | null>(null);
     const frozen = party.freeze !== null;
     const overdue = party.kyc?.state === 'overdue';
+    const review = party.licence?.review ?? null;
     const open = (key: Command, action: RouteAction) =>
-        setStage({ key, action });
+        setStage({ key, action, requestId: crypto.randomUUID() });
     const {
         freeze,
         release,
@@ -129,6 +134,17 @@ export function PartyDrawer({
                 action={stage.action}
                 viewer={viewer}
                 onCancel={() => setStage(null)}
+                payload={
+                    review !== null &&
+                    (stage.key === 'verify_licence' ||
+                        stage.key === 'reject_licence')
+                        ? {
+                              request_id: stage.requestId,
+                              expected_revision: review.revision,
+                              submission_id: review.submission_id,
+                          }
+                        : undefined
+                }
             />
         ) : null;
 
@@ -171,7 +187,8 @@ export function PartyDrawer({
                                     {t(`admin.parties.health.${party.health}`)}
                                 </span>
                             </span>
-                            {frozen && (
+                            {/* A staff account's state is its health, so it is not badged twice. */}
+                            {frozen && party.health !== 'frozen' && (
                                 <MicroBadge>
                                     {t('admin.parties.badge.frozen')}
                                 </MicroBadge>
@@ -449,7 +466,8 @@ export function PartyDrawer({
                                             [
                                                 [
                                                     'member_id',
-                                                    party.licence.member_id,
+                                                    party.licence.member_id ??
+                                                        '—',
                                                 ],
                                                 [
                                                     'licence',
@@ -465,7 +483,8 @@ export function PartyDrawer({
                                                 ],
                                                 [
                                                     'district',
-                                                    party.licence.district,
+                                                    party.licence.district ??
+                                                        '—',
                                                 ],
                                             ] as const
                                         ).map(([key, value]) => (

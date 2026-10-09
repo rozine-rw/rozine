@@ -218,6 +218,7 @@ it('links only the console sections the server sends', () => {
                 allowed_actions: ['admin.open'],
             }}
             sections={{
+                today: { url: '/admin/dashboard', method: 'get' },
                 investors: {
                     url: '/admin/investor-verifications',
                     method: 'get',
@@ -230,6 +231,9 @@ it('links only the console sections the server sends', () => {
             }}
         />,
     );
+    expect(
+        screen.getByRole('link', { name: 'Rozine Operations Center' }),
+    ).toHaveAttribute('href', '/admin/dashboard');
     expect(
         screen.getByRole('link', { name: 'Investor Directory' }),
     ).toHaveAttribute('href', '/admin/investor-verifications');

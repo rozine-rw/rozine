@@ -619,6 +619,10 @@ const rw: Catalog = {
     'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
     'business.reports.guide.cosign.body':
         'Iyo igenzura rifunzwe, wongeraho incamake ugashyiraho umukono bitarenze tariki ya {day}, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+    'business.reports.guide.visit.body_undated':
+        "CPA wagenewe asura aho ukorera agasuzuma inyandiko, agahuza amafaranga yinjira n'asohoka, hanyuma agafunga raporo.",
+    'business.reports.guide.cosign.body_undated':
+        'Iyo igenzura rifunzwe, urayisuzuma ugashyiraho umukono mu gihe cyagenewe isuzuma, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',
@@ -700,6 +704,18 @@ const rw: Catalog = {
     'business.profile.records.signatories': 'Abashyira umukono',
     'business.profile.records.mandate':
         '{count} ku bubasha · hakenewe {required}+',
+    'business.profile.registration.title': 'Ibyanditswe',
+    'business.profile.registration.established': 'Cyashinzwe',
+    'business.profile.registration.note':
+        "Bivuye ku iyandikwa n'ububasha byawe byemejwe. Bihinduka gusa iyo Rozine yemeje inyandiko nshya.",
+    'business.profile.registration.people': 'Abari ku bubasha',
+    'business.profile.registration.required': 'Agomba gushyiraho umukono',
+    'business.profile.registration.role.owner': "Nyir'ikigo",
+    'business.profile.registration.role.beneficial_owner': "Nyir'inyungu",
+    'business.profile.registration.role.controller': 'Ugenzura',
+    'business.profile.registration.role.director': 'Umuyobozi',
+    'business.profile.registration.role.signatory': 'Ushyiraho umukono',
+    'business.profile.registration.role.representative': 'Uhagarariye',
     'business.profile.linked.unlink': 'Kuraho',
     'business.profile.linked.unlink_named': 'Kuraho {name}',
     'business.profile.linked.add': '+ Huza konti yakiriraho',
@@ -1155,6 +1171,8 @@ const rw: Catalog = {
     'admin.role.access.superadmin': 'Uburenganzira bwose',
     'admin.role.compliance': 'Kubahiriza amategeko',
     'admin.role.access.compliance': 'Uburenganzira bwo kubahiriza amategeko',
+    'admin.role.treasury': 'Imari',
+    'admin.role.access.treasury': "Uburenganzira bw'imari",
     'admin.kyc.intro':
         "Ibisabwa byo kugenzura umwirondoro by'abantu bashaka gushora imari. Fungura kimwe urebe inyandiko zacyo, hanyuma ucyemeze cyangwa ucyange ugaragaza impamvu.",
     'admin.kyc.tabs': "Imiterere y'igenzura",
@@ -1318,6 +1336,7 @@ const rw: Catalog = {
     'admin.today.kpi.secondary_volume':
         "Ingano y'igurisha rya kabiri uyu munsi",
     'admin.today.kpi.secondary_volume_trend': "Hagati y'abashoramari",
+    'admin.today.kpi.not_tracked': 'Ntibirakurikiranwa',
     'admin.today.attention.applications_pending': 'Ubusabe butegereje',
     'admin.today.attention.kyc_awaiting': 'KYC itegereje gusuzumwa',
     'admin.today.attention.notes_late': 'Inyandiko zatinze kwishyurwa',
@@ -1329,6 +1348,9 @@ const rw: Catalog = {
     'admin.today.breaks.ledger': "Fungura igitabo cy'imari",
     'admin.today.breaks.empty_title': "Igitabo cy'imari gihuye neza",
     'admin.today.breaks.empty_body': 'Nta kinyuranyo gifunguye.',
+    'admin.today.breaks.untracked_title': 'Ihuza rya konti ntirirakurikiranwa',
+    'admin.today.breaks.untracked_body':
+        "Ibinyuranyo bizagaragara hano ihuza ry'inyandiko za banki nirimara guhuzwa.",
     'admin.today.breaks.age': 'Kimaze iminsi {days}',
     'admin.today.breaks.unassigned': 'Nta ugikurikirana',
     'admin.today.breaks.owner': 'Ugikurikirana: {name}',
@@ -1372,6 +1394,8 @@ const rw: Catalog = {
     'admin.today.activity.title': 'Ibikorwa biri kuba',
     'admin.today.activity.caption': 'Mu rusobe rwose',
     'admin.today.activity.empty': 'Nta mafaranga arahinduranya.',
+    'admin.today.untracked': 'Ntibirakurikiranwa muri konsole.',
+    'admin.today.capital.empty': 'Nta gishoro cyakusanyijwe muri iki gihe.',
     'admin.today.activity.see_all': "Reba ibikorwa byose mu gitabo cy'imari",
     'admin.today.lifecycle.title': "Urugendo rw'inyandiko",
     'admin.today.lifecycle.caption': 'Aho buri nyandiko iri ubu',
@@ -1689,6 +1713,8 @@ const rw: Catalog = {
     'admin.parties.health.distressed': 'Biri mu bibazo',
     'admin.parties.health.active': 'Irakora',
     'admin.parties.health.kyc_pending': 'KYC itegerejwe',
+    'admin.parties.health.frozen': 'Byahagaritswe',
+    'admin.parties.health.not_tracked': 'Ntibikurikiranwa',
     'admin.parties.kyc.verified': 'Byemejwe',
     'admin.parties.kyc.pending': 'Bitegereje',
     'admin.parties.kyc.overdue': 'Byarengeje igihe',
@@ -1867,7 +1893,7 @@ const rw: Catalog = {
     'admin.events.col.action': 'Igikorwa',
     'admin.events.col.object': 'Ikintu',
     'admin.events.col.source': 'Inkomoko',
-    'admin.events.no_reason': 'Nta mpamvu yanditswe — igikorwa cya sisitemu.',
+    'admin.events.no_reason': 'Nta mpamvu yanditswe kuri iki gikorwa.',
     'admin.events.field': 'Umwanya',
     'admin.events.before': 'Mbere',
     'admin.events.after': 'Nyuma',
@@ -2456,6 +2482,9 @@ const rw: Catalog = {
     'business.repayments.total': 'Igiteranyo',
     'business.repayments.schedule': 'Gahunda yo kwishyura',
     'business.repayments.late.title': 'Iyo ubwishyu butinze',
+    'business.repayments.none.title': 'Nta kwishyura birahari',
+    'business.repayments.none.body':
+        "Kwishyura bitangira iyo amafaranga wakusanyije amaze kuzura no kukugeraho. Ingengabihe, ibigomba kwishyurwa n'ubwishyu bwose bizagaragara hano.",
     'business.servicing.repay.state.current': 'Biri ku gihe',
     'business.servicing.repay.state.due_today': 'Bigomba kwishyurwa uyu munsi',
     'business.servicing.repay.state.overdue': 'Byarengeje igihe',
