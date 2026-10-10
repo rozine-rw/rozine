@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "f029cb4797662b949bbc131076ad4ee7f5193ae47111879f9a6814b95260abfb",
-    "coverageSetSha256": "be6ce143a7d09f91021fe9dc654650353c91afbbf8fe2f12cc2d310eea7e0865",
+    "sourceManifestSha256": "050eaabafd14110b24ca378795e7457e1ab698bb28fa5302608d578ebc2a8e57",
+    "coverageSetSha256": "a594e43af5f5951dc0a961ad5e8072ca015ad15c1383a0c414dc8e3d0acf5314",
     "thresholds": {
         "critical": {
             "global": {
@@ -227,6 +227,7 @@
         "resources/js/components/investor/investor-shell.tsx",
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
+        "resources/js/components/investor/market/filter-pill.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
@@ -410,11 +411,13 @@
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",
+        "resources/js/pages/investor/cart.tsx",
         "resources/js/pages/investor/checkout.tsx",
         "resources/js/pages/investor/commitment.tsx",
         "resources/js/pages/investor/deal.tsx",
         "resources/js/pages/investor/deals.tsx",
         "resources/js/pages/investor/holding.tsx",
+        "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",
         "resources/js/pages/investor/verification.tsx",

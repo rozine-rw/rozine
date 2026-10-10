@@ -1164,6 +1164,14 @@
                     "url": "/preview/investor-portfolio",
                     "method": "get"
                 },
+                "market": {
+                    "url": "/preview/investor-market",
+                    "method": "get"
+                },
+                "cart": {
+                    "url": "/preview/investor-cart",
+                    "method": "get"
+                },
                 "profile": {
                     "url": "/preview/investor-profile",
                     "method": "get"
@@ -1197,6 +1205,14 @@
             },
             "portfolio": {
                 "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
                 "method": "get"
             },
             "profile": {
