@@ -257,3 +257,30 @@ test('each deployment workflow passes its fixed environment profile', function (
     expect(File::get(base_path('.github/workflows/deploy-uat.yml')))->toContain(' uat ${UAT_RUNTIME_USER}', 'vars.STAGING_RUNTIME_USER')
         ->and(File::get(base_path('.github/workflows/deploy-prod.yml')))->toContain(' production\' < .github/scripts/deploy-remote.sh');
 });
+
+test('each deployment copies nested vendor and storage folders and skips only the root ones', function (string $workflow) {
+    preg_match_all("/--exclude '([^']+)'/", File::get(base_path('.github/workflows/'.$workflow)), $matches);
+    $source = $this->deploymentDirectory.'/source';
+    $target = $this->deploymentDirectory.'/target';
+    $kept = ['resources/views/vendor/mail/html/code.blade.php', 'resources/views/vendor/mail/text/code.blade.php',
+        'resources/js/routes/storage/index.ts', 'app/Http/Kernel.php'];
+    $skipped = ['.git/HEAD', '.github/workflows/tests.yml', 'node_modules/vite/index.js', 'vendor/autoload.php', '.env',
+        'storage/logs/laravel.log', 'bootstrap/cache/config.php', 'public/build/manifest.json', 'public/storage/file.txt'];
+    foreach ([...$kept, ...$skipped] as $path) {
+        File::ensureDirectoryExists(dirname($source.'/'.$path));
+        File::put($source.'/'.$path, $path);
+    }
+    $excludes = array_merge(...array_map(fn (string $pattern): array => ['--exclude', $pattern], $matches[1]));
+
+    $process = new Process(['rsync', '-a', '--delete', ...$excludes, $source.'/', $target.'/']);
+    $process->run();
+
+    expect($process->getExitCode())->toBe(0, $process->getErrorOutput());
+    foreach ($kept as $path) {
+        expect(File::exists($target.'/'.$path))->toBeTrue($path.' must be deployed');
+    }
+    foreach ($skipped as $path) {
+        expect(File::exists($target.'/'.$path))->toBeFalse($path.' must not be deployed');
+    }
+    expect($matches[1])->toHaveCount(9)->each->toStartWith('/');
+})->with(['deploy-uat.yml', 'deploy-prod.yml']);
