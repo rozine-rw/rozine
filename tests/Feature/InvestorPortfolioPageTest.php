@@ -61,6 +61,7 @@ it('renders the empty portfolio in the live-minimal shape, with real routes and 
             ['key' => 'active', 'active' => true, 'link' => ['url' => '/investor/portfolio?tab=active', 'method' => 'get']],
             ['key' => 'matured', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=matured', 'method' => 'get']]])
         ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+            'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'notifications' => null, 'launcher' => ['url' => '/dashboard', 'method' => 'get']])
         ->and(json_encode($props, JSON_THROW_ON_ERROR))->not->toContain('/preview/');
