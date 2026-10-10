@@ -59,7 +59,8 @@ it('offers a released application for publication before anything is listed', fu
         ->and($props['business']['name'])->toBeString()->not->toBe('')
         ->and(array_keys($props['business']))->toBe(['name', 'company_code', 'industry', 'district'])
         ->and($props['links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
-            'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
+            'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
+            'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
             'wallet' => ['url' => "/business/{$business}/wallet", 'method' => 'get'],
             'deposit' => ['url' => "/business/{$business}/wallet?kind=deposit", 'method' => 'get'], 'withdraw' => null, 'notifications' => null,
             'rating' => ['url' => "/business/{$business}/rating", 'method' => 'get'], 'apply' => null]);

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1f51d57874e7f84b2e59e7b2824ebd8213fc4f22a7620c39d9d4da853b3b607e",
-    "coverageSetSha256": "6a880fee7038e400fe7ea1f435e93674f600c83815ed37cb2ca3b7ea35bfebee",
+    "sourceManifestSha256": "050eaabafd14110b24ca378795e7457e1ab698bb28fa5302608d578ebc2a8e57",
+    "coverageSetSha256": "a594e43af5f5951dc0a961ad5e8072ca015ad15c1383a0c414dc8e3d0acf5314",
     "thresholds": {
         "critical": {
             "global": {
@@ -179,6 +179,7 @@
         "resources/js/components/business/onboarding/step-documents.tsx",
         "resources/js/components/business/onboarding/step-finish.tsx",
         "resources/js/components/business/onboarding/upload-tile.tsx",
+        "resources/js/components/business/profile/account-sections.tsx",
         "resources/js/components/business/profile/company-form.tsx",
         "resources/js/components/business/profile/company-records.tsx",
         "resources/js/components/business/profile/legal-document.tsx",
@@ -395,6 +396,7 @@
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/market.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",

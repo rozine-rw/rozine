@@ -171,7 +171,27 @@ const rw: Catalog = {
         'Nta murandasi ufite. Ibyo ubona bishobora kuba bitagezweho, kandi nta kintu gishobora koherezwa kugeza ongeye kubona umurandasi.',
     'business.nav.home': 'Ahabanza',
     'business.nav.reports': 'Raporo',
+    'business.nav.market': 'Isoko',
     'business.nav.profile': 'Umwirondoro',
+    'business.market.title': "Incamake y'isoko",
+    'business.market.subtitle': 'Uko noti zawe zihagaze ku isoko rya kabiri.',
+    'business.market.tile.demand': 'UBUSHAKE',
+    'business.market.tile.price': "IGICIRO CY'IMPUZANDENGO",
+    'business.market.tile.volume': 'INGANO (IMINSI 7)',
+    'business.market.tile.liquidity': "AMANOTA Y'UBWINSHI BW'AMAFARANGA",
+    'business.market.chart': 'Igiciro ku isoko rya kabiri',
+    'business.market.range': "Igihe cy'igiciro",
+    'business.market.range_7d': 'IM 7',
+    'business.market.range_14d': 'IM 14',
+    'business.market.range_30d': 'IM 30',
+    'business.market.chart_empty':
+        'Nta bucuruzi bwo ku isoko rya kabiri burabaho.',
+    'business.market.high': 'HEJURU CYANE',
+    'business.market.low': 'HASI CYANE',
+    'business.market.notes': 'Noti zawe ku isoko',
+    'business.market.notes_empty_title': 'Nta noti yawe iracuruzwa',
+    'business.market.notes_empty_body':
+        "Noti abashoramari bagurisha mbere y'igihe zizagaragara hano n'igiciro cyazo.",
     'business.home.head_title': 'Ahabanza',
     'business.home.wallet_balance': 'Amafaranga ari mu gikapu',
     'business.home.deposit': 'Shyiramo',
@@ -647,6 +667,40 @@ const rw: Catalog = {
     'business.profile.section.linked': 'Konti zihujwe',
     'business.profile.section.terms': "Amategeko n'amabwiriza",
     'business.profile.section.privacy': "Itangazo ku ibanga ry'amakuru",
+    'business.profile.section.security': 'Umutekano wa konti',
+    'business.profile.section.permissions': "Uburenganzira n'inshingano",
+    'business.profile.section.support': 'Ubufasha',
+    'business.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
+    'business.profile.security.two_factor_on':
+        'Birakora · kode ya porogaramu yemeza iyo winjira',
+    'business.profile.security.two_factor_off':
+        'Ntibikora · ongeraho kode ya porogaramu yemeza iyo winjira',
+    'business.profile.security.password': 'Hindura ijambobanga',
+    'business.profile.permissions.none': 'Nta burenganzira kuri iki kigo',
+    'business.profile.permissions.business.view': 'Kureba ikigo',
+    'business.profile.permissions.application.create':
+        'Gutangiza ubusabe bwo gukusanya',
+    'business.profile.permissions.application.save': 'Guhindura ubusabe',
+    'business.profile.permissions.application.evaluate':
+        'Kugenzura niba byemewe',
+    'business.profile.permissions.application.sign': 'Gusinya ubusabe',
+    'business.profile.permissions.report.cosign': 'Gusinyana raporo',
+    'business.profile.permissions.business.wallet.deposit':
+        'Kongera amafaranga mu ikofi',
+    'business.profile.permissions.repayment.pay': 'Kwishyura',
+    'business.profile.pending.linked_title':
+        'Nta konti yo kwakiriraho iracyahari',
+    'business.profile.pending.linked_body':
+        'Konti zo kwakiriraho zihujwe n’iki kigo zizagaragara hano.',
+    'business.profile.pending.support_title': 'Biraza vuba muri porogaramu',
+    'business.profile.pending.support_body':
+        'Ibisubizo ku bibazo ibigo bikunze kubaza bizagaragara hano.',
+    'business.profile.pending.terms_title': 'Biraza vuba muri porogaramu',
+    'business.profile.pending.terms_body':
+        "Amategeko n'amabwiriza bizasomerwa hano nibimara gutangazwa.",
+    'business.profile.pending.privacy_title': 'Biraza vuba muri porogaramu',
+    'business.profile.pending.privacy_body':
+        "Itangazo ku ibanga ry'amakuru rizasomerwa hano nirimara gutangazwa.",
     'business.profile.sign_out': 'Sohoka',
     'business.profile.back': 'Subira ku mwirondoro',
     'business.profile.company.name': "Izina ry'ikigo",

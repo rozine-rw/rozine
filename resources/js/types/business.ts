@@ -245,6 +245,7 @@ export type BusinessApplications = {
 export type BusinessAppLinks = {
     home: RouteLink;
     reports: RouteLink;
+    market: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
 };
@@ -257,7 +258,16 @@ export type BusinessShellLinks = {
     home: RouteLink;
     launcher: RouteLink;
     reports: RouteLink | null;
+    market: RouteLink | null;
     profile: RouteLink | null;
+};
+
+/**
+ * Market (design L1263–1308): how the business's notes trade on the secondary market. There is no
+ * secondary-market read yet, so the page carries its links only and measures nothing.
+ */
+export type BusinessMarketProps = {
+    links: BusinessAppLinks;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -892,7 +902,26 @@ export type BusinessReportsProps = {
 /* Profile (MVP-BUSINESS-SCR-09 company, signatories, documents; design L1460–1479, L1718–1891) */
 /* ------------------------------------------------------------------------------------------ */
 
-export type ProfileSection = 'company' | 'linked' | 'terms' | 'privacy';
+/** The design's Profile menu (Business.dc.html L5022–5028), in its order. */
+export type ProfileSection =
+    | 'company'
+    | 'security'
+    | 'permissions'
+    | 'linked'
+    | 'support'
+    | 'terms'
+    | 'privacy';
+
+/** A mandate permission (`MandateAuthority::PERMISSIONS`). */
+export type MandatePermission =
+    | 'business.view'
+    | 'application.create'
+    | 'application.save'
+    | 'application.evaluate'
+    | 'application.sign'
+    | 'report.cosign'
+    | 'business.wallet.deposit'
+    | 'repayment.pay';
 
 export type CompanyProfile = {
     /** The RDB-registered name: shown, never edited here. */
@@ -979,12 +1008,24 @@ export type BusinessProfileProps = {
         label: string;
         districts: { value: string; label: string }[];
     }[];
+    /** The mandate's people, for Permissions & roles; nothing to invite, remove or transfer. */
+    team: {
+        name: string;
+        roles: MandateRole[];
+        permissions: MandatePermission[];
+        signatory: boolean;
+    }[];
+    security: { two_factor: boolean };
+    /** Null while there is no Business read: the section shows its empty state. */
     linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
+    /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
     links: BusinessAppLinks & {
         back: RouteLink;
         /** A section with no read open to the business is null and left out of the menu. */
         sections: Record<ProfileSection, RouteLink | null>;
+        /** The account's security settings, where the password and two-factor sign-in are managed. */
+        security_settings: RouteLink;
         sign_out: RouteAction;
     };
     /** Null while there is no profile command: nothing is editable. */

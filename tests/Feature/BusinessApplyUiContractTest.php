@@ -160,7 +160,7 @@ it('renders a just-created draft with the shape of the live-minimal fixture and 
             'operation' => ['url' => '/business/application-operations/{request_id}', 'method' => 'get'],
         ])
         ->and($props['shell_links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'],
-            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'],
+            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
             'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get']])
         ->and($props['actions'])->toBe([
             'save' => ['url' => "{$path}/save", 'method' => 'post'],
