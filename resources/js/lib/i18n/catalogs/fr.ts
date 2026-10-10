@@ -2333,6 +2333,66 @@ const fr: Catalog = {
     'auditor.profile.menu': 'Sections du profil',
     'auditor.profile.section.accreditation': 'Accréditation',
     'auditor.profile.section.availability': 'Disponibilité et couverture',
+    'auditor.profile.section.earnings': 'Revenus',
+    'auditor.profile.section.contact': 'Informations personnelles',
+    'auditor.profile.section.payout': 'Compte bancaire de versement',
+    'auditor.profile.section.telemetry': "Télémétrie de l'auditeur",
+    'auditor.profile.section.security': 'Sécurité et appareils',
+    'auditor.profile.section.learn': 'Académie des auditeurs',
+    'auditor.profile.section.legal': 'Conditions et mentions légales',
+    'auditor.profile.contact.title': 'Informations personnelles',
+    'auditor.profile.contact.phone': 'Téléphone',
+    'auditor.profile.contact.email': 'E-mail',
+    'auditor.profile.contact.address': 'Adresse',
+    'auditor.profile.contact.district': "District d'activité",
+    'auditor.profile.contact.not_provided': 'Non renseigné',
+    'auditor.profile.telemetry.title': "Télémétrie de l'auditeur",
+    'auditor.profile.telemetry.clock_expiries': 'Délais expirés',
+    'auditor.profile.telemetry.clock_expiries_sub':
+        'Audits acceptés arrivés à 0:00',
+    'auditor.profile.telemetry.variance': 'Précision des écarts',
+    'auditor.profile.telemetry.variance_sub':
+        "Écart moyen avec l'analyse interne",
+    'auditor.profile.telemetry.on_time': 'Clôture dans les délais',
+    'auditor.profile.telemetry.jobs_done': {
+        one: '{count} mission terminée',
+        other: '{count} missions terminées',
+    },
+    'auditor.profile.telemetry.strikes': 'Avertissements qualité',
+    'auditor.profile.telemetry.strikes_sub': 'Litiges retenus contre vous',
+    'auditor.profile.telemetry.defended': 'Litiges défendus',
+    'auditor.profile.telemetry.defended_sub':
+        'La revue a confirmé votre travail',
+    'auditor.profile.telemetry.first_note': 'Défauts à la première note',
+    'auditor.profile.telemetry.first_note_sub':
+        'Opérations en défaut dès la note 1',
+    'auditor.profile.telemetry.note':
+        "Rozine suit la performance des partenaires pour protéger le capital des investisseurs. Une mesure affiche un tiret tant qu'elle n'est pas mesurée.",
+    'auditor.profile.security.title': 'Sécurité et appareils',
+    'auditor.profile.security.two_factor': 'Authentification à deux facteurs',
+    'auditor.profile.security.two_factor_on':
+        "Activée · code d'une application d'authentification à la connexion",
+    'auditor.profile.security.two_factor_off':
+        "Désactivée · ajoutez un code d'application d'authentification à la connexion",
+    'auditor.profile.security.password': 'Changer le mot de passe',
+    'auditor.profile.legal.title': 'Conditions et mentions légales',
+    'auditor.profile.legal.engagement': "Conditions d'engagement",
+    'auditor.profile.legal.current':
+        'Acceptées · le contrat-cadre et les procédures convenues',
+    'auditor.profile.legal.required': 'Votre acceptation est requise',
+    'auditor.profile.legal.unavailable': 'Lecture impossible pour le moment',
+    'auditor.profile.pending.earnings_title': 'Aucun revenu pour le moment',
+    'auditor.profile.pending.earnings_body':
+        'Votre part des frais de service et vos rendements apparaîtront ici dès leur accumulation.',
+    'auditor.profile.pending.payout_title': 'Aucun compte de versement',
+    'auditor.profile.pending.payout_body':
+        'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
+    'auditor.profile.pending.learn_title': "Bientôt dans l'application",
+    'auditor.profile.pending.learn_body':
+        "Les leçons de l'Académie des auditeurs apparaîtront ici dès leur publication.",
+    'auditor.profile.pending.legal_title': "Bientôt dans l'application",
+    'auditor.profile.pending.legal_body':
+        "Vos conditions d'engagement pourront être consultées ici.",
     'auditor.profile.on_time': 'À temps',
     'auditor.profile.jobs': 'Missions',
     'auditor.profile.since': 'Depuis',

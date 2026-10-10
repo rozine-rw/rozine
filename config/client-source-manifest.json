@@ -379,6 +379,7 @@
         "resources/js/components/auditor/money.ts",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
@@ -681,10 +682,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 653,
+        "totalTrackedSources": 654,
         "generated": 258,
         "declarationOnly": 18,
-        "authoredExecutable": 377
+        "authoredExecutable": 378
     },
-    "coverageSetSha256": "59c453194970a00d69867f2a17b9f34c6bd10bdf8487687f91676eaaa518c842"
+    "coverageSetSha256": "6a880fee7038e400fe7ea1f435e93674f600c83815ed37cb2ca3b7ea35bfebee"
 }
