@@ -18,8 +18,8 @@ use Inertia\Response;
 /**
  * The Investor Profile (`investor.profile`) and the "You're verified" page its verification row
  * opens once the identity is verified (`investor.verified`), web pages only. The account's own
- * name, email and creation date come from the authenticated user, as the Auditor profile reads
- * its name.
+ * name, email, creation date and whether two-factor sign-in is on come from the authenticated
+ * user, as the Auditor profile reads its name.
  */
 class InvestorProfileController extends Controller
 {
@@ -32,7 +32,8 @@ class InvestorProfileController extends Controller
         $facts = $profile->handle((int) $user?->getAuthIdentifier(), $context === null ? null : (int) $context);
 
         return Inertia::render('investor/profile', (new InvestorProfileResource([...$facts, 'section' => $request->validated('section') ?? 'overview',
-            'name' => (string) $user?->getAttribute('name'), 'email' => (string) $user?->getAttribute('email'), 'member_since' => $joined->toIso8601String()]))->resolve($request));
+            'name' => (string) $user?->getAttribute('name'), 'email' => (string) $user?->getAttribute('email'), 'member_since' => $joined->toIso8601String(),
+            'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true]))->resolve($request));
     }
 
     /** The wallet and the open deals; a person still being verified is sent back to their verification. */

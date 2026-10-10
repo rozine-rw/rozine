@@ -1,7 +1,7 @@
 {
     "component": "investor/profile",
     "props": {
-        "section": "automation",
+        "section": "terms",
         "identity": {
             "name": "Robert Mugisha",
             "email": "robert.m@example.rw",
@@ -64,55 +64,7 @@
                 }
             ]
         },
-        "statements": {
-            "annual": {
-                "period": "2025-07-01T00:00:00+02:00",
-                "kind": "annual",
-                "complete": true,
-                "link": {
-                    "url": "/preview/investor-profile-statements",
-                    "method": "get"
-                }
-            },
-            "monthly": [
-                {
-                    "period": "2026-09-01T00:00:00+02:00",
-                    "kind": "monthly",
-                    "complete": false,
-                    "link": {
-                        "url": "/preview/investor-profile-statements",
-                        "method": "get"
-                    }
-                },
-                {
-                    "period": "2026-08-01T00:00:00+02:00",
-                    "kind": "monthly",
-                    "complete": true,
-                    "link": {
-                        "url": "/preview/investor-profile-statements",
-                        "method": "get"
-                    }
-                },
-                {
-                    "period": "2026-07-01T00:00:00+02:00",
-                    "kind": "monthly",
-                    "complete": true,
-                    "link": {
-                        "url": "/preview/investor-profile-statements",
-                        "method": "get"
-                    }
-                },
-                {
-                    "period": "2026-06-01T00:00:00+02:00",
-                    "kind": "monthly",
-                    "complete": true,
-                    "link": {
-                        "url": "/preview/investor-profile-statements",
-                        "method": "get"
-                    }
-                }
-            ]
-        },
+        "statements": null,
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -180,10 +132,6 @@
             },
             "privacy": {
                 "url": "/preview/investor-profile-privacy",
-                "method": "get"
-            },
-            "automation": {
-                "url": "/preview/investor-profile-automation",
                 "method": "get"
             },
             "verification": {
