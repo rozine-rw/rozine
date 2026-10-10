@@ -8,6 +8,8 @@ use App\Application\Auditor\FindAuditorOperation;
 use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetAuditorAccreditation;
 use App\Application\Auditor\GetAuditorProfile;
+use App\Application\Auditor\ListAuditJobs;
+use App\Application\Auditor\ListAuditorFiledReports;
 use App\Application\Auditor\ReadAuditorCertificate;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\SubmitAuditorAccreditation;
@@ -36,7 +38,7 @@ class AuditorProfileController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity, private GetAuditorAccreditation $accreditation, private GetAuditEngagementSummary $engagements) {}
 
-    public function show(Request $request, GetAuditorProfile $profile): Response|AuditorProfileResource
+    public function show(Request $request, GetAuditorProfile $profile, ListAuditJobs $jobs, ListAuditorFiledReports $reports): Response|AuditorProfileResource
     {
         $this->requireToken($request, 'auditor:read');
         $userId = $this->userId($request);
@@ -49,8 +51,12 @@ class AuditorProfileController extends Controller
             // The certificate on record is linked only when both reads saw the same revision.
             'certificate_id' => $record['revision'] === $facts['accreditation']['revision'] ? $record['state']['certificate_id'] : null,
             'name' => (string) $request->user()?->getAttribute('name'),
+            'email' => (string) $request->user()?->getAttribute('email'),
+            'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'section' => is_string($section) ? $section : '',
             'engagement' => $this->engagements->handle($userId, $revision),
+            'jobs' => $jobs->handle($userId, $revision),
+            'filed' => $reports->handle($userId, $revision, limit: 0)['counts']['all'],
         ]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile', $resource->resolve($request));

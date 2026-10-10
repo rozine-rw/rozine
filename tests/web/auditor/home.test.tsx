@@ -241,7 +241,17 @@ describe('Auditor Home', () => {
             />,
         );
 
-        expect(screen.getAllByText('Unavailable')).toHaveLength(2);
+        /* The balance reads it aloud; the licence and deals tiles show a dash read as it. */
+        expect(screen.getAllByText('Unavailable')).toHaveLength(3);
+        /* Yield, deals, licence, on-time, variance and clock expiries: no stand-in figures. */
+        expect(screen.getAllByText('—')).toHaveLength(6);
+        expect(screen.queryByText('·')).not.toBeInTheDocument();
+        expect(screen.getByText('0')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Engagement terms aren’t available; new work is paused',
+            ),
+        ).toBeInTheDocument();
         expect(screen.getByText('Wallet balance')).toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: /Wallet balance/ }),
@@ -259,6 +269,17 @@ describe('Auditor Home', () => {
         expect(
             screen.getByRole('switch', { name: 'Accepting audits' }),
         ).toBeDisabled();
+    });
+
+    it('names only the affiliation on record and colours clock expiries by their count', () => {
+        const props = fixture();
+
+        props.auditor = { ...props.auditor, accreditation: null };
+        props.standing = { ...props.standing, clock_expiries: 7 };
+        render(<AuditorHome {...props} />);
+
+        expect(screen.getByText('Uwase & Co.')).toBeInTheDocument();
+        expect(screen.getByText('7')).toHaveClass('text-rz-ink');
     });
 
     it('reads a quiet morning: paused, no score, no earnings, nothing nearby or running', () => {

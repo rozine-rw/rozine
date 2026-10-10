@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuditorCommands } from '@/components/auditor/commands';
+import { useBusinessOnRecord } from '@/components/auditor/conflict-receipt';
 import { ConflictSheet } from '@/components/auditor/sheets/conflict-sheet';
 import { DIVIDER } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
@@ -13,7 +14,9 @@ const RECORD_SHOWN = 4;
 /**
  * Declare an interest (design L390–414, MVP-AUDITOR-AC-08): any assigned file, at any time. The
  * design declares on one tap; here the tap opens a confirmation that records the kind of interest,
- * because the declaration is permanent and re-dispatches the file.
+ * because the declaration is permanent and re-dispatches the file. The declaration goes to the
+ * chosen file's own command: its `id` fills the `{assignment}` token the server sends. A
+ * declaration on record whose Business the read does not name reads as the Conflicts page names it.
  */
 export function ConflictRegister({
     conflicts,
@@ -22,6 +25,7 @@ export function ConflictRegister({
 }) {
     const { t, locale } = useTranslation();
     const center = useAuditorCommands();
+    const onRecord = useBusinessOnRecord();
     /*
      * Only the chosen file's ID is kept: the record, its revision and its scope are read from the
      * current props on every render, so a declaration sent again after a refresh carries the
@@ -98,7 +102,9 @@ export function ConflictRegister({
                                     </span>
                                     <span className="min-w-0 flex-1">
                                         <span className="block text-[12px] font-semibold text-rz-ink">
-                                            {entry.business} · {entry.note_id}
+                                            {entry.business === null
+                                                ? onRecord(entry.assignment_id)
+                                                : `${entry.business} · ${entry.note_id}`}
                                         </span>
                                         <span className="mt-px block text-[11px] text-rz-secondary">
                                             {t(
@@ -120,7 +126,13 @@ export function ConflictRegister({
                 <ConflictSheet
                     business={file.business}
                     assignment={{ id: file.id, revision: file.revision }}
-                    action={conflicts.declare}
+                    action={{
+                        ...conflicts.declare,
+                        url: conflicts.declare.url.replace(
+                            '{assignment}',
+                            file.id,
+                        ),
+                    }}
                     scope={file.allowed_actions}
                     onClose={() => setFileId(null)}
                 />

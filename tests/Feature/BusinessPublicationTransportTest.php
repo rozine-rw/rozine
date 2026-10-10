@@ -58,7 +58,7 @@ it('serves the same authorized release and publication receipts on web and API',
     } else {
         $campaignPage = $this->get($campaignUrl)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/campaign')
             ->where('contract_version', 'business-campaign-v1')->where('campaign.lifecycle', 'live')->where('home', null)
-            ->where('shell_links.home.url', route('business.home', [], false))
+            ->where('shell_links.home.url', route('business.show', ['business' => $parameters['business']], false))
             ->where('note.progress.committed.amount', '0')->where('note.progress.remaining.amount', '10800000')
             ->where('allowed_actions', ['campaign.cancel'])->where('actions.cancel.method', 'post')->missing('actor_user_id')->missing('binding'));
         $this->get($campaignUrl, ['X-Inertia' => 'true', 'X-Inertia-Version' => $campaignPage->inertiaPage()['version']])->assertOk()->assertHeader('X-Inertia', 'true')

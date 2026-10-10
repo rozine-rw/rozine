@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import BusinessReports from '@/pages/business/reports';
 import type { BusinessReportsProps, ReportDetail } from '@/types/business';
 import annualFixture from '../../../resources/fixtures/ui/business-reports-annual.json';
+import emptyFixture from '../../../resources/fixtures/ui/business-reports-empty.json';
 import mayFixture from '../../../resources/fixtures/ui/business-reports-may.json';
 import listFixture from '../../../resources/fixtures/ui/business-reports.json';
 
@@ -81,24 +82,27 @@ describe('Business Reports', () => {
         ).toHaveAttribute('href', '/preview/business-reports-annual');
     });
 
-    it('fills gaps in a row and says when a tab is empty', async () => {
+    it('names only the Audit Partner where no figures or seal date were read, and says when a tab is empty', async () => {
         const user = userEvent.setup();
         const page = props(listFixture);
 
         page.reports.verified[0].inflow = null;
-        page.reports.verified[0].health = null;
+        page.reports.verified[1].health = null;
+        page.reports.verified[1].auditor = 'CPA A. K.';
         page.reports.in_audit[0].seal_by = null;
         page.reports.archived = [];
         render(<BusinessReports {...page} />);
 
+        expect(screen.getByText('Audited by CPA J-P M.')).toBeInTheDocument();
+        expect(screen.getByText('Audited by CPA A. K.')).toBeInTheDocument();
         expect(
-            screen.getByText('Inflow — · — · audited by CPA J-P M.'),
+            screen.getByText('Inflow RWF 29M · Watch · audited by CPA J-P M.'),
         ).toBeInTheDocument();
 
         await user.click(screen.getByRole('tab', { name: 'In audit' }));
 
         expect(
-            screen.getByText('With CPA Jean-Paul M. · sealed by —'),
+            screen.getByText('Audited by CPA Jean-Paul M.'),
         ).toBeInTheDocument();
 
         await user.click(screen.getByRole('tab', { name: 'Archived' }));
@@ -147,6 +151,38 @@ describe('Business Reports', () => {
                 /you add a recap and co-sign it by the 7th, or raise a dispute/,
             ),
         ).toBeInTheDocument();
+    });
+
+    it('names no audit-cycle day the server has not published, and lists nothing before the first report', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessReports {...props(emptyFixture)} />);
+
+        expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', { name: 'How monthly audits work' }),
+        );
+
+        const guide = within(
+            screen.getByRole('region', { name: 'How monthly audits work' }),
+        );
+
+        expect(
+            guide.getByText(
+                'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            guide.getByText(
+                /you review it and co-sign it within the review window, or raise a dispute/,
+            ),
+        ).toBeInTheDocument();
+        expect(guide.queryByText(/7th/u)).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('tab', { name: 'In audit' }));
+
+        expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
     });
 
     it('opens a published month exactly as investors see it', () => {

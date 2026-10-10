@@ -1,23 +1,15 @@
 import { AuditorShell } from '@/components/auditor/auditor-shell';
-import { ConflictReceiptCard } from '@/components/auditor/conflict-receipt';
+import {
+    ConflictReceiptCard,
+    useBusinessOnRecord,
+} from '@/components/auditor/conflict-receipt';
 import { ColumnPad, TabColumns } from '@/components/auditor/tab-columns';
 import { EmptyState, ScreenTitle, ShowMore } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AuditorConflictsProps, OwnConflict } from '@/types/auditor';
 
-/** Characters of the assignment ID kept in its short reference. */
-const REFERENCE_TAIL = 6;
-
-/** "…7QK2M4" for a long assignment ID; a short one reads as sent. */
-const shortReference = (id: string): string =>
-    id.length > REFERENCE_TAIL + 2 ? `…${id.slice(-REFERENCE_TAIL)}` : id;
-
 function OwnConflictReceipt({ entry }: { entry: OwnConflict }) {
-    const { t } = useTranslation();
-    const name = `${t('auditor.conflict.business_on_record')} · ${t(
-        'auditor.conflict.assignment_ref',
-        { reference: shortReference(entry.assignment_id) },
-    )}`;
+    const name = useBusinessOnRecord()(entry.assignment_id);
 
     return (
         <article aria-label={name}>

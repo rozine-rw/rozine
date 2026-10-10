@@ -31,6 +31,10 @@ function useTrend(): (kpi: TodayKpi) => { text: string; tone?: string } {
     const { t } = useTranslation();
 
     return (kpi) => {
+        if (kpi.value === null) {
+            return { text: t('admin.today.kpi.not_tracked') };
+        }
+
         switch (kpi.key) {
             case 'treasury_position':
                 return kpi.negative
@@ -56,7 +60,10 @@ function useTrend(): (kpi: TodayKpi) => { text: string; tone?: string } {
     };
 }
 
-/** Headline figures. The design's "Trust Index™" tile is dropped: Rozine publishes one score. */
+/**
+ * Headline figures. The design's "Trust Index™" tile is dropped: Rozine publishes one score. A
+ * figure the platform does not record yet reads "—", not tracked.
+ */
 export function TodayKpis({ kpis }: { kpis: TodayKpi[] }) {
     const { t } = useTranslation();
     const format = useStatFormatter();
@@ -72,7 +79,7 @@ export function TodayKpis({ kpis }: { kpis: TodayKpi[] }) {
                         key={kpi.key}
                         index={index}
                         label={t(`admin.today.kpi.${kpi.key}`)}
-                        value={format(kpi.value)}
+                        value={kpi.value === null ? '—' : format(kpi.value)}
                         sub={line.text}
                         subClassName={line.tone}
                         inlineLabel
@@ -100,7 +107,10 @@ const ATTENTION_HOVER: Record<Tone, string> = {
     purple: 'hover:border-[#7c3aed]',
 };
 
-/** What needs a human: each queue's size, opening the queue when its screen exists. */
+/**
+ * What needs a human: each queue's size, opening the queue when its screen exists and the viewer
+ * may work it. A queue the platform does not record yet reads "—".
+ */
 export function AttentionTiles({ tiles }: { tiles: AttentionTile[] }) {
     const { t } = useTranslation();
 
@@ -118,7 +128,7 @@ export function AttentionTiles({ tiles }: { tiles: AttentionTile[] }) {
                                 )}
                             />
                             <span className="text-[22px] leading-none font-extrabold tracking-[-.02em] text-rz-ink">
-                                {tile.count}
+                                {tile.count ?? '—'}
                             </span>
                         </span>
                         <span className="text-[11.5px] leading-[1.3] font-semibold text-[#6b7688] dark:text-rz-muted">
@@ -153,15 +163,18 @@ export function AttentionTiles({ tiles }: { tiles: AttentionTile[] }) {
     );
 }
 
-/** Reconciliation breaks: aged, owned or unowned, and never hidden (MVP-ADMIN-SCR-01-ST-02). */
+/**
+ * Reconciliation breaks: aged, owned or unowned, and never hidden (MVP-ADMIN-SCR-01-ST-02). Until
+ * breaks are tracked the card says so rather than claiming the ledger is reconciled.
+ */
 export function BreaksCard({
     breaks,
     viewer,
     ledger,
 }: {
-    breaks: ReconciliationBreak[];
+    breaks: ReconciliationBreak[] | null;
     viewer: StaffViewer;
-    ledger: RouteLink;
+    ledger: RouteLink | null;
 }) {
     const { t } = useTranslation();
     const [stage, setStage] = useState<{
@@ -174,12 +187,14 @@ export function BreaksCard({
         <section aria-label={t('admin.today.breaks.title')} className="mt-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <CardTitle>{t('admin.today.breaks.title')}</CardTitle>
-                <Link
-                    href={ledger}
-                    className="text-[12px] font-bold text-rz-accent-app-text"
-                >
-                    {t('admin.today.breaks.ledger')}
-                </Link>
+                {ledger && (
+                    <Link
+                        href={ledger}
+                        className="text-[12px] font-bold text-rz-accent-app-text"
+                    >
+                        {t('admin.today.breaks.ledger')}
+                    </Link>
+                )}
             </div>
             <p className="mt-1 text-[12px] text-rz-muted">
                 {t('admin.today.breaks.caption')}
@@ -191,7 +206,12 @@ export function BreaksCard({
                     CARD_SHADOW,
                 )}
             >
-                {breaks.length === 0 ? (
+                {breaks === null ? (
+                    <EmptyState
+                        title={t('admin.today.breaks.untracked_title')}
+                        body={t('admin.today.breaks.untracked_body')}
+                    />
+                ) : breaks.length === 0 ? (
                     <EmptyState
                         title={t('admin.today.breaks.empty_title')}
                         body={t('admin.today.breaks.empty_body')}

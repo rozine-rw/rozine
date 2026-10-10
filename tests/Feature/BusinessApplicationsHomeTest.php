@@ -20,23 +20,24 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('links the actual Business role home to create resume and submitted applications without invented wallet facts', function (): void {
+it('opens the Business role home straight on the business\'s designed Home, which starts and resumes applications', function (): void {
     $authority = AuthorityFixture::make();
     $business = AuthorityFixture::configure($authority)['data']['business']['id'];
-    $this->actingAs($authority['users'][0])->get('/business')->assertOk()->assertHeader('Cache-Control', 'no-store, private')
-        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/role-home')
-            ->where('business_applications.identity_context_revision', 1)->where('business_applications.entries.0.business_id', $business)
-            ->where('business_applications.entries.0.application', null)->where('business_applications.entries.0.actions.create.url', '/business/'.$business.'/applications')
-            ->where('business_applications.operation.url', '/business/application-operations/{request_id}')->missing('wallet')->missing('capital'));
+    $this->actingAs($authority['users'][0])->get('/business')->assertRedirect('/business/'.$business);
+    $this->get('/business/'.$business)->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+        ->assertInertia(fn (Assert $page): Assert => $page->component('business/home')->where('links.apply', null)
+            ->where('create_application.action.url', '/business/'.$business.'/applications')
+            ->where('create_application.operation.url', '/business/application-operations/{request_id}'));
     $created = $this->postJson('/business/'.$business.'/applications', ['identity_context_revision' => 1, 'expected_revision' => 0, 'request_id' => (string) Str::uuid()])->assertOk()->json();
-    $this->get('/business')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->where('business_applications.entries.0.application.link.url', $created['data']['next']['url'])
-        ->where('business_applications.entries.0.application.status', 'draft')->where('business_applications.entries.0.application.step', 'business'));
+    $this->get('/business')->assertRedirect('/business/'.$business);
+    $this->get('/business/'.$business)->assertOk()->assertInertia(fn (Assert $page): Assert => $page
+        ->where('links.apply.url', $created['data']['next']['url'])->where('create_application', null));
     $ready = BusinessQuoteFixture::ready();
     BusinessQuoteFixture::submit($ready, BusinessQuoteFixture::acceptance($ready));
-    $this->actingAs($ready['audit']['authority']['users'][0])->get('/business')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->where('business_applications.entries.0.application.status', 'submitted')->where('business_applications.entries.0.application.step', 'submitted')
-        ->where('business_applications.entries.0.allowed_actions', [])->where('business_applications.entries.0.actions.create', null));
+    $submitted = $ready['audit']['authority'];
+    $this->actingAs($submitted['users'][0])->get('/business')->assertRedirect('/business/'.$ready['audit']['business']);
+    $this->get('/business/'.$ready['audit']['business'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page
+        ->where('links.apply', null)->where('create_application', null));
 });
 
 it('provides API links and strips mutation capabilities from read-only tokens', function (): void {
@@ -61,13 +62,15 @@ it('only lists the current mandate and gives a view-only representative a read l
         ? [...$person, 'permissions' => ['business.view'], 'roles' => ['representative']] : $person, $authority['terms']['people']);
     $authority['terms']['required_signatories'] = [$authority['people'][0]->id];
     AuthorityFixture::configure($authority, 1);
-    $this->actingAs($authority['users'][1])->get('/business')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->has('business_applications.entries', 1)->where('business_applications.entries.0.allowed_actions', [])
-        ->where('business_applications.entries.0.actions.create', null)->where('business_applications.entries.0.application.id', $fixture['application']->id));
+    $this->actingAs($authority['users'][1])->get('/business')->assertRedirect('/business/'.$fixture['business']->id);
+    Sanctum::actingAs($authority['users'][1], ['business:read', 'business:command']);
+    $this->getJson('/api/v1/business')->assertOk()->assertJsonCount(1, 'data.entries')->assertJsonPath('data.entries.0.allowed_actions', [])
+        ->assertJsonPath('data.entries.0.actions.create', null)->assertJsonPath('data.entries.0.application.id', $fixture['application']->id);
     $authority['terms']['people'] = array_map(fn (array $person): array => $person['party_id'] === $authority['people'][1]->id
         ? [...$person, 'permissions' => []] : $person, $authority['terms']['people']);
     AuthorityFixture::configure($authority, 2);
-    $this->get('/business')->assertOk()->assertInertia(fn (Assert $page): Assert => $page->where('business_applications.entries', []));
+    $this->getJson('/api/v1/business')->assertOk()->assertJsonPath('data.entries', []);
+    $this->actingAs($authority['users'][1])->get('/business')->assertRedirect(route('dashboard'));
 });
 
 it('paginates only related effective mandates with a bounded stable opaque cursor', function (): void {
@@ -94,8 +97,8 @@ it('paginates only related effective mandates with a bounded stable opaque curso
     expect($first['entries'][0]['business_id'])->toBe($expected[0]);
     $second = $this->getJson($first['pagination']['next']['url'])->assertOk()->assertJsonPath('data.entries.0.business_id', $expected[1])->json('data');
     $this->getJson($second['pagination']['next']['url'])->assertOk()->assertJsonPath('data.entries.0.business_id', $expected[2])->assertJsonPath('data.pagination.next', null);
-    $this->actingAs($base['users'][0])->get('/business?limit=1')->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->where('business_applications.pagination.next.url', '/business?before='.$expected[0].'&limit=1&identity_context_revision=1'));
+    // With several businesses, the role home opens the first one the list returns.
+    $this->actingAs($base['users'][0])->get('/business')->assertRedirect('/business/'.$expected[0]);
     $this->getJson('/api/v1/business?before=not-an-id')->assertUnprocessable();
     $this->getJson('/api/v1/business?limit=51')->assertUnprocessable();
     $this->getJson('/api/v1/business?limit=0')->assertUnprocessable();

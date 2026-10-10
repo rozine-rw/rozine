@@ -3,7 +3,7 @@ import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { CompanyProfile } from '@/types/business';
+import type { CompanyProfile, CompanyRegistration } from '@/types/business';
 
 /**
  * The certificate and signatories on file (MVP-BUSINESS-SCR-09). The design has no screen for
@@ -91,6 +91,100 @@ export function CompanyRecords({ company }: { company: CompanyProfile }) {
                                 {person.role}
                             </span>
                         </span>
+                    </li>
+                ))}
+            </ul>
+        </>
+    );
+}
+
+/**
+ * The verified registration and mandate on file, read-only: what live Profile shows while no
+ * contact or certificate record exists to edit. It reuses the same key–value card and people
+ * rows; a sole trader has no company code line, and no year is shown when none is on file.
+ */
+export function CompanyRegistrationRecord({
+    registration,
+}: {
+    registration: CompanyRegistration;
+}) {
+    const { t } = useTranslation();
+    const optional = (label: string, value: string | number | null) =>
+        value === null ? [] : [{ label, value: String(value) }];
+
+    return (
+        <>
+            <p className="mt-6 text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                {t('business.profile.registration.title')}
+            </p>
+            <div className="mt-2.5">
+                <KeyValues
+                    rows={[
+                        {
+                            label: t('business.profile.company.name'),
+                            value: registration.name,
+                        },
+                        ...optional(
+                            t('business.auth.register.code_label'),
+                            registration.company_code,
+                        ),
+                        {
+                            label: t('business.onboarding.confirm.industry'),
+                            value: registration.industry,
+                        },
+                        {
+                            label: t('business.profile.company.district'),
+                            value: registration.district,
+                        },
+                        ...optional(
+                            t('business.profile.registration.established'),
+                            registration.established_year,
+                        ),
+                    ]}
+                />
+            </div>
+            <p className="mt-2 text-[11.5px] leading-normal text-rz-secondary">
+                {t('business.profile.registration.note')}
+            </p>
+            <div className="mt-5 flex items-center justify-between">
+                <p className="text-[11px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                    {t('business.profile.registration.people')}
+                </p>
+                <span className="text-[11px] font-semibold text-rz-secondary">
+                    {t('business.profile.records.mandate', {
+                        count: registration.people.length,
+                        required: registration.signatories_required,
+                    })}
+                </span>
+            </div>
+            <ul className="mt-[9px] flex flex-col gap-[9px]">
+                {registration.people.map((person) => (
+                    <li
+                        key={`${person.name}-${person.roles.join('-')}`}
+                        className="flex items-center gap-[11px] rounded-xl border border-rz-border bg-rz-surface px-[13px] py-[11px]"
+                    >
+                        <span className="flex size-[34px] items-center justify-center rounded-full bg-rz-page text-[13px]">
+                            <Icon name="person" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-[13.5px] font-semibold text-rz-ink">
+                                {person.name}
+                            </span>
+                            <span className="block text-[11.5px] text-rz-secondary">
+                                {person.roles
+                                    .map((role) =>
+                                        t(
+                                            `business.profile.registration.role.${role}`,
+                                        ),
+                                    )
+                                    .join(' · ')}
+                            </span>
+                        </span>
+                        {person.signatory && (
+                            <span className="shrink-0 rounded-[10px] bg-rz-accent-soft px-2 py-[3px] text-[11px] font-semibold text-rz-accent-app-text">
+                                {t('business.profile.registration.required')}
+                            </span>
+                        )}
                     </li>
                 ))}
             </ul>

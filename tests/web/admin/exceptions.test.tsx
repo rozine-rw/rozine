@@ -30,10 +30,10 @@ describe('Exceptions', () => {
 
         expect(screen.getByTestId('head')).toHaveTextContent('Exceptions');
         expect(
-            within(nav()).getByRole('link', { name: 'Exceptions' }),
+            within(nav()).getByRole('link', { name: 'Risk Center' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
-            within(nav()).getByRole('link', { name: 'Book' }),
+            within(nav()).getByRole('link', { name: 'Notes' }),
         ).not.toHaveAttribute('aria-current');
         expect(screen.getByText('6 open')).toBeInTheDocument();
         expect(screen.getByText('3 unassigned')).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe('Exceptions', () => {
         render(<AdminExceptions {...fixture} />);
 
         expect(
-            within(nav()).getByRole('link', { name: 'Exceptions' }),
+            within(nav()).getByRole('link', { name: 'Risk Center' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
             within(nav()).queryByRole('link', { name: /Applications/u }),

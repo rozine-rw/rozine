@@ -20,7 +20,7 @@ class BusinessApplicationResource extends JsonResource
         $view = $request->query('view_step');
         $step = is_string($view) && isset($steps[$view]) && $steps[$view] <= $steps[$record['step']] ? $view : $record['step'];
         $parameters = ['business' => $record['business_id'], 'application' => $record['id']];
-        $home = self::link($request->routeIs('api.*') ? 'api.v1.business.index' : 'business.home');
+        $home = $request->routeIs('api.*') ? self::link('api.v1.business.index') : self::link('business.show', ['business' => $record['business_id']]);
         $back = $step === 'business' || $step === 'submitted' ? $home
             : self::link(self::prefix($request).'show', [...$parameters, 'view_step' => $step === 'raise' ? 'business' : 'raise']);
         $placeholder = '00000000-0000-0000-0000-000000000000';
@@ -38,7 +38,7 @@ class BusinessApplicationResource extends JsonResource
             'pending_application' => $page['pending_application'] === null ? null : ['id' => $page['pending_application']['id'],
                 'link' => self::link(self::prefix($request).'show', ['business' => $record['business_id'], 'application' => $page['pending_application']['id']])],
             'quote' => $review['quote'], 'acceptance' => $review['acceptance'], 'submission' => $review['submission'], 'home' => null,
-            'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'), 'reports' => null, 'profile' => null],
+            'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'), ...BusinessHomeResource::tabs($request, $record['business_id'])],
             'links' => ['close' => $home, 'back' => $back, 'operation' => $lookup], 'actions' => $actions];
     }
 

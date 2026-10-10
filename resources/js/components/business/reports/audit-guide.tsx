@@ -4,6 +4,7 @@ import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatOrdinal } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { BusinessReportsProps } from '@/types/business';
 
 const STEPS: { key: 'opens' | 'visit' | 'cosign'; icon: IconName }[] = [
     { key: 'opens', icon: 'receipt' },
@@ -13,14 +14,13 @@ const STEPS: { key: 'opens' | 'visit' | 'cosign'; icon: IconName }[] = [
 
 /**
  * "How monthly audits work" (design L948–981). A phone folds it away behind its heading; a wide
- * screen keeps it open as the page's right column.
+ * screen keeps it open as the page's right column. Without a published audit-cycle policy the
+ * steps name no day rather than assume one.
  */
 export function AuditGuide({
-    sealDay,
-    cosignDay,
+    policy,
 }: {
-    sealDay: number;
-    cosignDay: number;
+    policy: BusinessReportsProps['policy'];
 }) {
     const { t, locale } = useTranslation();
     const [open, setOpen] = useState(false);
@@ -96,27 +96,43 @@ export function AuditGuide({
                             <p className="mt-[3px] text-xs leading-normal text-rz-slate">
                                 {key === 'opens' &&
                                     t('business.reports.guide.opens.body')}
-                                {key === 'visit' && (
-                                    <>
-                                        {t(
-                                            'business.reports.guide.visit.body_before',
-                                        )}{' '}
-                                        <strong className="text-rz-ink">
-                                            {formatOrdinal(sealDay, locale, t)}
-                                        </strong>
-                                        {t(
-                                            'business.reports.guide.visit.body_after',
-                                        )}
-                                    </>
-                                )}
+                                {key === 'visit' &&
+                                    (policy === null ? (
+                                        t(
+                                            'business.reports.guide.visit.body_undated',
+                                        )
+                                    ) : (
+                                        <>
+                                            {t(
+                                                'business.reports.guide.visit.body_before',
+                                            )}{' '}
+                                            <strong className="text-rz-ink">
+                                                {formatOrdinal(
+                                                    policy.seal_day,
+                                                    locale,
+                                                    t,
+                                                )}
+                                            </strong>
+                                            {t(
+                                                'business.reports.guide.visit.body_after',
+                                            )}
+                                        </>
+                                    ))}
                                 {key === 'cosign' &&
-                                    t('business.reports.guide.cosign.body', {
-                                        day: formatOrdinal(
-                                            cosignDay,
-                                            locale,
-                                            t,
-                                        ),
-                                    })}
+                                    (policy === null
+                                        ? t(
+                                              'business.reports.guide.cosign.body_undated',
+                                          )
+                                        : t(
+                                              'business.reports.guide.cosign.body',
+                                              {
+                                                  day: formatOrdinal(
+                                                      policy.cosign_day,
+                                                      locale,
+                                                      t,
+                                                  ),
+                                              },
+                                          ))}
                             </p>
                         </div>
                     </li>

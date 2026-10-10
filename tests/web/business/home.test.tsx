@@ -85,7 +85,7 @@ describe('Business Home', () => {
         expect(screen.queryByText(/^RDB/u)).not.toBeInTheDocument();
     });
 
-    it('marks the Home tab current in both the sidebar and the tab bar, without Market', () => {
+    it("marks the Home tab current in both the sidebar and the tab bar, with the design's four tabs", () => {
         render(<BusinessHome {...fixture} />);
 
         const navs = screen.getAllByRole('navigation', {
@@ -102,8 +102,13 @@ describe('Business Home', () => {
                 within(nav).getByRole('link', { name: 'Reports' }),
             ).not.toHaveAttribute('aria-current');
             expect(
-                within(nav).queryByRole('link', { name: 'Market' }),
-            ).not.toBeInTheDocument();
+                within(nav)
+                    .getAllByRole('link')
+                    .map((link) => link.textContent),
+            ).toEqual(['Home', 'Reports', 'Market', 'Profile']);
+            expect(
+                within(nav).getByRole('link', { name: 'Market' }),
+            ).toHaveAttribute('href', '/preview/business-market');
         }
     });
 
@@ -161,6 +166,11 @@ describe('Business Home', () => {
     it('renders every kind of Today item with its call to act', () => {
         const today: BusinessTodo[] = [
             {
+                kind: 'audit_cosign',
+                report_kind: 'flash',
+                link: link('/business/b1/audit-reports/r1'),
+            },
+            {
                 kind: 'application_declined',
                 title: 'Solar Roof',
                 reason: null,
@@ -190,6 +200,16 @@ describe('Business Home', () => {
 
         render(<BusinessHome {...fixture} today={today} />);
 
+        expect(screen.getByText('Audit report ready')).toBeInTheDocument();
+        expect(screen.getByText('Flash audit report')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your CPA sealed it. Read the findings before you co-sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review & co-sign/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
         expect(screen.getAllByText('Application declined')).toHaveLength(2);
         expect(
             screen.getByText(

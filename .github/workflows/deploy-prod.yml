@@ -44,17 +44,19 @@ jobs:
           ssh-keyscan -H "${{ secrets.STAGING_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Rsync source to server
+        # Excludes are anchored to the repository root: an unanchored 'vendor' or 'storage' also
+        # skipped resources/views/vendor/mail (the mail theme) and every other nested folder of that name.
         run: |
           rsync -az --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'node_modules' \
-            --exclude 'vendor' \
-            --exclude '.env' \
-            --exclude 'storage' \
-            --exclude 'bootstrap/cache' \
-            --exclude 'public/build' \
-            --exclude 'public/storage' \
+            --exclude '/.git' \
+            --exclude '/.github' \
+            --exclude '/node_modules' \
+            --exclude '/vendor' \
+            --exclude '/.env' \
+            --exclude '/storage' \
+            --exclude '/bootstrap/cache' \
+            --exclude '/public/build' \
+            --exclude '/public/storage' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new" \
             ./ "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}:/var/www/rozine-prod/"
 

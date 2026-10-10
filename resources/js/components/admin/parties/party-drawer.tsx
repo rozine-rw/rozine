@@ -5,6 +5,7 @@ import {
     formatTimestamp,
     initialOf,
 } from '@/components/admin/format';
+import { KycReview } from '@/components/admin/kyc-review';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
@@ -53,6 +54,8 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     kyc_pending: 'amber',
+    frozen: 'red',
+    not_tracked: 'grey',
 };
 
 const SECTION =
@@ -91,15 +94,21 @@ export function PartyDrawer({
 }) {
     const { t, locale } = useTranslation();
     const format = useStatFormatter();
-    const [tab, setTab] = useState<Tab>('overview');
+    // A submission waiting for review opens on Controls, where its documents and decision are.
+    const [tab, setTab] = useState<Tab>(
+        party.verification?.status === 'submitted' ? 'controls' : 'overview',
+    );
+    // Each opened stage is one request: a double submit replays it, a later decision is new.
     const [stage, setStage] = useState<{
         key: Command;
         action: RouteAction;
+        requestId: string;
     } | null>(null);
     const frozen = party.freeze !== null;
     const overdue = party.kyc?.state === 'overdue';
+    const review = party.licence?.review ?? null;
     const open = (key: Command, action: RouteAction) =>
-        setStage({ key, action });
+        setStage({ key, action, requestId: crypto.randomUUID() });
     const {
         freeze,
         release,
@@ -125,6 +134,17 @@ export function PartyDrawer({
                 action={stage.action}
                 viewer={viewer}
                 onCancel={() => setStage(null)}
+                payload={
+                    review !== null &&
+                    (stage.key === 'verify_licence' ||
+                        stage.key === 'reject_licence')
+                        ? {
+                              request_id: stage.requestId,
+                              expected_revision: review.revision,
+                              submission_id: review.submission_id,
+                          }
+                        : undefined
+                }
             />
         ) : null;
 
@@ -167,7 +187,8 @@ export function PartyDrawer({
                                     {t(`admin.parties.health.${party.health}`)}
                                 </span>
                             </span>
-                            {frozen && (
+                            {/* A staff account's state is its health, so it is not badged twice. */}
+                            {frozen && party.health !== 'frozen' && (
                                 <MicroBadge>
                                     {t('admin.parties.badge.frozen')}
                                 </MicroBadge>
@@ -392,6 +413,23 @@ export function PartyDrawer({
                             </section>
                         )}
 
+                        {party.verification && (
+                            <section
+                                aria-label={t('admin.kyc.drawer')}
+                                className="mb-5"
+                            >
+                                <h3 className={SECTION}>
+                                    {t('admin.kyc.drawer')}
+                                </h3>
+                                <div className="mt-2.5">
+                                    <KycReview
+                                        review={party.verification}
+                                        viewer={viewer}
+                                        returnTo="directory"
+                                    />
+                                </div>
+                            </section>
+                        )}
                         {party.licence !== null && (
                             <section
                                 aria-label={t('admin.parties.licence_title')}
@@ -428,7 +466,8 @@ export function PartyDrawer({
                                             [
                                                 [
                                                     'member_id',
-                                                    party.licence.member_id,
+                                                    party.licence.member_id ??
+                                                        '—',
                                                 ],
                                                 [
                                                     'licence',
@@ -444,7 +483,8 @@ export function PartyDrawer({
                                                 ],
                                                 [
                                                     'district',
-                                                    party.licence.district,
+                                                    party.licence.district ??
+                                                        '—',
                                                 ],
                                             ] as const
                                         ).map(([key, value]) => (

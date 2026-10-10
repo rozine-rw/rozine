@@ -5,14 +5,16 @@ import { initials } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatMonthYear } from '@/lib/rozine/format';
 import type { Money } from '@/types';
-import type { AuditorIdentity } from '@/types/auditor';
+import type { AuditorProfileIdentity } from '@/types/auditor';
 
 type HeroProps = {
     serverTime: string;
-    auditor: AuditorIdentity;
+    /** The firm and professional body are left out while no record of them exists. */
+    auditor: AuditorProfileIdentity;
     qualityScore: number | null;
     earned: Money | null;
-    activeDeals: number;
+    /** Null when the server cannot state it: the tile says so rather than inventing a count. */
+    activeDeals: number | null;
     /** Null when no expiry is on record: the tile says so rather than inventing one. */
     licenceExpiresOn: string | null;
 };
@@ -36,12 +38,24 @@ function GlassTile({
     );
 }
 
+/** A tile value the server cannot state: a dash, read out as unavailable. */
+function Unavailable() {
+    const { t } = useTranslation();
+
+    return (
+        <span className="text-[15px] font-bold">
+            <span aria-hidden>—</span>
+            <span className="sr-only">{t('auditor.home.unavailable')}</span>
+        </span>
+    );
+}
+
 /** The avatar disc: the passport photo, or the partner's initials until one is on file. */
 export function Avatar({
     auditor,
     className,
 }: {
-    auditor: Pick<AuditorIdentity, 'name' | 'avatar_url'>;
+    auditor: Pick<AuditorProfileIdentity, 'name' | 'avatar_url'>;
     className: string;
 }) {
     return (
@@ -84,6 +98,9 @@ export function Hero({
         month: 'short',
         timeZone: 'Africa/Kigali',
     }).format(new Date(serverTime));
+    const affiliation = [auditor.firm, auditor.accreditation]
+        .filter((part) => part !== null)
+        .join(' · ');
 
     return (
         <div className="relative overflow-hidden rounded-[20px] bg-[#c2661f] p-[17px] shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)]">
@@ -99,9 +116,11 @@ export function Hero({
                     <p className="truncate text-[17px] font-bold text-white">
                         {auditor.name}
                     </p>
-                    <p className="mt-0.5 truncate text-[11px] text-white/80">
-                        {auditor.firm} · {auditor.accreditation}
-                    </p>
+                    {affiliation !== '' && (
+                        <p className="mt-0.5 truncate text-[11px] text-white/80">
+                            {affiliation}
+                        </p>
+                    )}
                 </div>
                 {qualityScore !== null && (
                     <div
@@ -145,16 +164,17 @@ export function Hero({
                     )}
                 </GlassTile>
                 <GlassTile label={t('auditor.home.tile.deals')}>
-                    <span className="text-[15px] font-bold">{activeDeals}</span>
+                    {activeDeals === null ? (
+                        <Unavailable />
+                    ) : (
+                        <span className="text-[15px] font-bold">
+                            {activeDeals}
+                        </span>
+                    )}
                 </GlassTile>
                 <GlassTile label={t('auditor.home.tile.licence')}>
                     {licenceExpiresOn === null ? (
-                        <span className="text-[15px] font-bold">
-                            <span aria-hidden>—</span>
-                            <span className="sr-only">
-                                {t('auditor.home.unavailable')}
-                            </span>
-                        </span>
+                        <Unavailable />
                     ) : (
                         <span className="truncate text-[15px] font-bold">
                             {formatMonthYear(licenceExpiresOn, locale)}

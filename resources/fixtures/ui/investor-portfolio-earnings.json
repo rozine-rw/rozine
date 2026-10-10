@@ -23,6 +23,22 @@
                     "url": "/preview/investor-portfolio-matured",
                     "method": "get"
                 }
+            },
+            {
+                "key": "secondary",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-secondary",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "saved",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-portfolio-saved",
+                    "method": "get"
+                }
             }
         ],
         "earnings": {
@@ -443,6 +459,14 @@
             },
             "portfolio": {
                 "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
                 "method": "get"
             },
             "profile": {

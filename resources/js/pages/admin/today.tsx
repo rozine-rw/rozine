@@ -21,14 +21,17 @@ import type { AdminTodayProps } from '@/types/admin';
 /**
  * Today (MVP-ADMIN-SCR-01, design Dashboard T192–346): the headline figures, what needs a human,
  * reconciliation breaks with their age and owner, and the book at a glance. Every figure is the
- * server's; the page never totals or ranks anything itself.
+ * server's; the page never totals or ranks anything itself. A figure or panel the platform does
+ * not record yet arrives as null and reads as not tracked. The quick commands are the design's that
+ * open a page: Review queue, Audit desk (Reports) and Policies, each shown only when the server
+ * sends its link. Broadcast and Run cycle have no command yet, so they are left out.
  */
 export default function AdminToday(props: AdminTodayProps) {
     const { t } = useTranslation();
     const commands = [
         ['review_queue', props.nav.applications, 'bg-[#7c3aed]'],
-        ['release_queue', props.nav.disbursements, 'bg-[#1d9e75]'],
-        ['audit_trail', props.nav.events, 'bg-[#0c1830] dark:bg-[#93a1bd]'],
+        ['audit_desk', props.nav.reports, 'bg-[#c2661f]'],
+        ['policies', props.nav.policies, 'bg-[#0c1830] dark:bg-[#93a1bd]'],
     ] as const;
 
     return (
@@ -37,18 +40,21 @@ export default function AdminToday(props: AdminTodayProps) {
                 aria-label={t('admin.today.commands')}
                 className="mb-4 flex flex-wrap gap-[9px]"
             >
-                {commands.map(([key, link, accent]) => (
-                    <Link
-                        key={key}
-                        href={link}
-                        className="flex h-9 items-center gap-2 rounded-[10px] border border-[#eaeef6] bg-rz-surface px-3.5 text-[12.5px] font-bold text-rz-ink shadow-[0_1px_2px_rgba(16,32,58,.04)] transition-[border-color,transform] duration-100 hover:-translate-y-px hover:border-[#1e3aff] dark:border-rz-border"
-                    >
-                        <span
-                            className={`size-2 shrink-0 rounded-[3px] ${accent}`}
-                        />
-                        {t(`admin.today.command.${key}`)}
-                    </Link>
-                ))}
+                {commands.map(
+                    ([key, link, accent]) =>
+                        link && (
+                            <Link
+                                key={key}
+                                href={link}
+                                className="flex h-9 items-center gap-2 rounded-[10px] border border-[#eaeef6] bg-rz-surface px-3.5 text-[12.5px] font-bold text-rz-ink shadow-[0_1px_2px_rgba(16,32,58,.04)] transition-[border-color,transform] duration-100 hover:-translate-y-px hover:border-[#1e3aff] dark:border-rz-border"
+                            >
+                                <span
+                                    className={`size-2 shrink-0 rounded-[3px] ${accent}`}
+                                />
+                                {t(`admin.today.command.${key}`)}
+                            </Link>
+                        ),
+                )}
             </nav>
 
             <TodayKpis kpis={props.kpis} />

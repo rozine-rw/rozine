@@ -28,8 +28,9 @@ it('links authorized Auditor home to jobs and profile without exposing those lin
         ->assertInertia(fn (Assert $page): Assert => $page->where('links.jobs', ['url' => '/auditor/jobs', 'method' => 'get'])
             ->where('links.profile', ['url' => '/auditor/profile', 'method' => 'get']));
     $business = BusinessApplicationFixture::make();
-    $this->actingAs($business['authority']['users'][0])->get(route('business.home'))->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->where('links', null)->where('business_applications.entries.0.audit_report', null));
+    $this->actingAs($business['authority']['users'][0])->get(route('business.home'))->assertRedirect('/business/'.$business['business']->id);
+    $this->get('/business/'.$business['business']->id)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/home')
+        ->missing('links.jobs')->where('links.profile.url', '/business/'.$business['business']->id.'/profile'));
 });
 
 it('projects sealed jobs as awaiting co-sign and removes published jobs from active work', function (bool $api, string $kind): void {
@@ -67,39 +68,32 @@ it('projects sealed jobs as awaiting co-sign and removes published jobs from act
     expect($read()['assigned'])->toBeEmpty();
 })->with([false, true])->with(['flash', 'monthly']);
 
-it('links Business home only to its own latest unamended sealed report across transports', function (bool $api): void {
+it('links the Business list only to its own latest unamended sealed report, and the web role home opens that business', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);
     $user = $fixture['audit']['authority']['users'][0];
-    if ($api) {
-        Sanctum::actingAs($user, ['business:read']);
-    } else {
-        $this->actingAs($user);
-    }
-    $read = function () use ($api): array {
-        $response = $api ? $this->getJson('/api/v1/business') : $this->get('/business');
-        $response->assertOk();
-
-        return $api ? $response->json('data.entries') : $response->viewData('page')['props']['business_applications']['entries'];
-    };
-    $link = ['url' => ($api ? '/api/v1' : '').'/business/'.$fixture['audit']['business'].'/audit-reports/'.$fixture['report']->id, 'method' => 'get'];
+    $this->actingAs($user)->get('/business')->assertRedirect('/business/'.$fixture['audit']['business']);
+    Sanctum::actingAs($user, ['business:read']);
+    $read = fn (): array => $this->getJson('/api/v1/business')->assertOk()->json('data.entries');
+    $link = ['url' => '/api/v1/business/'.$fixture['audit']['business'].'/audit-reports/'.$fixture['report']->id, 'method' => 'get'];
     expect($read()[0]['audit_report'])->toBe(['id' => $fixture['report']->id, 'kind' => 'flash', 'status' => 'pending', 'link' => $link]);
     Fixture::cosign($fixture);
     expect($read()[0]['audit_report']['status'])->toBe('published');
     app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->refresh()->revision, (string) Str::uuid());
     expect($read()[0]['audit_report'])->toBeNull();
     RoleMembership::query()->where('party_id', $user->party_id)->update(['status' => 'revoked']);
-    ($api ? $this->getJson('/api/v1/business') : $this->getJson('/business'))->assertForbidden();
-})->with([false, true]);
+    $this->getJson('/api/v1/business')->assertForbidden();
+    $this->actingAs($user)->getJson('/business')->assertForbidden();
+});
 
 it('does not expose another Business report from home', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);
     $other = BusinessApplicationFixture::make();
-    $this->actingAs($other['authority']['users'][0])->get('/business')->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->has('business_applications.entries', 1)
-            ->where('business_applications.entries.0.business_id', $other['business']->id)
-            ->where('business_applications.entries.0.audit_report', null));
+    $this->actingAs($other['authority']['users'][0])->get('/business')->assertRedirect('/business/'.$other['business']->id);
+    Sanctum::actingAs($other['authority']['users'][0], ['business:read']);
+    $this->getJson('/api/v1/business')->assertOk()->assertJsonCount(1, 'data.entries')
+        ->assertJsonPath('data.entries.0.business_id', $other['business']->id)->assertJsonPath('data.entries.0.audit_report', null);
 });
 
 it('exposes unit tolerance separately from cash tolerance', function (): void {

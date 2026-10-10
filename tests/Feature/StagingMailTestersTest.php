@@ -57,7 +57,7 @@ test('a superadmin adds and removes a named tester with a reason the journal kee
             ->where('contract_version', 'staff-staging-mail-testers-v1')
             ->where('server_recipients', ['@rozine.rw'])->where('testers', [])
             ->where('viewer.role', 'superadmin')->where('nav.mail_testers.url', route('staff.staging-mail-testers.index', [], false))
-            ->where('nav.investors.url', route('staff.investor-verifications.index', [], false))
+            ->where('nav.investors.url', route('staff.investors.index', [], false))
             ->where('add', ['url' => route('staff.staging-mail-testers.store', [], false), 'method' => 'post']));
 
     $this->post(route('staff.staging-mail-testers.store'), testerChange(['email' => ' Tester@Example.org ']))
@@ -199,12 +199,13 @@ test('the tester list does not exist outside staging', function (string $environ
     expect(StagingMailTester::query()->count())->toBe(1);
 })->with(['testing', 'local']);
 
-test('the staff home links to the tester list only for a superadmin on staging', function (string $environment, string $role, bool $linked) {
+test('the console sidebar links to the tester list only for a superadmin on staging', function (string $environment, string $role, bool $linked) {
     app()->detectEnvironment(fn (): string => $environment);
 
-    $this->actingAs(testerStaff([$role]))->get(route('admin.home'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('identity/staff-home')
-            ->where('staging_mail_testers', $linked ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null));
+    $this->actingAs(testerStaff([$role]))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/today')
+            ->where('nav.mail_testers', $linked ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null));
+    $this->getJson(route('api.v1.staff.dashboard'))->assertOk()->assertJsonPath('data.nav.mail_testers', null);
 })->with([
     'superadmin on staging' => ['staging', 'superadmin', true],
     'compliance on staging' => ['staging', 'compliance', false],

@@ -28,7 +28,7 @@ it('projects only current engagement status and the matching transport link on e
     }
     $prefix = $api ? 'api.v1.auditor.' : 'auditor.';
     $pages = $api ? ['profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs']
-        : ['home' => 'identity/role-home', 'profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs'];
+        : ['home' => 'auditor/home', 'profile' => 'auditor/profile', 'jobs.index' => 'auditor/jobs'];
     $read = function (string $status) use ($api, $prefix, $pages): void {
         $summary = ['status' => $status, 'link' => ['url' => route($prefix.'engagement.show', [], false), 'method' => 'get']];
         foreach ($pages as $route => $component) {
@@ -111,8 +111,9 @@ it('does not project Auditor engagement status onto other role homes', function 
     $user = User::factory()->withTwoFactor()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create(['role' => $role]);
     app(SelectActiveRole::class)->handle($user->id, $role, 0, (string) Str::uuid());
-    $this->actingAs($user)->get(route($role.'.home'))->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->where('engagement', null));
+    // A role home opens straight into its app (#277); the page it lands on carries no engagement.
+    $this->actingAs($user)->followingRedirects()->get(route($role.'.home'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->missing('engagement'));
     $this->getJson(route('auditor.home'))->assertForbidden()->assertJsonMissingPath('engagement');
 })->with(['business', 'investor']);
 

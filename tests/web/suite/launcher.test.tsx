@@ -182,7 +182,7 @@ describe('Suite launcher', () => {
         );
         expect(
             screen.getByRole('link', { name: 'Open staff workspace' }),
-        ).toHaveAttribute('href', '/admin');
+        ).toHaveAttribute('href', '/admin/dashboard');
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
         expect(screen.queryByRole('list')).not.toBeInTheDocument();
         view.rerender(

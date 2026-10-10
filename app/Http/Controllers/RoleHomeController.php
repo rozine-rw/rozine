@@ -4,34 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Business\ListBusinessApplications;
 use App\Application\Identity\AuthorizeActiveRole;
-use App\Http\Requests\Business\ListApplicationsRequest;
-use App\Http\Resources\AuditorEngagementSummaryResource;
-use App\Http\Resources\AuditorJobsResource;
-use App\Http\Resources\BusinessApplicationsResource;
-use App\Http\Resources\IdentityContextResource;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
+/**
+ * The launcher opens an app at its role home (`investor.home`, `business.home`). There is no page
+ * between the launcher and the app: once the active role is authorized, the role home sends the
+ * viewer to the app's designed home, Deals for an Investor and the business's own Home for a
+ * Business member. Someone without the active role still gets the access-denied answer.
+ */
 class RoleHomeController extends Controller
 {
-    public function __invoke(ListApplicationsRequest $request, AuthorizeActiveRole $action, ListBusinessApplications $applications, GetAuditEngagementSummary $engagements): Response
+    public function __invoke(Request $request, AuthorizeActiveRole $action, ListBusinessApplications $applications): RedirectResponse
     {
         $role = explode('.', (string) $request->route()?->getName())[0];
         $userId = (int) $request->user()?->getAuthIdentifier();
-        $expectedContext = $request->validated('identity_context_revision');
-        $identity = $action->context($userId, $role, $expectedContext === null ? null : (int) $expectedContext);
+        $identity = $action->context($userId, $role, null);
+        if ($role === 'investor') {
+            return redirect()->route('investor.deals');
+        }
 
-        return Inertia::render('identity/role-home', [
-            'identity' => (new IdentityContextResource($identity))->resolve($request),
-            'role' => $role,
-            'links' => $role === 'auditor' ? AuditorJobsResource::links($request) : null,
-            'section' => $request->query('section') === 'access' ? 'access' : 'overview',
-            'engagement' => $role === 'auditor' ? (new AuditorEngagementSummaryResource($engagements->handle($userId, $identity['context_revision'])))->resolve($request) : null,
-            'business_applications' => $role === 'business' ? (new BusinessApplicationsResource($applications->handle($userId, $identity['context_revision'],
-                $request->validated('before'), (int) ($request->validated('limit') ?? 20))))->resolve($request) : null,
-        ]);
+        $business = $applications->handle($userId, $identity['context_revision'], null, 1)['entries'][0]['business_id'] ?? null;
+
+        return $business === null ? redirect()->route('dashboard') : redirect()->route('business.show', ['business' => $business]);
     }
 }

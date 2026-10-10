@@ -9,7 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Compliance's Investor identity queue in the Admin console frame. Only the Investors section is
- * served here; every other sidebar entry is null. A case's documents are linked, never inlined.
+ * served here; every other sidebar entry is null. A case's documents are linked, never inlined: each
+ * carries a download link and a view link that serves the same private file for display in place.
  *
  * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string}
  * @phpstan-type Review array{
@@ -57,15 +58,19 @@ class StaffInvestorVerificationsResource extends JsonResource
      * @param  array{url: string, method: string}  $close
      * @return array<string, mixed>
      */
-    private static function review(array $review, array $close, string $prefix): array
+    public static function review(array $review, array $close, string $prefix): array
     {
         $action = fn (string $name): array => ['url' => route($prefix.'staff.investor-verifications.'.$name, ['verification' => $review['id']], false), 'method' => 'post'];
 
         return ['id' => $review['id'], 'revision' => $review['revision'], 'status' => $review['status'], 'submitted_at' => $review['submitted_at'],
             'account' => $review['account'], 'date_of_birth' => $review['state']['date_of_birth'], 'id_type' => $review['state']['id_type'],
             'id_number' => $review['state']['id_number'], 'decision' => $review['state']['decision'],
-            'documents' => array_map(fn (array $document): array => [...$document, 'link' => ['url' => route($prefix.'staff.investor-verifications.document',
-                ['verification' => $review['id'], 'document' => $document['id']], false), 'method' => 'get']], $review['documents']),
+            'documents' => array_map(function (array $document) use ($review, $prefix): array {
+                $route = ['verification' => $review['id'], 'document' => $document['id']];
+
+                return [...$document, 'link' => ['url' => route($prefix.'staff.investor-verifications.document', $route, false), 'method' => 'get'],
+                    'view' => ['url' => route($prefix.'staff.investor-verifications.document', [...$route, 'disposition' => 'inline'], false), 'method' => 'get']];
+            }, $review['documents']),
             'history' => $review['history'], 'links' => ['close' => $close],
             'actions' => (object) array_combine($review['allowed_actions'], array_map($action, $review['allowed_actions']))];
     }

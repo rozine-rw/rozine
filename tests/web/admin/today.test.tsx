@@ -15,7 +15,7 @@ const props = (fixture: { props: unknown }) =>
 beforeEach(resetInertia);
 
 describe('Admin frame', () => {
-    it('draws the grouped MVP sidebar with live badges and no post-MVP sections', () => {
+    it('draws the grouped design sidebar with live badges', () => {
         render(<AdminToday {...props(todayFixture)} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent(
@@ -32,14 +32,50 @@ describe('Admin frame', () => {
             within(nav).getByRole('link', { name: /^Applications\s*6$/ }),
         ).toHaveAttribute('href', '/preview/admin-applications');
         expect(
-            within(nav).getByRole('link', { name: /^Disbursements\s*2$/ }),
-        ).toBeInTheDocument();
-        expect(
-            within(nav).getByRole('link', { name: 'Ledger' }),
-        ).not.toHaveAttribute('aria-current');
-        expect(within(nav).getByText('Treasury')).toBeInTheDocument();
+            within(nav).getByRole('link', { name: /^Payments\s*2$/ }),
+        ).toHaveAttribute('href', '/preview/admin-disbursements');
 
-        for (const gone of ['Ratings', 'Policies', 'Engines', 'Notes']) {
+        for (const group of [
+            'Accounts',
+            'Capital',
+            'Oversight',
+            'Treasury',
+            'Engagement',
+            'Console',
+        ]) {
+            expect(within(nav).getByText(group)).toBeInTheDocument();
+        }
+
+        for (const shown of [
+            'Notes',
+            'Primary Market',
+            'Secondary Market',
+            'Risk Center',
+            'Compliance',
+            'Ratings',
+            'Deferrals',
+            'Rozine Plus',
+            'Finance',
+            'Messaging',
+            'Academies',
+            'App Control',
+            'Policies',
+            'System Health',
+        ]) {
+            expect(
+                within(nav).getByRole('link', { name: shown }),
+            ).toHaveAttribute('href', '/preview/admin-section');
+        }
+
+        for (const gone of [
+            'Disbursements',
+            'Repayments',
+            'Ledger',
+            'Book',
+            'Exceptions',
+            'Reconciliation',
+            'Partner coverage',
+        ]) {
             expect(
                 within(nav).queryByRole('link', { name: gone }),
             ).not.toBeInTheDocument();
@@ -318,16 +354,11 @@ describe('Admin Today', () => {
     it('explains quiet panels', () => {
         const fixture = props(todayFixture);
 
+        const [first, second] = fixture.activity ?? [];
+
         fixture.activity = [
-            {
-                ...fixture.activity[0],
-                at: '2026-09-23T17:39:40+02:00',
-            },
-            {
-                ...fixture.activity[1],
-                id: 'old',
-                at: '2026-09-20T17:39:40+02:00',
-            },
+            { ...first, at: '2026-09-23T17:39:40+02:00' },
+            { ...second, id: 'old', at: '2026-09-20T17:39:40+02:00' },
         ];
         render(<AdminToday {...fixture} />);
 
@@ -348,5 +379,129 @@ describe('Admin Today', () => {
         expect(
             screen.getByText('No applications waiting.'),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Admin Today, live', () => {
+    /** The page as the live Operations Center sends it: every untracked figure and panel null. */
+    const live = (): AdminTodayProps => {
+        const fixture = props(todayFixture);
+
+        return {
+            ...fixture,
+            nav: { ...fixture.nav, ledger: null, events: null },
+            kpis: fixture.kpis.map((kpi) =>
+                [
+                    'treasury_position',
+                    'default_rate',
+                    'secondary_volume',
+                ].includes(kpi.key)
+                    ? { key: kpi.key, value: null }
+                    : kpi,
+            ),
+            attention: fixture.attention.map((tile) =>
+                tile.key === 'notes_late' ? { ...tile, count: null } : tile,
+            ),
+            breaks: null,
+            capital_raised: { ...fixture.capital_raised, bars: [] },
+            portfolio_health: null,
+            activity: null,
+            funnel: fixture.funnel.map((stage) =>
+                stage.stage === 'matured'
+                    ? { ...stage, count: null, width_pct: 0 }
+                    : stage,
+            ),
+            pending_applications: fixture.pending_applications.map((item) => ({
+                ...item,
+                link: null,
+            })),
+            sector_exposure: null,
+            treasury: {
+                ...fixture.treasury,
+                platform_net: null,
+                paid_to_investors: null,
+            },
+            collections: null,
+        };
+    };
+
+    it('reads every figure the platform does not record yet as not tracked', () => {
+        render(<AdminToday {...live()} />);
+
+        expect(screen.getAllByText('Not tracked yet')).toHaveLength(3);
+        expect(screen.getAllByText('—')).toHaveLength(7);
+        expect(screen.queryByText('9 of 165 notes')).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Reconciliation not tracked yet'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('Ledger fully reconciled'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByText('Not tracked in the console yet.'),
+        ).toHaveLength(4);
+        expect(
+            screen.getByText('No capital raised in this window.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No money has moved yet.'),
+        ).not.toBeInTheDocument();
+    });
+
+    it("offers the design's quick commands that open a page, in its order, and only those the server links", () => {
+        const base = live();
+
+        render(
+            <AdminToday
+                {...base}
+                nav={{ ...base.nav, applications: null, reports: null }}
+            />,
+        );
+
+        const commands = screen.getByRole('navigation', {
+            name: 'Quick commands',
+        });
+
+        expect(
+            within(commands)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Policies']);
+        expect(
+            within(commands).queryByText('Broadcast'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(commands).queryByText('Run cycle'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows only the links the viewer may open', () => {
+        render(<AdminToday {...live()} />);
+
+        const commands = screen.getByRole('navigation', {
+            name: 'Quick commands',
+        });
+
+        expect(
+            within(commands).getByRole('link', { name: 'Review queue' }),
+        ).toHaveAttribute('href', '/preview/admin-applications');
+        expect(
+            within(commands).getByRole('link', { name: 'Audit desk' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
+        expect(
+            within(commands).getByRole('link', { name: 'Policies' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
+        expect(
+            screen.queryByRole('link', { name: 'Open the ledger' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Akabanga Foods')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Review Akabanga Foods' }),
+        ).not.toBeInTheDocument();
     });
 });

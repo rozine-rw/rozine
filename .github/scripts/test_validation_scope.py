@@ -8,6 +8,7 @@ import io
 import json
 import os
 import subprocess
+import threading
 import unittest
 import tempfile
 from pathlib import Path
@@ -992,6 +993,83 @@ class CanonicalCoordinationTests(unittest.TestCase):
             return original(repository, run)
         with self.server(), patch.object(policy, "coordination_identity", side_effect=disappearance), self.assertRaisesRegex(policy.CoordinationRefusal, "coordination_index_changed"):
             policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def failed_peer(self, number, *, matching=False):
+        run = copy.deepcopy(self.runs[100])
+        sha = f"{number:040x}"
+        run.update(id=number, event="push", head_branch="dev", head_sha=sha, conclusion="failure")
+        self.runs[number] = run
+        self.artifacts[number] = {}
+        self.jobs[number] = []
+        tree = self.tree if matching else "7" * 40
+        self.commits[sha] = {"sha": sha, "tree": {"sha": tree}, "parents": [{"sha": "8" * 40}]}
+        self.identity(number)["tree_sha"] = tree
+
+    def test_historical_peer_reads_overlap_with_a_fixed_bound_and_validate_every_identity(self):
+        peers = list(range(300, 308))
+        for number in peers:
+            self.failed_peer(number)
+        original = policy.coordination_identity
+        lock = threading.Lock()
+        ready = threading.Event()
+        active = peak = 0
+        checked = []
+
+        def identity(repository, run):
+            nonlocal active, peak
+            if run["id"] not in peers:
+                return original(repository, run)
+            with lock:
+                active += 1
+                peak = max(peak, active)
+                if active == 4:
+                    ready.set()
+            try:
+                self.assertTrue(ready.wait(3), "historical reads were serialized")
+                result = original(repository, run)
+                with lock:
+                    checked.append(run["id"])
+                return result
+            finally:
+                with lock:
+                    active -= 1
+
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity):
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+        self.assertEqual(peak, 4)
+        self.assertCountEqual(checked, peers)
+
+    def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
+        for number in range(300, 308):
+            self.failed_peer(number, matching=number == 307)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_parallel_historical_reads_cannot_ignore_failed_identity_publication(self):
+        for number in range(300, 308):
+            self.failed_peer(number)
+        self.jobs[307][0]["steps"][-1]["conclusion"] = "failure"
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+            policy.canonical_selection(self.env())
+        self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_historical_refusal_does_not_submit_later_batches(self):
+        peers = list(range(300, 340))
+        for number in peers:
+            self.failed_peer(number, matching=number == 300)
+        original = policy.coordination_identity
+        checked = []
+
+        def identity(repository, run):
+            checked.append(run["id"])
+            return original(repository, run)
+
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+        self.assertTrue(set(checked).intersection(peers))
+        self.assertFalse(set(checked).intersection(peers[4:]))
         self.assertNotIn("ci-coordination-decision", self.artifacts[200])
 
     def test_current_identity_contradiction_rechecks_before_selecting(self):

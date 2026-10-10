@@ -12,15 +12,24 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { RouteLink } from '@/types';
+import type { Money, RouteLink } from '@/types';
 import type { AdminTodayProps, FunnelStage } from '@/types/admin';
 
 const CAPTION = 'mt-1.5 text-[11px] text-rz-muted';
 
+const QUIET = 'py-6 text-center text-[12.5px] text-rz-faint';
+
+/** What a panel says while the platform does not record its figures yet. */
+function Untracked() {
+    const { t } = useTranslation();
+
+    return <p className={QUIET}>{t('admin.today.untracked')}</p>;
+}
+
 const DATE_INPUT =
     'relative rounded-lg border border-rz-hairline bg-rz-surface px-[7px] py-[5px] text-[11px] text-rz-ink uppercase outline-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-auto [&::-webkit-calendar-picker-indicator]:w-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0';
 
-const short = (money: AdminTodayProps['treasury']['invested']): string =>
+const short = (money: Money): string =>
     formatRwfShort(money).replace('RWF ', '');
 
 /** "Capital raised": the server's buckets for the chosen window, refetched when it changes. */
@@ -124,6 +133,11 @@ export function CapitalRaisedPanel({
                 })}
             </p>
             <div className="mt-5 flex h-[200px] items-end gap-2.5">
+                {chart.bars.length === 0 && (
+                    <p className={cn(QUIET, 'w-full self-center')}>
+                        {t('admin.today.capital.empty')}
+                    </p>
+                )}
                 {chart.bars.map((bar) => (
                     <div
                         key={bar.label}
@@ -148,13 +162,23 @@ export function CapitalRaisedPanel({
     );
 }
 
-/** The health donut: the server's three shares, drawn as one conic ring. */
+/** The health donut: the server's three shares, drawn as one conic ring, or not tracked yet. */
 export function PortfolioHealthPanel({
     health,
 }: {
     health: AdminTodayProps['portfolio_health'];
 }) {
     const { t } = useTranslation();
+
+    if (health === null) {
+        return (
+            <Panel label={t('admin.today.health.title')}>
+                <CardTitle>{t('admin.today.health.title')}</CardTitle>
+                <Untracked />
+            </Panel>
+        );
+    }
+
     const a = health.healthy.pct * 3.6;
     const b = (health.healthy.pct + health.watch.pct) * 3.6;
     const rows = [
@@ -227,14 +251,17 @@ export function PortfolioHealthPanel({
     );
 }
 
-/** Live activity: the newest ledger movements, each opening its entry. */
+/**
+ * Live activity: the newest ledger movements, each opening its entry. Until the console has a
+ * ledger feed it says so, and the ledger link shows only when the ledger is served.
+ */
 export function ActivityPanel({
     items,
     ledger,
     serverTime,
 }: {
     items: AdminTodayProps['activity'];
-    ledger: RouteLink;
+    ledger: RouteLink | null;
     serverTime: string;
 }) {
     const { t } = useTranslation();
@@ -249,12 +276,11 @@ export function ActivityPanel({
                 </span>
             </div>
             <div className="mt-3.5 flex flex-col">
-                {items.length === 0 && (
-                    <p className="py-6 text-center text-[12.5px] text-rz-faint">
-                        {t('admin.today.activity.empty')}
-                    </p>
+                {items === null && <Untracked />}
+                {items?.length === 0 && (
+                    <p className={QUIET}>{t('admin.today.activity.empty')}</p>
                 )}
-                {items.map((item) => (
+                {items?.map((item) => (
                     <Link
                         key={item.id}
                         href={item.link}
@@ -292,27 +318,29 @@ export function ActivityPanel({
                         </span>
                     </Link>
                 ))}
-                <Link
-                    href={ledger}
-                    className="mt-3 flex w-full items-center justify-center gap-[7px] rounded-[10px] border border-rz-hairline bg-rz-page p-[11px] text-[12.5px] font-bold text-rz-accent-app-text"
-                >
-                    {t('admin.today.activity.see_all')}
-                    <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
+                {ledger && (
+                    <Link
+                        href={ledger}
+                        className="mt-3 flex w-full items-center justify-center gap-[7px] rounded-[10px] border border-rz-hairline bg-rz-page p-[11px] text-[12.5px] font-bold text-rz-accent-app-text"
                     >
-                        <path
-                            d="M9 6l6 6-6 6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </Link>
+                        {t('admin.today.activity.see_all')}
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                        >
+                            <path
+                                d="M9 6l6 6-6 6"
+                                stroke="currentColor"
+                                strokeWidth="2.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </Link>
+                )}
             </div>
         </Panel>
     );
@@ -346,7 +374,7 @@ export function LifecyclePanel({
                                 {t(`admin.today.lifecycle.${stage.stage}`)}
                             </span>
                             <span className="text-[12.5px] font-bold text-rz-ink">
-                                {stage.count}
+                                {stage.count ?? '—'}
                             </span>
                         </div>
                         <div className="h-2 overflow-hidden rounded-[5px] bg-[#e2e8f2] dark:bg-rz-surface-muted">
@@ -379,9 +407,7 @@ export function PendingApplicationsPanel({
             <CardTitle>{t('admin.today.pending.title')}</CardTitle>
             <div className="mt-3.5 flex flex-col gap-2.5">
                 {items.length === 0 && (
-                    <p className="py-6 text-center text-[12.5px] text-rz-faint">
-                        {t('admin.today.pending.empty')}
-                    </p>
+                    <p className={QUIET}>{t('admin.today.pending.empty')}</p>
                 )}
                 {items.map((item) => (
                     <div
@@ -419,15 +445,18 @@ export function PendingApplicationsPanel({
                                 )}
                             </div>
                         </div>
-                        <Link
-                            href={item.link}
-                            aria-label={t('admin.today.pending.review_named', {
-                                name: item.business,
-                            })}
-                            className="rounded-lg bg-rz-accent-fill px-3 py-1.5 text-[11.5px] font-semibold text-white"
-                        >
-                            {t('admin.today.pending.review')}
-                        </Link>
+                        {item.link && (
+                            <Link
+                                href={item.link}
+                                aria-label={t(
+                                    'admin.today.pending.review_named',
+                                    { name: item.business },
+                                )}
+                                className="rounded-lg bg-rz-accent-fill px-3 py-1.5 text-[11.5px] font-semibold text-white"
+                            >
+                                {t('admin.today.pending.review')}
+                            </Link>
+                        )}
                     </div>
                 ))}
             </div>
@@ -450,8 +479,9 @@ export function SectorPanel({
                     {t('admin.today.sectors.tip')}
                 </InfoTip>
             </div>
+            {sectors === null && <Untracked />}
             <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {sectors.map((sector) => (
+                {sectors?.map((sector) => (
                     <div
                         key={sector.sector}
                         className={cn(
@@ -515,7 +545,7 @@ export function TreasuryPanel({
                         <dd
                             className={cn('mt-1.5 text-[19px] font-bold', tone)}
                         >
-                            {formatRwfShort(value)}
+                            {value === null ? '—' : formatRwfShort(value)}
                         </dd>
                     </div>
                 ))}
@@ -530,6 +560,16 @@ export function CollectionsPanel({
     collections: AdminTodayProps['collections'];
 }) {
     const { t } = useTranslation();
+
+    if (collections === null) {
+        return (
+            <Panel label={t('admin.today.collections.title')}>
+                <CardTitle>{t('admin.today.collections.title')}</CardTitle>
+                <Untracked />
+            </Panel>
+        );
+    }
+
     const states = [
         [
             'on_track',

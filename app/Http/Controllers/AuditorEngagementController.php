@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Auditor\AcceptAuditEngagementTerms;
 use App\Application\Auditor\FindAuditEngagementOperation;
 use App\Application\Auditor\GetAuditEngagementTerms;
+use App\Application\Auditor\ListAuditJobs;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Auditor\AcceptEngagementTermsRequest;
 use App\Http\Resources\AuditorEngagementResource;
@@ -19,14 +20,15 @@ use Inertia\Response;
 
 /**
  * The Auditor engagement terms. The web agreement page renders the Resource as flat Inertia props,
- * beside the Auditor app's own navigation; the versioned API returns the same Resource in its JSON
- * `data` envelope. Acceptance and its operation lookup are JSON on both surfaces.
+ * beside the Auditor app's own navigation and its open-offers badge; the versioned API returns the
+ * same Resource in its JSON `data` envelope. Acceptance and its operation lookup are JSON on both
+ * surfaces.
  */
 class AuditorEngagementController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity) {}
 
-    public function show(Request $request, GetAuditEngagementTerms $terms): Response|AuditorEngagementResource
+    public function show(Request $request, GetAuditEngagementTerms $terms, ListAuditJobs $jobs): Response|AuditorEngagementResource
     {
         [$userId, $revision] = $this->readContext($request);
         $resource = new AuditorEngagementResource([...$terms->handle($userId, $revision), 'identity_context_revision' => $revision]);
@@ -36,7 +38,7 @@ class AuditorEngagementController extends Controller
         /** @var array{links: array<string, mixed>} $page */
         $page = $resource->resolve($request);
 
-        return Inertia::render('auditor/engagement', [...$page, 'open_jobs' => 0,
+        return Inertia::render('auditor/engagement', [...$page, 'open_jobs' => AuditorJobsResource::openJobs($jobs->handle($userId, $revision)),
             'links' => [...Arr::except(AuditorJobsResource::links($request), ['operation']), ...$page['links']]]);
     }
 

@@ -12,6 +12,8 @@
     "tests/Architecture/StrictTypesTest.php",
     "tests/Feature/ExampleTest.php",
     "tests/Feature/Auth/AuthenticationTest.php",
+    "tests/Feature/Auth/EmailVerificationTest.php",
+    "tests/Feature/EmailVerificationCodeTest.php",
     "tests/Feature/ActiveRoleAuthorizationTest.php",
     "tests/Feature/EnvironmentIsolationTest.php",
     "tests/Feature/WalletSyntheticIsolationTest.php",

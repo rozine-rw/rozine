@@ -32,11 +32,11 @@ describe('Book', () => {
 
         expect(screen.getByTestId('head')).toHaveTextContent('Book');
         expect(
-            within(nav()).getByRole('link', { name: 'Book' }),
+            within(nav()).getByRole('link', { name: 'Notes' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
-            within(nav()).getByRole('link', { name: 'Exceptions' }),
-        ).toHaveAttribute('href', '/preview/admin-exceptions');
+            within(nav()).getByRole('link', { name: 'Risk Center' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
 
         expect(
             screen.getByRole('heading', { name: 'Live notes' }),
@@ -103,7 +103,7 @@ describe('Book', () => {
         render(<AdminBook {...fixture} />);
 
         expect(
-            within(nav()).getByRole('link', { name: 'Book' }),
+            within(nav()).getByRole('link', { name: 'Notes' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(
             within(nav()).queryByRole('link', { name: /Applications/u }),
@@ -166,36 +166,33 @@ describe('Book', () => {
     });
 });
 
-describe('The optional Phase 2 sidebar items', () => {
-    it('show only when their link is sent', () => {
+describe('Phase 2 pages in the design sidebar', () => {
+    it('never add their own entry, even when their link is sent', () => {
         const repayments = structuredClone(
             repaymentsFixture.props,
         ) as AdminRepaymentsProps;
-        const { rerender } = render(<AdminRepayments {...repayments} />);
-
-        expect(
-            within(nav()).queryByRole('link', { name: 'Book' }),
-        ).not.toBeInTheDocument();
-        expect(
-            within(nav()).queryByRole('link', { name: 'Exceptions' }),
-        ).not.toBeInTheDocument();
-
-        rerender(
+        render(
             <AdminRepayments
                 {...repayments}
                 nav={{
                     ...repayments.nav,
                     book: { url: '/preview/admin-book', method: 'get' },
-                    exceptions: null,
+                    exceptions: {
+                        url: '/preview/admin-exceptions',
+                        method: 'get',
+                    },
                 }}
             />,
         );
 
+        for (const gone of ['Book', 'Exceptions', 'Repayments']) {
+            expect(
+                within(nav()).queryByRole('link', { name: gone }),
+            ).not.toBeInTheDocument();
+        }
+
         expect(
-            within(nav()).getByRole('link', { name: 'Book' }),
-        ).not.toHaveAttribute('aria-current');
-        expect(
-            within(nav()).queryByRole('link', { name: 'Exceptions' }),
-        ).not.toBeInTheDocument();
+            within(nav()).getByRole('link', { name: /^Payments/u }),
+        ).toHaveAttribute('aria-current', 'page');
     });
 });

@@ -154,6 +154,22 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         ctaTone={GREEN_TEXT}
                     />
                 );
+            case 'audit_cosign':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('document', 'blue')}
+                        iconTile={GREEN_TILE}
+                        dot="bg-rz-accent-app-text"
+                        kicker={t('business.today.cosign.kicker')}
+                        title={t(
+                            `business.audit_cosign.kind.${item.report_kind}`,
+                        )}
+                        sub={t('business.today.cosign.sub')}
+                        cta={t('business.today.cosign.cta')}
+                        ctaTone={GREEN_TEXT}
+                    />
+                );
             case 'application_declined':
                 return (
                     <TodoCard

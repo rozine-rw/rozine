@@ -311,8 +311,10 @@ export type AuditorStanding = DispatchStanding & {
     avg_variance_pct: string | null;
     /** The server's flag that the average sits outside the published tolerance. */
     variance_flagged: boolean;
+    /** The partner's filed (sealed) reports. */
     jobs_done: number;
-    clock_expiries: number;
+    /** Jobs whose clock ran out on this partner, or null while the server keeps no such count. */
+    clock_expiries: number | null;
 };
 
 /** A countdown against a server deadline. `server_time` anchors the clock (contract §4). */
@@ -393,17 +395,20 @@ export type AuditorActivity =
     | { kind: 'payout'; at: string; amount: Money };
 
 /**
- * Auditor Home as designed. The live Auditor landing page is still `identity/role-home`, which
- * carries the engagement summary; this synthetic page may carry one too.
+ * Auditor Home (GET `/auditor`, `auditor.home`), the Auditor role's landing page. The live page
+ * always carries the engagement summary; a synthetic fixture may leave it out. A fact the server
+ * holds no record of yet — the firm and professional body, the score, earnings, active deals —
+ * is null and reads as unavailable or is left out, never a stand-in.
  */
 export type AuditorHomeProps = AuditorPageContract &
     Partial<EngagementSummaryProp> & {
-        auditor: AuditorIdentity;
+        auditor: AuditorProfileIdentity;
         /** The published partner-quality score out of 100; null until the quality policy is live. */
         quality_score: number | null;
         /** Accrued service-fee share this month (C-23), or null before anything accrues. */
         earned_this_month: Money | null;
-        active_deals: number;
+        /** Deals the partner is active on, or null while the server cannot state it. */
+        active_deals: number | null;
         /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
         licence_expires_on: string | null;
         availability: AuditorAvailability;
@@ -1111,7 +1116,8 @@ export type FiledReport = {
     month: string | null;
     district: string;
     filed_on: string;
-    due_on: string;
+    /** When the report was due: the flash deadline or the monthly window's close; null if none. */
+    due_on: string | null;
     status: FiledReportStatus;
     late_days: number | null;
     rejection: { reason: string; amend: RouteLink } | null;
@@ -1120,31 +1126,70 @@ export type FiledReport = {
 
 export type ReportFilter = 'all' | FiledReportStatus;
 
+/**
+ * A verification the partner still owes: an accepted assignment with a due date whose report is
+ * not sealed yet. The audit calendar places it on `due_at` and links to its file.
+ */
+export type OwedVerification = {
+    id: string;
+    business: string;
+    district: string;
+    kind: 'flash' | 'monthly';
+    due_at: string;
+    link: RouteLink;
+};
+
+/**
+ * A declaration on the record. The partner's own conflict read names no Business or note (AC-08,
+ * S-C): the live register sends both as null, and the entry then reads "Business on record" with
+ * a short reference to `assignment_id`, as the Conflicts page does.
+ */
 export type ConflictEntry = {
     conflict_id: string;
-    business: string;
-    note_id: string;
+    assignment_id: string;
     kind: ConflictKind;
     declared_on: string;
-};
+} & ({ business: string; note_id: string } | { business: null; note_id: null });
 
 /** An assigned file a conflict can be declared on; the declaration targets its `revision`. */
 export type AssignedFile = {
     id: string;
     revision: number;
     business: string;
-    note_id: string;
+    /** The note the file is for, or null where the read does not name it. */
+    note_id: string | null;
     /** Whether a conflict can be declared on this file is this record's own call. */
     allowed_actions: AuditorAllowedAction[];
 };
 
+/**
+ * Portfolio (GET `/auditor/portfolio`, `auditor.portfolio.index`): the partner's filed reports and
+ * their conflict register. The server sends only the filters it can count; the live page offers
+ * all, awaiting co-sign and published.
+ */
 export type AuditorPortfolioProps = AuditorPageContract & {
+    /** Filed reports, newest first; the calendar places each on the day it was due. */
     reports: FiledReport[];
+    /**
+     * The server's report filter and its counts. The design's Portfolio has no filter control,
+     * so the page lists every report the read sends by month instead.
+     */
     filter: ReportFilter;
     filters: { key: ReportFilter; count: number; link: RouteLink }[];
+    owed: OwedVerification[];
+    /**
+     * Whether `owed` comes from every assigned file. False when the assignment read was cut at
+     * its page limit: an older file beyond it may still be due, so the calendar must not report
+     * an all-clear and points to the Jobs list for the rest.
+     */
+    owed_complete: boolean;
     conflicts: {
         files: AssignedFile[];
         record: ConflictEntry[];
+        /**
+         * Where a declaration goes. The live page sends the assignment's own command with a
+         * literal `{assignment}` token, which the page replaces with the chosen file's `id`.
+         */
         declare: RouteAction;
     };
     outcome: AuditorOutcome | null;
@@ -1227,7 +1272,17 @@ export type Accreditation =
           submission: AccreditationSubmission;
       };
 
-export type ProfileSection = 'accreditation' | 'availability';
+/** The design's Profile menu (Auditor.dc.html L3528–3536), in its order. */
+export type ProfileSection =
+    | 'earnings'
+    | 'contact'
+    | 'accreditation'
+    | 'payout'
+    | 'availability'
+    | 'telemetry'
+    | 'security'
+    | 'learn'
+    | 'legal';
 
 /**
  * The partner as the Profile shows them. A fact Rozine holds no record of yet — the firm, the
@@ -1261,6 +1316,9 @@ export type AuditorProfileProps = AuditorPageContract &
         quality_score: number | null;
         on_time_pct: number | null;
         jobs_done: number;
+        /** The account's own email; no phone or address is held, so they are null. */
+        contact: { email: string; phone: null; address: null };
+        security: { two_factor: boolean };
         accreditation: Accreditation;
         /** Whether dispatch may offer work now; read with `availability.accepting`. */
         standing: DispatchStanding;
@@ -1276,6 +1334,8 @@ export type AuditorProfileProps = AuditorPageContract &
             OperationLookupLinks &
             AccreditationCertificateLinks & {
                 sections: Record<ProfileSection, RouteLink>;
+                /** The account's security settings, where the password and two-factor sign-in are managed. */
+                security_settings: RouteLink;
             };
         preview_outcome?: AuditorPreviewOutcome;
     };

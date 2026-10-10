@@ -5,7 +5,6 @@ import { RoleIcon } from '@/components/rozine/role-icon';
 import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard, logout } from '@/routes';
-import { home as adminHome } from '@/routes/admin';
 import { store } from '@/routes/identity/active-role';
 import { resume } from '@/routes/identity/roles';
 import {
@@ -13,6 +12,7 @@ import {
     verification as investorVerification,
 } from '@/routes/investor';
 import { edit as security } from '@/routes/security';
+import { dashboard as staffDashboard } from '@/routes/staff';
 import { notice as verificationNotice } from '@/routes/verification';
 import type {
     IdentityCode,
@@ -337,7 +337,7 @@ export default function Launcher({
                             )}
                             {canAdmin && (
                                 <Link
-                                    href={adminHome()}
+                                    href={staffDashboard()}
                                     className="mt-4 inline-block rounded-[18px] border border-rz-hairline bg-rz-surface p-5 font-semibold text-rz-ink"
                                 >
                                     {t('suite.admin')}

@@ -10,7 +10,8 @@ import type { BusinessRatingProps } from '@/types/business';
 
 /**
  * Financial health (MVP-BUSINESS-SCR-03, design L811–939), opened from the rating on Home's hero.
- * It shows the published rating and the engine's sizing of capacity; nothing here is computed.
+ * It shows the published rating and the engine's sizing of capacity; nothing here is computed. A
+ * section the server leaves null (factors, capacity, financials) is not drawn.
  */
 export default function BusinessRating({
     home,
@@ -95,47 +96,56 @@ export default function BusinessRating({
                     <CapacityCard sizing={sizing} raise={links.raise} />
                 )}
 
-                <div className="mt-5 flex items-center gap-[7px]">
-                    <h2 className="text-[13px] font-semibold tracking-[.04em] text-rz-secondary uppercase">
-                        {t('business.rating.financials')}
-                    </h2>
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-[10px] border border-[#cdeddb] bg-[#e7f7ee] px-1.5 py-0.5 text-[10.5px] font-bold text-rz-accent-app-text dark:border-transparent dark:bg-rz-accent-soft">
-                        {t('business.rating.sources')}
-                    </span>
-                </div>
-                <dl className="mt-[11px] grid grid-cols-2 gap-[9px]">
-                    {(
-                        [
-                            [
-                                'revenue',
-                                formatRwfShort(financials.avg_monthly_revenue),
-                            ],
-                            ['ebitda', formatRwfShort(financials.ebitda_month)],
-                            [
-                                'margin',
-                                t('business.reports.percent', {
-                                    value: financials.net_margin_percent,
-                                }),
-                            ],
-                            [
-                                'outstanding',
-                                formatRwfShort(financials.outstanding),
-                            ],
-                        ] as const
-                    ).map(([key, value]) => (
-                        <div
-                            key={key}
-                            className="rounded-xl border border-rz-border bg-rz-surface p-3"
-                        >
-                            <dt className="text-[10px] font-semibold text-rz-secondary uppercase">
-                                {t(`business.rating.financial.${key}`)}
-                            </dt>
-                            <dd className="mt-[3px] text-[15px] font-semibold text-rz-ink">
-                                {value}
-                            </dd>
+                {financials !== null && (
+                    <>
+                        <div className="mt-5 flex items-center gap-[7px]">
+                            <h2 className="text-[13px] font-semibold tracking-[.04em] text-rz-secondary uppercase">
+                                {t('business.rating.financials')}
+                            </h2>
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-[10px] border border-[#cdeddb] bg-[#e7f7ee] px-1.5 py-0.5 text-[10.5px] font-bold text-rz-accent-app-text dark:border-transparent dark:bg-rz-accent-soft">
+                                {t('business.rating.sources')}
+                            </span>
                         </div>
-                    ))}
-                </dl>
+                        <dl className="mt-[11px] grid grid-cols-2 gap-[9px]">
+                            {(
+                                [
+                                    [
+                                        'revenue',
+                                        formatRwfShort(
+                                            financials.avg_monthly_revenue,
+                                        ),
+                                    ],
+                                    [
+                                        'ebitda',
+                                        formatRwfShort(financials.ebitda_month),
+                                    ],
+                                    [
+                                        'margin',
+                                        t('business.reports.percent', {
+                                            value: financials.net_margin_percent,
+                                        }),
+                                    ],
+                                    [
+                                        'outstanding',
+                                        formatRwfShort(financials.outstanding),
+                                    ],
+                                ] as const
+                            ).map(([key, value]) => (
+                                <div
+                                    key={key}
+                                    className="rounded-xl border border-rz-border bg-rz-surface p-3"
+                                >
+                                    <dt className="text-[10px] font-semibold text-rz-secondary uppercase">
+                                        {t(`business.rating.financial.${key}`)}
+                                    </dt>
+                                    <dd className="mt-[3px] text-[15px] font-semibold text-rz-ink">
+                                        {value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </>
+                )}
             </div>
         </DetailSheet>
     );

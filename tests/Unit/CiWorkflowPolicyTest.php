@@ -76,6 +76,19 @@ STUB);
 
         return (string) file_get_contents($this->temporary.'/output');
     };
+    $this->postgresImage = 'public.ecr.aws/docker/library/postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3';
+    $this->postgresServices = array_fill_keys(['php-shards.postgres', 'ci.postgres', 'concurrency.postgres',
+        'negative-control-groups.postgres', 'dev-smoke.postgres', 'poc-php.postgres'], $this->postgresImage);
+    $this->serviceImages = function (array $workflow): array {
+        $images = [];
+        foreach ($workflow['jobs'] as $job => $definition) {
+            foreach ($definition['services'] ?? [] as $service => $container) {
+                $images[$job.'.'.$service] = $container['image'] ?? null;
+            }
+        }
+
+        return $images;
+    };
 });
 
 afterEach(function (): void {
@@ -155,6 +168,28 @@ it('tests immutable proposed merges and preserves deployment gates', function ()
         ->and($workflow['jobs']['tested-tree']['if'])->toBe("\${{ github.event_name == 'pull_request' && needs.ci.result == 'success' && needs.web.result == 'success' }}")
         ->and($workflow['jobs']['dev-smoke']['if'])->toBe("\${{ needs.plan.outputs.reused == 'true' && needs.plan.outputs.scope == 'full' && github.ref == 'refs/heads/dev' }}");
 });
+
+it('pulls every PostgreSQL service from the one digest-pinned Docker Official Image', function (): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+
+    expect(($this->serviceImages)($workflow))->toBe($this->postgresServices);
+});
+
+it('rejects a service image that is not the pinned official image', function (string $case): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+    match ($case) {
+        'Docker Hub tag' => $workflow['jobs']['php-shards']['services']['postgres']['image'] = 'postgres:17',
+        'mirror tag without digest' => $workflow['jobs']['ci']['services']['postgres']['image'] = 'public.ecr.aws/docker/library/postgres:17',
+        'different digest' => $workflow['jobs']['poc-php']['services']['postgres']['image'] = 'public.ecr.aws/docker/library/postgres:17@sha256:'.str_repeat('0', 64),
+        'other registry' => $workflow['jobs']['dev-smoke']['services']['postgres']['image'] = str_replace('public.ecr.aws/docker', 'mirror.gcr.io', $this->postgresImage),
+        'missing image' => $workflow['jobs']['negative-control-groups']['services']['postgres'] = [],
+        'removed service' => $workflow['jobs']['concurrency']['services'] = [],
+        'added service' => $workflow['jobs']['web']['services']['postgres'] = ['image' => 'postgres:17'],
+        default => throw new InvalidArgumentException('Unknown service image scenario: '.$case),
+    };
+
+    expect(($this->serviceImages)($workflow))->not->toBe($this->postgresServices);
+})->with(['Docker Hub tag', 'mirror tag without digest', 'different digest', 'other registry', 'missing image', 'removed service', 'added service']);
 
 it('requires board sync evidence before reusing the tested tree', function (): void {
     $this->fixtures['jobs'][0]['jobs'][0]['conclusion'] = 'skipped';

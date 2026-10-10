@@ -96,6 +96,12 @@ export type BusinessTodo =
           link: RouteLink;
       }
     | {
+          /** The latest sealed audit report, waiting for the business's co-signatures. */
+          kind: 'audit_cosign';
+          report_kind: 'flash' | 'monthly';
+          link: RouteLink;
+      }
+    | {
           kind: 'application_declined';
           title: string;
           reason: string | null;
@@ -239,6 +245,7 @@ export type BusinessApplications = {
 export type BusinessAppLinks = {
     home: RouteLink;
     reports: RouteLink;
+    market: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
 };
@@ -251,7 +258,16 @@ export type BusinessShellLinks = {
     home: RouteLink;
     launcher: RouteLink;
     reports: RouteLink | null;
+    market: RouteLink | null;
     profile: RouteLink | null;
+};
+
+/**
+ * Market (design L1263–1308): how the business's notes trade on the secondary market. There is no
+ * secondary-market read yet, so the page carries its links only and measures nothing.
+ */
+export type BusinessMarketProps = {
+    links: BusinessAppLinks;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -873,8 +889,12 @@ export type BusinessReportsProps = {
     reports: Record<ReportStatus, ReportRow[]>;
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
-    /** Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. */
-    policy: { seal_day: number; cosign_day: number };
+    /**
+     * Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. Null when
+     * no such day is published (the live monthly review closes a fixed time after delivery): the
+     * guide then names no day.
+     */
+    policy: { seal_day: number; cosign_day: number } | null;
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -882,7 +902,26 @@ export type BusinessReportsProps = {
 /* Profile (MVP-BUSINESS-SCR-09 company, signatories, documents; design L1460–1479, L1718–1891) */
 /* ------------------------------------------------------------------------------------------ */
 
-export type ProfileSection = 'company' | 'linked' | 'terms' | 'privacy';
+/** The design's Profile menu (Business.dc.html L5022–5028), in its order. */
+export type ProfileSection =
+    | 'company'
+    | 'security'
+    | 'permissions'
+    | 'linked'
+    | 'support'
+    | 'terms'
+    | 'privacy';
+
+/** A mandate permission (`MandateAuthority::PERMISSIONS`). */
+export type MandatePermission =
+    | 'business.view'
+    | 'application.create'
+    | 'application.save'
+    | 'application.evaluate'
+    | 'application.sign'
+    | 'report.cosign'
+    | 'business.wallet.deposit'
+    | 'repayment.pay';
 
 export type CompanyProfile = {
     /** The RDB-registered name: shown, never edited here. */
@@ -917,6 +956,31 @@ export type LinkedAccount = {
     unlink: RouteAction | null;
 };
 
+/** A role a person holds on the business's verified mandate. */
+export type MandateRole =
+    | 'owner'
+    | 'beneficial_owner'
+    | 'controller'
+    | 'director'
+    | 'signatory'
+    | 'representative';
+
+/**
+ * What the business's verified profile and current mandate hold, read-only. Live Profile shows
+ * this while no contact, address or certificate record exists to edit.
+ */
+export type CompanyRegistration = {
+    name: string;
+    /** RDB company code; null for a verified sole trader, and no line is shown. */
+    company_code: string | null;
+    industry: string;
+    district: string;
+    established_year: number | null;
+    /** Everyone on the mandate; `signatory` marks the people whose signature is required. */
+    people: { name: string; roles: MandateRole[]; signatory: boolean }[];
+    signatories_required: number;
+};
+
 /** A versioned legal document, as the business accepted it. */
 export type LegalDocument = {
     version: string;
@@ -929,26 +993,43 @@ export type BusinessProfileProps = {
         name: string;
         address_line: string;
         verified: boolean;
-        rating: BusinessRating;
+        /** Null until a rating is published; no score is shown. */
+        rating: BusinessRating | null;
     };
     section: ProfileSection;
     /** True at the bare Profile URL: a phone shows only the menu, a wide screen opens `section`. */
     landing: boolean;
-    company: CompanyProfile;
+    /** The editable contact record; null while none is held, and `registration` shows instead. */
+    company: CompanyProfile | null;
+    registration: CompanyRegistration | null;
     /** Provinces and the districts in each, for the address pickers. */
     provinces: {
         value: string;
         label: string;
         districts: { value: string; label: string }[];
     }[];
+    /** The mandate's people, for Permissions & roles; nothing to invite, remove or transfer. */
+    team: {
+        name: string;
+        roles: MandateRole[];
+        permissions: MandatePermission[];
+        signatory: boolean;
+    }[];
+    security: { two_factor: boolean };
+    /** Null while there is no Business read: the section shows its empty state. */
     linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
+    /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
     links: BusinessAppLinks & {
         back: RouteLink;
-        sections: Record<ProfileSection, RouteLink>;
+        /** A section with no read open to the business is null and left out of the menu. */
+        sections: Record<ProfileSection, RouteLink | null>;
+        /** The account's security settings, where the password and two-factor sign-in are managed. */
+        security_settings: RouteLink;
         sign_out: RouteAction;
     };
-    actions: { save_company: RouteAction };
+    /** Null while there is no profile command: nothing is editable. */
+    actions: { save_company: RouteAction | null };
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1117,12 +1198,13 @@ export type BusinessRatingProps = {
     /** Published factor scores out of 100, when the engine publishes them. */
     factors: { key: RatingFactorKey; score: number }[] | null;
     sizing: CapacitySizing | null;
+    /** Audited financials the rating rests on; null while none is published, and none is shown. */
     financials: {
         avg_monthly_revenue: Money;
         ebitda_month: Money;
         net_margin_percent: string;
         outstanding: Money;
-    };
+    } | null;
     links: { close: RouteLink; raise: RouteLink | null };
 };
 
@@ -1251,6 +1333,20 @@ export type BusinessRepaymentsProps = BusinessServicingPageContract & {
     actions: { pay: RouteAction | null };
     preview_outcome?: C3PreviewOutcome<'repayment.pay'>;
 };
+
+/**
+ * `business.repayments.show` while no note of the business is servicing: no note, servicing or
+ * pay panel, and no Pay. The sheet shows its empty state over Home.
+ */
+export type BusinessRepaymentsEmptyProps = Omit<
+    BusinessRepaymentsProps,
+    'note' | 'servicing' | 'pay'
+> & { note: null; servicing: null; pay: null };
+
+/** What the Repayments page receives: a servicing note's sheet, or its empty state. */
+export type BusinessRepaymentsPageProps =
+    | BusinessRepaymentsProps
+    | BusinessRepaymentsEmptyProps;
 
 /* ------------------------------------------------------------------------------------------ */
 /* Audit prep (MVP-BUSINESS-SCR-07, design L1006–1057)                                         */

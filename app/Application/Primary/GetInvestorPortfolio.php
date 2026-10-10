@@ -16,7 +16,7 @@ namespace App\Application\Primary;
  */
 final class GetInvestorPortfolio
 {
-    public const array TABS = ['active', 'matured'];
+    public const array TABS = ['active', 'matured', 'secondary', 'saved'];
 
     public function __construct(private GetInvestorViewer $viewer) {}
 

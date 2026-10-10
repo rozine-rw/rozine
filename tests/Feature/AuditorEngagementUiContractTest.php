@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\SelectActiveRole;
-use App\Models\Party;
-use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -78,7 +75,7 @@ function engagementUiProps(User $user, string $url = '/auditor/engagement', stri
 }
 
 /**
- * Reads the engagement summary on every live Auditor entry page — the role home, Jobs, the file
+ * Reads the engagement summary on every live Auditor entry page — Home, Jobs, the file
  * and the Jobs beneath it, and Profile — checks each against the banner fixture's `engagement`
  * key by key, and returns them.
  *
@@ -88,7 +85,7 @@ function engagementUiSummaries(User $user, string $assignmentId): array
 {
     $summary = engagementUiFixture('auditor-jobs-engagement-required', 'auditor/jobs')['engagement'];
     $file = engagementUiProps($user, '/auditor/jobs/'.$assignmentId, 'auditor/file');
-    $read = ['home' => engagementUiProps($user, '/auditor', 'identity/role-home')['engagement'],
+    $read = ['home' => engagementUiProps($user, '/auditor', 'auditor/home')['engagement'],
         'jobs' => engagementUiProps($user, '/auditor/jobs', 'auditor/jobs')['engagement'],
         'file' => $file['engagement'], 'file.jobs' => $file['jobs']['engagement'],
         'profile' => engagementUiProps($user, '/auditor/profile', 'auditor/profile')['engagement']];
@@ -193,18 +190,4 @@ it('carries the live engagement summary the banners read on every Auditor entry 
 
     AuditEngagementFixture::release($fixture['staff'], 2, 'withdrawn');
     expect(engagementUiSummaries($user, $assignment->id))->toBe($expect('unavailable'));
-});
-
-it('renders no engagement summary on a role home that is not the Auditor\'s', function (): void {
-    $party = Party::factory()->verified()->create();
-    $user = User::factory()->withTwoFactor()->for($party)->create();
-    RoleMembership::factory()->for($party)->active()->create(['role' => 'business']);
-    app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
-
-    $props = engagementUiProps($user, '/business', 'identity/role-home');
-    expect($props)->toHaveKey('engagement')
-        ->and($props['engagement'])->toBeNull()
-        ->and(engagementUiFixture('role-home-business', 'identity/role-home')['engagement'])->toBeNull()
-        ->and(engagementUiFixture('role-home-auditor-engagement-required', 'identity/role-home')['engagement'])
-        ->toBe(['status' => 'required', 'link' => ['url' => '/preview/auditor-engagement', 'method' => 'get']]);
 });

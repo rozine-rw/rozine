@@ -53,14 +53,12 @@ export default function BusinessReports({
         report?.archived ? 'archived' : 'verified',
     );
 
+    /** A row whose seal date or filed figures were not read names only its Audit Partner. */
     const detail = (row: ReportRow): string => {
-        if (row.status === 'in_audit') {
+        if (row.status === 'in_audit' && row.seal_by !== null) {
             return t('business.reports.row.in_audit', {
                 auditor: row.auditor,
-                date:
-                    row.seal_by === null
-                        ? '—'
-                        : formatDayMonth(row.seal_by, locale),
+                date: formatDayMonth(row.seal_by, locale),
             });
         }
 
@@ -68,12 +66,19 @@ export default function BusinessReports({
             return t('business.reports.row.annual');
         }
 
+        if (
+            row.status === 'in_audit' ||
+            row.inflow === null ||
+            row.health === null
+        ) {
+            return t('business.reports.sheet.audited_by', {
+                name: row.auditor,
+            });
+        }
+
         return t('business.reports.row.filed', {
-            inflow: row.inflow === null ? '—' : formatRwfShort(row.inflow),
-            health:
-                row.health === null
-                    ? '—'
-                    : t(`business.reports.health.${row.health}`),
+            inflow: formatRwfShort(row.inflow),
+            health: t(`business.reports.health.${row.health}`),
             auditor: row.auditor,
         });
     };
@@ -93,10 +98,7 @@ export default function BusinessReports({
                         {t('business.reports.subtitle')}
                     </p>
                 </header>
-                <AuditGuide
-                    sealDay={policy.seal_day}
-                    cosignDay={policy.cosign_day}
-                />
+                <AuditGuide policy={policy} />
                 <div
                     data-rzcol
                     className="relative lg:col-start-1 lg:row-start-2 lg:min-h-0 lg:overflow-hidden lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface"

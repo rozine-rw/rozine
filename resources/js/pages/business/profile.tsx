@@ -1,7 +1,15 @@
 import { Link } from '@inertiajs/react';
 import { BusinessShell } from '@/components/business/business-shell';
+import {
+    PendingSection,
+    SecurityCenter,
+    TeamPermissions,
+} from '@/components/business/profile/account-sections';
 import { CompanyForm } from '@/components/business/profile/company-form';
-import { CompanyRecords } from '@/components/business/profile/company-records';
+import {
+    CompanyRecords,
+    CompanyRegistrationRecord,
+} from '@/components/business/profile/company-records';
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
@@ -13,15 +21,20 @@ const COLUMN =
     'lg:min-h-0 lg:min-w-0 lg:flex-[0_0_calc(50%-8px)] lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface';
 
 /**
- * Profile (MVP-BUSINESS-SCR-09, design L1460–1479 and L1718–1891). A phone shows the menu, then
- * each section as its own page; a wide screen keeps the menu beside the open section.
+ * Profile (MVP-BUSINESS-SCR-09, design L1460–1479 and L1718–1891), with the design's seven
+ * sections. A phone shows the menu, then each section as its own page; a wide screen keeps the
+ * menu beside the open section. Company details are editable only with a save action; otherwise
+ * the record on file shows read-only. A section with nothing to read yet shows its empty state.
  */
 export default function BusinessProfile({
     business,
     section,
     landing,
     company,
+    registration,
     provinces,
+    team,
+    security,
     linked,
     legal,
     links,
@@ -76,21 +89,46 @@ export default function BusinessProfile({
                     </div>
                     {section === 'company' && (
                         <>
-                            <CompanyForm
-                                company={company}
-                                provinces={provinces}
-                                action={actions.save_company}
-                            />
-                            <CompanyRecords company={company} />
+                            {company !== null &&
+                                actions.save_company !== null && (
+                                    <CompanyForm
+                                        company={company}
+                                        provinces={provinces}
+                                        action={actions.save_company}
+                                    />
+                                )}
+                            {company !== null && (
+                                <CompanyRecords company={company} />
+                            )}
+                            {registration !== null && (
+                                <CompanyRegistrationRecord
+                                    registration={registration}
+                                />
+                            )}
                         </>
                     )}
-                    {section === 'linked' && linked !== null && (
-                        <LinkedAccounts linked={linked} />
+                    {section === 'security' && (
+                        <SecurityCenter
+                            security={security}
+                            settings={links.security_settings}
+                        />
                     )}
+                    {section === 'permissions' && (
+                        <TeamPermissions team={team} />
+                    )}
+                    {section === 'linked' &&
+                        (linked === null ? (
+                            <PendingSection kind="linked" />
+                        ) : (
+                            <LinkedAccounts linked={linked} />
+                        ))}
+                    {section === 'support' && <PendingSection kind="support" />}
                     {(section === 'terms' || section === 'privacy') &&
-                        legal !== null && (
+                        (legal === null ? (
+                            <PendingSection kind={section} />
+                        ) : (
                             <LegalDocument kind={section} document={legal} />
-                        )}
+                        ))}
                 </section>
             </div>
         </BusinessShell>

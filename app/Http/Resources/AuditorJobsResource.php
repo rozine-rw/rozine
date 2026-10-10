@@ -133,9 +133,23 @@ class AuditorJobsResource extends JsonResource
         $operation = self::link(self::prefix($request).'jobs.operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
 
-        return ['home' => $request->routeIs('api.*') ? null : self::link('auditor.home'), 'jobs' => self::link(self::prefix($request).'jobs.index'), 'portfolio' => null,
+        return ['home' => $request->routeIs('api.*') ? null : self::link('auditor.home'), 'jobs' => self::link(self::prefix($request).'jobs.index'),
+            'portfolio' => $request->routeIs('api.*') ? null : self::link('auditor.portfolio.index'),
             'profile' => self::link(self::prefix($request).'profile'), 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'),
             'conflicts' => self::link(self::prefix($request).'conflicts.index'), 'operation' => $operation];
+    }
+
+    /**
+     * Open offers on a read of the partner's work, for the Jobs tab badge. They are counted only
+     * when the read holds all of that work (no next page); otherwise the count is 0 and the badge
+     * stays hidden, so a page's share is never shown as the total.
+     *
+     * @param  array{data: list<AuditApplication>, next_cursor: string|null}  $work
+     */
+    public static function openJobs(array $work): int
+    {
+        return $work['next_cursor'] !== null ? 0
+            : count(array_filter($work['data'], fn (array $record): bool => $record['work']['assignment']['status'] !== 'accepted'));
     }
 
     /** @return array{next: array{url: string, method: 'get'}|null} */

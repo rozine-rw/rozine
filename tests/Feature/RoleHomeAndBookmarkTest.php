@@ -40,17 +40,34 @@ function bookmarkPayload(string $role = 'investor', string $section = 'access', 
         'expected_revision' => $revision, 'request_id' => (string) Str::uuid()];
 }
 
-it('authorizes each home without switching roles and shares the API identity facts', function (string $role): void {
-    [$user] = bookmarkParticipant($role);
-    $this->actingAs($user)->getJson(route($role.'.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
+it('authorizes the Investor home without switching roles and opens Deals with no page in between', function (): void {
+    [$user] = bookmarkParticipant('investor');
+    $this->actingAs($user)->getJson(route('investor.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
     expect($user->refresh()->context_revision)->toBe(0);
-    $selected = app(SelectActiveRole::class)->handle($user->id, $role, 0, (string) Str::uuid());
-    $this->get(route($role.'.home', ['section' => 'access']))->assertInertia(fn (Assert $page): Assert => $page
-        ->component('identity/role-home', false)->where('identity', $selected)->where('role', $role)->where('section', 'access'));
-    $this->get(route($role.'.home'))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'overview'));
-    $this->getJson(route('api.v1.identity.roles.show', $role))->assertExactJson(['data' => $selected]);
+    $selected = app(SelectActiveRole::class)->handle($user->id, 'investor', 0, (string) Str::uuid());
+    $this->get(route('investor.home', ['section' => 'access']))->assertRedirectToRoute('investor.deals');
+    $this->get(route('investor.home'))->assertRedirectToRoute('investor.deals');
+    $this->getJson(route('api.v1.identity.roles.show', 'investor'))->assertExactJson(['data' => $selected]);
     expect($user->refresh()->context_revision)->toBe(1);
-})->with(['investor', 'business', 'auditor']);
+});
+
+it('sends a Business member with no business on record back to the launcher instead of an empty page', function (): void {
+    [$user] = bookmarkParticipant('business');
+    $this->actingAs($user)->getJson(route('business.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
+    app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
+    $this->get(route('business.home'))->assertRedirectToRoute('dashboard');
+});
+
+it('authorizes the Auditor home the same way and renders the designed Auditor Home there', function (): void {
+    [$user] = bookmarkParticipant('auditor');
+    $this->actingAs($user)->getJson(route('auditor.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
+    expect($user->refresh()->context_revision)->toBe(0);
+    $selected = app(SelectActiveRole::class)->handle($user->id, 'auditor', 0, (string) Str::uuid());
+    $this->get(route('auditor.home', ['section' => 'access']))->assertInertia(fn (Assert $page): Assert => $page
+        ->component('auditor/home', false)->where('identity_context_revision', $selected['context_revision'])->missing('section')->missing('identity'));
+    $this->getJson(route('api.v1.identity.roles.show', 'auditor'))->assertExactJson(['data' => $selected]);
+    expect($user->refresh()->context_revision)->toBe(1);
+});
 
 it('saves and resumes the current account position with web and API parity', function (): void {
     [$user] = bookmarkParticipant();
