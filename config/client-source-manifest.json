@@ -1,7 +1,10 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [".ts", ".tsx"],
+    "extensions": [
+        ".ts",
+        ".tsx"
+    ],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -433,6 +436,7 @@
         "resources/js/components/business/onboarding/step-documents.tsx",
         "resources/js/components/business/onboarding/step-finish.tsx",
         "resources/js/components/business/onboarding/upload-tile.tsx",
+        "resources/js/components/business/profile/account-sections.tsx",
         "resources/js/components/business/profile/company-form.tsx",
         "resources/js/components/business/profile/company-records.tsx",
         "resources/js/components/business/profile/legal-document.tsx",
@@ -649,6 +653,7 @@
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/market.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
@@ -682,10 +687,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 654,
+        "totalTrackedSources": 656,
         "generated": 258,
         "declarationOnly": 18,
-        "authoredExecutable": 378
+        "authoredExecutable": 380
     },
-    "coverageSetSha256": "6a880fee7038e400fe7ea1f435e93674f600c83815ed37cb2ca3b7ea35bfebee"
+    "coverageSetSha256": "a594e43af5f5951dc0a961ad5e8072ca015ad15c1383a0c414dc8e3d0acf5314"
 }
