@@ -6,11 +6,11 @@
         "identity_context_revision": 5,
         "server_time": "2026-09-23T09:00:00+02:00",
         "allowed_actions": [],
-        "tab": "active",
+        "tab": "secondary",
         "tabs": [
             {
                 "key": "active",
-                "active": true,
+                "active": false,
                 "link": {
                     "url": "/preview/investor-portfolio",
                     "method": "get"
@@ -26,7 +26,7 @@
             },
             {
                 "key": "secondary",
-                "active": false,
+                "active": true,
                 "link": {
                     "url": "/preview/investor-portfolio-secondary",
                     "method": "get"
@@ -75,182 +75,7 @@
                 "amount": "540094"
             }
         },
-        "holdings": [
-            {
-                "id": "h-greenleaf",
-                "name": "GreenLeaf Agro",
-                "accent": "green",
-                "industry": "Agriculture",
-                "district": "Gasabo",
-                "health": "healthy",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "890000"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "800000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "90000"
-                },
-                "gain_pct": "11.3",
-                "repaid_pct": 83,
-                "matures_on": "2026-10-03T00:00:00+02:00",
-                "payments_made": 5,
-                "payments_total": 6,
-                "link": {
-                    "url": "/preview/investor-holding",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "h-musanze",
-                "name": "Musanze Traders",
-                "accent": "blue",
-                "industry": "Construction",
-                "district": "Nyarugenge",
-                "health": "healthy",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "946800"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "900000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "46800"
-                },
-                "gain_pct": "5.2",
-                "repaid_pct": 40,
-                "matures_on": "2026-12-20T00:00:00+02:00",
-                "payments_made": 2,
-                "payments_total": 5,
-                "link": {
-                    "url": "/preview/investor-holding-musanze",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "h-isoko",
-                "name": "Isoko Energy",
-                "accent": "ink",
-                "industry": "Energy",
-                "district": "Nyarugenge",
-                "health": "arrears",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "497168"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "475000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "22168"
-                },
-                "gain_pct": "4.7",
-                "repaid_pct": 33,
-                "matures_on": "2026-11-12T00:00:00+02:00",
-                "payments_made": 2,
-                "payments_total": 6,
-                "link": {
-                    "url": "/preview/investor-holding-arrears",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "h-intare",
-                "name": "Intare Supply",
-                "accent": "purple",
-                "industry": "Hospitality",
-                "district": "Nyarugenge",
-                "health": "healthy",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "1029168"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "950000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "79168"
-                },
-                "gain_pct": "8.3",
-                "repaid_pct": 67,
-                "matures_on": "2026-11-10T00:00:00+02:00",
-                "payments_made": 4,
-                "payments_total": 6,
-                "link": {
-                    "url": "/preview/investor-holding-intare",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "h-karongi",
-                "name": "Karongi Freight",
-                "accent": "teal",
-                "industry": "Logistics",
-                "district": "Karongi",
-                "health": "healthy",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "654000"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "600000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "54000"
-                },
-                "gain_pct": "9.0",
-                "repaid_pct": 75,
-                "matures_on": "2026-10-05T00:00:00+02:00",
-                "payments_made": 3,
-                "payments_total": 4,
-                "link": {
-                    "url": "/preview/investor-holding-karongi",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "h-kivu",
-                "name": "Kivu Coffee",
-                "accent": "green",
-                "industry": "Agriculture",
-                "district": "Rubavu",
-                "health": "watch",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "467250"
-                },
-                "invested": {
-                    "currency": "RWF",
-                    "amount": "450000"
-                },
-                "gain": {
-                    "currency": "RWF",
-                    "amount": "17250"
-                },
-                "gain_pct": "3.8",
-                "repaid_pct": 33,
-                "matures_on": "2026-11-03T00:00:00+02:00",
-                "payments_made": 1,
-                "payments_total": 3,
-                "link": {
-                    "url": "/preview/investor-holding-plan",
-                    "method": "get"
-                }
-            }
-        ],
+        "holdings": [],
         "payouts": [
             {
                 "month": "2026-10-01T00:00:00+02:00",
@@ -449,40 +274,6 @@
                 "method": "get"
             }
         },
-        "commitments": [
-            {
-                "id": "cmt1_01k6r3",
-                "deal_name": "GreenLeaf Agro",
-                "units": "6",
-                "principal": {
-                    "currency": "RWF",
-                    "amount": "30000"
-                },
-                "state": "confirmed",
-                "closing": null,
-                "link": {
-                    "url": "/preview/investor-commitment-confirmed",
-                    "method": "get"
-                }
-            },
-            {
-                "id": "cmt2_01k6r3",
-                "deal_name": "Kivu Coffee",
-                "units": "6",
-                "principal": {
-                    "currency": "RWF",
-                    "amount": "30000"
-                },
-                "state": "funded",
-                "closing": {
-                    "stage": "in_flight",
-                    "provider": "unknown"
-                },
-                "link": {
-                    "url": "/preview/investor-commitment-funded-unknown",
-                    "method": "get"
-                }
-            }
-        ]
+        "commitments": []
     }
 }

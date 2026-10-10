@@ -3206,6 +3206,8 @@ const en = {
     'investor.portfolio.tabs': 'Holdings',
     'investor.portfolio.tab.active': 'Active',
     'investor.portfolio.tab.matured': 'Matured',
+    'investor.portfolio.tab.secondary': 'Secondary',
+    'investor.portfolio.tab.saved': 'Saved',
     'investor.portfolio.invested_line': 'Invested RWF {amount}',
     'investor.portfolio.matures_line':
         'Matures {date} · {made}/{total} payments',
@@ -3217,6 +3219,10 @@ const en = {
     'investor.portfolio.empty.matured.title': 'Nothing here yet',
     'investor.portfolio.empty.matured.body':
         'Holdings in this category will appear here.',
+    'investor.portfolio.empty.secondary.title': 'Nothing here yet',
+    'investor.portfolio.empty.secondary.body':
+        'Holdings in this category will appear here.',
+    'investor.portfolio.empty.saved.title': 'No saved deals yet',
     'investor.portfolio.browse_deals': 'Browse opportunities',
     'investor.portfolio.total_value': 'TOTAL VALUE',
     'investor.portfolio.businesses': '{count} businesses',

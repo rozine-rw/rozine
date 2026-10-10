@@ -448,7 +448,8 @@ export type Concentration =
     | { status: 'concentrated'; business: string; share_pct: number }
     | { status: 'balanced' };
 
-export type PortfolioTab = 'active' | 'matured';
+/** The design's Portfolio tabs; Secondary and Saved have no read yet and open empty. */
+export type PortfolioTab = 'active' | 'matured' | 'secondary' | 'saved';
 
 export type InvestorPortfolioProps = {
     tab: PortfolioTab;

@@ -3311,6 +3311,8 @@ const rw: Catalog = {
     'investor.portfolio.tabs': 'Ibyo ufite',
     'investor.portfolio.tab.active': 'Bikora',
     'investor.portfolio.tab.matured': 'Byarangiye',
+    'investor.portfolio.tab.secondary': 'Isoko rya kabiri',
+    'investor.portfolio.tab.saved': 'Ibyo wabitse',
     'investor.portfolio.invested_line': 'Washoye RWF {amount}',
     'investor.portfolio.matures_line':
         'Birangira {date} · {made}/{total} byishyuwe',
@@ -3322,6 +3324,10 @@ const rw: Catalog = {
     'investor.portfolio.empty.matured.title': 'Nta kintu kiri hano',
     'investor.portfolio.empty.matured.body':
         'Ibyo ufite muri iki cyiciro bizagaragara hano.',
+    'investor.portfolio.empty.secondary.title': 'Nta kintu kiri hano',
+    'investor.portfolio.empty.secondary.body':
+        'Ibyo ufite muri iki cyiciro bizagaragara hano.',
+    'investor.portfolio.empty.saved.title': 'Nta mahirwe urabika',
     'investor.portfolio.browse_deals': 'Reba amahirwe',
     'investor.portfolio.total_value': 'AGACIRO KOSE',
     'investor.portfolio.businesses': 'Ibigo {count}',
