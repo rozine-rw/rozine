@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\GetBusinessProfile;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
@@ -159,7 +160,9 @@ Route::get('business/{business}', [BusinessHomeController::class, 'show'])->midd
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.')->group(function (): void {
     Route::get('{business}/reports', [BusinessHomeController::class, 'reports'])->whereUlid('business')->name('reports');
-    Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')->whereIn('section', ['company'])->name('profile');
+    Route::get('{business}/market', [BusinessHomeController::class, 'market'])->whereUlid('business')->name('market');
+    Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
+        ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
 });
 

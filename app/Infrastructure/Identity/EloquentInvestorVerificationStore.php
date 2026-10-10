@@ -136,6 +136,24 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
     }
 
     /**
+     * A read with no lock: it changes nothing, and an approved submission is never edited again.
+     *
+     * @return array{id_type: 'national_id'|'passport'|'drivers_license', id_number: string}|null
+     */
+    public function approvedDocument(int $userId): ?array
+    {
+        $partyId = User::query()->whereKey($userId)->value('party_id');
+        $state = $partyId === null ? null
+            : InvestorVerification::query()->where('party_id', $partyId)->where('status', 'approved')->value('state');
+        if (! is_array($state) || ($state['id_number'] ?? '') === '') {
+            return null;
+        }
+
+        /** @var State $state */
+        return ['id_type' => $state['id_type'], 'id_number' => $state['id_number']];
+    }
+
+    /**
      * Refusals recorded for these commands carry the KYC policy they were decided under, like their successes.
      *
      * @param  Closure(): OperationResult  $operation

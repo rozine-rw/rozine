@@ -68,6 +68,7 @@ function codes<S extends string>(section: S) {
 const notes = codes('notes');
 const primary = codes('primary_market');
 const secondary = codes('secondary_market');
+const reports = codes('reports');
 const risk = codes('risk');
 const compliance = codes('compliance');
 const payments = codes('payments');
@@ -150,6 +151,30 @@ export const SECTION_DESIGNS: Record<
                     'volume_30d',
                     'trades',
                 ],
+            }),
+        ],
+    },
+    reports: {
+        kpis: [
+            reports.kpi('published'),
+            reports.kpi('awaiting'),
+            reports.kpi('breached'),
+            reports.kpi('on_time'),
+        ],
+        blocks: [
+            reports.block('field', {
+                sub: reports.sub('field'),
+                columns: [
+                    'business',
+                    'assigned_cpa',
+                    'status',
+                    'variance',
+                    'signed',
+                ],
+            }),
+            reports.block('monthly', {
+                sub: reports.sub('monthly'),
+                columns: ['business', 'period', 'audit_partner', 'status'],
             }),
         ],
     },

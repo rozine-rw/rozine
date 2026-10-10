@@ -71,6 +71,7 @@ export type AdminPendingSection =
     | 'notes'
     | 'primary_market'
     | 'secondary_market'
+    | 'reports'
     | 'risk'
     | 'compliance'
     | 'payments'

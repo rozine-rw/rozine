@@ -169,7 +169,29 @@ const fr: Catalog = {
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
+    'business.nav.market': 'Marché',
     'business.nav.profile': 'Profil',
+    'business.market.title': 'Aperçu du marché',
+    'business.market.subtitle':
+        'Comment vos notes se comportent sur le marché secondaire.',
+    'business.market.tile.demand': 'DEMANDE',
+    'business.market.tile.price': 'PRIX SECONDAIRE MOYEN',
+    'business.market.tile.volume': 'VOLUME (7 J)',
+    'business.market.tile.liquidity': 'SCORE DE LIQUIDITÉ',
+    'business.market.chart': 'Prix secondaire',
+    'business.market.range': 'Période du prix',
+    'business.market.range_7d': '7 J',
+    'business.market.range_14d': '14 J',
+    'business.market.range_30d': '30 J',
+    'business.market.chart_empty':
+        'Aucune transaction secondaire pour le moment.',
+    'business.market.high': 'PLUS HAUT',
+    'business.market.low': 'PLUS BAS',
+    'business.market.notes': 'Vos notes sur le marché',
+    'business.market.notes_empty_title':
+        "Aucune de vos notes ne s'échange encore",
+    'business.market.notes_empty_body':
+        "Les notes revendues par les investisseurs avant l'échéance apparaîtront ici avec leur prix.",
     'business.home.head_title': 'Accueil',
     'business.home.wallet_balance': 'Solde du portefeuille',
     'business.home.deposit': 'Déposer',
@@ -645,6 +667,39 @@ const fr: Catalog = {
     'business.profile.section.linked': 'Comptes liés',
     'business.profile.section.terms': 'Conditions générales',
     'business.profile.section.privacy': 'Note de confidentialité',
+    'business.profile.section.security': 'Centre de sécurité',
+    'business.profile.section.permissions': 'Autorisations et rôles',
+    'business.profile.section.support': "Centre d'assistance",
+    'business.profile.security.two_factor': 'Authentification à deux facteurs',
+    'business.profile.security.two_factor_on':
+        "Activée · code d'une application d'authentification à la connexion",
+    'business.profile.security.two_factor_off':
+        "Désactivée · ajoutez un code d'application d'authentification à la connexion",
+    'business.profile.security.password': 'Changer le mot de passe',
+    'business.profile.permissions.none':
+        'Aucune autorisation sur cette entreprise',
+    'business.profile.permissions.business.view': "Consulter l'entreprise",
+    'business.profile.permissions.application.create': 'Lancer des levées',
+    'business.profile.permissions.application.save': 'Modifier les demandes',
+    'business.profile.permissions.application.evaluate':
+        "Vérifier l'éligibilité",
+    'business.profile.permissions.application.sign': 'Signer les demandes',
+    'business.profile.permissions.report.cosign': 'Cosigner les rapports',
+    'business.profile.permissions.business.wallet.deposit':
+        'Alimenter le portefeuille',
+    'business.profile.permissions.repayment.pay': 'Payer les remboursements',
+    'business.profile.pending.linked_title': 'Aucun compte de versement',
+    'business.profile.pending.linked_body':
+        'Les comptes de versement liés à cette entreprise apparaîtront ici.',
+    'business.profile.pending.support_title': "Bientôt dans l'application",
+    'business.profile.pending.support_body':
+        'Les réponses aux questions les plus fréquentes des entreprises apparaîtront ici.',
+    'business.profile.pending.terms_title': "Bientôt dans l'application",
+    'business.profile.pending.terms_body':
+        'Les Conditions générales pourront être consultées ici dès leur publication.',
+    'business.profile.pending.privacy_title': "Bientôt dans l'application",
+    'business.profile.pending.privacy_body':
+        'La Note de confidentialité pourra être consultée ici dès sa publication.',
     'business.profile.sign_out': 'Se déconnecter',
     'business.profile.back': 'Retour au profil',
     'business.profile.company.name': "Nom de l'entreprise",
@@ -880,6 +935,11 @@ const fr: Catalog = {
     'admin.design.col.points': 'Points',
     'admin.design.col.app': 'Application',
     'admin.design.col.status': 'Statut',
+    'admin.design.col.assigned_cpa': 'CPA assigné',
+    'admin.design.col.variance': 'V_total / J',
+    'admin.design.col.signed': 'Signature',
+    'admin.design.col.period': 'Période',
+    'admin.design.col.audit_partner': "Partenaire d'audit",
     'admin.design.col.features': 'Fonctionnalités',
     'admin.design.col.entity': 'Élément',
     'admin.design.col.input': 'Paramètre',
@@ -937,6 +997,21 @@ const fr: Catalog = {
         'Notes en difficulté · alerte précoce',
     'admin.design.risk.distressed.empty':
         'Aucune note en difficulté à afficher pour le moment.',
+    'admin.design.reports.kpi.published': 'Audités et publiés',
+    'admin.design.reports.kpi.awaiting': "En attente d'audit",
+    'admin.design.reports.kpi.breached': 'SLA dépassé',
+    'admin.design.reports.kpi.on_time': "Taux d'audit à temps",
+    'admin.design.reports.field.title':
+        "Opérations d'audit flash sur le terrain",
+    'admin.design.reports.field.sub':
+        "Chaque visite de terrain avec son CPA, l'écart, l'heure de validation et les constats signés.",
+    'admin.design.reports.field.empty':
+        'Aucune mission ISRS 4400 enregistrée pour le moment.',
+    'admin.design.reports.monthly.title':
+        'Suivi de conformité des audits mensuels',
+    'admin.design.reports.monthly.sub':
+        'Relevés mensuels, vérifiés sur place avant le 7.',
+    'admin.design.reports.monthly.empty': 'Rien dans cette vue.',
     'admin.design.compliance.kpi.kyc_completion': 'Achèvement KYC',
     'admin.design.compliance.kpi.aml_alerts': 'Alertes AML',
     'admin.design.compliance.kpi.sanctions': 'Correspondances sanctions',
@@ -1292,8 +1367,8 @@ const fr: Catalog = {
     'admin.ledger.kind.contra': 'Contre-passation',
     'admin.today.commands': 'Commandes rapides',
     'admin.today.command.review_queue': "File d'examen",
-    'admin.today.command.release_queue': 'File de versement',
-    'admin.today.command.audit_trail': "Piste d'audit",
+    'admin.today.command.audit_desk': "Bureau d'audit",
+    'admin.today.command.policies': 'Politiques',
     'admin.today.kpi.capital_raised': 'Capital total levé',
     'admin.today.kpi.capital_raised_trend': 'Sur tous les titres',
     'admin.today.kpi.active_businesses': 'Entreprises actives',
@@ -3448,11 +3523,48 @@ const fr: Catalog = {
     'investor.profile.type.institution': 'Institution',
     'investor.profile.member_since': 'Membre depuis {date}',
     'investor.profile.item.linked': 'Comptes liés',
-    'investor.profile.item.statements': 'Relevés',
+    'investor.profile.item.statements': 'Relevés et impôts',
     'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': "Vérification d'identité",
     'investor.profile.item.terms': 'Conditions générales',
     'investor.profile.item.privacy': 'Note de confidentialité',
+    'investor.profile.item.personal': 'Informations personnelles',
+    'investor.profile.item.plan': 'Rozine Plus · comment le débloquer',
+    'investor.profile.item.security': 'Centre de sécurité',
+    'investor.profile.item.help': "Centre d'aide",
+    'investor.profile.plan_title': 'Rozine Plus',
+    'investor.profile.personal.name': 'NOM COMPLET',
+    'investor.profile.personal.email': 'E-MAIL',
+    'investor.profile.personal.phone': 'TÉLÉPHONE',
+    'investor.profile.personal.id_type': 'TYPE DE PIÈCE',
+    'investor.profile.personal.id_number': 'NUMÉRO DE PIÈCE',
+    'investor.profile.personal.passport_number': 'NUMÉRO DE PASSEPORT',
+    'investor.profile.personal.address': 'ADRESSE',
+    'investor.profile.personal.country': 'PAYS',
+    'investor.profile.personal.province': 'PROVINCE',
+    'investor.profile.personal.district': 'DISTRICT',
+    'investor.profile.personal.sector': 'SECTEUR',
+    'investor.profile.personal.cell': 'CELLULE',
+    'investor.profile.personal.not_provided': 'Non renseigné',
+    'investor.profile.security.two_factor': 'Authentification à deux facteurs',
+    'investor.profile.security.two_factor_on':
+        "Activée · code d'une application d'authentification à la connexion",
+    'investor.profile.security.two_factor_off':
+        "Désactivée · ajoutez un code d'application d'authentification à la connexion",
+    'investor.profile.security.password': 'Changer le mot de passe',
+    'investor.profile.pending.plan_title':
+        "Rozine Plus n'est pas encore ouvert",
+    'investor.profile.pending.plan_body':
+        "Ses paliers et ses frais sont encore en cours de définition. D'ici là, vous investissez opération par opération, aux conditions affichées pour chacune.",
+    'investor.profile.pending.help_title': "Bientôt dans l'application",
+    'investor.profile.pending.help_body':
+        'Les réponses aux questions les plus fréquentes des investisseurs apparaîtront ici.',
+    'investor.profile.pending.terms_title': "Bientôt dans l'application",
+    'investor.profile.pending.terms_body':
+        'Les Conditions générales pourront être consultées ici dès leur publication.',
+    'investor.profile.pending.privacy_title': "Bientôt dans l'application",
+    'investor.profile.pending.privacy_body':
+        'La Note de confidentialité pourra être consultée ici dès sa publication.',
     'investor.profile.sign_out': 'Se déconnecter',
     'investor.profile.linked.unlink': 'Délier',
     'investor.profile.linked.unverified': 'En vérification',
@@ -5129,10 +5241,10 @@ const fr: Catalog = {
     'admin.section.coverage.subtitle':
         'Partenaires d’audit et audits ouverts dans chaque district, et si le district est couvert. Lecture seule.',
     'admin.section.coverage.search': 'Rechercher par district ou province…',
-    'admin.section.reports.title': 'Rapports',
+    'admin.section.reports.title': 'Rapports mensuels',
     'admin.section.reports.subtitle':
-        'Dossiers pour le régulateur et le conseil, et exports, chacun pour sa période et aussi définitif que ses chiffres. Lecture seule.',
-    'admin.section.reports.search': 'Rechercher par dossier ou période…',
+        'Rapports de performance des entreprises publiés pour les investisseurs',
+    'admin.section.reports.search': 'Rechercher…',
     'admin.reconciliation.day_close.label': 'Clôture de la journée',
     'admin.reconciliation.day_close.title': 'Clôture de la journée · {date}',
     'admin.reconciliation.day_close.state.reconciled': 'Rapprochée',
