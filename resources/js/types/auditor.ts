@@ -1247,7 +1247,17 @@ export type Accreditation =
           submission: AccreditationSubmission;
       };
 
-export type ProfileSection = 'accreditation' | 'availability';
+/** The design's Profile menu (Auditor.dc.html L3528–3536), in its order. */
+export type ProfileSection =
+    | 'earnings'
+    | 'contact'
+    | 'accreditation'
+    | 'payout'
+    | 'availability'
+    | 'telemetry'
+    | 'security'
+    | 'learn'
+    | 'legal';
 
 /**
  * The partner as the Profile shows them. A fact Rozine holds no record of yet — the firm, the
@@ -1281,6 +1291,9 @@ export type AuditorProfileProps = AuditorPageContract &
         quality_score: number | null;
         on_time_pct: number | null;
         jobs_done: number;
+        /** The account's own email; no phone or address is held, so they are null. */
+        contact: { email: string; phone: null; address: null };
+        security: { two_factor: boolean };
         accreditation: Accreditation;
         /** Whether dispatch may offer work now; read with `availability.accepting`. */
         standing: DispatchStanding;
@@ -1296,6 +1309,8 @@ export type AuditorProfileProps = AuditorPageContract &
             OperationLookupLinks &
             AccreditationCertificateLinks & {
                 sections: Record<ProfileSection, RouteLink>;
+                /** The account's security settings, where the password and two-factor sign-in are managed. */
+                security_settings: RouteLink;
             };
         preview_outcome?: AuditorPreviewOutcome;
     };

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "3e5c9e1d122bda6798c4aba87810ed1b12d13fbbefd65aecb4d6a46b9bc1ec80",
-    "coverageSetSha256": "5c16487283ad86d2cc0321a6ca49a0e8f16a84520fc53374b91de4b835d57d13",
+    "sourceManifestSha256": "f029cb4797662b949bbc131076ad4ee7f5193ae47111879f9a6814b95260abfb",
+    "coverageSetSha256": "be6ce143a7d09f91021fe9dc654650353c91afbbf8fe2f12cc2d310eea7e0865",
     "thresholds": {
         "critical": {
             "global": {
@@ -125,6 +125,7 @@
         "resources/js/components/auditor/money.ts",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",

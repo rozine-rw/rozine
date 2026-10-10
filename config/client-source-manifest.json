@@ -1,7 +1,10 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [".ts", ".tsx"],
+    "extensions": [
+        ".ts",
+        ".tsx"
+    ],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -378,6 +381,7 @@
         "resources/js/components/auditor/money.ts",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
@@ -679,10 +683,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 651,
+        "totalTrackedSources": 652,
         "generated": 257,
         "declarationOnly": 18,
-        "authoredExecutable": 376
+        "authoredExecutable": 377
     },
-    "coverageSetSha256": "5c16487283ad86d2cc0321a6ca49a0e8f16a84520fc53374b91de4b835d57d13"
+    "coverageSetSha256": "be6ce143a7d09f91021fe9dc654650353c91afbbf8fe2f12cc2d310eea7e0865"
 }
