@@ -51,7 +51,7 @@ it('shows the account, its verified state and its verified funding methods, offe
             'verified' => true, 'unlink' => null]], 'banks' => []])
         ->and($props['statements'])->toBe(['annual' => null, 'monthly' => []])
         ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
-            'profile' => $profile(), 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'notifications' => null,
+            'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'], 'profile' => $profile(), 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'notifications' => null,
             'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'overview' => $profile(), 'linked' => $profile('?section=linked'),
             'statements' => $profile('?section=statements'), 'automation' => $profile('?section=automation'),
             'verification' => ['url' => '/investor/verified', 'method' => 'get'], 'terms' => null, 'privacy' => null])
