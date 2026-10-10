@@ -17,6 +17,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * partner's private conflict read, which names no Business or note, so neither is sent. The
  * audit calendar reads what the partner owes from the same work: every accepted assignment with a
  * due date whose report is not sealed yet, linked to its file (a sealed one is already a report).
+ * `reports_complete` says whether the reports sent are every report the partner filed: the read
+ * stops at its page size and a filter narrows it, so the calendar must not call a month empty then.
  * Earnings, origination, yield-share and managed deals have no read yet, so nothing is sent for
  * them and the page shows the design's empty states.
  *
@@ -67,6 +69,7 @@ class AuditorPortfolioResource extends JsonResource
                 'declare' => ['url' => str_replace(self::ASSIGNMENT_PLACEHOLDER, '{assignment}', $declare), 'method' => 'post']],
             'owed' => $owed,
             'owed_complete' => $page['jobs']['next_cursor'] === null,
+            'reports_complete' => $page['filter'] === self::FILTERS[0] && count($page['reports']['data']) >= $counts['all'],
             'outcome' => null,
             'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => AuditorJobsResource::links($request)];

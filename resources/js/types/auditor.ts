@@ -1183,6 +1183,12 @@ export type AuditorPortfolioProps = AuditorPageContract & {
      * an all-clear and points to the Jobs list for the rest.
      */
     owed_complete: boolean;
+    /**
+     * Whether `reports` is every report the partner filed. False when the report read was cut at
+     * its page size or narrowed by a filter: a month may then be missing reports, so the calendar
+     * must not call it empty.
+     */
+    reports_complete: boolean;
     conflicts: {
         files: AssignedFile[];
         record: ConflictEntry[];

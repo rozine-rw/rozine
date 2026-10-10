@@ -2321,6 +2321,8 @@ const en = {
         'This calendar shows your latest assignments only. Open Jobs to check every verification you owe.',
     'auditor.calendar.partial_empty':
         'Nothing due this month among your latest assignments.',
+    'auditor.calendar.reports_partial':
+        'Only your latest filed reports are shown here, so a month may be missing some.',
     'auditor.calendar.open_jobs': 'Open Jobs',
     'auditor.calendar.share': 'Your share',
     'auditor.calendar.on_time_by': 'On-time by',

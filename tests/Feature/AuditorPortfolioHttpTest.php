@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Identity\SelectActiveRole;
+use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\AuditAssignment;
 use App\Models\Party;
@@ -85,7 +87,7 @@ it('renders an empty Portfolio in the live contract shape with its empty states 
             'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(), 'allowed_actions' => [],
             'reports' => [], 'filter' => 'all', 'filters' => auditorPortfolioFilters(0, 0, 0),
             'conflicts' => ['files' => [], 'record' => [], 'declare' => ['url' => '/auditor/jobs/{assignment}/conflict', 'method' => 'post']],
-            'owed' => [], 'owed_complete' => true, 'outcome' => null, 'open_jobs' => 0,
+            'owed' => [], 'owed_complete' => true, 'reports_complete' => true, 'outcome' => null, 'open_jobs' => 0,
             'links' => ['home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
                 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
                 'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
@@ -110,14 +112,15 @@ it('lists sealed reports as awaiting co-sign until published, with exact filter 
     expect($report['due_on'])->toBeString();
     $props = auditorPortfolioProps($fixture['user']);
     expect($props['reports'])->toBe([$report])->and($props['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))
-        ->and($props['owed'])->toBe([]);
-    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [], 'filters' => auditorPortfolioFilters(1, 1, 0)]);
+        ->and($props['owed'])->toBe([])->and($props['reports_complete'])->toBeTrue();
+    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [],
+        'filters' => auditorPortfolioFilters(1, 1, 0), 'reports_complete' => false]);
     $this->get($report['link']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/audit'));
     expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $published = [...$report, 'status' => 'published'];
-    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published'])['reports'])->toBe([$published])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => []])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1)])
+    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['reports' => [$published], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => [], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1), 'reports_complete' => true])
         ->and(auditorPortfolioProps($fixture['user'], ['filter' => ['published']])['filter'])->toBe('all')
         ->and(auditorPortfolioProps(AuditorFixture::make()['user'])['reports'])->toBe([]);
 });
@@ -132,6 +135,31 @@ it('names a monthly report by its period and dates it by the monthly report wind
         'due_on' => app(AuditReportWindow::class)->dueAt($period), 'status' => 'awaiting_cosign']);
 });
 
+it('never calls the filed reports complete once the read stops at its page size', function (): void {
+    $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    expect(auditorPortfolioProps($fixture['user'])['reports_complete'])->toBeTrue();
+    $store = new class(app(AuditorFiledReportStore::class)) implements AuditorFiledReportStore
+    {
+        /** @var list<int> */
+        public array $limits = [];
+
+        public function __construct(private AuditorFiledReportStore $store) {}
+
+        public function filed(int $userId, int $contextRevision, ?bool $published, int $limit): array
+        {
+            $this->limits[] = $limit;
+
+            return $this->store->filed($userId, $contextRevision, $published, 0);
+        }
+    };
+    app()->instance(AuditorFiledReportStore::class, $store);
+    $cut = auditorPortfolioProps($fixture['user']);
+    expect($store->limits)->toBe([AuditReadPolicy::MAX_PAGE_SIZE])->and(AuditReadPolicy::MAX_PAGE_SIZE)->toBe(50)
+        ->and($cut['reports'])->toBe([])->and($cut['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))->and($cut['reports_complete'])->toBeFalse();
+});
+
 it('never reports an all-clear while an owed verification may lie beyond the first page of assignments', function (): void {
     $fixture = AuditAssignmentFixture::make(1);
     $partner = $fixture['partners'][0];
@@ -144,7 +172,7 @@ it('never reports an all-clear while an owed verification may lie beyond the fir
         AuditAssignmentFixture::engagement($partner['party']->id);
     }
     $cut = auditorPortfolioProps($partner['user']);
-    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()
+    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()->and($cut['reports_complete'])->toBeTrue()
         ->and($cut['links']['jobs'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
 });
 
