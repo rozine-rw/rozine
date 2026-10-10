@@ -60,7 +60,7 @@ class InvestorDealsResource extends JsonResource
                 'link' => $filter($data['sort'], $row['industry'])], $data['industries']),
             'deals' => array_map(fn (array $deal): array => self::withLink($request, $deal), $data['deals']),
             'focus' => $focus === null ? null : self::withLink($request, $focus), 'quote' => null,
-            'links' => ['deals' => $deals(), 'portfolio' => $page('investor.portfolio'), 'profile' => $page('investor.profile'),
+            'links' => ['deals' => $deals(), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
                 'notifications' => null, 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
                 'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null, 'checkout' => null]];
