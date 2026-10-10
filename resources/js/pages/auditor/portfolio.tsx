@@ -94,6 +94,7 @@ export default function AuditorPortfolio(props: AuditorPortfolioProps) {
                                 items={items}
                                 month={month}
                                 complete={props.owed_complete}
+                                reportsComplete={props.reports_complete}
                                 jobs={props.links.jobs}
                             />
                         </ColumnPad>

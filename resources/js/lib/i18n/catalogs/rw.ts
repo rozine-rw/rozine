@@ -2405,6 +2405,8 @@ const rw: Catalog = {
         'Iyi kalendari yerekana imirimo uheruka guhabwa gusa. Fungura Imirimo urebe igenzura ryose ugomba gutanga.',
     'auditor.calendar.partial_empty':
         'Nta kigomba gutangwa uku kwezi mu mirimo uheruka guhabwa.',
+    'auditor.calendar.reports_partial':
+        'Hano hagaragara raporo uheruka gutanga gusa, bityo ukwezi gushobora kubura zimwe.',
     'auditor.calendar.open_jobs': 'Fungura Imirimo',
     'auditor.calendar.share': 'Umugabane wawe',
     'auditor.calendar.on_time_by': 'Bitarenze',

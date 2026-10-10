@@ -517,6 +517,38 @@ describe('Auditor Portfolio', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('never calls a month empty when the filed reports were cut or narrowed', () => {
+        render(
+            <AuditorPortfolio
+                {...props(emptyFixture)}
+                reports_complete={false}
+            />,
+        );
+
+        const due = screen.getByRole('region', { name: 'Due in October' });
+
+        expect(due).toHaveTextContent(
+            'Only your latest filed reports are shown here, so a month may be missing some.',
+        );
+        expect(
+            screen.queryByText('Nothing due in this month.'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent('You are clear');
+    });
+
+    it('notes that a month may be missing reports beside those it lists', () => {
+        const base = props();
+
+        render(<AuditorPortfolio {...base} reports_complete={false} />);
+
+        const due = screen.getByRole('region', { name: 'Due in October' });
+
+        expect(within(due).getAllByRole('listitem').length).toBeGreaterThan(0);
+        expect(due).toHaveTextContent(
+            'Only your latest filed reports are shown here, so a month may be missing some.',
+        );
+    });
+
     it('renders the live empty Portfolio with the Portfolio tab current', () => {
         render(<AuditorPortfolio {...props(liveMinimalFixture)} />);
 

@@ -581,12 +581,15 @@ export function DueList({
     items,
     month,
     complete,
+    reportsComplete,
     jobs,
 }: {
     items: CalendarItem[];
     month: Day;
     /** Whether the owed verifications come from every assigned file (`owed_complete`). */
     complete: boolean;
+    /** Whether the filed reports are every report the partner filed (`reports_complete`). */
+    reportsComplete: boolean;
     jobs: RouteLink | null;
 }) {
     const { t, locale } = useTranslation();
@@ -618,9 +621,14 @@ export function DueList({
                           })}
                 </span>
             </div>
-            {due.length === 0 && complete && (
+            {due.length === 0 && complete && reportsComplete && (
                 <EmptyState className="mt-2.5 py-[26px]">
                     {t('auditor.calendar.empty')}
+                </EmptyState>
+            )}
+            {due.length === 0 && complete && !reportsComplete && (
+                <EmptyState className="mt-2.5 py-[26px]">
+                    {t('auditor.calendar.reports_partial')}
                 </EmptyState>
             )}
             {due.length === 0 && !complete && (
@@ -722,6 +730,11 @@ export function DueList({
                         );
                     })}
                 </ul>
+            )}
+            {due.length > 0 && !reportsComplete && (
+                <p className="mt-2.5 text-[11.5px] leading-[1.55] text-rz-slate">
+                    {t('auditor.calendar.reports_partial')}
+                </p>
             )}
         </section>
     );

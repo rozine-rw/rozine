@@ -2411,6 +2411,8 @@ const fr: Catalog = {
         'Ce calendrier ne montre que vos missions les plus récentes. Ouvrez Missions pour voir chaque vérification à rendre.',
     'auditor.calendar.partial_empty':
         'Rien à rendre ce mois-ci parmi vos missions les plus récentes.',
+    'auditor.calendar.reports_partial':
+        'Seuls vos derniers rapports déposés apparaissent ici ; un mois peut donc en omettre certains.',
     'auditor.calendar.open_jobs': 'Ouvrir Missions',
     'auditor.calendar.share': 'Votre part',
     'auditor.calendar.on_time_by': 'Échéance',
