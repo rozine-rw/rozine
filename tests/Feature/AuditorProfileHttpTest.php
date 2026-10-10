@@ -113,6 +113,7 @@ it('renders a first-time Auditor profile from the protected facts with the contr
         'allowed_actions' => ['accreditation.submit'], 'section' => 'accreditation',
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
         'quality_score' => null, 'on_time_pct' => null, 'jobs_done' => 0, 'open_jobs' => 0,
+        'contact' => ['email' => $fixture['user']->email, 'phone' => null, 'address' => null], 'security' => ['two_factor' => true],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED'],
         'accreditation' => ['status' => 'none', 'revision' => 0, 'licence' => null, 'expires_on' => null, 'days_left' => null, 'submission' => ['status' => 'none']],
         'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
@@ -122,8 +123,16 @@ it('renders a first-time Auditor profile from the protected facts with the contr
     ])->and($props['links'])->toBe([
         'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'], 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'],
         'profile' => ['url' => '/auditor/profile', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
-        'sections' => ['accreditation' => ['url' => '/auditor/profile', 'method' => 'get'],
-            'availability' => ['url' => '/auditor/profile?section=availability', 'method' => 'get']],
+        'sections' => ['earnings' => ['url' => '/auditor/profile?section=earnings', 'method' => 'get'],
+            'contact' => ['url' => '/auditor/profile?section=contact', 'method' => 'get'],
+            'accreditation' => ['url' => '/auditor/profile', 'method' => 'get'],
+            'payout' => ['url' => '/auditor/profile?section=payout', 'method' => 'get'],
+            'availability' => ['url' => '/auditor/profile?section=availability', 'method' => 'get'],
+            'telemetry' => ['url' => '/auditor/profile?section=telemetry', 'method' => 'get'],
+            'security' => ['url' => '/auditor/profile?section=security', 'method' => 'get'],
+            'learn' => ['url' => '/auditor/profile?section=learn', 'method' => 'get'],
+            'legal' => ['url' => '/auditor/profile?section=legal', 'method' => 'get']],
+        'security_settings' => ['url' => '/settings/security', 'method' => 'get'],
         'operation' => ['url' => '/auditor/operations/{request_id}', 'method' => 'get'],
         'certificate' => null, 'submitted_certificate' => null,
     ]);
@@ -131,7 +140,10 @@ it('renders a first-time Auditor profile from the protected facts with the contr
         ->component('auditor/jobs')->where('eligible', [])->where('assigned', []));
     $this->get(route('auditor.profile', ['section' => 'availability']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'availability'));
     $this->get(route('auditor.profile', ['section' => ['availability']]))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
-    $this->get(route('auditor.profile', ['section' => 'earnings']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
+    foreach (['earnings', 'contact', 'payout', 'telemetry', 'security', 'learn', 'legal'] as $section) {
+        $this->get(route('auditor.profile', ['section' => $section]))->assertInertia(fn (Assert $page): Assert => $page->where('section', $section));
+    }
+    $this->get(route('auditor.profile', ['section' => 'refer']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
     $this->assertDatabaseCount('auditor_profiles', 0);
 });
 
