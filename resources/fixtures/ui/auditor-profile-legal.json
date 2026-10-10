@@ -1,12 +1,18 @@
 {
     "component": "auditor/profile",
     "props": {
-        "engagement": null,
+        "engagement": {
+            "status": "current",
+            "link": {
+                "url": "/preview/auditor-engagement",
+                "method": "get"
+            }
+        },
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": ["accreditation.renew", "availability.update"],
-        "section": "accreditation",
+        "section": "legal",
         "auditor": {
             "name": "Diane Uwase, CPA",
             "firm": "Uwase & Co.",
