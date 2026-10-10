@@ -72,7 +72,9 @@ it('seeds every persona through the domain and each app reads the seeded data ba
                 $byName = $deals->keyBy('name');
 
                 return $deals->first()['name'] === 'GreenLeaf Agro'
-                    && $byName->keys()->sort()->values()->all() === ['GreenLeaf Agro', 'Huye Supply', 'Kigali Motors', 'Rugali Textiles', 'Umuganda Supply']
+                    && $byName->keys()->sort()->values()->all() === ['Akabanga Foods', 'GreenLeaf Agro', 'Huye Supply', 'Intare Mills', 'Kigali Motors',
+                        'Rugali Textiles', 'Umuganda Supply', 'Volt Energy Rwanda']
+                    && $byName->only(['Akabanga Foods', 'Intare Mills', 'Volt Energy Rwanda'])->pluck('funded_pct')->unique()->all() === ['100.0']
                     && $byName['GreenLeaf Agro']['raised']['amount'] === '11900000' && $byName['GreenLeaf Agro']['target']['amount'] === '18000000'
                     && $byName['GreenLeaf Agro']['avg_monthly_revenue']['amount'] === '32000000' && $byName['GreenLeaf Agro']['audited'] === true
                     && $byName['Huye Supply']['funded_pct'] === '100.0';
@@ -113,13 +115,14 @@ it('seeds every persona through the domain and each app reads the seeded data ba
 
     $this->actingAs(showcaseUser('superadmin'))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/today')
-            ->where('kpis', /** @param Collection<int, array<string, mixed>> $kpis */ fn (Collection $kpis): bool => $kpis->firstWhere('key', 'active_businesses')['value']['value'] === 8
-                && $kpis->firstWhere('key', 'verified_investors')['value']['value'] === 10));
+            ->where('kpis', /** @param Collection<int, array<string, mixed>> $kpis */ fn (Collection $kpis): bool => $kpis->firstWhere('key', 'active_businesses')['value']['value'] === 11
+                && $kpis->firstWhere('key', 'verified_investors')['value']['value'] === 18));
     $this->actingAs(showcaseUser('compliance'))->get(route('staff.investor-verifications.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/investor-verifications')
             ->where('entries', /** @param Collection<int, array<string, mixed>> $entries */ fn (Collection $entries): bool => $entries->pluck('name')->sort()->values()->all() === ['Patrick Gatera', 'Peace Bizimana', 'Samuel Mugisha']));
     $this->actingAs(showcaseUser('operations'))->get(route('staff.disbursements.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('admin/disbursements')->has('disbursements', 1));
+        ->assertInertia(fn (Assert $page) => $page->component('admin/disbursements')->has('disbursements', 1)
+            ->where('disbursements.0.state', 'succeeded'));
 });
 
 it('changes nothing when run again, and only rewrites the sign-in file', function (): void {

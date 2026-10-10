@@ -124,12 +124,18 @@ class DesignShowcaseSeeder extends Seeder
         $robert = $investors['robert'] ?? throw new LogicException('DESIGN_SHOWCASE_UNKNOWN_INVESTOR: robert');
         $this->persona('investor', $robert, null, route('investor.deals', [], false));
 
-        // Huye Supply's Coffee Inventory note: fully committed and its funding locked.
-        $huyeSupply = DesignShowcaseFixture::business(self::HUYE_SUPPLY, self::PASSWORD, $operations, $okello);
-        $coffee = DesignShowcaseFixture::publish($huyeSupply, DesignShowcaseFixture::application($huyeSupply, self::HUYE_SUPPLY_RAISE, $operations, $okello,
-            $compliance, 'published'), $operations);
-        DesignShowcaseFixture::commit($coffee, $this->purchases($investors, [['marie', '2400'], ['patrick', '1440'], ['claudine', '200'], ['peace', '600'], ['robert', '160']]));
-        DesignShowcaseFixture::fund($coffee);
+        // Raises investors bought out in full, with their funding locked: Huye Supply's Coffee Inventory note
+        // and three more businesses that listed and filled their notes.
+        foreach ([[self::HUYE_SUPPLY, self::HUYE_SUPPLY_RAISE, $okello, [['marie', '2400'], ['patrick', '1440'], ['claudine', '200'], ['peace', '600'], ['robert', '160']]],
+            [self::VOLT, self::VOLT_RAISE, $kamanzi, [['patrickk', '2500'], ['olivieru', '1720'], ['emmanuelu', '2580']]],
+            [self::AKABANGA, self::AKABANGA_RAISE, $karangwa, [['ericm', '1500'], ['yves', '660'], ['jeanb', '2400'], ['peacek', '240']]],
+            [self::INTARE, self::INTARE_RAISE, $niyonsaba, [['yves', '800'], ['alineb', '280'], ['peacek', '520']]]] as [$spec, $raise, $partner, $purchases]) {
+            $business = DesignShowcaseFixture::business($spec, self::PASSWORD, $operations, $partner);
+            $campaign = DesignShowcaseFixture::publish($business, DesignShowcaseFixture::application($business, $raise, $operations, $partner,
+                $compliance, 'published'), $operations);
+            DesignShowcaseFixture::commit($campaign, $this->purchases($investors, $purchases));
+            DesignShowcaseFixture::fund($campaign);
+        }
 
         // The other live raises on the Deals deck, each audited by its Audit Partner in the design. The deck
         // lists the newest listing first, so GreenLeaf's Cold-Chain Hub is published last.
@@ -164,7 +170,10 @@ class DesignShowcaseSeeder extends Seeder
         DesignShowcaseFixture::pendingInvestor('Samuel Mugisha', 'samuel.mugisha@example.test', self::PASSWORD, '2/11/1987', '1 1987 8 0031876 4 12');
         DesignShowcaseFixture::pendingInvestor('Peace Bizimana', 'peace.bizimana@example.test', self::PASSWORD, '21/6/1995', '1 1995 7 0067234 1 09');
         DesignShowcaseFixture::pulse(self::PULSE_BUSINESSES, self::PULSE_PLEDGES);
+        // The local:disbursement scenario paid out: Eric Ndoli authorizes as treasury, Aimable Ntaganda approves
+        // with an authenticator step-up, and the synthetic provider confirms. Real funded notes cannot open one yet.
         DesignShowcaseFixture::disbursement(4);
+        DesignShowcaseFixture::payOut($operations, DesignShowcaseFixture::staff('Aimable Ntaganda', 'aimable.ntaganda@example.test', self::PASSWORD, ['approver'])['user']);
         $this->staff('superadmin', 'A. Diane', self::COMPLETE_MARKER, ['superadmin']);
     }
 
@@ -272,6 +281,14 @@ class DesignShowcaseSeeder extends Seeder
         'olivier' => ['Olivier Kamanzi', 'olivier.kamanzi@example.test', ['7000000']],
         'aline' => ['Aline Keza', 'aline.keza@example.test', ['15500000']],
         'diane' => ['Diane Mukamana', 'diane.mukamana@example.test', ['15000000']],
+        'patrickk' => ['Patrick Kayitare', 'patrick.kayitare@example.test', ['13000000']],
+        'olivieru' => ['Olivier Umutoni', 'olivier.umutoni@example.test', ['9000000']],
+        'emmanuelu' => ['Emmanuel Umutoni', 'emmanuel.umutoni@example.test', ['13000000']],
+        'ericm' => ['Eric Mugisha', 'eric.mugisha@example.test', ['8000000']],
+        'yves' => ['Yves Bizimana', 'yves.bizimana@example.test', ['8000000']],
+        'jeanb' => ['Jean Bizimana', 'jean.bizimana@example.test', ['12500000']],
+        'peacek' => ['Peace Kamanzi', 'peace.kamanzi@example.test', ['4000000']],
+        'alineb' => ['Aline Bizimana', 'aline.bizimana@example.test', ['2000000']],
     ];
 
     /** @var Business */
@@ -345,6 +362,36 @@ class DesignShowcaseSeeder extends Seeder
     /** @var Raise */
     private const array KIGALI_MOTORS_RAISE = ['title' => 'Freight Equipment', 'target' => '35500000', 'term_months' => 6, 'use_of_funds' => ['equipment'],
         'story' => 'Two refrigerated vans for hotel deliveries.'];
+
+    /** @var Business */
+    private const array VOLT = ['name' => 'Volt Energy Rwanda', 'code' => 'RDB-2019-552301', 'industry' => 'Energy', 'district' => 'Rubavu',
+        'established_year' => 2019, 'inflow' => '42000000', 'outflow' => '31000000', 'people' => [
+            ['name' => 'Didier Habineza', 'email' => 'didier.habineza@example.test'],
+        ]];
+
+    /** @var Raise */
+    private const array VOLT_RAISE = ['title' => 'Solar Mini-Grid', 'target' => '34000000', 'term_months' => 6, 'use_of_funds' => ['equipment'],
+        'story' => 'Solar mini-grids for three Rubavu trading centres.'];
+
+    /** @var Business */
+    private const array AKABANGA = ['name' => 'Akabanga Foods', 'code' => 'RDB-2018-447120', 'industry' => 'Manufacturing', 'district' => 'Nyagatare',
+        'established_year' => 2018, 'inflow' => '38000000', 'outflow' => '27000000', 'people' => [
+            ['name' => 'Clarisse Mutesi', 'email' => 'clarisse.mutesi@example.test'],
+        ]];
+
+    /** @var Raise */
+    private const array AKABANGA_RAISE = ['title' => 'Chilli Oil Line', 'target' => '24000000', 'term_months' => 4, 'use_of_funds' => ['equipment', 'inventory'],
+        'story' => 'A second bottling line for chilli oil.'];
+
+    /** @var Business */
+    private const array INTARE = ['name' => 'Intare Mills', 'code' => 'RDB-2019-679879', 'industry' => 'Energy', 'district' => 'Nyanza',
+        'established_year' => 2019, 'inflow' => '20000000', 'outflow' => '15000000', 'people' => [
+            ['name' => 'Jean Pierre Ndayisaba', 'email' => 'jp.ndayisaba@example.test'],
+        ]];
+
+    /** @var Raise */
+    private const array INTARE_RAISE = ['title' => 'Mill Working Capital', 'target' => '8000000', 'term_months' => 3, 'use_of_funds' => ['working_capital'],
+        'story' => 'Working capital for the harvest season.'];
 
     /** @var Business */
     private const array HUYE_SUPPLY = ['name' => 'Huye Supply', 'code' => 'RDB-2016-196807', 'industry' => 'Retail', 'district' => 'Kicukiro',

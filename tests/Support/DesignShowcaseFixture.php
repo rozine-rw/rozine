@@ -21,7 +21,10 @@ use App\Application\Business\GetBusinessApplicationReview;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Business\SubmitBusinessApplication;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
+use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
+use App\Application\Disbursement\ManageDisbursements;
 use App\Application\Disbursement\OpenFundedDisbursements;
+use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Evidence\RecordStatementVerification;
@@ -45,6 +48,8 @@ use App\Models\AuditSigningKey;
 use App\Models\BusinessApplication;
 use App\Models\BusinessCampaign;
 use App\Models\DepositPolicy;
+use App\Models\Disbursement;
+use App\Models\DisbursementIntent;
 use App\Models\InvestorFundingMethod;
 use App\Models\InvestorVerification;
 use App\Models\Party;
@@ -370,6 +375,30 @@ final class DesignShowcaseFixture
     {
         app(SyntheticDisbursementFixtures::class)->fund([1200, 1200], $termMonths);
         app(OpenFundedDisbursements::class)->handle();
+    }
+
+    /**
+     * Pays the opened synthetic disbursement out through maker/checker: the treasury maker authorizes, the
+     * approver confirms with an authenticator step-up and approves, and the synthetic provider's success
+     * callback reconciles and issues the closing.
+     */
+    public static function payOut(User $maker, User $checker): void
+    {
+        $manage = app(ManageDisbursements::class);
+        $disbursement = Disbursement::query()->orderByDesc('id')->firstOrFail();
+        $reason = 'Checked against the funded campaign.';
+        self::must($manage->command($maker->id, $disbursement->id, 'authorize', 0, $reason, (string) Str::uuid()), 'DISBURSEMENT_AUTHORIZED');
+        $detail = $manage->page($checker->id, $disbursement->id, null, 25)['disbursement'];
+        $code = (new Google2FA)->getCurrentOtp(decrypt((string) $checker->refresh()->two_factor_secret));
+        $proof = $manage->stepUp($checker->id, $disbursement->id, $detail['revision'], $detail['approval_binding']['intent_digest'], $code);
+        Cache::forget('fortify.2fa_codes.'.md5($code));
+        self::must($manage->command($checker->id, $disbursement->id, 'approve', $detail['revision'], $reason, (string) Str::uuid(), $proof['proof']),
+            'DISBURSEMENT_INTENT_RECORDED');
+        $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
+        $outcome = app(RecordPayoutEvent::class)->handle(app(SyntheticPayoutScripts::class)->callback($intent->id, 'succeeded'));
+        if ($outcome['decision'] !== 'matched_success') {
+            throw new LogicException('DESIGN_SHOWCASE_PAYOUT_NOT_RECONCILED: '.$outcome['decision']);
+        }
     }
 
     /**
