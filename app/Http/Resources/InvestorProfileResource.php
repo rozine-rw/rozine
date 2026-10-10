@@ -30,7 +30,7 @@ class InvestorProfileResource extends JsonResource
                 'member_since' => $data['member_since']],
             'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => null], $data['methods']), 'banks' => []],
             'statements' => ['annual' => null, 'monthly' => []],
-            'links' => ['deals' => self::link('investor.deals'), 'portfolio' => self::link('investor.portfolio'), 'profile' => $profile(),
+            'links' => ['deals' => self::link('investor.deals'), 'portfolio' => self::link('investor.portfolio'), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => $profile(),
                 'wallet' => $verified ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard'),
                 'overview' => $profile(), 'linked' => $profile(['section' => 'linked']), 'statements' => $profile(['section' => 'statements']),
                 'automation' => $profile(['section' => 'automation']), 'verification' => self::link($verified ? 'investor.verified' : 'investor.verification'),

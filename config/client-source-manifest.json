@@ -1,7 +1,10 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [".ts", ".tsx"],
+    "extensions": [
+        ".ts",
+        ".tsx"
+    ],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -54,6 +57,7 @@
         "resources/js/actions/App/Http/Controllers/EmailVerificationCodeController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorProfileController.ts",
@@ -480,6 +484,7 @@
         "resources/js/components/investor/investor-shell.tsx",
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
+        "resources/js/components/investor/market/filter-pill.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
@@ -662,11 +667,13 @@
         "resources/js/pages/investor/auth/access.tsx",
         "resources/js/pages/investor/auth/intro.tsx",
         "resources/js/pages/investor/auth/sign-up.tsx",
+        "resources/js/pages/investor/cart.tsx",
         "resources/js/pages/investor/checkout.tsx",
         "resources/js/pages/investor/commitment.tsx",
         "resources/js/pages/investor/deal.tsx",
         "resources/js/pages/investor/deals.tsx",
         "resources/js/pages/investor/holding.tsx",
+        "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",
         "resources/js/pages/investor/verification.tsx",
@@ -679,10 +686,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 651,
-        "generated": 257,
+        "totalTrackedSources": 655,
+        "generated": 258,
         "declarationOnly": 18,
-        "authoredExecutable": 376
+        "authoredExecutable": 379
     },
-    "coverageSetSha256": "15a15164fab91dea897fec8640785c99295f4c81865d9cb00e34847d36480602"
+    "coverageSetSha256": "068371a29d8a2c426eb391d9cc19ac28fb6a6d6c9a3de74db41bd8adea912d8e"
 }
