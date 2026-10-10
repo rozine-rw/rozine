@@ -71,6 +71,8 @@ export type EvidencePhoto = {
 export type InvestorAppLinks = {
     deals: RouteLink;
     portfolio: RouteLink;
+    market: RouteLink;
+    cart: RouteLink;
     profile: RouteLink;
     wallet: RouteLink;
     notifications: RouteLink;
@@ -993,11 +995,20 @@ export type WalletMovement = WalletEntry['movement'];
 export type C3InvestorShellLinks = {
     deals: RouteLink | null;
     portfolio: RouteLink | null;
+    /** Web only: the Market and Cart pages have no bearer-transport read. */
+    market: RouteLink | null;
+    cart: RouteLink | null;
     profile: RouteLink | null;
     /** Null before the identity is verified: there is no wallet yet. */
     wallet: RouteLink | null;
     notifications: RouteLink | null;
     launcher: RouteLink;
+};
+
+/** A web Investor page with no facts of its own yet (Market, Cart): the app frame's links only. */
+export type InvestorShellPageProps = {
+    identity_context_revision: number;
+    links: C3InvestorShellLinks;
 };
 
 export type C3InvestorWalletProps = InvestorPageContract & {

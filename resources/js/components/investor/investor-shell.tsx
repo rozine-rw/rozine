@@ -6,7 +6,7 @@ import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useTranslation } from '@/hooks/use-translation';
 import type { C3InvestorShellLinks } from '@/types/investor';
 
-export type InvestorTab = 'deals' | 'portfolio' | 'profile';
+export type InvestorTab = 'deals' | 'portfolio' | 'market' | 'cart' | 'profile';
 
 const stroke = {
     stroke: 'currentColor',
@@ -26,6 +26,22 @@ const GLYPHS: Record<InvestorTab, ReactNode> = {
     portfolio: (
         <svg viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M4 18V9m5 9V5m5 13v-6m5 6V8" {...stroke} />
+        </svg>
+    ),
+    market: (
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M3 17 9 11l4 4 8-8" {...stroke} />
+            <path d="M16 7h5v5" {...stroke} />
+        </svg>
+    ),
+    cart: (
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+                d="M2.8 4h2.3l2.2 10.3a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.56-1.22L20.6 8H6"
+                {...stroke}
+            />
+            <circle cx="9.6" cy="19.6" r="1.35" fill="currentColor" />
+            <circle cx="17" cy="19.6" r="1.35" fill="currentColor" />
         </svg>
     ),
     profile: (
@@ -49,10 +65,8 @@ type InvestorShellProps = {
 };
 
 /**
- * The Investor app frame. The design's third tab, Market, is secondary trading: the order book,
- * resale and "sell back to Rozine" are outside the MVP (crosswalk MVP-INVESTOR-SCR-06/07 are
- * Phase 3, and policy rejects the sell-back), so the tab is left out rather than shipped as a
- * dead end.
+ * The Investor app frame, with the design's five tabs: Deals, Portfolio, Market, Cart and Profile.
+ * A tab whose destination the server does not link (null) is left out.
  */
 export function InvestorShell({
     title,
@@ -64,7 +78,9 @@ export function InvestorShell({
 }: InvestorShellProps) {
     const { t } = useTranslation();
     useChangeBeacon(beacon);
-    const nav = (['deals', 'portfolio', 'profile'] as const).flatMap((key) => {
+    const nav = (
+        ['deals', 'portfolio', 'market', 'cart', 'profile'] as const
+    ).flatMap((key) => {
         const href = links[key];
 
         return href === null
