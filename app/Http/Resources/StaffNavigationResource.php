@@ -50,19 +50,20 @@ class StaffNavigationResource extends JsonResource
         // Every other design section opens its pending page until its screen is wired. Payments is
         // the disbursement queue, and Compliance the investor identity review queue, for whoever may
         // see them. These are web pages, so they keep web URLs.
+        $pendingPage = fn (string $slug): array => ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
         $pending = [];
         foreach (StaffSectionController::SECTIONS as $slug => $section) {
-            $pending[$section] = ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
+            $pending[$section] = $pendingPage($slug);
         }
         $compliance = in_array('investors.verify', $permissions, true)
-            ? ['url' => route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pending['compliance'];
+            ? ['url' => route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pendingPage('compliance');
         // The staging mail testers page exists only on staging (the `uat` isolation profile), for
         // whoever may manage the list; it sits in the console group of the sidebar.
         $mailTesters = $prefix === '' && app()->environment(['staging', 'uat']) && in_array('staging.mail.testers.manage', $permissions, true)
             ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['disbursements'] ?? $pending['payments'], 'compliance' => $compliance,
+            'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'compliance' => $compliance,
             'repayments' => null, 'ledger' => null, 'mail_testers' => $mailTesters];
     }
 }

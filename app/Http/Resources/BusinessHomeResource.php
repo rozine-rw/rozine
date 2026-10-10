@@ -68,8 +68,9 @@ class BusinessHomeResource extends JsonResource
      */
     public static function tabs(Request $request, string $business): array
     {
-        return $request->routeIs('api.*') ? ['reports' => null, 'profile' => null]
-            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'profile' => self::link($request, 'business.profile', ['business' => $business])];
+        return $request->routeIs('api.*') ? ['reports' => null, 'market' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'market' => self::link($request, 'business.market', ['business' => $business]),
+                'profile' => self::link($request, 'business.profile', ['business' => $business])];
     }
 
     /**

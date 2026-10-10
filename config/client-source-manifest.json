@@ -1,7 +1,10 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [".ts", ".tsx"],
+    "extensions": [
+        ".ts",
+        ".tsx"
+    ],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -377,8 +380,9 @@
         "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",
+        "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
-        "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/portfolio/earnings.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -433,6 +437,7 @@
         "resources/js/components/business/onboarding/step-documents.tsx",
         "resources/js/components/business/onboarding/step-finish.tsx",
         "resources/js/components/business/onboarding/upload-tile.tsx",
+        "resources/js/components/business/profile/account-sections.tsx",
         "resources/js/components/business/profile/company-form.tsx",
         "resources/js/components/business/profile/company-records.tsx",
         "resources/js/components/business/profile/legal-document.tsx",
@@ -649,6 +654,7 @@
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/market.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
@@ -682,10 +688,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 654,
+        "totalTrackedSources": 657,
         "generated": 258,
         "declarationOnly": 18,
-        "authoredExecutable": 378
+        "authoredExecutable": 381
     },
-    "coverageSetSha256": "6a880fee7038e400fe7ea1f435e93674f600c83815ed37cb2ca3b7ea35bfebee"
+    "coverageSetSha256": "66762bcf788b7fc60f8191545ac5a66f2f54f456d1b30e27be77f3ac13e5e5c3"
 }

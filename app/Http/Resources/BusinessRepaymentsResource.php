@@ -30,7 +30,7 @@ class BusinessRepaymentsResource extends JsonResource
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $data['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'receipt' => null, 'recent' => [],
             'bases' => (object) [], 'home' => $home,
-            'shell_links' => ['home' => $home['links']['home'], 'launcher' => $home['links']['launcher'], 'reports' => $home['links']['reports'], 'profile' => $home['links']['profile']],
+            'shell_links' => ['home' => $home['links']['home'], 'launcher' => $home['links']['launcher'], 'reports' => $home['links']['reports'], 'market' => $home['links']['market'], 'profile' => $home['links']['profile']],
             'links' => ['close' => $home['links']['home'], 'top_up' => $home['links']['deposit'], 'operation' => ['url' => str_replace($placeholder, '{request_id}', $operation), 'method' => 'get']],
             'actions' => ['pay' => null]];
     }
