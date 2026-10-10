@@ -121,6 +121,31 @@
                 "method": "post"
             }
         },
+        "owed": [
+            {
+                "id": "mr_greenleaf",
+                "business": "GreenLeaf Agro",
+                "district": "Rwamagana",
+                "kind": "monthly",
+                "due_at": "2026-10-07T21:59:59Z",
+                "link": {
+                    "url": "/preview/auditor-file",
+                    "method": "get"
+                }
+            },
+            {
+                "id": "mr_intare",
+                "business": "Intare Supply",
+                "district": "Kicukiro",
+                "kind": "monthly",
+                "due_at": "2026-11-07T21:59:59Z",
+                "link": {
+                    "url": "/preview/auditor-file",
+                    "method": "get"
+                }
+            }
+        ],
+        "owed_complete": true,
         "outcome": null,
         "open_jobs": 1,
         "links": {

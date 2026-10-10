@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "050eaabafd14110b24ca378795e7457e1ab698bb28fa5302608d578ebc2a8e57",
-    "coverageSetSha256": "a594e43af5f5951dc0a961ad5e8072ca015ad15c1383a0c414dc8e3d0acf5314",
+    "sourceManifestSha256": "a2d9e5629780ce207aae881f5b502d4d1f7a3b212816b575e753330aef70e1b5",
+    "coverageSetSha256": "66762bcf788b7fc60f8191545ac5a66f2f54f456d1b30e27be77f3ac13e5e5c3",
     "thresholds": {
         "critical": {
             "global": {
@@ -123,8 +123,9 @@
         "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",
+        "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
-        "resources/js/components/auditor/portfolio/reports-section.tsx",
+        "resources/js/components/auditor/portfolio/earnings.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",

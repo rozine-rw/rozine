@@ -41,6 +41,8 @@
                 "method": "post"
             }
         },
+        "owed": [],
+        "owed_complete": true,
         "outcome": null,
         "open_jobs": 0,
         "links": {
