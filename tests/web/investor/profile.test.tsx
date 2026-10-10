@@ -410,12 +410,7 @@ describe('Profile', () => {
         expect(screen.getByText('ADDRESS')).toBeInTheDocument();
         expect(field('COUNTRY')).toBe('Rwanda');
 
-        for (const label of [
-            'PROVINCE',
-            'DISTRICT',
-            'SECTOR',
-            'CELL',
-        ]) {
+        for (const label of ['PROVINCE', 'DISTRICT', 'SECTOR', 'CELL']) {
             expect(field(label)).toBe('Not provided');
         }
 
