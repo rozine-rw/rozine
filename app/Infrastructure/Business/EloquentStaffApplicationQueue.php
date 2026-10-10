@@ -15,7 +15,7 @@ use RuntimeException;
 
 final class EloquentStaffApplicationQueue implements StaffApplicationQueue
 {
-    public function __construct(private CanonicalJson $json) {}
+    public function __construct(private CanonicalJson $json, private RetainedStaffUnderwritingBasis $underwriting) {}
 
     /** @return array<string, mixed> */
     public function page(string $tab, string $search, ?string $before, int $limit, ?string $applicationId): array
@@ -46,16 +46,20 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         $submissions = BusinessApplicationSubmission::query()->whereKey($all->pluck('current_submission_id'))->get()->keyBy('id');
         $releases = BusinessApplicationRelease::query()->whereIn('business_application_id', $all->pluck('id'))->get()->keyBy('business_application_id');
         $rows = [];
+        $underwritingBasis = null;
         foreach ($all as $application) {
             $submission = $submissions->get($application->current_submission_id);
             if ($submission === null) {
                 throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
             }
+            if ($application->id === $applicationId) {
+                $underwritingBasis = $this->underwriting->project($application, $submission);
+            }
             $rows[$application->id] = $this->row($application, $submission, $releases->get($application->id));
         }
 
         return ['entries' => $records->map(fn (BusinessApplication $application): array => $rows[$application->id])->values()->all(),
-            'selected' => $applicationId === null ? null : $rows[$applicationId], 'counts' => $counts,
+            'selected' => $applicationId === null ? null : $rows[$applicationId], 'underwriting_basis' => $underwritingBasis, 'counts' => $counts,
             'next_cursor' => $more ? $records->last()?->id : null, 'tab' => $tab, 'search' => $search, 'before' => $before, 'limit' => $limit];
     }
 
