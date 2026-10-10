@@ -41,6 +41,10 @@
                 "url": "/admin/secondary-market",
                 "method": "get"
             },
+            "reports": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
             "risk": {
                 "url": "/admin/risk",
                 "method": "get"

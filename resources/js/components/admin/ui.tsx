@@ -283,7 +283,10 @@ export function EmptyState({
     );
 }
 
-/** The ⓘ that keeps long explanations off the canvas; opens on hover or keyboard focus. */
+/**
+ * The ⓘ that keeps long explanations off the canvas; opens on hover or keyboard focus. Closed, the
+ * tip takes no layout, so it never widens a phone screen.
+ */
 export function InfoTip({
     label,
     children,
@@ -304,7 +307,7 @@ export function InfoTip({
             <span
                 role="tooltip"
                 className={cn(
-                    'pointer-events-none invisible absolute top-[calc(100%+9px)] z-[90] w-[244px] max-w-[62vw] -translate-y-1 rounded-[10px] bg-[#0c1830] px-3 py-2.5 text-left text-[11.5px] leading-[1.5] font-medium tracking-[.003em] whitespace-normal text-[#e8edf6] opacity-0 shadow-[0_16px_38px_-10px_rgba(12,24,48,.5)] transition-[opacity,transform] duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus:visible group-focus:translate-y-0 group-focus:opacity-100 after:absolute after:bottom-full after:border-[5px] after:border-transparent after:border-b-[#0c1830] dark:bg-[#1c2b4a] dark:after:border-b-[#1c2b4a]',
+                    'pointer-events-none absolute top-[calc(100%+9px)] z-[90] hidden w-[244px] max-w-[62vw] -translate-y-1 rounded-[10px] bg-[#0c1830] px-3 py-2.5 text-left text-[11.5px] leading-[1.5] font-medium tracking-[.003em] whitespace-normal text-[#e8edf6] opacity-0 shadow-[0_16px_38px_-10px_rgba(12,24,48,.5)] transition-[opacity,transform] duration-150 group-hover:block group-hover:translate-y-0 group-hover:opacity-100 group-focus:block group-focus:translate-y-0 group-focus:opacity-100 after:absolute after:bottom-full after:border-[5px] after:border-transparent after:border-b-[#0c1830] dark:bg-[#1c2b4a] dark:after:border-b-[#1c2b4a]',
                     align === 'left'
                         ? 'left-0 after:left-3'
                         : 'right-0 after:right-3',
