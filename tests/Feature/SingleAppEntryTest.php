@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\EnterSoleApp;
 use App\Application\Identity\GetIdentityContext;
+use App\Domain\Identity\IdentityViolation;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Mockery\Expectation;
 use Tests\Support\InvestorWalletFixture;
 
 beforeEach(function (): void {
@@ -100,4 +103,24 @@ it('selects only the account\'s own sole app and never twice in a row', function
         ->and($enter->selectSole($one->id, 'investor'))->toBeTrue()
         ->and($enter->selectSole($one->id, 'investor'))->toBeFalse()
         ->and(soleAppActiveRole($one))->toBe('investor');
+});
+
+it('leaves the launcher to explain a selection refused mid-flight, as when another tab moved the context on', function (): void {
+    $one = soleAppPerson('investor');
+    $real = app(IdentityAccessStore::class);
+    $store = Mockery::mock(IdentityAccessStore::class);
+    foreach ((new ReflectionClass(IdentityAccessStore::class))->getMethods() as $method) {
+        $store->shouldReceive($method->name);
+        $expectation = $store->mockery_findExpectation($method->name, []);
+        if (! $expectation instanceof Expectation) {
+            throw new RuntimeException('The identity access test boundary was not registered.');
+        }
+        $method->name === 'selectRole'
+            ? $expectation->twice()->andThrow(new IdentityViolation('IDENTITY_CONTEXT_STALE', 409))
+            : $expectation->andReturnUsing(fn (mixed ...$arguments): mixed => $real->{$method->name}(...$arguments));
+    }
+    app()->instance(IdentityAccessStore::class, $store);
+
+    $this->actingAs($one)->get(route('enter'))->assertRedirect(route('dashboard'));
+    expect(app(EnterSoleApp::class)->selectSole($one->id, 'investor'))->toBeFalse()->and(soleAppActiveRole($one))->toBeNull();
 });
