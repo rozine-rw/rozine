@@ -251,7 +251,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrimaryFunding::class, EloquentPrimaryFunding::class);
         $this->app->bind(CampaignFundingEvidence::class, RetainedPrimaryFunding::class);
         $this->app->bind(HoldingSource::class, RetainedHoldingSource::class);
-        // The synthetic provider exists only on local and testing with live money off; everywhere
+        // The synthetic provider exists only on local, testing and UAT with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.
         $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()
             ? $this->app->make(SyntheticDepositProvider::class) : $this->app->make(UnavailableDepositProvider::class);

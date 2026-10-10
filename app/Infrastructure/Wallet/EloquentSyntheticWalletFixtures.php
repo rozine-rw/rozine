@@ -15,7 +15,7 @@ use App\Models\WalletDepositIntent;
 use Illuminate\Support\Str;
 use LogicException;
 
-/** Synthetic wallet rows for local and testing checks. Every write is append-only. */
+/** Synthetic wallet rows for local, testing and UAT checks. Every write is append-only. */
 final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
 {
     public function __construct(private SyntheticWalletGuard $guard, private SyntheticEventSigner $signer, private EnvironmentIsolation $isolation) {}
@@ -24,7 +24,8 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
     public function prepareInvestor(string $partyId): array
     {
         $this->guard->assertAllowed();
-        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')->orderBy('id')->first();
+        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')
+            ->where('label', '!=', self::DECLINING_LABEL)->orderBy('id')->first();
         if ($method === null) {
             $method = new InvestorFundingMethod;
             $method->forceFill(['party_id' => $partyId, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
@@ -36,6 +37,20 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
         }
 
         return ['method_id' => $method->id, 'policy_version' => $current->version];
+    }
+
+    public function addDecliningMethod(string $partyId): string
+    {
+        $this->guard->assertAllowed();
+        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')
+            ->where('label', self::DECLINING_LABEL)->orderBy('id')->first();
+        if ($method === null) {
+            $method = new InvestorFundingMethod;
+            $method->forceFill(['party_id' => $partyId, 'kind' => 'mtn', 'label' => self::DECLINING_LABEL, 'masked' => '+250 788 ···· 000',
+                'reference' => 'synthetic-msisdn-'.Str::lower(Str::random(12)), 'verification_source' => 'synthetic', 'verified_at' => now()])->save();
+        }
+
+        return $method->id;
     }
 
     public function withdrawPolicy(): string

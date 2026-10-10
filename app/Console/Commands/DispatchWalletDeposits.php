@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 /**
  * The deposit outbox worker: sends committed intents the request path did not reach, and resends an
- * interrupted send only for a provider with safe idempotent sends. Local and testing only.
+ * interrupted send only for a provider with safe idempotent sends. Local, testing and UAT only.
  */
 class DispatchWalletDeposits extends Command
 {
@@ -17,7 +17,7 @@ class DispatchWalletDeposits extends Command
 
     protected $signature = 'wallet:dispatch-deposits {--limit=50 : Maximum outbox rows to send (1-500)}';
 
-    protected $description = 'Send committed synthetic deposit intents from the outbox (local and testing only)';
+    protected $description = 'Send committed synthetic deposit intents from the outbox (local, testing and UAT only)';
 
     public function handle(DispatchDepositIntents $dispatch): int
     {

@@ -436,9 +436,10 @@ arch('the deposit provider is reached only through the wallet actions and adapte
     ->expect('App\Application\Wallet\Contracts\DepositProvider')
     ->toOnlyBeUsedIn(['App\Application\Wallet', 'App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider']);
 
-arch('synthetic signing and fixtures stay inside the local wallet hook')
+arch('synthetic signing and fixtures stay inside the local and staging wallet hooks')
     ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
-    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
+    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet',
+        'App\Console\Commands\PrepareStagingWallet']);
 
 it('has concrete targets for the disbursement boundary', function (): void {
     foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
