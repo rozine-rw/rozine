@@ -34,6 +34,7 @@ beforeEach(function (): void {
 
 dataset('business pages', [
     'reports' => ['business.reports', 'business/reports'],
+    'market' => ['business.market', 'business/market'],
     'profile' => ['business.profile', 'business/profile'],
     'rating' => ['business.rating', 'business/rating'],
     'repayments' => ['business.repayments.show', 'business/repayments'],
@@ -51,27 +52,50 @@ it('sends a guest to sign in, refuses a person outside the mandate and validates
         ->assertInertia(fn (Assert $page): Assert => $page->component($component));
 })->with('business pages');
 
-it('opens Profile on the verified registration and mandate, with nothing editable and no section it cannot read', function (): void {
+it('opens Profile on the verified registration and mandate, with every design section and nothing editable', function (): void {
     [$authority, $business] = ($this->business)();
     $user = $authority['users'][0];
     $profile = ($this->link)("/business/{$business}/profile");
+    $section = fn (string $key): array => ($this->link)("/business/{$business}/profile/{$key}");
 
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
-        'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => null, 'legal' => null, 'actions' => ['save_company' => null]])
+        'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => null, 'legal' => null, 'actions' => ['save_company' => null],
+        'security' => ['two_factor' => false]])
         ->and(array_diff_key($props['registration'], ['people' => true]))->toBe(['name' => 'Synthetic business', 'company_code' => 'COMPANY-001',
             'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020, 'signatories_required' => 1])
         ->and($props['registration']['people'])->toEqualCanonicalizing([
             ['name' => 'Verified person 0', 'roles' => ['controller', 'owner', 'signatory'], 'signatory' => true],
             ['name' => 'Verified person 1', 'roles' => ['controller', 'owner', 'signatory'], 'signatory' => false]])
+        ->and($props['team'])->toEqualCanonicalizing([
+            ['name' => 'Verified person 0', 'roles' => ['controller', 'owner', 'signatory'], 'permissions' => $props['team'][0]['permissions'], 'signatory' => true],
+            ['name' => 'Verified person 1', 'roles' => ['controller', 'owner', 'signatory'], 'permissions' => $props['team'][1]['permissions'], 'signatory' => false]])
+        ->and(array_merge(...array_column($props['team'], 'permissions')))->toContain('business.view')
         ->and($props['links'])->toBe(['home' => ($this->link)("/business/{$business}"), 'reports' => ($this->link)("/business/{$business}/reports"),
-            'profile' => $profile, 'launcher' => ($this->link)('/dashboard'), 'back' => $profile,
-            'sections' => ['company' => ($this->link)("/business/{$business}/profile/company"), 'linked' => null, 'terms' => null, 'privacy' => null],
-            'sign_out' => ($this->link)('/logout', 'post')]);
+            'market' => ($this->link)("/business/{$business}/market"), 'profile' => $profile, 'launcher' => ($this->link)('/dashboard'), 'back' => $profile,
+            'sections' => ['company' => $section('company'), 'security' => $section('security'), 'permissions' => $section('permissions'),
+                'linked' => $section('linked'), 'support' => $section('support'), 'terms' => $section('terms'), 'privacy' => $section('privacy')],
+            'security_settings' => ($this->link)('/settings/security'), 'sign_out' => ($this->link)('/logout', 'post')]);
 
-    expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => 'company'], 'business/profile')['landing'])->toBeFalse();
-    $this->actingAs($user)->get("/business/{$business}/profile/linked")->assertNotFound();
+    foreach (['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'] as $key) {
+        expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => $key], 'business/profile'))
+            ->toMatchArray(['section' => $key, 'landing' => false]);
+    }
+    $this->actingAs($user)->get("/business/{$business}/profile/billing")->assertNotFound();
+
+    $user->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save();
+    expect(($this->props)($user->refresh(), 'business.profile', ['business' => $business, 'section' => 'security'], 'business/profile')['security'])
+        ->toBe(['two_factor' => true]);
+});
+
+it('opens Market with its shell links only, as no secondary-market read exists', function (): void {
+    [$authority, $business] = ($this->business)();
+
+    expect(($this->props)($authority['users'][0], 'business.market', ['business' => $business], 'business/market'))
+        ->toBe(['links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => ($this->link)("/business/{$business}/reports"),
+            'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
+            'launcher' => ($this->link)('/dashboard')]]);
 });
 
 it('shows a sole trader without a company code, and the published rating once a raise is listed', function (): void {
@@ -119,7 +143,7 @@ it('opens Repayments on its empty state over the real Home while no note is serv
         ->and((array) $props['bases'])->toBe([])
         ->and($props['server_time'])->toBe(now()->toIso8601String())
         ->and($props['shell_links'])->toBe(['home' => ($this->link)("/business/{$business}"), 'launcher' => ($this->link)('/dashboard'),
-            'reports' => ($this->link)("/business/{$business}/reports"), 'profile' => ($this->link)("/business/{$business}/profile")])
+            'reports' => ($this->link)("/business/{$business}/reports"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")])
         ->and($props['links'])->toBe(['close' => ($this->link)("/business/{$business}"), 'top_up' => ($this->link)("/business/{$business}/wallet?kind=deposit"),
             'operation' => ($this->link)("/business/{$business}/repayment-operations/{request_id}?command=repayment.pay&identity_context_revision=1")]);
 });
@@ -130,7 +154,7 @@ it('lists no report before the first sealed monthly report, and names no audit-c
 
     expect(($this->props)($authority['users'][0], 'business.reports', ['business' => $business], 'business/reports'))
         ->toBe(['reports' => ['verified' => [], 'in_audit' => [], 'archived' => []], 'report' => null, 'policy' => null,
-            'links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => $reports, 'profile' => ($this->link)("/business/{$business}/profile"),
+            'links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => $reports, 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
                 'launcher' => ($this->link)('/dashboard'), 'close' => $reports]]);
 });
 
@@ -177,7 +201,7 @@ it('sends the Reports and Profile tabs from every live Business page', function 
     $campaign = PrimaryReservationFixture::campaign();
     $user = User::query()->findOrFail($campaign->actor_user_id);
     $business = $campaign->business_id;
-    $tabs = ['reports' => ($this->link)("/business/{$business}/reports"), 'profile' => ($this->link)("/business/{$business}/profile")];
+    $tabs = ['reports' => ($this->link)("/business/{$business}/reports"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")];
 
     expect(($this->props)($user, 'business.campaigns.show', ['business' => $business, 'campaign' => $campaign->id], 'business/campaign')['shell_links'])
         ->toMatchArray($tabs)

@@ -52,8 +52,10 @@ describe('Auditor display formatting', () => {
         );
 
         expect(screen.getByText('Rendement · OCT')).toBeInTheDocument();
+        /* The Portfolio's due list opens on the current month: « oct. » reads OCT on its tiles. */
         expect(
-            screen.getAllByText('SEP', { selector: 'span' }).length,
+            screen.getAllByText('OCT', { selector: 'span' }).length,
         ).toBeGreaterThan(0);
+        expect(screen.getByText('octobre 2026')).toBeInTheDocument();
     });
 });

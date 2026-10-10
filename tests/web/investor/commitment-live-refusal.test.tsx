@@ -24,6 +24,8 @@ const refused = (code: string, status: number): C3InvestorCommitmentProps => ({
     links: {
         deals: null,
         portfolio: null,
+        market: null,
+        cart: null,
         profile: null,
         wallet: { url: '/investor/wallet', method: 'get' },
         notifications: null,

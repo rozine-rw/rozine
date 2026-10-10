@@ -19,6 +19,8 @@ import awaitingFixture from '../../../resources/fixtures/ui/investor-portfolio-a
 import emptyFixture from '../../../resources/fixtures/ui/investor-portfolio-empty.json';
 import portfolioMinimalFixture from '../../../resources/fixtures/ui/investor-portfolio-live-minimal.json';
 import portfolioMaturedFixture from '../../../resources/fixtures/ui/investor-portfolio-matured.json';
+import savedFixture from '../../../resources/fixtures/ui/investor-portfolio-saved.json';
+import secondaryFixture from '../../../resources/fixtures/ui/investor-portfolio-secondary.json';
 import portfolioFixture from '../../../resources/fixtures/ui/investor-portfolio.json';
 import { resetInertia, setWide } from './inertia-mock';
 
@@ -64,6 +66,11 @@ describe('Portfolio', () => {
         expect(
             within(tabs).getByRole('link', { name: 'Matured' }),
         ).not.toHaveAttribute('aria-current');
+        expect(
+            within(tabs)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Active', 'Matured', 'Secondary', 'Saved']);
 
         const cards = () => screen.getAllByRole('link', { name: /Details/u });
 
@@ -177,6 +184,40 @@ describe('Portfolio', () => {
         expect(
             screen.queryByRole('link', { name: 'Browse opportunities' }),
         ).not.toBeInTheDocument();
+    });
+
+    it("opens the design's Secondary and Saved tabs with their empty states", () => {
+        const { unmount } = render(
+            <InvestorPortfolio {...portfolio(secondaryFixture)} />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Holdings' }),
+            ).getByRole('link', { name: 'Secondary' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByText('Nothing here yet')).toBeInTheDocument();
+        expect(
+            screen.getByText('Holdings in this category will appear here.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Browse opportunities' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(<InvestorPortfolio {...portfolio(savedFixture)} />);
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Holdings' }),
+            ).getByRole('link', { name: 'Saved' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByText('No saved deals yet')).toBeInTheDocument();
+        // No deal can be saved yet, so the design's "tap the heart" hint is left out.
+        expect(screen.queryByText(/heart/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Browse opportunities' }),
+        ).toHaveAttribute('href', '/preview/investor-deals');
     });
 
     it('renders the live empty portfolio with no empty breakdowns and no unlinked tab', () => {

@@ -83,7 +83,8 @@ it('renders the Business wallet with real routes, the literal lookup token and n
             'operation' => ['url' => '/business/'.$business.'/wallet-operations/{request_id}?command=business.wallet.deposit&identity_context_revision=1', 'method' => 'get']])
         ->and($props['actions'])->toBe(['deposit' => ['url' => '/business/'.$business.'/wallet/deposits', 'method' => 'post']])
         ->and($props['shell_links'])->toBe(['home' => ['url' => '/business/'.$business, 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
-            'reports' => ['url' => '/business/'.$business.'/reports', 'method' => 'get'], 'profile' => ['url' => '/business/'.$business.'/profile', 'method' => 'get']])
+            'reports' => ['url' => '/business/'.$business.'/reports', 'method' => 'get'], 'market' => ['url' => '/business/'.$business.'/market', 'method' => 'get'],
+            'profile' => ['url' => '/business/'.$business.'/profile', 'method' => 'get']])
         ->and(json_encode($props, JSON_THROW_ON_ERROR))->not->toContain('/preview/')->not->toContain('syn_')
         ->and(BusinessWallet::query()->where('business_id', $business)->exists())->toBeFalse();
 });

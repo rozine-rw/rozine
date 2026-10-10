@@ -14,7 +14,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * any read yet, so neither status nor its filter is sent. The conflict register offers each
  * accepted assignment under its own `allowed_actions`; the declaration goes to that assignment's
  * own command, whose `{assignment}` the page fills in. Declarations on record come from the
- * partner's private conflict read, which names no Business or note, so neither is sent.
+ * partner's private conflict read, which names no Business or note, so neither is sent. The
+ * audit calendar reads what the partner owes from the same work: every accepted assignment with a
+ * due date whose report is not sealed yet, linked to its file (a sealed one is already a report).
+ * `reports_complete` says whether the reports sent are every report the partner filed: the read
+ * stops at its page size and a filter narrows it, so the calendar must not call a month empty then.
+ * Earnings, origination, yield-share and managed deals have no read yet, so nothing is sent for
+ * them and the page shows the design's empty states.
  *
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type FiledReport from \App\Application\Auditor\Contracts\AuditorFiledReportStore
@@ -39,10 +45,15 @@ class AuditorPortfolioResource extends JsonResource
         $counts = $page['reports']['counts'];
         $counts = [...$counts, 'awaiting_cosign' => $counts['all'] - $counts['published']];
         $files = [];
+        $owed = [];
         foreach ($page['jobs']['data'] as $record) {
             $job = AuditorJobsResource::job($record);
             if ($job['state'] === 'assigned') {
                 $files[] = ['id' => $job['id'], 'revision' => $job['revision'], 'business' => $job['business'], 'note_id' => null, 'allowed_actions' => $job['allowed_actions']];
+                if ($job['deadline'] !== null && (($record['work']['report'] ?? null)['status'] ?? null) !== 'sealed') {
+                    $owed[] = ['id' => $job['id'], 'business' => $job['business'], 'district' => $job['district'], 'kind' => $job['kind'],
+                        'due_at' => $job['deadline']['due_at'], 'link' => AuditorJobsResource::link('auditor.jobs.show', ['assignment' => $job['id']])];
+                }
             }
         }
         $declare = route('auditor.jobs.conflict', ['assignment' => self::ASSIGNMENT_PLACEHOLDER], false);
@@ -56,6 +67,9 @@ class AuditorPortfolioResource extends JsonResource
                 'record' => array_map(fn (array $entry): array => ['conflict_id' => $entry['conflict']['conflict_id'], 'assignment_id' => $entry['assignment_id'],
                     'business' => null, 'note_id' => null, 'kind' => $entry['conflict']['kind'], 'declared_on' => $entry['conflict']['declared_at']], $page['conflicts']['data']),
                 'declare' => ['url' => str_replace(self::ASSIGNMENT_PLACEHOLDER, '{assignment}', $declare), 'method' => 'post']],
+            'owed' => $owed,
+            'owed_complete' => $page['jobs']['next_cursor'] === null,
+            'reports_complete' => $page['filter'] === self::FILTERS[0] && count($page['reports']['data']) >= $counts['all'],
             'outcome' => null,
             'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => AuditorJobsResource::links($request)];

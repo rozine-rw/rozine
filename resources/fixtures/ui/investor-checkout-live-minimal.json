@@ -96,6 +96,14 @@
                 "url": "/investor/portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/investor/market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/investor/cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/investor/profile",
                 "method": "get"

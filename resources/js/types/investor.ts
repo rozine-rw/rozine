@@ -71,6 +71,8 @@ export type EvidencePhoto = {
 export type InvestorAppLinks = {
     deals: RouteLink;
     portfolio: RouteLink;
+    market: RouteLink;
+    cart: RouteLink;
     profile: RouteLink;
     wallet: RouteLink;
     notifications: RouteLink;
@@ -446,7 +448,8 @@ export type Concentration =
     | { status: 'concentrated'; business: string; share_pct: number }
     | { status: 'balanced' };
 
-export type PortfolioTab = 'active' | 'matured';
+/** The design's Portfolio tabs; Secondary and Saved have no read yet and open empty. */
+export type PortfolioTab = 'active' | 'matured' | 'secondary' | 'saved';
 
 export type InvestorPortfolioProps = {
     tab: PortfolioTab;
@@ -651,13 +654,21 @@ export type InvestorType = 'individual' | 'institution';
 export type KycState = 'verified' | 'pending' | 'unverified' | 'expired';
 
 /**
- * `automation` (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP
- * (D-61, C-29), so it carries no mandate, tier or outcome data.
+ * The design's profile sub-pages (Investor.dc.html L9933–9941). `plan`, `help`, `terms` and
+ * `privacy` have no approved content yet and show an empty state. `automation`
+ * (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP (D-61, C-29),
+ * so it carries no mandate, tier or outcome data.
  */
 export type ProfileSection =
     | 'overview'
+    | 'personal'
+    | 'plan'
+    | 'security'
     | 'linked'
     | 'statements'
+    | 'help'
+    | 'terms'
+    | 'privacy'
     | 'automation';
 
 export type LinkedAccount = FundingMethod & {
@@ -684,6 +695,17 @@ export type InvestorProfileProps = {
         kyc: KycState;
         member_since: string;
     };
+    /** Read-only. Phone and address are not collected, so they are null. */
+    personal: {
+        name: string;
+        email: string;
+        phone: string | null;
+        id_type: IdDocument | null;
+        /** The approved document's number with all but its last four characters hidden. */
+        id_number: string | null;
+        address: null;
+    };
+    security: { two_factor: boolean };
     linked: {
         accounts: LinkedAccount[];
         banks: { code: string; name: string }[];
@@ -696,13 +718,19 @@ export type InvestorProfileProps = {
     links: C3InvestorShellLinks & {
         deals: RouteLink;
         overview: RouteLink;
+        personal: RouteLink;
+        plan: RouteLink;
+        security: RouteLink;
         linked: RouteLink;
         statements: RouteLink;
+        help: RouteLink;
+        terms: RouteLink;
+        privacy: RouteLink;
         /** Present only when the server offers the gated Auto-Deploy explainer. */
         automation?: RouteLink;
         verification: RouteLink | null;
-        terms: RouteLink | null;
-        privacy: RouteLink | null;
+        /** The account's security settings, where the password and two-factor sign-in are managed. */
+        security_settings: RouteLink;
     };
     /** `link_account` is null until linking has a live command; no form is offered then. */
     actions: { link_account: RouteAction | null; logout: RouteAction };
@@ -993,11 +1021,20 @@ export type WalletMovement = WalletEntry['movement'];
 export type C3InvestorShellLinks = {
     deals: RouteLink | null;
     portfolio: RouteLink | null;
+    /** Web only: the Market and Cart pages have no bearer-transport read. */
+    market: RouteLink | null;
+    cart: RouteLink | null;
     profile: RouteLink | null;
     /** Null before the identity is verified: there is no wallet yet. */
     wallet: RouteLink | null;
     notifications: RouteLink | null;
     launcher: RouteLink;
+};
+
+/** A web Investor page with no facts of its own yet (Market, Cart): the app frame's links only. */
+export type InvestorShellPageProps = {
+    identity_context_revision: number;
+    links: C3InvestorShellLinks;
 };
 
 export type C3InvestorWalletProps = InvestorPageContract & {

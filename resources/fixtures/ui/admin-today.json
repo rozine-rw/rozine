@@ -65,6 +65,10 @@
                 "url": "/preview/admin-section",
                 "method": "get"
             },
+            "reports": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
             "risk": {
                 "url": "/preview/admin-section",
                 "method": "get"

@@ -25,6 +25,7 @@
                 "method": "get"
             },
             "reports": null,
+            "market": null,
             "profile": null
         },
         "links": {

@@ -17,6 +17,9 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
  */
 final class GetBusinessProfile
 {
+    /** The design's Profile sections (Business.dc.html L5022–5028), in its menu order. */
+    public const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'];
+
     public function __construct(private WithBusinessAuthority $authority, private BusinessCampaignStore $campaigns) {}
 
     /**

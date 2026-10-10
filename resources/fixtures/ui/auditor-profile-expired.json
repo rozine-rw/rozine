@@ -17,6 +17,14 @@
         "quality_score": 99,
         "on_time_pct": 96,
         "jobs_done": 9,
+        "contact": {
+            "email": "diane.uwase@uwaseco.rw",
+            "phone": null,
+            "address": null
+        },
+        "security": {
+            "two_factor": true
+        },
         "accreditation": {
             "status": "expired",
             "revision": 6,
@@ -66,14 +74,46 @@
                 "method": "get"
             },
             "sections": {
+                "earnings": {
+                    "url": "/preview/auditor-profile-earnings",
+                    "method": "get"
+                },
+                "contact": {
+                    "url": "/preview/auditor-profile-contact",
+                    "method": "get"
+                },
                 "accreditation": {
                     "url": "/preview/auditor-profile",
+                    "method": "get"
+                },
+                "payout": {
+                    "url": "/preview/auditor-profile-payout",
                     "method": "get"
                 },
                 "availability": {
                     "url": "/preview/auditor-profile-availability",
                     "method": "get"
+                },
+                "telemetry": {
+                    "url": "/preview/auditor-profile-telemetry",
+                    "method": "get"
+                },
+                "security": {
+                    "url": "/preview/auditor-profile-security",
+                    "method": "get"
+                },
+                "learn": {
+                    "url": "/preview/auditor-profile-learn",
+                    "method": "get"
+                },
+                "legal": {
+                    "url": "/preview/auditor-profile-legal",
+                    "method": "get"
                 }
+            },
+            "security_settings": {
+                "url": "/preview/auditor-profile-security",
+                "method": "get"
             },
             "operation": {
                 "url": "/preview/auditor-operation-{request_id}",

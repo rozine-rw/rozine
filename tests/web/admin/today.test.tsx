@@ -448,6 +448,33 @@ describe('Admin Today, live', () => {
         ).not.toBeInTheDocument();
     });
 
+    it("offers the design's quick commands that open a page, in its order, and only those the server links", () => {
+        const base = live();
+
+        render(
+            <AdminToday
+                {...base}
+                nav={{ ...base.nav, applications: null, reports: null }}
+            />,
+        );
+
+        const commands = screen.getByRole('navigation', {
+            name: 'Quick commands',
+        });
+
+        expect(
+            within(commands)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Policies']);
+        expect(
+            within(commands).queryByText('Broadcast'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(commands).queryByText('Run cycle'),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows only the links the viewer may open', () => {
         render(<AdminToday {...live()} />);
 
@@ -459,8 +486,11 @@ describe('Admin Today, live', () => {
             within(commands).getByRole('link', { name: 'Review queue' }),
         ).toHaveAttribute('href', '/preview/admin-applications');
         expect(
-            within(commands).queryByRole('link', { name: 'Audit trail' }),
-        ).not.toBeInTheDocument();
+            within(commands).getByRole('link', { name: 'Audit desk' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
+        expect(
+            within(commands).getByRole('link', { name: 'Policies' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
         expect(
             screen.queryByRole('link', { name: 'Open the ledger' }),
         ).not.toBeInTheDocument();

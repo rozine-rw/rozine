@@ -32,6 +32,7 @@ describe('A designed section that is not wired yet', () => {
             'notes',
             'primary_market',
             'secondary_market',
+            'reports',
             'risk',
             'compliance',
             'payments',
@@ -203,6 +204,25 @@ describe('A designed section that is not wired yet', () => {
             within(nav).getByRole('link', { name: 'Engines' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(screen.getByTestId('head')).toHaveTextContent('Engines');
+    });
+});
+
+describe('The title ⓘ', () => {
+    it('takes no layout while closed and opens on hover or keyboard focus', () => {
+        render(<AdminPendingSection {...props({ section: 'reports' })} />);
+
+        const tip = screen.getByRole('tooltip', { hidden: true });
+
+        expect(tip).toHaveTextContent(
+            'Business performance reports published to investors',
+        );
+        // Closed it is display:none, not just invisible, so it never widens a phone screen.
+        expect(tip).toHaveClass(
+            'hidden',
+            'group-hover:block',
+            'group-focus:block',
+        );
+        expect(tip).not.toHaveClass('invisible');
     });
 });
 
