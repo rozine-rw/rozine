@@ -85,7 +85,7 @@ it('renders an empty Portfolio in the live contract shape with its empty states 
             'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(), 'allowed_actions' => [],
             'reports' => [], 'filter' => 'all', 'filters' => auditorPortfolioFilters(0, 0, 0),
             'conflicts' => ['files' => [], 'record' => [], 'declare' => ['url' => '/auditor/jobs/{assignment}/conflict', 'method' => 'post']],
-            'owed' => [], 'outcome' => null, 'open_jobs' => 0,
+            'owed' => [], 'owed_complete' => true, 'outcome' => null, 'open_jobs' => 0,
             'links' => ['home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
                 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
                 'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
@@ -130,6 +130,22 @@ it('names a monthly report by its period and dates it by the monthly report wind
     $period = now('Africa/Kigali')->subMonthNoOverflow()->format('Y-m');
     expect($reports)->toHaveCount(1)->and($reports[0])->toMatchArray(['kind' => 'monthly', 'month' => $period.'-01',
         'due_on' => app(AuditReportWindow::class)->dueAt($period), 'status' => 'awaiting_cosign']);
+});
+
+it('never reports an all-clear while an owed verification may lie beyond the first page of assignments', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $outstanding = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($partner['user'], $outstanding);
+    $whole = auditorPortfolioProps($partner['user']);
+    expect(array_column($whole['owed'], 'id'))->toBe([$outstanding->id])->and($whole['owed_complete'])->toBeTrue();
+    $this->travel(1)->minutes();
+    foreach (range(1, 25) as $newer) {
+        AuditAssignmentFixture::engagement($partner['party']->id);
+    }
+    $cut = auditorPortfolioProps($partner['user']);
+    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()
+        ->and($cut['links']['jobs'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
 });
 
 it('declares an interest through the assigned file\'s own command and keeps only a private record of it', function (): void {

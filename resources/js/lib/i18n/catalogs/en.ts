@@ -2248,6 +2248,12 @@ const en = {
     'auditor.calendar.count_one': '1 deal',
     'auditor.calendar.count_other': '{count} deals',
     'auditor.calendar.empty': 'Nothing due in this month.',
+    'auditor.calendar.partial': 'Some assigned work is not shown here',
+    'auditor.calendar.partial_body':
+        'This calendar shows your latest assignments only. Open Jobs to check every verification you owe.',
+    'auditor.calendar.partial_empty':
+        'Nothing due this month among your latest assignments.',
+    'auditor.calendar.open_jobs': 'Open Jobs',
     'auditor.calendar.share': 'Your share',
     'auditor.calendar.on_time_by': 'On-time by',
     'auditor.calendar.due_today': 'Due today',

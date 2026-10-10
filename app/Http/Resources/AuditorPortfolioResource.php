@@ -66,6 +66,7 @@ class AuditorPortfolioResource extends JsonResource
                     'business' => null, 'note_id' => null, 'kind' => $entry['conflict']['kind'], 'declared_on' => $entry['conflict']['declared_at']], $page['conflicts']['data']),
                 'declare' => ['url' => str_replace(self::ASSIGNMENT_PLACEHOLDER, '{assignment}', $declare), 'method' => 'post']],
             'owed' => $owed,
+            'owed_complete' => $page['jobs']['next_cursor'] === null,
             'outcome' => null,
             'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => AuditorJobsResource::links($request)];

@@ -199,6 +199,7 @@
                 }
             }
         ],
+        "owed_complete": true,
         "outcome": {
             "kind": "conflict_declared",
             "business": "GreenLeaf Agro",

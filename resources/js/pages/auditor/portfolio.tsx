@@ -82,13 +82,20 @@ export default function AuditorPortfolio(props: AuditorPortfolioProps) {
                                 }}
                                 picked={picked}
                                 onPick={setPicked}
+                                complete={props.owed_complete}
+                                jobs={props.links.jobs}
                             />
                         </ColumnPad>
                     }
                     right={
                         <ColumnPad side="right">
                             <ManagedDeals />
-                            <DueList items={items} month={month} />
+                            <DueList
+                                items={items}
+                                month={month}
+                                complete={props.owed_complete}
+                                jobs={props.links.jobs}
+                            />
                         </ColumnPad>
                     }
                 />

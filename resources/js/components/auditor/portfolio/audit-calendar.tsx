@@ -243,6 +243,8 @@ export function AuditCalendar({
     onMonth,
     picked,
     onPick,
+    complete,
+    jobs,
 }: {
     today: Day;
     items: CalendarItem[];
@@ -251,6 +253,10 @@ export function AuditCalendar({
     onMonth: (step: -1 | 1) => void;
     picked: Day | null;
     onPick: (day: Day | null) => void;
+    /** Whether the owed verifications come from every assigned file (`owed_complete`). */
+    complete: boolean;
+    /** The Jobs list, where every assigned file can be seen when the calendar's read was cut. */
+    jobs: RouteLink | null;
 }) {
     const { t, locale } = useTranslation();
     const titleFor = useItemTitle();
@@ -269,6 +275,8 @@ export function AuditCalendar({
     );
     const soon = ahead.filter((item) => item.days <= SOON_DAYS);
     const next = soon[0] ?? ahead[0];
+    // A cut read cannot prove nothing is due: never report an all-clear from it.
+    const settled = soon.length === 0 && complete;
 
     return (
         <section aria-labelledby="audit-calendar">
@@ -476,44 +484,89 @@ export function AuditCalendar({
                 role="status"
                 className={cn(
                     'mt-3 rounded-2xl border bg-rz-surface p-3.5',
-                    soon.length > 0
-                        ? 'border-[#f0dcb8] dark:border-[rgba(227,181,106,.35)]'
-                        : 'border-[#cfe9d8] dark:border-[rgba(29,158,117,.35)]',
+                    settled
+                        ? 'border-[#cfe9d8] dark:border-[rgba(29,158,117,.35)]'
+                        : 'border-[#f0dcb8] dark:border-[rgba(227,181,106,.35)]',
                 )}
             >
                 <p
                     className={cn(
                         'text-[12.5px] font-bold',
-                        soon.length > 0
-                            ? 'text-[#7d420f] dark:text-[#e3b56a]'
-                            : 'text-rz-positive',
+                        settled
+                            ? 'text-rz-positive'
+                            : 'text-[#7d420f] dark:text-[#e3b56a]',
                     )}
                 >
                     {soon.length === 0
-                        ? t('auditor.calendar.clear')
+                        ? t(
+                              complete
+                                  ? 'auditor.calendar.clear'
+                                  : 'auditor.calendar.partial',
+                          )
                         : soon.length === 1
                           ? t('auditor.calendar.soon_one')
                           : t('auditor.calendar.soon_other', {
                                 count: soon.length,
                             })}
                 </p>
-                <p className="mt-1 text-[11.5px] leading-[1.55] text-rz-slate">
-                    {next === undefined
-                        ? t('auditor.calendar.clear_none')
-                        : t(
-                              soon.length === 0
-                                  ? 'auditor.calendar.clear_next'
-                                  : soon.length === 1
-                                    ? 'auditor.calendar.soon_body_one'
-                                    : 'auditor.calendar.soon_body_other',
-                              {
-                                  business: next.business,
-                                  date: formatDayMonth(next.day, locale),
-                              },
-                          )}
-                </p>
+                {(complete || soon.length > 0) && (
+                    <p className="mt-1 text-[11.5px] leading-[1.55] text-rz-slate">
+                        {next === undefined
+                            ? t('auditor.calendar.clear_none')
+                            : t(
+                                  soon.length === 0
+                                      ? 'auditor.calendar.clear_next'
+                                      : soon.length === 1
+                                        ? 'auditor.calendar.soon_body_one'
+                                        : 'auditor.calendar.soon_body_other',
+                                  {
+                                      business: next.business,
+                                      date: formatDayMonth(next.day, locale),
+                                  },
+                              )}
+                    </p>
+                )}
+                {!complete && <PartialNotice jobs={jobs} />}
             </div>
         </section>
+    );
+}
+
+/**
+ * Said wherever the calendar would otherwise read as complete: the assignment read stopped at its
+ * page limit, so an older file may still be due. Points to the Jobs list, which pages through all.
+ */
+function PartialNotice({
+    jobs,
+    empty = false,
+}: {
+    jobs: RouteLink | null;
+    empty?: boolean;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <p
+            className={
+                empty
+                    ? undefined
+                    : 'mt-1 text-[11.5px] leading-[1.55] text-rz-slate'
+            }
+        >
+            {t(
+                empty
+                    ? 'auditor.calendar.partial_empty'
+                    : 'auditor.calendar.partial_body',
+            )}
+            {jobs !== null && (
+                <>
+                    {' '}
+                    <Link href={jobs} className="font-bold text-rz-ink">
+                        {t('auditor.calendar.open_jobs')}
+                    </Link>
+                </>
+            )}
+        </p>
     );
 }
 
@@ -527,9 +580,14 @@ const MINI_TILE = cn('min-w-0 flex-1 rounded-[10px] px-2.5 py-2', INSET);
 export function DueList({
     items,
     month,
+    complete,
+    jobs,
 }: {
     items: CalendarItem[];
     month: Day;
+    /** Whether the owed verifications come from every assigned file (`owed_complete`). */
+    complete: boolean;
+    jobs: RouteLink | null;
 }) {
     const { t, locale } = useTranslation();
     const titleFor = useItemTitle();
@@ -560,11 +618,17 @@ export function DueList({
                           })}
                 </span>
             </div>
-            {due.length === 0 ? (
+            {due.length === 0 && complete && (
                 <EmptyState className="mt-2.5 py-[26px]">
                     {t('auditor.calendar.empty')}
                 </EmptyState>
-            ) : (
+            )}
+            {due.length === 0 && !complete && (
+                <EmptyState className="mt-2.5 py-[26px]">
+                    <PartialNotice jobs={jobs} empty />
+                </EmptyState>
+            )}
+            {due.length > 0 && (
                 <ul className="mt-2.5 flex flex-col gap-[9px]">
                     {due.map((item) => {
                         const date = new Date(`${item.day}T00:00:00Z`);

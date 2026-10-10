@@ -438,6 +438,85 @@ describe('Auditor Portfolio', () => {
         expect(screen.queryByText('On the record')).not.toBeInTheDocument();
     });
 
+    it('never reads as clear when the owed verifications were cut at the page limit', () => {
+        const base = props(emptyFixture);
+
+        render(<AuditorPortfolio {...base} owed_complete={false} />);
+
+        const status = screen.getByRole('status');
+
+        expect(status).toHaveTextContent(
+            'Some assigned work is not shown hereThis calendar shows your latest assignments only. Open Jobs to check every verification you owe. Open Jobs',
+        );
+        expect(status).not.toHaveTextContent('You are clear');
+        expect(
+            within(status).getByRole('link', { name: 'Open Jobs' }),
+        ).toHaveAttribute('href', '/preview/auditor-jobs');
+
+        const due = screen.getByRole('region', { name: 'Due in October' });
+
+        expect(due).toHaveTextContent(
+            'Nothing due this month among your latest assignments. Open Jobs',
+        );
+        expect(
+            within(due).getByRole('link', { name: 'Open Jobs' }),
+        ).toHaveAttribute('href', '/preview/auditor-jobs');
+        expect(
+            screen.queryByText('Nothing due in this month.'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('still names what is due soon from a cut read, and points to the rest', () => {
+        const base = props(emptyFixture);
+
+        render(
+            <AuditorPortfolio
+                {...base}
+                owed_complete={false}
+                owed={[
+                    {
+                        id: 'as_0',
+                        business: 'File 0',
+                        district: 'Gasabo',
+                        kind: 'monthly',
+                        due_at: '2026-10-04T12:00:00Z',
+                        link: { url: '/auditor/jobs/as_0', method: 'get' },
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            '1 verification due within 5 daysFile by the due date: File 0, due 4 Oct.This calendar shows your latest assignments only. Open Jobs to check every verification you owe. Open Jobs',
+        );
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Due in October' }),
+            ).getByRole('link', { name: /File 0/u }),
+        ).toHaveTextContent('In 1 day');
+    });
+
+    it('says a cut read is partial even without a Jobs link to offer', () => {
+        const base = props(emptyFixture);
+
+        render(
+            <AuditorPortfolio
+                {...base}
+                owed_complete={false}
+                links={{ ...base.links, jobs: null }}
+            />,
+        );
+
+        const status = screen.getByRole('status');
+
+        expect(status).toHaveTextContent(
+            'Some assigned work is not shown hereThis calendar shows your latest assignments only. Open Jobs to check every verification you owe.',
+        );
+        expect(
+            within(status).queryByRole('link', { name: 'Open Jobs' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders the live empty Portfolio with the Portfolio tab current', () => {
         render(<AuditorPortfolio {...props(liveMinimalFixture)} />);
 

@@ -2327,6 +2327,12 @@ const rw: Catalog = {
     'auditor.calendar.count_one': 'Umushinga 1',
     'auditor.calendar.count_other': 'Imishinga {count}',
     'auditor.calendar.empty': 'Nta kigomba gutangwa uku kwezi.',
+    'auditor.calendar.partial': 'Imwe mu mirimo wahawe ntigaragara hano',
+    'auditor.calendar.partial_body':
+        'Iyi kalendari yerekana imirimo uheruka guhabwa gusa. Fungura Imirimo urebe igenzura ryose ugomba gutanga.',
+    'auditor.calendar.partial_empty':
+        'Nta kigomba gutangwa uku kwezi mu mirimo uheruka guhabwa.',
+    'auditor.calendar.open_jobs': 'Fungura Imirimo',
     'auditor.calendar.share': 'Umugabane wawe',
     'auditor.calendar.on_time_by': 'Bitarenze',
     'auditor.calendar.due_today': 'Uyu munsi',

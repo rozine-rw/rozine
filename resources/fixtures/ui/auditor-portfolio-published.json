@@ -145,6 +145,7 @@
                 }
             }
         ],
+        "owed_complete": true,
         "outcome": null,
         "open_jobs": 1,
         "links": {

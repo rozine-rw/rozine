@@ -1177,6 +1177,12 @@ export type AuditorPortfolioProps = AuditorPageContract & {
     filter: ReportFilter;
     filters: { key: ReportFilter; count: number; link: RouteLink }[];
     owed: OwedVerification[];
+    /**
+     * Whether `owed` comes from every assigned file. False when the assignment read was cut at
+     * its page limit: an older file beyond it may still be due, so the calendar must not report
+     * an all-clear and points to the Jobs list for the rest.
+     */
+    owed_complete: boolean;
     conflicts: {
         files: AssignedFile[];
         record: ConflictEntry[];

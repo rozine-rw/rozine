@@ -2331,6 +2331,12 @@ const fr: Catalog = {
     'auditor.calendar.count_one': '1 opération',
     'auditor.calendar.count_other': '{count} opérations',
     'auditor.calendar.empty': 'Rien à rendre ce mois-ci.',
+    'auditor.calendar.partial': "Une partie de vos missions n'apparaît pas ici",
+    'auditor.calendar.partial_body':
+        'Ce calendrier ne montre que vos missions les plus récentes. Ouvrez Missions pour voir chaque vérification à rendre.',
+    'auditor.calendar.partial_empty':
+        'Rien à rendre ce mois-ci parmi vos missions les plus récentes.',
+    'auditor.calendar.open_jobs': 'Ouvrir Missions',
     'auditor.calendar.share': 'Votre part',
     'auditor.calendar.on_time_by': 'Échéance',
     'auditor.calendar.due_today': "À rendre aujourd'hui",
