@@ -117,9 +117,9 @@ it('lists sealed reports as awaiting co-sign until published, with exact filter 
     $this->get($report['link']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/audit'));
     expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $published = [...$report, 'status' => 'published'];
-    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published'])['reports'])->toBe([$published])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => []])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1)])
+    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['reports' => [$published], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => [], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1), 'reports_complete' => true])
         ->and(auditorPortfolioProps($fixture['user'], ['filter' => ['published']])['filter'])->toBe('all')
         ->and(auditorPortfolioProps(AuditorFixture::make()['user'])['reports'])->toBe([]);
 });
@@ -165,7 +165,7 @@ it('never reports an all-clear while an owed verification may lie beyond the fir
         AuditAssignmentFixture::engagement($partner['party']->id);
     }
     $cut = auditorPortfolioProps($partner['user']);
-    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()
+    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()->and($cut['reports_complete'])->toBeTrue()
         ->and($cut['links']['jobs'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
 });
 

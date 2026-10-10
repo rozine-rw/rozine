@@ -634,6 +634,11 @@ export function DueList({
             {due.length === 0 && !complete && (
                 <EmptyState className="mt-2.5 py-[26px]">
                     <PartialNotice jobs={jobs} empty />
+                    {!reportsComplete && (
+                        <span className="mt-1.5 block">
+                            {t('auditor.calendar.reports_partial')}
+                        </span>
+                    )}
                 </EmptyState>
             )}
             {due.length > 0 && (
