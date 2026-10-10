@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Identity\SelectActiveRole;
+use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\AuditAssignment;
 use App\Models\Party;
@@ -139,18 +140,24 @@ it('never calls the filed reports complete once the read stops at its page size'
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
     expect(auditorPortfolioProps($fixture['user'])['reports_complete'])->toBeTrue();
-    $store = app(AuditorFiledReportStore::class);
-    app()->instance(AuditorFiledReportStore::class, new class($store) implements AuditorFiledReportStore
+    $store = new class(app(AuditorFiledReportStore::class)) implements AuditorFiledReportStore
     {
+        /** @var list<int> */
+        public array $limits = [];
+
         public function __construct(private AuditorFiledReportStore $store) {}
 
         public function filed(int $userId, int $contextRevision, ?bool $published, int $limit): array
         {
+            $this->limits[] = $limit;
+
             return $this->store->filed($userId, $contextRevision, $published, 0);
         }
-    });
+    };
+    app()->instance(AuditorFiledReportStore::class, $store);
     $cut = auditorPortfolioProps($fixture['user']);
-    expect($cut['reports'])->toBe([])->and($cut['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))->and($cut['reports_complete'])->toBeFalse();
+    expect($store->limits)->toBe([AuditReadPolicy::MAX_PAGE_SIZE])->and(AuditReadPolicy::MAX_PAGE_SIZE)->toBe(50)
+        ->and($cut['reports'])->toBe([])->and($cut['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))->and($cut['reports_complete'])->toBeFalse();
 });
 
 it('never reports an all-clear while an owed verification may lie beyond the first page of assignments', function (): void {
