@@ -880,6 +880,11 @@ const fr: Catalog = {
     'admin.design.col.points': 'Points',
     'admin.design.col.app': 'Application',
     'admin.design.col.status': 'Statut',
+    'admin.design.col.assigned_cpa': 'CPA assigné',
+    'admin.design.col.variance': 'V_total / J',
+    'admin.design.col.signed': 'Signature',
+    'admin.design.col.period': 'Période',
+    'admin.design.col.audit_partner': "Partenaire d'audit",
     'admin.design.col.features': 'Fonctionnalités',
     'admin.design.col.entity': 'Élément',
     'admin.design.col.input': 'Paramètre',
@@ -937,6 +942,21 @@ const fr: Catalog = {
         'Notes en difficulté · alerte précoce',
     'admin.design.risk.distressed.empty':
         'Aucune note en difficulté à afficher pour le moment.',
+    'admin.design.reports.kpi.published': 'Audités et publiés',
+    'admin.design.reports.kpi.awaiting': "En attente d'audit",
+    'admin.design.reports.kpi.breached': 'SLA dépassé',
+    'admin.design.reports.kpi.on_time': "Taux d'audit à temps",
+    'admin.design.reports.field.title':
+        "Opérations d'audit flash sur le terrain",
+    'admin.design.reports.field.sub':
+        "Chaque visite de terrain avec son CPA, l'écart, l'heure de validation et les constats signés.",
+    'admin.design.reports.field.empty':
+        'Aucune mission ISRS 4400 enregistrée pour le moment.',
+    'admin.design.reports.monthly.title':
+        'Suivi de conformité des audits mensuels',
+    'admin.design.reports.monthly.sub':
+        'Relevés mensuels, vérifiés sur place avant le 7.',
+    'admin.design.reports.monthly.empty': 'Rien dans cette vue.',
     'admin.design.compliance.kpi.kyc_completion': 'Achèvement KYC',
     'admin.design.compliance.kpi.aml_alerts': 'Alertes AML',
     'admin.design.compliance.kpi.sanctions': 'Correspondances sanctions',
@@ -1292,8 +1312,8 @@ const fr: Catalog = {
     'admin.ledger.kind.contra': 'Contre-passation',
     'admin.today.commands': 'Commandes rapides',
     'admin.today.command.review_queue': "File d'examen",
-    'admin.today.command.release_queue': 'File de versement',
-    'admin.today.command.audit_trail': "Piste d'audit",
+    'admin.today.command.audit_desk': "Bureau d'audit",
+    'admin.today.command.policies': 'Politiques',
     'admin.today.kpi.capital_raised': 'Capital total levé',
     'admin.today.kpi.capital_raised_trend': 'Sur tous les titres',
     'admin.today.kpi.active_businesses': 'Entreprises actives',
@@ -5123,10 +5143,10 @@ const fr: Catalog = {
     'admin.section.coverage.subtitle':
         'Partenaires d’audit et audits ouverts dans chaque district, et si le district est couvert. Lecture seule.',
     'admin.section.coverage.search': 'Rechercher par district ou province…',
-    'admin.section.reports.title': 'Rapports',
+    'admin.section.reports.title': 'Rapports mensuels',
     'admin.section.reports.subtitle':
-        'Dossiers pour le régulateur et le conseil, et exports, chacun pour sa période et aussi définitif que ses chiffres. Lecture seule.',
-    'admin.section.reports.search': 'Rechercher par dossier ou période…',
+        'Rapports de performance des entreprises publiés pour les investisseurs',
+    'admin.section.reports.search': 'Rechercher…',
     'admin.reconciliation.day_close.label': 'Clôture de la journée',
     'admin.reconciliation.day_close.title': 'Clôture de la journée · {date}',
     'admin.reconciliation.day_close.state.reconciled': 'Rapprochée',
