@@ -82,7 +82,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::submit
-* @see app/Http/Controllers/AuditorProfileController.php:63
+* @see app/Http/Controllers/AuditorProfileController.php:65
 * @route '/auditor/accreditation'
 */
 export const submit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ submit.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::submit
-* @see app/Http/Controllers/AuditorProfileController.php:63
+* @see app/Http/Controllers/AuditorProfileController.php:65
 * @route '/auditor/accreditation'
 */
 submit.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ submit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::submit
-* @see app/Http/Controllers/AuditorProfileController.php:63
+* @see app/Http/Controllers/AuditorProfileController.php:65
 * @route '/auditor/accreditation'
 */
 submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::submit
-* @see app/Http/Controllers/AuditorProfileController.php:63
+* @see app/Http/Controllers/AuditorProfileController.php:65
 * @route '/auditor/accreditation'
 */
 const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::submit
-* @see app/Http/Controllers/AuditorProfileController.php:63
+* @see app/Http/Controllers/AuditorProfileController.php:65
 * @route '/auditor/accreditation'
 */
 submitForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ submit.form = submitForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::renew
-* @see app/Http/Controllers/AuditorProfileController.php:68
+* @see app/Http/Controllers/AuditorProfileController.php:70
 * @route '/auditor/accreditation/renewal'
 */
 export const renew = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ renew.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::renew
-* @see app/Http/Controllers/AuditorProfileController.php:68
+* @see app/Http/Controllers/AuditorProfileController.php:70
 * @route '/auditor/accreditation/renewal'
 */
 renew.url = (options?: RouteQueryOptions) => {
@@ -162,7 +162,7 @@ renew.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::renew
-* @see app/Http/Controllers/AuditorProfileController.php:68
+* @see app/Http/Controllers/AuditorProfileController.php:70
 * @route '/auditor/accreditation/renewal'
 */
 renew.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ renew.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::renew
-* @see app/Http/Controllers/AuditorProfileController.php:68
+* @see app/Http/Controllers/AuditorProfileController.php:70
 * @route '/auditor/accreditation/renewal'
 */
 const renewForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ const renewForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::renew
-* @see app/Http/Controllers/AuditorProfileController.php:68
+* @see app/Http/Controllers/AuditorProfileController.php:70
 * @route '/auditor/accreditation/renewal'
 */
 renewForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -194,7 +194,7 @@ renew.form = renewForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::withdraw
-* @see app/Http/Controllers/AuditorProfileController.php:73
+* @see app/Http/Controllers/AuditorProfileController.php:75
 * @route '/auditor/accreditation/withdrawal'
 */
 export const withdraw = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -209,7 +209,7 @@ withdraw.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::withdraw
-* @see app/Http/Controllers/AuditorProfileController.php:73
+* @see app/Http/Controllers/AuditorProfileController.php:75
 * @route '/auditor/accreditation/withdrawal'
 */
 withdraw.url = (options?: RouteQueryOptions) => {
@@ -218,7 +218,7 @@ withdraw.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::withdraw
-* @see app/Http/Controllers/AuditorProfileController.php:73
+* @see app/Http/Controllers/AuditorProfileController.php:75
 * @route '/auditor/accreditation/withdrawal'
 */
 withdraw.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -228,7 +228,7 @@ withdraw.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::withdraw
-* @see app/Http/Controllers/AuditorProfileController.php:73
+* @see app/Http/Controllers/AuditorProfileController.php:75
 * @route '/auditor/accreditation/withdrawal'
 */
 const withdrawForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -238,7 +238,7 @@ const withdrawForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::withdraw
-* @see app/Http/Controllers/AuditorProfileController.php:73
+* @see app/Http/Controllers/AuditorProfileController.php:75
 * @route '/auditor/accreditation/withdrawal'
 */
 withdrawForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -250,7 +250,7 @@ withdraw.form = withdrawForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 export const certificate = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -265,7 +265,7 @@ certificate.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 certificate.url = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -292,7 +292,7 @@ certificate.url = (args: { certificate: string | number } | [certificate: string
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 certificate.get = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -302,7 +302,7 @@ certificate.get = (args: { certificate: string | number } | [certificate: string
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 certificate.head = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -312,7 +312,7 @@ certificate.head = (args: { certificate: string | number } | [certificate: strin
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 const certificateForm = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -322,7 +322,7 @@ const certificateForm = (args: { certificate: string | number } | [certificate: 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 certificateForm.get = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -332,7 +332,7 @@ certificateForm.get = (args: { certificate: string | number } | [certificate: st
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::certificate
-* @see app/Http/Controllers/AuditorProfileController.php:101
+* @see app/Http/Controllers/AuditorProfileController.php:103
 * @route '/auditor/accreditation/certificates/{certificate}'
 */
 certificateForm.head = (args: { certificate: string | number } | [certificate: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -349,7 +349,7 @@ certificate.form = certificateForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::availability
-* @see app/Http/Controllers/AuditorProfileController.php:81
+* @see app/Http/Controllers/AuditorProfileController.php:83
 * @route '/auditor/availability'
 */
 export const availability = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -364,7 +364,7 @@ availability.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::availability
-* @see app/Http/Controllers/AuditorProfileController.php:81
+* @see app/Http/Controllers/AuditorProfileController.php:83
 * @route '/auditor/availability'
 */
 availability.url = (options?: RouteQueryOptions) => {
@@ -373,7 +373,7 @@ availability.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::availability
-* @see app/Http/Controllers/AuditorProfileController.php:81
+* @see app/Http/Controllers/AuditorProfileController.php:83
 * @route '/auditor/availability'
 */
 availability.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -383,7 +383,7 @@ availability.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::availability
-* @see app/Http/Controllers/AuditorProfileController.php:81
+* @see app/Http/Controllers/AuditorProfileController.php:83
 * @route '/auditor/availability'
 */
 const availabilityForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -393,7 +393,7 @@ const availabilityForm = (options?: RouteQueryOptions): RouteFormDefinition<'pos
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::availability
-* @see app/Http/Controllers/AuditorProfileController.php:81
+* @see app/Http/Controllers/AuditorProfileController.php:83
 * @route '/auditor/availability'
 */
 availabilityForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -405,7 +405,7 @@ availability.form = availabilityForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 export const operation = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -420,7 +420,7 @@ operation.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 operation.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -447,7 +447,7 @@ operation.url = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 operation.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -457,7 +457,7 @@ operation.get = (args: { request_id: string | number } | [request_id: string | n
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 operation.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -467,7 +467,7 @@ operation.head = (args: { request_id: string | number } | [request_id: string | 
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 const operationForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -477,7 +477,7 @@ const operationForm = (args: { request_id: string | number } | [request_id: stri
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 operationForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -487,7 +487,7 @@ operationForm.get = (args: { request_id: string | number } | [request_id: string
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::operation
-* @see app/Http/Controllers/AuditorProfileController.php:90
+* @see app/Http/Controllers/AuditorProfileController.php:92
 * @route '/auditor/operations/{request_id}'
 */
 operationForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -2328,6 +2328,66 @@ const rw: Catalog = {
     'auditor.profile.menu': "Ibice by'umwirondoro",
     'auditor.profile.section.accreditation': "Uruhushya rw'umwuga",
     'auditor.profile.section.availability': "Igihe uboneka n'aho ukorera",
+    'auditor.profile.section.earnings': 'Ibyo winjiza',
+    'auditor.profile.section.contact': "Umwirondoro n'aho ubarizwa",
+    'auditor.profile.section.payout': 'Konti ya banki yo kwishyurirwaho',
+    'auditor.profile.section.telemetry': "Igenzura ry'umugenzuzi",
+    'auditor.profile.section.security': "Umutekano n'ibikoresho",
+    'auditor.profile.section.learn': "Ishuri ry'abagenzuzi",
+    'auditor.profile.section.legal': "Amategeko n'amabwiriza",
+    'auditor.profile.contact.title': "Umwirondoro n'aho ubarizwa",
+    'auditor.profile.contact.phone': 'Telefoni',
+    'auditor.profile.contact.email': 'Imeyili',
+    'auditor.profile.contact.address': 'Aderesi',
+    'auditor.profile.contact.district': 'Akarere ukoreramo',
+    'auditor.profile.contact.not_provided': 'Ntibyatanzwe',
+    'auditor.profile.telemetry.title': "Igenzura ry'umugenzuzi",
+    'auditor.profile.telemetry.clock_expiries': 'Igihe cyarangiye',
+    'auditor.profile.telemetry.clock_expiries_sub':
+        'Igenzura ryemewe ryageze kuri 0:00',
+    'auditor.profile.telemetry.variance': "Ubunyangamugayo bw'itandukaniro",
+    'auditor.profile.telemetry.variance_sub':
+        "Itandukaniro risanzwe n'isesengura ry'imbere",
+    'auditor.profile.telemetry.on_time': 'Kurangiriza ku gihe',
+    'auditor.profile.telemetry.jobs_done': {
+        one: 'Akazi {count} karangiye',
+        other: 'Imirimo {count} yarangiye',
+    },
+    'auditor.profile.telemetry.strikes': "Amakosa y'ubuziranenge",
+    'auditor.profile.telemetry.strikes_sub': 'Impaka zemejwe zikurega',
+    'auditor.profile.telemetry.defended': 'Impaka watsinze',
+    'auditor.profile.telemetry.defended_sub': 'Isuzuma ryemeje akazi kawe',
+    'auditor.profile.telemetry.first_note': 'Kunanirwa kwishyura noti ya mbere',
+    'auditor.profile.telemetry.first_note_sub':
+        'Amahirwe yananiwe kwishyura noti ya 1',
+    'auditor.profile.telemetry.note':
+        "Rozine ikurikirana imikorere y'abafatanyabikorwa kugira ngo irinde imari y'abashoramari. Igipimo kigaragaza akarongo kugeza gipimwe.",
+    'auditor.profile.security.title': "Umutekano n'ibikoresho",
+    'auditor.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
+    'auditor.profile.security.two_factor_on':
+        'Birakora · kode ya porogaramu yemeza iyo winjira',
+    'auditor.profile.security.two_factor_off':
+        'Ntibikora · ongeraho kode ya porogaramu yemeza iyo winjira',
+    'auditor.profile.security.password': 'Hindura ijambobanga',
+    'auditor.profile.legal.title': "Amategeko n'amabwiriza",
+    'auditor.profile.legal.engagement': "Amasezerano y'akazi",
+    'auditor.profile.legal.current':
+        "Yemejwe · amasezerano rusange n'uburyo bwumvikanyweho",
+    'auditor.profile.legal.required': 'Bisaba ko ubyemeza',
+    'auditor.profile.legal.unavailable': 'Ntibishoboka gusomwa ubu',
+    'auditor.profile.pending.earnings_title': 'Nta byo winjije biraboneka',
+    'auditor.profile.pending.earnings_body':
+        "Umugabane wawe w'amafaranga ya serivisi n'inyungu bizagaragara hano nibimara kuboneka.",
+    'auditor.profile.pending.payout_title':
+        'Nta konti yo kwishyurirwaho iracyahari',
+    'auditor.profile.pending.payout_body':
+        'Konti ya banki wishyurirwaho izagaragara hano.',
+    'auditor.profile.pending.learn_title': 'Biraza vuba muri porogaramu',
+    'auditor.profile.pending.learn_body':
+        "Amasomo y'Ishuri ry'abagenzuzi azagaragara hano namara gutangazwa.",
+    'auditor.profile.pending.legal_title': 'Biraza vuba muri porogaramu',
+    'auditor.profile.pending.legal_body':
+        "Amasezerano yawe y'akazi azasomerwa hano.",
     'auditor.profile.on_time': 'Ku gihe',
     'auditor.profile.jobs': 'Imirimo',
     'auditor.profile.since': 'Kuva',
