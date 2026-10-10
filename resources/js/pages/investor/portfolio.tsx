@@ -24,9 +24,10 @@ const FIRST = { phone: 3, desk: 4 } as const;
 /**
  * Portfolio (MVP-INVESTOR-SCR-04, design L1062–1303): what the investor holds, its value and gain,
  * scheduled payouts, and concentration by business, industry and rating. Commitments still awaiting
- * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d). The
- * design's Secondary and Saved tabs (resale and the watchlist) and its Rozine Plus charge card are
- * outside the MVP. An `investor-servicing-v1` page (C4 v1 §4c) shows realised and projected
+ * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d). All four
+ * of the design's tabs are offered; Secondary (resale) and Saved (the watchlist) have no read yet
+ * and show the design's empty states. Saved leaves out the design's "tap the heart" hint, since no
+ * deal can be saved yet. The Rozine Plus charge card waits on approved Plus terms. An `investor-servicing-v1` page (C4 v1 §4c) shows realised and projected
  * earnings apart in place of the Phase 1B value and gain.
  */
 export default function InvestorPortfolio(
@@ -114,10 +115,14 @@ export default function InvestorPortfolio(
                         <p className="mt-3 text-[15px] font-semibold text-rz-ink">
                             {t(`investor.portfolio.empty.${props.tab}.title`)}
                         </p>
-                        <p className="mt-1.5 text-[13px] leading-normal text-rz-secondary">
-                            {t(`investor.portfolio.empty.${props.tab}.body`)}
-                        </p>
-                        {props.tab === 'active' && (
+                        {props.tab !== 'saved' && (
+                            <p className="mt-1.5 text-[13px] leading-normal text-rz-secondary">
+                                {t(
+                                    `investor.portfolio.empty.${props.tab}.body`,
+                                )}
+                            </p>
+                        )}
+                        {(props.tab === 'active' || props.tab === 'saved') && (
                             <Link
                                 href={props.links.deals}
                                 className="mt-4 inline-block rounded-xl bg-rz-accent-fill px-5 py-[11px] text-[13.5px] font-semibold text-white"

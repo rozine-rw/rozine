@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 export const verified = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ verified.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 verified.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ verified.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 verified.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ verified.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 verified.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ verified.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 const verifiedForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const verifiedForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 verifiedForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ verifiedForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/verified'
 */
 verifiedForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -9,6 +9,17 @@
             "kyc": "unverified",
             "member_since": "2026-03-10T00:00:00+02:00"
         },
+        "personal": {
+            "name": "Robert Mugisha",
+            "email": "robert.m@example.rw",
+            "phone": null,
+            "id_type": null,
+            "id_number": null,
+            "address": null
+        },
+        "security": {
+            "two_factor": false
+        },
         "linked": {
             "accounts": [],
             "banks": [
@@ -40,6 +51,14 @@
                 "url": "/preview/investor-portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/preview/investor-profile",
                 "method": "get"
@@ -60,6 +79,18 @@
                 "url": "/preview/investor-profile",
                 "method": "get"
             },
+            "personal": {
+                "url": "/preview/investor-profile-personal",
+                "method": "get"
+            },
+            "plan": {
+                "url": "/preview/investor-profile-plan",
+                "method": "get"
+            },
+            "security": {
+                "url": "/preview/investor-profile-security",
+                "method": "get"
+            },
             "linked": {
                 "url": "/preview/investor-profile-linked",
                 "method": "get"
@@ -68,16 +99,24 @@
                 "url": "/preview/investor-profile-statements",
                 "method": "get"
             },
+            "help": {
+                "url": "/preview/investor-profile-help",
+                "method": "get"
+            },
+            "terms": {
+                "url": "/preview/investor-profile-terms",
+                "method": "get"
+            },
+            "privacy": {
+                "url": "/preview/investor-profile-privacy",
+                "method": "get"
+            },
             "verification": {
                 "url": "/preview/investor-verification",
                 "method": "get"
             },
-            "terms": {
-                "url": "/preview/investor-profile",
-                "method": "get"
-            },
-            "privacy": {
-                "url": "/preview/investor-profile",
+            "security_settings": {
+                "url": "/preview/investor-profile-security",
                 "method": "get"
             }
         },

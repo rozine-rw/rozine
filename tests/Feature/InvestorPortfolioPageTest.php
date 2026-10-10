@@ -59,8 +59,11 @@ it('renders the empty portfolio in the live-minimal shape, with real routes and 
             'projected_3m' => $zero, 'next_payout' => null, 'avg_monthly' => $zero])
         ->and($props['tabs'])->toBe([
             ['key' => 'active', 'active' => true, 'link' => ['url' => '/investor/portfolio?tab=active', 'method' => 'get']],
-            ['key' => 'matured', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=matured', 'method' => 'get']]])
+            ['key' => 'matured', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=matured', 'method' => 'get']],
+            ['key' => 'secondary', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=secondary', 'method' => 'get']],
+            ['key' => 'saved', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=saved', 'method' => 'get']]])
         ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+            'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'notifications' => null, 'launcher' => ['url' => '/dashboard', 'method' => 'get']])
         ->and(json_encode($props, JSON_THROW_ON_ERROR))->not->toContain('/preview/');
@@ -74,8 +77,17 @@ it('shows the wallet’s credited cash as idle and opens the matured tab', funct
         ->assertInertia(fn (Assert $page) => $page->component('investor/portfolio')->where('tab', 'matured')
             ->where('idle', ['currency' => 'RWF', 'amount' => '75000'])->where('holdings', [])
             ->where('tabs.0.active', false)->where('tabs.1.active', true));
-    $this->get(route('investor.portfolio', ['tab' => 'secondary']))->assertSessionHasErrors('tab');
+    $this->get(route('investor.portfolio', ['tab' => 'resale']))->assertSessionHasErrors('tab');
 });
+
+it('opens the design’s Secondary and Saved tabs empty, since neither has a read yet', function (string $tab, int $index): void {
+    $fixture = InvestorWalletFixture::ready();
+
+    $this->actingAs($fixture['user'])->get(route('investor.portfolio', ['tab' => $tab]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('investor/portfolio')->where('tab', $tab)
+            ->where('holdings', [])->where('commitments', [])->where('tabs.0.active', false)->where("tabs.{$index}.active", true)
+            ->where("tabs.{$index}.key", $tab));
+})->with([['secondary', 2], ['saved', 3]]);
 
 it('shows a person still being verified an empty portfolio with no wallet', function (): void {
     $person = User::factory()->create(['party_id' => Party::factory()]);
