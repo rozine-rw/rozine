@@ -26,6 +26,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class InvestorVerificationResource extends JsonResource
 {
+    /** Rozine verifies Investors resident in Rwanda, so the flow and the Profile show it as the country of residence. */
+    public const COUNTRY_OF_RESIDENCE = 'Rwanda';
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -38,7 +41,7 @@ class InvestorVerificationResource extends JsonResource
 
         return ['investor_type' => 'individual', 'verified' => $data['verified'], 'identity_context_revision' => $data['identity_context_revision'], 'revision' => $data['revision'],
             'status' => $data['status'], 'decision_reason' => $data['status'] === 'rejected' ? $state['decision']['reason'] ?? null : null,
-            'step' => $state['step'], 'country' => 'Rwanda', 'date_of_birth' => $state['date_of_birth'],
+            'step' => $state['step'], 'country' => self::COUNTRY_OF_RESIDENCE, 'date_of_birth' => $state['date_of_birth'],
             'id_type' => $state['id_type'], 'id_number' => $state['id_number'],
             'uploads' => ['front' => $upload($state['uploads']['front']), 'back' => $upload($state['uploads']['back']), 'selfie' => $upload($state['uploads']['selfie'])],
             'links' => ['back' => $api ? null : ['url' => route('dashboard', [], false), 'method' => 'get']],

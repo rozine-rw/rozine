@@ -408,9 +408,9 @@ describe('Profile', () => {
         expect(field('ID TYPE')).toBe('National ID');
         expect(field('ID NUMBER')).toBe('•••• •••• •••• 5678');
         expect(screen.getByText('ADDRESS')).toBeInTheDocument();
+        expect(field('COUNTRY')).toBe('Rwanda');
 
         for (const label of [
-            'COUNTRY',
             'PROVINCE',
             'DISTRICT',
             'SECTOR',

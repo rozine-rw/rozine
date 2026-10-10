@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Identity\EnterSoleApp;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Http\Middleware\HandleAppearance;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -46,6 +48,15 @@ return Application::configure(basePath: dirname(__DIR__))
             // A person still being verified browses the Investor deals until the role opens.
             if (! $request->expectsJson() && $request->routeIs('investor.home') && $exception->reason === 'IDENTITY_VERIFICATION_REQUIRED') {
                 return redirect()->route('investor.deals');
+            }
+
+            // A page of the account's only app opens it again (for example after verification reset
+            // the active role) instead of sending the person through the launcher.
+            $app = Str::before((string) $request->route()?->getName(), '.');
+            if (! $request->expectsJson() && $request->isMethod('GET') && $exception->reason === 'ACTIVE_ROLE_REQUIRED'
+                && in_array($app, ['investor', 'business', 'auditor'], true) && $request->user() !== null
+                && app(EnterSoleApp::class)->selectSole((int) $request->user()->getAuthIdentifier(), $app)) {
+                return redirect()->to($request->fullUrl());
             }
 
             if (! $request->expectsJson() && $request->routeIs('investor.home', 'investor.wallet', 'investor.verification', 'investor.portfolio', 'investor.profile', 'investor.verified', 'business.home', 'auditor.home', 'auditor.profile',

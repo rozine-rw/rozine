@@ -236,7 +236,7 @@ export function PersonalInformation({
             </p>
             <Field
                 label={t('investor.profile.personal.country')}
-                value={personal.address}
+                value={personal.country}
             />
             <div className="flex gap-3">
                 <Field

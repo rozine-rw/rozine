@@ -54,7 +54,7 @@ it('shows the account, its verified state and its verified funding methods, offe
         ->and($props['section'])->toBe('overview')
         ->and($props['identity'])->toBe(['name' => $user->name, 'email' => $user->email, 'investor_type' => 'individual', 'kyc' => 'verified',
             'member_since' => $user->created_at->toIso8601String()])
-        ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'address' => null])
+        ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'country' => 'Rwanda', 'address' => null])
         ->and($props['security'])->toBe(['two_factor' => false])
         ->and($props['linked'])->toBe(['accounts' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
             'verified' => true, 'unlink' => null]], 'banks' => []])
