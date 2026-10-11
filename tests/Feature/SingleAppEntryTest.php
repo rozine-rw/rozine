@@ -83,7 +83,7 @@ it('reopens the only app on the page asked for after verification resets the act
     $this->actingAs($fixture['user']->fresh())->get($url)->assertRedirect($url);
     expect(soleAppActiveRole($fixture['user']))->toBe('investor');
     $this->get($url)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('investor/profile')
-        ->where('personal.country', 'Rwanda')->where('personal.address', null));
+        ->where('personal.country', null)->where('personal.address', null));
 });
 
 it('still refuses when the person has two apps, and keeps JSON refusals unchanged', function (): void {

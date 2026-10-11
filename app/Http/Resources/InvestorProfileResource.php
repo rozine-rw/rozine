@@ -11,8 +11,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `InvestorProfileProps` (MVP-INVESTOR-SCR-11) for the web page. It shapes the account and the facts
  * `GetInvestorProfile` read and adds real routes only, with a link for each of the design's menu
  * rows. Personal information is read-only: name and email from the account, the approved identity
- * document already masked; the country is the residence the verification flow shows; phone and the
- * street address are not collected, so they are null. The security
+ * document already masked; phone, country and street address are not collected, so they are null
+ * (the profile shows the country as unknown until one is captured). The security
  * center reports two-factor sign-in and opens the account's security settings, where the password
  * and two-factor are managed. Linked accounts are the wallet's verified funding methods; there is
  * no link or unlink command yet, so neither is offered. No statement is generated yet, so
@@ -34,7 +34,7 @@ class InvestorProfileResource extends JsonResource
             'identity' => ['name' => $data['name'], 'email' => $data['email'], 'investor_type' => $data['investor_type'], 'kyc' => $data['kyc'],
                 'member_since' => $data['member_since']],
             'personal' => ['name' => $data['name'], 'email' => $data['email'], 'phone' => null, 'id_type' => $data['document']['id_type'] ?? null,
-                'id_number' => $data['document']['id_number'] ?? null, 'country' => InvestorVerificationResource::COUNTRY_OF_RESIDENCE, 'address' => null],
+                'id_number' => $data['document']['id_number'] ?? null, 'country' => null, 'address' => null],
             'security' => ['two_factor' => $data['two_factor']],
             'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => null], $data['methods']), 'banks' => []],
             'statements' => ['annual' => null, 'monthly' => []],

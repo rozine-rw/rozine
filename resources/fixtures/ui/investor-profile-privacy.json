@@ -15,7 +15,7 @@
             "phone": null,
             "id_type": "national_id",
             "id_number": "•••• •••• •••• 5678",
-            "country": "Rwanda",
+            "country": null,
             "address": null
         },
         "security": {

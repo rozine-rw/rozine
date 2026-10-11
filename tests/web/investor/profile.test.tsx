@@ -408,7 +408,7 @@ describe('Profile', () => {
         expect(field('ID TYPE')).toBe('National ID');
         expect(field('ID NUMBER')).toBe('•••• •••• •••• 5678');
         expect(screen.getByText('ADDRESS')).toBeInTheDocument();
-        expect(field('COUNTRY')).toBe('Rwanda');
+        expect(field('COUNTRY')).toBe('Unknown');
 
         for (const label of ['PROVINCE', 'DISTRICT', 'SECTOR', 'CELL']) {
             expect(field(label)).toBe('Not provided');
@@ -439,6 +439,7 @@ describe('Profile', () => {
         render(<InvestorProfile {...unverified} />);
         expect(field('ID TYPE')).toBe('Not provided');
         expect(field('ID NUMBER')).toBe('Not provided');
+        expect(field('COUNTRY')).toBe('Unknown');
     });
 
     it('reports two-factor sign-in and opens the security settings for it and the password', () => {
