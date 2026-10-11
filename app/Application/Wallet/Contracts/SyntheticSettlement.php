@@ -17,7 +17,10 @@ interface SyntheticSettlement
     /** Whether synthetic deposits settle by themselves here (UAT with live money off). */
     public function enabled(): bool;
 
-    /** After the response is sent, waits a few seconds, then settles everything still unsettled, once per request. */
+    /**
+     * After the response is sent, waits a few seconds, then settles everything still unsettled: at
+     * most one wait per application lifetime, and none when nothing is left to settle.
+     */
     public function scheduleAfterResponse(): void;
 
     /**

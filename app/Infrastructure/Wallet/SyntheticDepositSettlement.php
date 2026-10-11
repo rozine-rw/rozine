@@ -33,6 +33,9 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
 {
     public const int DELAY_SECONDS = 3;
 
+    /** Whether a settlement is already waiting for this application's termination. */
+    private bool $scheduled = false;
+
     public function __construct(private Application $app, private EnvironmentIsolation $isolation, private SyntheticWalletGuard $guard) {}
 
     public function enabled(): bool
@@ -40,15 +43,23 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
         return $this->guard->allowed() && $this->isolation->profile() === 'uat';
     }
 
+    /**
+     * One wait per application lifetime, however many deposits were sent: the callback is registered
+     * once, and it waits only if something is still unsettled when the application terminates (the
+     * worker settles its batch itself, so it finishes without waiting).
+     */
     public function scheduleAfterResponse(): void
     {
-        if (! $this->enabled()) {
+        if (! $this->enabled() || $this->scheduled) {
             return;
         }
-        $pending = true;
-        $this->app->terminating(function () use (&$pending): void {
-            if ($pending) {
-                $pending = false;
+        $this->scheduled = true;
+        $this->app->terminating(function (): void {
+            if (! $this->scheduled) {
+                return;
+            }
+            $this->scheduled = false;
+            if ($this->unsettledInvestorDeposits(1) !== [] || $this->unsettledBusinessDeposits(1) !== []) {
                 Sleep::for(self::DELAY_SECONDS)->seconds();
                 $this->settlePending();
             }

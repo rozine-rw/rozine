@@ -260,7 +260,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
         $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
-        $this->app->bind(SyntheticSettlement::class, SyntheticDepositSettlement::class);
+        $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
     }
 

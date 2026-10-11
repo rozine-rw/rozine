@@ -30,9 +30,12 @@ use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
 use Carbon\Carbon;
+use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
@@ -271,6 +274,7 @@ it('settles Investor and Business deposits whose process stopped after acknowled
     app()->terminate();
     expect(WalletProviderEvent::query()->count())->toBe(1)->and(BusinessProviderEvent::query()->count())->toBe(1)
         ->and(WalletDepositCredit::query()->count())->toBe(1)->and(BusinessDepositCredit::query()->count())->toBe(1);
+    Sleep::assertNeverSlept();
 });
 
 it('sends Investor and Business deposits lost before dispatch, resends an interrupted send, then settles each once', function (): void {
@@ -386,4 +390,39 @@ it('resends an interrupted Business send once its claim is stale, then settles i
         ->and(BusinessDepositCredit::query()->count())->toBe(1);
     expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(BusinessDepositCredit::query()->count())->toBe(1)
         ->and(BusinessProviderEvent::query()->count())->toBe(1);
+});
+
+it('finishes a worker batch through the real console termination without waiting, and waits once when something is left', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $business = stagingBusiness();
+    foreach (['11000', '12000', '13000'] as $amount) {
+        app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+    }
+    foreach (['14000', '15000'] as $amount) {
+        app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $business['method']->id);
+    }
+    $kernel = app(ConsoleKernel::class);
+    $worker = fn (): int => $kernel->handle(new ArrayInput(['command' => 'wallet:dispatch-deposits']), new BufferedOutput);
+
+    $status = $worker();
+    $kernel->terminate(new ArrayInput(['command' => 'wallet:dispatch-deposits']), $status);
+    expect($status)->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(3)->and(BusinessDepositCredit::query()->count())->toBe(2);
+    Sleep::assertNeverSlept();
+
+    foreach (['16000', '17000', '18000'] as $amount) {
+        app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+    }
+    app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '19000'], $business['method']->id);
+    app()->bind(ApplyProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+    app()->bind(ApplyBusinessProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+    $status = $worker();
+    $kernel->terminate(new ArrayInput(['command' => 'wallet:dispatch-deposits']), $status);
+    expect($status)->toBe(1)->and(WalletDepositCredit::query()->count())->toBe(3)->and(BusinessDepositCredit::query()->count())->toBe(2);
+    Sleep::assertSleptTimes(1);
+
+    app()->offsetUnset(ApplyProviderOutcome::class);
+    app()->offsetUnset(ApplyBusinessProviderOutcome::class);
+    expect($worker())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(6)->and(BusinessDepositCredit::query()->count())->toBe(3)
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(9);
 });
