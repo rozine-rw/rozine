@@ -967,6 +967,94 @@ class CanonicalCoordinationTests(unittest.TestCase):
             second = policy.canonical_selection(self.env())
             self.assertEqual((second["mode"], second["owner_run"], second["source_run"]), ("await", "200", "200"))
 
+    def test_no_source_selection_keeps_two_used_history_reads_and_fresh_own_identity(self):
+        self.artifacts[100].pop("validation-tree")
+        with self.server(), patch.object(policy, "workflow_history", wraps=policy.workflow_history) as history, patch.object(policy, "current_coordination_identity", wraps=policy.current_coordination_identity) as own:
+            decision = policy.canonical_selection(self.env())
+            self.assertEqual((decision["mode"], decision["owner_run"]), ("execute", "200"))
+            self.assertEqual(history.call_count, 2)
+            self.assertEqual(own.call_count, 2)
+
+    def test_pending_followers_verify_own_identity_without_reading_unused_history(self):
+        with self.server(), patch.object(policy, "workflow_history", side_effect=AssertionError("unused history retrieval")), patch.object(policy, "coordination_identity", wraps=policy.coordination_identity) as identity:
+            self.assertEqual(policy.pending_follower_ids(self.env(), [self.runs[201]], self.tree), {201})
+            self.assertEqual(identity.call_args_list[0].args[1]["id"], 200)
+
+    def test_each_used_history_api_failure_still_refuses_selection(self):
+        for failing_read in [1, 2]:
+            reads = 0
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                if "/workflows/tests.yml/runs?" in endpoint:
+                    reads += 1
+                    if reads == failing_read:
+                        raise subprocess.CalledProcessError(1, "gh api")
+                return copy.deepcopy(self.api(endpoint, **kwargs))
+            with self.subTest(history_read=failing_read), self.server(), patch.object(policy, "api", side_effect=api), self.assertRaises(subprocess.CalledProcessError):
+                policy.canonical_selection(self.env())
+            self.assertEqual(reads, failing_read)
+
+    def test_second_history_observes_new_matching_failures_and_published_owner(self):
+        original_runs, original_jobs, original_artifacts = copy.deepcopy((self.runs, self.jobs, self.artifacts))
+        for transition in ["failure", "cancelled", "skipped", "owner"]:
+            self.runs, self.jobs, self.artifacts = copy.deepcopy((original_runs, original_jobs, original_artifacts))
+            reads = 0
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                if "/workflows/tests.yml/runs?" in endpoint:
+                    reads += 1
+                    if reads == 2:
+                        if transition == "owner":
+                            self.publish(201, self.decision(201, "execute", 201, 201))
+                        else:
+                            self.runs[202] = dict(self.runs[200], id=202, status="completed", conclusion=transition)
+                return copy.deepcopy(self.api(endpoint, **kwargs))
+            with self.subTest(transition=transition), self.server(), patch.object(policy, "api", side_effect=api):
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
+                    policy.canonical_selection(self.env())
+                self.assertEqual(reads, 2)
+                self.assertFalse(Path("ci-coordination-decision/coordination-decision.json").exists())
+
+    def test_follower_own_identity_is_fresh_after_second_history(self):
+        original_runs, original_artifacts = copy.deepcopy((self.runs, self.artifacts))
+        for transition in ["attempt", "workflow", "tree"]:
+            self.runs, self.artifacts = copy.deepcopy((original_runs, original_artifacts))
+            env = self.env()
+            reads = 0
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                if "/workflows/tests.yml/runs?" in endpoint:
+                    reads += 1
+                    if reads == 2:
+                        if transition == "tree":
+                            self.artifacts[200]["ci-coordination-identity"]["tree_sha"] = "f" * 40
+                        else:
+                            self.runs[200]["run_attempt" if transition == "attempt" else "workflow_id"] = 2 if transition == "attempt" else 999
+                return copy.deepcopy(self.api(endpoint, **kwargs))
+            with self.subTest(transition=transition), self.server(), patch.object(policy, "api", side_effect=api), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(env)
+            self.assertEqual(reads, 2)
+
+    def test_pending_follower_own_attempt_change_during_native_verification_refuses(self):
+        env = self.env()
+        def api(endpoint, **kwargs):
+            if endpoint.endswith("/git/commits/" + "d" * 40):
+                self.runs[200]["run_attempt"] = 2
+            return copy.deepcopy(self.api(endpoint, **kwargs))
+        with self.server(), patch.object(policy, "api", side_effect=api), self.assertRaisesRegex(policy.CoordinationRefusal, "run_or_attempt_changed"):
+            policy.pending_follower_ids(env, [self.runs[201]], self.tree)
+
+    def test_current_attempt_change_before_decision_publication_refuses(self):
+        original = policy.reusable_run
+        def change_after_selection(*args, **kwargs):
+            result = original(*args, **kwargs)
+            self.runs[200]["run_attempt"] = 2
+            return result
+        with self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: copy.deepcopy(self.api(endpoint, **kwargs))), patch.object(policy, "reusable_run", side_effect=change_after_selection):
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "run_or_attempt_changed"):
+                policy.canonical_selection(self.env())
+            self.assertFalse(Path("ci-coordination-decision/coordination-decision.json").exists())
+
     def test_ready_promotion_can_own_validation_for_earlier_queued_push(self):
         self.artifacts[100].pop("validation-tree")
         self.jobs[200][-1]["status"] = "queued"

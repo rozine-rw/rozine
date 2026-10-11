@@ -322,7 +322,7 @@ def pending_participants(repository, runs, tree):
     return participants
 
 
-def canonical_context(env, tree):
+def current_coordination_identity(env, tree):
     repository = env["GITHUB_REPOSITORY"]
     workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
     current = api(f"repos/{repository}/actions/runs/{env['GITHUB_RUN_ID']}")
@@ -331,14 +331,20 @@ def canonical_context(env, tree):
     identity = coordination_identity(repository, current)
     if identity["tree_sha"] != tree or identity["tested_sha"] != env["GITHUB_SHA"]:
         raise CoordinationRefusal("current_checkout_identity_mismatch")
-    runs = [run for run in workflow_history(repository) if trusted_run(run, repository, workflow_id) and run["id"] != current["id"]]
+    return current, identity
+
+
+def canonical_context(env, tree):
+    repository = env["GITHUB_REPOSITORY"]
+    current, identity = current_coordination_identity(env, tree)
+    runs = [run for run in workflow_history(repository) if trusted_run(run, repository, current["workflow_id"]) and run["id"] != current["id"]]
     return current, identity, runs
 
 
 def pending_follower_ids(env, runs, tree):
     if env.get("COORDINATION_ACTIVE") != "true":
         return set()
-    current, identity, _ = canonical_context(env, tree)
+    current, identity = current_coordination_identity(env, tree)
     own = (str(current["id"]), str(current["run_attempt"]))
     try:
         decision = coordination_decision(env["GITHUB_REPOSITORY"], current, identity)
