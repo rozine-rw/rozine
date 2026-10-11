@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Wallet\Contracts;
+
+/**
+ * Staging's stand-in for a provider's callbacks. On UAT with live money off, a synthetic deposit the
+ * provider acknowledged settles through a signed provider event, verified and applied once like any
+ * other. Settlement is recoverable: whatever is still unsettled is found from the recorded
+ * acknowledgements, not from memory, and each deposit always gets the same event, so a retry replays
+ * instead of crediting twice. Everywhere else it does nothing; local and testing keep the manual
+ * `local:wallet --event` hook.
+ */
+interface SyntheticSettlement
+{
+    /** Whether synthetic deposits settle by themselves here (UAT with live money off). */
+    public function enabled(): bool;
+
+    /** After the response is sent, waits a few seconds, then settles everything still unsettled, once per request. */
+    public function scheduleAfterResponse(): void;
+
+    /**
+     * Settles acknowledged synthetic Investor and Business deposits that have no final outcome yet,
+     * oldest first. A failure is reported and left for the next run.
+     *
+     * @return array{settled: int, failed: int}
+     */
+    public function settlePending(int $limit = 50): array;
+}

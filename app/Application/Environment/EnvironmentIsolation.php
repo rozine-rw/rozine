@@ -256,9 +256,12 @@ class EnvironmentIsolation
             throw new LogicException('ISOLATION_RESET_DENIED');
         }
 
-        // The synthetic wallet seed, event hook and outbox worker exist for local and testing only.
-        if (in_array($command, ['local:wallet', 'wallet:dispatch-deposits'], true)
-            && (! in_array($this->profile(), ['local', 'testing'], true) || $this->config->get('isolation.live_money_enabled') !== false)) {
+        // The synthetic wallet seed and event hook exist for local and testing only. The staging tester
+        // setup and the deposit worker (outbox sends and synthetic settlement recovery) also run on UAT.
+        // Every one of them stops once live money is on.
+        $synthetic = ['local:wallet' => ['local', 'testing'], 'staging:wallet' => ['local', 'testing', 'uat'], 'wallet:dispatch-deposits' => ['local', 'testing', 'uat']];
+        if (isset($synthetic[$command])
+            && (! in_array($this->profile(), $synthetic[$command], true) || $this->config->get('isolation.live_money_enabled') !== false)) {
             throw new LogicException('ISOLATION_SYNTHETIC_WALLET_DENIED');
         }
     }

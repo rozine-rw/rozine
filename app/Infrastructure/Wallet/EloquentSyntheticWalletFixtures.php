@@ -39,6 +39,15 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
         return ['method_id' => $method->id, 'policy_version' => $current->version];
     }
 
+    public function currentPolicy(): ?array
+    {
+        $this->guard->assertAllowed();
+        $policy = DepositPolicy::query()->where('effective_at', '<=', now())->orderByDesc('effective_at')->orderByDesc('id')->first();
+
+        return $policy === null ? null : ['version' => $policy->version, 'status' => $policy->status, 'fee' => $policy->fee,
+            'minimum' => $policy->minimum, 'maximum' => $policy->maximum];
+    }
+
     public function addDecliningMethod(string $partyId): string
     {
         $this->guard->assertAllowed();
@@ -89,8 +98,8 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
     private function appendPolicy(string $version, string $status): DepositPolicy
     {
         $policy = new DepositPolicy;
-        $policy->forceFill(['version' => $version, 'synthetic' => true, 'status' => $status, 'fee' => $status === 'active' ? '0' : null,
-            'minimum' => $status === 'active' ? '1000' : null, 'maximum' => $status === 'active' ? '5000000' : null, 'effective_at' => now()])->save();
+        $policy->forceFill(['version' => $version, 'synthetic' => true, 'status' => $status, 'fee' => $status === 'active' ? self::POLICY_TERMS['fee'] : null,
+            'minimum' => $status === 'active' ? self::POLICY_TERMS['minimum'] : null, 'maximum' => $status === 'active' ? self::POLICY_TERMS['maximum'] : null, 'effective_at' => now()])->save();
 
         return $policy;
     }

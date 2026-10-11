@@ -18,8 +18,9 @@ use LogicException;
  * Investor account a verified synthetic MTN method under the explicit synthetic policy (fee 0,
  * RWF 1,000 to 5,000,000), and with `--declining` a second test number whose deposits fail. On UAT
  * only an owner-approved tester qualifies (the staging mail list or a superadmin's named testers).
- * It never creates an account or a password, and it refuses wherever synthetic deposits are not
- * allowed: demo, production, or live money on.
+ * A policy already in force on other terms is never overwritten: the command refuses and changes
+ * nothing. It never creates an account or a password, and it refuses wherever synthetic deposits
+ * are not allowed: demo, production, or live money on.
  */
 class PrepareStagingWallet extends Command
 {
@@ -43,6 +44,12 @@ class PrepareStagingWallet extends Command
             $user = User::query()->where('email', $email)->first();
             if ($user === null || $user->party_id === null || ! in_array('investor', $identity->handle($user->id)['available_roles'], true)) {
                 throw new LogicException('WALLET_STAGING_INVESTOR_REQUIRED: that account is not a verified Investor yet.');
+            }
+            $policy = $fixtures->currentPolicy();
+            if ($policy !== null && $policy['status'] === 'active'
+                && [$policy['fee'], $policy['minimum'], $policy['maximum']] !== array_values(SyntheticWalletFixtures::POLICY_TERMS)) {
+                throw new LogicException('WALLET_STAGING_POLICY_MISMATCH: the deposit policy in force ('.$policy['version']
+                    .') is not the synthetic fee 0, RWF 1,000 to 5,000,000 policy, so nothing was prepared.');
             }
             $prepared = $fixtures->prepareInvestor((string) $user->party_id);
             $this->components->info('Synthetic deposits ready. On UAT each one settles by itself a few seconds after it is sent.');

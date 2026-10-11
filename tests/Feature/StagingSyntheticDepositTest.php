@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 use App\Application\Environment\Contracts\StagingMailTesterStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Wallet\ApplyProviderOutcome;
+use App\Application\Wallet\Contracts\BusinessWalletStore;
+use App\Application\Wallet\Contracts\SyntheticSettlement;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\RecordBusinessDeposit;
+use App\Application\Wallet\RecordDepositIntent;
 use App\Models\BusinessDepositCredit;
+use App\Models\BusinessDepositDispatch;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
 use App\Models\BusinessProviderEvent;
@@ -16,7 +23,9 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\WalletDepositCredit;
+use App\Models\WalletDepositDispatch;
 use App\Models\WalletProviderEvent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
@@ -48,6 +57,21 @@ function stagingTester(): array
     $methods = InvestorFundingMethod::query()->where('party_id', $user->party_id)->orderBy('id')->get();
 
     return ['user' => $user, 'method' => $methods->firstWhere('label', 'MTN MoMo'), 'declining' => $methods->firstWhere('label', 'MTN MoMo (test: declines)')];
+}
+
+/**
+ * A configured Business whose mandate holder may deposit from a verified synthetic method, under the synthetic policy.
+ *
+ * @return array{user: User, business: BusinessProfile, method: BusinessFundingMethod}
+ */
+function stagingBusiness(): array
+{
+    $authority = BusinessAuthorityFixture::make('organization', 1, 'COMPANY-'.Str::ulid(), 1);
+    BusinessAuthorityFixture::configure($authority);
+    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
+    DepositPolicy::query()->exists() || DepositPolicy::factory()->create(SyntheticWalletFixtures::POLICY_TERMS);
+
+    return ['user' => $authority['users'][0], 'business' => $business, 'method' => BusinessFundingMethod::factory()->create(['business_id' => $business->id])];
 }
 
 /** @return array<string, mixed> */
@@ -85,12 +109,8 @@ it('declines a staging deposit paid from the declining test number and credits n
 
 it('settles a staging Business deposit through the Business provider path', function (): void {
     asStaging();
-    $authority = BusinessAuthorityFixture::make('organization', 1, 'COMPANY-'.Str::ulid(), 1);
-    BusinessAuthorityFixture::configure($authority);
-    $business = BusinessProfile::query()->where('entity_party_id', $authority['entity'])->firstOrFail();
-    DepositPolicy::factory()->create(['fee' => '0', 'minimum' => '1000', 'maximum' => '1000000']);
-    $method = BusinessFundingMethod::factory()->create(['business_id' => $business->id]);
-    $this->actingAs($authority['users'][0])->postJson(route('business.wallet.deposit', $business->id), stagingDeposit($method, '30000'))->assertOk();
+    $business = stagingBusiness();
+    $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '30000'))->assertOk();
 
     expect(BusinessProviderEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
         ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '30000'])
@@ -101,7 +121,9 @@ it('leaves local and testing deposits to the manual event hook', function (): vo
     $tester = stagingTester();
     $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method']))->assertOk();
 
-    expect(WalletProviderEvent::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0);
+    expect(app(SyntheticSettlement::class)->enabled())->toBeFalse()
+        ->and(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 0, 'failed' => 0])
+        ->and(WalletProviderEvent::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0);
     Sleep::assertNeverSlept();
 });
 
@@ -179,4 +201,131 @@ it('keeps the local account seeder off staging, so no account with a known passw
     asStaging();
     expect(Artisan::call('local:wallet', ['--seed' => 'tester@staging.rozine.invalid']))->toBe(1)
         ->and(User::query()->where('email', 'tester@staging.rozine.invalid')->exists())->toBeFalse();
+});
+
+it('recovers a settlement lost to a transient failure, on the next deposit and through the worker, crediting each deposit once', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    app()->bind(ApplyProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+    $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '10000'))->assertOk();
+
+    expect(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(1)
+        ->and(WalletProviderEvent::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0);
+
+    app()->offsetUnset(ApplyProviderOutcome::class);
+    $this->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))->assertOk();
+    expect(WalletDepositCredit::query()->count())->toBe(2)
+        ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['wallet']['total']['amount'])->toBe('30000');
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 0 synthetic deposits; 0 left for the next run.')
+        ->and(WalletProviderEvent::query()->count())->toBe(2)->and(WalletDepositCredit::query()->count())->toBe(2);
+});
+
+it('reports a settlement the worker could not finish and leaves it for the next run', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '10000'], $tester['method']->id);
+    app()->bind(ApplyProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(1)->and(Artisan::output())->toContain('Settled 0 synthetic deposits; 1 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(0);
+    app()->offsetUnset(ApplyProviderOutcome::class);
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 1 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(1);
+});
+
+it('settles Investor and Business deposits whose process stopped after acknowledging them, once, whoever gets there first', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $business = stagingBusiness();
+    app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '15000'], $tester['method']->id);
+    app(RecordBusinessDeposit::class)->handle($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '25000'], $business['method']->id);
+
+    expect(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(1)
+        ->and(BusinessDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(1)
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(0);
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(1)->and(BusinessDepositCredit::query()->count())->toBe(1);
+
+    app()->terminate();
+    expect(WalletProviderEvent::query()->count())->toBe(1)->and(BusinessProviderEvent::query()->count())->toBe(1)
+        ->and(WalletDepositCredit::query()->count())->toBe(1)->and(BusinessDepositCredit::query()->count())->toBe(1);
+});
+
+it('sends Investor and Business deposits lost before dispatch, resends an interrupted send, then settles each once', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $business = stagingBusiness();
+    app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '11000'], $tester['method']->id);
+    app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '12000'], $business['method']->id);
+    app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '13000'], $tester['method']->id);
+    expect(app(WalletStore::class)->claimDispatches(null, 1, true, 'uat'))->toHaveCount(1);
+    $this->travel(6)->minutes();
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())
+        ->toContain('Claimed 2 deposit dispatches; 2 acknowledged.')
+        ->toContain('Claimed 1 Business deposit dispatches; 1 acknowledged.')
+        ->toContain('Settled 3 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(2)->and(BusinessDepositCredit::query()->count())->toBe(1);
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 0 synthetic deposits')
+        ->and(WalletDepositCredit::query()->count())->toBe(2)->and(BusinessDepositCredit::query()->count())->toBe(1);
+});
+
+it('gives each deposit one stable settlement event, so a settlement racing another replays instead of recording a second', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $intent = app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '10000'], $tester['method']->id);
+    $racer = new class(app(ApplyProviderOutcome::class))
+    {
+        public bool $raced = false;
+
+        public function __construct(private ApplyProviderOutcome $real) {}
+
+        /**
+         * Another settlement runs to completion between this one's read and its apply, a few seconds later.
+         *
+         * @param  array<string, mixed>  $message
+         * @return array{disposition: string, state: string, credited: bool, replayed: bool}
+         */
+        public function handle(array $message): array
+        {
+            if (! $this->raced) {
+                $this->raced = true;
+                Carbon::setTestNow(now()->addSeconds(7));
+                app(SyntheticSettlement::class)->settlePending();
+            }
+
+            return $this->real->handle($message);
+        }
+    };
+    app()->instance(ApplyProviderOutcome::class, $racer);
+
+    expect(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 1, 'failed' => 0]);
+    $event = WalletProviderEvent::query()->sole();
+    expect($event->provider_event_id)->toBe('synthetic-settlement-'.$intent['data']['intent_id'])
+        ->and($event->disposition)->toBe('applied')->and(WalletDepositCredit::query()->count())->toBe(1);
+});
+
+it('refuses to prepare a tester while a policy on other terms is in force, changing nothing', function (): void {
+    asStaging();
+    InvestorWalletFixture::investor('tester@staging.rozine.invalid');
+    DepositPolicy::factory()->create(['version' => 'synthetic-other-terms', 'fee' => '500', 'minimum' => '2500', 'maximum' => '1000000']);
+
+    expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid']))->toBe(1)
+        ->and(Artisan::output())->toContain('WALLET_STAGING_POLICY_MISMATCH')->toContain('synthetic-other-terms')
+        ->and(InvestorFundingMethod::query()->count())->toBe(0)
+        ->and(DepositPolicy::query()->sole()->only(['version', 'fee', 'minimum', 'maximum']))
+        ->toBe(['version' => 'synthetic-other-terms', 'fee' => '500', 'minimum' => '2500', 'maximum' => '1000000']);
+});
+
+it('prepares a tester under a fresh synthetic policy when the policy in force was withdrawn', function (): void {
+    asStaging();
+    InvestorWalletFixture::investor('tester@staging.rozine.invalid');
+    DepositPolicy::factory()->withdrawn()->create(['version' => 'synthetic-withdrawn']);
+    $this->travel(1)->seconds();
+
+    expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid']))->toBe(0)
+        ->and(app(SyntheticWalletFixtures::class)->currentPolicy())
+        ->toMatchArray(['status' => 'active', ...SyntheticWalletFixtures::POLICY_TERMS]);
 });

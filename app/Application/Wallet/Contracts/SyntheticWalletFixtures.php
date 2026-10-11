@@ -14,9 +14,19 @@ interface SyntheticWalletFixtures
     /** The label of the synthetic test number whose deposits staging declines (a method's reference is encrypted, so its label names it). */
     public const string DECLINING_LABEL = 'MTN MoMo (test: declines)';
 
+    /** The explicit synthetic policy terms: no fee, RWF 1,000 to 5,000,000 per deposit. */
+    public const array POLICY_TERMS = ['fee' => '0', 'minimum' => '1000', 'maximum' => '5000000'];
+
+    /**
+     * The policy in force now, or null when none is.
+     *
+     * @return array{version: string, status: string, fee: string|null, minimum: string|null, maximum: string|null}|null
+     */
+    public function currentPolicy(): ?array;
+
     /**
      * Gives the Party a verified synthetic MTN method and makes sure an explicit synthetic policy
-     * (fee 0) is in force, appending a new version only when none is.
+     * (POLICY_TERMS) is in force, appending a new version only when no active one is.
      *
      * @return array{method_id: string, policy_version: string}
      */
