@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Application\Environment\Contracts\StagingMailTesterStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\ApplyProviderOutcome;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
+use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\SyntheticSettlement;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
 use App\Application\Wallet\Contracts\WalletStore;
@@ -14,6 +16,7 @@ use App\Application\Wallet\RecordBusinessDeposit;
 use App\Application\Wallet\RecordDepositIntent;
 use App\Models\BusinessDepositCredit;
 use App\Models\BusinessDepositDispatch;
+use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
 use App\Models\BusinessProviderEvent;
@@ -24,6 +27,7 @@ use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositDispatch;
+use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -206,16 +210,32 @@ it('keeps the local account seeder off staging, so no account with a known passw
 it('recovers a settlement lost to a transient failure, on the next deposit and through the worker, crediting each deposit once', function (): void {
     asStaging();
     $tester = stagingTester();
-    app()->bind(ApplyProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+    $failing = new class
+    {
+        /** @var list<array<string, mixed>> */
+        public array $seen = [];
+
+        /** @param array<string, mixed> $message */
+        public function handle(array $message): never
+        {
+            $this->seen[] = $message;
+
+            throw new RuntimeException('The outcome store is unavailable.');
+        }
+    };
+    app()->instance(ApplyProviderOutcome::class, $failing);
     $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '10000'))->assertOk();
 
     expect(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(1)
         ->and(WalletProviderEvent::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0);
 
     app()->offsetUnset(ApplyProviderOutcome::class);
+    $this->travel(5)->minutes();
     $this->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))->assertOk();
+    $first = WalletProviderEvent::query()->where('amount', '10000')->sole();
     expect(WalletDepositCredit::query()->count())->toBe(2)
-        ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['wallet']['total']['amount'])->toBe('30000');
+        ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['wallet']['total']['amount'])->toBe('30000')
+        ->and($failing->seen)->toHaveCount(1)->and($first->evidence)->toBe($failing->seen[0]);
 
     expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 0 synthetic deposits; 0 left for the next run.')
         ->and(WalletProviderEvent::query()->count())->toBe(2)->and(WalletDepositCredit::query()->count())->toBe(2);
@@ -328,4 +348,42 @@ it('prepares a tester under a fresh synthetic policy when the policy in force wa
     expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid']))->toBe(0)
         ->and(app(SyntheticWalletFixtures::class)->currentPolicy())
         ->toMatchArray(['status' => 'active', ...SyntheticWalletFixtures::POLICY_TERMS]);
+});
+
+it('never resurrects a deposit whose outcome is already final, for Investor or Business', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $business = stagingBusiness();
+    $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['declining'], '10000'))->assertOk();
+    $intent = app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '12000'], $tester['method']->id);
+    $declined = app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '14000'], $business['method']->id);
+    foreach ([[ApplyProviderOutcome::class, $intent], [ApplyBusinessProviderOutcome::class, $declined]] as [$applier, $result]) {
+        $record = $applier === ApplyProviderOutcome::class ? WalletDepositIntent::query()->whereKey($result['data']['intent_id'])->sole()
+            : BusinessDepositIntent::query()->whereKey($result['data']['intent_id'])->sole();
+        expect(app($applier)->handle(app(SyntheticEventSigner::class)->sign(['provider' => 'synthetic', 'event_id' => 'provider-failure-'.$record->id,
+            'reference' => $record->provider_reference, 'state' => 'failed', 'amount' => $record->amount, 'currency' => 'RWF', 'environment' => 'uat',
+            'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]))['state'])->toBe('failed');
+    }
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())
+        ->toContain('Claimed 1 deposit dispatches; 1 acknowledged.')->toContain('Claimed 1 Business deposit dispatches; 1 acknowledged.')
+        ->toContain('Settled 0 synthetic deposits; 0 left for the next run.')
+        ->and(WalletProviderEvent::query()->where('state', 'succeeded')->count() + BusinessProviderEvent::query()->where('state', 'succeeded')->count())->toBe(0)
+        ->and(WalletDepositCredit::query()->count() + BusinessDepositCredit::query()->count())->toBe(0);
+});
+
+it('resends an interrupted Business send once its claim is stale, then settles it once', function (): void {
+    asStaging();
+    $business = stagingBusiness();
+    app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '16000'], $business['method']->id);
+    expect(app(BusinessWalletStore::class)->claimDispatches(null, 1, true, 'uat'))->toHaveCount(1);
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Claimed 0 Business deposit dispatches; 0 acknowledged.')
+        ->toContain('Settled 0 synthetic deposits');
+    $this->travel(6)->minutes();
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Claimed 1 Business deposit dispatches; 1 acknowledged.')
+        ->toContain('Settled 1 synthetic deposits; 0 left for the next run.')
+        ->and(BusinessDepositCredit::query()->count())->toBe(1);
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(BusinessDepositCredit::query()->count())->toBe(1)
+        ->and(BusinessProviderEvent::query()->count())->toBe(1);
 });
