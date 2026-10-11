@@ -80,7 +80,9 @@ use App\Application\Wallet\Contracts\PrimaryCashReceipts;
 use App\Application\Wallet\Contracts\PrimaryCommittedCash;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\SyntheticSettlement;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\SyntheticWalletTesters;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\SyntheticWalletGuard;
@@ -155,9 +157,11 @@ use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
 use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
 use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
+use App\Infrastructure\Wallet\EloquentSyntheticWalletTesters;
 use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
 use App\Infrastructure\Wallet\SyntheticDepositProvider;
+use App\Infrastructure\Wallet\SyntheticDepositSettlement;
 use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -251,13 +255,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrimaryFunding::class, EloquentPrimaryFunding::class);
         $this->app->bind(CampaignFundingEvidence::class, RetainedPrimaryFunding::class);
         $this->app->bind(HoldingSource::class, RetainedHoldingSource::class);
-        // The synthetic provider exists only on local and testing with live money off; everywhere
+        // The synthetic provider exists only on local, testing and UAT with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.
         $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()
             ? $this->app->make(SyntheticDepositProvider::class) : $this->app->make(UnavailableDepositProvider::class);
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
         $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
+        $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
+        $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
     }
 

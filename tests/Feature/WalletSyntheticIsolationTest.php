@@ -70,10 +70,19 @@ it('binds nothing that can send, verify or sign where synthetic support is not a
         ->and(fn () => app(SyntheticWalletGuard::class)->assertAllowed())->toThrow(LogicException::class, 'WALLET_SYNTHETIC_ONLY');
 })->with([
     'live money on' => [fn () => config(['isolation.live_money_enabled' => true])],
-    'uat profile' => [fn () => app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => 'uat']))],
     'demo profile' => [fn () => app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => 'demo']))],
     'production profile' => [fn () => app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => 'production']))],
 ]);
+
+it('binds the synthetic provider on UAT with live money off, so staging testers can fund a wallet', function (): void {
+    app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => 'uat']));
+    $message = app(SyntheticEventSigner::class)->sign(syntheticFields(['environment' => 'uat']));
+    expect(app(SyntheticWalletGuard::class)->allowed())->toBeTrue()
+        ->and(app(DepositProvider::class)->name())->toBe('synthetic')
+        ->and(app(DepositProvider::class)->verify($message)->environment)->toBe('uat');
+    config(['isolation.live_money_enabled' => true]);
+    expect(app(SyntheticWalletGuard::class)->allowed())->toBeFalse()->and(app(DepositProvider::class)->name())->toBe('unavailable');
+});
 
 it('stops an already-resolved synthetic provider once the guard closes', function (): void {
     $provider = app(DepositProvider::class);

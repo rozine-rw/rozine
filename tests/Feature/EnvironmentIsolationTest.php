@@ -639,7 +639,17 @@ test('forced seed and reset commands stop before database access', function (str
     expect($original->table('users')->where('id', $user->id)->value('email'))->toBe($user->email);
 })->with(['production', 'uat', 'demo'])->with(['db:seed', 'db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback']);
 
-test('the synthetic wallet seed, event hook and worker stop outside local and testing', function (string $environment, string $command) {
+test('the synthetic wallet seed and event hook stop outside local and testing', function (string $environment) {
+    isolatedConfiguration($environment);
+    if ($environment === 'production') {
+        config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
+    }
+
+    expect(fn () => Event::dispatch(new CommandStarting('local:wallet', new ArrayInput(['command' => 'local:wallet']), new BufferedOutput)))
+        ->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+})->with(['production', 'uat', 'demo']);
+
+test('the staging tester setup and the deposit worker stop on production and demo', function (string $environment, string $command) {
     isolatedConfiguration($environment);
     if ($environment === 'production') {
         config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
@@ -647,7 +657,16 @@ test('the synthetic wallet seed, event hook and worker stop outside local and te
 
     expect(fn () => Event::dispatch(new CommandStarting($command, new ArrayInput(['command' => $command]), new BufferedOutput)))
         ->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
-})->with(['production', 'uat', 'demo'])->with(['local:wallet', 'wallet:dispatch-deposits']);
+})->with(['production', 'demo'])->with(['staging:wallet', 'wallet:dispatch-deposits']);
+
+test('the staging tester setup and the deposit worker start on UAT with live money off, and stop once it is on', function (string $command) {
+    isolatedConfiguration('uat');
+    $start = fn () => Event::dispatch(new CommandStarting($command, new ArrayInput(['command' => $command]), new BufferedOutput));
+
+    expect($start)->not->toThrow(LogicException::class);
+    config(['isolation.live_money_enabled' => true]);
+    expect($start)->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+})->with(['staging:wallet', 'wallet:dispatch-deposits']);
 
 test('the synthetic wallet commands also stop on testing once live money is switched on', function () {
     config(['isolation.live_money_enabled' => true]);

@@ -10,6 +10,7 @@ use App\Application\Wallet\ApplyProviderOutcome;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\SyntheticWalletTesters;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\DispatchDepositIntents;
@@ -68,6 +69,7 @@ use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
+use App\Models\SyntheticWalletTesterChange;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositDispatch;
@@ -408,7 +410,8 @@ it('has concrete targets for the wallet ledger boundary', function (): void {
     foreach ([InvestorWallet::class, LedgerAccount::class, LedgerEntry::class, LedgerLine::class, DepositPolicy::class, InvestorFundingMethod::class,
         InvestorAccountRestriction::class, WalletDepositIntent::class, WalletDepositDispatch::class, WalletProviderEvent::class, WalletDepositCredit::class,
         WalletStore::class, WalletPostings::class, DepositProvider::class, SyntheticEventSigner::class, SyntheticWalletFixtures::class,
-        RecordDepositIntent::class, GetInvestorWallet::class, FindWalletOperation::class, ApplyProviderOutcome::class, DispatchDepositIntents::class] as $target) {
+        RecordDepositIntent::class, GetInvestorWallet::class, FindWalletOperation::class, ApplyProviderOutcome::class, DispatchDepositIntents::class,
+        SyntheticWalletTesters::class, SyntheticWalletTesterChange::class] as $target) {
         expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
     }
 })->group('arch');
@@ -416,7 +419,7 @@ it('has concrete targets for the wallet ledger boundary', function (): void {
 arch('wallet ledger records are only accessed by their adapter')
     ->expect(['App\Models\InvestorWallet', 'App\Models\LedgerAccount', 'App\Models\LedgerEntry', 'App\Models\LedgerLine', 'App\Models\DepositPolicy',
         'App\Models\InvestorFundingMethod', 'App\Models\InvestorAccountRestriction', 'App\Models\WalletDepositIntent', 'App\Models\WalletDepositDispatch',
-        'App\Models\WalletProviderEvent', 'App\Models\WalletDepositCredit'])
+        'App\Models\WalletProviderEvent', 'App\Models\WalletDepositCredit', 'App\Models\SyntheticWalletTesterChange'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Models', 'Database\Factories']);
 
 arch('Business wallet records are only accessed by the wallet adapter')
@@ -436,9 +439,15 @@ arch('the deposit provider is reached only through the wallet actions and adapte
     ->expect('App\Application\Wallet\Contracts\DepositProvider')
     ->toOnlyBeUsedIn(['App\Application\Wallet', 'App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider']);
 
-arch('synthetic signing and fixtures stay inside the local wallet hook')
+arch('synthetic signing and fixtures stay inside the local and staging wallet hooks')
     ->expect(['App\Application\Wallet\Contracts\SyntheticEventSigner', 'App\Application\Wallet\Contracts\SyntheticWalletFixtures'])
-    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet']);
+    ->toOnlyBeUsedIn(['App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider', 'App\Console\Commands\PrepareSyntheticWallet',
+        'App\Console\Commands\PrepareStagingWallet']);
+
+arch('the named wallet testers are reached only by the deposit admission, the staging command and their adapter')
+    ->expect('App\Application\Wallet\Contracts\SyntheticWalletTesters')
+    ->toOnlyBeUsedIn(['App\Application\Wallet\SyntheticDepositAdmission', 'App\Infrastructure\Wallet', 'App\Providers\AppServiceProvider',
+        'App\Console\Commands\PrepareStagingWallet']);
 
 it('has concrete targets for the disbursement boundary', function (): void {
     foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
