@@ -24,10 +24,11 @@ interface SyntheticSettlement
     public function scheduleAfterResponse(): void;
 
     /**
-     * Settles acknowledged synthetic Investor and Business deposits that have no final outcome yet,
-     * oldest first. A failure is reported and left for the next run.
+     * Settles at most $limit acknowledged synthetic deposits that have no final outcome yet, Investor
+     * and Business together, oldest first. A failure is reported and left for the next run;
+     * `remaining` counts the deposits still unsettled afterwards, failures included.
      *
-     * @return array{settled: int, failed: int}
+     * @return array{settled: int, failed: int, remaining: int}
      */
     public function settlePending(int $limit = 50): array;
 }

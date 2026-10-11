@@ -142,7 +142,7 @@ it('leaves local and testing deposits to the manual event hook', function (): vo
     $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method']))->assertOk();
 
     expect(app(SyntheticSettlement::class)->enabled())->toBeFalse()
-        ->and(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 0, 'failed' => 0])
+        ->and(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 0, 'failed' => 0, 'remaining' => 0])
         ->and(WalletProviderEvent::query()->count())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(0);
     Sleep::assertNeverSlept();
 });
@@ -366,7 +366,7 @@ it('gives each deposit one stable settlement event, so a settlement racing anoth
     };
     app()->instance(ApplyProviderOutcome::class, $racer);
 
-    expect(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 1, 'failed' => 0]);
+    expect(app(SyntheticSettlement::class)->settlePending())->toBe(['settled' => 1, 'failed' => 0, 'remaining' => 0]);
     $event = WalletProviderEvent::query()->sole();
     expect($event->provider_event_id)->toBe('synthetic-settlement-'.$intent['data']['intent_id'])
         ->and($event->disposition)->toBe('applied')->and(WalletDepositCredit::query()->count())->toBe(1);
@@ -465,6 +465,60 @@ it('finishes a worker batch through the real console termination without waiting
     app()->offsetUnset(ApplyBusinessProviderOutcome::class);
     expect($worker())->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(7)->and(BusinessDepositCredit::query()->count())->toBe(2)
         ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(9);
+});
+
+it('keeps the worker non-zero while deposits beyond its limit are unsettled, settling the oldest first across both owners', function (): void {
+    $business = stagingBusiness();
+    app(RecordBusinessDeposit::class)->handle($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '25000'], $business['method']->id);
+    asStaging();
+    $tester = stagingTester();
+    foreach (['11000', '12000', '13000'] as $amount) {
+        app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+    }
+    expect(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(3)
+        ->and(BusinessDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(1)
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(0);
+
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(1)->and(Artisan::output())
+        ->toContain('Settled 2 synthetic deposits; 2 left for the next run.')->not->toContain('deposit dispatches left')
+        ->and(BusinessDepositCredit::query()->count())->toBe(1)
+        ->and(WalletProviderEvent::query()->pluck('amount')->all())->toBe(['11000'])->and(WalletDepositCredit::query()->count())->toBe(1);
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(0)->and(Artisan::output())
+        ->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(3)->and(BusinessDepositCredit::query()->count())->toBe(1);
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(0)->and(Artisan::output())->toContain('Settled 0 synthetic deposits; 0 left for the next run.')
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(4)
+        ->and(WalletDepositCredit::query()->count() + BusinessDepositCredit::query()->count())->toBe(4);
+});
+
+it('sends at most the limit across both outboxes, interrupted resends included, and stays non-zero until nothing is left to send', function (): void {
+    $business = stagingBusiness();
+    foreach (['21000', '22000', '23000'] as $amount) {
+        app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $business['method']->id);
+    }
+    asStaging();
+    $tester = stagingTester();
+    foreach (['11000', '12000', '13000'] as $amount) {
+        app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+    }
+    expect(app(WalletStore::class)->claimDispatches(null, 1, true, 'uat'))->toHaveCount(1)
+        ->and(app(BusinessWalletStore::class)->claimDispatches(null, 1, true, 'uat'))->toHaveCount(1);
+    $this->travel(6)->minutes();
+    expect(app(WalletStore::class)->claimableDispatches(true))->toBe(3)->and(app(WalletStore::class)->claimableDispatches(false))->toBe(2)
+        ->and(app(BusinessWalletStore::class)->claimableDispatches(true))->toBe(3)->and(app(BusinessWalletStore::class)->claimableDispatches(false))->toBe(2);
+
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(1)->and(Artisan::output())
+        ->toContain('Claimed 2 deposit dispatches; 2 acknowledged.')->toContain('Claimed 0 Business deposit dispatches; 0 acknowledged.')
+        ->toContain('4 deposit dispatches left for the next run.')->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(2)->and(BusinessDepositCredit::query()->count())->toBe(0);
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(1)->and(Artisan::output())
+        ->toContain('Claimed 1 deposit dispatches; 1 acknowledged.')->toContain('Claimed 1 Business deposit dispatches; 1 acknowledged.')
+        ->toContain('2 deposit dispatches left for the next run.')->toContain('Settled 2 synthetic deposits; 0 left for the next run.');
+    expect(Artisan::call('wallet:dispatch-deposits', ['--limit' => '2']))->toBe(0)->and(Artisan::output())
+        ->toContain('Claimed 0 deposit dispatches; 0 acknowledged.')->toContain('Claimed 2 Business deposit dispatches; 2 acknowledged.')
+        ->not->toContain('deposit dispatches left')->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletDepositCredit::query()->count())->toBe(3)->and(BusinessDepositCredit::query()->count())->toBe(3)
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(6);
 });
 
 it('refuses UAT deposits from an Investor who is not a named wallet tester, even one the staging mail list approves', function (): void {

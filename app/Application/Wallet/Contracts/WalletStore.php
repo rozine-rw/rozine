@@ -48,11 +48,15 @@ interface WalletStore
 
     /**
      * Claims queued dispatches (and, for a provider with safe idempotent sends, dispatches whose
-     * send was interrupted) in a short transaction of its own, before any provider is called.
+     * send was interrupted) in a short transaction of its own, before any provider is called. At
+     * most $limit in all, queued ones first.
      *
      * @return list<DepositInstruction>
      */
     public function claimDispatches(?string $intentId, int $limit, bool $resendInterrupted, string $environment): array;
+
+    /** How many dispatches a claim with no limit would take now, so a bounded run can report what it left. */
+    public function claimableDispatches(bool $resendInterrupted): int;
 
     /** Records whether the provider acknowledged a claimed dispatch. The first outcome stands. */
     public function recordDispatch(string $intentId, bool $acknowledged): void;

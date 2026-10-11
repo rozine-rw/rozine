@@ -40,4 +40,12 @@ final class DispatchBusinessDeposits
 
         return ['claimed' => count($instructions), 'acknowledged' => $acknowledged];
     }
+
+    /** How many dispatches are still waiting for a run to claim them. */
+    public function backlog(): int
+    {
+        $this->guard->assertAllowed();
+
+        return $this->store->claimableDispatches($this->provider->idempotentSends());
+    }
 }
