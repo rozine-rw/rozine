@@ -19,14 +19,23 @@ interface SyntheticSettlement
 
     /**
      * After the response is sent, waits a few seconds, then settles everything still unsettled: at
-     * most one wait per application lifetime, and none when nothing is left to settle.
+     * most one wait per application lifetime, and none when nothing is left to settle or the run's
+     * allowance is spent.
      */
     public function scheduleAfterResponse(): void;
 
     /**
+     * Bounds every settlement attempt for the rest of this application's lifetime, the after-response
+     * one at termination included, to $limit in all. The worker sets it from its limit; a web request
+     * never does, so its after-response settlement keeps its own batch.
+     */
+    public function limitRun(int $limit): void;
+
+    /**
      * Settles at most $limit acknowledged synthetic deposits that have no final outcome yet, Investor
-     * and Business together, oldest first. A failure is reported and left for the next run;
-     * `remaining` counts the deposits still unsettled afterwards, failures included.
+     * and Business together, oldest first, and never more than the run's allowance has left. A
+     * failure is reported and left for the next run; `remaining` counts the deposits still unsettled
+     * afterwards, failures included.
      *
      * @return array{settled: int, failed: int, remaining: int}
      */

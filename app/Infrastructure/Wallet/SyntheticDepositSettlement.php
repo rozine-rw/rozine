@@ -37,6 +37,9 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
     /** Whether a settlement is already waiting for this application's termination. */
     private bool $scheduled = false;
 
+    /** Settlement attempts left in a run a worker bounded; null in an unbounded one, such as a web request. */
+    private ?int $allowance = null;
+
     public function __construct(private Application $app, private EnvironmentIsolation $isolation, private SyntheticWalletGuard $guard) {}
 
     public function enabled(): bool
@@ -46,8 +49,9 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
 
     /**
      * One wait per application lifetime, however many deposits were sent: the callback is registered
-     * once, and it waits only if something is still unsettled when the application terminates (the
-     * worker settles its batch itself, so it finishes without waiting).
+     * once, and it waits only if something is still unsettled when the application terminates and
+     * the run's allowance is not spent (the worker settles its batch itself, so it finishes without
+     * waiting).
      */
     public function scheduleAfterResponse(): void
     {
@@ -60,11 +64,16 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
                 return;
             }
             $this->scheduled = false;
-            if ($this->unsettledInvestorIntents()->exists() || $this->unsettledBusinessIntents()->exists()) {
+            if ($this->allowance !== 0 && ($this->unsettledInvestorIntents()->exists() || $this->unsettledBusinessIntents()->exists())) {
                 Sleep::for(self::DELAY_SECONDS)->seconds();
                 $this->settlePending();
             }
         });
+    }
+
+    public function limitRun(int $limit): void
+    {
+        $this->allowance = max(0, $limit);
     }
 
     public function settlePending(int $limit = 50): array
@@ -73,9 +82,14 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
         if (! $this->enabled()) {
             return $result;
         }
+        $limit = min($limit, $this->allowance ?? $limit);
         $oldest = [...$this->unsettledInvestorDeposits($limit), ...$this->unsettledBusinessDeposits($limit)];
         usort($oldest, fn (array $first, array $second): int => strcmp($first['intent']->id, $second['intent']->id));
-        foreach (array_slice($oldest, 0, $limit) as $deposit) {
+        $batch = array_slice($oldest, 0, $limit);
+        if ($this->allowance !== null) {
+            $this->allowance -= count($batch);
+        }
+        foreach ($batch as $deposit) {
             try {
                 $deposit['investor']
                     ? $this->app->make(ApplyProviderOutcome::class)->handle($this->message($deposit['intent'], $this->declines($deposit['intent'])))

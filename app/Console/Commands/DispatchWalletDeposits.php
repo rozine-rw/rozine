@@ -14,10 +14,10 @@ use Illuminate\Console\Command;
  * reach, and resends an interrupted send only for a provider with safe idempotent sends. On UAT it
  * then settles the acknowledged synthetic deposits still without a final outcome, so a settlement
  * lost to a failure or a restart is recovered here. `--limit` bounds the run: at most that many
- * sends across both outboxes (Investor ones first), and at most that many settlements across both
- * owners (oldest first). The worker exits non-zero while anything is left for the next run: a
- * dispatch still waiting to be sent, or a synthetic deposit still unsettled. Local, testing and UAT
- * only.
+ * sends across both outboxes (Investor ones first), and at most that many settlement attempts
+ * across both owners (oldest first), the provider's after-response settlement when the run ends
+ * included. The worker exits non-zero while anything is left for the next run: a dispatch still
+ * waiting to be sent, or a synthetic deposit still unsettled. Local, testing and UAT only.
  */
 class DispatchWalletDeposits extends Command
 {
@@ -35,6 +35,7 @@ class DispatchWalletDeposits extends Command
 
             return self::INVALID;
         }
+        $settlement->limitRun($limit);
         $sent = $dispatch->handle(null, $limit);
         $this->info('Claimed '.$sent['claimed'].' deposit dispatches; '.$sent['acknowledged'].' acknowledged.');
         $allowance = max(0, $limit - $sent['claimed']);

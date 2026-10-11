@@ -93,6 +93,23 @@ function stagingDeposit(InvestorFundingMethod|BusinessFundingMethod $method, str
     return ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'amount' => ['currency' => 'RWF', 'amount' => $amount], 'method_id' => $method->id];
 }
 
+/**
+ * Runs the deposit worker through the real console kernel, its termination included.
+ *
+ * @param  array<string, string>  $options
+ * @return array{0: int, 1: string}
+ */
+function stagingWorker(array $options = []): array
+{
+    $kernel = app(ConsoleKernel::class);
+    $input = new ArrayInput(['command' => 'wallet:dispatch-deposits', ...$options]);
+    $output = new BufferedOutput;
+    $status = $kernel->handle($input, $output);
+    $kernel->terminate($input, $status);
+
+    return [$status, $output->fetch()];
+}
+
 it('settles a staging deposit a few seconds after the response, through the signed provider event, crediting it once', function (): void {
     asStaging();
     $tester = stagingTester();
@@ -520,6 +537,111 @@ it('sends at most the limit across both outboxes, interrupted resends included, 
         ->and(WalletDepositCredit::query()->count())->toBe(3)->and(BusinessDepositCredit::query()->count())->toBe(3)
         ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(6);
 });
+
+it('keeps the after-response settlement at termination inside the worker limit, with either owner acknowledged and the other queued', function (string $acknowledged): void {
+    $business = stagingBusiness();
+    if ($acknowledged === 'business') {
+        foreach (['21000', '22000'] as $amount) {
+            app(RecordBusinessDeposit::class)->handle($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $business['method']->id);
+        }
+    } else {
+        app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '23000'], $business['method']->id);
+    }
+    asStaging();
+    $tester = stagingTester();
+    if ($acknowledged === 'investor') {
+        foreach (['11000', '12000'] as $amount) {
+            app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+        }
+    } else {
+        app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '13000'], $tester['method']->id);
+    }
+    $settled = fn (): int => WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count();
+    $credits = fn (): int => WalletDepositCredit::query()->count() + BusinessDepositCredit::query()->count();
+    expect(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count() + BusinessDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(2)
+        ->and($settled())->toBe(0);
+
+    [$status, $output] = stagingWorker(['--limit' => '1']);
+    expect($status)->toBe(1)->and($output)->toContain('Settled 1 synthetic deposits; 2 left for the next run.')->not->toContain('deposit dispatches left')
+        ->and(WalletDepositDispatch::query()->where('phase', 'acknowledged')->count() + BusinessDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe(3)
+        ->and($settled())->toBe(1)->and($credits())->toBe(1);
+    [$status, $output] = stagingWorker(['--limit' => '1']);
+    expect($status)->toBe(1)->and($output)->toContain('Settled 1 synthetic deposits; 1 left for the next run.')->and($settled())->toBe(2);
+    [$status, $output] = stagingWorker(['--limit' => '1']);
+    expect($status)->toBe(0)->and($output)->toContain('Settled 1 synthetic deposits; 0 left for the next run.')
+        ->and($settled())->toBe(3)->and($credits())->toBe(3);
+    Sleep::assertNeverSlept();
+})->with(['investor', 'business']);
+
+it('counts failed settlement attempts against the worker limit, so termination retries only what the limit has left, once each', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    foreach (['11000', '12000', '13000'] as $amount) {
+        app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => $amount], $tester['method']->id);
+    }
+    app()->bind(ApplyProviderOutcome::class, fn () => throw new RuntimeException('The outcome store is unavailable.'));
+    $kernel = app(ConsoleKernel::class);
+    $input = new ArrayInput(['command' => 'wallet:dispatch-deposits', '--limit' => '4']);
+    $output = new BufferedOutput;
+
+    $status = $kernel->handle($input, $output);
+    expect($status)->toBe(1)->and($output->fetch())->toContain('Settled 0 synthetic deposits; 3 left for the next run.');
+    app()->offsetUnset(ApplyProviderOutcome::class);
+    $kernel->terminate($input, $status);
+    Sleep::assertSleptTimes(1);
+    expect(WalletProviderEvent::query()->pluck('amount')->all())->toBe(['11000'])->and(WalletDepositCredit::query()->count())->toBe(1);
+
+    [$status, $output] = stagingWorker();
+    expect($status)->toBe(0)->and($output)->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletProviderEvent::query()->count())->toBe(3)->and(WalletDepositCredit::query()->count())->toBe(3);
+    Sleep::assertSleptTimes(1);
+});
+
+it('recovers a backlog beyond both the worker limit and the termination batch, for either wallet, crediting each deposit once', function (string $owner): void {
+    $business = stagingBusiness();
+    if ($owner === 'business') {
+        foreach (range(1, 52) as $index) {
+            app(RecordBusinessDeposit::class)->handle($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => (string) (1000 + $index)], $business['method']->id);
+        }
+    }
+    asStaging();
+    $tester = stagingTester();
+    if ($owner === 'investor') {
+        foreach (range(1, 52) as $index) {
+            app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => (string) (1000 + $index)], $tester['method']->id);
+        }
+    }
+    $settled = fn (): int => WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count();
+    $credits = fn (): int => WalletDepositCredit::query()->count() + BusinessDepositCredit::query()->count();
+
+    [$status, $output] = stagingWorker(['--limit' => '1']);
+    expect($status)->toBe(1)->and($output)->toContain('Settled 1 synthetic deposits; 51 left for the next run.')->and($settled())->toBe(1);
+    [$status, $output] = stagingWorker();
+    expect($status)->toBe(1)->and($output)->toContain('Settled 50 synthetic deposits; 1 left for the next run.')->and($settled())->toBe(51);
+    [$status, $output] = stagingWorker();
+    expect($status)->toBe(0)->and($output)->toContain('Settled 1 synthetic deposits; 0 left for the next run.')
+        ->and($settled())->toBe(52)->and($credits())->toBe(52);
+    Sleep::assertNeverSlept();
+})->with(['investor', 'business']);
+
+it('gives the Business outbox only what the Investor outbox left of the limit, none at a limit of 1 and all it needs at 500', function (int $limit): void {
+    $business = stagingBusiness();
+    app(BusinessWalletStore::class)->deposit($business['user']->id, 1, $business['business']->id, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '22000'], $business['method']->id);
+    asStaging();
+    $tester = stagingTester();
+    app(WalletStore::class)->deposit($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '11000'], $tester['method']->id);
+
+    [$status, $output] = stagingWorker(['--limit' => (string) $limit]);
+    expect($output)->toContain('Claimed 1 deposit dispatches; 1 acknowledged.')
+        ->toContain($limit === 1 ? 'Claimed 0 Business deposit dispatches; 0 acknowledged.' : 'Claimed 1 Business deposit dispatches; 1 acknowledged.')
+        ->toContain($limit === 1 ? '1 deposit dispatches left for the next run.' : 'Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and($status)->toBe($limit === 1 ? 1 : 0)
+        ->and(BusinessDepositDispatch::query()->where('phase', 'acknowledged')->count())->toBe($limit === 1 ? 0 : 1);
+
+    expect(stagingWorker()[0])->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(1)->and(BusinessDepositCredit::query()->count())->toBe(1)
+        ->and(WalletProviderEvent::query()->count() + BusinessProviderEvent::query()->count())->toBe(2);
+    Sleep::assertNeverSlept();
+})->with([1, 500]);
 
 it('refuses UAT deposits from an Investor who is not a named wallet tester, even one the staging mail list approves', function (): void {
     $onServerList = InvestorWalletFixture::investor('tester@staging.rozine.invalid')['user'];
