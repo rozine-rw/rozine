@@ -50,11 +50,15 @@ interface BusinessWalletStore
     public function findRepayment(int $userId, int $contextRevision, string $businessId, string $requestId): array;
 
     /**
-     * Claims queued Business deposit dispatches, committing each claim before any provider call.
+     * Claims queued Business deposit dispatches, committing each claim before any provider call. At
+     * most $limit in all, queued ones first.
      *
      * @return list<DepositInstruction>
      */
     public function claimDispatches(?string $intentId, int $limit, bool $resendInterrupted, string $environment): array;
+
+    /** How many dispatches a claim with no limit would take now, so a bounded run can report what it left. */
+    public function claimableDispatches(bool $resendInterrupted): int;
 
     public function recordDispatch(string $intentId, bool $acknowledged): void;
 

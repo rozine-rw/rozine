@@ -19,6 +19,7 @@ use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Sleep;
 use LogicException;
 use Throwable;
@@ -36,6 +37,9 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
     /** Whether a settlement is already waiting for this application's termination. */
     private bool $scheduled = false;
 
+    /** Settlement attempts left in a run a worker bounded; null in an unbounded one, such as a web request. */
+    private ?int $allowance = null;
+
     public function __construct(private Application $app, private EnvironmentIsolation $isolation, private SyntheticWalletGuard $guard) {}
 
     public function enabled(): bool
@@ -45,8 +49,9 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
 
     /**
      * One wait per application lifetime, however many deposits were sent: the callback is registered
-     * once, and it waits only if something is still unsettled when the application terminates (the
-     * worker settles its batch itself, so it finishes without waiting).
+     * once, and it waits only if something is still unsettled when the application terminates and
+     * the run's allowance is not spent (the worker settles its batch itself, so it finishes without
+     * waiting).
      */
     public function scheduleAfterResponse(): void
     {
@@ -59,20 +64,32 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
                 return;
             }
             $this->scheduled = false;
-            if ($this->unsettledInvestorDeposits(1) !== [] || $this->unsettledBusinessDeposits(1) !== []) {
+            if ($this->allowance !== 0 && ($this->unsettledInvestorIntents()->exists() || $this->unsettledBusinessIntents()->exists())) {
                 Sleep::for(self::DELAY_SECONDS)->seconds();
                 $this->settlePending();
             }
         });
     }
 
+    public function limitRun(int $limit): void
+    {
+        $this->allowance = max(0, $limit);
+    }
+
     public function settlePending(int $limit = 50): array
     {
-        $result = ['settled' => 0, 'failed' => 0];
+        $result = ['settled' => 0, 'failed' => 0, 'remaining' => 0];
         if (! $this->enabled()) {
             return $result;
         }
-        foreach ([...$this->unsettledInvestorDeposits($limit), ...$this->unsettledBusinessDeposits($limit)] as $deposit) {
+        $limit = min($limit, $this->allowance ?? $limit);
+        $oldest = [...$this->unsettledInvestorDeposits($limit), ...$this->unsettledBusinessDeposits($limit)];
+        usort($oldest, fn (array $first, array $second): int => strcmp($first['intent']->id, $second['intent']->id));
+        $batch = array_slice($oldest, 0, $limit);
+        if ($this->allowance !== null) {
+            $this->allowance -= count($batch);
+        }
+        foreach ($batch as $deposit) {
             try {
                 $deposit['investor']
                     ? $this->app->make(ApplyProviderOutcome::class)->handle($this->message($deposit['intent'], $this->declines($deposit['intent'])))
@@ -83,6 +100,7 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
                 $result['failed']++;
             }
         }
+        $result['remaining'] = $this->unsettledInvestorIntents()->count() + $this->unsettledBusinessIntents()->count();
 
         return $result;
     }
@@ -90,21 +108,33 @@ final class SyntheticDepositSettlement implements SyntheticSettlement
     /** @return list<array{intent: WalletDepositIntent, investor: true}> */
     private function unsettledInvestorDeposits(int $limit): array
     {
-        $acknowledged = WalletDepositDispatch::query()->where('phase', 'acknowledged')->select('intent_id');
-        $final = WalletProviderEvent::query()->where('disposition', 'applied')->whereIn('state', ['succeeded', 'failed'])->select('intent_id');
-
-        return array_values(WalletDepositIntent::query()->where('provider', 'synthetic')->whereIn('id', $acknowledged)->whereNotIn('id', $final)
-            ->orderBy('id')->limit($limit)->get()->map(fn (WalletDepositIntent $intent): array => ['intent' => $intent, 'investor' => true])->all());
+        return array_values($this->unsettledInvestorIntents()->orderBy('id')->limit($limit)->get()
+            ->map(fn (WalletDepositIntent $intent): array => ['intent' => $intent, 'investor' => true])->all());
     }
 
     /** @return list<array{intent: BusinessDepositIntent, investor: false}> */
     private function unsettledBusinessDeposits(int $limit): array
     {
+        return array_values($this->unsettledBusinessIntents()->orderBy('id')->limit($limit)->get()
+            ->map(fn (BusinessDepositIntent $intent): array => ['intent' => $intent, 'investor' => false])->all());
+    }
+
+    /** @return Builder<WalletDepositIntent> */
+    private function unsettledInvestorIntents(): Builder
+    {
+        $acknowledged = WalletDepositDispatch::query()->where('phase', 'acknowledged')->select('intent_id');
+        $final = WalletProviderEvent::query()->where('disposition', 'applied')->whereIn('state', ['succeeded', 'failed'])->select('intent_id');
+
+        return WalletDepositIntent::query()->where('provider', 'synthetic')->whereIn('id', $acknowledged)->whereNotIn('id', $final);
+    }
+
+    /** @return Builder<BusinessDepositIntent> */
+    private function unsettledBusinessIntents(): Builder
+    {
         $acknowledged = BusinessDepositDispatch::query()->where('phase', 'acknowledged')->select('intent_id');
         $final = BusinessProviderEvent::query()->where('disposition', 'applied')->whereIn('state', ['succeeded', 'failed'])->select('intent_id');
 
-        return array_values(BusinessDepositIntent::query()->where('provider', 'synthetic')->whereIn('id', $acknowledged)->whereNotIn('id', $final)
-            ->orderBy('id')->limit($limit)->get()->map(fn (BusinessDepositIntent $intent): array => ['intent' => $intent, 'investor' => false])->all());
+        return BusinessDepositIntent::query()->where('provider', 'synthetic')->whereIn('id', $acknowledged)->whereNotIn('id', $final);
     }
 
     private function declines(WalletDepositIntent $intent): bool

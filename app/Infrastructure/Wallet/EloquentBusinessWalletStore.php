@@ -32,6 +32,7 @@ use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -207,14 +208,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     public function claimDispatches(?string $intentId, int $limit, bool $resendInterrupted, string $environment): array
     {
         return DB::transaction(function () use ($intentId, $limit, $resendInterrupted, $environment): array {
-            $claimed = BusinessDepositDispatch::query()->where('phase', 'claimed')->select('intent_id');
-            $outcomes = BusinessDepositDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('intent_id');
-            $queued = BusinessDepositDispatch::query()->where('phase', 'queued')->whereNotIn('intent_id', $claimed)
-                ->when($intentId !== null, fn ($query) => $query->where('intent_id', $intentId))
-                ->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all();
-            $interrupted = $resendInterrupted ? BusinessDepositDispatch::query()->where('phase', 'claimed')->whereNotIn('intent_id', $outcomes)
-                ->where('created_at', '<', now()->subMinutes(5))->when($intentId !== null, fn ($query) => $query->where('intent_id', $intentId))
-                ->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all() : [];
+            $queued = $this->queuedDispatches($intentId)->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all();
+            $interrupted = $resendInterrupted && count($queued) < $limit ? $this->interruptedDispatches($intentId)
+                ->orderBy('id')->limit($limit - count($queued))->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all() : [];
             foreach ($queued as $queuedIntent) {
                 (new BusinessDepositDispatch)->forceFill(['intent_id' => $queuedIntent, 'phase' => 'claimed', 'created_at' => now('UTC')])->save();
             }
@@ -223,6 +219,35 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 ->map(fn (BusinessDepositIntent $intent): DepositInstruction => new DepositInstruction($intent->id, $intent->operation_id,
                     $intent->provider_reference, $this->intentPayload($intent)['amount'], $intent->currency, $environment))->all());
         }, 3);
+    }
+
+    public function claimableDispatches(bool $resendInterrupted): int
+    {
+        return $this->queuedDispatches(null)->count() + ($resendInterrupted ? $this->interruptedDispatches(null)->count() : 0);
+    }
+
+    /**
+     * Queued dispatches no claim has taken yet.
+     *
+     * @return Builder<BusinessDepositDispatch>
+     */
+    private function queuedDispatches(?string $intentId): Builder
+    {
+        return BusinessDepositDispatch::query()->where('phase', 'queued')
+            ->whereNotIn('intent_id', BusinessDepositDispatch::query()->where('phase', 'claimed')->select('intent_id'))
+            ->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
+    }
+
+    /**
+     * Claims still without a send outcome five minutes on: their send was interrupted.
+     *
+     * @return Builder<BusinessDepositDispatch>
+     */
+    private function interruptedDispatches(?string $intentId): Builder
+    {
+        return BusinessDepositDispatch::query()->where('phase', 'claimed')
+            ->whereNotIn('intent_id', BusinessDepositDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('intent_id'))
+            ->where('created_at', '<', now()->subMinutes(5))->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
     }
 
     public function recordDispatch(string $intentId, bool $acknowledged): void
