@@ -76,7 +76,7 @@ function c3Released(TestCase $test): array
 /** Publishes from the sheet as the signatory and returns the live campaign's path. */
 function c3Publish(BrowserJourney $journey, string $publish): string
 {
-    $journey->login('c3b', 'c3-signatory@example.test', C3_PASSWORD);
+    $journey->login('c3b', 'c3-signatory@example.test', C3_PASSWORD, landing: '**/business/*');
     $path = $journey->code('c3b', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.$publish).');
@@ -130,7 +130,7 @@ function c3Tranches(string $total): array
 function c3Credit(BrowserJourney $journey, string $session, string $email, string $total): void
 {
     expect(Artisan::call('local:wallet', ['--seed' => $email]))->toBe(0);
-    $journey->login($session, $email, SyntheticWalletSeeder::PASSWORD);
+    $journey->login($session, $email, SyntheticWalletSeeder::PASSWORD, landing: '**/investor/deals');
     $credited = '0';
     foreach (c3Tranches($total) as $amount) {
         $request = $journey->code($session, '
@@ -241,7 +241,7 @@ function c3Approve(BrowserJourney $journey): string
         ->and(Artisan::call('identity:staff', ['user' => $checker->id, '--role' => ['approver'], '--reason' => 'Synthetic C3 checker.']))->toBe(0)
         /* The scheduled reconciler also opens newly funded campaigns (#176). */
         ->and(Artisan::call('disbursements:reconcile'))->toBe(0);
-    $journey->login('c3m', 'c3-maker@example.test', C3_PASSWORD, C3_MAKER_SECRET);
+    $journey->login('c3m', 'c3-maker@example.test', C3_PASSWORD, landing: '**/admin/dashboard', secret: C3_MAKER_SECRET);
     $authorized = $journey->code('c3m', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/admin/disbursements').');
@@ -256,7 +256,7 @@ function c3Approve(BrowserJourney $journey): string
             await noOverflow();
             await shot('.$journey->shot('authorized-desktop').');
             return body.code;');
-    $journey->login('c3c', 'c3-checker@example.test', C3_PASSWORD, C3_CHECKER_SECRET);
+    $journey->login('c3c', 'c3-checker@example.test', C3_PASSWORD, landing: '**/admin/dashboard', secret: C3_CHECKER_SECRET);
     /* The login consumed this window's code: step-up needs the next one. */
     sleep(30 - (time() % 30) + 1);
     $approved = $journey->code('c3c', '

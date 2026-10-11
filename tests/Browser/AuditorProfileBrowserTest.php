@@ -26,7 +26,7 @@ it('walks the design Auditor Profile sections on a wide screen and a phone', fun
     expect($actor['user']->refresh()->email)->toBe('ap-auditor@example.test');
 
     (new BrowserJourney('auditor-profile', 8046))->within(function (BrowserJourney $journey) use ($secret): void {
-        $journey->login('ap1', 'ap-auditor@example.test', AP_PASSWORD, $secret);
+        $journey->login('ap1', 'ap-auditor@example.test', AP_PASSWORD, landing: '**/auditor', secret: $secret);
         $journey->code('ap1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/auditor/profile').');

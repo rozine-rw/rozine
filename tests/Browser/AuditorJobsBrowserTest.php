@@ -97,13 +97,11 @@ it('runs the real-record Auditor Jobs accept decline conflict and receipt journe
         }']);
         file_put_contents($directory.'/mfa-snapshot.txt', $run(['snapshot']));
 
-        /* Signs in with the authenticator code, opens the Auditor app and reads the live offers. */
+        /* Signs in with the authenticator code straight into the Auditor app, the account's only one, and reads the live offers. */
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.locator("input[name=code]").fill('.json_encode($totp->getCurrentOtp($secret)).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
-            await page.getByRole("button", {name:"Auditor", exact:true}).click();
             await page.waitForURL("**/auditor");
             await page.goto('.json_encode($base.'/auditor/jobs').');
             await page.getByRole("heading", {name:"Audit jobs"}).waitFor();

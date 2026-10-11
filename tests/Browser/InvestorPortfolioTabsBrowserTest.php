@@ -23,7 +23,7 @@ it('offers the design Portfolio tabs with Secondary and Saved empty on a wide sc
     expect($fixture['user']->email)->toBe('portfolio-tabs@example.test');
 
     (new BrowserJourney('investor-portfolio-tabs', 8049))->within(function (BrowserJourney $journey): void {
-        $journey->login('pt1', 'portfolio-tabs@example.test', PT_PASSWORD);
+        $journey->login('pt1', 'portfolio-tabs@example.test', PT_PASSWORD, landing: '**/investor/deals');
         $journey->code('pt1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');

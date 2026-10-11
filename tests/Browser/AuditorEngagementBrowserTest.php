@@ -79,14 +79,12 @@ it('reads and explicitly accepts the synthetic engagement terms from the Auditor
             await page.waitForURL("**/two-factor-challenge");
         }']);
 
-        /* Signs in, opens the Auditor landing page and follows its engagement banner. */
+        /* Signs in straight onto the Auditor landing page, the account's only app, and follows its engagement banner. */
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.setViewportSize({width:1280, height:860});
             await page.locator("input[name=code]").fill('.json_encode($totp->getCurrentOtp($secret)).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
-            await page.getByRole("button", {name:"Auditor", exact:true}).click();
             await page.waitForURL("**/auditor");
             await page.getByRole("link", {name:/Review and accept the engagement terms to take new work/}).click();
             await page.waitForURL("**/auditor/engagement");

@@ -76,7 +76,7 @@ it('starts and completes the factual procedure, saves its note and withdraws sta
         $run(['run-code', 'async (page) => {
             await page.locator("input[name=code]").fill('.json_encode($totp->getCurrentOtp($secret)).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL("**/auditor");
             await page.goto('.json_encode($base.'/auditor/jobs/'.$fixture['assignment']->id).');
             await page.getByRole("button", {name:"Start the audit", exact:true}).click();
             await page.waitForURL("**/auditor/reports/*");

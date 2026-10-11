@@ -29,7 +29,7 @@ it('offers the design quick commands and Oversight › Reports in the live conso
     auth()->logout();
 
     (new BrowserJourney('admin-dashboard-design', 8048))->within(function (BrowserJourney $journey): void {
-        $journey->login('add1', 'add-staff@example.test', ADD_PASSWORD, ADD_SECRET);
+        $journey->login('add1', 'add-staff@example.test', ADD_PASSWORD, landing: '**/admin/dashboard', secret: ADD_SECRET);
         $journey->code('add1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/admin/dashboard').');

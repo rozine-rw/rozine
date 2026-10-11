@@ -12,11 +12,12 @@ use Tests\Support\InvestorWalletFixture;
 use Tests\TestCase;
 
 /*
- * The launcher opens every app straight on its designed home, in a real browser: a verified
+ * Signing in opens a person's only app straight on its designed home, in a real browser: a verified
  * Investor lands on Deals, a Business member on their business's Home, an Auditor on the Auditor
- * Home and a staff member on the Admin console's Dashboard. No page sits between the launcher and
- * an app, and the bare app URLs (/investor, /business, /admin) go to the same places. A sealed
- * report waiting for the Business's co-signatures is reached from the Business Home's Today list.
+ * Home and a staff member on the Admin console's Dashboard. The launcher, opened on purpose, opens
+ * the same homes; no page sits between it and an app, and the bare app URLs (/investor, /business,
+ * /admin) go to the same places. A sealed report waiting for the Business's co-signatures is
+ * reached from the Business Home's Today list.
  */
 
 uses(TestCase::class, DatabaseTruncation::class);
@@ -24,6 +25,14 @@ uses(TestCase::class, DatabaseTruncation::class);
 const AE_PASSWORD = 'Synthetic-app-entry-browser-42!';
 const AE_PORT = 8041;
 const AE_SECRET = 'JBSWY3DPEHPK3PXP';
+
+/** Page code that opens the launcher on purpose. */
+function aeLauncher(BrowserJourney $journey): string
+{
+    return '
+            await page.goto('.json_encode($journey->base.'/dashboard').');
+            await page.waitForURL("**/dashboard");';
+}
 
 /** Page code that fails if the removed in-between pages render anything. */
 function aeNoInBetween(): string
@@ -34,7 +43,7 @@ function aeNoInBetween(): string
             }';
 }
 
-it('opens each app from the launcher straight on its designed home', function (): void {
+it('opens each person\'s only app on sign-in, and each app from the launcher, straight on its designed home', function (): void {
     $investor = InvestorWalletFixture::investor('ae-investor@example.test', AE_PASSWORD)['user'];
     $authority = BusinessAuthorityFixture::make();
     $business = BusinessAuthorityFixture::configure($authority)['data']['business']['id'];
@@ -48,8 +57,9 @@ it('opens each app from the launcher straight on its designed home', function ()
     expect($investor->refresh()->email)->toBe('ae-investor@example.test')->and(Str::isUlid($business))->toBeTrue();
 
     (new BrowserJourney('app-entry', AE_PORT))->within(function (BrowserJourney $journey) use ($business): void {
-        $journey->login('ae1', 'ae-investor@example.test', AE_PASSWORD);
-        $journey->code('ae1', '
+        $journey->login('ae1', 'ae-investor@example.test', AE_PASSWORD, landing: '**/investor/deals');
+        $journey->code('ae1', aeNoInBetween().'
+            await page.getByRole("link", {name:"Portfolio"}).first().waitFor();'.aeLauncher($journey).'
             await page.getByRole("button", {name:"Investor", exact:true}).click();
             await page.waitForURL("**/investor/deals");'.aeNoInBetween().'
             await page.getByRole("link", {name:"Portfolio"}).first().waitFor();
@@ -57,8 +67,8 @@ it('opens each app from the launcher straight on its designed home', function ()
             await page.goto('.json_encode($journey->base.'/investor').');
             await page.waitForURL("**/investor/deals");');
 
-        $journey->login('ae2', 'ae-business@example.test', AE_PASSWORD);
-        $journey->code('ae2', '
+        $journey->login('ae2', 'ae-business@example.test', AE_PASSWORD, landing: '**/business/'.$business);
+        $journey->code('ae2', aeNoInBetween().aeLauncher($journey).'
             await page.getByRole("button", {name:"Business", exact:true}).click();
             await page.waitForURL("**/business/'.$business.'");'.aeNoInBetween().'
             await shot('.$journey->shot('business-home').');
@@ -68,14 +78,14 @@ it('opens each app from the launcher straight on its designed home', function ()
             await page.goto('.json_encode($journey->base.'/business').');
             await page.waitForURL("**/business/'.$business.'");');
 
-        $journey->login('ae3', 'ae-auditor@example.test', AE_PASSWORD, AE_SECRET);
-        $journey->code('ae3', '
+        $journey->login('ae3', 'ae-auditor@example.test', AE_PASSWORD, landing: '**/auditor', secret: AE_SECRET);
+        $journey->code('ae3', aeNoInBetween().aeLauncher($journey).'
             await page.getByRole("button", {name:"Auditor", exact:true}).click();
             await page.waitForURL(/\/auditor$/);'.aeNoInBetween().'
             await shot('.$journey->shot('auditor-home').');');
 
-        $journey->login('ae4', 'ae-staff@example.test', AE_PASSWORD, AE_SECRET);
-        $journey->code('ae4', '
+        $journey->login('ae4', 'ae-staff@example.test', AE_PASSWORD, landing: '**/admin/dashboard', secret: AE_SECRET);
+        $journey->code('ae4', aeNoInBetween().aeLauncher($journey).'
             await page.getByRole("link", {name:"Open staff workspace"}).click();
             await page.waitForURL("**/admin/dashboard");'.aeNoInBetween().'
             await page.getByText("Rozine Operations Center").first().waitFor();
@@ -95,10 +105,8 @@ it('opens a sealed flash report awaiting co-signature from the Business Home it 
     expect($fixture['report']->refresh()->status)->toBe('sealed');
 
     (new BrowserJourney('app-entry-cosign', AE_PORT))->within(function (BrowserJourney $journey) use ($business, $report): void {
-        $journey->login('ae5', 'ae-cosign@example.test', AE_PASSWORD);
-        $journey->code('ae5', '
-            await page.getByRole("button", {name:"Business", exact:true}).click();
-            await page.waitForURL("**/business/'.$business.'");'.aeNoInBetween().'
+        $journey->login('ae5', 'ae-cosign@example.test', AE_PASSWORD, landing: '**/business/'.$business);
+        $journey->code('ae5', aeNoInBetween().'
             await page.getByText("Flash audit report", {exact:true}).first().waitFor();
             await shot('.$journey->shot('business-home-cosign').');
             await page.getByRole("link", {name:/Review & co-sign/}).first().click();
