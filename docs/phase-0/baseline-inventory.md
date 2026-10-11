@@ -1770,13 +1770,14 @@ facts that would differ between machines, so they are excluded deliberately.
 | `id` | `bpchar` | no | — |
 | `party_id` | `bpchar` | no | — |
 | `user_id` | `int8` | no | — |
+| `revision` | `int4` | no | — |
 | `action` | `varchar` | no | — |
 | `reason` | `text` | no | — |
 | `actor_key` | `varchar` | no | — |
 | `request_id` | `uuid` | no | — |
 | `created_at` | `timestamptz` | no | — |
 
-**Indexes:** `synthetic_wallet_tester_changes_party_id_id_index` on (party_id, id); `synthetic_wallet_tester_changes_pkey` on (id) — unique; `synthetic_wallet_tester_changes_request_id_unique` on (request_id) — unique
+**Indexes:** `synthetic_wallet_tester_changes_party_id_revision_unique` on (party_id, revision) — unique; `synthetic_wallet_tester_changes_pkey` on (id) — unique; `synthetic_wallet_tester_changes_request_id_unique` on (request_id) — unique
 
 ### `users`
 

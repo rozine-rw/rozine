@@ -9,8 +9,9 @@ use Closure;
 /**
  * The named UAT wallet testers: the Parties an operator explicitly allowed to start synthetic
  * deposits there, separate from the staging mail testers. Each grant and revocation is an appended,
- * audited change with the operator's reason. A revocation stops new deposits only; deposits already
- * accepted still reach their outcome, and no change is ever rewritten.
+ * audited change with the operator's reason, at the Party's next revision; the highest revision
+ * decides. A revocation stops new deposits only; deposits already accepted still reach their
+ * outcome, and no change is ever rewritten.
  */
 interface SyntheticWalletTesters
 {

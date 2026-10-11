@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\DB;
 use LogicException;
 
 /**
- * Grants and revocations are appended to `synthetic_wallet_tester_changes`, the latest one deciding.
- * Both take the tester account's row lock, which every Investor deposit holds while it is recorded.
+ * Grants and revocations are appended to `synthetic_wallet_tester_changes` at the Party's next
+ * revision, allocated under the tester account's row lock, which every Investor deposit also holds
+ * while it is recorded. The highest revision decides: ids and clocks never order the changes.
  */
 final class EloquentSyntheticWalletTesters implements SyntheticWalletTesters
 {
@@ -22,7 +23,7 @@ final class EloquentSyntheticWalletTesters implements SyntheticWalletTesters
 
     public function authorized(string $partyId): bool
     {
-        return SyntheticWalletTesterChange::query()->where('party_id', $partyId)->orderByDesc('id')->value('action') === 'granted';
+        return SyntheticWalletTesterChange::query()->where('party_id', $partyId)->orderByDesc('revision')->value('action') === 'granted';
     }
 
     public function grant(string $partyId, int $userId, string $reason, string $requestId, Closure $prepare): array
@@ -53,8 +54,9 @@ final class EloquentSyntheticWalletTesters implements SyntheticWalletTesters
 
     private function append(string $partyId, int $userId, string $action, string $reason, string $requestId): string
     {
+        $revision = (int) SyntheticWalletTesterChange::query()->where('party_id', $partyId)->max('revision') + 1;
         $change = new SyntheticWalletTesterChange;
-        $change->forceFill(['party_id' => $partyId, 'user_id' => $userId, 'action' => $action, 'reason' => $reason,
+        $change->forceFill(['party_id' => $partyId, 'user_id' => $userId, 'revision' => $revision, 'action' => $action, 'reason' => $reason,
             'actor_key' => 'console', 'request_id' => $requestId, 'created_at' => now()])->save();
 
         return $change->id;

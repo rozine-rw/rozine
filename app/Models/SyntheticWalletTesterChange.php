@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One audited grant or revocation of a Party's UAT synthetic deposits. Append-only by trigger.
+ * One audited grant or revocation of a Party's UAT synthetic deposits, at the Party's next revision.
+ * Append-only by trigger.
  *
  * @property string $id
  * @property string $party_id
  * @property int $user_id
+ * @property int $revision
  * @property string $action
  * @property string $reason
  * @property string $actor_key
@@ -32,6 +34,6 @@ class SyntheticWalletTesterChange extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['user_id' => 'integer', 'created_at' => 'immutable_datetime'];
+        return ['user_id' => 'integer', 'revision' => 'integer', 'created_at' => 'immutable_datetime'];
     }
 }

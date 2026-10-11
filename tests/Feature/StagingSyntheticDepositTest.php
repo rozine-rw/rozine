@@ -513,8 +513,42 @@ it('stops a revoked tester\'s new deposits, still settles the deposits already a
 
     expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid', '--reason' => 'Retest']))->toBe(0);
     $this->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))->assertOk();
-    expect(SyntheticWalletTesterChange::query()->orderBy('id')->pluck('action')->all())->toBe(['granted', 'revoked', 'granted'])
+    expect(SyntheticWalletTesterChange::query()->orderBy('revision')->get()->map(fn (SyntheticWalletTesterChange $change): array => [$change->revision, $change->action])->all())
+        ->toBe([[1, 'granted'], [2, 'revoked'], [3, 'granted']])
         ->and(WalletDepositCredit::query()->count())->toBe(2);
+});
+
+it('decides by revision, not by id, so a revocation whose id sorts before the grant still stops new deposits', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '10000'], $tester['method']->id);
+    $grant = SyntheticWalletTesterChange::query()->sole();
+    // Another operator process's revocation, appended next under the account lock, with an id from the same millisecond that sorts lower.
+    (new SyntheticWalletTesterChange)->forceFill(['id' => substr($grant->id, 0, 10).str_repeat('0', 16), 'party_id' => $grant->party_id,
+        'user_id' => $grant->user_id, 'revision' => 2, 'action' => 'revoked', 'reason' => 'Testing finished', 'actor_key' => 'console',
+        'request_id' => (string) Str::uuid(), 'created_at' => $grant->created_at])->save();
+    expect(SyntheticWalletTesterChange::query()->orderByDesc('id')->value('action'))->toBe('granted');
+
+    $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))
+        ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_TESTER_REQUIRED');
+    expect(app(SyntheticWalletTesters::class)->authorized((string) $tester['user']->party_id))->toBeFalse()
+        ->and(WalletDepositIntent::query()->count())->toBe(1)->and(WalletDepositCredit::query()->count())->toBe(1);
+
+    expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid', '--reason' => 'Retest']))->toBe(0)
+        ->and(SyntheticWalletTesterChange::query()->orderByDesc('revision')->first()?->only(['revision', 'action']))->toBe(['revision' => 3, 'action' => 'granted']);
+    $this->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '30000'))->assertOk();
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(WalletDepositCredit::query()->count())->toBe(2);
+});
+
+it('refuses a second change at a revision the Party already has', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    $grant = SyntheticWalletTesterChange::query()->sole();
+
+    expect(fn () => DB::transaction(fn () => (new SyntheticWalletTesterChange)->forceFill(['party_id' => $grant->party_id, 'user_id' => $grant->user_id,
+        'revision' => 1, 'action' => 'revoked', 'reason' => 'Racing operator', 'actor_key' => 'console', 'request_id' => (string) Str::uuid(),
+        'created_at' => now()])->save()))->toThrow(QueryException::class, 'synthetic_wallet_tester_changes_party_id_revision_unique');
+    expect(app(SyntheticWalletTesters::class)->authorized((string) $tester['user']->party_id))->toBeTrue();
 });
 
 it('refuses a named tester\'s UAT deposit once their Investor role or verification no longer holds, and still settles the accepted one', function (Closure $lapse): void {
