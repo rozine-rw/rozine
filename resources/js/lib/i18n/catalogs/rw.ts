@@ -3536,6 +3536,7 @@ const rw: Catalog = {
     'investor.profile.personal.passport_number': 'NIMERO YA PASIPORO',
     'investor.profile.personal.address': 'ADERESI',
     'investor.profile.personal.country': 'IGIHUGU',
+    'investor.profile.personal.country_unknown': 'Ntibizwi',
     'investor.profile.personal.province': 'INTARA',
     'investor.profile.personal.district': 'AKARERE',
     'investor.profile.personal.sector': 'UMURENGE',

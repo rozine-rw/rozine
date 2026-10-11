@@ -30,7 +30,7 @@ test('registering sends the onboarding code email, not a link', function () {
         'email' => 'aline@example.test',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertRedirect(route('dashboard', absolute: false));
+    ])->assertRedirect(route('enter', absolute: false));
 
     $user = User::query()->where('email', 'aline@example.test')->sole();
 
@@ -48,7 +48,7 @@ test('the emailed code verifies the address and continues like the verification 
 
     $this->actingAs($user)
         ->post(route('verification.code'), ['code' => emailCodeFor($user)])
-        ->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        ->assertRedirect(route('enter', absolute: false).'?verified=1');
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     Event::assertDispatched(Verified::class, fn (Verified $event): bool => $event->user->getEmailForVerification() === $user->email);
@@ -281,7 +281,7 @@ test('a submission that loses the write to another for the same address still co
 
     $this->actingAs($user)
         ->post(route('verification.code'), ['code' => $code])
-        ->assertRedirect(route('dashboard', absolute: false).'?verified=1')
+        ->assertRedirect(route('enter', absolute: false).'?verified=1')
         ->assertSessionHasNoErrors();
 
     expect(User::query()->findOrFail($user->id)->hasVerifiedEmail())->toBeTrue();
@@ -368,7 +368,7 @@ test('an already verified account is sent on without checking a code', function 
 
     $this->actingAs($user)
         ->post(route('verification.code'), ['code' => '123456'])
-        ->assertRedirect(route('dashboard', absolute: false).'?verified=1')
+        ->assertRedirect(route('enter', absolute: false).'?verified=1')
         ->assertSessionHasNoErrors();
 });
 

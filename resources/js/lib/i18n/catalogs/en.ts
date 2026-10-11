@@ -3429,6 +3429,7 @@ const en = {
     'investor.profile.personal.passport_number': 'PASSPORT NUMBER',
     'investor.profile.personal.address': 'ADDRESS',
     'investor.profile.personal.country': 'COUNTRY',
+    'investor.profile.personal.country_unknown': 'Unknown',
     'investor.profile.personal.province': 'PROVINCE',
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTOR',

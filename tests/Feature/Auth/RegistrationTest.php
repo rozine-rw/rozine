@@ -26,7 +26,7 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('enter', absolute: false));
 });
 
 test('new users can verify their email using the registration notification', function (): void {
@@ -38,7 +38,7 @@ test('new users can verify their email using the registration notification', fun
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard', absolute: false));
+    ])->assertSessionHasNoErrors()->assertRedirect(route('enter', absolute: false));
 
     $user = User::query()->where('email', 'test@example.com')->sole();
 
@@ -52,6 +52,7 @@ test('new users can verify their email using the registration notification', fun
 
     $notification = Notification::sent($user, OneTimeCode::class)->sole();
 
+    // The dashboard visit above is the intended page, so verification returns there.
     $this->post(route('verification.code'), ['code' => $notification->code])
         ->assertRedirect(route('dashboard', absolute: false));
 

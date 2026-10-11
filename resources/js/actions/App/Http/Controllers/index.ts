@@ -25,6 +25,7 @@ import BusinessAuditReportController from './BusinessAuditReportController'
 import EmailVerificationCodeController from './EmailVerificationCodeController'
 import PulseController from './PulseController'
 import DashboardController from './DashboardController'
+import EnterAppController from './EnterAppController'
 import RoleHomeController from './RoleHomeController'
 import AuditorHomeController from './AuditorHomeController'
 import StaffHomeController from './StaffHomeController'
@@ -71,6 +72,7 @@ const Controllers = {
     EmailVerificationCodeController: Object.assign(EmailVerificationCodeController, EmailVerificationCodeController),
     PulseController: Object.assign(PulseController, PulseController),
     DashboardController: Object.assign(DashboardController, DashboardController),
+    EnterAppController: Object.assign(EnterAppController, EnterAppController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),
     AuditorHomeController: Object.assign(AuditorHomeController, AuditorHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),

@@ -236,7 +236,8 @@ export function PersonalInformation({
             </p>
             <Field
                 label={t('investor.profile.personal.country')}
-                value={personal.address}
+                value={personal.country}
+                empty={t('investor.profile.personal.country_unknown')}
             />
             <div className="flex gap-3">
                 <Field
@@ -269,10 +270,13 @@ export function PersonalInformation({
 function Field({
     label,
     value,
+    empty,
     className,
 }: {
     label: string;
     value: string | null;
+    /** What a missing value reads as; "Not provided" unless the field says otherwise. */
+    empty?: string;
     className?: string;
 }) {
     const { t } = useTranslation();
@@ -288,7 +292,7 @@ function Field({
                     value === null ? 'text-rz-muted' : 'text-rz-ink',
                 )}
             >
-                {value ?? t('investor.profile.personal.not_provided')}
+                {value ?? empty ?? t('investor.profile.personal.not_provided')}
             </dd>
         </div>
     );
