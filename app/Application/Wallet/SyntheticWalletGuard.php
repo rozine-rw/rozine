@@ -9,8 +9,9 @@ use Illuminate\Contracts\Config\Repository;
 use LogicException;
 
 /**
- * The synthetic deposit provider, its policies and its hooks exist only on local and testing
- * installations with live money off. Demo, UAT and production never reach them.
+ * The synthetic deposit provider, its policies and its hooks exist only on local, testing and UAT
+ * (staging) installations with live money off, so testers can fund a staging wallet without a
+ * real provider. Demo and production never reach them.
  */
 final class SyntheticWalletGuard
 {
@@ -18,13 +19,13 @@ final class SyntheticWalletGuard
 
     public function allowed(): bool
     {
-        return in_array($this->isolation->profile(), ['local', 'testing'], true) && $this->config->get('isolation.live_money_enabled') === false;
+        return in_array($this->isolation->profile(), ['local', 'testing', 'uat'], true) && $this->config->get('isolation.live_money_enabled') === false;
     }
 
     public function assertAllowed(): void
     {
         if (! $this->allowed()) {
-            throw new LogicException('WALLET_SYNTHETIC_ONLY: synthetic deposits run only on local or testing with live money off.');
+            throw new LogicException('WALLET_SYNTHETIC_ONLY: synthetic deposits run only on local, testing or UAT with live money off.');
         }
     }
 }

@@ -15,7 +15,7 @@ use App\Models\WalletDepositIntent;
 use Illuminate\Support\Str;
 use LogicException;
 
-/** Synthetic wallet rows for local and testing checks. Every write is append-only. */
+/** Synthetic wallet rows for local, testing and UAT checks. Every write is append-only. */
 final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
 {
     public function __construct(private SyntheticWalletGuard $guard, private SyntheticEventSigner $signer, private EnvironmentIsolation $isolation) {}
@@ -24,7 +24,8 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
     public function prepareInvestor(string $partyId): array
     {
         $this->guard->assertAllowed();
-        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')->orderBy('id')->first();
+        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')
+            ->where('label', '!=', self::DECLINING_LABEL)->orderBy('id')->first();
         if ($method === null) {
             $method = new InvestorFundingMethod;
             $method->forceFill(['party_id' => $partyId, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
@@ -36,6 +37,29 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
         }
 
         return ['method_id' => $method->id, 'policy_version' => $current->version];
+    }
+
+    public function currentPolicy(): ?array
+    {
+        $this->guard->assertAllowed();
+        $policy = DepositPolicy::query()->where('effective_at', '<=', now())->orderByDesc('effective_at')->orderByDesc('id')->first();
+
+        return $policy === null ? null : ['version' => $policy->version, 'status' => $policy->status, 'fee' => $policy->fee,
+            'minimum' => $policy->minimum, 'maximum' => $policy->maximum];
+    }
+
+    public function addDecliningMethod(string $partyId): string
+    {
+        $this->guard->assertAllowed();
+        $method = InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->whereNull('revoked_at')
+            ->where('label', self::DECLINING_LABEL)->orderBy('id')->first();
+        if ($method === null) {
+            $method = new InvestorFundingMethod;
+            $method->forceFill(['party_id' => $partyId, 'kind' => 'mtn', 'label' => self::DECLINING_LABEL, 'masked' => '+250 788 ···· 000',
+                'reference' => 'synthetic-msisdn-'.Str::lower(Str::random(12)), 'verification_source' => 'synthetic', 'verified_at' => now()])->save();
+        }
+
+        return $method->id;
     }
 
     public function withdrawPolicy(): string
@@ -74,8 +98,8 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
     private function appendPolicy(string $version, string $status): DepositPolicy
     {
         $policy = new DepositPolicy;
-        $policy->forceFill(['version' => $version, 'synthetic' => true, 'status' => $status, 'fee' => $status === 'active' ? '0' : null,
-            'minimum' => $status === 'active' ? '1000' : null, 'maximum' => $status === 'active' ? '5000000' : null, 'effective_at' => now()])->save();
+        $policy->forceFill(['version' => $version, 'synthetic' => true, 'status' => $status, 'fee' => $status === 'active' ? self::POLICY_TERMS['fee'] : null,
+            'minimum' => $status === 'active' ? self::POLICY_TERMS['minimum'] : null, 'maximum' => $status === 'active' ? self::POLICY_TERMS['maximum'] : null, 'effective_at' => now()])->save();
 
         return $policy;
     }

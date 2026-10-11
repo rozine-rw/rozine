@@ -11,6 +11,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\DepositInstruction;
+use App\Application\Wallet\SyntheticDepositAdmission;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
 use App\Domain\Operations\ChangeScope;
@@ -48,7 +49,7 @@ use RuntimeException;
 final class EloquentWalletStore implements WalletStore
 {
     public function __construct(private AuthorizeActiveRole $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes, private SyntheticDepositAdmission $admission) {}
 
     /**
      * @param  array{currency: string, amount: string}  $amount
@@ -66,6 +67,9 @@ final class EloquentWalletStore implements WalletStore
                     function (): void {}, function (string $operationId) use ($wallet, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
                         $data = ['wallet_id' => $wallet->id];
                         $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
+                        if (! $this->admission->admitsInvestor($partyId)) {
+                            throw new CommandRejection('SYNTHETIC_TESTER_REQUIRED', 403, data: $data);
+                        }
                         $method = $this->verifiedMethods($partyId)->firstWhere('id', $methodId) ?? throw new CommandRejection('DEPOSIT_METHOD_UNVERIFIED', data: $data);
                         if ($this->depositBlocked($partyId)) {
                             throw new CommandRejection('RESTRICTION_ACTIVE', data: $data);
@@ -96,7 +100,7 @@ final class EloquentWalletStore implements WalletStore
             $policy = $this->applicablePolicy();
             $methods = $this->verifiedMethods($partyId);
             $cases = $this->currentCases($partyId);
-            $canDeposit = $policy !== null && $methods->isNotEmpty() && ! $this->depositBlocked($partyId);
+            $canDeposit = $policy !== null && $methods->isNotEmpty() && ! $this->depositBlocked($partyId) && $this->admission->admitsInvestor($partyId);
             $deposits = $wallet === null ? [] : $this->deposits($wallet);
             $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
             $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
