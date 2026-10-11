@@ -536,6 +536,21 @@ def immutable_merge_identity(repository, run):
     return proof
 
 
+def preflight_merge_identity(repository, run):
+    if (run.get("event") != "pull_request" or run.get("path") != ".github/workflows/tests.yml"
+            or run.get("head_repository", {}).get("full_name") != repository):
+        raise ValueError("preflight identity requires the trusted same-repository PR workflow")
+    proof = coordination_identity(repository, run)
+    age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
+    if age.total_seconds() < 0 or age > datetime.timedelta(days=30):
+        raise ValueError("PR preflight identity is stale")
+    later_names = {f"{prefix}-{run['id']}-{run['run_attempt']}" for prefix in ("validation-tree", "pr-merge-identity")}
+    if any(item["name"] in later_names for item in artifact_inventory(repository, run)):
+        raise ValueError("validation or merge evidence appeared during preflight classification")
+    same_attempt(repository, run)
+    return proof
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -553,7 +568,10 @@ def newer_run_blocks(repository, run, source, tree):
         try:
             proof = download_evidence(repository, run)
         except MissingEvidence:
-            return immutable_merge_identity(repository, run)["tree_sha"] == tree
+            try:
+                return immutable_merge_identity(repository, run)["tree_sha"] == tree
+            except MissingEvidence:
+                return preflight_merge_identity(repository, run)["tree_sha"] == tree
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")
@@ -567,16 +585,30 @@ def newer_run_blocks(repository, run, source, tree):
 
 def workflow_history(repository):
     endpoint = f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100"
-    first = api(endpoint)
-    total = first["total_count"]
-    if not isinstance(total, int) or not 0 <= total <= 5000:
-        raise ValueError("workflow history exceeds the verified lookup bound")
-    responses = [first] if len(first["workflow_runs"]) == total else pages(endpoint)
-    runs = [run for response in responses for run in response["workflow_runs"]]
-    if (any(response["total_count"] != total for response in responses)
-            or len(runs) != total or len({run["id"] for run in runs}) != total):
-        raise ValueError("workflow history is incomplete or changed during pagination")
-    return runs
+    deadline = time.monotonic() + 45
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise CoordinationRefusal("workflow_history_incomplete_or_changed")
+        return seconds
+
+    for attempt in range(3):
+        first = api(endpoint, timeout=remaining())
+        total = first["total_count"]
+        if not isinstance(total, int) or not 0 <= total <= 5000:
+            raise ValueError("workflow history exceeds the verified lookup bound")
+        responses = [first] if len(first["workflow_runs"]) == total else pages(endpoint, timeout=remaining())
+        runs = [run for response in responses for run in response["workflow_runs"]]
+        if (any(response["total_count"] != total for response in responses)
+                or len(runs) != total or len({run["id"] for run in runs}) != total):
+            if attempt == 2:
+                raise CoordinationRefusal("workflow_history_incomplete_or_changed")
+            diagnostic("retrying_unstable_workflow_history")
+            time.sleep(min(1, remaining()))
+            continue
+        remaining()
+        return runs
 
 
 def coordination_artifact_index(repository):
