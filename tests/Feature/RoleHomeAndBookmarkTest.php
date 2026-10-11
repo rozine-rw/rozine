@@ -167,7 +167,9 @@ it('requires authentication and scoped token ability for navigation', function (
 });
 
 it('replaces stale Inertia home content with a denied page while keeping JSON errors stable', function (): void {
-    [$user] = bookmarkParticipant();
+    [$user, $membership] = bookmarkParticipant();
+    // With a second app the page cannot pick the role itself, so the denial still shows.
+    RoleMembership::factory()->for($membership->party)->active()->create(['role' => 'business']);
     $this->actingAs($user)->get(route('investor.home'))->assertForbidden()->assertInertia(fn (Assert $page): Assert => $page
         ->component('identity/access-denied')->where('code', 'ACTIVE_ROLE_REQUIRED')->missing('identity'));
     $version = app(HandleInertiaRequests::class)->version(Request::create('/investor'));

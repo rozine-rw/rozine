@@ -3550,6 +3550,7 @@ const fr: Catalog = {
     'investor.profile.personal.passport_number': 'NUMÉRO DE PASSEPORT',
     'investor.profile.personal.address': 'ADRESSE',
     'investor.profile.personal.country': 'PAYS',
+    'investor.profile.personal.country_unknown': 'Inconnu',
     'investor.profile.personal.province': 'PROVINCE',
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTEUR',

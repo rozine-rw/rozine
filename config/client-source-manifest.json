@@ -55,6 +55,7 @@
         "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
         "resources/js/actions/App/Http/Controllers/EmailVerificationCodeController.ts",
+        "resources/js/actions/App/Http/Controllers/EnterAppController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
@@ -688,8 +689,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 657,
-        "generated": 258,
+        "totalTrackedSources": 658,
+        "generated": 259,
         "declarationOnly": 18,
         "authoredExecutable": 381
     },
