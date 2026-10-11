@@ -142,7 +142,8 @@ it('completes the real browser identity switch return logout MFA and staff journ
         $result = $run(['run-code', 'async (page) => {
             await page.locator("input[name=code]").fill('.json_encode($totp->getCurrentOtp($secret)).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL("**/admin/dashboard");
+            await page.goto('.json_encode($base.'/dashboard').');
             await page.getByRole("link", {name:"Open staff workspace"}).click();
             await page.waitForURL("**/admin");
             await page.getByRole("heading", {name:"Staff workspace"}).waitFor();

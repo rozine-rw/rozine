@@ -62,7 +62,7 @@ it('cancels an unfunded live campaign from the campaign page in a real browser',
     ['publish' => $publish] = ccReleased($this, 'cc-signatory@example.test');
 
     (new BrowserJourney('campaign-cancel', CC_PORT))->within(function (BrowserJourney $journey) use ($publish): void {
-        $journey->login('cc1', 'cc-signatory@example.test', CC_PASSWORD);
+        $journey->login('cc1', 'cc-signatory@example.test', CC_PASSWORD, landing: '**/business/*');
         $journey->code('cc1', ccPublishAndOpen($journey, $publish).'
             await shot('.$journey->shot('live-phone').');
             await campaign.getByRole("button", {name:"Cancel this raise", exact:true}).click();
@@ -92,7 +92,7 @@ it('recovers a cancellation whose answer was lost by looking it up, never sendin
     ['publish' => $publish] = ccReleased($this, 'cc-replay@example.test');
 
     (new BrowserJourney('campaign-cancel-replay', CC_PORT))->within(function (BrowserJourney $journey) use ($publish): void {
-        $journey->login('cr1', 'cc-replay@example.test', CC_PASSWORD);
+        $journey->login('cr1', 'cc-replay@example.test', CC_PASSWORD, landing: '**/business/*');
         $answer = $journey->code('cr1', ccPublishAndOpen($journey, $publish).'
             const posts = [];
             const lookups = [];
@@ -123,7 +123,7 @@ it('shows a raise the expiry sweep closed at its deadline as expired, with nothi
     ['publish' => $publish] = ccReleased($this, 'cc-expiry@example.test');
 
     (new BrowserJourney('campaign-expiry', CC_PORT))->within(function (BrowserJourney $journey) use ($publish): void {
-        $journey->login('ce1', 'cc-expiry@example.test', CC_PASSWORD);
+        $journey->login('ce1', 'cc-expiry@example.test', CC_PASSWORD, landing: '**/business/*');
         $campaignUrl = $journey->code('ce1', ccPublishAndOpen($journey, $publish).'
             return page.url();');
 

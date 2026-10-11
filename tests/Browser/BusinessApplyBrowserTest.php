@@ -82,14 +82,13 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
 
         return $output;
     };
-    $signIn = static fn (string $email): string => 'await page.context().clearCookies();'
+    /* Sign-in opens the account's only app on the Home of the first business in its applications list. */
+    $signIn = static fn (string $email, string $landing): string => 'await page.context().clearCookies();'
         .'await page.goto('.json_encode($base.'/login').');'
         .'await page.getByRole("textbox", {name:"Email address"}).fill('.json_encode($email).');'
         .'await page.getByLabel("Password", {exact:true}).fill('.json_encode($password).');'
         .'await page.getByRole("button", {name:"Log in", exact:true}).click();'
-        .'await page.waitForURL("**/dashboard");'
-        .'await page.getByRole("button", {name:"Business", exact:true}).click();'
-        .'await page.waitForURL("**/business");';
+        .'await page.waitForURL('.json_encode($landing).');';
     $noOverflow = 'if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Mobile overflow");';
     $accept = 'const review = page.getByRole("dialog", {name:"Raise application"});
         await review.getByRole("checkbox", {name:/^I accept this offer/}).click();
@@ -111,7 +110,7 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.setViewportSize({width:1113, height:750});
-            '.$signIn($soloEmail).'
+            '.$signIn($soloEmail, '**/business/'.$relatedBusiness).'
             const list = page.getByRole("region", {name:"Raise applications"});
             await list.getByRole("link", {name:"Continue your application"}).waitFor();
             await list.getByText("Saved at Your raise").waitFor();
@@ -220,7 +219,7 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         /* Two required signatories: the first signature waits for the second, who completes it on a phone. */
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
-            '.$signIn($firstEmail).'
+            '.$signIn($firstEmail, '**/business/'.$pair['audit']['business']).'
             await page.goto('.json_encode($base.$path($pair)).');
             '.$accept.'
             const signed = page.waitForResponse(response => response.url().endsWith("/submit"));
@@ -241,7 +240,7 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
             await page.setViewportSize({width:390, height:844});
-            '.$signIn($secondEmail).'
+            '.$signIn($secondEmail, '**/business/'.$pair['audit']['business']).'
             await page.getByRole("region", {name:"Raise applications"}).getByRole("link", {name:"Continue your application"}).waitFor();
             '.$noOverflow.'
             await page.screenshot({path:"ua-live-rolehome-phone.png", fullPage:true, animations:"disabled"});
@@ -262,7 +261,7 @@ it('runs the real-record Business Apply resume save evaluate sign and submit jou
         /* A review opened before its evidence is withdrawn is refused on signing and read afresh. */
         $result = $run(['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", error => errors.push(error.message));
-            '.$signIn($staleEmail).'
+            '.$signIn($staleEmail, '**/business/'.$stale['audit']['business']).'
             const denied = await page.goto('.json_encode($base.$path($solo)).');
             if ((denied?.status() ?? 0) < 400) throw new Error("Another business application was readable: " + denied?.status());
             await page.goto('.json_encode($base.$path($stale)).');

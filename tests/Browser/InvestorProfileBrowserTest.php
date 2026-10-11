@@ -27,7 +27,7 @@ it('shows the design profile with the masked ID number on a wide screen and a ph
     expect(InvestorVerification::query()->where('party_id', $fixture['party']->id)->value('status'))->toBe('approved');
 
     (new BrowserJourney('investor-profile', 8043))->within(function (BrowserJourney $journey): void {
-        $journey->login('pf1', 'profile-investor@example.test', PROFILE_PASSWORD);
+        $journey->login('pf1', 'profile-investor@example.test', PROFILE_PASSWORD, landing: '**/investor/deals');
         $journey->code('pf1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/investor/profile').');

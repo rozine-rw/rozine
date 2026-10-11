@@ -28,7 +28,7 @@ const IW_PORT = 8036;
 function iwSignIn(BrowserJourney $journey, string $session, string $email): void
 {
     expect(Artisan::call('local:wallet', ['--seed' => $email]))->toBe(0);
-    $journey->login($session, $email, SyntheticWalletSeeder::PASSWORD);
+    $journey->login($session, $email, SyntheticWalletSeeder::PASSWORD, landing: '**/investor/deals');
 }
 
 /** Delivers a synthetic provider event for a recorded request through the local hook. */

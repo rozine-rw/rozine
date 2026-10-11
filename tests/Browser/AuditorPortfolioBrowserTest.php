@@ -32,7 +32,7 @@ it('places an accepted Flash Audit on the design Portfolio calendar on a wide sc
     expect($offset)->toBeGreaterThanOrEqual(0);
 
     (new BrowserJourney('auditor-portfolio', 8047))->within(function (BrowserJourney $journey) use ($due, $offset, $secret): void {
-        $journey->login('apf1', 'apf-auditor@example.test', APF_PASSWORD, $secret);
+        $journey->login('apf1', 'apf-auditor@example.test', APF_PASSWORD, landing: '**/auditor', secret: $secret);
         $journey->code('apf1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/auditor/portfolio').');

@@ -156,8 +156,12 @@ final class BrowserJourney
         return is_string($encoded) ? json_decode($encoded, true) : $encoded;
     }
 
-    /** Signs a person in through the real login form, answering the TOTP challenge when enrolled. */
-    public function login(string $session, string $email, string $password, ?string $secret = null): void
+    /**
+     * Signs a person in through the real login form, answering the TOTP challenge when enrolled, and
+     * waits for the URL sign-in lands on: the app itself for someone with only one (Investor Deals,
+     * their Business Home, the Auditor Home, or the Admin dashboard for staff), the launcher otherwise.
+     */
+    public function login(string $session, string $email, string $password, string $landing, ?string $secret = null): void
     {
         $this->open($session, '/login');
         $challenge = $secret === null ? '' : '
@@ -168,7 +172,7 @@ final class BrowserJourney
             await page.getByRole("textbox", {name:"Email address"}).fill('.json_encode($email).');
             await page.getByLabel("Password", {exact:true}).fill('.json_encode($password).');
             await page.getByRole("button", {name:"Log in", exact:true}).click();'.$challenge.'
-            await page.waitForURL("**/dashboard");');
+            await page.waitForURL('.json_encode($landing).');');
     }
 
     /** The current six-digit code for a synthetic authenticator secret. */
