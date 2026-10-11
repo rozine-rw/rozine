@@ -11,6 +11,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\DepositInstruction;
+use App\Application\Wallet\SyntheticDepositAdmission;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
 use App\Domain\Operations\CommandRejection;
@@ -49,7 +50,7 @@ use RuntimeException;
 final class EloquentBusinessWalletStore implements BusinessWalletStore
 {
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing, private SyntheticDepositAdmission $admission) {}
 
     /**
      * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
@@ -62,7 +63,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 $wallet = BusinessWallet::query()->where('business_id', $business['id'])->first();
                 $policy = $this->applicablePolicy();
                 $methods = $this->verifiedMethods($business['id']);
-                $canDeposit = $policy !== null && $methods->isNotEmpty() && $this->permits($business, (string) ($identity['party']['id'] ?? ''));
+                $canDeposit = $policy !== null && $methods->isNotEmpty() && $this->admission->admitsBusiness()
+                    && $this->permits($business, (string) ($identity['party']['id'] ?? ''));
                 $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
                 $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
 
@@ -107,6 +109,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                     function (string $operationId) use ($wallet, $business, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
                         $data = ['wallet_id' => $wallet->id];
                         $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
+                        if (! $this->admission->admitsBusiness()) {
+                            throw new CommandRejection('SYNTHETIC_BUSINESS_FUNDING_OFF', 403, data: $data);
+                        }
                         $method = $this->verifiedMethods($business['id'])->firstWhere('id', $methodId)
                             ?? throw new CommandRejection('DEPOSIT_METHOD_UNVERIFIED', data: $data);
                         $money = $amount['currency'] === 'RWF' ? WalletMoney::fromInput($amount['amount']) : null;

@@ -82,6 +82,7 @@ use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\SyntheticSettlement;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\SyntheticWalletTesters;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\SyntheticWalletGuard;
@@ -156,6 +157,7 @@ use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
 use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
 use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
+use App\Infrastructure\Wallet\EloquentSyntheticWalletTesters;
 use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
 use App\Infrastructure\Wallet\SyntheticDepositProvider;
@@ -260,6 +262,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DepositProvider::class, $synthetic);
         $this->app->bind(SyntheticEventSigner::class, $synthetic);
         $this->app->bind(SyntheticWalletFixtures::class, EloquentSyntheticWalletFixtures::class);
+        $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
         $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
     }
