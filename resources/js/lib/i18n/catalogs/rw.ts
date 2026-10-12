@@ -32,6 +32,10 @@ const rw: Catalog = {
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
+    'identity.denied.verification_required.title':
+        'Igenzura ry’umwirondoro rirakenewe',
+    'identity.denied.verification_required.body':
+        'Umwirondoro wawe ugomba kugenzurwa mbere yo gufungura uru rupapuro. Hitamo porogaramu kugira ngo ukomeze.',
     'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
     'identity.denied.expired_offer.body':
         'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
@@ -3536,6 +3540,7 @@ const rw: Catalog = {
     'investor.profile.personal.passport_number': 'NIMERO YA PASIPORO',
     'investor.profile.personal.address': 'ADERESI',
     'investor.profile.personal.country': 'IGIHUGU',
+    'investor.profile.personal.country_unknown': 'Ntibizwi',
     'investor.profile.personal.province': 'INTARA',
     'investor.profile.personal.district': 'AKARERE',
     'investor.profile.personal.sector': 'UMURENGE',

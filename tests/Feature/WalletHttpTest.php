@@ -6,6 +6,7 @@ use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorFundingMethod;
 use App\Models\InvestorWallet;
 use App\Models\LedgerEntry;
+use App\Models\Party;
 use App\Models\User;
 use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositIntent;
@@ -272,6 +273,25 @@ it('denies the wallet page to someone without current investor authority', funct
         ->assertJsonPath('code', 'ACTIVE_ROLE_REVISION_CONFLICT');
     auth()->logout();
     $this->get(route('investor.wallet'))->assertRedirect(route('login'));
+});
+
+it('keeps unverified wallet reads on the same truthful refusal without opening access', function (): void {
+    $user = User::factory()->create(['party_id' => Party::factory()]);
+    $this->actingAs($user);
+
+    foreach ([1, 2] as $attempt) {
+        $this->get(route('investor.wallet'))->assertForbidden()
+            ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+                ->where('code', 'IDENTITY_VERIFICATION_REQUIRED')->where('status', 403));
+        $this->getJson(route('investor.wallet'))->assertForbidden()->assertJsonPath('code', 'IDENTITY_VERIFICATION_REQUIRED');
+        $this->get(route('dashboard'))->assertOk();
+    }
+
+    expect($user->refresh()->active_membership_id)->toBeNull()
+        ->and($user->context_revision)->toBe(0)
+        ->and(InvestorWallet::query()->count())->toBe(0)
+        ->and(WalletDepositIntent::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->count())->toBe(0);
 });
 
 it('fails closed on an intent or credit whose sealed facts do not match', function (bool $credit): void {

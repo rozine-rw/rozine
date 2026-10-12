@@ -32,7 +32,7 @@ it('lists, opens and searches the live staff applications queue in a real browse
     $title = $fixture['application']->refresh()->draft['title'];
 
     (new BrowserJourney('staff-queue', SA_PORT))->within(function (BrowserJourney $journey) use ($title): void {
-        $journey->login('sa1', 'sa-staff@example.test', SA_PASSWORD, SA_SECRET);
+        $journey->login('sa1', 'sa-staff@example.test', SA_PASSWORD, landing: '**/admin/dashboard', secret: SA_SECRET);
         $journey->code('sa1', '
             await page.goto("http://127.0.0.1:" + '.SA_PORT.' + "/admin/applications");
             const table = page.getByRole("table", {name:"Applications"});

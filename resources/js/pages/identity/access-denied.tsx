@@ -130,9 +130,12 @@ export default function AccessDenied({ code, status }: Props) {
     }
 
     const expired = code === 'ASSIGNMENT_ACCEPTANCE_EXPIRED';
+    const verificationRequired = code === 'IDENTITY_VERIFICATION_REQUIRED';
     const title = expired
         ? t('identity.denied.expired_offer.title')
-        : t('identity.denied.title');
+        : verificationRequired
+          ? t('identity.denied.verification_required.title')
+          : t('identity.denied.title');
 
     return (
         <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
@@ -141,7 +144,9 @@ export default function AccessDenied({ code, status }: Props) {
             <p role="alert">
                 {expired
                     ? t('identity.denied.expired_offer.body')
-                    : t('identity.denied.body')}
+                    : verificationRequired
+                      ? t('identity.denied.verification_required.body')
+                      : t('identity.denied.body')}
             </p>
             <Link href={dashboard()}>{t('identity.home.back')}</Link>
         </main>

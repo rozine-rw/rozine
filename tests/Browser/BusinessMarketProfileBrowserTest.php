@@ -26,7 +26,7 @@ it('opens Business Market and every Profile section on a wide screen and a phone
     expect($holder->refresh()->email)->toBe('bmp-holder@example.test');
 
     (new BrowserJourney('business-market-profile', 8044))->within(function (BrowserJourney $journey) use ($business): void {
-        $journey->login('bmp1', 'bmp-holder@example.test', BMP_PASSWORD);
+        $journey->login('bmp1', 'bmp-holder@example.test', BMP_PASSWORD, landing: '**/business/'.$business);
         $journey->code('bmp1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/business/'.$business).');

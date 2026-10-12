@@ -30,6 +30,10 @@ const en = {
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.verification_required.title':
+        'Identity verification required',
+    'identity.denied.verification_required.body':
+        'Your identity needs to be verified before you can open this page. Choose an app to continue.',
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
@@ -3429,6 +3433,7 @@ const en = {
     'investor.profile.personal.passport_number': 'PASSPORT NUMBER',
     'investor.profile.personal.address': 'ADDRESS',
     'investor.profile.personal.country': 'COUNTRY',
+    'investor.profile.personal.country_unknown': 'Unknown',
     'investor.profile.personal.province': 'PROVINCE',
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTOR',

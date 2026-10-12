@@ -30,7 +30,7 @@ it('registers an unverified Party without accepting supplied authority', functio
         'status' => 'active',
         'verified_at' => now()->toISOString(),
         'email_verified_at' => now()->toISOString(),
-    ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard', absolute: false));
+    ])->assertSessionHasNoErrors()->assertRedirect(route('enter', absolute: false));
 
     $user = User::query()->where('email', 'alpha@example.test')->sole();
     $party = $user->party()->sole();

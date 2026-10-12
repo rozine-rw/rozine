@@ -25,8 +25,8 @@ const CB_EMAIL = 'beacon@s4e.rozine.invalid';
 it('updates an open wallet from another context\'s deposit and credit without a refresh', function (): void {
     (new BrowserJourney('change-beacon', CB_PORT))->within(function (BrowserJourney $journey): void {
         expect(Artisan::call('local:wallet', ['--seed' => CB_EMAIL]))->toBe(0);
-        $journey->login('cb1', CB_EMAIL, SyntheticWalletSeeder::PASSWORD);
-        $journey->login('cb2', CB_EMAIL, SyntheticWalletSeeder::PASSWORD);
+        $journey->login('cb1', CB_EMAIL, SyntheticWalletSeeder::PASSWORD, landing: '**/investor/deals');
+        $journey->login('cb2', CB_EMAIL, SyntheticWalletSeeder::PASSWORD, landing: '**/investor/deals');
 
         // Context 1 opens the wallet and marks the document, which only a full page load would clear.
         $journey->code('cb1', '

@@ -21,6 +21,7 @@ use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationCodeController;
+use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorMarketController;
@@ -83,6 +84,7 @@ Route::middleware('throttle:10,1')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('enter', EnterAppController::class)->name('enter');
     Route::get('investor', RoleHomeController::class)->name('investor.home');
     Route::get('business', RoleHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('business.home');
     Route::get('auditor', AuditorHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('auditor.home');

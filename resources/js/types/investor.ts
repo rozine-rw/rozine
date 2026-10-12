@@ -695,7 +695,7 @@ export type InvestorProfileProps = {
         kyc: KycState;
         member_since: string;
     };
-    /** Read-only. Phone and address are not collected, so they are null. */
+    /** Read-only. Phone, country and street address are not collected, so they are null. */
     personal: {
         name: string;
         email: string;
@@ -703,6 +703,8 @@ export type InvestorProfileProps = {
         id_type: IdDocument | null;
         /** The approved document's number with all but its last four characters hidden. */
         id_number: string | null;
+        /** Not collected yet; the page shows it as unknown. */
+        country: string | null;
         address: null;
     };
     security: { two_factor: boolean };

@@ -21,7 +21,7 @@ it('opens Market and Cart from the Investor tabs on a wide screen and a phone', 
     expect($investor->refresh()->email)->toBe('mc-investor@example.test');
 
     (new BrowserJourney('investor-market-cart', 8042))->within(function (BrowserJourney $journey): void {
-        $journey->login('mc1', 'mc-investor@example.test', MC_PASSWORD);
+        $journey->login('mc1', 'mc-investor@example.test', MC_PASSWORD, landing: '**/investor/deals');
         $journey->code('mc1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/investor/deals').');
