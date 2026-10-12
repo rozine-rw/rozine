@@ -1438,6 +1438,18 @@ facts that would differ between machines, so they are excluded deliberately.
 
 **Indexes:** `primary_expiry_failures_last_attempted_at_index` on (last_attempted_at); `primary_expiry_failures_pkey` on (primary_reservation_id) — unique
 
+### `primary_failed_closings`
+
+| Column | Type | Nullable | Default |
+|---|---|---|---|
+| `disbursement_closing_id` | `bpchar` | no | — |
+| `business_campaign_closure_id` | `bpchar` | no | — |
+| `funding_id` | `bpchar` | no | — |
+| `closing_sha256` | `bpchar` | no | — |
+| `disbursement_sha256` | `bpchar` | no | — |
+
+**Indexes:** `primary_failed_closings_business_campaign_closure_id_unique` on (business_campaign_closure_id) — unique; `primary_failed_closings_funding_id_unique` on (funding_id) — unique; `primary_failed_closings_pkey` on (disbursement_closing_id) — unique
+
 ### `primary_funding_commitments`
 
 | Column | Type | Nullable | Default |
@@ -2028,6 +2040,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_10_06_100000_create_investor_verifications.php |
 | 2026_10_07_075048_create_staging_mail_testers_table.php |
 | 2026_10_11_081137_create_synthetic_wallet_tester_changes_table.php |
+| 2026_10_12_054843_retain_primary_terminal_failed_closings.php |
 | 2026_10_12_113137_retain_primary_successful_issuance.php |
 
 ## Routes
