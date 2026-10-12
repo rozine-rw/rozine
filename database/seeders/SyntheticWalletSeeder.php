@@ -8,6 +8,7 @@ use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\ParallelTesting;
 use LogicException;
 use Tests\Support\InvestorWalletFixture;
 
@@ -30,9 +31,13 @@ class SyntheticWalletSeeder extends Seeder
         $isolation = app(EnvironmentIsolation::class);
         $isolation->assertSeedingAllowed();
         $config = config()->array('database.connections.'.config()->string('database.default'));
+        $parallelToken = ParallelTesting::token();
+        $isParallelDatabase = $isolation->profile() === 'testing'
+            && is_string($parallelToken) && preg_match('/\A[1-9][0-9]*\z/', $parallelToken) === 1
+            && ($config['database'] ?? null) === 'rozine_test_test_'.$parallelToken;
         if (($config['driver'] ?? null) !== 'pgsql' || ! in_array($config['host'] ?? null, ['127.0.0.1', 'localhost', '::1'], true)
-            || ! in_array($config['database'] ?? null, ['rozine', 'rozine_test', 'rozine_manual'], true)
-            || ($isolation->profile() === 'testing' && $config['database'] !== 'rozine_test')
+            || (! in_array($config['database'] ?? null, ['rozine', 'rozine_test', 'rozine_manual'], true) && ! $isParallelDatabase)
+            || ($isolation->profile() === 'testing' && $config['database'] !== 'rozine_test' && ! $isParallelDatabase)
             || ! empty($config['url']) || isset($config['read']) || isset($config['write'])) {
             throw new LogicException('WALLET_LOCAL_DATABASE_REQUIRED: use a local PostgreSQL database named rozine, rozine_test or rozine_manual.');
         }
