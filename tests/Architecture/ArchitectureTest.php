@@ -207,7 +207,8 @@ arch('infrastructure concretions are reached through their container binding')
     ->expect('App\Infrastructure')
     ->toOnlyBeUsedIn('App\Providers')
     ->ignoring(['App\Infrastructure\Business\RetainedFundedCampaignFacts', 'App\Infrastructure\Business\CampaignProgress',
-        'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease']);
+        'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease',
+        'App\Infrastructure\Primary\RetainedFundedClosing']);
 
 arch('campaign progress is private to the Business campaign page and the Investor deals')
     ->expect('App\Infrastructure\Business\CampaignProgress')
@@ -270,7 +271,7 @@ it('has concrete targets for the business authority boundary', function (): void
 })->group('arch');
 
 arch('business authority records are only accessed by their adapter')
-    ->expect(['App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease', 'App\Models\BusinessCampaignClosure'])
+    ->expect(['App\Models\BusinessMandate', 'App\Models\BusinessApplication', 'App\Models\BusinessApplicationVersion', 'App\Models\BusinessCreditSnapshot', 'App\Models\BusinessApplicationQuote', 'App\Models\BusinessApplicationSignature', 'App\Models\BusinessApplicationSubmission', 'App\Models\BusinessExposureReservation', 'App\Models\BusinessApplicationRelease'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Business', 'App\Models', 'Database\Factories']);
 
 arch('business authority records are only accessed by their adapter or the named funding gate reader')
@@ -383,9 +384,9 @@ arch('accepted exposure is private to the Business adapter')
     ->expect('App\\Application\\Business\\Contracts\\BusinessExposureStore')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
 
-arch('campaign closure evidence is private to the Business adapter')
+arch('campaign closure evidence is private to Business persistence and the named Primary failed-closing adapter')
     ->expect('App\\Application\\Business\\Contracts\\CampaignClosureEvidence')
-    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Providers\\AppServiceProvider']);
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary\\EloquentFundedCampaigns', 'App\\Providers\\AppServiceProvider']);
 
 arch('retained campaign inputs are private to the Business and Primary adapters')
     ->expect('App\Application\Business\Contracts\PrimaryCampaignSource')
@@ -513,3 +514,11 @@ arch('funding records remain inside Primary persistence')
 arch('returned cash evidence stays behind the wallet and Primary adapters')
     ->expect('App\\Application\\Wallet\\Contracts\\PrimaryReturnedCash')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Wallet', 'App\\Infrastructure\\Primary', 'App\\Providers\\AppServiceProvider']);
+
+arch('retained closing authentication stays private to the named Primary settlement adapter')
+    ->expect('App\\Infrastructure\\Primary\\RetainedFundedClosing')
+    ->toOnlyBeUsedIn('App\\Infrastructure\\Primary\\EloquentFundedCampaigns');
+
+arch('terminal failed closures are written only by Business persistence or the named Primary adapter')
+    ->expect('App\\Models\\BusinessCampaignClosure')
+    ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary\\EloquentFundedCampaigns', 'App\\Models', 'Database\\Factories']);

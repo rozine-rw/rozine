@@ -114,7 +114,7 @@ it('propagates retained corruption during discovery and locking instead of listi
     }))->toThrow(RuntimeException::class, 'PRIMARY_FUNDING_INTEGRITY_FAILED');
 })->with(['discovery', 'locking']);
 
-it('keeps current admission unavailable and all financial writes refused despite genuine retained funding', function (): void {
+it('keeps current admission and issuance unavailable and refuses unauthenticated failed closing', function (): void {
     ['campaign' => $campaign] = PrimaryHoldingFixture::committed();
     $binding = app(FundedCampaigns::class);
     $before = [DB::table('ledger_entries')->count(), DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count()];
@@ -128,7 +128,7 @@ it('keeps current admission unavailable and all financial writes refused despite
         expect(fn () => $adapter->issue($facts, new IssueInstruction($id, $id, $id, now()->toIso8601String(), now()->toDateString(), [], now()->toIso8601String())))
             ->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
         expect(fn () => $adapter->failClose($facts, new FailedClosing($id, $id, 'approve_recheck', ['restriction'])))
-            ->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
+            ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_UNAVAILABLE');
     });
     expect([DB::table('ledger_entries')->count(), DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count()])->toBe($before)
         ->and(app(FundedCampaigns::class))->toBe($binding);

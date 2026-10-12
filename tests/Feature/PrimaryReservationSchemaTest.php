@@ -212,6 +212,8 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
+    $terminalFailures->down();
     $heldGenerations->down();
     $issuedCompleteness->down();
     $holdingIssue->down();
@@ -262,6 +264,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $holdingIssue->up();
     $issuedCompleteness->up();
     $heldGenerations->up();
+    $terminalFailures->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();
