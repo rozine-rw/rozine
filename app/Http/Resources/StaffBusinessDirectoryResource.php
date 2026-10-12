@@ -36,6 +36,7 @@ class StaffBusinessDirectoryResource extends JsonResource
         'business.authority.configure' => ['Authority recorded', 'blue'], 'business.authority.revoke' => ['Authority revoked', 'red'],
         'campaign.publish' => ['Note published', 'green'], 'campaign.cancel' => ['Note cancelled', 'red'],
         'campaign.expire' => ['Note closed unfunded at its deadline', 'amber'],
+        'campaign.failed_closing' => ['Funded note closed after failure', 'red'],
     ];
 
     /** A note's tone beside its state in the 360's list. */

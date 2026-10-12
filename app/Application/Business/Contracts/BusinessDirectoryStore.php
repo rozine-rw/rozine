@@ -26,7 +26,7 @@ namespace App\Application\Business\Contracts;
  * @phpstan-type Note array{id: string, title: string, status: 'active'|'funded'|'failed'}
  * @phpstan-type HistoryEntry array{
  *     id: string, at: string, actor: string, subject: string|null, reason: string|null,
- *     command: 'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'
+ *     command: 'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'
  * }
  * @phpstan-type Detail array{row: DirectoryRow, notes: list<Note>, history: list<HistoryEntry>}
  */
