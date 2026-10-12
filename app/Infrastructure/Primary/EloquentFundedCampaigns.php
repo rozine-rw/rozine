@@ -22,12 +22,13 @@ use App\Models\PrimaryCampaignFunding;
  * authenticates historical funding and purchases; locking takes only Business then campaign
  * gates in the caller's transaction. The caller places staff locks between those calls and
  * retains the full financial order through commit. No verified-fact or lock cache is retained.
- * Current admission is unavailable and financial writes refuse until their authoritative sources
- * and forward settlement exist. Historical funding never supplies current admission authority.
+ * Current admission and failed closing remain unavailable on this base. Successful issue is
+ * delegated to its authenticated Primary collaborator. Historical funding never supplies current
+ * admission authority; this adapter remains unbound to the ordinary runtime port.
  */
 final class EloquentFundedCampaigns implements FundedCampaigns
 {
-    public function __construct(private RetainedFundedCampaignFacts $facts) {}
+    public function __construct(private RetainedFundedCampaignFacts $facts, private RetainedPrimaryIssuance $issuance) {}
 
     public function funded(?string $before, int $limit): array
     {
@@ -73,7 +74,7 @@ final class EloquentFundedCampaigns implements FundedCampaigns
     public function issue(FundedCampaign $campaign, IssueInstruction $instruction): void
     {
         $this->assertTransaction();
-        throw new CommandRejection('FUNDING_SOURCE_UNAVAILABLE', 409);
+        $this->issuance->issue($campaign, $instruction);
     }
 
     public function failClose(FundedCampaign $campaign, FailedClosing $closing): void

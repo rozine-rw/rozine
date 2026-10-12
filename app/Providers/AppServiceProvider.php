@@ -67,6 +67,7 @@ use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\HoldingSource;
+use App\Application\Primary\Contracts\IssuedHoldingEvidence;
 use App\Application\Primary\Contracts\PrimaryAdmission;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
@@ -149,6 +150,7 @@ use App\Infrastructure\Primary\EloquentPrimaryFunding;
 use App\Infrastructure\Primary\EloquentPrimaryPurchaseIndex;
 use App\Infrastructure\Primary\EloquentPrimaryReservations;
 use App\Infrastructure\Primary\RetainedHoldingSource;
+use App\Infrastructure\Primary\RetainedIssuedHoldings;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Primary\UnavailablePrimaryAdmission;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
@@ -255,6 +257,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrimaryFunding::class, EloquentPrimaryFunding::class);
         $this->app->bind(CampaignFundingEvidence::class, RetainedPrimaryFunding::class);
         $this->app->bind(HoldingSource::class, RetainedHoldingSource::class);
+        $this->app->bind(IssuedHoldingEvidence::class, RetainedIssuedHoldings::class);
         // The synthetic provider exists only on local, testing and UAT with live money off; everywhere
         // else nothing can be sent, verified or signed, because no live provider exists yet.
         $synthetic = fn (): DepositProvider&SyntheticEventSigner => $this->app->make(SyntheticWalletGuard::class)->allowed()

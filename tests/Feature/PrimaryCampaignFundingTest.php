@@ -368,6 +368,8 @@ it('refuses rolling the migration back once funding evidence exists', function (
 
 it('can reverse and reapply the empty funding migration', function (): void {
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $issuances = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
+    $issuances->down();
     $heldGenerations->down();
     $entryIndex = require database_path('migrations/2026_09_30_171842_index_wallet_ledger_lines_by_entry.php');
     $entryIndex->down();
@@ -389,6 +391,7 @@ it('can reverse and reapply the empty funding migration', function (): void {
     $holdingIssue->up();
     $issuedCompleteness->up();
     $heldGenerations->up();
+    $issuances->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(Schema::hasTable('primary_campaign_fundings'))->toBeTrue();
 });

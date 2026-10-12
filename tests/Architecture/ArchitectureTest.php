@@ -207,7 +207,10 @@ arch('infrastructure concretions are reached through their container binding')
     ->expect('App\Infrastructure')
     ->toOnlyBeUsedIn('App\Providers')
     ->ignoring(['App\Infrastructure\Business\RetainedFundedCampaignFacts', 'App\Infrastructure\Business\CampaignProgress',
-        'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease']);
+        'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease',
+        'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings',
+        'App\Infrastructure\Primary\RetainedFundedClosing', 'App\Infrastructure\Primary\PrimaryIssuancePayload',
+        'App\Infrastructure\Wallet\RetainedPrimaryIssueCash']);
 
 arch('campaign progress is private to the Business campaign page and the Investor deals')
     ->expect('App\Infrastructure\Business\CampaignProgress')
@@ -228,7 +231,8 @@ arch('held retirement collaborators keep Business and Wallet persistence behind 
 
 arch('the retained funded projection is an internal collaborator of the named funding adapter')
     ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
-    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\EloquentFundedCampaigns']);
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\EloquentFundedCampaigns',
+        'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings']);
 
 arch('the retained funded projection keeps its own collaborators behind contracts')
     ->expect('App\Infrastructure\Business\RetainedFundedCampaignFacts')
@@ -467,9 +471,37 @@ arch('disbursement records are only accessed by the disbursement adapters')
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\DisbursementIndependenceDeclaration'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
 
-arch('proposed Holdings stay unwritten until the S3-C adapter owns them')
+arch('Holdings are written and read only by their named Primary issuance collaborators')
     ->expect('App\Models\PrimaryHolding')
-    ->toOnlyBeUsedIn(['App\Models', 'Database\Factories']);
+    ->toOnlyBeUsedIn(['App\Models', 'Database\Factories', 'App\Infrastructure\Primary\RetainedPrimaryIssuance',
+        'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+
+arch('Primary issuance conversion records stay inside their named producer and verifier')
+    ->expect('App\Models\PrimaryCampaignIssuance')
+    ->toOnlyBeUsedIn(['App\Models', 'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+
+arch('the Primary success writer is private to its funded adapter')
+    ->expect('App\Infrastructure\Primary\RetainedPrimaryIssuance')
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\EloquentFundedCampaigns']);
+
+arch('issued bundle and cash authentication stay behind their exact consumers')
+    ->expect('App\Infrastructure\Wallet\RetainedPrimaryIssueCash')
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+
+arch('closing authentication and envelope assembly are private to Primary success collaborators')
+    ->expect(['App\Infrastructure\Primary\RetainedFundedClosing', 'App\Infrastructure\Primary\PrimaryIssuancePayload'])
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+
+it('keeps the complete issued source read-only with concrete boundary targets', function (): void {
+    foreach (['App\Application\Primary\Contracts\IssuedHoldingEvidence', 'App\Models\PrimaryCampaignIssuance',
+        'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings',
+        'App\Infrastructure\Primary\PrimaryIssuancePayload', 'App\Infrastructure\Primary\RetainedFundedClosing',
+        'App\Infrastructure\Wallet\RetainedPrimaryIssueCash'] as $target) {
+        expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
+    }
+    $source = (string) file_get_contents(dirname(__DIR__, 2).'/app/Infrastructure/Primary/RetainedIssuedHoldings.php');
+    expect($source)->not->toMatch('/->(insert|update|delete|upsert|save|forceFill|create|lockForUpdate|sharedLock|lock)\(|DB::(statement|unprepared|transaction)/');
+})->group('arch');
 
 it('keeps the Holding source verifier read-only', function (): void {
     $source = (string) file_get_contents(dirname(__DIR__, 2).'/app/Infrastructure/Primary/RetainedHoldingSource.php');
