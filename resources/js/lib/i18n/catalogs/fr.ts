@@ -30,6 +30,10 @@ const fr: Catalog = {
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
+    'identity.denied.verification_required.title':
+        'Vérification d’identité requise',
+    'identity.denied.verification_required.body':
+        'Votre identité doit être vérifiée avant de pouvoir ouvrir cette page. Choisissez une application pour continuer.',
     'identity.denied.expired_offer.title': 'Cette offre est close',
     'identity.denied.expired_offer.body':
         'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
