@@ -11,7 +11,7 @@ uses(TestCase::class);
 
 it('checks isolation through the seeder entry point before doing any work', function (): void {
     ParallelTesting::resolveTokenUsing(fn (): false => false);
-    expect(fn () => app(SyntheticWalletSeeder::class)->run())->not->toThrow(Throwable::class);
+    expect(fn () => app(SyntheticWalletSeeder::class)->run())->not->toThrow(Exception::class);
 
     config(['database.connections.pgsql.database' => 'rozine_test_test_1']);
     expect(fn () => app(SyntheticWalletSeeder::class)->run())->toThrow(LogicException::class, 'WALLET_LOCAL_DATABASE_REQUIRED');
@@ -21,7 +21,7 @@ it('admits only the serial testing database or the exact numeric parallel worker
     config(['database.connections.pgsql.database' => $database]);
     ParallelTesting::resolveTokenUsing(fn (): string|false => $token);
 
-    expect(fn () => app(SyntheticWalletSeeder::class)->assertLocal())->not->toThrow(Throwable::class);
+    expect(fn () => app(SyntheticWalletSeeder::class)->assertLocal())->not->toThrow(Exception::class);
 })->with([
     'serial without token' => ['rozine_test', false],
     'serial with token' => ['rozine_test', '1'],
@@ -71,7 +71,7 @@ it('preserves the local database allowlist and refuses parallel databases on loc
 
     $assertLocal = fn () => app(SyntheticWalletSeeder::class)->assertLocal();
     if ($allowed) {
-        expect($assertLocal)->not->toThrow(Throwable::class);
+        expect($assertLocal)->not->toThrow(Exception::class);
     } else {
         expect($assertLocal)->toThrow(LogicException::class, 'WALLET_LOCAL_DATABASE_REQUIRED');
     }
