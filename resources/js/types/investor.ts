@@ -1342,6 +1342,7 @@ export type InvestorNotice = {
     read_action: RouteAction | null;
 } & (
     | { kind: 'wallet.deposit_received'; facts: Money }
+    | { kind: 'primary.refunded'; facts: Money & { business: string } }
     | { kind: 'verification.approved'; facts: never[] }
     | { kind: 'verification.rejected'; facts: { reason: string } }
 );

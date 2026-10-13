@@ -21,6 +21,7 @@ class InvestorNoticesResource extends JsonResource
         'verification.approved' => 'investor.deals',
         'verification.rejected' => 'investor.verification',
         'wallet.deposit_received' => 'investor.wallet',
+        'primary.refunded' => 'investor.wallet',
     ];
 
     /** @return array<string, mixed> */

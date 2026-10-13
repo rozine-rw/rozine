@@ -9,6 +9,7 @@ use App\Domain\Identity\PartyNoticeKind;
 use App\Models\PartyNotice;
 use App\Models\PartyNoticeDelivery;
 use App\Models\User;
+use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\VerificationDecided;
 use App\Notifications\RozineMail;
 use Illuminate\Database\Eloquent\Builder;
@@ -70,9 +71,11 @@ final readonly class EloquentPartyNotices implements PartyNotices
     /** @param  array<string, string>  $facts */
     private function message(PartyNoticeKind $kind, array $facts): RozineMail
     {
-        return $kind === PartyNoticeKind::VerificationApproved
-            ? VerificationDecided::approved(route('investor.deals'))
-            : VerificationDecided::rejected($facts['reason'], route('investor.verification'));
+        return match ($kind) {
+            PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
+            PartyNoticeKind::VerificationApproved => VerificationDecided::approved(route('investor.deals')),
+            default => VerificationDecided::rejected($facts['reason'], route('investor.verification')),
+        };
     }
 
     private function mail(string $noticeId, string $partyId, RozineMail $message): void

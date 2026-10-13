@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorDeals from '@/pages/investor/deals';
@@ -51,7 +51,7 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             name: /RWF|verified|another look/u,
         });
 
-        expect(items).toHaveLength(3);
+        expect(items).toHaveLength(4);
         expect(items[0]).toHaveTextContent(
             'Deposit receivedRWF 250,000 is now in your wallet.',
         );
@@ -62,8 +62,13 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(items[2]).toHaveTextContent(
             'Compliance could not verify your details: The photo of your ID is blurred. Upload a sharper photo.',
         );
+        expect(items[3]).toHaveTextContent(
+            'Raise refundedThe Karongi Freight Ltd raise closed without reaching its target. RWF 150,000 is back in your wallet, with no fee.',
+        );
         expect(within(items[0]).getByLabelText('Unread')).toBeInTheDocument();
-        expect(within(items[2]).queryByLabelText('Unread')).toBeNull();
+        expect(
+            within(items[2]).queryByLabelText('Unread'),
+        ).not.toBeInTheDocument();
         expect(within(panel).getByLabelText('2 unread')).toHaveTextContent('2');
     });
 
@@ -137,10 +142,14 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         await vi.waitFor(() =>
             expect(
                 within(panel).queryByRole('button', { name: 'Mark all read' }),
-            ).toBeNull(),
+            ).not.toBeInTheDocument(),
         );
-        expect(within(panel).queryByLabelText('Unread')).toBeNull();
-        expect(within(panel).queryByLabelText(/unread$/u)).toBeNull();
+        expect(
+            within(panel).queryByLabelText('Unread'),
+        ).not.toBeInTheDocument();
+        expect(
+            within(panel).queryByLabelText(/unread$/u),
+        ).not.toBeInTheDocument();
     });
 
     it('says when the notices could not be loaded, retries, and says when there are none', async () => {
@@ -175,21 +184,17 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         await user.click(
             screen.getByRole('button', { name: 'Close notifications' }),
         );
-        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
         await openBell(user);
-        act(() => {
-            fireEvent.keyDown(window, { key: 'Enter' });
-        });
+        fireEvent.keyDown(window, { key: 'Enter' });
         expect(screen.getByRole('dialog')).toBeInTheDocument();
-        act(() => {
-            fireEvent.keyDown(window, { key: 'Escape' });
-        });
-        expect(screen.queryByRole('dialog')).toBeNull();
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-        const panel = await openBell(user);
-        fireEvent.click(panel.previousElementSibling as Element);
-        expect(screen.queryByRole('dialog')).toBeNull();
+        await openBell(user);
+        fireEvent.click(screen.getByTestId('notices-scrim'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('opens the same panel from the wide-screen bell', async () => {

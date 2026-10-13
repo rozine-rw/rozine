@@ -4577,6 +4577,9 @@ const rw: Catalog = {
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':
         '{amount} ubu ari mu gikapu cyawe.',
+    'investor.notices.primary.refunded.title': 'Amafaranga yawe yagarutse',
+    'investor.notices.primary.refunded.body':
+        'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',
     'investor.notices.verification.approved.title': 'Wemejwe',
     'investor.notices.verification.approved.body':
         'Umwirondoro wawe wemejwe kandi igikapu cyawe cyiteguye gushora imari.',

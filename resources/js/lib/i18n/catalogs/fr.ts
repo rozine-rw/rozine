@@ -4608,6 +4608,9 @@ const fr: Catalog = {
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',
+    'investor.notices.primary.refunded.title': 'Levée remboursée',
+    'investor.notices.primary.refunded.body':
+        "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
     'investor.notices.verification.approved.title': 'Vous êtes vérifié',
     'investor.notices.verification.approved.body':
         'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',

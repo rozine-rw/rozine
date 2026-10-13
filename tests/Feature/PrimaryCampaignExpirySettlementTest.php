@@ -20,14 +20,18 @@ use App\Models\CommandOperation;
 use App\Models\InvestorFundingMethod;
 use App\Models\LedgerEntry;
 use App\Models\Party;
+use App\Models\PartyNotice;
+use App\Models\PartyNoticeDelivery;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use App\Notifications\Investor\RaiseExpired;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Mockery\CompositeExpectation;
 use Tests\Support\AuditSealingFixture;
@@ -185,8 +189,10 @@ it('flushes expiry purchase beacons, then campaign progress, then the closure, a
     expect($purchases)->not->toBe($inReservationOrder)
         ->and($rows)->toBe([...$purchases, $campaign, $campaign])
         ->and($closure)->toBe($progress + 1)
-        // A system expiry journals nothing afterwards: the return bindings are the last write before the beacons.
-        ->and(array_slice($writes, -6))->toBe(['primary_campaign_closure_returns', ...array_fill(0, 5, 'change_feed')]);
+        // A system expiry journals nothing afterwards: the return bindings are the last write before the beacons. The
+        // refund e-mail receipts are written once the expiry has committed.
+        ->and(array_slice(array_values(array_diff($writes, ['party_notice_deliveries'])), -6))->toBe(['primary_campaign_closure_returns', ...array_fill(0, 5, 'change_feed')])
+        ->and(array_slice($writes, -2))->toBe(['party_notice_deliveries', 'party_notice_deliveries']);
 });
 
 it('rolls back observed expiry subjects with every cash return when the closing caller fails', function (): void {
@@ -363,3 +369,25 @@ it('refuses a forged system cause against an otherwise valid retained expiry clo
     }))->toThrow(QueryException::class, 'exact system closure')
         ->and((array) DB::table('primary_campaign_expiry_settlements')->sole())->toBe($cause);
 })->with(['created_at', 'business_campaign_closure_id']);
+
+it('tells each refunded Investor in-app and by e-mail once, and leaves a released hold unannounced (BRS NTF-R01)', function (): void {
+    Notification::fake();
+    $investor = PrimaryReservationFixture::investor();
+    $root = ($this->purchase)('confirmed', '3', $investor);
+    ($this->purchase)('held');
+    $this->travelTo($this->campaign->expires_at);
+    expect($this->store->expireDue(1))->toBe(1)->and($this->store->expireDue(1))->toBe(0);
+
+    $notice = PartyNotice::query()->where('kind', 'primary.refunded')->sole();
+    $business = BusinessProfile::query()->whereKey($this->campaign->business_id)->sole()->profile['name'];
+    expect([$notice->party_id, $notice->kind, $notice->facts, $notice->event_key])
+        ->toBe([$investor['party']->id, 'primary.refunded', ['amount' => '15000', 'business' => $business, 'currency' => 'RWF'], 'primary-refund:'.$root->id])
+        ->and(PartyNoticeDelivery::query()->where('party_notice_id', $notice->id)->where('channel', 'mail')->sole()->only(['user_id', 'status']))
+        ->toBe(['user_id' => $investor['user']->id, 'status' => 'sent']);
+    Notification::assertSentToTimes($investor['user'], RaiseExpired::class, 1);
+    Notification::assertSentTo($investor['user'], RaiseExpired::class,
+        fn (RaiseExpired $mail): bool => [$mail->businessName, $mail->refund, $mail->url] === [$business, '15000', route('investor.wallet')]);
+
+    $this->actingAs($investor['user'])->getJson(route('investor.notices'))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'primary.refunded')->assertJsonPath('data.notices.0.link.url', '/investor/wallet');
+});

@@ -4,10 +4,16 @@
         {
             "id": "01k7nq0c2y6w8e4t1v3x5z7b9d",
             "kind": "wallet.deposit_received",
-            "facts": { "amount": "250000", "currency": "RWF" },
+            "facts": {
+                "amount": "250000",
+                "currency": "RWF"
+            },
             "created_at": "2026-10-13T08:42:00+02:00",
             "read": false,
-            "link": { "url": "/preview/investor-wallet", "method": "get" },
+            "link": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
             "read_action": {
                 "url": "/preview/investor-notices/read",
                 "method": "post"
@@ -19,7 +25,10 @@
             "facts": [],
             "created_at": "2026-10-12T16:05:00+02:00",
             "read": false,
-            "link": { "url": "/preview/investor-deals", "method": "get" },
+            "link": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
             "read_action": {
                 "url": "/preview/investor-notices/read",
                 "method": "post"
@@ -35,6 +44,22 @@
             "read": true,
             "link": {
                 "url": "/preview/investor-verification",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9a",
+            "kind": "primary.refunded",
+            "facts": {
+                "amount": "150000",
+                "currency": "RWF",
+                "business": "Karongi Freight Ltd"
+            },
+            "created_at": "2026-10-08T09:15:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-wallet",
                 "method": "get"
             },
             "read_action": null

@@ -4396,6 +4396,9 @@ const en = {
     'investor.notices.wallet.deposit_received.title': 'Deposit received',
     'investor.notices.wallet.deposit_received.body':
         '{amount} is now in your wallet.',
+    'investor.notices.primary.refunded.title': 'Raise refunded',
+    'investor.notices.primary.refunded.body':
+        'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
     'investor.notices.verification.approved.title': 'You are verified',
     'investor.notices.verification.approved.body':
         'Your identity is verified and your wallet is ready to invest.',

@@ -23,6 +23,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
+    'primary.refunded': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: (
+            <path
+                d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
+                {...stroke}
+            />
+        ),
+    },
     'verification.approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -111,6 +121,7 @@ export function NoticesPanel({
                 type="button"
                 aria-hidden
                 tabIndex={-1}
+                data-testid="notices-scrim"
                 onClick={onClose}
                 className="fixed inset-0 z-[70] animate-[rz-scrim_.22s_ease_both] bg-[rgba(10,15,28,.32)]"
             />
@@ -273,6 +284,11 @@ function body(
         case 'wallet.deposit_received':
             return t('investor.notices.wallet.deposit_received.body', {
                 amount: formatRwf(notice.facts),
+            });
+        case 'primary.refunded':
+            return t('investor.notices.primary.refunded.body', {
+                amount: formatRwf(notice.facts),
+                business: notice.facts.business,
             });
         case 'verification.rejected':
             return t('investor.notices.verification.rejected.body', {
