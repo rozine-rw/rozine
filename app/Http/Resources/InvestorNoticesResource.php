@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Route;
 
 /**
  * The account's notices for the bell panel. Each notice carries its kind and facts for the client
@@ -16,12 +17,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class InvestorNoticesResource extends JsonResource
 {
-    /** Where each kind opens, by route name. */
+    /** Where each kind opens, by route name and parameters. */
     private const array DESTINATIONS = [
-        'verification.approved' => 'investor.deals',
-        'verification.rejected' => 'investor.verification',
-        'wallet.deposit_received' => 'investor.wallet',
-        'primary.refunded' => 'investor.wallet',
+        'verification.approved' => ['investor.deals', []],
+        'verification.rejected' => ['investor.verification', []],
+        'wallet.deposit_received' => ['investor.wallet', []],
+        'primary.refunded' => ['investor.wallet', []],
+        'security.password_changed' => ['investor.profile', ['section' => 'security']],
     ];
 
     /** @return array<string, mixed> */
@@ -33,9 +35,18 @@ class InvestorNoticesResource extends JsonResource
 
         return ['unread' => $inbox['unread'],
             'notices' => array_map(fn (array $notice): array => [...$notice,
-                'link' => ['url' => route($prefix.self::DESTINATIONS[$notice['kind']], [], false), 'method' => 'get'],
+                'link' => $this->link($prefix, ...self::DESTINATIONS[$notice['kind']]),
                 'read_action' => $notice['read'] ? null : ['url' => route($prefix.'investor.notices.read', ['notice' => $notice['id']], false), 'method' => 'post'],
             ], $inbox['notices']),
             'actions' => ['read_all' => $inbox['unread'] === 0 ? null : ['url' => route($prefix.'investor.notices.read_all', [], false), 'method' => 'post']]];
+    }
+
+    /**
+     * @param  array<string, string>  $parameters
+     * @return array{url: string, method: 'get'}|null
+     */
+    private function link(string $prefix, string $name, array $parameters): ?array
+    {
+        return Route::has($prefix.$name) ? ['url' => route($prefix.$name, $parameters, false), 'method' => 'get'] : null;
     }
 }

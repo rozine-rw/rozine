@@ -25,6 +25,14 @@ interface PartyNotices
     public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey): void;
 
     /**
+     * Records one notice for an event on the account itself, for the account's Party; an account
+     * with no Party records nothing.
+     *
+     * @param  array<string, string>  $facts
+     */
+    public function recordForAccount(int $userId, PartyNoticeKind $kind, array $facts, string $eventKey): void;
+
+    /**
      * The account's own Party's newest notices and how many are unread; an account with no Party
      * has none.
      *

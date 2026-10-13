@@ -15,9 +15,10 @@ enum PartyNoticeKind: string
     case VerificationRejected = 'verification.rejected';
     case DepositReceived = 'wallet.deposit_received';
     case RaiseRefunded = 'primary.refunded';
+    case PasswordChanged = 'security.password_changed';
 
     public function mailed(): bool
     {
-        return $this !== self::DepositReceived;
+        return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded], true);
     }
 }

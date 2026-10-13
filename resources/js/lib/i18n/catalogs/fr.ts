@@ -4611,6 +4611,10 @@ const fr: Catalog = {
     'investor.notices.primary.refunded.title': 'Levée remboursée',
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
+    'investor.notices.security.password_changed.title':
+        'Votre mot de passe a été modifié',
+    'investor.notices.security.password_changed.body':
+        "Si ce n'était pas vous, réinitialisez votre mot de passe maintenant et contactez le support Rozine.",
     'investor.notices.verification.approved.title': 'Vous êtes vérifié',
     'investor.notices.verification.approved.body':
         'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',

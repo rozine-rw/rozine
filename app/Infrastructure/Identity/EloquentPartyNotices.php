@@ -41,6 +41,14 @@ final readonly class EloquentPartyNotices implements PartyNotices
         }
     }
 
+    public function recordForAccount(int $userId, PartyNoticeKind $kind, array $facts, string $eventKey): void
+    {
+        $partyId = User::query()->whereKey($userId)->value('party_id');
+        if (is_string($partyId)) {
+            DB::transaction(fn () => $this->record($partyId, $kind, $facts, $eventKey));
+        }
+    }
+
     public function inbox(int $userId, int $limit): array
     {
         $notices = $this->owned($userId)->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get();

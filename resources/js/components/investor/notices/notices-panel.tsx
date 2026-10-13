@@ -38,6 +38,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
+    'security.password_changed': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <rect x="5" y="11" width="14" height="9" rx="2" {...stroke} />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" {...stroke} />
+            </>
+        ),
+    },
     'verification.rejected': {
         bar: 'bg-[#b3383c]',
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
@@ -106,7 +116,9 @@ export function NoticesPanel({
             await send(notice.read_action);
         }
 
-        router.visit(notice.link);
+        if (notice.link !== null) {
+            router.visit(notice.link);
+        }
     };
 
     const readAll = async (action: RouteAction) => {
@@ -296,5 +308,7 @@ function body(
             });
         case 'verification.approved':
             return t('investor.notices.verification.approved.body');
+        case 'security.password_changed':
+            return t('investor.notices.security.password_changed.body');
     }
 }

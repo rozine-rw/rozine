@@ -1338,12 +1338,14 @@ export type InvestorNotice = {
     id: string;
     created_at: string;
     read: boolean;
-    link: RouteLink;
+    /** Null where this transport has no screen for the kind. */
+    link: RouteLink | null;
     read_action: RouteAction | null;
 } & (
     | { kind: 'wallet.deposit_received'; facts: Money }
     | { kind: 'primary.refunded'; facts: Money & { business: string } }
     | { kind: 'verification.approved'; facts: never[] }
+    | { kind: 'security.password_changed'; facts: never[] }
     | { kind: 'verification.rejected'; facts: { reason: string } }
 );
 

@@ -7,6 +7,7 @@ use App\Models\PartyNoticeDelivery;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
@@ -111,4 +112,26 @@ it('keeps notices and receipts immutable but for the first read time', function 
     PartyNotice::query()->whereKey($notice->id)->update(['read_at' => now()]);
     $refused(fn () => PartyNotice::query()->whereKey($notice->id)->update(['read_at' => now()->addMinute()]));
     expect($notice->refresh()->read_at?->equalTo(now()))->toBeTrue();
+});
+
+it('notices each password change, signed in or by reset, linking to security on the web only', function (): void {
+    $user = $this->investor['user'];
+    $this->actingAs($user)->from(route('security.edit'))->put(route('user-password.update'),
+        ['current_password' => 'password', 'password' => 'new-password', 'password_confirmation' => 'new-password'])->assertSessionHasNoErrors();
+    auth()->logout();
+    $this->post(route('password.update'), ['token' => Password::createToken($user), 'email' => $user->email,
+        'password' => 'newer-password', 'password_confirmation' => 'newer-password'])->assertSessionHasNoErrors();
+
+    expect(PartyNotice::query()->where('kind', 'security.password_changed')->where('party_id', $this->investor['party']->id)->count())->toBe(2)
+        ->and(PartyNoticeDelivery::query()->where('channel', 'mail')->exists())->toBeFalse();
+    $this->actingAs($user)->getJson(route('investor.notices'))->assertJsonPath('data.notices.0.kind', 'security.password_changed')
+        ->assertJsonPath('data.notices.0.facts', [])
+        ->assertJsonPath('data.notices.0.link', ['url' => '/investor/profile?section=security', 'method' => 'get']);
+    Sanctum::actingAs($user, ['investor:read']);
+    $this->getJson(route('api.v1.investor.notices'))->assertJsonPath('data.notices.0.link', null);
+
+    $unattached = User::factory()->create();
+    $this->actingAs($unattached)->from(route('security.edit'))->put(route('user-password.update'),
+        ['current_password' => 'password', 'password' => 'new-password', 'password_confirmation' => 'new-password'])->assertSessionHasNoErrors();
+    expect(PartyNotice::query()->where('kind', 'security.password_changed')->count())->toBe(2);
 });

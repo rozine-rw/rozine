@@ -48,10 +48,10 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         );
 
         const items = await within(panel).findAllByRole('button', {
-            name: /RWF|verified|another look/u,
+            name: /RWF|verified|another look|password/u,
         });
 
-        expect(items).toHaveLength(4);
+        expect(items).toHaveLength(5);
         expect(items[0]).toHaveTextContent(
             'Deposit receivedRWF 250,000 is now in your wallet.',
         );
@@ -64,6 +64,9 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         );
         expect(items[3]).toHaveTextContent(
             'Raise refundedThe Karongi Freight Ltd raise closed without reaching its target. RWF 150,000 is back in your wallet, with no fee.',
+        );
+        expect(items[4]).toHaveTextContent(
+            'Your password was changedIf this was not you, reset your password now and contact Rozine support.',
         );
         expect(within(items[0]).getByLabelText('Unread')).toBeInTheDocument();
         expect(
@@ -150,6 +153,28 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(
             within(panel).queryByLabelText(/unread$/u),
         ).not.toBeInTheDocument();
+    });
+
+    it('marks a notice read without leaving the page when this transport has no screen for it', async () => {
+        const user = userEvent.setup();
+        render(<InvestorDeals {...deals()} />);
+        const inbox = notices();
+
+        inbox.notices[0].link = null;
+        inertia.queue.push(answers({ data: inbox }));
+        const panel = await openBell(user);
+        const items = await within(panel).findAllByRole('button', {
+            name: /RWF/u,
+        });
+
+        inertia.queue.push(answers({ data: { unread: 1 } }));
+        await user.click(items[0]);
+
+        expect(inertia.calls[1]).toMatchObject({
+            url: '/preview/investor-notices/read',
+            method: 'post',
+        });
+        expect(inertia.visit).not.toHaveBeenCalled();
     });
 
     it('says when the notices could not be loaded, retries, and says when there are none', async () => {
