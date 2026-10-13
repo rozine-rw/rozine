@@ -59,6 +59,7 @@
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorProfileController.ts",
@@ -169,6 +170,7 @@
         "resources/js/routes/api/v1/investor/commitments/index.ts",
         "resources/js/routes/api/v1/investor/deals/index.ts",
         "resources/js/routes/api/v1/investor/index.ts",
+        "resources/js/routes/api/v1/investor/notices/index.ts",
         "resources/js/routes/api/v1/investor/primary/index.ts",
         "resources/js/routes/api/v1/investor/primary/operations/index.ts",
         "resources/js/routes/api/v1/investor/risks/index.ts",
@@ -239,6 +241,7 @@
         "resources/js/routes/investor/commitments/index.ts",
         "resources/js/routes/investor/deals/index.ts",
         "resources/js/routes/investor/index.ts",
+        "resources/js/routes/investor/notices/index.ts",
         "resources/js/routes/investor/primary/index.ts",
         "resources/js/routes/investor/primary/operations/index.ts",
         "resources/js/routes/investor/risks/index.ts",
@@ -492,6 +495,7 @@
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/market/filter-pill.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
+        "resources/js/components/investor/notices/notices-panel.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
         "resources/js/components/investor/portfolio/holding-detail.tsx",
@@ -693,10 +697,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 662,
-        "generated": 262,
+        "totalTrackedSources": 666,
+        "generated": 265,
         "declarationOnly": 18,
-        "authoredExecutable": 382
+        "authoredExecutable": 383
     },
-    "coverageSetSha256": "b82fda5c818fd932f23e4f2b8f6523ff856ba5fbd7f67ce4c4471cc9a5d5f451"
+    "coverageSetSha256": "b2c3320611aff56a632f02822dc16d00295bb91e30b781c70f3dedc0c84237a3"
 }

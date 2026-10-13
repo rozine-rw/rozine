@@ -1251,7 +1251,7 @@
                     "method": "get"
                 },
                 "notifications": {
-                    "url": "/preview/investor-deals",
+                    "url": "/preview/investor-notices",
                     "method": "get"
                 },
                 "launcher": {
@@ -1294,7 +1294,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {

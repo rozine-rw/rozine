@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Wallet;
 
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -14,6 +15,7 @@ use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\SyntheticDepositAdmission;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -50,7 +52,8 @@ use RuntimeException;
 final class EloquentWalletStore implements WalletStore
 {
     public function __construct(private AuthorizeActiveRole $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes, private SyntheticDepositAdmission $admission) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes, private SyntheticDepositAdmission $admission,
+        private PartyNotices $notices) {}
 
     /**
      * @param  array{currency: string, amount: string}  $amount
@@ -164,6 +167,8 @@ final class EloquentWalletStore implements WalletStore
             $credited = $disposition === 'applied' && $outcome->credits();
             if ($credited) {
                 $this->postCredit($intent, $record);
+                $this->notices->record($wallet->party_id, PartyNoticeKind::DepositReceived,
+                    ['amount' => $intent->credited, 'currency' => $intent->currency], 'wallet-deposit:'.$intent->id);
             }
             if ($disposition === 'applied') {
                 $this->changes->record(ChangeScope::party($wallet->party_id), 'wallet', $wallet->id);

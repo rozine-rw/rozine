@@ -56,6 +56,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\Contracts\InvestorDirectoryStore;
 use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\Contracts\StaffDirectoryStore;
 use App\Application\Operations\Contracts\ActivityTrailStore;
 use App\Application\Operations\Contracts\CanonicalJson;
@@ -135,6 +136,7 @@ use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Identity\EloquentInvestorDirectoryStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationReviewStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationStore;
+use App\Infrastructure\Identity\EloquentPartyNotices;
 use App\Infrastructure\Identity\EloquentStaffDirectoryStore;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Operations\EloquentActivityTrailStore;
@@ -254,6 +256,7 @@ class AppServiceProvider extends ServiceProvider
         // No current-authority admission source exists yet: reserve and confirm fail closed (#96 5968131139).
         $this->app->bind(PrimaryAdmission::class, CurrentPrimaryAdmission::class);
         $this->app->bind(RiskAcknowledgements::class, EloquentRiskAcknowledgements::class);
+        $this->app->bind(PartyNotices::class, EloquentPartyNotices::class);
         $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);
         $this->app->bind(PrimaryCommitmentView::class, EloquentPrimaryCommitmentView::class);

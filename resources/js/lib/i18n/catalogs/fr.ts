@@ -4596,6 +4596,25 @@ const fr: Catalog = {
     'investor.checkout.c3.indicative':
         "Indicatif jusqu'à la réservation : les droits exacts de vos titres sont fixés à la réservation.",
     'investor.checkout.c3.reserve': 'Réserver · {amount}',
+    'investor.notices.title': 'Notifications',
+    'investor.notices.unread_count': '{count} non lues',
+    'investor.notices.unread': 'Non lue',
+    'investor.notices.mark_all': 'Tout marquer comme lu',
+    'investor.notices.close': 'Fermer les notifications',
+    'investor.notices.loading': 'Chargement des notifications',
+    'investor.notices.failed': "Vos notifications n'ont pas pu être chargées.",
+    'investor.notices.retry': 'Réessayer',
+    'investor.notices.empty': 'Aucune notification pour le moment.',
+    'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
+    'investor.notices.wallet.deposit_received.body':
+        '{amount} est maintenant dans votre portefeuille.',
+    'investor.notices.verification.approved.title': 'Vous êtes vérifié',
+    'investor.notices.verification.approved.body':
+        'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',
+    'investor.notices.verification.rejected.title':
+        "Vos informations d'identité doivent être revues",
+    'investor.notices.verification.rejected.body':
+        "La conformité n'a pas pu vérifier vos informations : {reason}",
     'investor.checkout.risks.title': 'Avant votre premier investissement',
     'investor.checkout.risks.lead':
         'Cochez chaque déclaration pour confirmer que vous la comprenez.',

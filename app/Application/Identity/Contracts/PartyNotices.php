@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Identity\Contracts;
+
+use App\Domain\Identity\PartyNoticeKind;
+
+/**
+ * A Party's in-app notices and their delivery receipts (BRS v2.0 NTF-R01). A notice is recorded in
+ * the same transaction as the event it reports, so no notice exists without its event and no event
+ * key produces two notices. An e-mailed kind is sent after commit, leaving a receipt either way.
+ *
+ * @phpstan-type Notice array{id: string, kind: string, facts: array<string, mixed>, created_at: string, read: bool}
+ * @phpstan-type Inbox array{unread: int, notices: list<Notice>}
+ */
+interface PartyNotices
+{
+    /**
+     * Records one notice for an event inside the caller's transaction. Replaying an event key
+     * records nothing new.
+     *
+     * @param  array<string, string>  $facts
+     */
+    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey): void;
+
+    /**
+     * The account's own Party's newest notices and how many are unread; an account with no Party
+     * has none.
+     *
+     * @return Inbox
+     */
+    public function inbox(int $userId, int $limit): array;
+
+    /** How many of the account's Party's notices are unread. */
+    public function unread(int $userId): int;
+
+    /**
+     * Marks one of the account's Party's notices read, or all of them when no notice is named, and
+     * returns how many were newly read. A notice that is not theirs is not found.
+     */
+    public function markRead(int $userId, ?string $noticeId): int;
+}

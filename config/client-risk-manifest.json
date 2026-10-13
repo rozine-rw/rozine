@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "087516ae4b0a7f3660acf32d1e8049393c7e84f2447b2d81b91b650da5524d9f",
-    "coverageSetSha256": "b82fda5c818fd932f23e4f2b8f6523ff856ba5fbd7f67ce4c4471cc9a5d5f451",
+    "sourceManifestSha256": "ea4d1b858c10463635e8d6eaf55cbbb7bb81ee9ac81f016a586102b0d6f63f13",
+    "coverageSetSha256": "b2c3320611aff56a632f02822dc16d00295bb91e30b781c70f3dedc0c84237a3",
     "thresholds": {
         "critical": {
             "global": {
@@ -231,6 +231,7 @@
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/market/filter-pill.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
+        "resources/js/components/investor/notices/notices-panel.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
         "resources/js/components/investor/portfolio/holding-card.tsx",
         "resources/js/components/investor/portfolio/holding-detail.tsx",

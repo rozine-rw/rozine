@@ -3,6 +3,7 @@ import dealsC9d3dc from './deals'
 import verificationAf8c0f from './verification'
 import wallet0fdd46 from './wallet'
 import risks from './risks'
+import notices5868c6 from './notices'
 import primary from './primary'
 import commitments from './commitments'
 /**
@@ -833,6 +834,87 @@ walletForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 wallet.form = walletForm
 
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+export const notices = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notices.url(options),
+    method: 'get',
+})
+
+notices.definition = {
+    methods: ["get","head"],
+    url: '/investor/notices',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+notices.url = (options?: RouteQueryOptions) => {
+    return notices.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+notices.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+notices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: notices.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+const noticesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+noticesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorNoticesController::notices
+* @see app/Http/Controllers/InvestorNoticesController.php:17
+* @route '/investor/notices'
+*/
+noticesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+notices.form = noticesForm
+
 const investor = {
     home: Object.assign(home, home),
     deals: Object.assign(deals, dealsC9d3dc),
@@ -845,6 +927,7 @@ const investor = {
     checkout: Object.assign(checkout, checkout),
     wallet: Object.assign(wallet, wallet0fdd46),
     risks: Object.assign(risks, risks),
+    notices: Object.assign(notices, notices5868c6),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),
 }

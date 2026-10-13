@@ -113,7 +113,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/investor/notifications",
+                "url": "/investor/notices",
                 "method": "get"
             },
             "launcher": {

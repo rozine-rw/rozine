@@ -1,0 +1,49 @@
+{
+    "unread": 2,
+    "notices": [
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9d",
+            "kind": "wallet.deposit_received",
+            "facts": { "amount": "250000", "currency": "RWF" },
+            "created_at": "2026-10-13T08:42:00+02:00",
+            "read": false,
+            "link": { "url": "/preview/investor-wallet", "method": "get" },
+            "read_action": {
+                "url": "/preview/investor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9c",
+            "kind": "verification.approved",
+            "facts": [],
+            "created_at": "2026-10-12T16:05:00+02:00",
+            "read": false,
+            "link": { "url": "/preview/investor-deals", "method": "get" },
+            "read_action": {
+                "url": "/preview/investor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9b",
+            "kind": "verification.rejected",
+            "facts": {
+                "reason": "The photo of your ID is blurred. Upload a sharper photo."
+            },
+            "created_at": "2026-10-10T11:20:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-verification",
+                "method": "get"
+            },
+            "read_action": null
+        }
+    ],
+    "actions": {
+        "read_all": {
+            "url": "/preview/investor-notices/read",
+            "method": "post"
+        }
+    }
+}

@@ -59,8 +59,8 @@ describe('Deals on a phone', () => {
             screen.getByRole('link', { name: 'Wallet balance' }),
         ).toHaveTextContent('RWF 1,253,485+RWF 912K · 3 Oct');
         expect(
-            screen.getByRole('link', { name: 'Notifications, 2 unread' }),
-        ).toHaveAttribute('href', '/preview/investor-deals');
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        ).toHaveAttribute('aria-haspopup', 'dialog');
 
         const sorts = screen.getByRole('navigation', { name: 'Sort deals' });
 
@@ -308,7 +308,7 @@ describe('Deals on a phone', () => {
             screen.queryByRole('link', { name: 'Wallet balance' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications' }),
+            screen.getByRole('button', { name: 'Notifications' }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Invest in GreenLeaf Agro' }),
@@ -950,7 +950,7 @@ describe('Deals in C3 states', () => {
         const { unmount: leavePhone } = render(<InvestorDeals {...home} />);
 
         expect(
-            screen.queryByRole('link', { name: /^Notifications/u }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
         leavePhone();
 
@@ -967,7 +967,7 @@ describe('Deals in C3 states', () => {
         expect(await screen.findByTestId('head')).toBeInTheDocument();
         expect(screen.queryByText(rationale)).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /^Notifications/u }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
     });
 

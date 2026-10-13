@@ -53,7 +53,7 @@ class InvestorDealsResource extends JsonResource
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'],
             'server_time' => now()->toIso8601String(), 'allowed_actions' => [], 'gate' => self::gate($request, $data),
-            'wallet' => $funded ? ['available' => $data['available'], 'next_payout' => null] : null, 'unread_notifications' => 0,
+            'wallet' => $funded ? ['available' => $data['available'], 'next_payout' => null] : null, 'unread_notifications' => $data['unread_notifications'],
             'sorts' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $data['sort'], 'link' => $filter($key, $data['industry'])],
                 ['all', 'top_interest', 'top_rated']),
             'industries' => array_map(fn (array $row): array => [...$row, 'active' => $row['industry'] === $data['industry'],
@@ -62,7 +62,7 @@ class InvestorDealsResource extends JsonResource
             'focus' => $focus === null ? null : self::withLink($request, $focus), 'quote' => null,
             'links' => ['deals' => $deals(), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
-                'notifications' => null, 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
+                'notifications' => self::link($request, 'investor.notices'), 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
                 'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null,
                 'checkout' => $funded && ! $data['restricted'] && $focus !== null ? self::link($request, 'investor.checkout', ['campaign' => (string) $focus['campaign_id']]) : null]];
     }

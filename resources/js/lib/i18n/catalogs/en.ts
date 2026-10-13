@@ -4384,6 +4384,25 @@ const en = {
     'investor.checkout.c3.indicative':
         'Indicative until you reserve: the exact rights of your notes are fixed when they are reserved.',
     'investor.checkout.c3.reserve': 'Reserve · {amount}',
+    'investor.notices.title': 'Notifications',
+    'investor.notices.unread_count': '{count} unread',
+    'investor.notices.unread': 'Unread',
+    'investor.notices.mark_all': 'Mark all read',
+    'investor.notices.close': 'Close notifications',
+    'investor.notices.loading': 'Loading notifications',
+    'investor.notices.failed': 'Your notifications could not be loaded.',
+    'investor.notices.retry': 'Try again',
+    'investor.notices.empty': 'No notifications yet.',
+    'investor.notices.wallet.deposit_received.title': 'Deposit received',
+    'investor.notices.wallet.deposit_received.body':
+        '{amount} is now in your wallet.',
+    'investor.notices.verification.approved.title': 'You are verified',
+    'investor.notices.verification.approved.body':
+        'Your identity is verified and your wallet is ready to invest.',
+    'investor.notices.verification.rejected.title':
+        'Your identity details need another look',
+    'investor.notices.verification.rejected.body':
+        'Compliance could not verify your details: {reason}',
     'investor.checkout.risks.title': 'Before your first investment',
     'investor.checkout.risks.lead':
         'Tick each statement to confirm you understand it.',

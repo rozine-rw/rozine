@@ -4564,6 +4564,26 @@ const rw: Catalog = {
     'investor.checkout.c3.indicative':
         "Ni ikigereranyo kugeza ufashe: uburenganzira nyabwo bw'impapuro zawe bushyirwaho igihe zifashwe.",
     'investor.checkout.c3.reserve': 'Fata · {amount}',
+    'investor.notices.title': 'Imenyesha',
+    'investor.notices.unread_count': '{count} bitarasomwa',
+    'investor.notices.unread': 'Bitarasomwa',
+    'investor.notices.mark_all': 'Byose byasomwe',
+    'investor.notices.close': 'Funga imenyesha',
+    'investor.notices.loading': 'Imenyesha riri gufunguka',
+    'investor.notices.failed': 'Imenyesha ryawe ntiryashoboye gufunguka.',
+    'investor.notices.retry': 'Ongera ugerageze',
+    'investor.notices.empty': 'Nta menyesha rirahari.',
+    'investor.notices.wallet.deposit_received.title':
+        'Amafaranga yashyizwe kuri konti',
+    'investor.notices.wallet.deposit_received.body':
+        '{amount} ubu ari mu gikapu cyawe.',
+    'investor.notices.verification.approved.title': 'Wemejwe',
+    'investor.notices.verification.approved.body':
+        'Umwirondoro wawe wemejwe kandi igikapu cyawe cyiteguye gushora imari.',
+    'investor.notices.verification.rejected.title':
+        'Amakuru y’umwirondoro wawe akeneye kongera kurebwa',
+    'investor.notices.verification.rejected.body':
+        'Ishami rishinzwe kubahiriza amategeko ntiryashoboye kwemeza amakuru yawe: {reason}',
     'investor.checkout.risks.title': "Mbere y'ishoramari ryawe rya mbere",
     'investor.checkout.risks.lead':
         'Shyira akamenyetso kuri buri nteruro kugira ngo wemeze ko uyumva.',

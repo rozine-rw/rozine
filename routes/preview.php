@@ -55,6 +55,16 @@ Route::get('preview/mail/{template}', function (string $template): MailMessage {
     return $previews[$template]()->toMail($recipient);
 })->where('template', '[a-z0-9.-]+');
 
+/*
+| The Investor bell's notices, as the live `investor.notices` JSON answers them, and a read that
+| changes nothing, so the panel can be reviewed from any Deals preview.
+*/
+
+Route::get('preview/investor-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/investor-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/investor-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
 Route::get('preview/{fixture}', function (string $fixture) {
     $path = resource_path("fixtures/ui/{$fixture}.json");
 

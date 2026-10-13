@@ -1329,6 +1329,30 @@ export type InvestorRiskStatements = {
     action: RouteAction | null;
 };
 
+/**
+ * One in-app notice (BRS v2.0 NTF-R01), recorded from one event. The client words it from its
+ * catalogs by `kind`; `link` opens the screen that already holds the record, and `read_action`
+ * marks it read (null once read).
+ */
+export type InvestorNotice = {
+    id: string;
+    created_at: string;
+    read: boolean;
+    link: RouteLink;
+    read_action: RouteAction | null;
+} & (
+    | { kind: 'wallet.deposit_received'; facts: Money }
+    | { kind: 'verification.approved'; facts: never[] }
+    | { kind: 'verification.rejected'; facts: { reason: string } }
+);
+
+/** The account's newest notices behind the bell, with the unread count. */
+export type InvestorNotices = {
+    unread: number;
+    notices: InvestorNotice[];
+    actions: { read_all: RouteAction | null };
+};
+
 export type C3InvestorCheckoutProps = InvestorPageContract & {
     deal: Pick<
         C3DealCard,

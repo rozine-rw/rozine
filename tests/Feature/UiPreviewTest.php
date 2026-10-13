@@ -339,8 +339,8 @@ test('preview routes are registered for local and testing', function (string $en
     $routes = Route::getRoutes()->getRoutes();
 
     expect(array_map(fn ($route): string => $route->uri(), $routes))
-        ->toBe(['preview/mail', 'preview/mail/{template}', 'preview/{fixture}'])
-        ->and(array_map(fn ($route): ?string => $route->getName(), $routes))->toBe([null, null, null]);
+        ->toBe(['preview/mail', 'preview/mail/{template}', 'preview/investor-notices', 'preview/investor-notices/read', 'preview/{fixture}'])
+        ->and(array_map(fn ($route): ?string => $route->getName(), $routes))->toBe([null, null, null, null, null]);
 })->with(['local', 'testing']);
 
 test('preview routes do not exist in production, staging or demo', function (string $environment) {
@@ -351,3 +351,10 @@ test('preview routes do not exist in production, staging or demo', function (str
 
     expect(Route::getRoutes()->getRoutes())->toBeEmpty();
 })->with(['production', 'staging', 'uat', 'demo']);
+
+test('the Investor bell previews its notices and a read that changes nothing', function () {
+    $this->get('/preview/investor-notices')->assertOk()
+        ->assertJsonPath('data.unread', 2)->assertJsonCount(3, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'wallet.deposit_received');
+    $this->post('/preview/investor-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
+});

@@ -251,6 +251,10 @@ it('has concrete targets for the command outcome boundary', function (): void {
     expect(class_exists(CommandOperation::class))->toBeTrue();
 })->group('arch');
 
+arch('party notices and their receipts are only accessed by their adapter')
+    ->expect(['App\Models\PartyNotice', 'App\Models\PartyNoticeDelivery'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Identity\EloquentPartyNotices', 'App\Models']);
+
 arch('command outcomes are only accessed by the journal adapter')
     ->expect('App\Models\CommandOperation')
     ->toOnlyBeUsedIn(['App\Infrastructure\Operations', 'App\Models', 'Database\Factories']);

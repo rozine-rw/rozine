@@ -53,7 +53,7 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
     $months = $this->evidence['period']['months'];
 
     expect($props)->toMatchArray(['contract_version' => 'investor-primary-v1', 'identity_context_revision' => 1, 'allowed_actions' => [],
-        'gate' => ['status' => 'eligible'], 'unread_notifications' => 0, 'quote' => null])
+        'gate' => ['status' => 'eligible'], 'unread_notifications' => 1, 'quote' => null])
         ->and($props['wallet'])->toBe(['available' => ['currency' => 'RWF', 'amount' => '10000000'], 'next_payout' => null])
         ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated'])
         ->and($props['sorts'][0])->toBe(['key' => 'all', 'active' => true, 'link' => ['url' => '/investor/deals', 'method' => 'get']])
@@ -61,7 +61,7 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])
         ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'],
-            'notifications' => null, 'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get'],
+            'notifications' => ['url' => '/investor/notices', 'method' => 'get'], 'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get'],
             'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get']])
         ->and($props['deals'])->toHaveCount(1)
