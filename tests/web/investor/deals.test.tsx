@@ -103,7 +103,7 @@ describe('Deals on a phone', () => {
         expect(bar).toHaveTextContent('of 1,840 left');
         expect(bar).toHaveTextContent('RWF5,000');
         expect(bar).toHaveTextContent('13.5%');
-        expect(bar).toHaveTextContent('RWF5,607');
+        expect(bar).toHaveTextContent('RWF5,574');
         expect(
             within(bar).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
@@ -512,9 +512,9 @@ describe('Deal detail on a phone', () => {
         expect(card).toHaveTextContent('RWF 5,000 × 1 note');
         expect(card).toHaveTextContent('+RWF 675');
         expect(card).toHaveTextContent(
-            'Fee on earnings · 10.0% (Standard)RWF 68',
+            'Fee on earnings · 15.0% (Standard)RWF 101',
         );
-        expect(card).toHaveTextContent('RWF 5,607');
+        expect(card).toHaveTextContent('RWF 5,574');
         expect(card).not.toHaveTextContent('1%');
         expect(
             within(card).getByRole('button', { name: 'One note fewer' }),

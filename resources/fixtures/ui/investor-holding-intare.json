@@ -45,11 +45,11 @@
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "1056875"
+                "amount": "1050936"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "704586"
+                "amount": "700626"
             },
             "next_payment": {
                 "amount": {
@@ -342,7 +342,7 @@
                     },
                     "earnings_fee": {
                         "tier": "standard",
-                        "rate_bps": 1000,
+                        "rate_bps": 1500,
                         "basis": "return_only",
                         "policy_version": "synthetic-plus-policy-0"
                     },

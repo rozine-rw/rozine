@@ -100,9 +100,9 @@ describe('Checkout: the indicative step', () => {
         const sheet = screen.getByRole('dialog', { name: 'Checkout' });
 
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 6.5% (Silver)RWF 44',
+            'Fee on earnings · 10.0% (Silver)RWF 68',
         );
-        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,631');
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
         expect(sheet).toHaveTextContent(
             'Charged on your return only, never on your principal. This rate is fixed for this note.',
         );
@@ -128,9 +128,9 @@ describe('Checkout: the indicative step', () => {
         );
         expect(within(sheet).getByText('+RWF 675')).toBeInTheDocument();
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 10.0% (Standard)RWF 68',
+            'Fee on earnings · 15.0% (Standard)RWF 101',
         );
-        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,574');
         expect(
             within(sheet).getByText(
                 'Charged on your return only, never on your principal. This rate is fixed for this note.',

@@ -107,11 +107,11 @@
                 "term_months": 6,
                 "payout_fee": {
                     "currency": "RWF",
-                    "amount": "405"
+                    "amount": "606"
                 },
                 "earnings_fee": {
                     "tier": "standard",
-                    "rate_bps": 1000,
+                    "rate_bps": 1500,
                     "basis": "return_only",
                     "policy_version": "synthetic-plus-policy-0"
                 },

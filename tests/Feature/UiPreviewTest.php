@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Primary\EarningsFeeBand;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Route;
@@ -175,8 +176,8 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
 });
 
 test('every investor quote and term carries the locked Plus fee on earnings, on the return only', function () {
-    /** Robert's #99 bands in basis points, keyed by tier (provisional wire shape, #96). */
-    $bands = ['standard' => 1000, 'bronze' => 800, 'silver' => 650, 'gold' => 550, 'platinum' => 500, 'diamond' => 400];
+    /** The BRS v2.0 INV-R04 bands in basis points, keyed by tier, exactly as the live checkout locks them. */
+    $bands = EarningsFeeBand::RATES;
     $seen = 0;
 
     foreach (c3PreviewFixtures() as $name => $fixture) {
@@ -202,7 +203,7 @@ test('every investor quote and term carries the locked Plus fee on earnings, on 
     $silver = c3PreviewFixtures()['investor-checkout-plus-silver']['props']['quote'];
 
     expect($silver['earnings_fee']['tier'])->toBe('silver')
-        ->and($silver['earnings_fee']['rate_bps'])->toBe(650);
+        ->and($silver['earnings_fee']['rate_bps'])->toBe(1000);
 });
 
 test('C4 fixtures cover every surface in the scaffold, each with a live-minimal shape', function () {

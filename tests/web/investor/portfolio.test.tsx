@@ -315,7 +315,7 @@ describe('Holding detail', () => {
         expect(screen.getByText('800,000')).toBeInTheDocument();
         expect(screen.getByText('108,000')).toBeInTheDocument();
         expect(screen.getByText('13.5% yield')).toBeInTheDocument();
-        expect(screen.getByText('897,200')).toBeInTheDocument();
+        expect(screen.getByText('891,800')).toBeInTheDocument();
         expect(screen.getByText('5/6 payments')).toBeInTheDocument();
         expect(screen.getAllByText('RWF 151,333')).toHaveLength(2);
         expect(screen.getByText('5/5')).toBeInTheDocument();
@@ -486,7 +486,7 @@ describe('Commitments and issue (C3)', () => {
         );
         expect(record).toHaveTextContent('Effective date (Kigali)21 Sept 2026');
         expect(record).toHaveTextContent('RZ-HLD-2201');
-        expect(record).toHaveTextContent('Fee on earnings10.0% (Standard)');
+        expect(record).toHaveTextContent('Fee on earnings15.0% (Standard)');
 
         const schedule = within(record).getByRole('table');
 
