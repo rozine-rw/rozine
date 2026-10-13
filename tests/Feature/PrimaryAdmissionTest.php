@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Primary\PrimaryDisclosure;
 use App\Domain\Primary\RiskStatements;
-use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Models\InvestorRiskAcknowledgement;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
@@ -90,7 +90,7 @@ it('reserves and confirms at the band of the first RWF 1M, on the return only', 
     $confirmed = ($this->confirm)($held['reservation_id'])->assertOk()->assertJsonPath('code', 'RESERVATION_CONFIRMED')->json('data.receipt');
 
     expect($confirmed['terms']['earnings_fee'])->toEqual(['tier' => 'standard', 'rate_bps' => 1500, 'basis' => 'return_only', 'policy_version' => 'brs-2.0-inv-r04'])
-        ->and($confirmed['terms']['disclosure_version'])->toBe(CurrentPrimaryAdmission::DISCLOSURE_VERSION)
+        ->and($confirmed['terms']['disclosure_version'])->toBe(PrimaryDisclosure::VERSION)
         ->and($confirmed['terms']['rate_pct'])->toBe('11.1')->and($confirmed['amount'])->toBe('10000')
         ->and(PrimaryCommitment::query()->count())->toBe(1);
 });

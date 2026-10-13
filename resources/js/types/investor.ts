@@ -1316,6 +1316,19 @@ export type Commitment = {
     link: RouteLink;
 };
 
+/**
+ * The five risk statements an Investor ticks before a first investment (BRS v2.0 KYC-R05). The
+ * server's exact wording is shown, because the acknowledgement binds its version and digest.
+ * `action` is null once they are acknowledged.
+ */
+export type InvestorRiskStatements = {
+    version: string;
+    statements_sha256: string;
+    statements: { key: string; text: string }[];
+    acknowledged: boolean;
+    action: RouteAction | null;
+};
+
 export type C3InvestorCheckoutProps = InvestorPageContract & {
     deal: Pick<
         C3DealCard,
@@ -1338,6 +1351,8 @@ export type C3InvestorCheckoutProps = InvestorPageContract & {
     reservation: Reservation | null;
     commitment: Commitment | null;
     refusal: { code: string; status: number } | null;
+    /** Null before identity verification; absent from the preview fixtures. */
+    risks?: InvestorRiskStatements | null;
     home: C3InvestorDealsProps | null;
     /**
      * The app links travel with the page, not only with `home`, so the shell keeps its navigation

@@ -4596,6 +4596,12 @@ const fr: Catalog = {
     'investor.checkout.c3.indicative':
         "Indicatif jusqu'à la réservation : les droits exacts de vos titres sont fixés à la réservation.",
     'investor.checkout.c3.reserve': 'Réserver · {amount}',
+    'investor.checkout.risks.title': 'Avant votre premier investissement',
+    'investor.checkout.risks.lead':
+        'Cochez chaque déclaration pour confirmer que vous la comprenez.',
+    'investor.checkout.risks.accept': 'Je comprends ces risques',
+    'investor.checkout.risks.failed':
+        "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':

@@ -10,8 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `C3InvestorDealsProps` (investor-primary-v1) for both transports, or `C3InvestorDealProps` when
  * the Resource is for one deal. It shapes already authorized facts and adds real routes only.
- * There is no quote and no checkout until admission exists, and a destination with no live
- * route yet is null. Portfolio and Profile are web pages only, so the API carries their links as
+ * There is no quote here; the checkout link opens the live checkout for the focused deal when
+ * the viewer may invest, and a destination with no live route yet is null. Portfolio and Profile are web pages only, so the API carries their links as
  * null. A person still being verified gets the deck behind the verification gate, with no wallet
  * and no wallet links.
  */
@@ -35,7 +35,7 @@ class InvestorDealsResource extends JsonResource
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $home['identity_context_revision'],
             'server_time' => $home['server_time'], 'allowed_actions' => [], 'deal' => $home['focus'], 'gate' => $home['gate'], 'quote' => null,
-            'home' => $home, 'links' => ['back' => self::link($request, 'investor.deals'), 'checkout' => null]];
+            'home' => $home, 'links' => ['back' => self::link($request, 'investor.deals'), 'checkout' => $home['links']['checkout']]];
     }
 
     /**
@@ -63,7 +63,8 @@ class InvestorDealsResource extends JsonResource
             'links' => ['deals' => $deals(), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
                 'notifications' => null, 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
-                'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null, 'checkout' => null]];
+                'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null,
+                'checkout' => $funded && ! $data['restricted'] && $focus !== null ? self::link($request, 'investor.checkout', ['campaign' => (string) $focus['campaign_id']]) : null]];
     }
 
     /**

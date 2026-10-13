@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 const index0282307d754d45442065ef1c088d1c84 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index0282307d754d45442065ef1c088d1c84.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 index0282307d754d45442065ef1c088d1c84.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index0282307d754d45442065ef1c088d1c84.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 index0282307d754d45442065ef1c088d1c84.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index0282307d754d45442065ef1c088d1c84.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 index0282307d754d45442065ef1c088d1c84.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index0282307d754d45442065ef1c088d1c84.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 const index0282307d754d45442065ef1c088d1c84Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const index0282307d754d45442065ef1c088d1c84Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 index0282307d754d45442065ef1c088d1c84Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ index0282307d754d45442065ef1c088d1c84Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/api/v1/investor/deals'
 */
 index0282307d754d45442065ef1c088d1c84Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ index0282307d754d45442065ef1c088d1c84Form.head = (options?: RouteQueryOptions): 
 index0282307d754d45442065ef1c088d1c84.form = index0282307d754d45442065ef1c088d1c84Form
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 const index242d64da7608c8eb584ec3751fc350b2 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index242d64da7608c8eb584ec3751fc350b2.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 index242d64da7608c8eb584ec3751fc350b2.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index242d64da7608c8eb584ec3751fc350b2.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 index242d64da7608c8eb584ec3751fc350b2.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index242d64da7608c8eb584ec3751fc350b2.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 index242d64da7608c8eb584ec3751fc350b2.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index242d64da7608c8eb584ec3751fc350b2.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 const index242d64da7608c8eb584ec3751fc350b2Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index242d64da7608c8eb584ec3751fc350b2Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 index242d64da7608c8eb584ec3751fc350b2Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index242d64da7608c8eb584ec3751fc350b2Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::index
-* @see app/Http/Controllers/InvestorDealsController.php:16
+* @see app/Http/Controllers/InvestorDealsController.php:18
 * @route '/investor/deals'
 */
 index242d64da7608c8eb584ec3751fc350b2Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 const show01e713cee3d6bc5b73e3588151b5355a = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -187,7 +187,7 @@ show01e713cee3d6bc5b73e3588151b5355a.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 show01e713cee3d6bc5b73e3588151b5355a.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ show01e713cee3d6bc5b73e3588151b5355a.url = (args: { campaign: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 show01e713cee3d6bc5b73e3588151b5355a.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -224,7 +224,7 @@ show01e713cee3d6bc5b73e3588151b5355a.get = (args: { campaign: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 show01e713cee3d6bc5b73e3588151b5355a.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -234,7 +234,7 @@ show01e713cee3d6bc5b73e3588151b5355a.head = (args: { campaign: string | number }
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 const show01e713cee3d6bc5b73e3588151b5355aForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -244,7 +244,7 @@ const show01e713cee3d6bc5b73e3588151b5355aForm = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 show01e713cee3d6bc5b73e3588151b5355aForm.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -254,7 +254,7 @@ show01e713cee3d6bc5b73e3588151b5355aForm.get = (args: { campaign: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/api/v1/investor/deals/{campaign}'
 */
 show01e713cee3d6bc5b73e3588151b5355aForm.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -270,7 +270,7 @@ show01e713cee3d6bc5b73e3588151b5355aForm.head = (args: { campaign: string | numb
 show01e713cee3d6bc5b73e3588151b5355a.form = show01e713cee3d6bc5b73e3588151b5355aForm
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 const showc3def7767f05a5b3f7291057dd7d7cad = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -285,7 +285,7 @@ showc3def7767f05a5b3f7291057dd7d7cad.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showc3def7767f05a5b3f7291057dd7d7cad.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -312,7 +312,7 @@ showc3def7767f05a5b3f7291057dd7d7cad.url = (args: { campaign: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showc3def7767f05a5b3f7291057dd7d7cad.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -322,7 +322,7 @@ showc3def7767f05a5b3f7291057dd7d7cad.get = (args: { campaign: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showc3def7767f05a5b3f7291057dd7d7cad.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -332,7 +332,7 @@ showc3def7767f05a5b3f7291057dd7d7cad.head = (args: { campaign: string | number }
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 const showc3def7767f05a5b3f7291057dd7d7cadForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -342,7 +342,7 @@ const showc3def7767f05a5b3f7291057dd7d7cadForm = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showc3def7767f05a5b3f7291057dd7d7cadForm.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -352,7 +352,7 @@ showc3def7767f05a5b3f7291057dd7d7cadForm.get = (args: { campaign: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showc3def7767f05a5b3f7291057dd7d7cadForm.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -377,6 +377,213 @@ export const show = {
     '/investor/deals/{campaign}': showc3def7767f05a5b3f7291057dd7d7cad,
 }
 
-const InvestorDealsController = { index, show }
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+const checkoutfed618ca5d43a84f296cc5eab9b84569 = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, options),
+    method: 'get',
+})
+
+checkoutfed618ca5d43a84f296cc5eab9b84569.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/investor/deals/{campaign}/checkout',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+checkoutfed618ca5d43a84f296cc5eab9b84569.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return checkoutfed618ca5d43a84f296cc5eab9b84569.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+checkoutfed618ca5d43a84f296cc5eab9b84569.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+checkoutfed618ca5d43a84f296cc5eab9b84569.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+const checkoutfed618ca5d43a84f296cc5eab9b84569Form = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+checkoutfed618ca5d43a84f296cc5eab9b84569Form.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/api/v1/investor/deals/{campaign}/checkout'
+*/
+checkoutfed618ca5d43a84f296cc5eab9b84569Form.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkoutfed618ca5d43a84f296cc5eab9b84569.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+checkoutfed618ca5d43a84f296cc5eab9b84569.form = checkoutfed618ca5d43a84f296cc5eab9b84569Form
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+const checkout26104bc63bcc436ba389bf0897c587f7 = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkout26104bc63bcc436ba389bf0897c587f7.url(args, options),
+    method: 'get',
+})
+
+checkout26104bc63bcc436ba389bf0897c587f7.definition = {
+    methods: ["get","head"],
+    url: '/investor/deals/{campaign}/checkout',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+checkout26104bc63bcc436ba389bf0897c587f7.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return checkout26104bc63bcc436ba389bf0897c587f7.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+checkout26104bc63bcc436ba389bf0897c587f7.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: checkout26104bc63bcc436ba389bf0897c587f7.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+checkout26104bc63bcc436ba389bf0897c587f7.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: checkout26104bc63bcc436ba389bf0897c587f7.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+const checkout26104bc63bcc436ba389bf0897c587f7Form = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkout26104bc63bcc436ba389bf0897c587f7.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+checkout26104bc63bcc436ba389bf0897c587f7Form.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkout26104bc63bcc436ba389bf0897c587f7.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorDealsController::checkout
+* @see app/Http/Controllers/InvestorDealsController.php:35
+* @route '/investor/deals/{campaign}/checkout'
+*/
+checkout26104bc63bcc436ba389bf0897c587f7Form.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: checkout26104bc63bcc436ba389bf0897c587f7.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+checkout26104bc63bcc436ba389bf0897c587f7.form = checkout26104bc63bcc436ba389bf0897c587f7Form
+
+/**
+* Multiple routes resolve to \App\Http\Controllers\InvestorDealsController::checkout, so this export is a
+* dictionary keyed by URI rather than a callable. Call a specific route with `checkout['<uri>'](...)`,
+* or import the route by name from your generated `routes/` directory.
+*/
+export const checkout = {
+    '/api/v1/investor/deals/{campaign}/checkout': checkoutfed618ca5d43a84f296cc5eab9b84569,
+    '/investor/deals/{campaign}/checkout': checkout26104bc63bcc436ba389bf0897c587f7,
+}
+
+const InvestorDealsController = { index, show, checkout }
 
 export default InvestorDealsController

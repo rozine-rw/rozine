@@ -4564,6 +4564,12 @@ const rw: Catalog = {
     'investor.checkout.c3.indicative':
         "Ni ikigereranyo kugeza ufashe: uburenganzira nyabwo bw'impapuro zawe bushyirwaho igihe zifashwe.",
     'investor.checkout.c3.reserve': 'Fata · {amount}',
+    'investor.checkout.risks.title': "Mbere y'ishoramari ryawe rya mbere",
+    'investor.checkout.risks.lead':
+        'Shyira akamenyetso kuri buri nteruro kugira ngo wemeze ko uyumva.',
+    'investor.checkout.risks.accept': 'Ndumva izi ngaruka',
+    'investor.checkout.risks.failed':
+        'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
     'investor.checkout.c3.reserve_fine_print':
         "Gufata bibika impapuro n'amafaranga iminota 5 mu gihe wemeza.",

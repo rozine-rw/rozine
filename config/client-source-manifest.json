@@ -480,6 +480,7 @@
         "resources/js/components/investor/deals/deals-body.tsx",
         "resources/js/components/investor/deals/desk-card.tsx",
         "resources/js/components/investor/deals/invest-bar.tsx",
+        "resources/js/components/investor/deals/risk-statements.tsx",
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",

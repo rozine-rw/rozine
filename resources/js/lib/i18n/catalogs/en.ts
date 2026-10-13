@@ -4384,6 +4384,12 @@ const en = {
     'investor.checkout.c3.indicative':
         'Indicative until you reserve: the exact rights of your notes are fixed when they are reserved.',
     'investor.checkout.c3.reserve': 'Reserve · {amount}',
+    'investor.checkout.risks.title': 'Before your first investment',
+    'investor.checkout.risks.lead':
+        'Tick each statement to confirm you understand it.',
+    'investor.checkout.risks.accept': 'I understand these risks',
+    'investor.checkout.risks.failed':
+        "We couldn't record your answer. Try again.",
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':

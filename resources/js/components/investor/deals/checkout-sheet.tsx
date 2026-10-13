@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
 import { CapNote } from '@/components/investor/deals/invest-bar';
+import { RiskStatementsStep } from '@/components/investor/deals/risk-statements';
 import { useTimeLeft } from '@/components/investor/deals/time-left';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { CommitmentCard } from '@/components/investor/primary/commitment';
@@ -117,6 +118,7 @@ export function CheckoutSheet({
     reservation,
     commitment,
     refusal,
+    risks,
     links,
     actions,
     preview_outcome: preview,
@@ -544,6 +546,13 @@ export function CheckoutSheet({
             <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
                 <C3Notice command={command} />
                 <DealStatusNotice deal={deal} className="mb-[11px]" />
+                {risks?.action && (
+                    <RiskStatementsStep
+                        risks={risks}
+                        action={risks.action}
+                        identityRevision={identityRevision}
+                    />
+                )}
                 {dealLine}
                 <div className="mt-[11px] flex items-center justify-between">
                     <span className={LABEL}>

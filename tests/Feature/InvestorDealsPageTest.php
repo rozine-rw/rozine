@@ -45,7 +45,7 @@ beforeEach(function (): void {
     };
 });
 
-it('lists the live publication with allowlisted facts, live fill and no quote or checkout', function (): void {
+it('lists the live publication with allowlisted facts, live fill, no quote and a checkout for the focused deal', function (): void {
     $props = ($this->deals)()->assertOk()->assertInertia(fn ($page) => $page->component('investor/deals'))->viewData('page')['props'];
     $card = $props['deals'][0];
     $principal = $this->campaign->payload['principal'];
@@ -61,7 +61,8 @@ it('lists the live publication with allowlisted facts, live fill and no quote or
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])
         ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'],
-            'notifications' => null, 'checkout' => null, 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
+            'notifications' => null, 'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get'],
+            'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get']])
         ->and($props['deals'])->toHaveCount(1)
         ->and($card)->toMatchArray(['campaign_id' => $this->campaign->id, 'revision' => 1, 'name' => $this->evidence['business']['name'],
@@ -160,7 +161,8 @@ it('opens one deal with its deck, and refuses one that is unknown or closed', fu
     $this->actingAs($this->investor['user'])->get(route('investor.deals.show', $this->campaign->id))->assertOk()
         ->assertInertia(fn ($page) => $page->component('investor/deal')->where('deal.campaign_id', $this->campaign->id)
             ->where('quote', null)->where('gate', ['status' => 'eligible'])
-            ->where('links', ['back' => ['url' => '/investor/deals', 'method' => 'get'], 'checkout' => null])
+            ->where('links', ['back' => ['url' => '/investor/deals', 'method' => 'get'],
+                'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get']])
             ->where('home.focus.campaign_id', $this->campaign->id));
     $this->actingAs($this->investor['user'])->get(route('investor.deals.show', strtolower((string) Str::ulid())))->assertNotFound();
 

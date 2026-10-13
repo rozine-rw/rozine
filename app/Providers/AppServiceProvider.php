@@ -67,6 +67,7 @@ use App\Application\Primary\Contracts\CampaignCommitments;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\HoldingSource;
+use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Application\Primary\Contracts\PrimaryAdmission;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
@@ -152,6 +153,7 @@ use App\Infrastructure\Primary\EloquentPrimaryPurchaseIndex;
 use App\Infrastructure\Primary\EloquentPrimaryReservations;
 use App\Infrastructure\Primary\EloquentRiskAcknowledgements;
 use App\Infrastructure\Primary\RetainedHoldingSource;
+use App\Infrastructure\Primary\RetainedInvestorCheckoutFacts;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
@@ -252,6 +254,7 @@ class AppServiceProvider extends ServiceProvider
         // No current-authority admission source exists yet: reserve and confirm fail closed (#96 5968131139).
         $this->app->bind(PrimaryAdmission::class, CurrentPrimaryAdmission::class);
         $this->app->bind(RiskAcknowledgements::class, EloquentRiskAcknowledgements::class);
+        $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);
         $this->app->bind(PrimaryCommitmentView::class, EloquentPrimaryCommitmentView::class);
         $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);

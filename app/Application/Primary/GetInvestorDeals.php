@@ -11,7 +11,7 @@ use Brick\Math\BigDecimal;
 /**
  * The Deals deck for the authenticated Investor. Current Investor authority comes first, through
  * the wallet read; the deck then reads only the allowlisted publication projection. Nothing here
- * quotes, reserves or chooses terms: until admission exists there is no quote and no checkout.
+ * quotes, reserves or chooses terms; the live checkout (`GetInvestorCheckout`) does the quoting.
  *
  * A person whose identity is not yet verified may browse the same deck while it is checked, with
  * no wallet and the stage of their verification instead: verification comes before any investment

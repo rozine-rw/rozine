@@ -105,6 +105,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
     Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
+    Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
