@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 import dealsC9d3dc from './deals'
 import wallet0fdd46 from './wallet'
+import risks from './risks'
 import primary from './primary'
 import commitments from './commitments'
 import verificationAf8c0f from './verification'
@@ -250,6 +251,7 @@ verification.form = verificationForm
 const investor = {
     deals: Object.assign(deals, dealsC9d3dc),
     wallet: Object.assign(wallet, wallet0fdd46),
+    risks: Object.assign(risks, risks),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),
     verification: Object.assign(verification, verificationAf8c0f),

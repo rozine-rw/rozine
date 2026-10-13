@@ -2,6 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import dealsC9d3dc from './deals'
 import verificationAf8c0f from './verification'
 import wallet0fdd46 from './wallet'
+import risks from './risks'
 import primary from './primary'
 import commitments from './commitments'
 /**
@@ -743,6 +744,7 @@ const investor = {
     market: Object.assign(market, market),
     cart: Object.assign(cart, cart),
     wallet: Object.assign(wallet, wallet0fdd46),
+    risks: Object.assign(risks, risks),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),
 }

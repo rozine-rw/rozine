@@ -14,9 +14,9 @@ use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 /*
- * The Investor purchase transport (C3 v2 §2c, #96 5968131139): release and cancel run on real
- * data; reserve and confirm are routed but refused POLICY_INPUT_REQUIRED, with no effect, until a
- * current-authority admission source is bound.
+ * The Investor purchase transport (C3 v2 §2c, #96 5968131139) on real data. Reserve and confirm
+ * run under live admission, so an Investor who has not acknowledged the KYC-R05 risk statements is
+ * refused RISK_ACKNOWLEDGEMENT_REQUIRED with no effect (see PrimaryAdmissionTest for the bands).
  */
 
 beforeEach(function (): void {
@@ -37,22 +37,22 @@ function heldReservation(User $investor, BusinessCampaign $campaign): array
     return ['id' => $id, 'revision' => $version->revision, 'version' => $version];
 }
 
-it('refuses reserve POLICY_INPUT_REQUIRED and holds nothing until admission is bound', function (): void {
+it('refuses reserve RISK_ACKNOWLEDGEMENT_REQUIRED and holds nothing before the risks are acknowledged', function (): void {
     $request = (string) Str::uuid();
     $body = ['request_id' => $request, 'identity_context_revision' => 1, 'campaign_id' => $this->campaign->id, 'units' => '2',
         'expected_campaign_revision' => 1, 'quote_revision' => 1];
 
     $this->actingAs($this->investor['user'])
         ->postJson(route('investor.primary.reserve', ['campaign' => $this->campaign->id]), $body)
-        ->assertJsonPath('status', 'rejected')->assertJsonPath('code', 'POLICY_INPUT_REQUIRED');
+        ->assertJsonPath('status', 'rejected')->assertJsonPath('code', 'RISK_ACKNOWLEDGEMENT_REQUIRED');
 
     expect(PrimaryReservationRecord::query()->count())->toBe(0);
     $this->getJson(route('investor.primary.operations.show', ['campaign' => $this->campaign->id, 'request_id' => $request,
         'identity_context_revision' => 1, 'command' => 'primary.reserve']))
-        ->assertJsonPath('code', 'POLICY_INPUT_REQUIRED');
+        ->assertJsonPath('code', 'RISK_ACKNOWLEDGEMENT_REQUIRED');
 });
 
-it('refuses confirm POLICY_INPUT_REQUIRED and keeps the hold as it was', function (): void {
+it('refuses confirm RISK_ACKNOWLEDGEMENT_REQUIRED and keeps the hold as it was', function (): void {
     $held = heldReservation($this->investor['user'], $this->campaign);
 
     $this->actingAs($this->investor['user'])
@@ -60,7 +60,7 @@ it('refuses confirm POLICY_INPUT_REQUIRED and keeps the hold as it was', functio
             'identity_context_revision' => 1, 'reservation_id' => $held['id'], 'expected_reservation_revision' => $held['revision'],
             'disclosure_version' => $held['version']->payload['terms']['disclosure_version'],
             'disclosure_sha256' => $held['version']->payload['disclosure_sha256'], 'acknowledged' => true])
-        ->assertJsonPath('code', 'POLICY_INPUT_REQUIRED');
+        ->assertJsonPath('code', 'RISK_ACKNOWLEDGEMENT_REQUIRED');
 
     expect(PrimaryCommitment::query()->count())->toBe(0)
         ->and(PrimaryReservationVersion::query()->where('primary_reservation_id', $held['id'])->max('revision'))->toBe($held['revision']);

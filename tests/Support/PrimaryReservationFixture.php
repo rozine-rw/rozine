@@ -21,7 +21,6 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Brick\Math\BigInteger;
-use Brick\Math\RoundingMode;
 use Illuminate\Support\Str;
 
 /** Synthetic admission is deliberately explicit; it is not production eligibility or fee policy. */
@@ -76,13 +75,8 @@ final class PrimaryReservationFixture
     /** @param array<string, mixed> $campaign */
     public static function terms(UnitRights $rights, array $campaign): PrimaryTerms
     {
-        $fee = BigInteger::zero();
-        foreach ($rights->instalments as $instalment) {
-            $fee = $fee->plus(BigInteger::of($instalment['return'])->multipliedBy(1000)->dividedBy(10000, RoundingMode::HalfUp));
-        }
-
         return PrimaryTerms::disclosed($campaign['rate_pct'], $campaign['term_months'], $campaign['policy_version'], 'synthetic-disclosure-1',
-            ['tier' => 'standard', 'rate_bps' => 1000, 'basis' => 'return_only', 'policy_version' => 'synthetic-primary-fees-1'], (string) $fee, $rights);
+            ['tier' => 'standard', 'rate_bps' => 1500, 'basis' => 'return_only', 'policy_version' => 'synthetic-primary-fees-1'], PrimaryTerms::payoutFeeFor($rights, 1500), $rights);
     }
 
     /**
