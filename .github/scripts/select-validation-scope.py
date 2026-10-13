@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 FULL_JOBS = [
@@ -599,15 +599,41 @@ def workflow_history(repository):
             raise CoordinationRefusal("workflow_history_incomplete_or_changed")
         return seconds
 
+    def read_page(number):
+        return api(f"{endpoint}&page={number}", timeout=remaining())
+
     for attempt in range(3):
         first = api(endpoint, timeout=remaining())
         total = first["total_count"]
-        if not isinstance(total, int) or not 0 <= total <= 5000:
+        if type(total) is not int or not 0 <= total <= 5000:
             raise ValueError("workflow history exceeds the verified lookup bound")
-        responses = [first] if len(first["workflow_runs"]) == total else pages(endpoint, timeout=remaining())
+        count = max(1, (total + 99) // 100)
+        responses = [first] + [None] * (count - 1)
+        if count > 1:
+            readers = ThreadPoolExecutor(max_workers=4)
+            try:
+                futures = {readers.submit(read_page, number): number for number in range(2, count + 1)}
+                for future in as_completed(futures, timeout=remaining()):
+                    responses[futures[future] - 1] = future.result()
+            except TimeoutError:
+                raise CoordinationRefusal("workflow_history_incomplete_or_changed") from None
+            finally:
+                # Every running read uses this deadline; queued reads must not
+                # continue after a hard error or an expired collection wait.
+                readers.shutdown(wait=True, cancel_futures=True)
         runs = [run for response in responses for run in response["workflow_runs"]]
-        if (any(response["total_count"] != total for response in responses)
-                or len(runs) != total or len({run["id"] for run in runs}) != total):
+        if any(not isinstance(run, dict) or type(run.get("id")) is not int or run["id"] <= 0 for run in runs):
+            raise CoordinationRefusal("workflow_history_invalid_run_identity")
+        complete = (all(response["total_count"] == total for response in responses)
+                    and len(runs) == total and len({run["id"] for run in runs}) == total
+                    and all(len(response["workflow_runs"]) == min(100, max(0, total - page * 100))
+                            for page, response in enumerate(responses)))
+        if complete and count > 1:
+            anchor = api(endpoint, timeout=remaining())
+            complete = (anchor["total_count"] == total
+                        and [run["id"] for run in anchor["workflow_runs"]]
+                        == [run["id"] for run in first["workflow_runs"]])
+        if not complete:
             if attempt == 2:
                 raise CoordinationRefusal("workflow_history_incomplete_or_changed")
             diagnostic("retrying_unstable_workflow_history")

@@ -342,9 +342,11 @@ class ScopeTests(unittest.TestCase):
         last = {"total_count": 101, "workflow_runs": [old_failed]}
         env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "f" * 40, "SOURCE_RUN": "99", "SOURCE_ATTEMPT": "2"}
         def api(endpoint, *, timeout=45):
-            return first if "/runs?" in endpoint else {"id": 7}
-        with patch.object(policy, "command", side_effect=["f" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", return_value=[first, last]), patch.object(policy, "validate_source", return_value=self.proof):
+            return (last if endpoint.endswith("&page=2") else first) if "/runs?" in endpoint else {"id": 7}
+        with patch.object(policy, "command", side_effect=["f" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api) as reads, patch.object(policy, "validate_source", return_value=self.proof), patch.object(policy, "newer_run_blocks", wraps=policy.newer_run_blocks) as blocks:
             self.assertEqual(policy.reusable_run(env, "full"), "")
+            self.assertTrue(any(call.args[1]["id"] == 77 for call in blocks.call_args_list))
+            self.assertTrue(any(call.args[0].endswith("&page=2") for call in reads.call_args_list))
         for scenario in ["missing page", "duplicate IDs", "changed count", "bound exceeded"]:
             responses = copy.deepcopy([first, last])
             first_response = copy.deepcopy(first)
@@ -352,7 +354,9 @@ class ScopeTests(unittest.TestCase):
             if scenario == "duplicate IDs": responses[-1]["workflow_runs"] = [first_runs[0]]
             if scenario == "changed count": responses[-1]["total_count"] = 102
             if scenario == "bound exceeded": first_response["total_count"] = 5001
-            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first_response), patch.object(policy, "pages", return_value=responses), patch.object(policy.time, "sleep"):
+            def read(endpoint, *, timeout=45):
+                return responses[-1] if endpoint.endswith("&page=2") and len(responses) > 1 else first_response
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep"):
                 with self.assertRaises(ValueError): policy.workflow_history("rozine-rw/rozine")
 
     def test_source_attempt_is_pinned_and_changed_attempt_refuses_receipt(self):
@@ -383,69 +387,226 @@ class ScopeTests(unittest.TestCase):
 
 
 class WorkflowHistoryTests(unittest.TestCase):
+    @staticmethod
+    def page(number, total=101, offset=0):
+        return {"total_count": total, "workflow_runs": [
+            {"id": value + offset} for value in range((number - 1) * 100 + 1, min(number * 100, total) + 1)]}
+
     def setUp(self):
-        self.first = {"total_count": 2, "workflow_runs": [{"id": 1}]}
-        self.last = {"total_count": 2, "workflow_runs": [{"id": 2}]}
+        self.first = self.page(1)
+        self.last = self.page(2)
+
+    def read(self, endpoint, *, timeout=45):
+        return self.last if endpoint.endswith("&page=2") else self.first
 
     def test_stable_empty_single_and_multi_page_histories_need_no_retry(self):
-        for first, pages in [({"total_count": 0, "workflow_runs": []}, []),
-                             ({"total_count": 2, "workflow_runs": [{"id": 1}, {"id": 2}]}, []),
-                             (self.first, [self.first, self.last])]:
-            with self.subTest(first=first), patch.object(policy, "api", return_value=first) as api, patch.object(policy, "pages", return_value=pages) as paginated, patch.object(policy.time, "sleep") as sleep:
-                self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": 1}, {"id": 2}] if first["total_count"] else [])
-                self.assertEqual(api.call_count, 1)
-                self.assertEqual(paginated.call_count, int(bool(pages)))
+        for total in [0, 2, 100, 101, 200, 5000]:
+            def read(endpoint, *, timeout=45):
+                number = int(endpoint.rsplit("&page=", 1)[1]) if "&page=" in endpoint else 1
+                return self.page(number, total)
+            with self.subTest(total=total), patch.object(policy, "api", side_effect=read) as api, patch.object(policy, "pages") as paginated, patch.object(policy.time, "sleep") as sleep:
+                self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": value} for value in range(1, total + 1)])
+                expected = 1 if total <= 100 else (total + 99) // 100 + 1
+                self.assertEqual(api.call_count, expected)
+                self.assertTrue(all("?per_page=100" in call.args[0] and not any(filter in call.args[0] for filter in ["status=", "created=", "head_sha=", "branch="]) for call in api.call_args_list))
+                paginated.assert_not_called()
                 sleep.assert_not_called()
 
     def test_unstable_pages_are_discarded_before_a_complete_fresh_read(self):
-        for scenario in ["missing page", "duplicate IDs", "changed count", "insertion between pages"]:
-            pages = copy.deepcopy([self.first, self.last])
-            if scenario == "missing page": pages = [self.first]
-            if scenario == "duplicate IDs": pages[-1]["workflow_runs"] = [{"id": 1}]
-            if scenario == "changed count": pages[-1]["total_count"] = 3
-            if scenario == "insertion between pages": pages[0]["workflow_runs"] = [{"id": 99}, {"id": 1}]
-            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=self.first) as api, patch.object(policy, "pages", side_effect=[pages, [self.first, self.last]]) as paginated, patch.object(policy.time, "sleep") as sleep:
-                self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": 1}, {"id": 2}])
-                self.assertEqual((api.call_count, paginated.call_count), (2, 2))
+        for scenario in ["missing page", "duplicate IDs", "changed count", "insertion between pages", "stable-count replacement"]:
+            first, last, anchor = copy.deepcopy(self.first), copy.deepcopy(self.last), copy.deepcopy(self.first)
+            if scenario == "missing page": last["workflow_runs"] = []
+            if scenario == "duplicate IDs": last["workflow_runs"] = [{"id": 1}]
+            if scenario == "changed count": last["total_count"] = 102
+            if scenario == "insertion between pages": anchor["total_count"] = 102
+            if scenario == "stable-count replacement": anchor["workflow_runs"][0] = {"id": 999}
+            responses = [first, last]
+            if scenario in ("insertion between pages", "stable-count replacement"): responses.append(anchor)
+            # New complete snapshot must be returned; none of the old page IDs may leak.
+            fresh = [self.page(1, offset=200), self.page(2, offset=200), self.page(1, offset=200)]
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=responses + fresh) as api, patch.object(policy.time, "sleep") as sleep:
+                self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": value} for value in range(201, 302)])
+                self.assertEqual(api.call_count, len(responses) + 3)
                 sleep.assert_called_once_with(1)
 
     def test_persistent_instability_stops_after_three_complete_reads(self):
-        for pages in [[self.first], [self.first, self.first], [self.first, dict(self.last, total_count=3)]]:
-            with self.subTest(pages=pages), patch.object(policy, "api", return_value=self.first) as api, patch.object(policy, "pages", return_value=pages) as paginated, patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
+        for scenario in ["missing page", "duplicate IDs", "changed count", "first page drift"]:
+            last = copy.deepcopy(self.last)
+            if scenario == "missing page": last["workflow_runs"] = []
+            if scenario == "duplicate IDs": last["workflow_runs"] = [{"id": 1}]
+            if scenario == "changed count": last["total_count"] = 102
+            responses = [self.first, last]
+            if scenario == "first page drift": responses.append(self.page(1, offset=1000))
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=responses * 3) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
                 policy.workflow_history("rozine-rw/rozine")
-            self.assertEqual((api.call_count, paginated.call_count, sleep.call_count), (3, 3, 2))
+            self.assertEqual((api.call_count, sleep.call_count), (len(responses) * 3, 2))
 
-    def test_one_deadline_bounds_both_native_calls_and_rejects_a_late_stable_read(self):
-        output = [json.dumps(self.first), json.dumps([self.first, self.last])]
-        with patch.object(policy.time, "monotonic", side_effect=[0, 0, 20, 46]), patch.object(policy.subprocess, "check_output", side_effect=output) as command, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
-            policy.workflow_history("rozine-rw/rozine")
-        self.assertEqual([call.kwargs["timeout"] for call in command.call_args_list], [45, 25])
+    def test_one_deadline_bounds_page_and_anchor_reads_and_refuses_a_late_complete_read(self):
+        for late in [False, True]:
+            clock = [0]
+            calls = []
+            def read(endpoint, *, timeout=45):
+                calls.append(timeout)
+                clock[0] += 20 if len(calls) <= 2 else (6 if late else 0)
+                return self.read(endpoint)
+            with self.subTest(late=late), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep") as sleep:
+                if late:
+                    with self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
+                        policy.workflow_history("rozine-rw/rozine")
+                else:
+                    self.assertEqual(policy.workflow_history("rozine-rw/rozine"), self.first["workflow_runs"] + self.last["workflow_runs"])
+            self.assertEqual(calls, [45, 25, 5])
+            sleep.assert_not_called()
 
-    def test_retry_uses_remaining_time_instead_of_starting_another_deadline(self):
-        output = [json.dumps(self.first), json.dumps([self.first]), json.dumps(self.first), json.dumps([self.first, self.last])]
-        with patch.object(policy.time, "monotonic", side_effect=[0, 0, 5, 10, 30, 44, 44.5]), patch.object(policy.subprocess, "check_output", side_effect=output) as command, patch.object(policy.time, "sleep") as sleep:
-            self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": 1}, {"id": 2}])
-        self.assertEqual([call.kwargs["timeout"] for call in command.call_args_list], [45, 40, 15, 1])
-        sleep.assert_called_once_with(1)
-        with patch.object(policy.time, "monotonic", side_effect=[0, 0, 20, 46]), patch.object(policy, "api", return_value=self.first) as api, patch.object(policy, "pages", return_value=[self.first]), patch.object(policy.time, "sleep") as sleep, self.assertRaises(policy.CoordinationRefusal):
+    def test_retry_uses_remaining_time_instead_of_restarting_the_deadline(self):
+        clock = [0]
+        calls = []
+        responses = [self.first, dict(self.last, workflow_runs=[]), self.first, self.last, self.first]
+        def read(endpoint, *, timeout=45):
+            calls.append(timeout)
+            clock[0] += [5, 5, 15, 5, 1][len(calls) - 1]
+            return responses[len(calls) - 1]
+        def sleep(seconds): clock[0] += seconds
+        with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep", side_effect=sleep) as wait:
+            self.assertEqual(policy.workflow_history("rozine-rw/rozine"), self.first["workflow_runs"] + self.last["workflow_runs"])
+        self.assertEqual(calls, [45, 40, 34, 19, 14])
+        wait.assert_called_once_with(1)
+
+    def test_an_incomplete_late_read_cannot_start_another_snapshot(self):
+        clock = [0]
+        calls = []
+        def read(endpoint, *, timeout=45):
+            calls.append(timeout)
+            clock[0] += 23
+            return dict(self.read(endpoint), workflow_runs=[])
+        with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
             policy.workflow_history("rozine-rw/rozine")
-        self.assertEqual(api.call_count, 1)
+        self.assertEqual(calls, [45, 22])
         sleep.assert_not_called()
 
-    def test_hard_errors_in_either_native_call_are_never_retried(self):
-        for position in ["first", "pages"]:
+    def test_hard_errors_in_first_page_later_page_or_anchor_are_never_retried(self):
+        for position in [1, 2, 3]:
             for error in [subprocess.CalledProcessError(1, "gh api", stderr="private API detail"), subprocess.TimeoutExpired("gh api", 45)]:
-                with self.subTest(position=position, error=error), patch.object(policy, "api", return_value=self.first, side_effect=error if position == "first" else None) as api, patch.object(policy, "pages", side_effect=error) as pages, patch.object(policy.time, "sleep") as sleep, self.assertRaises(subprocess.SubprocessError):
+                calls = []
+                def read(endpoint, *, timeout=45):
+                    calls.append(endpoint)
+                    if len(calls) == position: raise error
+                    return self.read(endpoint)
+                with self.subTest(position=position, error=error), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep") as sleep, self.assertRaises(subprocess.SubprocessError):
                     policy.workflow_history("rozine-rw/rozine")
-                self.assertEqual(api.call_count, 1)
-                self.assertEqual(pages.call_count, int(position == "pages"))
+                self.assertEqual(len(calls), position)
                 sleep.assert_not_called()
-        for total in [-1, 5001, "2", None]:
-            with self.subTest(total=total), patch.object(policy, "api", return_value=dict(self.first, total_count=total)) as api, patch.object(policy, "pages") as pages, patch.object(policy.time, "sleep") as sleep, self.assertRaises(ValueError):
+
+    def test_invalid_totals_refuse_before_submitting_pages(self):
+        for total in [-1, 5001, "2", None, True, False]:
+            with self.subTest(total=total), patch.object(policy, "api", return_value=dict(self.first, total_count=total)) as api, patch.object(policy, "ThreadPoolExecutor") as readers, patch.object(policy.time, "sleep") as sleep, self.assertRaises(ValueError):
                 policy.workflow_history("rozine-rw/rozine")
             api.assert_called_once()
-            pages.assert_not_called()
+            readers.assert_not_called()
             sleep.assert_not_called()
+
+    def test_a_missing_id_is_a_hard_refusal_not_partial_history(self):
+        for row in [{}, {"id": None}, {"id": True}, {"id": "101"}, {"id": 0}, {"id": -1}, None]:
+            last = dict(self.last, workflow_runs=[row])
+            def read(endpoint, *, timeout=45):
+                return last if endpoint.endswith("&page=2") else self.first
+            with self.subTest(row=row), patch.object(policy, "api", side_effect=read) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_invalid_run_identity"):
+                policy.workflow_history("rozine-rw/rozine")
+            self.assertEqual(api.call_count, 2)
+            sleep.assert_not_called()
+
+    def test_four_bounded_workers_collect_all_pages_in_order(self):
+        lock, barrier = threading.Lock(), threading.Barrier(4)
+        active = peak = 0
+        calls = []
+        def read(endpoint, *, timeout=45):
+            nonlocal active, peak
+            number = int(endpoint.rsplit("&page=", 1)[1]) if "&page=" in endpoint else 1
+            with lock:
+                active += 1
+                peak = max(peak, active)
+                calls.append((number, timeout))
+            try:
+                if 2 <= number <= 5: barrier.wait(timeout=2)
+                return self.page(number, 1040)
+            finally:
+                with lock: active -= 1
+        with patch.object(policy, "api", side_effect=read):
+            rows = policy.workflow_history("rozine-rw/rozine")
+        self.assertEqual(rows, [{"id": value} for value in range(1, 1041)])
+        self.assertEqual(peak, 4)
+        self.assertEqual(sorted(number for number, _ in calls), [1, 1, *range(2, 12)])
+        self.assertTrue(all(0 < timeout <= 45 for _, timeout in calls))
+
+    def test_every_run_field_is_preserved_for_provenance_and_failure_checks(self):
+        rows = [
+            {"id": number, "run_attempt": 3, "status": "completed", "conclusion": "failure",
+             "head_sha": "a" * 40, "created_at": "2026-10-06T00:00:00Z", "updated_at": "2026-10-13T00:00:00Z",
+             "head_repository": {"full_name": "rozine-rw/rozine"}, "extra": {"immutable": [1, 2, 3]}}
+            for number in range(1, 102)]
+        def read(endpoint, *, timeout=45):
+            return {"total_count": len(rows), "workflow_runs": copy.deepcopy(rows[100:] if endpoint.endswith("&page=2") else rows[:100])}
+        with patch.object(policy, "api", side_effect=read):
+            self.assertEqual(policy.workflow_history("rozine-rw/rozine"), rows)
+
+    def test_out_of_order_completion_does_not_change_the_result_set_or_order(self):
+        third = threading.Event()
+        completed = []
+        def read(endpoint, *, timeout=45):
+            number = int(endpoint.rsplit("&page=", 1)[1]) if "&page=" in endpoint else 1
+            if number == 2 and not third.wait(timeout=2): raise RuntimeError("pages were serialized")
+            completed.append(number)
+            if number == 3: third.set()
+            return self.page(number, 301)
+        with patch.object(policy, "api", side_effect=read):
+            self.assertEqual(policy.workflow_history("rozine-rw/rozine"), [{"id": value} for value in range(1, 302)])
+        self.assertLess(completed.index(3), completed.index(2))
+
+    def test_reader_errors_and_collection_expiry_cancel_queued_reads(self):
+        for error in [subprocess.CalledProcessError(1, "gh api"), TimeoutError("collection expired")]:
+            with self.subTest(error=error), patch.object(policy, "api", return_value=self.page(1, 1040)) as api, patch.object(policy, "ThreadPoolExecutor") as factory, patch.object(policy, "as_completed", side_effect=error), patch.object(policy.time, "sleep") as sleep:
+                readers = factory.return_value
+                with self.assertRaises(subprocess.SubprocessError if isinstance(error, subprocess.SubprocessError) else policy.CoordinationRefusal):
+                    policy.workflow_history("rozine-rw/rozine")
+                factory.assert_called_once_with(max_workers=4)
+                readers.shutdown.assert_called_once_with(wait=True, cancel_futures=True)
+                api.assert_called_once()
+                sleep.assert_not_called()
+
+    def test_a_failed_worker_does_not_drain_the_remaining_request_queue(self):
+        four_started, cancelled, release = threading.Event(), threading.Event(), threading.Event()
+        lock = threading.Lock()
+        started = []
+        error = subprocess.CalledProcessError(1, "gh api", stderr="private API detail")
+        original = policy.ThreadPoolExecutor
+        class ObservedReaders(original):
+            def submit(self, function, number):
+                future = super().submit(function, number)
+                if number == 2:
+                    # Keep the failed worker occupied until the collector has
+                    # cancelled its queue, so scheduling races cannot mask it.
+                    future.add_done_callback(lambda finished: cancelled.wait(timeout=2))
+                return future
+            def shutdown(self, wait=True, *, cancel_futures=False):
+                super().shutdown(wait=False, cancel_futures=cancel_futures)
+                cancelled.set()
+                release.set()
+                super().shutdown(wait=wait)
+        def read(endpoint, *, timeout=45):
+            number = int(endpoint.rsplit("&page=", 1)[1]) if "&page=" in endpoint else 1
+            if number == 1: return self.page(1, 1040)
+            with lock:
+                started.append(number)
+                if len(started) == 4: four_started.set()
+            if number == 2:
+                if not four_started.wait(timeout=2): raise RuntimeError("reader concurrency missing")
+                raise error
+            if not release.wait(timeout=2): raise RuntimeError("worker cleanup missing")
+            return self.page(number, 1040)
+        with patch.object(policy, "api", side_effect=read), patch.object(policy, "ThreadPoolExecutor", ObservedReaders), patch.object(policy.time, "sleep") as sleep, self.assertRaises(subprocess.CalledProcessError):
+            policy.workflow_history("rozine-rw/rozine")
+        self.assertEqual(sorted(started), [2, 3, 4, 5])
+        sleep.assert_not_called()
 
 
 class MergeIdentityTests(unittest.TestCase):
