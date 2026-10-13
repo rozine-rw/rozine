@@ -10,10 +10,6 @@ use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\EarningsFeeBand;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
-use App\Domain\Wallet\WalletBalance;
-use App\Domain\Wallet\WalletMoney;
-use App\Models\InvestorWallet;
-use App\Models\PrimaryHolding;
 use App\Models\User;
 use Brick\Math\BigInteger;
 use Closure;
@@ -67,28 +63,23 @@ final readonly class CurrentPrimaryAdmission implements PrimaryAdmission
             throw new CommandRejection('RISK_ACKNOWLEDGEMENT_REQUIRED', 409);
         }
         $fee = EarningsFeeBand::forActiveCapital($this->outstanding($partyId)->plus($rights->principal));
-        if (! is_string($campaign['rate_pct'] ?? null) || ! is_int($campaign['term_months'] ?? null) || ! is_string($campaign['policy_version'] ?? null)) {
-            throw new CommandRejection('POLICY_INPUT_REQUIRED');
-        }
+        $rate = $campaign['rate_pct'] ?? null;
+        $term = $campaign['term_months'] ?? null;
+        $policy = $campaign['policy_version'] ?? null;
 
-        return PrimaryTerms::disclosed($campaign['rate_pct'], $campaign['term_months'], $campaign['policy_version'], self::DISCLOSURE_VERSION,
+        return PrimaryTerms::disclosed(is_string($rate) ? $rate : '', is_int($term) ? $term : 0, is_string($policy) ? $policy : '', self::DISCLOSURE_VERSION,
             $fee, PrimaryTerms::payoutFeeFor($rights, $fee['rate_bps']), $rights);
     }
 
     /** Principal the Party already has working in notes: committed purchase cash plus issued Holdings. */
     private function outstanding(string $partyId): BigInteger
     {
-        $walletId = InvestorWallet::query()->where('party_id', $partyId)->value('id');
-        $committed = BigInteger::zero();
-        if (is_string($walletId)) {
-            $sums = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
-                ->where('ledger_accounts.wallet_id', $walletId)->where('ledger_accounts.kind', 'investor_committed')->groupBy('ledger_lines.direction')
-                ->selectRaw('ledger_lines.direction AS direction, sum(ledger_lines.amount)::text AS total')->pluck('total', 'direction');
-            $committed = BigInteger::of(WalletBalance::bucket(WalletMoney::of((string) ($sums['credit'] ?? '0')),
-                WalletMoney::of((string) ($sums['debit'] ?? '0')))->amount());
-        }
-        $issued = (string) PrimaryHolding::query()->where('party_id', $partyId)->selectRaw('coalesce(sum(principal), 0)::text AS total')->value('total');
+        $row = (array) DB::selectOne("SELECT
+            coalesce((SELECT sum(CASE WHEN ll.direction = 'credit' THEN ll.amount ELSE -ll.amount END)
+                FROM ledger_lines ll JOIN ledger_accounts la ON la.id = ll.account_id JOIN investor_wallets w ON w.id = la.wallet_id
+                WHERE w.party_id = ? AND la.kind = 'investor_committed'), 0)::text AS committed,
+            coalesce((SELECT sum(h.principal) FROM primary_holdings h WHERE h.party_id = ?), 0)::text AS issued", [$partyId, $partyId]);
 
-        return $committed->plus($issued);
+        return BigInteger::of((string) $row['committed'])->plus((string) $row['issued']);
     }
 }

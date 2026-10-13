@@ -18,8 +18,8 @@ final class EarningsFeeBand
     /** Rate in basis points by tier, from the lowest band of active capital to the highest. */
     public const array RATES = ['standard' => 1500, 'bronze' => 1200, 'silver' => 1000, 'gold' => 900, 'platinum' => 800];
 
-    /** The lower bound of each tier in RWF; a tier runs up to, not including, the next bound. */
-    private const array FLOORS = ['platinum' => '100000000', 'gold' => '25000000', 'silver' => '5000000', 'bronze' => '1000000', 'standard' => '0'];
+    /** The lower bound of each tier above `standard` in RWF, highest first; a tier runs up to, not including, the next bound. */
+    private const array FLOORS = ['platinum' => '100000000', 'gold' => '25000000', 'silver' => '5000000', 'bronze' => '1000000'];
 
     /** @return array{tier: string, rate_bps: int, basis: string, policy_version: string} */
     public static function forActiveCapital(BigInteger $activeCapital): array
@@ -27,12 +27,8 @@ final class EarningsFeeBand
         if ($activeCapital->isNegative()) {
             throw new PrimaryViolation('INVALID_MONEY');
         }
-        foreach (self::FLOORS as $tier => $floor) {
-            if ($activeCapital->isGreaterThanOrEqualTo($floor)) {
-                return ['tier' => $tier, 'rate_bps' => self::RATES[$tier], 'basis' => 'return_only', 'policy_version' => self::POLICY_VERSION];
-            }
-        }
+        $tier = array_find_key(self::FLOORS, fn (string $floor): bool => $activeCapital->isGreaterThanOrEqualTo($floor)) ?? 'standard';
 
-        throw new PrimaryViolation('INVALID_MONEY');
+        return ['tier' => $tier, 'rate_bps' => self::RATES[$tier], 'basis' => 'return_only', 'policy_version' => self::POLICY_VERSION];
     }
 }
