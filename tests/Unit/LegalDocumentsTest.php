@@ -37,5 +37,5 @@ it('keeps the decided exclusions out of the issued text', function (): void {
     $business = legalDocument('business-terms-2026-10-13')['body'];
 
     expect($privacy)->not->toContain('biometric')->not->toContain('privacy@rozine.rw')->toContain('info@rozine.rw')
-        ->and($business)->not->toContain('Credit Reference')->not->toContain('First-Loss')->toContain('day 31');
+        ->and($business)->not->toContain('Credit Reference')->not->toContain('First-Loss')->toContain('day 31')->toContain('3% of the principal raised')->not->toContain('second signatory is required');
 });
