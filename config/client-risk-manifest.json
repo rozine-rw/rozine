@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d433990677209145f40fc465060b36fe11dae08a92e7ac4fca9acd79e712d62b",
-    "coverageSetSha256": "66762bcf788b7fc60f8191545ac5a66f2f54f456d1b30e27be77f3ac13e5e5c3",
+    "sourceManifestSha256": "087516ae4b0a7f3660acf32d1e8049393c7e84f2447b2d81b91b650da5524d9f",
+    "coverageSetSha256": "b82fda5c818fd932f23e4f2b8f6523ff856ba5fbd7f67ce4c4471cc9a5d5f451",
     "thresholds": {
         "critical": {
             "global": {
@@ -222,6 +222,7 @@
         "resources/js/components/investor/deals/deals-body.tsx",
         "resources/js/components/investor/deals/desk-card.tsx",
         "resources/js/components/investor/deals/invest-bar.tsx",
+        "resources/js/components/investor/deals/risk-statements.tsx",
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",
