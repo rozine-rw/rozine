@@ -630,9 +630,10 @@ def workflow_history(repository):
                             for page, response in enumerate(responses)))
         if complete and count > 1:
             anchor = api(endpoint, timeout=remaining())
+            # A rerun can change attempt/status/provenance without moving its ID.
+            # Compare every field so an evolving run cannot retain stale success.
             complete = (anchor["total_count"] == total
-                        and [run["id"] for run in anchor["workflow_runs"]]
-                        == [run["id"] for run in first["workflow_runs"]])
+                        and anchor["workflow_runs"] == first["workflow_runs"])
         if not complete:
             if attempt == 2:
                 raise CoordinationRefusal("workflow_history_incomplete_or_changed")

@@ -378,6 +378,25 @@ class ScopeTests(unittest.TestCase):
             validate.assert_called_once_with(env, "poc")
             record.assert_called_once_with(env, "poc")
 
+    def test_failed_rerun_seen_by_anchor_cannot_reuse_the_initial_success(self):
+        for changed_id in [99, 100]:
+            first = {"total_count": 101, "workflow_runs": [dict(self.run, id=value) for value in range(99, 199)]}
+            last = {"total_count": 101, "workflow_runs": [dict(self.run, id=199)]}
+            fresh = copy.deepcopy(first)
+            fresh["workflow_runs"][changed_id - 99].update(run_attempt=3, conclusion="failure", updated_at="2099-01-01T00:00:00Z")
+            responses = iter([first, last, fresh, fresh, last, fresh])
+            env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "f" * 40, "SOURCE_RUN": "99", "SOURCE_ATTEMPT": "2"}
+            def api(endpoint, *, timeout=45):
+                return next(responses) if "/runs?" in endpoint else {"id": 7}
+            with self.subTest(changed_id=changed_id), patch.object(policy, "command", side_effect=["f" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api) as reads, patch.object(policy, "validate_source", return_value=self.proof) as validate, patch.object(policy.time, "sleep") as sleep:
+                self.assertEqual(policy.reusable_run(env, "full"), "")
+                self.assertEqual(sum("/runs?" in call.args[0] for call in reads.call_args_list), 6)
+                sleep.assert_called_once_with(1)
+                if changed_id == 99:
+                    validate.assert_not_called()
+                else:
+                    validate.assert_called_once()
+
     def test_reuse_budget_includes_selection_board_and_receipt(self):
         jobs = [{"name": name, "status": "completed", "conclusion": "success", "started_at": "2026-10-06T11:00:00Z", "completed_at": "2026-10-06T11:00:20Z"}
                 for name in ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]]
@@ -440,6 +459,53 @@ class WorkflowHistoryTests(unittest.TestCase):
             with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=responses * 3) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
                 policy.workflow_history("rozine-rw/rozine")
             self.assertEqual((api.call_count, sleep.call_count), (len(responses) * 3, 2))
+
+    def test_anchor_metadata_drift_discards_the_whole_snapshot(self):
+        metadata = {"run_attempt": 2, "status": "completed", "conclusion": "success",
+                    "created_at": "2026-10-12T11:00:00Z", "run_started_at": "2026-10-12T11:01:00Z", "updated_at": "2026-10-12T11:02:00Z",
+                    "event": "pull_request", "workflow_id": 7, "path": ".github/workflows/tests.yml",
+                    "head_sha": "a" * 40, "head_branch": "dev", "head_repository": {"full_name": "rozine-rw/rozine"},
+                    "pull_requests": [{"number": 310}], "actor": {"login": "reviewer"}}
+        mutations = {"run_attempt": 3, "status": "in_progress", "conclusion": "failure",
+                     "created_at": "2026-10-13T11:00:00Z", "run_started_at": "2026-10-13T11:01:00Z", "updated_at": "2026-10-13T11:02:00Z",
+                     "event": "push", "workflow_id": 8, "path": ".github/workflows/other.yml",
+                     "head_sha": "b" * 40, "head_branch": "uat", "head_repository": {"full_name": "fork/repo"},
+                     "pull_requests": [{"number": 309}], "actor": {"login": "another"}}
+        for key, value in mutations.items():
+            first = copy.deepcopy(self.first)
+            first["workflow_runs"][0].update(metadata)
+            fresh = copy.deepcopy(first)
+            fresh["workflow_runs"][0][key] = value
+            with self.subTest(key=key), patch.object(policy, "api", side_effect=[first, self.last, fresh, fresh, self.last, fresh]) as api, patch.object(policy.time, "sleep") as sleep:
+                self.assertEqual(policy.workflow_history("rozine-rw/rozine"), fresh["workflow_runs"] + self.last["workflow_runs"])
+                self.assertEqual(api.call_count, 6)
+                sleep.assert_called_once_with(1)
+
+    def test_persistent_metadata_drift_refuses_after_three_whole_snapshots(self):
+        first = copy.deepcopy(self.first)
+        first["workflow_runs"][0].update(run_attempt=2, conclusion="success")
+        anchor = copy.deepcopy(first)
+        anchor["workflow_runs"][0].update(run_attempt=3, conclusion="failure")
+        with patch.object(policy, "api", side_effect=[first, self.last, anchor] * 3) as api, patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
+            policy.workflow_history("rozine-rw/rozine")
+        self.assertEqual((api.call_count, sleep.call_count), (9, 2))
+
+    def test_metadata_retry_cannot_reset_the_shared_deadline(self):
+        clock = [0]
+        timeouts = []
+        first = copy.deepcopy(self.first)
+        first["workflow_runs"][0].update(run_attempt=2, conclusion="success")
+        anchor = copy.deepcopy(first)
+        anchor["workflow_runs"][0].update(run_attempt=3, conclusion="failure")
+        responses = iter([first, self.last, anchor])
+        def read(endpoint, *, timeout=45):
+            timeouts.append(timeout)
+            clock[0] += 15
+            return next(responses)
+        with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy, "api", side_effect=read), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
+            policy.workflow_history("rozine-rw/rozine")
+        self.assertEqual(timeouts, [45, 30, 15])
+        sleep.assert_not_called()
 
     def test_one_deadline_bounds_page_and_anchor_reads_and_refuses_a_late_complete_read(self):
         for late in [False, True]:
