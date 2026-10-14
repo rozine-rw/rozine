@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
@@ -118,6 +120,26 @@ it('opens a Holding with its issue as recorded, its maturity value and its next 
         ->and(array_keys($issue))->toEqualCanonicalizing(array_keys($fixture['props']['holding']['issue']))
         ->and(array_keys($issue['issue_receipt']))->toEqualCanonicalizing(array_keys($fixture['props']['holding']['issue']['issue_receipt']))
         ->and(array_keys($props['links']))->toEqualCanonicalizing(array_keys($fixture['props']['links']));
+});
+
+it('shows the business\'s published monthly reports on the Holding page', function (): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+    $business = BusinessCampaign::query()->whereKey($holding->business_campaign_id)->value('business_id');
+    app()->instance(PublishedMonthlyReports::class, new class($business) implements PublishedMonthlyReports
+    {
+        public function __construct(private string $businessId) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return $businessId !== $this->businessId ? [] : [['report_id' => 'r1', 'period' => '2026-11', 'inflow' => '900', 'outflow' => '1000', 'net' => '-100',
+                'operational_status' => 'active', 'differences' => false, 'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'sealed_on' => '2026-12-07'],
+                'auditor_note' => '', 'business_note' => '']];
+        }
+    });
+
+    $this->actingAs($user)->get(route('investor.holdings.show', $holding->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('holding.updates.0.id', 'r1')->where('holding.updates.0.month', '2026-11-01T00:00:00+02:00')
+            ->where('holding.updates.0.net', ['currency' => 'RWF', 'amount' => '-100'])->where('holding.updates.0.status', 'healthy'));
 });
 
 it('keeps a Holding from anyone but its holder, and answers over API v1 with investor:read', function (): void {

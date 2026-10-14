@@ -33,7 +33,7 @@ class InvestorHoldingResource extends JsonResource
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [],
             'holding' => [...$data['holding'], 'link' => $self, 'on_time' => ['made' => 0, 'on_time' => 0, 'late' => 0], 'rating_change' => null,
-                'recovery_plan' => null, 'arrears' => null, 'photos' => [], 'updates' => [],
+                'recovery_plan' => null, 'arrears' => null, 'photos' => [],
                 'issue' => ['id' => $issue['id'], 'revision' => 1, 'note_id' => $issue['campaign_id'], 'campaign_id' => $issue['campaign_id'],
                     'units' => $issue['units'], 'ordinals' => $issue['ordinals'], 'principal' => $issue['principal'], 'rights' => $issue['rights'],
                     'issued_at' => $issue['issued_at'], 'disbursement_effective_at' => $issue['disbursement_effective_at'], 'effective_date' => $issue['effective_date'],

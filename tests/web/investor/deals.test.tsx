@@ -677,6 +677,7 @@ describe('Deal detail on a phone', () => {
             repaid: { currency: 'RWF', amount: '0' },
         };
         other.deal.updates[0].auditor_note = '';
+        other.deal.updates[0].business_note = '';
         other.deal.updates[0].photos = [];
         other.gate = { status: 'restricted' };
         render(<InvestorDeal {...other} />);
@@ -687,6 +688,9 @@ describe('Deal detail on a phone', () => {
 
         expect(
             within(sheet).queryByText("AUDITOR'S NOTE"),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('FROM THE BUSINESS'),
         ).not.toBeInTheDocument();
         expect(
             within(sheet).queryByText('PUBLISHED PHOTOS'),

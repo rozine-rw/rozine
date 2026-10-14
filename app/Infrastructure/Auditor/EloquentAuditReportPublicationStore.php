@@ -9,6 +9,7 @@ use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\WithBusinessAuthority;
@@ -41,8 +42,9 @@ use Illuminate\Support\Str;
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  * @phpstan-import-type AuditBinding from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Verification from \App\Application\Evidence\Contracts\StatementStore
+ * @phpstan-import-type PublishedMonthlyReport from PublishedMonthlyReports
  */
-final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore, PublishedApplicationReport
+final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore, PublishedApplicationReport, PublishedMonthlyReports
 {
     public function __construct(private WithBusinessStatementVerification $evidence, private WithBusinessAuthority $authority,
         private IdentityRepository $identities, private AuditAssignmentStore $assignments, private AuditReportCryptography $cryptography,
@@ -280,6 +282,42 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
         return ['partner' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
             'verified_on' => substr((string) $seal->payload['sealed_at'], 0, 10), 'digest' => $seal->digest];
+    }
+
+    public function forBusiness(string $businessId): array
+    {
+        $publications = AuditReportPublication::query()->join('audit_reports as reports', 'reports.id', '=', 'audit_report_publications.audit_report_id')
+            ->where('audit_report_publications.business_id', $businessId)->where('audit_report_publications.status', 'published')
+            ->where('reports.kind', 'monthly')->orderByDesc('reports.id')->get(['audit_report_publications.*']);
+        $reports = array_values(array_filter($publications->map(fn (AuditReportPublication $publication): ?array => $this->monthlyReport($publication))->all()));
+        usort($reports, fn (array $left, array $right): int => strcmp($right['period'], $left['period']));
+
+        return $reports;
+    }
+
+    /**
+     * A published monthly report as Investors may see it; null when its seal no longer verifies or
+     * its statements never reconciled to monthly figures.
+     *
+     * @return PublishedMonthlyReport|null
+     */
+    private function monthlyReport(AuditReportPublication $publication): ?array
+    {
+        $seal = rescue(fn (): AuditReportSeal => $this->seal($publication), null, false);
+        $monthly = $seal?->payload['sources']['monthly'] ?? null;
+        /** @var list<array{code: string, observed?: mixed}> $findings */
+        $findings = $seal?->payload['report']['findings'] ?? [];
+        $operational = array_find($findings, fn (array $finding): bool => $finding['code'] === 'OPERATIONAL_STATUS_OBSERVED');
+        $note = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get()
+            ->map(fn (AuditReportSignature $signature): string => (string) ($signature->payload['note'] ?? ''))->first(fn (string $text): bool => $text !== '');
+
+        return $seal === null || ! is_array($monthly) ? null : ['report_id' => $publication->audit_report_id, 'period' => (string) $monthly['period'],
+            'inflow' => (string) $monthly['inflow'], 'outflow' => (string) $monthly['outflow'], 'net' => (string) $monthly['net'],
+            'operational_status' => (string) ($operational['observed'] ?? 'active'),
+            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')),
+            'auditor' => ['name' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
+                'sealed_on' => substr((string) $seal->payload['sealed_at'], 0, 10)],
+            'auditor_note' => (string) $seal->payload['report']['draft']['note'], 'business_note' => $note ?? ''];
     }
 
     /** @return array<string, mixed> */

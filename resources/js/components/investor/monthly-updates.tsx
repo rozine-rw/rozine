@@ -236,7 +236,7 @@ type UpdateSheetProps = {
 
 /**
  * One verified monthly report (phone L4543–4602, desk L468–527): who audited it and when, the
- * statement-verified inflow and outflow, the net, the business's note, the auditor's note and any
+ * statement-verified inflow and outflow, the net, the business's note when it left one, the auditor's note and any
  * captioned images the business published, each of which opens full size. No location text or
  * Audit Partner originals are shown (C3 v2, H9).
  */
@@ -357,10 +357,14 @@ export function UpdateSheet({ update, onClose }: UpdateSheetProps) {
                     </span>
                 </div>
 
-                <Micro>{t('investor.updates.from_business')}</Micro>
-                <p className="mt-2 text-[12.5px] leading-[1.6] text-rz-slate">
-                    {update.business_note}
-                </p>
+                {update.business_note !== '' && (
+                    <>
+                        <Micro>{t('investor.updates.from_business')}</Micro>
+                        <p className="mt-2 text-[12.5px] leading-[1.6] text-rz-slate">
+                            {update.business_note}
+                        </p>
+                    </>
+                )}
 
                 {update.auditor_note !== '' && (
                     <>

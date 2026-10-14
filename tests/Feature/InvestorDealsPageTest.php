@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
@@ -174,6 +175,36 @@ it('opens one deal with its deck, and refuses one that is unknown or closed', fu
     $this->getJson(route('api.v1.investor.deals.show', $this->campaign->id))->assertNotFound()->assertJsonPath('code', 'DEAL_NOT_FOUND');
 });
 
+it('shows the business\'s published monthly reports on the deal, healthy only when operating and matched', function (): void {
+    $report = fn (string $id, string $period, string $status, bool $differences): array => ['report_id' => $id, 'period' => $period,
+        'inflow' => '34600000', 'outflow' => '31500000', 'net' => '3100000', 'operational_status' => $status, 'differences' => $differences,
+        'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'sealed_on' => '2026-09-07'],
+        'auditor_note' => $differences ? 'Cash differed by RWF 1.' : '', 'business_note' => $id === 'r1' ? 'Sales held steady.' : ''];
+    app()->instance(PublishedMonthlyReports::class, new /** @phpstan-import-type PublishedMonthlyReport from PublishedMonthlyReports */ class([$report('r1', '2026-08', 'active', false), $report('r2', '2026-07', 'active', true), $report('r3', '2026-06', 'suspended', false)], $this->campaign->business_id) implements PublishedMonthlyReports
+    {
+        /** @param list<PublishedMonthlyReport> $reports */
+        public function __construct(private array $reports, private string $businessId) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return $businessId === $this->businessId ? $this->reports : [];
+        }
+    });
+
+    $updates = $this->actingAs($this->investor['user'])->get(route('investor.deals.show', $this->campaign->id))->assertOk()
+        ->viewData('page')['props']['deal']['updates'];
+
+    expect($updates[0])->toBe(['id' => 'r1', 'month' => '2026-08-01T00:00:00+02:00', 'status' => 'healthy', 'summary' => 'Verified · figures match the statements',
+        'net' => ['currency' => 'RWF', 'amount' => '3100000'], 'inflow' => ['currency' => 'RWF', 'amount' => '34600000'],
+        'outflow' => ['currency' => 'RWF', 'amount' => '31500000'], 'business_note' => 'Sales held steady.',
+        'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'verified_on' => '2026-09-07T00:00:00+02:00'],
+        'auditor_note' => '', 'photos' => []])
+        ->and(array_column($updates, 'status'))->toBe(['healthy', 'watch', 'watch'])
+        ->and(array_column($updates, 'summary'))->toBe(['Verified · figures match the statements', 'Watch · the Audit Partner noted a difference',
+            'Watch · operations suspended when audited'])
+        ->and(app(InvestorDealCatalogue::class)->updates(strtolower((string) Str::ulid())))->toBe([]);
+});
+
 it('never lists an unrated publication', function (): void {
     ($this->publications)(fn (array $payload): array => [...$payload, 'public_evidence' => [...$payload['public_evidence'], 'rating' => null]]);
 
@@ -221,6 +252,11 @@ it('sorts and filters the deck by industry and focuses the requested deal', func
         public function card(string $campaignId): ?array
         {
             return $this->deal($campaignId);
+        }
+
+        public function updates(string $campaignId): array
+        {
+            return [];
         }
     });
     $ids = fn (array $query): array => array_column(($this->deals)($query)->viewData('page')['props']['deals'], 'campaign_id');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary;
 
+use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigInteger;
@@ -12,14 +13,15 @@ use Brick\Math\BigInteger;
  * One issued Holding for the authenticated Investor (C3 v2 §2e), read under current Investor
  * authority. It carries the issue as recorded (`IssuedHolding`) and the figures the issue alone
  * supports: the expected return, the maturity value net of the payout fee and the next scheduled
- * instalment. Nothing has been received or serviced yet, so the payment record, recovery plan,
- * arrears, photos and monthly updates are empty.
+ * instalment, and the business's published monthly audit reports. Nothing has been received or
+ * serviced yet, so the payment record, recovery plan, arrears and photos are empty.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  */
 final class GetInvestorHolding
 {
-    public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private GetInvestorPortfolio $portfolio) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private GetInvestorPortfolio $portfolio,
+        private InvestorDealCatalogue $catalogue) {}
 
     /**
      * Refuses `HOLDING_NOT_FOUND` (404) for an unknown Holding or another Party's.
@@ -42,6 +44,7 @@ final class GetInvestorHolding
                 'expected_profit' => $holding['rights']['total_return'], 'maturity_value' => HoldingFigures::maturityValue($holding),
                 'received' => HoldingFigures::money(BigInteger::zero()),
                 'next_payment' => $upcoming === [] ? null : ['amount' => $upcoming[0]['amount'], 'due_on' => HoldingFigures::kigaliMidnight($upcoming[0]['due_on'])],
-                'months_left' => count($upcoming), 'investors' => $card['investors']]];
+                'months_left' => count($upcoming), 'investors' => $card['investors'],
+                'updates' => $this->catalogue->updates($holding['campaign_id'])]];
     }
 }

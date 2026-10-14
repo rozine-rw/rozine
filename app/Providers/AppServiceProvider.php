@@ -20,6 +20,7 @@ use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\AuditStepUp;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
@@ -250,6 +251,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StaffApplicationQueue::class, EloquentStaffApplicationQueue::class);
         $this->app->bind(AcceptedApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(PublishedApplicationReport::class, EloquentAuditReportPublicationStore::class);
+        $this->app->bind(PublishedMonthlyReports::class, EloquentAuditReportPublicationStore::class);
         $this->app->bind(BusinessExposureStore::class, EloquentBusinessExposureReservations::class);
         $this->app->bind(ConsentCatalog::class, EloquentConsentCatalog::class);
         $this->app->bind(StatementStore::class, EloquentStatementStore::class);

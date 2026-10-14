@@ -35,4 +35,12 @@ interface InvestorDealCatalogue
      * @return DealCard|null
      */
     public function card(string $campaignId): ?array;
+
+    /**
+     * The campaign's Business's published monthly audit reports as Investor updates, newest
+     * month first (`MonthlyUpdate`); empty for an unknown campaign.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function updates(string $campaignId): array;
 }

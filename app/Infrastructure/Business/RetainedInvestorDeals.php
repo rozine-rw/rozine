@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
@@ -14,6 +15,7 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonImmutable;
 use RuntimeException;
 
 /**
@@ -23,6 +25,8 @@ use RuntimeException;
  * address, company code, officer, statement, raw evidence or Auditor original is ever read out.
  * An open raise keeps its own lifecycle: `funded` needs the retained funding lock, and a full or
  * elapsed raise without one stays pending settlement rather than borrowing a settled state.
+ *
+ * @phpstan-import-type PublishedMonthlyReport from PublishedMonthlyReports
  */
 final class RetainedInvestorDeals implements InvestorDealCatalogue
 {
@@ -33,7 +37,8 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
     private const array ACCENTS = ['green', 'blue', 'amber', 'purple', 'teal', 'magenta', 'ink'];
 
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
-        private CampaignProgress $progress, private CanonicalJson $json, private AuditReportPublicationStore $reports) {}
+        private CampaignProgress $progress, private CanonicalJson $json, private AuditReportPublicationStore $reports,
+        private PublishedMonthlyReports $monthly) {}
 
     public function deals(): array
     {
@@ -55,6 +60,37 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
     public function card(string $campaignId): ?array
     {
         return BusinessCampaign::query()->whereKey($campaignId)->exists() ? $this->project($campaignId, false) : null;
+    }
+
+    public function updates(string $campaignId): array
+    {
+        $businessId = BusinessCampaign::query()->whereKey($campaignId)->value('business_id');
+
+        return is_string($businessId) ? array_map(fn (array $report): array => self::update($report), $this->monthly->forBusiness($businessId)) : [];
+    }
+
+    /**
+     * One published monthly report as the Deal and Holding pages show it. A report is healthy when
+     * the business was operating and every count matched its statements; anything else is on watch.
+     *
+     * @param  PublishedMonthlyReport  $report
+     * @return array<string, mixed>
+     */
+    private static function update(array $report): array
+    {
+        $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+        $kigali = fn (string $day): string => CarbonImmutable::parse($day, 'Africa/Kigali')->toIso8601String();
+        [$status, $summary] = match (true) {
+            $report['operational_status'] !== 'active' => ['watch', "Watch · operations {$report['operational_status']} when audited"],
+            $report['differences'] => ['watch', 'Watch · the Audit Partner noted a difference'],
+            default => ['healthy', 'Verified · figures match the statements'],
+        };
+
+        return ['id' => $report['report_id'], 'month' => $kigali($report['period'].'-01'), 'status' => $status, 'summary' => $summary,
+            'net' => $money($report['net']), 'inflow' => $money($report['inflow']), 'outflow' => $money($report['outflow']),
+            'business_note' => $report['business_note'],
+            'auditor' => ['name' => $report['auditor']['name'], 'licence' => $report['auditor']['licence'], 'verified_on' => $kigali($report['auditor']['sealed_on'])],
+            'auditor_note' => $report['auditor_note'], 'photos' => []];
     }
 
     /** @return array<string, mixed>|null */
@@ -102,7 +138,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'about' => ['description' => $draft['story'], 'industry' => $card['industry'], 'district' => $card['district']],
             'audit' => $audit === null ? null : ['standard' => null, 'partner' => $audit['partner'], 'licence' => $audit['licence'],
                 'verified_on' => $audit['verified_on'], 'digest' => $audit['digest'], 'reconciliation_statement' => null, 'tolerance' => null],
-            'updates' => [], 'overdue_report' => null];
+            'updates' => $this->updates($campaignId), 'overdue_report' => null];
     }
 
     /**
