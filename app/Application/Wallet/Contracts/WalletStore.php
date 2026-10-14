@@ -33,6 +33,14 @@ interface WalletStore
     public function statement(int $userId, ?int $contextRevision, ?string $from, ?string $to): array;
 
     /**
+     * The calendar months (first day, `Y-m-d`) in which the caller's wallet recorded a credited
+     * deposit or an internal transfer, newest first: the months a statement has rows for.
+     *
+     * @return list<string>
+     */
+    public function statementMonths(int $userId, ?int $contextRevision): array;
+
+    /**
      * Records a deposit intent and its dispatch outbox row, or journals the refusal. Never credits.
      *
      * @param  array{currency: string, amount: string}  $amount

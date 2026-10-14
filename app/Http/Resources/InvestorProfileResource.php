@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,8 +16,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * (the profile shows the country as unknown until one is captured). The security
  * center reports two-factor sign-in and opens the account's security settings, where the password
  * and two-factor are managed. Linked accounts are the wallet's verified funding methods; there is
- * no link or unlink command yet, so neither is offered. No statement is generated yet, so
- * Statements shows its empty state. Rozine Plus, the help center, the terms and the privacy note
+ * no link or unlink command yet, so neither is offered. Statements lists a monthly wallet
+ * statement for each month with wallet activity, opening the wallet statement PDF for that month; a
+ * month not yet over is marked open. There is no annual summary yet. Rozine Plus, the help center, the terms and the privacy note
  * have no approved content yet and show their empty state. The verification link opens the
  * verification flow, or the verified page once the identity is verified.
  */
@@ -25,7 +27,7 @@ class InvestorProfileResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool} $data */
+        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, statement_months: list<string>} $data */
         $data = $this->resource;
         $verified = $data['kyc'] === 'verified';
         $profile = fn (array $query = []): array => self::link('investor.profile', $query);
@@ -37,7 +39,7 @@ class InvestorProfileResource extends JsonResource
                 'id_number' => $data['document']['id_number'] ?? null, 'country' => null, 'address' => null],
             'security' => ['two_factor' => $data['two_factor']],
             'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => null], $data['methods']), 'banks' => []],
-            'statements' => ['annual' => null, 'monthly' => []],
+            'statements' => ['annual' => null, 'monthly' => array_map(fn (string $month): array => self::monthly($month), $data['statement_months'])],
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => self::link('investor.portfolio'), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => $profile(),
                 'wallet' => $verified ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard'),
                 'overview' => $profile(), 'personal' => $profile(['section' => 'personal']), 'plan' => $profile(['section' => 'plan']),
@@ -46,6 +48,19 @@ class InvestorProfileResource extends JsonResource
                 'automation' => $profile(['section' => 'automation']), 'verification' => self::link($verified ? 'investor.verified' : 'investor.verification'),
                 'security_settings' => self::link('security.edit')],
             'actions' => ['link_account' => null, 'logout' => ['url' => route('logout', [], false), 'method' => 'post']]];
+    }
+
+    /**
+     * One monthly statement: the wallet statement PDF for that calendar month.
+     *
+     * @return array{period: string, kind: 'monthly', complete: bool, link: array{url: string, method: 'get'}}
+     */
+    private static function monthly(string $month): array
+    {
+        $first = CarbonImmutable::parse($month, (string) config('app.timezone'));
+
+        return ['period' => $first->toDateString(), 'kind' => 'monthly', 'complete' => $first->endOfMonth()->isPast(),
+            'link' => self::link('investor.wallet.statement', ['format' => 'pdf', 'from' => $first->toDateString(), 'to' => $first->endOfMonth()->toDateString()])];
     }
 
     /**

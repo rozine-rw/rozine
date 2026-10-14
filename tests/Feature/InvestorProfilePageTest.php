@@ -8,6 +8,7 @@ use App\Models\InvestorVerification;
 use App\Models\Party;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -157,4 +158,22 @@ it('sends a person still being verified back to their verification, and a guest 
 
     auth()->logout();
     $this->get(route('investor.verified'))->assertRedirect(route('login'));
+});
+
+it('lists a monthly wallet statement for each month with wallet activity, marking the current month open', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-20 10:00:00', 'UTC'));
+    InvestorWalletFixture::policy(maximum: null);
+    $investor = PrimaryReservationFixture::investor('50000');
+    $this->travelTo(CarbonImmutable::parse('2026-10-05 10:00:00', 'UTC'));
+    InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '20000')['data']['intent_id']);
+
+    $statements = $this->actingAs($investor['user'])->get(route('investor.profile', ['section' => 'statements']))->assertOk()->viewData('page')['props']['statements'];
+
+    expect($statements)->toBe(['annual' => null, 'monthly' => [
+        ['period' => '2026-10-01', 'kind' => 'monthly', 'complete' => false,
+            'link' => ['url' => '/investor/wallet/statement.pdf?from=2026-10-01&to=2026-10-31', 'method' => 'get']],
+        ['period' => '2026-09-01', 'kind' => 'monthly', 'complete' => true,
+            'link' => ['url' => '/investor/wallet/statement.pdf?from=2026-09-01&to=2026-09-30', 'method' => 'get']],
+    ]]);
+    expect(substr_count((string) $this->get($statements['monthly'][1]['link']['url'])->assertOk()->getContent(), 'Deposit from'))->toBe(1);
 });

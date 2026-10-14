@@ -167,6 +167,24 @@ final class EloquentWalletStore implements WalletStore
         });
     }
 
+    public function statementMonths(int $userId, ?int $contextRevision): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity): array {
+            $wallet = InvestorWallet::query()->where('party_id', (string) $identity['party']['id'])->first();
+            if ($wallet === null) {
+                return [];
+            }
+            $zone = (string) config('app.timezone');
+            $instants = [...WalletDepositCredit::query()->where('wallet_id', $wallet->id)->pluck('created_at')->all(),
+                ...LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+                    ->where('source_type', 'primary_reservation')->pluck('created_at')->all()];
+            $months = array_values(array_unique(array_map(fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-01'), $instants)));
+            rsort($months);
+
+            return $months;
+        });
+    }
+
     /**
      * @template TModel of Model
      *
