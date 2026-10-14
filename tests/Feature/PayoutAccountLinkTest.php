@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
-use App\Application\Wallet\Contracts\PayoutAccountVerifier;
+use App\Application\Wallet\Contracts\PayoutAccounts;
 use App\Domain\Wallet\PayoutAccount;
 use App\Infrastructure\Wallet\UnavailablePayoutAccountVerifier;
 use App\Models\InvestorFundingMethod;
@@ -14,7 +14,10 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 
-/** @return array<string, string> */
+/**
+ * @param  array<string, string|null>  $fields
+ * @return array<string, string|null>
+ */
 function payoutLink(array $fields = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'type' => 'mobile', 'network' => 'airtel', 'number' => '0731234567', ...$fields];
@@ -111,12 +114,16 @@ it('offers no linking where nothing can verify an account, and refuses a link se
     config(['isolation.live_money_enabled' => true]);
     $fixture = InvestorWalletFixture::ready();
 
-    expect(app(PayoutAccountVerifier::class))->toBeInstanceOf(UnavailablePayoutAccountVerifier::class);
+    expect(app(PayoutAccounts::class)->linkable())->toBeFalse();
     $this->actingAs($fixture['user'])->get(route('investor.profile', ['section' => 'linked']))
         ->assertInertia(fn (Assert $page) => $page->where('actions.link_account', null)->where('linked.banks', [])
             ->where('linked.accounts.0.unlink', null));
     $this->post(route('investor.profile.link'), payoutLink())->assertSessionHasErrors(['number' => 'Accounts cannot be linked yet. Try again later.']);
-    expect(fn () => app(UnavailablePayoutAccountVerifier::class)->refusal(PayoutAccount::fromInput(payoutLink()), 'Ada'))->toThrow(LogicException::class);
+    $account = PayoutAccount::fromInput(payoutLink());
+    expect($account)->toBeInstanceOf(PayoutAccount::class);
+    if ($account instanceof PayoutAccount) {
+        expect(fn () => app(UnavailablePayoutAccountVerifier::class)->refusal($account, 'Ada'))->toThrow(LogicException::class);
+    }
 });
 
 it('offers no linking to a person not yet verified, and refuses a link sent anyway', function (): void {
