@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 export const show = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show.url = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { holding: string | number } | [holding: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { holding: string | number } | [holding: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { holding: string | number } | [holding: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 const showForm = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { holding: string | number } | [holding: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 showForm.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { holding: string | number } | [holding: string | number ]
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 showForm.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

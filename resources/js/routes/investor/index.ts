@@ -334,7 +334,7 @@ verified.form = verifiedForm
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 export const portfolio = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -349,7 +349,7 @@ portfolio.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 portfolio.url = (options?: RouteQueryOptions) => {
@@ -358,7 +358,7 @@ portfolio.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 portfolio.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -368,7 +368,7 @@ portfolio.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 portfolio.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -378,7 +378,7 @@ portfolio.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 const portfolioForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -388,7 +388,7 @@ const portfolioForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 portfolioForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -398,7 +398,7 @@ portfolioForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\InvestorPortfolioController::portfolio
-* @see app/Http/Controllers/InvestorPortfolioController.php:16
+* @see app/Http/Controllers/InvestorPortfolioController.php:18
 * @route '/investor/portfolio'
 */
 portfolioForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

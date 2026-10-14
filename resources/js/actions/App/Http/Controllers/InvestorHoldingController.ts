@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 const show2d90da9506fecf802ca14320d286aee7 = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show2d90da9506fecf802ca14320d286aee7.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 show2d90da9506fecf802ca14320d286aee7.url = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show2d90da9506fecf802ca14320d286aee7.url = (args: { holding: string | number } |
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 show2d90da9506fecf802ca14320d286aee7.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show2d90da9506fecf802ca14320d286aee7.get = (args: { holding: string | number } |
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 show2d90da9506fecf802ca14320d286aee7.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show2d90da9506fecf802ca14320d286aee7.head = (args: { holding: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 const show2d90da9506fecf802ca14320d286aee7Form = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const show2d90da9506fecf802ca14320d286aee7Form = (args: { holding: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 show2d90da9506fecf802ca14320d286aee7Form.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ show2d90da9506fecf802ca14320d286aee7Form.get = (args: { holding: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/api/v1/investor/holdings/{holding}'
 */
 show2d90da9506fecf802ca14320d286aee7Form.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +99,7 @@ show2d90da9506fecf802ca14320d286aee7Form.head = (args: { holding: string | numbe
 show2d90da9506fecf802ca14320d286aee7.form = show2d90da9506fecf802ca14320d286aee7Form
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 const show75afaa693aeab7486eaf61bf84b20f60 = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -114,7 +114,7 @@ show75afaa693aeab7486eaf61bf84b20f60.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show75afaa693aeab7486eaf61bf84b20f60.url = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ show75afaa693aeab7486eaf61bf84b20f60.url = (args: { holding: string | number } |
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show75afaa693aeab7486eaf61bf84b20f60.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ show75afaa693aeab7486eaf61bf84b20f60.get = (args: { holding: string | number } |
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show75afaa693aeab7486eaf61bf84b20f60.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ show75afaa693aeab7486eaf61bf84b20f60.head = (args: { holding: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 const show75afaa693aeab7486eaf61bf84b20f60Form = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ const show75afaa693aeab7486eaf61bf84b20f60Form = (args: { holding: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show75afaa693aeab7486eaf61bf84b20f60Form.get = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,7 +181,7 @@ show75afaa693aeab7486eaf61bf84b20f60Form.get = (args: { holding: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorHoldingController::show
-* @see app/Http/Controllers/InvestorHoldingController.php:16
+* @see app/Http/Controllers/InvestorHoldingController.php:18
 * @route '/investor/holdings/{holding}'
 */
 show75afaa693aeab7486eaf61bf84b20f60Form.head = (args: { holding: string | number } | [holding: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
