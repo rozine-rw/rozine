@@ -246,6 +246,10 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessDeposits->down();
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
+    $successfulIssuance = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
+    $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
+    $successfulIssuance->down();
+    $terminalFailures->down();
     $heldGenerations->down();
     $issuedCompleteness->down();
     $holdingIssue->down();
@@ -334,6 +338,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $holdingIssue->up();
     $issuedCompleteness->up();
     $heldGenerations->up();
+    $terminalFailures->up();
+    $successfulIssuance->up();
     $businessDeposits->up();
     $businessRepayments->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);

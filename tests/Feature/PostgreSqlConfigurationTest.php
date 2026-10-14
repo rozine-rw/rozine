@@ -122,6 +122,12 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $holdingBinding = require database_path('migrations/2026_09_30_084737_bind_primary_holdings_to_retained_commitments.php');
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
+    $successfulIssuance = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
+    $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
+    $walletTesterChanges = require database_path('migrations/2026_10_11_081137_create_synthetic_wallet_tester_changes_table.php');
+    $successfulIssuance->down();
+    $terminalFailures->down();
+    $walletTesterChanges->down();
     $investorVerifications = require database_path('migrations/2026_10_06_100000_create_investor_verifications.php');
     $investorVerifications->down();
     expect(Schema::hasTable('investor_verifications'))->toBeFalse()
@@ -347,6 +353,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $businessDeposits->up();
     $businessRepayments->up();
     $investorVerifications->up();
+    $walletTesterChanges->up();
+    $terminalFailures->up();
+    $successfulIssuance->up();
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
