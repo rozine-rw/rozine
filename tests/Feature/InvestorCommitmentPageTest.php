@@ -121,6 +121,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
         {
             return $command === 'primary.confirm' ? [] : $this->real->forTarget($actorKey, $command, $targetType, $targetId);
         }
+
+        public function requestOf(string $operationId): ?string
+        {
+            return $this->real->requestOf($operationId);
+        }
     }],
     'two refunds' => [fn (OperationRecords $real): OperationRecords => new class($real) implements OperationRecords
     {
@@ -131,6 +136,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
             $records = $this->real->forTarget($actorKey, $command, $targetType, $targetId);
 
             return $command === 'primary.refund' ? [...$records, ...$records] : $records;
+        }
+
+        public function requestOf(string $operationId): ?string
+        {
+            return $this->real->requestOf($operationId);
         }
     }],
 ]);

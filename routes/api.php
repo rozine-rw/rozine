@@ -23,6 +23,7 @@ use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorHoldingController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
@@ -206,6 +207,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::post('reservations/{reservation}/confirm', [InvestorPrimaryController::class, 'confirm'])->whereUlid('reservation')->name('primary.confirm');
     Route::post('reservations/{reservation}/release', [InvestorPrimaryController::class, 'release'])->whereUlid('reservation')->name('primary.release');
     Route::get('commitments/{commitment}', [InvestorPrimaryController::class, 'commitment'])->whereUlid('commitment')->name('commitments.show');
+    Route::get('holdings/{holding}', [InvestorHoldingController::class, 'show'])->whereUlid('holding')->name('holdings.show');
     Route::post('commitments/{commitment}/cancel', [InvestorPrimaryController::class, 'cancel'])->whereUlid('commitment')->name('primary.cancel');
     Route::get('deals/{campaign}/primary-operations/{request_id}', [InvestorPrimaryController::class, 'operation'])->whereUlid('campaign')->whereUuid('request_id')
         ->name('primary.operations.show');

@@ -26,6 +26,7 @@ use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorHoldingController;
 use App\Http\Controllers\InvestorMarketController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPortfolioController;
@@ -105,6 +106,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
     Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');
+    Route::get('holdings/{holding}', [InvestorHoldingController::class, 'show'])->whereUlid('holding')->name('holdings.show');
     Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
     Route::post('profile/linked-accounts', [InvestorProfileController::class, 'link'])->name('profile.link');
     Route::post('profile/linked-accounts/{method}/unlink', [InvestorProfileController::class, 'unlink'])->whereUlid('method')->name('profile.unlink');

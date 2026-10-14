@@ -18,4 +18,7 @@ interface OperationRecords
      * @return list<OperationRecord>
      */
     public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array;
+
+    /** The request id an operation was recorded under, or null for an unknown operation. */
+    public function requestOf(string $operationId): ?string;
 }

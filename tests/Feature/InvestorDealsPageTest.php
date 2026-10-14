@@ -217,6 +217,11 @@ it('sorts and filters the deck by industry and focuses the requested deal', func
         {
             return array_find(self::DEALS, fn (array $deal): bool => $deal['campaign_id'] === $campaignId);
         }
+
+        public function card(string $campaignId): ?array
+        {
+            return $this->deal($campaignId);
+        }
     });
     $ids = fn (array $query): array => array_column(($this->deals)($query)->viewData('page')['props']['deals'], 'campaign_id');
 

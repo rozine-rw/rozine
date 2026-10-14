@@ -18,6 +18,6 @@ class InvestorPortfolioController extends Controller
         $context = $request->validated('identity_context_revision');
         $facts = $portfolio->handle((int) $request->user()?->getAuthIdentifier(), $context === null ? null : (int) $context);
 
-        return Inertia::render('investor/portfolio', (new InvestorPortfolioResource([...$facts, 'tab' => $request->validated('tab') ?? 'active']))->resolve($request));
+        return Inertia::render('investor/portfolio', (new InvestorPortfolioResource(['portfolio' => $facts, 'tab' => (string) ($request->validated('tab') ?? 'active')]))->resolve($request));
     }
 }

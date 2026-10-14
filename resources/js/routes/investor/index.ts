@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 import dealsC9d3dc from './deals'
 import verificationAf8c0f from './verification'
+import holdings from './holdings'
 import profile937a89 from './profile'
 import wallet0fdd46 from './wallet'
 import risks from './risks'
@@ -922,6 +923,7 @@ const investor = {
     verification: Object.assign(verification, verificationAf8c0f),
     verified: Object.assign(verified, verified),
     portfolio: Object.assign(portfolio, portfolio),
+    holdings: Object.assign(holdings, holdings),
     profile: Object.assign(profile, profile937a89),
     market: Object.assign(market, market),
     cart: Object.assign(cart, cart),

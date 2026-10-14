@@ -479,10 +479,10 @@ arch('disbursement records are only accessed by the disbursement adapters')
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\DisbursementIndependenceDeclaration'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
 
-arch('Holdings are written and read only by their named Primary issuance collaborators')
+arch('Holdings are written and read only by their named Primary issuance collaborators and the Investor\'s read-only Holdings reader')
     ->expect('App\Models\PrimaryHolding')
     ->toOnlyBeUsedIn(['App\Models', 'Database\Factories', 'App\Infrastructure\Primary\RetainedPrimaryIssuance',
-        'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+        'App\Infrastructure\Primary\RetainedIssuedHoldings', 'App\Infrastructure\Primary\EloquentInvestorHoldings']);
 
 arch('Primary issuance conversion records stay inside their named producer and verifier')
     ->expect('App\Models\PrimaryCampaignIssuance')

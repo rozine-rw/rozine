@@ -27,4 +27,12 @@ interface InvestorDealCatalogue
      * @return DealCard|null
      */
     public function deal(string $campaignId): ?array;
+
+    /**
+     * The card of a rated publication an Investor already holds or committed to, whether or not
+     * its raise is still open; null when it has no published rating.
+     *
+     * @return DealCard|null
+     */
+    public function card(string $campaignId): ?array;
 }

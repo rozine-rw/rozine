@@ -5,6 +5,7 @@ import risks from './risks'
 import notices5868c6 from './notices'
 import primary from './primary'
 import commitments from './commitments'
+import holdings from './holdings'
 import verificationAf8c0f from './verification'
 /**
 * @see \App\Http\Controllers\InvestorDealsController::deals
@@ -437,6 +438,7 @@ const investor = {
     notices: Object.assign(notices, notices5868c6),
     primary: Object.assign(primary, primary),
     commitments: Object.assign(commitments, commitments),
+    holdings: Object.assign(holdings, holdings),
     verification: Object.assign(verification, verificationAf8c0f),
 }
 

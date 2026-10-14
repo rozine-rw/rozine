@@ -52,6 +52,11 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
         return $this->project($campaignId, true);
     }
 
+    public function card(string $campaignId): ?array
+    {
+        return BusinessCampaign::query()->whereKey($campaignId)->exists() ? $this->project($campaignId, false) : null;
+    }
+
     /** @return array<string, mixed>|null */
     private function project(string $campaignId, bool $detail): ?array
     {

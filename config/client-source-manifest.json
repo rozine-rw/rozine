@@ -60,6 +60,7 @@
         "resources/js/actions/App/Http/Controllers/EnterAppController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorHoldingController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPortfolioController.ts",
@@ -174,6 +175,7 @@
         "resources/js/routes/api/v1/index.ts",
         "resources/js/routes/api/v1/investor/commitments/index.ts",
         "resources/js/routes/api/v1/investor/deals/index.ts",
+        "resources/js/routes/api/v1/investor/holdings/index.ts",
         "resources/js/routes/api/v1/investor/index.ts",
         "resources/js/routes/api/v1/investor/notices/index.ts",
         "resources/js/routes/api/v1/investor/primary/index.ts",
@@ -248,6 +250,7 @@
         "resources/js/routes/index.ts",
         "resources/js/routes/investor/commitments/index.ts",
         "resources/js/routes/investor/deals/index.ts",
+        "resources/js/routes/investor/holdings/index.ts",
         "resources/js/routes/investor/index.ts",
         "resources/js/routes/investor/notices/index.ts",
         "resources/js/routes/investor/primary/index.ts",
@@ -709,8 +712,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 678,
-        "generated": 276,
+        "totalTrackedSources": 681,
+        "generated": 279,
         "declarationOnly": 18,
         "authoredExecutable": 384
     },
