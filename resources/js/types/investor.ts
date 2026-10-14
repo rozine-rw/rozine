@@ -1412,6 +1412,12 @@ export type InvestorNotice = {
     | { kind: 'primary.refunded'; facts: Money & { business: string } }
     | { kind: 'verification.approved'; facts: never[] }
     | { kind: 'security.password_changed'; facts: never[] }
+    | {
+          kind:
+              | 'security.payout_account_linked'
+              | 'security.payout_account_unlinked';
+          facts: { account: string };
+      }
     | { kind: 'verification.rejected'; facts: { reason: string } }
     | { kind: 'business.deposit_received'; facts: Money }
     | {

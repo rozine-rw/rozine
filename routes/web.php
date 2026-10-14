@@ -104,6 +104,8 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
     Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');
     Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
+    Route::post('profile/linked-accounts', [InvestorProfileController::class, 'link'])->name('profile.link');
+    Route::post('profile/linked-accounts/{method}/unlink', [InvestorProfileController::class, 'unlink'])->whereUlid('method')->name('profile.unlink');
     Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
     Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');

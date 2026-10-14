@@ -48,19 +48,19 @@
             ],
             "banks": [
                 {
-                    "code": "BK",
+                    "code": "bk",
                     "name": "Bank of Kigali"
                 },
                 {
-                    "code": "EQUITY",
+                    "code": "equity",
                     "name": "Equity Bank Rwanda"
                 },
                 {
-                    "code": "IM",
+                    "code": "im",
                     "name": "I&M Bank Rwanda"
                 },
                 {
-                    "code": "BPR",
+                    "code": "bpr",
                     "name": "BPR Bank Rwanda"
                 }
             ]

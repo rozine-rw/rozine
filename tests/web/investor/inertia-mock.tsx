@@ -147,11 +147,14 @@ type FormState = { processing: boolean; errors: Record<string, string> };
 export function Form({
     action,
     method,
+    transform = (data) => data,
     children,
 }: {
     action: string;
     method: string;
     resetOnSuccess?: string[];
+    transform?: (data: Record<string, unknown>) => Record<string, unknown>;
+    options?: Record<string, unknown>;
     children: ReactNode | ((state: FormState) => ReactNode);
 }) {
     inertia.forms.push({ action, method });
@@ -160,7 +163,9 @@ export function Form({
         event.preventDefault();
         inertia.posts.push({
             url: action,
-            data: Object.fromEntries(new FormData(event.currentTarget)),
+            data: transform(
+                Object.fromEntries(new FormData(event.currentTarget)),
+            ),
         });
     };
 

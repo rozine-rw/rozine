@@ -4441,6 +4441,14 @@ const en = {
         'Your password was changed',
     'investor.notices.security.password_changed.body':
         'If this was not you, reset your password now and contact Rozine support.',
+    'investor.notices.security.payout_account_linked.title':
+        'Payout account linked',
+    'investor.notices.security.payout_account_linked.body':
+        '{account} is now linked for deposits and withdrawals. If this was not you, contact Rozine support now.',
+    'investor.notices.security.payout_account_unlinked.title':
+        'Payout account unlinked',
+    'investor.notices.security.payout_account_unlinked.body':
+        '{account} is no longer linked. If this was not you, contact Rozine support now.',
     'investor.notices.verification.approved.title': 'You are verified',
     'investor.notices.verification.approved.body':
         'Your identity is verified and your wallet is ready to invest.',

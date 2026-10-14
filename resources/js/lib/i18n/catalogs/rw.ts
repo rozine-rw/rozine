@@ -4627,6 +4627,14 @@ const rw: Catalog = {
         'Ijambo ry’ibanga ryawe ryahinduwe',
     'investor.notices.security.password_changed.body':
         'Niba atari wowe, hindura ijambo ry’ibanga ubu kandi uvugane n’ubufasha bwa Rozine.',
+    'investor.notices.security.payout_account_linked.title':
+        'Konti yo kwishyurirwaho yahujwe',
+    'investor.notices.security.payout_account_linked.body':
+        '{account} ubu yahujwe ku kubitsa no kubikuza. Niba atari wowe, hamagara ubufasha bwa Rozine ubu.',
+    'investor.notices.security.payout_account_unlinked.title':
+        'Konti yo kwishyurirwaho yakuweho',
+    'investor.notices.security.payout_account_unlinked.body':
+        '{account} ntikigihujwe. Niba atari wowe, hamagara ubufasha bwa Rozine ubu.',
     'investor.notices.verification.approved.title': 'Wemejwe',
     'investor.notices.verification.approved.body':
         'Umwirondoro wawe wemejwe kandi igikapu cyawe cyiteguye gushora imari.',

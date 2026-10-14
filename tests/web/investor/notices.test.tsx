@@ -277,4 +277,42 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             "Withdrawal returnedThe payout of RWF 50,000 to Bank of Kigali ···· 4417 didn't go through. It's back in your wallet.",
         );
     });
+    it('words a linked and an unlinked payout account as security notices', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'linked',
+                kind: 'security.payout_account_linked',
+                facts: { account: 'Airtel Money +250 731 ···· 567' },
+            },
+            {
+                ...first,
+                id: 'unlinked',
+                kind: 'security.payout_account_unlinked',
+                facts: { account: 'MTN MoMo +250 788 ···· 456' },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Payout account/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Payout account linkedAirtel Money +250 731 ···· 567 is now linked for deposits and withdrawals. If this was not you, contact Rozine support now.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Payout account unlinkedMTN MoMo +250 788 ···· 456 is no longer linked. If this was not you, contact Rozine support now.',
+        );
+    });
 });

@@ -4654,6 +4654,14 @@ const fr: Catalog = {
         'Votre mot de passe a été modifié',
     'investor.notices.security.password_changed.body':
         "Si ce n'était pas vous, réinitialisez votre mot de passe maintenant et contactez le support Rozine.",
+    'investor.notices.security.payout_account_linked.title':
+        'Compte de versement lié',
+    'investor.notices.security.payout_account_linked.body':
+        "{account} est désormais lié pour les dépôts et les retraits. Si ce n'était pas vous, contactez immédiatement le support Rozine.",
+    'investor.notices.security.payout_account_unlinked.title':
+        'Compte de versement retiré',
+    'investor.notices.security.payout_account_unlinked.body':
+        "{account} n'est plus lié. Si ce n'était pas vous, contactez immédiatement le support Rozine.",
     'investor.notices.verification.approved.title': 'Vous êtes vérifié',
     'investor.notices.verification.approved.body':
         'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',

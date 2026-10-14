@@ -108,7 +108,10 @@ describe('Profile', () => {
         expect(screen.getByText('· Verifying')).toBeInTheDocument();
 
         await user.click(screen.getAllByRole('button', { name: 'Unlink' })[0]);
-        expect(inertia.posts[0].url).toBe('/preview/investor-profile-linked');
+        expect(inertia.posts[0]).toEqual({
+            url: '/preview/investor-profile-linked',
+            data: { request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u) },
+        });
 
         await user.click(
             screen.getByRole('button', { name: '+ Link a new account' }),
@@ -132,7 +135,7 @@ describe('Profile', () => {
         await user.click(
             within(form).getByRole('radio', { name: 'Bank account' }),
         );
-        await user.selectOptions(within(form).getByLabelText('BANK'), 'EQUITY');
+        await user.selectOptions(within(form).getByLabelText('BANK'), 'equity');
         await user.type(
             within(form).getByLabelText('ACCOUNT NUMBER'),
             '40-01 2345678',
@@ -149,8 +152,9 @@ describe('Profile', () => {
             data: {
                 type: 'bank',
                 network: 'airtel',
-                bank: 'EQUITY',
+                bank: 'equity',
                 number: '40012345678',
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
             },
         });
         expect(

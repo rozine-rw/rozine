@@ -15,8 +15,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * document already masked; phone, country and street address are not collected, so they are null
  * (the profile shows the country as unknown until one is captured). The security
  * center reports two-factor sign-in and opens the account's security settings, where the password
- * and two-factor are managed. Linked accounts are the wallet's verified funding methods; there is
- * no link or unlink command yet, so neither is offered. Statements lists a monthly wallet
+ * and two-factor are managed. Linked accounts are the wallet's verified funding methods. Where an
+ * account can be verified, the section offers the link form with its banks and an unlink action
+ * on each account; elsewhere neither is offered. Statements lists a monthly wallet
  * statement for each month with wallet activity, opening the wallet statement PDF for that month; a
  * month not yet over is marked open. There is no annual summary yet. Rozine Plus, the help center, the terms and the privacy note
  * have no approved content yet and show their empty state. The verification link opens the
@@ -27,7 +28,7 @@ class InvestorProfileResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, statement_months: list<string>} $data */
+        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, statement_months: list<string>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
         $data = $this->resource;
         $verified = $data['kyc'] === 'verified';
         $profile = fn (array $query = []): array => self::link('investor.profile', $query);
@@ -38,7 +39,8 @@ class InvestorProfileResource extends JsonResource
             'personal' => ['name' => $data['name'], 'email' => $data['email'], 'phone' => null, 'id_type' => $data['document']['id_type'] ?? null,
                 'id_number' => $data['document']['id_number'] ?? null, 'country' => null, 'address' => null],
             'security' => ['two_factor' => $data['two_factor']],
-            'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => null], $data['methods']), 'banks' => []],
+            'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => $data['linkable']
+                ? ['url' => route('investor.profile.unlink', ['method' => $method['id']], false), 'method' => 'post'] : null], $data['methods']), 'banks' => $data['banks']],
             'statements' => ['annual' => null, 'monthly' => array_map(fn (string $month): array => self::monthly($month), $data['statement_months'])],
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => self::link('investor.portfolio'), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => $profile(),
                 'wallet' => $verified ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard'),
@@ -47,7 +49,7 @@ class InvestorProfileResource extends JsonResource
                 'help' => $profile(['section' => 'help']), 'terms' => $profile(['section' => 'terms']), 'privacy' => $profile(['section' => 'privacy']),
                 'automation' => $profile(['section' => 'automation']), 'verification' => self::link($verified ? 'investor.verified' : 'investor.verification'),
                 'security_settings' => self::link('security.edit')],
-            'actions' => ['link_account' => null, 'logout' => ['url' => route('logout', [], false), 'method' => 'post']]];
+            'actions' => ['link_account' => $data['linkable'] ? ['url' => route('investor.profile.link', [], false), 'method' => 'post'] : null, 'logout' => ['url' => route('logout', [], false), 'method' => 'post']]];
     }
 
     /**

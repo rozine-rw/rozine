@@ -63,6 +63,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'security.payout_account_linked': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: <path d="M4 9h16M4 15h16M7 5v14M17 5v14" {...stroke} />,
+    },
+    'security.payout_account_unlinked': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: <path d="M5 12h14" {...stroke} />,
+    },
     'verification.rejected': {
         bar: 'bg-[#b3383c]',
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
@@ -353,6 +363,14 @@ function body(
             return t('investor.notices.verification.approved.body');
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
+        case 'security.payout_account_linked':
+            return t('investor.notices.security.payout_account_linked.body', {
+                account: notice.facts.account,
+            });
+        case 'security.payout_account_unlinked':
+            return t('investor.notices.security.payout_account_unlinked.body', {
+                account: notice.facts.account,
+            });
         case 'business.deposit_received':
             return t('investor.notices.business.deposit_received.body', {
                 amount: formatRwf(notice.facts),

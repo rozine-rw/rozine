@@ -19,6 +19,8 @@ enum PartyNoticeKind: string
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case PasswordChanged = 'security.password_changed';
+    case PayoutAccountLinked = 'security.payout_account_linked';
+    case PayoutAccountUnlinked = 'security.payout_account_unlinked';
     case BusinessDepositReceived = 'business.deposit_received';
     case BusinessRaiseExpired = 'business.raise_expired';
 

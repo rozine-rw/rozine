@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Wallet\PayoutAccount;
 use App\Models\InvestorFundingMethod;
 use App\Models\InvestorVerification;
 use App\Models\Party;
@@ -41,7 +42,7 @@ function profilePageApproved(Party $party, string $type, string $number, string 
         'state' => [...app(InvestorVerificationCase::class)->empty(), 'step' => 'liveness', 'date_of_birth' => '1990-08-01', 'id_type' => $type, 'id_number' => $number]])->save();
 }
 
-it('shows the account, its verified state and its verified funding methods, offering no command that does not exist', function (): void {
+it('shows the account, its verified state and its verified funding methods, with linking and unlinking open', function (): void {
     $fixture = InvestorWalletFixture::ready();
     InvestorFundingMethod::factory()->unverified()->create(['party_id' => $fixture['party']->id]);
     $user = $fixture['user'];
@@ -58,7 +59,8 @@ it('shows the account, its verified state and its verified funding methods, offe
         ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'country' => null, 'address' => null])
         ->and($props['security'])->toBe(['two_factor' => false])
         ->and($props['linked'])->toBe(['accounts' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
-            'verified' => true, 'unlink' => null]], 'banks' => []])
+            'verified' => true, 'unlink' => ['url' => '/investor/profile/linked-accounts/'.$fixture['method']->id.'/unlink', 'method' => 'post']]],
+            'banks' => array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS)])
         ->and($props['statements'])->toBe(['annual' => null, 'monthly' => []])
         ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'], 'profile' => $profile(), 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'notifications' => null,
@@ -67,7 +69,7 @@ it('shows the account, its verified state and its verified funding methods, offe
             'statements' => $profile('?section=statements'), 'help' => $profile('?section=help'), 'terms' => $profile('?section=terms'),
             'privacy' => $profile('?section=privacy'), 'automation' => $profile('?section=automation'),
             'verification' => ['url' => '/investor/verified', 'method' => 'get'], 'security_settings' => ['url' => '/settings/security', 'method' => 'get']])
-        ->and($props['actions'])->toBe(['link_account' => null, 'logout' => ['url' => '/logout', 'method' => 'post']])
+        ->and($props['actions'])->toBe(['link_account' => ['url' => '/investor/profile/linked-accounts', 'method' => 'post'], 'logout' => ['url' => '/logout', 'method' => 'post']])
         ->and(array_keys($props['links']))->toEqualCanonicalizing(array_keys(profilePageFixture('investor-profile-automation')['links']));
 
     foreach (['personal', 'plan', 'security', 'statements', 'help', 'terms', 'privacy'] as $section) {

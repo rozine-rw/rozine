@@ -247,6 +247,7 @@
         "resources/js/routes/investor/notices/index.ts",
         "resources/js/routes/investor/primary/index.ts",
         "resources/js/routes/investor/primary/operations/index.ts",
+        "resources/js/routes/investor/profile/index.ts",
         "resources/js/routes/investor/risks/index.ts",
         "resources/js/routes/investor/verification/index.ts",
         "resources/js/routes/investor/wallet/index.ts",
@@ -700,8 +701,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 669,
-        "generated": 268,
+        "totalTrackedSources": 670,
+        "generated": 269,
         "declarationOnly": 18,
         "authoredExecutable": 383
     },

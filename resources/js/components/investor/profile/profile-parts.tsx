@@ -493,10 +493,10 @@ type LinkedProps = {
 
 /**
  * Linked payout accounts (design L3856–3923) — wallet readiness. Accounts arrive masked; linking
- * sends the details to the server, which verifies ownership (a one-off verification debit, and
- * payouts only to an account in the investor's own name) and answers with field errors. Cards are
- * not a payout rail in the MVP, so the design's debit-card option is left out. Until the server
- * links a link or unlink command, the accounts are listed without it and nothing invites linking.
+ * sends the details, with a fresh `request_id`, to the server, which verifies the account is in the
+ * investor's own name and answers with field errors. Cards are not a payout rail in the MVP, so the
+ * design's debit-card option is left out. Where the server offers no link or unlink command, the
+ * accounts are listed without it and nothing invites linking.
  */
 export function LinkedAccounts({ linked, action }: LinkedProps) {
     const { t } = useTranslation();
@@ -530,6 +530,11 @@ export function LinkedAccounts({ linked, action }: LinkedProps) {
                             <Form
                                 action={account.unlink.url}
                                 method={account.unlink.method}
+                                transform={(data) => ({
+                                    ...data,
+                                    request_id: crypto.randomUUID(),
+                                })}
+                                options={{ preserveScroll: true }}
                             >
                                 <button
                                     type="submit"
@@ -597,6 +602,10 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform((data) => ({
+            ...data,
+            request_id: crypto.randomUUID(),
+        }));
         form.post(action.url, {
             preserveScroll: true,
             onSuccess: () => {
