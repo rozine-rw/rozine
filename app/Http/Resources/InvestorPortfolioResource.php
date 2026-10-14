@@ -13,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * page. The totals, projected payouts, industries, risk bands and concentration are the server's.
  * Nothing has matured yet, so the Active tab lists every Holding and Matured opens empty;
  * Secondary (holdings listed for resale) and Saved (the watchlist) have no read yet either.
- * Commitments awaiting issue are not listed yet. A destination with no live route yet is null,
+ * Each commitment awaiting issue opens its commitment page. A destination with no live route yet is null,
  * and a person still being verified has no wallet to link.
  *
  * @phpstan-import-type PortfolioFacts from \App\Application\Primary\GetInvestorPortfolio
@@ -38,7 +38,8 @@ class InvestorPortfolioResource extends JsonResource
             'holdings' => $data['tab'] === 'active' ? array_map(fn (array $holding): array => [...$holding,
                 'link' => self::link('investor.holdings.show', ['holding' => $holding['id']])], $data['holdings']) : [],
             'payouts' => $data['payouts'], 'industries' => $data['industries'], 'risk' => $data['risk'], 'concentration' => $data['concentration'],
-            'idle' => $data['idle'], 'commitments' => [],
+            'idle' => $data['idle'], 'commitments' => array_map(fn (array $commitment): array => [...$commitment,
+                'link' => self::link('investor.commitments.show', ['commitment' => $commitment['id']])], $data['commitments']),
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => $portfolio(), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => self::link('investor.profile'),
                 'wallet' => $data['verified'] ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard')]];
     }

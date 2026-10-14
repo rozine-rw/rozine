@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use App\Models\CommandOperation;
 use App\Models\PrimaryHolding;
+use App\Models\PrimaryReservationRecord;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
 
 /*
@@ -130,3 +132,27 @@ it('keeps a Holding from anyone but its holder, and answers over API v1 with inv
         ->assertJsonPath('data.holding.issue.issue_receipt.link.url', '/api/v1/investor/holdings/'.$holding->id)
         ->assertJsonPath('data.links.portfolio', null)->assertJsonPath('data.links.wallet.url', '/api/v1/investor/wallet');
 });
+
+it('opens an issued commitment as issued, linked to its Holding, and leaves it off the awaiting list', function (): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+
+    $this->actingAs($user)->get(route('investor.commitments.show', $holding->commitment_id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('commitment.state', 'issued')->where('commitment.closing', null)
+            ->where('commitment.holding', ['id' => $holding->id, 'link' => ['url' => '/investor/holdings/'.$holding->id, 'method' => 'get']]));
+    $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitments', []));
+});
+
+it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, string $state, ?array $closing): void {
+    ['commitments' => [$commitment]] = PrimaryHoldingFixture::committed(fund: $fund);
+    $user = User::query()->where('party_id', PrimaryReservationRecord::query()->whereKey($commitment->primary_reservation_id)->value('party_id'))->sole();
+
+    $this->actingAs($user)->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('holdings', [])
+        ->where('totals.invested', ['currency' => 'RWF', 'amount' => '0'])
+        ->where('commitments', [['id' => $commitment->id, 'deal_name' => $page->toArray()['props']['commitments'][0]['deal_name'], 'units' => '1080',
+            'principal' => ['currency' => 'RWF', 'amount' => '5400000'], 'state' => $state, 'closing' => $closing,
+            'link' => ['url' => '/investor/commitments/'.$commitment->id, 'method' => 'get']]]));
+    $this->get(route('investor.commitments.show', $commitment->id))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitment.state', $state));
+})->with([
+    'raise open' => [false, 'confirmed', null],
+    'funding locked' => [true, 'funded', ['stage' => 'awaiting_disbursement']],
+]);

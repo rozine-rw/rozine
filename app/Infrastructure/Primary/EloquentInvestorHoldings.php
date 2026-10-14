@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Primary;
 
+use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Reads `primary_holdings`, which the database keeps immutable and bound to their issued closing.
+ * Reads `primary_holdings`, which the database keeps immutable and bound to their issued closing,
+ * and the confirmed purchases still awaiting one: no Holding, no refund entry and no closure.
  * The issue receipt's operation is the disbursement intent's, from the Holding's own payload, with
  * the request id that operation was recorded under.
  *
@@ -20,7 +23,7 @@ use RuntimeException;
  */
 final readonly class EloquentInvestorHoldings implements InvestorHoldings
 {
-    public function __construct(private OperationRecords $operations) {}
+    public function __construct(private OperationRecords $operations, private PrimaryCampaignSource $campaigns) {}
 
     public function forInvestor(int $userId): array
     {
@@ -40,6 +43,30 @@ final readonly class EloquentInvestorHoldings implements InvestorHoldings
         $holding = $this->owned($userId)->where('commitment_id', strtolower($commitmentId))->first();
 
         return $holding === null ? null : $this->record($holding);
+    }
+
+    public function awaitingIssue(int $userId): array
+    {
+        $rows = DB::select("SELECT c.id, r.business_campaign_id, r.units, r.principal,
+                EXISTS (SELECT 1 FROM primary_campaign_fundings f WHERE f.business_campaign_id = r.business_campaign_id) AS funded
+            FROM primary_commitments c JOIN primary_reservations r ON r.id = c.primary_reservation_id
+            WHERE r.party_id = (SELECT party_id FROM users WHERE id = ?)
+                AND NOT EXISTS (SELECT 1 FROM primary_holdings h WHERE h.commitment_id = c.id)
+                AND NOT EXISTS (SELECT 1 FROM ledger_entries e WHERE e.source_type = 'primary_reservation' AND e.source_id = r.id AND e.kind = 'primary_refund')
+                AND NOT EXISTS (SELECT 1 FROM business_campaign_closures k WHERE k.business_campaign_id = r.business_campaign_id)
+            ORDER BY c.id DESC", [$userId]);
+
+        $titles = [];
+        $pending = [];
+        foreach ($rows as $row) {
+            $row = (array) $row;
+            $campaignId = (string) $row['business_campaign_id'];
+            $titles[$campaignId] ??= $this->campaigns->presentation($campaignId)['title'];
+            $pending[] = ['commitment_id' => (string) $row['id'], 'campaign_id' => $campaignId, 'deal_name' => $titles[$campaignId], 'units' => (string) $row['units'],
+                'principal' => ['currency' => 'RWF', 'amount' => (string) $row['principal']], 'funded' => (bool) $row['funded']];
+        }
+
+        return $pending;
     }
 
     /** @return Builder<PrimaryHolding> */

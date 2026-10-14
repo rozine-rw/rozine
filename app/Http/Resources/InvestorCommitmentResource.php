@@ -46,11 +46,14 @@ class InvestorCommitmentResource extends JsonResource
         $confirmation = $commitment['confirmation'];
         /** @var array<string, mixed>|null $refund */
         $refund = $commitment['refund'];
+        /** @var array{id: string}|null $holding */
+        $holding = $commitment['holding'];
         $shown = $commitment;
         unset($shown['reservation_id']);
 
         return [...$shown, 'confirmation' => [...$confirmation, 'link' => $link],
             'refund' => $refund === null ? null : [...$refund, 'link' => self::lookup($request, $context, $commitment, (string) $refund['request_id'])],
+            'holding' => $holding === null ? null : ['id' => $holding['id'], 'link' => self::link($request, 'investor.holdings.show', ['holding' => $holding['id']])],
             'actions' => ['cancel' => null], 'link' => $link];
     }
 

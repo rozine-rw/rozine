@@ -89,7 +89,7 @@ it('shows a scoped refusal for an unknown commitment or one of another Investor,
     $this->getJson(route('api.v1.investor.commitments.show', $this->commitment))->assertForbidden();
 });
 
-it('refuses a commitment whose campaign is funded or closed until those sources are wired, unless the Investor refunded it', function (): void {
+it('shows a commitment whose campaign is funded as awaiting its disbursement, unless the Investor refunded it', function (): void {
     app()->instance(CampaignFundingEvidence::class, new class implements CampaignFundingEvidence
     {
         public function find(string $campaignId): array
@@ -98,8 +98,9 @@ it('refuses a commitment whose campaign is funded or closed until those sources 
         }
     });
 
-    $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertConflict()
-        ->assertInertia(fn ($page) => $page->where('refusal', ['code' => 'COMMITMENT_STATE_UNAVAILABLE', 'status' => 409]));
+    $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertOk()
+        ->assertInertia(fn ($page) => $page->where('commitment.state', 'funded')->where('commitment.closing', ['stage' => 'awaiting_disbursement'])
+            ->where('commitment.holding', null));
     ($this->refund)((string) Str::uuid());
     $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertOk()
         ->assertInertia(fn ($page) => $page->where('commitment.state', 'cancelled'));

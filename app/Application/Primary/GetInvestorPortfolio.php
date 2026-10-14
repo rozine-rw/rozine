@@ -15,7 +15,9 @@ use RuntimeException;
  * authority through `GetInvestorViewer`: the cash still idle in the wallet and every Holding the
  * primary issue gave them, with the business it is in (`HoldingFigures`). Payouts are the
  * scheduled instalments still due, net of the earnings fee and labelled as a projection; nothing
- * has been received until servicing pays it, so every gain is zero.
+ * has been received until servicing pays it, so every gain is zero. Confirmed purchases no Holding
+ * has issued from yet are listed apart and never counted among the Holdings: `confirmed` while the
+ * raise is open, `funded` once its funding is locked, awaiting the disbursement that issues them.
  *
  * @phpstan-import-type HeldPosition from HoldingFigures
  * @phpstan-import-type Card from HoldingFigures
@@ -29,7 +31,8 @@ use RuntimeException;
  *         next_payout: array{amount: Money, month: string}|null, avg_monthly: Money},
  *     payouts: list<PayoutMonth>, industries: list<array{name: string, accent: string, amount: Money, share_pct: int}>,
  *     risk: list<array{band: string, share_pct: int}>,
- *     concentration: array{status: 'concentrated', business: string, share_pct: int}|array{status: 'balanced'}|null}
+ *     concentration: array{status: 'concentrated', business: string, share_pct: int}|array{status: 'balanced'}|null,
+ *     commitments: list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|null}>}
  */
 final class GetInvestorPortfolio
 {
@@ -63,7 +66,8 @@ final class GetInvestorPortfolio
                 'next_payout' => $payouts === [] ? null : ['amount' => $payouts[0]['amount'], 'month' => $payouts[0]['month']],
                 'avg_monthly' => HoldingFigures::money($projected->dividedBy(3, RoundingMode::HalfUp))],
             'payouts' => $payouts, 'industries' => $this->industries($positions, $invested), 'risk' => $this->risk($positions, $invested),
-            'concentration' => $this->concentration($positions, $invested)];
+            'concentration' => $this->concentration($positions, $invested),
+            'commitments' => $viewer['wallet'] === null ? [] : $this->commitments($userId)];
     }
 
     /**
@@ -96,6 +100,14 @@ final class GetInvestorPortfolio
         $card = $this->catalogue->card($campaignId);
 
         return $card ?? throw new RuntimeException('HOLDING_PRESENTATION_UNAVAILABLE');
+    }
+
+    /** @return list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|null}> */
+    private function commitments(int $userId): array
+    {
+        return array_map(fn (array $commitment): array => ['id' => $commitment['commitment_id'], 'deal_name' => $commitment['deal_name'], 'units' => $commitment['units'],
+            'principal' => $commitment['principal'], 'state' => $commitment['funded'] ? 'funded' : 'confirmed',
+            'closing' => $commitment['funded'] ? ['stage' => 'awaiting_disbursement'] : null], $this->holdings->awaitingIssue($userId));
     }
 
     /** @return list<HeldPosition> */

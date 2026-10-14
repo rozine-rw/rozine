@@ -40,4 +40,12 @@ interface InvestorHoldings
      * @return IssuedHoldingRecord|null
      */
     public function ofCommitment(int $userId, string $commitmentId): ?array;
+
+    /**
+     * The account's confirmed purchases that no Holding issued from and no refund returned yet,
+     * newest first, each with its deal's title and whether its campaign's funding has been locked.
+     *
+     * @return list<array{commitment_id: string, campaign_id: string, deal_name: string, units: string, principal: Money, funded: bool}>
+     */
+    public function awaitingIssue(int $userId): array;
 }
