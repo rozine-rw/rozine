@@ -4424,6 +4424,10 @@ const en = {
     'investor.notices.business.deposit_received.title': 'Deposit received',
     'investor.notices.business.deposit_received.body':
         '{amount} is now in your Business wallet.',
+    'investor.notices.business.application_approved.title':
+        'Application approved',
+    'investor.notices.business.application_approved.body':
+        '{title} is approved for {amount} over {months} months. Review and sign to publish the raise.',
     'investor.notices.business.withdrawal_sent.title': 'Withdrawal sent',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} was sent to {account}.',
@@ -4431,6 +4435,19 @@ const en = {
         'Withdrawal returned',
     'investor.notices.business.withdrawal_returned.body':
         "The payout of {amount} to {account} didn't go through. It's back in your Business wallet.",
+    'investor.notices.auditor.accreditation_approved.title':
+        'Accreditation active',
+    'investor.notices.auditor.accreditation_approved.body':
+        'Licence {licence} is verified until {date}. You can now take audit jobs.',
+    'investor.notices.auditor.accreditation_rejected.title':
+        'Accreditation needs another look',
+    'investor.notices.auditor.accreditation_rejected.body':
+        '{reason} Upload a corrected certificate from your profile.',
+    'investor.notices.auditor.job_offered.title': 'New audit job',
+    'investor.notices.auditor.job_offered.body_flash':
+        'Flash audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.body_routine':
+        'Routine audit at {business}, {location}. Accept by {time}.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

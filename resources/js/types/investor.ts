@@ -1421,12 +1421,30 @@ export type InvestorNotice = {
     | { kind: 'verification.rejected'; facts: { reason: string } }
     | { kind: 'business.deposit_received'; facts: Money }
     | {
+          kind: 'business.application_approved';
+          facts: Money & { title: string; term_months: string };
+      }
+    | {
           kind: 'business.withdrawal_sent';
           facts: Money & { account: string; received: string };
       }
     | {
           kind: 'business.withdrawal_returned';
           facts: Money & { account: string };
+      }
+    | {
+          kind: 'auditor.accreditation_approved';
+          facts: { licence: string; expires_on: string };
+      }
+    | { kind: 'auditor.accreditation_rejected'; facts: { reason: string } }
+    | {
+          kind: 'auditor.job_offered';
+          facts: {
+              type: 'flash' | 'routine';
+              business: string;
+              location: string;
+              accept_by: string;
+          };
       }
     | {
           kind: 'business.raise_expired';

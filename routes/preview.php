@@ -72,6 +72,13 @@ Route::get('preview/business-notices', fn () => response()->json(['data' => json
 
 Route::post('preview/business-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
 
+/* The Auditor bell's notices, as the live `auditor.notices` JSON answers them. */
+
+Route::get('preview/auditor-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/auditor-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/auditor-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
 Route::get('preview/{fixture}', function (string $fixture) {
     $path = resource_path("fixtures/ui/{$fixture}.json");
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
 use App\Http\Controllers\AuditorHomeController;
 use App\Http\Controllers\AuditorJobsController;
+use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditorPortfolioController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
@@ -130,6 +131,9 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
+    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware('cache.headers:private;no_store')->name('notices');
+    Route::post('notices/read-all', [AuditorNoticesController::class, 'readAll'])->middleware('cache.headers:private;no_store')->name('notices.read_all');
+    Route::post('notices/{notice}/read', [AuditorNoticesController::class, 'read'])->whereUlid('notice')->middleware('cache.headers:private;no_store')->name('notices.read');
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
     Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
     Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');

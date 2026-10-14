@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\RoleBookmarkController;
 use App\Http\Controllers\Api\V1\StaffAccessController;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
+use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessNoticesController;
@@ -131,6 +132,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name('api.v1.auditor.')->group(function (): void {
+    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware('cache.headers:private;no_store')->name('notices');
+    Route::post('notices/read-all', [AuditorNoticesController::class, 'readAll'])->middleware('cache.headers:private;no_store')->name('notices.read_all');
+    Route::post('notices/{notice}/read', [AuditorNoticesController::class, 'read'])->whereUlid('notice')->middleware('cache.headers:private;no_store')->name('notices.read');
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
     Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
     Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');

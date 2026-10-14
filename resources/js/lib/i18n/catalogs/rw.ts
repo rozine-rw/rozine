@@ -4608,6 +4608,9 @@ const rw: Catalog = {
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.business.deposit_received.body':
         "{amount} ubu ari mu gikapu cy'ikigo.",
+    'investor.notices.business.application_approved.title': 'Ubusabe bwemejwe',
+    'investor.notices.business.application_approved.body':
+        '{title} yemerewe {amount} mu mezi {months}. Suzuma kandi usinye kugira ngo ikusanyamari ritangazwe.',
     'investor.notices.business.withdrawal_sent.title': 'Ibyabikujwe byoherejwe',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} byoherejwe kuri {account}.',
@@ -4615,6 +4618,19 @@ const rw: Catalog = {
         'Ibyabikujwe byagarutse',
     'investor.notices.business.withdrawal_returned.body':
         "Kohereza {amount} kuri {account} ntibyakunze. Byagarutse mu gikapu cy'ikigo.",
+    'investor.notices.auditor.accreditation_approved.title':
+        'Uruhushya rwemejwe',
+    'investor.notices.auditor.accreditation_approved.body':
+        "Uruhushya {licence} rwemejwe kugeza ku wa {date}. Ubu ushobora kwakira imirimo y'igenzura.",
+    'investor.notices.auditor.accreditation_rejected.title':
+        'Uruhushya rwawe rugomba kongera gusuzumwa',
+    'investor.notices.auditor.accreditation_rejected.body':
+        '{reason} Ohereza icyemezo gikosoye uhereye kuri porofayili yawe.',
+    'investor.notices.auditor.job_offered.title': "Umurimo mushya w'igenzura",
+    'investor.notices.auditor.job_offered.body_flash':
+        'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',
+    'investor.notices.auditor.job_offered.body_routine':
+        'Igenzura risanzwe kuri {business}, {location}. Emera mbere ya {time}.',
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

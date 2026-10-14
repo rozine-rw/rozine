@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 const AuditorHomeController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ AuditorHomeController.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 AuditorHomeController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ AuditorHomeController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 AuditorHomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ AuditorHomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 AuditorHomeController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ AuditorHomeController.head = (options?: RouteQueryOptions): RouteDefinition<'hea
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 const AuditorHomeControllerForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const AuditorHomeControllerForm = (options?: RouteQueryOptions): RouteFormDefini
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 AuditorHomeControllerForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ AuditorHomeControllerForm.get = (options?: RouteQueryOptions): RouteFormDefiniti
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 AuditorHomeControllerForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

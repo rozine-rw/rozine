@@ -27,6 +27,8 @@ class BusinessNoticesResource extends JsonResource
         return ['unread' => $inbox['unread'],
             'notices' => array_map(fn (array $notice): array => [...$notice,
                 'link' => ['url' => match ($notice['kind']) {
+                    'business.application_approved' => route($prefix.'business.applications.publish.show',
+                        ['business' => $business, 'application' => (string) $notice['facts']['application_id']], false),
                     'business.raise_expired' => route($prefix.'business.campaigns.show', ['business' => $business, 'campaign' => (string) $notice['facts']['campaign_id']], false),
                     default => route($prefix.'business.wallet.show', ['business' => $business], false),
                 }, 'method' => 'get'],

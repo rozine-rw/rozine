@@ -8,12 +8,14 @@ use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\WithVerifiedParties;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AccreditationCertificate;
 use App\Domain\Auditor\AccreditationProfile;
 use App\Domain\Auditor\AccreditationView;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditorCertificate;
@@ -39,6 +41,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         private AccreditationProfile $profiles,
         private AccreditationCertificate $certificates,
         private AccreditationView $views,
+        private PartyNotices $notices,
     ) {}
 
     /** @return array<string, mixed> */
@@ -92,6 +95,11 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
                     $state = $this->profiles->review($profile->state ?? $this->profiles->empty(), $decision, $submissionId, $checkedAt, $reference, $reason, now()->toDateTimeImmutable());
                     $record = $this->persist($profile, $partyId, $state, $expectedRevision);
                     $this->history($record, $actorId, 'accreditation.review', $reason);
+                    if ($decision === 'approve' || $decision === 'reject') {
+                        $this->notices->record($partyId, $decision === 'approve' ? PartyNoticeKind::AuditorAccreditationApproved : PartyNoticeKind::AuditorAccreditationRejected,
+                            $decision === 'approve' ? ['licence' => (string) $state['standing']['licence'], 'expires_on' => (string) $state['standing']['expires_on']] : ['reason' => trim($reason)],
+                            'auditor-accreditation-decided:'.$record->id.':'.$record->revision);
+                    }
 
                     return new OperationResult('ACCREDITATION_REVIEWED', ['profile_id' => $record->id], $record->revision);
                 });

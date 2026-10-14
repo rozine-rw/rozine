@@ -89,6 +89,11 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                                 'exposure_reservation_id' => $input['reservation_id'], 'actor_user_id' => $userId,
                                 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
                             $this->changes->record(ChangeScope::staffQueue('applications'), 'staff_queue', 'applications');
+                            $this->notices->record($this->audience->entityParty($application->business_id), PartyNoticeKind::BusinessApplicationApproved, [
+                                'business' => (string) ($input['business']['profile']['name'] ?? ''), 'title' => (string) ($application->draft['title'] ?? ''),
+                                'amount' => (string) $input['principal'], 'currency' => 'RWF', 'term_months' => (string) $application->draft['term_months'],
+                                'business_id' => $application->business_id, 'application_id' => $application->id,
+                            ], 'business-application-approved:'.$application->id, $this->audience->recipients($application->business_id));
 
                             return new OperationResult('APPLICATION_RELEASED', ['application_id' => $application->id, 'business_id' => $application->business_id,
                                 'receipt' => $this->receipt($release->id, $payload, 'APPLICATION_RELEASED')], 1);

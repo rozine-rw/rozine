@@ -55,7 +55,7 @@ describe('Business Home', () => {
             name: /RWF/u,
         });
 
-        expect(items).toHaveLength(4);
+        expect(items).toHaveLength(5);
         expect(items[0]).toHaveTextContent(
             'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
         );
@@ -67,6 +67,9 @@ describe('Business Home', () => {
         );
         expect(items[3]).toHaveTextContent(
             "Withdrawal returnedThe payout of RWF 300,000 to MTN MoMo +250 788 ···· 456 didn't go through. It's back in your Business wallet.",
+        );
+        expect(items[4]).toHaveTextContent(
+            'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
         );
 
         await user.click(

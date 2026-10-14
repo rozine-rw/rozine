@@ -43,6 +43,7 @@
         "resources/js/actions/App/Http/Controllers/AuditorEngagementController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorHomeController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorJobsController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
@@ -139,6 +140,7 @@
         "resources/js/routes/api/v1/auditor/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/index.ts",
         "resources/js/routes/api/v1/auditor/jobs/operations/index.ts",
+        "resources/js/routes/api/v1/auditor/notices/index.ts",
         "resources/js/routes/api/v1/auditor/operations/index.ts",
         "resources/js/routes/api/v1/auditor/reports/disputes/index.ts",
         "resources/js/routes/api/v1/auditor/reports/disputes/proofs/index.ts",
@@ -209,6 +211,7 @@
         "resources/js/routes/auditor/index.ts",
         "resources/js/routes/auditor/jobs/index.ts",
         "resources/js/routes/auditor/jobs/operations/index.ts",
+        "resources/js/routes/auditor/notices/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
         "resources/js/routes/auditor/portfolio/index.ts",
         "resources/js/routes/auditor/reports/disputes/index.ts",
@@ -701,8 +704,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 670,
-        "generated": 269,
+        "totalTrackedSources": 673,
+        "generated": 272,
         "declarationOnly": 18,
         "authoredExecutable": 383
     },

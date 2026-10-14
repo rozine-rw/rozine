@@ -8,7 +8,8 @@ namespace App\Domain\Identity;
  * The in-app notices a Party receives (BRS v2.0 NTF-R01), each from one recorded event. A kind
  * names the facts it carries; the client words them from its catalogs, and the notice opens the
  * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal
- * and a Business's expired raise are also e-mailed. A Business's notices belong to its entity Party.
+ * a Business's approved application and its expired raise, and an Audit Partner's accreditation
+ * decision and job offers are also e-mailed. A Business's notices belong to its entity Party.
  */
 enum PartyNoticeKind: string
 {
@@ -22,13 +23,18 @@ enum PartyNoticeKind: string
     case PayoutAccountLinked = 'security.payout_account_linked';
     case PayoutAccountUnlinked = 'security.payout_account_unlinked';
     case BusinessDepositReceived = 'business.deposit_received';
+    case BusinessApplicationApproved = 'business.application_approved';
     case BusinessRaiseExpired = 'business.raise_expired';
     case BusinessWithdrawalSent = 'business.withdrawal_sent';
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
+    case AuditorAccreditationApproved = 'auditor.accreditation_approved';
+    case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
+    case AuditorJobOffered = 'auditor.job_offered';
 
     public function mailed(): bool
     {
         return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
-            self::BusinessRaiseExpired], true);
+            self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
+            self::AuditorJobOffered], true);
     }
 }

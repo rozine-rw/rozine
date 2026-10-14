@@ -73,6 +73,26 @@
                 "method": "get"
             },
             "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c99",
+            "kind": "business.application_approved",
+            "facts": {
+                "business": "GreenLeaf Agro",
+                "title": "Solar Dryer Expansion",
+                "amount": "12000000",
+                "currency": "RWF",
+                "term_months": "12",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "application_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-09T11:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
         }
     ],
     "actions": {

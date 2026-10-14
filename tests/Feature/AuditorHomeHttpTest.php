@@ -96,7 +96,7 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
         'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
         'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
         'operation' => ['url' => '/auditor/operations/{request_id}', 'method' => 'get'],
-        'statement' => null, 'withdraw' => null, 'notifications' => null,
+        'statement' => null, 'withdraw' => null, 'notifications' => ['url' => '/auditor/notices', 'method' => 'get'],
     ]);
     $this->get('/auditor')->assertHeaderContains('Cache-Control', 'no-store')->assertHeaderContains('Cache-Control', 'private');
     foreach (['jobs' => 'auditor/jobs', 'portfolio' => 'auditor/portfolio', 'profile' => 'auditor/profile', 'conflicts' => 'auditor/conflicts'] as $tab => $component) {

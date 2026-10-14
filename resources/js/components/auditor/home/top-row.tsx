@@ -1,4 +1,9 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
+import {
+    NoticesPanel,
+    useNotices,
+} from '@/components/investor/notices/notices-panel';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import type { Money, RouteLink } from '@/types';
@@ -48,7 +53,7 @@ function Balance({
     );
 }
 
-/** The wallet chip with withdraw and statement, and the bell (design L91–106). */
+/** The wallet chip with withdraw and statement, and the notices bell (design L91–106). */
 export function TopRow({ available, unread, links }: TopRowProps) {
     const { t } = useTranslation();
 
@@ -137,41 +142,65 @@ export function TopRow({ available, unread, links }: TopRowProps) {
                 )}
             </div>
             {links.notifications !== null && (
-                <Link
-                    href={links.notifications}
-                    aria-label={
-                        unread > 0
-                            ? t('auditor.home.notifications_unread', {
-                                  count: unread,
-                              })
-                            : t('auditor.home.notifications')
-                    }
-                    className={`relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface ${CHIP_SHADOW}`}
-                >
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden
-                        className="size-[19px] text-[#16233c] dark:text-rz-ink"
-                    >
-                        <path
-                            d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinejoin="round"
-                        />
-                        <path
-                            d="M10 20a2 2 0 0 0 4 0"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                        />
-                    </svg>
-                    {unread > 0 && (
-                        <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
-                    )}
-                </Link>
+                <NoticesBell unread={unread} href={links.notifications} />
             )}
         </div>
+    );
+}
+
+/** The bell opens the partner's own notices panel over Home, loading the notices as it opens. */
+function NoticesBell({ unread, href }: { unread: number; href: RouteLink }) {
+    const { t } = useTranslation();
+    const notices = useNotices(href);
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => {
+                    setOpen(true);
+                    void notices.load();
+                }}
+                aria-label={
+                    unread > 0
+                        ? t('auditor.home.notifications_unread', {
+                              count: unread,
+                          })
+                        : t('auditor.home.notifications')
+                }
+                className={`relative ml-auto flex size-[42px] shrink-0 items-center justify-center rounded-xl border border-rz-border bg-rz-surface ${CHIP_SHADOW}`}
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                    className="size-[19px] text-[#16233c] dark:text-rz-ink"
+                >
+                    <path
+                        d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                    />
+                    <path
+                        d="M10 20a2 2 0 0 0 4 0"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                    />
+                </svg>
+                {unread > 0 && (
+                    <span className="absolute top-[9px] right-2.5 size-2 rounded-full border-2 border-rz-surface bg-[#b3383c]" />
+                )}
+            </button>
+            {open && (
+                <NoticesPanel
+                    notices={notices}
+                    onClose={() => setOpen(false)}
+                />
+            )}
+        </>
     );
 }

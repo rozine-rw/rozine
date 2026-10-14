@@ -2,7 +2,7 @@ import { router, useHttp } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDateTime, formatRwf } from '@/lib/rozine/format';
+import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { InvestorNotice, InvestorNotices } from '@/types/investor';
 import type { RouteAction, RouteLink } from '@/types/routing';
@@ -83,6 +83,11 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
+    'business.application_approved': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} />,
+    },
     'business.withdrawal_sent': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
@@ -96,6 +101,29 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
                 {...stroke}
             />
+        ),
+    },
+    'auditor.accreditation_approved': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
+    'auditor.accreditation_rejected': {
+        bar: 'bg-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
+        icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
+    },
+    'auditor.job_offered': {
+        bar: 'bg-[#0c1830] dark:bg-rz-slate',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        icon: (
+            <>
+                <path
+                    d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z"
+                    {...stroke}
+                />
+                <circle cx="12" cy="11" r="2.2" {...stroke} />
+            </>
         ),
     },
     'business.raise_expired': {
@@ -330,7 +358,7 @@ export function NoticesPanel({
                                             )}
                                         </span>
                                         <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
-                                            {body(notice, t)}
+                                            {body(notice, t, locale)}
                                         </span>
                                     </span>
                                 </button>
@@ -346,6 +374,7 @@ export function NoticesPanel({
 function body(
     notice: InvestorNotice,
     t: ReturnType<typeof useTranslation>['t'],
+    locale: string,
 ): string {
     switch (notice.kind) {
         case 'wallet.deposit_received':
@@ -390,6 +419,12 @@ function body(
             return t('investor.notices.business.deposit_received.body', {
                 amount: formatRwf(notice.facts),
             });
+        case 'business.application_approved':
+            return t('investor.notices.business.application_approved.body', {
+                title: notice.facts.title,
+                amount: formatRwf(notice.facts),
+                months: notice.facts.term_months,
+            });
         case 'business.withdrawal_sent':
             return t('investor.notices.business.withdrawal_sent.body', {
                 amount: formatRwf({
@@ -403,6 +438,26 @@ function body(
                 amount: formatRwf(notice.facts),
                 account: notice.facts.account,
             });
+        case 'auditor.accreditation_approved':
+            return t('investor.notices.auditor.accreditation_approved.body', {
+                licence: notice.facts.licence,
+                date: formatDate(notice.facts.expires_on, locale),
+            });
+        case 'auditor.accreditation_rejected':
+            return t('investor.notices.auditor.accreditation_rejected.body', {
+                reason: notice.facts.reason,
+            });
+        case 'auditor.job_offered':
+            return t(
+                notice.facts.type === 'flash'
+                    ? 'investor.notices.auditor.job_offered.body_flash'
+                    : 'investor.notices.auditor.job_offered.body_routine',
+                {
+                    business: notice.facts.business,
+                    location: notice.facts.location,
+                    time: formatDateTime(notice.facts.accept_by, locale),
+                },
+            );
         case 'business.raise_expired':
             return t('investor.notices.business.raise_expired.body', {
                 title: notice.facts.title,

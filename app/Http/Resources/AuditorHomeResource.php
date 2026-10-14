@@ -13,15 +13,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * partner's work as Jobs reads it, and their filed reports. A fact with no record yet stays null
  * and the page shows it as unavailable or leaves it out — the firm and professional body, the
  * quality score, earnings, active deals, on-time share, variance, clock expiries and the wallet —
- * and destinations that do not exist yet (statement, withdraw, notifications) are null, so their
- * controls stay hidden. Recent activity is the partner's own filings, newest first.
+ * and destinations that do not exist yet (statement, withdraw) are null, so their controls stay
+ * hidden. The bell opens the partner's own notices. Recent activity is the partner's own filings,
+ * newest first.
  *
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type FiledReports from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type Accreditation from AuditorProfileResource
  *
- * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports}
+ * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int}
  */
 class AuditorHomeResource extends JsonResource
 {
@@ -59,9 +60,9 @@ class AuditorHomeResource extends JsonResource
             'activity' => array_map(fn (array $report): array => ['kind' => 'report_filed', 'at' => $report['sealed_at'],
                 'business' => $report['business'], 'variance_pct' => null], $page['reports']['data']),
             'wallet' => ['available' => null],
-            'unread_notifications' => 0,
+            'unread_notifications' => $page['unread_notifications'] ?? 0,
             'links' => [...AuditorJobsResource::links($request), 'operation' => AuditorProfileResource::operationLink('auditor.'),
-                'statement' => null, 'withdraw' => null, 'notifications' => null],
+                'statement' => null, 'withdraw' => null, 'notifications' => ['url' => route('auditor.notices', [], false), 'method' => 'get']],
         ];
     }
 }

@@ -4637,12 +4637,28 @@ const fr: Catalog = {
     'investor.notices.business.deposit_received.title': 'Dépôt reçu',
     'investor.notices.business.deposit_received.body':
         "{amount} est maintenant dans le portefeuille de l'entreprise.",
+    'investor.notices.business.application_approved.title': 'Demande approuvée',
+    'investor.notices.business.application_approved.body':
+        '{title} est approuvée pour {amount} sur {months} mois. Relisez et signez pour publier la levée.',
     'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} a été envoyé vers {account}.',
     'investor.notices.business.withdrawal_returned.title': 'Retrait remboursé',
     'investor.notices.business.withdrawal_returned.body':
         "Le versement de {amount} vers {account} n'a pas abouti. Il est de retour dans le portefeuille de l'entreprise.",
+    'investor.notices.auditor.accreditation_approved.title':
+        'Accréditation active',
+    'investor.notices.auditor.accreditation_approved.body':
+        "La licence {licence} est vérifiée jusqu'au {date}. Vous pouvez maintenant accepter des missions d'audit.",
+    'investor.notices.auditor.accreditation_rejected.title':
+        'Votre accréditation doit être revue',
+    'investor.notices.auditor.accreditation_rejected.body':
+        '{reason} Téléversez un certificat corrigé depuis votre profil.',
+    'investor.notices.auditor.job_offered.title': "Nouvelle mission d'audit",
+    'investor.notices.auditor.job_offered.body_flash':
+        'Audit flash chez {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.body_routine':
+        'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
