@@ -26,7 +26,11 @@ class InvestorWalletResource extends JsonResource
         $movement = $data['history']['movement'];
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
-            'allowed_actions' => $data['allowed_actions'], 'wallet' => $data['wallet'], 'holds' => [], 'funding' => $data['funding'],
+            'allowed_actions' => $data['allowed_actions'], 'wallet' => $data['wallet'],
+            'holds' => array_map(fn (array $hold): array => ['reservation_id' => $hold['reservation_id'], 'deal_name' => $hold['deal_name'], 'amount' => $hold['amount'],
+                'units' => $hold['units'], 'clock' => ['starts_at' => $hold['starts_at'], 'expires_at' => $hold['expires_at']],
+                'link' => self::link($request, 'investor.checkout', ['campaign' => $hold['campaign_id'], 'reservation' => $hold['reservation_id']])], $data['holds']),
+            'funding' => $data['funding'],
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $context, $deposit), $data['deposits']),
             'history' => ['movement' => $movement,
                 'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key])], ['external', 'internal']),

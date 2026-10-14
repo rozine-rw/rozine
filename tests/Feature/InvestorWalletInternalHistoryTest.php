@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Models\LedgerEntry;
+use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -91,4 +92,29 @@ it('pages internal history twenty at a time', function (): void {
 
     expect($first['history']['items'])->toHaveCount(20)->and($next['url'])->toStartWith('/investor/wallet?movement=internal&before=')
         ->and($second['history']['items'])->toHaveCount(1)->and($second['history']['pagination']['next'])->toBeNull();
+});
+
+it('lists the live checkout holds newest first, each opening its held checkout', function (): void {
+    $first = ($this->reserve)('1', (string) Str::uuid());
+    $released = ($this->reserve)('2', (string) Str::uuid());
+    $latest = ($this->reserve)('3', (string) Str::uuid());
+    $this->checkout->release($this->investor['user']->id, 1, $this->campaign->id, $released, 1, (string) Str::uuid());
+
+    $title = app(PrimaryCampaignSource::class)->presentation($this->campaign->id)['title'];
+    $holds = internalWalletPage($this->actingAs($this->investor['user'])->get(route('investor.wallet')))['holds'];
+    $latestRecord = PrimaryReservationRecord::query()->whereKey($latest)->sole();
+    expect(array_column($holds, 'reservation_id'))->toBe([$latest, $first])
+        ->and($holds[0])->toBe(['reservation_id' => $latest, 'deal_name' => $title, 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'units' => '3',
+            'clock' => ['starts_at' => $latestRecord->created_at->utc()->toIso8601String(), 'expires_at' => $latestRecord->expires_at->utc()->toIso8601String()],
+            'link' => ['url' => '/investor/deals/'.$this->campaign->id.'/checkout?reservation='.$latest, 'method' => 'get']]);
+
+    $other = PrimaryReservationFixture::investor();
+    expect(internalWalletPage($this->actingAs($other['user'])->get(route('investor.wallet')))['holds'])->toBe([]);
+
+    Sanctum::actingAs($this->investor['user'], ['investor:read']);
+    $this->getJson(route('api.v1.investor.wallet'))->assertOk()->assertJsonCount(2, 'data.holds')
+        ->assertJsonPath('data.holds.0.link.url', '/api/v1/investor/deals/'.$this->campaign->id.'/checkout?reservation='.$latest);
+
+    $this->travel(1)->days();
+    expect(internalWalletPage($this->actingAs($this->investor['user'])->get(route('investor.wallet')))['holds'])->toBe([]);
 });

@@ -130,7 +130,7 @@ final class EloquentWalletStore implements WalletStore
                     'minimum' => $policy['terms']->minimum?->money(), 'maximum' => $policy['terms']->maximum?->money()],
                     'methods' => $methods->map(fn (InvestorFundingMethod $method): array => $this->method($method))->values()->all(), 'picks' => [],
                     'quote' => $this->quote($policy, $methods->isNotEmpty(), $query['kind'] ?? null, $query['amount'] ?? null)],
-                'deposits' => $deposits, 'history' => ['movement' => $movement, ...$history],
+                'holds' => $this->purchases->activeHolds($partyId), 'deposits' => $deposits, 'history' => ['movement' => $movement, ...$history],
                 'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
         });
     }

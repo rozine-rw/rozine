@@ -50,4 +50,20 @@ final readonly class EloquentPrimaryPurchaseIndex implements PrimaryPurchaseInde
 
         return $labels;
     }
+
+    public function activeHolds(string $partyId): array
+    {
+        $records = PrimaryReservationRecord::query()->where('party_id', $partyId)->where('expires_at', '>', now())
+            ->whereRaw("(SELECT v.state FROM primary_reservation_versions v WHERE v.primary_reservation_id = primary_reservations.id
+                ORDER BY v.revision DESC LIMIT 1) = 'held'")->orderByDesc('created_at')->orderByDesc('id')->get();
+        $titles = [];
+
+        return array_values($records->map(function (PrimaryReservationRecord $record) use (&$titles): array {
+            $titles[$record->business_campaign_id] ??= $this->campaigns->presentation($record->business_campaign_id)['title'];
+
+            return ['reservation_id' => $record->id, 'campaign_id' => $record->business_campaign_id, 'deal_name' => $titles[$record->business_campaign_id],
+                'amount' => ['currency' => 'RWF', 'amount' => (string) $record->principal], 'units' => (string) $record->units,
+                'starts_at' => $record->created_at->utc()->toIso8601String(), 'expires_at' => $record->expires_at->utc()->toIso8601String()];
+        })->all());
+    }
 }
