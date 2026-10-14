@@ -76,6 +76,12 @@ describe('Auditor Home', () => {
             url: '/preview/auditor-notices/read',
             method: 'post',
         });
+
+        await user.click(
+            within(panel).getByRole('button', { name: 'Close notifications' }),
+        );
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('lays out identity, standing, nearby work and activity from server facts', () => {
