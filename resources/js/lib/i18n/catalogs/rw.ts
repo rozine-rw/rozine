@@ -691,6 +691,8 @@ const rw: Catalog = {
     'business.profile.permissions.report.cosign': 'Gusinyana raporo',
     'business.profile.permissions.business.wallet.deposit':
         'Kongera amafaranga mu ikofi',
+    'business.profile.permissions.business.wallet.withdraw':
+        'Kubikuza mu gikapu',
     'business.profile.permissions.repayment.pay': 'Kwishyura',
     'business.profile.pending.linked_title':
         'Nta konti yo kwakiriraho iracyahari',
@@ -1964,6 +1966,7 @@ const rw: Catalog = {
     'business.wallet.available': 'Amafaranga ahari',
     'business.wallet.brand': 'Ikofi ya Rozine',
     'business.wallet.deposit.button': 'Shyiramo',
+    'business.wallet.withdraw.button': 'Bikuza',
     'business.wallet.processing': 'Birimo gukorwa…',
     'business.wallet.history': "Amateka y'ibikorwa",
     'business.wallet.detail.when': "Itariki n'isaha",
@@ -4605,6 +4608,13 @@ const rw: Catalog = {
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.business.deposit_received.body':
         "{amount} ubu ari mu gikapu cy'ikigo.",
+    'investor.notices.business.withdrawal_sent.title': 'Ibyabikujwe byoherejwe',
+    'investor.notices.business.withdrawal_sent.body':
+        '{amount} byoherejwe kuri {account}.',
+    'investor.notices.business.withdrawal_returned.title':
+        'Ibyabikujwe byagarutse',
+    'investor.notices.business.withdrawal_returned.body':
+        "Kohereza {amount} kuri {account} ntibyakunze. Byagarutse mu gikapu cy'ikigo.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

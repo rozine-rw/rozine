@@ -3,6 +3,8 @@ import type {
     DepositPolicy,
     DepositQuote,
     FundingMethod,
+    WalletWithdrawal,
+    WithdrawalTerms,
 } from './investor';
 import type { Money } from './money';
 import type {
@@ -921,6 +923,7 @@ export type MandatePermission =
     | 'application.sign'
     | 'report.cosign'
     | 'business.wallet.deposit'
+    | 'business.wallet.withdraw'
     | 'repayment.pay';
 
 export type CompanyProfile = {
@@ -1046,6 +1049,7 @@ export type BusinessProfileProps = {
 
 export type BusinessServicingAllowedAction =
     | 'business.wallet.deposit'
+    | 'business.wallet.withdraw'
     | 'repayment.pay';
 
 export type BusinessServicingPageContract = {
@@ -1055,7 +1059,7 @@ export type BusinessServicingPageContract = {
     allowed_actions: BusinessServicingAllowedAction[];
 };
 
-/** Withdrawal stays hidden (Phase 2); a restriction never withholds deposits (§11.4). */
+/** A restriction never withholds deposits (§11.4). */
 export type BusinessWalletBalances = {
     revision: number;
     status: 'active' | 'restricted';
@@ -1064,6 +1068,8 @@ export type BusinessWalletBalances = {
     available: Money;
     /** Recorded but not credited, outside `available`. */
     pending_deposits: Money;
+    /** Withdrawn from `available` and on its way to the Business's account. */
+    pending_withdrawals: Money;
 };
 
 /** External cash apart from internal transfers (H5), as on the Investor wallet. */
@@ -1097,21 +1103,25 @@ export type BusinessWalletMovement = BusinessWalletEntry['movement'];
 
 /**
  * `business.wallet.show`. Mirrors the C3 Investor wallet (v2 §2a): deposit through a verified
- * registered rail under a versioned policy, recorded intents, and the history. A null `policy`
- * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+ * registered rail under a versioned policy, withdrawal to the Business's own verified account
+ * (APP-B01, LED-R04), recorded intents and withdrawals, and the history. A null `policy` or
+ * `withdrawal` means that movement is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
  */
 export type BusinessWalletProps = BusinessServicingPageContract & {
     business: { id: string; name: string };
     wallet: BusinessWalletBalances;
     funding: {
-        kind: 'deposit' | null;
+        kind: 'deposit' | 'withdraw' | null;
         policy: DepositPolicy | null;
+        withdrawal: WithdrawalTerms | null;
         methods: FundingMethod[];
         picks: Money[];
         quote: DepositQuote | null;
     };
     /** Pending and unknown first. */
     deposits: DepositIntent[];
+    /** Unsettled first. */
+    withdrawals: WalletWithdrawal[];
     history: {
         movement: BusinessWalletMovement;
         filters: {
@@ -1122,10 +1132,11 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         items: BusinessWalletEntry[];
         pagination: Pagination;
     };
-    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
+    /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
     receipt:
         | (BusinessWalletEntry & { receipt: Receipt })
         | DepositIntent
+        | WalletWithdrawal
         | null;
     /** A headline figure without a basis renders without a drill-down. */
     bases: Partial<Record<'available', RouteLink>>;
@@ -1135,13 +1146,19 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         close: RouteLink;
         /** Opens the deposit panel. */
         deposit: RouteLink;
-        /** The operation lookup; its url holds the literal `{request_id}` token. */
+        /** Opens the withdrawal panel. */
+        withdraw: RouteLink;
+        /** The deposit operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
+        /** The withdrawal operation lookup, with the same token. */
+        withdrawal_operation: RouteLink;
         /** The note being repaid, when one is servicing. */
         repayments: RouteLink | null;
     };
-    actions: { deposit: RouteAction };
-    preview_outcome?: C3PreviewOutcome<'business.wallet.deposit'>;
+    actions: { deposit: RouteAction; withdraw: RouteAction };
+    preview_outcome?: C3PreviewOutcome<
+        'business.wallet.deposit' | 'business.wallet.withdraw'
+    >;
 };
 
 /* ------------------------------------------------------------------------------------------ */

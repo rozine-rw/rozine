@@ -691,6 +691,8 @@ const fr: Catalog = {
     'business.profile.permissions.report.cosign': 'Cosigner les rapports',
     'business.profile.permissions.business.wallet.deposit':
         'Alimenter le portefeuille',
+    'business.profile.permissions.business.wallet.withdraw':
+        'Retirer du portefeuille',
     'business.profile.permissions.repayment.pay': 'Payer les remboursements',
     'business.profile.pending.linked_title': 'Aucun compte de versement',
     'business.profile.pending.linked_body':
@@ -1969,6 +1971,7 @@ const fr: Catalog = {
     'business.wallet.available': 'Solde disponible',
     'business.wallet.brand': 'Portefeuille Rozine',
     'business.wallet.deposit.button': 'Déposer',
+    'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
     'business.wallet.history': 'Historique des transactions',
     'business.wallet.detail.when': 'Date et heure',
@@ -4634,6 +4637,12 @@ const fr: Catalog = {
     'investor.notices.business.deposit_received.title': 'Dépôt reçu',
     'investor.notices.business.deposit_received.body':
         "{amount} est maintenant dans le portefeuille de l'entreprise.",
+    'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
+    'investor.notices.business.withdrawal_sent.body':
+        '{amount} a été envoyé vers {account}.',
+    'investor.notices.business.withdrawal_returned.title': 'Retrait remboursé',
+    'investor.notices.business.withdrawal_returned.body':
+        "Le versement de {amount} vers {account} n'a pas abouti. Il est de retour dans le portefeuille de l'entreprise.",
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

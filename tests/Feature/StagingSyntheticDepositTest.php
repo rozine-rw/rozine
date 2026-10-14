@@ -142,7 +142,7 @@ it('declines a staging deposit paid from the declining test number and credits n
 it('refuses a new Business deposit on UAT and still settles one accepted before, through the Business provider path', function (): void {
     $business = stagingBusiness();
     $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '30000'))->assertOk();
-    expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit']);
+    expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw']);
 
     asStaging();
     $this->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))

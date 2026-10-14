@@ -242,6 +242,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $holdingIssue = require database_path('migrations/2026_09_30_114217_require_issue_evidence_for_primary_holdings.php');
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    $businessWithdrawals->down();
     $businessRepayments->down();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessDeposits->down();
@@ -336,6 +338,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $heldGenerations->up();
     $businessDeposits->up();
     $businessRepayments->up();
+    $businessWithdrawals->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)

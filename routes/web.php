@@ -190,6 +190,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');
     Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
+    Route::post('{business}/wallet/withdrawals', [BusinessWalletController::class, 'withdraw'])->whereUlid('business')->name('withdraw');
     Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
 

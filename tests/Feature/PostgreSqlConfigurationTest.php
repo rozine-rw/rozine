@@ -128,6 +128,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('investor_verification_versions'))->toBeFalse()
         ->and(Schema::hasTable('investor_verification_documents'))->toBeFalse();
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    $businessWithdrawals->down();
     $businessRepayments->down();
     expect(Schema::hasTable('business_repayments'))->toBeFalse();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
@@ -346,6 +348,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasColumn('wallet_deposit_intents', 'owner'))->toBeTrue();
     $businessDeposits->up();
     $businessRepayments->up();
+    $businessWithdrawals->up();
     $investorVerifications->up();
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);

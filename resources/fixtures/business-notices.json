@@ -39,6 +39,40 @@
                 "method": "get"
             },
             "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9b",
+            "kind": "business.withdrawal_sent",
+            "facts": {
+                "amount": "800000",
+                "currency": "RWF",
+                "received": "800000",
+                "account": "Bank of Kigali Account ····2231"
+            },
+            "created_at": "2026-10-11T10:05:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9a",
+            "kind": "business.withdrawal_returned",
+            "facts": {
+                "amount": "300000",
+                "currency": "RWF",
+                "received": "300000",
+                "account": "MTN MoMo +250 788 ···· 456"
+            },
+            "created_at": "2026-10-10T16:40:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
         }
     ],
     "actions": {

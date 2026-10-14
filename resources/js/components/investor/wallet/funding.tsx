@@ -15,6 +15,7 @@ import type {
     FundingMethod,
     PayoutAccountKind,
 } from '@/types/investor';
+import type { Money } from '@/types/money';
 import type { RouteAction, RouteLink } from '@/types/routing';
 import type { C3PreviewOutcome } from '@/types/settlement';
 
@@ -477,16 +478,20 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     );
 }
 
-type WithdrawPanelProps = {
-    funding: C3InvestorWalletProps['funding'];
+type WithdrawPanelProps<Name extends string> = {
+    funding: Pick<C3InvestorWalletProps['funding'], 'withdrawal' | 'methods'>;
     action: RouteAction;
-    available: C3InvestorWalletProps['wallet']['breakdown']['available'];
+    available: Money;
     allowed_actions: readonly string[];
     identity_context_revision: number;
-    preview_outcome?: C3InvestorWalletProps['preview_outcome'];
+    preview_outcome?: C3PreviewOutcome<Name>;
     operation: RouteLink;
     close: RouteLink | null;
     wide: boolean;
+    /** The withdrawal command: the Investor's `wallet.withdraw` unless a Business wallet names its own. */
+    command?: Name;
+    /** What the command carries beyond the amount and method, such as a Business wallet's owner. */
+    payload?: Record<string, unknown>;
 };
 
 /**
@@ -496,7 +501,7 @@ type WithdrawPanelProps = {
  * `allowed_actions` offers `wallet.withdraw`. The amount leaves the available balance at once and
  * is paid out only on the provider's verified success; a failure returns it.
  */
-export function WithdrawPanel({
+export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     funding,
     action,
     available,
@@ -506,7 +511,9 @@ export function WithdrawPanel({
     operation,
     close,
     wide,
-}: WithdrawPanelProps) {
+    command: name = 'wallet.withdraw' as Name,
+    payload = {},
+}: WithdrawPanelProps<Name>) {
     const { t } = useTranslation();
     const terms = funding.withdrawal;
     const quote = terms?.quote ?? null;
@@ -514,8 +521,8 @@ export function WithdrawPanel({
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
     const timer = useRef<number | undefined>(undefined);
-    const command = useC3Command<'wallet.deposit' | 'wallet.withdraw'>({
-        actions: { 'wallet.withdraw': action },
+    const command = useC3Command<Name>({
+        actions: { [name]: action } as Partial<Record<Name, RouteAction>>,
         lookup: operation,
         lookupQuery: { identity_context_revision: identityRevision },
         allowed,
@@ -556,7 +563,7 @@ export function WithdrawPanel({
     if (
         terms === null ||
         funding.methods.length === 0 ||
-        !allowed.includes('wallet.withdraw')
+        !allowed.includes(name)
     ) {
         return (
             <section
@@ -603,7 +610,8 @@ export function WithdrawPanel({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        command.send('wallet.withdraw', {
+        command.send(name, {
+            ...payload,
             identity_context_revision: identityRevision,
             amount: { currency: 'RWF', amount },
             method_id: method,

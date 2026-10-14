@@ -668,6 +668,8 @@ const en = {
     'business.profile.permissions.application.sign': 'Sign applications',
     'business.profile.permissions.report.cosign': 'Co-sign reports',
     'business.profile.permissions.business.wallet.deposit': 'Top up the wallet',
+    'business.profile.permissions.business.wallet.withdraw':
+        'Withdraw from the wallet',
     'business.profile.permissions.repayment.pay': 'Pay repayments',
     'business.profile.pending.linked_title': 'No payout account yet',
     'business.profile.pending.linked_body':
@@ -1887,6 +1889,7 @@ const en = {
     'business.wallet.available': 'Available balance',
     'business.wallet.brand': 'Rozine Wallet',
     'business.wallet.deposit.button': 'Deposit',
+    'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
     'business.wallet.history': 'Transaction history',
     'business.wallet.detail.when': 'Date & time',
@@ -4421,6 +4424,13 @@ const en = {
     'investor.notices.business.deposit_received.title': 'Deposit received',
     'investor.notices.business.deposit_received.body':
         '{amount} is now in your Business wallet.',
+    'investor.notices.business.withdrawal_sent.title': 'Withdrawal sent',
+    'investor.notices.business.withdrawal_sent.body':
+        '{amount} was sent to {account}.',
+    'investor.notices.business.withdrawal_returned.title':
+        'Withdrawal returned',
+    'investor.notices.business.withdrawal_returned.body':
+        "The payout of {amount} to {account} didn't go through. It's back in your Business wallet.",
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

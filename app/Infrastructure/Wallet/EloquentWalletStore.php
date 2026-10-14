@@ -252,7 +252,8 @@ final class EloquentWalletStore implements WalletStore
             }
             // Provider event keys are one namespace across owners: a key the other owner already consumed is a conflict here.
             $consumedElsewhere = DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
-                || WalletWithdrawalEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+                || WalletWithdrawalEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
             $current = $this->currentState($intent->id);
             $outcome = DepositOutcome::transition($current, $event->state);
             $disposition = match (true) {
@@ -605,7 +606,8 @@ final class EloquentWalletStore implements WalletStore
             }
             // Provider event keys are one namespace across deposits and withdrawals of both owners.
             $consumedElsewhere = WalletProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
-                || DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+                || DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
             $current = $this->withdrawalState($withdrawal->id);
             $outcome = DepositOutcome::transition($current, $event->state);
             $disposition = match (true) {

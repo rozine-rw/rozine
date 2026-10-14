@@ -1421,6 +1421,14 @@ export type InvestorNotice = {
     | { kind: 'verification.rejected'; facts: { reason: string } }
     | { kind: 'business.deposit_received'; facts: Money }
     | {
+          kind: 'business.withdrawal_sent';
+          facts: Money & { account: string; received: string };
+      }
+    | {
+          kind: 'business.withdrawal_returned';
+          facts: Money & { account: string };
+      }
+    | {
           kind: 'business.raise_expired';
           facts: {
               currency: 'RWF';

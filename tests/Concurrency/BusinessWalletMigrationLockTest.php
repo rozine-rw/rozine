@@ -21,14 +21,17 @@ it('installs the wallet supertype behind an in-flight posting without blocking i
     $ownerGuard = require database_path('migrations/2026_10_03_100100_refuse_ownerless_ledger_entries.php');
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
-    $restore = function () use ($migration, $ownerGuard, $businessDeposits, $businessRepayments): void {
+    $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    $restore = function () use ($migration, $ownerGuard, $businessDeposits, $businessRepayments, $businessWithdrawals): void {
         if (! Schema::hasTable('business_wallets')) {
             $migration->up();
         }
         $ownerGuard->up();
         $businessDeposits->up();
         $businessRepayments->up();
+        $businessWithdrawals->up();
     };
+    $businessWithdrawals->down();
     $businessRepayments->down();
     $businessDeposits->down();
     $ownerGuard->down();

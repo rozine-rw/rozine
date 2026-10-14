@@ -54,7 +54,7 @@ afterEach(() => {
 });
 
 describe('Business wallet (business-servicing-v1)', () => {
-    it('shows the available balance, the repayments link and the deposit history, with withdrawal hidden', () => {
+    it('shows the available balance, the repayments link and the deposit history, with deposit and withdraw offered', () => {
         render(<BusinessWallet {...wallet()} />);
 
         const balance = screen.getByRole('region', {
@@ -74,7 +74,13 @@ describe('Business wallet (business-servicing-v1)', () => {
             'href',
             '/preview/business-wallet-deposit',
         );
-        expect(screen.queryByText(/withdraw/iu)).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Withdraw' })).toHaveAttribute(
+            'href',
+            '/preview/business-wallet-withdraw',
+        );
+        expect(
+            screen.queryByRole('region', { name: 'Withdrawals' }),
+        ).not.toBeInTheDocument();
 
         const deposits = screen.getByRole('region', { name: 'Deposits' });
 
@@ -209,7 +215,7 @@ describe('Business wallet (business-servicing-v1)', () => {
 
         expect(inertia.reloads).toHaveLength(POLL_LIMIT);
         expect(inertia.reloads[0]).toMatchObject({
-            only: ['wallet', 'deposits', 'history'],
+            only: ['wallet', 'deposits', 'withdrawals', 'history'],
         });
 
         rerender(<BusinessWallet {...wallet(unknownFixture)} />);

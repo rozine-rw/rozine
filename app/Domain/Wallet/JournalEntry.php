@@ -89,8 +89,9 @@ final readonly class JournalEntry
     }
 
     /**
-     * A withdrawal movement (LED-R04): a hold moves the amount from available to withdrawing; a paid
-     * withdrawal moves it out to withdrawal clearing; a failed one returns it to available.
+     * A withdrawal movement (LED-R04), of an Investor or a Business wallet: a hold moves the amount
+     * from available to withdrawing; a paid withdrawal moves it out to withdrawal clearing; a failed
+     * one returns it to available.
      */
     public static function withdrawal(string $kind, WalletMoney $amount): self
     {
@@ -98,6 +99,9 @@ final readonly class JournalEntry
             'withdrawal_hold' => ['investor_available', 'investor_withdrawing'],
             'withdrawal_payout' => ['investor_withdrawing', 'withdrawal_clearing'],
             'withdrawal_return' => ['investor_withdrawing', 'investor_available'],
+            'business_withdrawal_hold' => ['business_available', 'business_withdrawing'],
+            'business_withdrawal_payout' => ['business_withdrawing', 'withdrawal_clearing'],
+            'business_withdrawal_return' => ['business_withdrawing', 'business_available'],
             default => throw new WalletViolation('WALLET_POSTING_KIND_INVALID'),
         };
 

@@ -23,6 +23,8 @@ enum PartyNoticeKind: string
     case PayoutAccountUnlinked = 'security.payout_account_unlinked';
     case BusinessDepositReceived = 'business.deposit_received';
     case BusinessRaiseExpired = 'business.raise_expired';
+    case BusinessWithdrawalSent = 'business.withdrawal_sent';
+    case BusinessWithdrawalReturned = 'business.withdrawal_returned';
 
     public function mailed(): bool
     {

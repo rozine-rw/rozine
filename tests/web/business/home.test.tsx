@@ -55,12 +55,18 @@ describe('Business Home', () => {
             name: /RWF/u,
         });
 
-        expect(items).toHaveLength(2);
+        expect(items).toHaveLength(4);
         expect(items[0]).toHaveTextContent(
             'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
         );
         expect(items[1]).toHaveTextContent(
             'Deposit receivedRWF 2,500,000 is now in your Business wallet.',
+        );
+        expect(items[2]).toHaveTextContent(
+            'Withdrawal sentRWF 800,000 was sent to Bank of Kigali Account ····2231.',
+        );
+        expect(items[3]).toHaveTextContent(
+            "Withdrawal returnedThe payout of RWF 300,000 to MTN MoMo +250 788 ···· 456 didn't go through. It's back in your Business wallet.",
         );
 
         await user.click(
