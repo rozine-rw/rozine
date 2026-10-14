@@ -9,6 +9,8 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Operations\Contracts\OperationRecords;
+use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\DepositInstruction;
@@ -51,9 +53,17 @@ use RuntimeException;
  */
 final class EloquentWalletStore implements WalletStore
 {
+    /** Each internal ledger posting as the history shows it: kind, from and to bucket, and its receipt code. */
+    private const array INTERNAL = [
+        'primary_hold' => ['hold', 'available', 'held', 'PRIMARY_RESERVED'],
+        'primary_release' => ['hold_release', 'held', 'available', 'PRIMARY_RELEASED'],
+        'primary_commit' => ['commitment', 'held', 'committed', 'PRIMARY_COMMITTED'],
+        'primary_refund' => ['commitment_refund', 'committed', 'available', 'COMMITMENT_REFUNDED'],
+    ];
+
     public function __construct(private AuthorizeActiveRole $authority, private OperationJournal $journal, private CanonicalJson $json,
         private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes, private SyntheticDepositAdmission $admission,
-        private PartyNotices $notices) {}
+        private PartyNotices $notices, private PrimaryPurchaseIndex $purchases, private OperationRecords $operations) {}
 
     /**
      * @param  array{currency: string, amount: string}  $amount
@@ -107,7 +117,11 @@ final class EloquentWalletStore implements WalletStore
             $canDeposit = $policy !== null && $methods->isNotEmpty() && ! $this->depositBlocked($partyId) && $this->admission->admitsInvestor($partyId);
             $deposits = $wallet === null ? [] : $this->deposits($wallet);
             $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
-            $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
+            $history = match (true) {
+                $wallet === null => ['items' => [], 'next_before' => null],
+                $movement === 'internal' => $this->internalHistory($wallet, $query['before'] ?? null),
+                default => $this->history($wallet, $query['before'] ?? null),
+            };
 
             return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $canDeposit ? ['wallet.deposit'] : [],
                 'wallet' => $this->balances($wallet, $cases->first()?->effective_at->toIso8601String()),
@@ -318,6 +332,62 @@ final class EloquentWalletStore implements WalletStore
             'next_before' => $credits->count() > 20 ? $page->last()?->id : null];
     }
 
+    /**
+     * Internal transfers between the Investor's own buckets: each purchase hold, its release, its
+     * commitment and its refund, newest first, twenty to a page, named by the deal it was for.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function internalHistory(InvestorWallet $wallet, ?string $before): array
+    {
+        $entries = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+            ->where('source_type', 'primary_reservation')->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->orderByDesc('id')->limit(21)->get();
+        $page = $entries->take(20);
+        $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($page->pluck('source_id')->all())));
+
+        return ['items' => array_values($page->map(fn (LedgerEntry $entry): array => $this->internalEntry($entry, $labels))->all()),
+            'next_before' => $entries->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /**
+     * @param  array<string, array{campaign_id: string, deal_name: string, units: string, policy_version: string}>  $labels
+     * @return array<string, mixed>
+     */
+    private function internalEntry(LedgerEntry $entry, array $labels): array
+    {
+        [$kind, $from, $to] = self::INTERNAL[$entry->kind];
+
+        return ['id' => $entry->id, 'movement' => 'internal', 'kind' => $kind, 'from' => $from, 'to' => $to,
+            'amount' => WalletMoney::of($this->debited($entry))->money(),
+            'deal_name' => ($labels[$entry->source_id] ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED'))['deal_name'],
+            'occurred_at' => (string) $entry->payload['recorded_at']];
+    }
+
+    /**
+     * The receipt of one internal transfer: the posting the ledger recorded, under the policy the
+     * purchase was quoted with, against the request that opened the purchase.
+     *
+     * @param  array{campaign_id: string, deal_name: string, units: string, policy_version: string}  $label
+     * @return array<string, mixed>
+     */
+    private function internalReceipt(LedgerEntry $entry, string $partyId, array $label): array
+    {
+        $origin = array_find($this->operations->forTarget('party:'.$partyId, 'primary.reserve', 'campaign', $label['campaign_id']),
+            fn (array $operation): bool => $operation['operation_id'] === $entry->origin_operation_id)
+            ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED');
+
+        return ['receipt_id' => $entry->id, 'operation_id' => $origin['operation_id'], 'request_id' => $origin['request_id'],
+            'code' => self::INTERNAL[$entry->kind][3], 'recorded_at' => (string) $entry->payload['recorded_at'],
+            'amount' => WalletMoney::of($this->debited($entry))->money(), 'units' => $label['units'],
+            'reference' => 'RZW-'.strtoupper(substr($entry->id, -10)), 'revision' => 1, 'policy_version' => $label['policy_version'], 'disclosure_version' => null];
+    }
+
+    private function debited(LedgerEntry $entry): string
+    {
+        return (string) LedgerLine::query()->where('entry_id', $entry->id)->where('direction', 'debit')->value('amount');
+    }
+
     /** @return array<string, mixed> */
     private function historyEntry(WalletDepositCredit $credit): array
     {
@@ -328,8 +398,9 @@ final class EloquentWalletStore implements WalletStore
     }
 
     /**
-     * The receipt the page was asked to open, if it is this wallet's: a deposit intent, or a credited
-     * deposit's history entry with its credit receipt. Anyone else's id opens nothing.
+     * The receipt the page was asked to open, if it is this wallet's: a deposit intent, a credited
+     * deposit's history entry with its credit receipt, or an internal transfer with its posting
+     * receipt. Anyone else's id opens nothing.
      *
      * @return array<string, mixed>|null
      */
@@ -343,8 +414,18 @@ final class EloquentWalletStore implements WalletStore
             return ['type' => 'deposit', 'deposit' => $deposit[0]];
         }
         $credit = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->whereKey(strtolower($id))->first();
+        if ($credit !== null) {
+            return ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+        }
+        $entry = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+            ->where('source_type', 'primary_reservation')->whereKey(strtolower($id))->first();
+        if ($entry === null) {
+            return null;
+        }
+        $labels = $this->purchases->walletLabels($wallet->party_id, [$entry->source_id]);
 
-        return $credit === null ? null : ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+        return ['type' => 'entry', 'entry' => $this->internalEntry($entry, $labels),
+            'receipt' => $this->internalReceipt($entry, $wallet->party_id, $labels[$entry->source_id])];
     }
 
     /** @return array{id: string, kind: string, label: string, masked: string} */
