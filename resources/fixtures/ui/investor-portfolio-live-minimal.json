@@ -110,6 +110,10 @@
             "launcher": {
                 "url": "/launcher",
                 "method": "get"
+            },
+            "changes": {
+                "url": "/changes?topics=purchase%2Cwallet&after=1.10.0.100.1",
+                "method": "get"
             }
         },
         "commitments": []

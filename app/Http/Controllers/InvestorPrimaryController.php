@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Operations\ReadChanges;
 use App\Application\Primary\GetInvestorCommitment;
 use App\Application\Primary\ManagePrimaryCheckout;
 use App\Http\Requests\Investor\PrimaryCommandRequest;
@@ -23,7 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class InvestorPrimaryController extends Controller
 {
-    public function __construct(private ManagePrimaryCheckout $checkout) {}
+    public function __construct(private ManagePrimaryCheckout $checkout, private ReadChanges $changes) {}
 
     public function reserve(PrimaryCommandRequest $request, string $campaign): OperationResource
     {
@@ -73,12 +74,13 @@ class InvestorPrimaryController extends Controller
     {
         $context = $request->validated('identity_context_revision');
         $context = $context === null ? null : (int) $context;
+        $cursor = $this->changes->cursor($this->user($request));
         if ($request->routeIs('api.*')) {
-            return new InvestorCommitmentResource([...$action->handle($this->user($request), $context, $commitment), 'refusal' => null]);
+            return new InvestorCommitmentResource([...$action->handle($this->user($request), $context, $commitment), 'refusal' => null, 'changes_cursor' => $cursor]);
         }
         $page = $action->page($this->user($request), $context, $commitment);
 
-        return Inertia::render('investor/commitment', (new InvestorCommitmentResource($page))->resolve($request))->toResponse($request)
+        return Inertia::render('investor/commitment', (new InvestorCommitmentResource([...$page, 'changes_cursor' => $cursor]))->resolve($request))->toResponse($request)
             ->setStatusCode($page['refusal']['status'] ?? 200);
     }
 

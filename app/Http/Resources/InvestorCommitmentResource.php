@@ -12,6 +12,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * authorized facts and adds real routes only. No cancel action is offered yet: the server cannot
  * yet tell a raising campaign from a funded one here, so the cancel command alone decides. The
  * Investor's own refund links to its cancel request; a closure's refund opens its wallet receipt.
+ * `links.changes` is the change beacon for the Investor's purchases, from the cursor taken before
+ * the facts were read.
  * A destination with no live route yet is null; Portfolio and Profile are web pages only, so the
  * API carries their links as null.
  */
@@ -20,7 +22,7 @@ class InvestorCommitmentResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{identity_context_revision: int, commitment: array<string, mixed>|null, refusal: array{code: string, status: int}|null} $data */
+        /** @var array{identity_context_revision: int, commitment: array<string, mixed>|null, refusal: array{code: string, status: int}|null, changes_cursor?: string} $data */
         $data = $this->resource;
         $context = $data['identity_context_revision'];
         $commitment = $data['commitment'];
@@ -33,7 +35,8 @@ class InvestorCommitmentResource extends JsonResource
             'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $wallet, 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet,
-                'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment)]];
+                'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment),
+                'changes' => isset($data['changes_cursor']) ? self::link($request, 'changes.index', ['topics' => 'purchase', 'after' => $data['changes_cursor']]) : null]];
     }
 
     /**

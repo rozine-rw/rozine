@@ -18,6 +18,20 @@ import type {
     C4InvestorPortfolioProps,
 } from '@/types/investor';
 
+/** What a purchase or wallet change reloads: every server fact on the page, never the tab or links. */
+const BEACON_RELOADS = [
+    'server_time',
+    'totals',
+    'earnings',
+    'holdings',
+    'payouts',
+    'industries',
+    'risk',
+    'concentration',
+    'idle',
+    'commitments',
+];
+
 /** The design lists three holdings on a phone and four on a wide screen before "See all". */
 const FIRST = { phone: 3, desk: 4 } as const;
 
@@ -155,6 +169,13 @@ export default function InvestorPortfolio(
             title={t('investor.portfolio.title')}
             tab="portfolio"
             links={props.links}
+            beacon={{
+                link: props.links.changes,
+                reloads: {
+                    purchase: { only: BEACON_RELOADS },
+                    wallet: { only: BEACON_RELOADS },
+                },
+            }}
         >
             {wide ? (
                 <div className="h-full px-[30px] pt-3 pb-3.5">

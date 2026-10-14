@@ -144,6 +144,26 @@ it('opens an issued commitment as issued, linked to its Holding, and leaves it o
     $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitments', []));
 });
 
+it('gives Portfolio, the commitment and the Holding their change beacon at the render-time cursor, on the web and over API v1', function (): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+    $pages = [
+        [route('investor.portfolio'), '/changes?topics=purchase%2Cwallet&after='],
+        [route('investor.commitments.show', $holding->commitment_id), '/changes?topics=purchase&after='],
+        [route('investor.holdings.show', $holding->id), '/changes?topics=purchase&after='],
+    ];
+    foreach ($pages as [$url, $prefix]) {
+        $link = $this->actingAs($user)->get($url)->assertOk()->viewData('page')['props']['links']['changes'];
+        expect($link['method'])->toBe('get')->and($link['url'])->toStartWith($prefix)
+            ->and($this->getJson($link['url'])->assertOk()->json('changes'))->toBe([]);
+    }
+
+    Sanctum::actingAs($user, ['investor:read']);
+    expect($this->getJson(route('api.v1.investor.commitments.show', ['commitment' => $holding->commitment_id, 'identity_context_revision' => 1]))
+        ->json('data.links.changes.url'))->toStartWith('/api/v1/changes?topics=purchase&after=')
+        ->and($this->getJson(route('api.v1.investor.holdings.show', $holding->id))->json('data.links.changes.url'))
+        ->toStartWith('/api/v1/changes?topics=purchase&after=');
+});
+
 it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, ?bool $sent, string $state, ?array $closing, ?string $observed = null): void {
     ['campaign' => $campaign, 'commitments' => [$commitment]] = PrimaryHoldingFixture::committed(fund: $fund);
     if ($sent !== null) {

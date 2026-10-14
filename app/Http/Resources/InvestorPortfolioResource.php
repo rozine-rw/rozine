@@ -26,7 +26,7 @@ class InvestorPortfolioResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{portfolio: PortfolioFacts, tab: string} $resource */
+        /** @var array{portfolio: PortfolioFacts, tab: string, changes_cursor?: string} $resource */
         $resource = $this->resource;
         $data = [...$resource['portfolio'], 'tab' => $resource['tab']];
         $portfolio = fn (array $query = []): array => self::link('investor.portfolio', $query);
@@ -41,7 +41,8 @@ class InvestorPortfolioResource extends JsonResource
             'idle' => $data['idle'], 'commitments' => array_map(fn (array $commitment): array => [...$commitment,
                 'link' => self::link('investor.commitments.show', ['commitment' => $commitment['id']])], $data['commitments']),
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => $portfolio(), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => self::link('investor.profile'),
-                'wallet' => $data['verified'] ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard')]];
+                'wallet' => $data['verified'] ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard'),
+                'changes' => isset($resource['changes_cursor']) ? self::link('changes.index', ['topics' => 'purchase,wallet', 'after' => $resource['changes_cursor']]) : null]];
     }
 
     /**

@@ -315,6 +315,10 @@
             "back": {
                 "url": "/investor/portfolio",
                 "method": "get"
+            },
+            "changes": {
+                "url": "/changes?topics=purchase&after=1.10.0.100.1",
+                "method": "get"
             }
         }
     }

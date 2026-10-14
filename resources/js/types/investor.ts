@@ -1538,6 +1538,8 @@ export type C3InvestorCommitmentProps = InvestorPageContract & {
     links: C3InvestorShellLinks & {
         close: RouteLink;
         operation: RouteLink | null;
+        /** The change beacon for the Investor's purchases, with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
     };
     preview_outcome?: C3PreviewOutcome<'primary.cancel'>;
 };
@@ -1593,7 +1595,11 @@ export type CommitmentSummary = Pick<
 export type C3InvestorPortfolioProps = Omit<InvestorPortfolioProps, 'links'> &
     InvestorPageContract & {
         commitments: CommitmentSummary[];
-        links: C3InvestorShellLinks & { deals: RouteLink };
+        links: C3InvestorShellLinks & {
+            deals: RouteLink;
+            /** The change beacon for purchases and the wallet, with its render-time cursor; null in previews. */
+            changes?: RouteLink | null;
+        };
     };
 
 /** Servicing fields keep their C3 empty states; they are C4 facts. */
@@ -1604,7 +1610,11 @@ export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
 
 export type C3InvestorHoldingProps = InvestorPageContract & {
     holding: C3HoldingDetail;
-    links: InvestorAppLinks & { back: RouteLink };
+    links: InvestorAppLinks & {
+        back: RouteLink;
+        /** The change beacon for the Investor's purchases, with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
+    };
 };
 
 /* ------------------------------------------------------------------------------------------ */

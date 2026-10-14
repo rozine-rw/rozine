@@ -187,6 +187,10 @@
             "operation": {
                 "url": "/preview/investor/primary-operations/{request_id}",
                 "method": "get"
+            },
+            "changes": {
+                "url": "/changes?topics=purchase&after=1.10.0.100.1",
+                "method": "get"
             }
         }
     }
