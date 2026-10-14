@@ -4659,6 +4659,16 @@ const fr: Catalog = {
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.business.report_sealed.title':
+        "Rapport d'audit prêt pour votre approbation",
+    'investor.notices.business.report_sealed.body':
+        "{auditor} a scellé votre rapport d'audit. Consultez-le, puis cosignez-le ou contestez-le.",
+    'investor.notices.business.report_sealed.body_due':
+        "{auditor} a scellé votre rapport d'audit. Cosignez-le ou contestez-le avant {time}.",
+    'investor.notices.business.report_review_closing.title':
+        'Fin du délai de revue',
+    'investor.notices.business.report_review_closing.body':
+        "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

@@ -10,16 +10,19 @@ use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditDisputeProof;
@@ -45,7 +48,11 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         private IdentityRepository $identities, private AuditAssignmentStore $assignments, private AuditReportCryptography $cryptography,
         private OperationJournal $journal, private CanonicalJson $json, private AuditReportWindow $window, private AuditSourceFactsStore $sourceFacts,
         private MonthlyReportReview $reviewPolicy, private StatementStore $statements,
-        private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff) {}
+        private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff,
+        private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
+
+    /** How long before a monthly review window closes the Business is reminded (BRS NTF-R01). */
+    private const int CLOSING_REMINDER_HOURS = 2;
 
     /** @param array<string, mixed> $payload */
     public function open(string $reportId, string $digest, array $payload): void
@@ -62,6 +69,34 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             $this->event($publication, 'report.delivered', 'system', null, null,
                 ['delivered_at' => $payload['sealed_at'], 'due_at' => $publication->due_at?->toIso8601String()], 1);
         }
+        $period = $payload['report']['period'] ?? null;
+        $this->notices->record($this->audience->entityParty($publication->business_id), PartyNoticeKind::BusinessReportSealed, [
+            'auditor' => (string) ($payload['auditor_name'] ?? ''), 'period' => is_string($period) ? $period : null,
+            'due_at' => $monthly ? $publication->due_at?->utc()->format('Y-m-d\TH:i:s\Z') : $this->window->dueAt(is_string($period) ? $period : null),
+            'business_id' => $publication->business_id, 'report_id' => $reportId,
+        ], 'business-report-sealed:'.$publication->id);
+    }
+
+    /**
+     * Reminds each Business whose monthly review window closes within the next two hours that
+     * the window to co-sign or dispute is closing, once per publication.
+     *
+     * @return int the reminders recorded
+     */
+    public function remindClosing(int $limit = 100): int
+    {
+        $now = now('UTC');
+        $due = AuditReportPublication::query()->where('policy_version', MonthlyReportReview::POLICY)->where('status', 'pending')
+            ->where('due_at', '>', $now)->where('due_at', '<=', $now->copy()->addHours(self::CLOSING_REMINDER_HOURS))
+            ->orderBy('due_at')->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id', 'due_at']);
+        foreach ($due as $publication) {
+            $this->notices->record($this->audience->entityParty($publication->business_id), PartyNoticeKind::BusinessReportReviewClosing, [
+                'due_at' => $publication->due_at->utc()->format('Y-m-d\TH:i:s\Z'),
+                'business_id' => $publication->business_id, 'report_id' => $publication->audit_report_id,
+            ], 'business-report-review-closing:'.$publication->id);
+        }
+
+        return $due->count();
     }
 
     /**

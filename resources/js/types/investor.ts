@@ -1447,6 +1447,18 @@ export type InvestorNotice = {
           };
       }
     | {
+          kind: 'business.report_sealed';
+          facts: {
+              auditor: string;
+              period: string | null;
+              due_at: string | null;
+          };
+      }
+    | {
+          kind: 'business.report_review_closing';
+          facts: { due_at: string };
+      }
+    | {
           kind: 'business.raise_expired';
           facts: {
               currency: 'RWF';

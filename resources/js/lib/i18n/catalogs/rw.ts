@@ -4631,6 +4631,16 @@ const rw: Catalog = {
         'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Igenzura risanzwe kuri {business}, {location}. Emera mbere ya {time}.',
+    'investor.notices.business.report_sealed.title':
+        "Raporo y'igenzura itegereje kwemezwa",
+    'investor.notices.business.report_sealed.body':
+        "{auditor} yashyizeho kashe kuri raporo y'igenzura yawe. Yisuzume, hanyuma uyisinyeho cyangwa uyijurire.",
+    'investor.notices.business.report_sealed.body_due':
+        "{auditor} yashyizeho kashe kuri raporo y'igenzura yawe. Yisinyeho cyangwa uyijurire mbere ya {time}.",
+    'investor.notices.business.report_review_closing.title':
+        'Igihe cyo gusuzuma kirarangiye vuba',
+    'investor.notices.business.report_review_closing.body':
+        "Igihe cyo gusinya cyangwa kujurira raporo y'igenzura kirangira saa {time}. Nutagira icyo ukora, izatangazwa uko yashyizweho kashe.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

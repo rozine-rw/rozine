@@ -4448,6 +4448,16 @@ const en = {
         'Flash audit at {business}, {location}. Accept by {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Routine audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.business.report_sealed.title':
+        'Audit report ready for your approval',
+    'investor.notices.business.report_sealed.body':
+        '{auditor} sealed your audit report. Review it, then co-sign or dispute it.',
+    'investor.notices.business.report_sealed.body_due':
+        '{auditor} sealed your audit report. Co-sign or dispute it by {time}.',
+    'investor.notices.business.report_review_closing.title':
+        'Review window closing',
+    'investor.notices.business.report_review_closing.body':
+        'Your window to co-sign or dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

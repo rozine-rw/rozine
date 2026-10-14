@@ -52,10 +52,10 @@ describe('Business Home', () => {
         );
         const panel = screen.getByRole('dialog', { name: 'Notifications' });
         const items = await within(panel).findAllByRole('button', {
-            name: /RWF/u,
+            name: /RWF|audit report/u,
         });
 
-        expect(items).toHaveLength(5);
+        expect(items).toHaveLength(8);
         expect(items[0]).toHaveTextContent(
             'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
         );
@@ -70,6 +70,15 @@ describe('Business Home', () => {
         );
         expect(items[4]).toHaveTextContent(
             'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
+        );
+        expect(items[5]).toHaveTextContent(
+            'Review window closingYour window to co-sign or dispute the audit report closes at',
+        );
+        expect(items[6]).toHaveTextContent(
+            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+        );
+        expect(items[7]).toHaveTextContent(
+            'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
         );
 
         await user.click(

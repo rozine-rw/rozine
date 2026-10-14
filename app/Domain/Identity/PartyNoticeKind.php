@@ -27,6 +27,8 @@ enum PartyNoticeKind: string
     case BusinessRaiseExpired = 'business.raise_expired';
     case BusinessWithdrawalSent = 'business.withdrawal_sent';
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
+    case BusinessReportSealed = 'business.report_sealed';
+    case BusinessReportReviewClosing = 'business.report_review_closing';
     case AuditorAccreditationApproved = 'auditor.accreditation_approved';
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';

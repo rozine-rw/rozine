@@ -103,6 +103,33 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             />
         ),
     },
+    'business.report_sealed': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect
+                    x="5"
+                    y="3.5"
+                    width="14"
+                    height="17"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="M8.6 9h6.8M8.6 13h6.8M8.6 17h4" {...stroke} />
+            </>
+        ),
+    },
+    'business.report_review_closing': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 8v4l2.5 2.5" {...stroke} />
+            </>
+        ),
+    },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -437,6 +464,19 @@ function body(
             return t('investor.notices.business.withdrawal_returned.body', {
                 amount: formatRwf(notice.facts),
                 account: notice.facts.account,
+            });
+        case 'business.report_sealed':
+            return notice.facts.due_at === null
+                ? t('investor.notices.business.report_sealed.body', {
+                      auditor: notice.facts.auditor,
+                  })
+                : t('investor.notices.business.report_sealed.body_due', {
+                      auditor: notice.facts.auditor,
+                      time: formatDateTime(notice.facts.due_at, locale),
+                  });
+        case 'business.report_review_closing':
+            return t('investor.notices.business.report_review_closing.body', {
+                time: formatDateTime(notice.facts.due_at, locale),
             });
         case 'auditor.accreditation_approved':
             return t('investor.notices.auditor.accreditation_approved.body', {

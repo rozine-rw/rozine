@@ -93,6 +93,58 @@
                 "method": "get"
             },
             "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c8a",
+            "kind": "business.report_review_closing",
+            "facts": {
+                "due_at": "2026-10-09T10:00:00Z",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-09T10:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c89",
+            "kind": "business.report_sealed",
+            "facts": {
+                "auditor": "Aline Uwase",
+                "period": "2026-09",
+                "due_at": "2026-10-09T10:00:00Z",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-08T12:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c88",
+            "kind": "business.report_sealed",
+            "facts": {
+                "auditor": "Aline Uwase",
+                "period": null,
+                "due_at": null,
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b03"
+            },
+            "created_at": "2026-09-20T12:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
         }
     ],
     "actions": {
