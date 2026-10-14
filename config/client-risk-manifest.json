@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1b26afab5eaa8c68d2684743b77c7fef16b43cf4dbbb30a33fa389984e6f4ca3",
-    "coverageSetSha256": "b2c3320611aff56a632f02822dc16d00295bb91e30b781c70f3dedc0c84237a3",
+    "sourceManifestSha256": "64a077bdcafbe5a8db2735135ee33e38520e17a1eacbf35370804a8a7b4dd874",
+    "coverageSetSha256": "7fafe3dac7e18f83f98a7429e5f9b5f4e811197fa871f5657d79e0164ac4cad5",
     "thresholds": {
         "critical": {
             "global": {
@@ -277,6 +277,7 @@
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
+        "resources/js/components/rozine/login-alerts.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
         "resources/js/components/rozine/proof-file-list.tsx",

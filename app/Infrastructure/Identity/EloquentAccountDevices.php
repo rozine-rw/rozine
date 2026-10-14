@@ -8,12 +8,14 @@ use App\Application\Identity\Contracts\AccountDevices;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Models\AccountDevice;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
  * Devices in `account_devices`, each known by the SHA-256 of its browser token. The first device
- * an account signs in from is recorded silently; every later new device is noticed.
+ * an account signs in from is recorded silently; every later new device is noticed, and also
+ * e-mailed to the account while its login alerts are on.
  */
 final readonly class EloquentAccountDevices implements AccountDevices
 {
@@ -31,8 +33,10 @@ final readonly class EloquentAccountDevices implements AccountDevices
             $token = Str::random(40);
             $device = new AccountDevice;
             $device->forceFill(['user_id' => $userId, 'token_hash' => hash('sha256', $token), 'label' => $label, 'created_at' => now('UTC')])->save();
-            if ($known) {
-                $this->notices->recordForAccount($userId, PartyNoticeKind::NewDevice, ['device' => $label], 'new-device:'.$device->id);
+            $account = User::query()->whereKey($userId)->first(['id', 'party_id', 'login_alerts']);
+            if ($known && is_string($account?->party_id)) {
+                $this->notices->record($account->party_id, PartyNoticeKind::NewDevice, ['device' => $label, 'signed_in_at' => $device->created_at->utc()->format('Y-m-d\TH:i:s\Z')],
+                    'new-device:'.$device->id, $account->login_alerts ? [$userId] : []);
             }
 
             return $token;

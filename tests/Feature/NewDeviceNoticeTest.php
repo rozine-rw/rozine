@@ -6,10 +6,13 @@ use App\Application\Identity\RecognizeSignInDevice;
 use App\Domain\Identity\DeviceLabel;
 use App\Models\AccountDevice;
 use App\Models\PartyNotice;
+use App\Models\PartyNoticeDelivery;
 use App\Models\User;
+use App\Notifications\Account\NewDeviceSignIn;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\InvestorWalletFixture;
 
@@ -21,6 +24,7 @@ use Tests\Support\InvestorWalletFixture;
 const FIREFOX_ON_ANDROID = 'Mozilla/5.0 (Android 14; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0';
 
 beforeEach(function (): void {
+    $this->freezeSecond();
     InvestorWalletFixture::policy(maximum: null);
     $this->investor = InvestorWalletFixture::ready();
     $this->signIn = function (?string $token = null, string $agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'): TestResponse {
@@ -54,7 +58,7 @@ it('tells the Party once when a new device signs in, and never for a device it k
     $notice = PartyNotice::query()->where('kind', 'security.new_device')->sole();
     $device = AccountDevice::query()->where('label', 'Firefox on Android')->sole();
     expect(AccountDevice::query()->count())->toBe(2)
-        ->and([$notice->party_id, $notice->facts, $notice->event_key])->toBe([$this->investor['party']->id, ['device' => 'Firefox on Android'], 'new-device:'.$device->id])
+        ->and([$notice->party_id, $notice->facts, $notice->event_key])->toBe([$this->investor['party']->id, ['device' => 'Firefox on Android', 'signed_in_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')], 'new-device:'.$device->id])
         ->and($device->token_hash)->toBe(hash('sha256', (string) $second));
 
     $this->actingAs($this->investor['user'])->getJson(route('investor.notices'))->assertJsonPath('data.notices.0.kind', 'security.new_device')
@@ -82,6 +86,36 @@ it('keeps device records unchanged once recorded, and lets them go with the acco
     $this->post(route('login.store'), ['email' => $other->email, 'password' => 'password']);
     $other->delete();
     expect(AccountDevice::query()->pluck('user_id')->all())->toBe([$this->investor['user']->id]);
+});
+
+it('e-mails the login alert while login alerts are on, and keeps the notice when they are off', function (): void {
+    Notification::fake();
+    $user = $this->investor['user'];
+    ($this->signIn)();
+    ($this->signIn)(null, FIREFOX_ON_ANDROID);
+
+    Notification::assertSentToTimes($user, NewDeviceSignIn::class, 1);
+    Notification::assertSentTo($user, NewDeviceSignIn::class, fn (NewDeviceSignIn $mail): bool => $mail->device === 'Firefox on Android'
+        && $mail->url === route('security.edit') && $mail->signedInAt->equalTo(now()));
+    expect(PartyNoticeDelivery::query()->where('channel', 'mail')->where('user_id', $user->id)->sole()->status)->toBe('sent');
+
+    $this->actingAs($user)->from(route('investor.profile', ['section' => 'security']))->put(route('login-alerts.update'), ['enabled' => '0'])
+        ->assertRedirect(route('investor.profile', ['section' => 'security']))->assertSessionHasNoErrors();
+    expect($user->refresh()->login_alerts)->toBeFalse();
+    ($this->signIn)();
+
+    Notification::assertSentToTimes($user, NewDeviceSignIn::class, 1);
+    expect(PartyNotice::query()->where('kind', 'security.new_device')->count())->toBe(2);
+
+    $this->actingAs($user)->put(route('login-alerts.update'), ['enabled' => '1'])->assertSessionHasNoErrors();
+    expect($user->refresh()->login_alerts)->toBeTrue();
+});
+
+it('needs a yes or no to change login alerts, from a signed-in, verified account', function (): void {
+    $this->put(route('login-alerts.update'), ['enabled' => '0'])->assertRedirect(route('login'));
+    $this->actingAs($this->investor['user'])->put(route('login-alerts.update'), ['enabled' => 'maybe'])->assertSessionHasErrors('enabled');
+    $this->put(route('login-alerts.update'))->assertSessionHasErrors('enabled');
+    expect($this->investor['user']->refresh()->login_alerts)->toBeTrue();
 });
 
 it('names devices plainly from their browser', function (?string $agent, string $label): void {

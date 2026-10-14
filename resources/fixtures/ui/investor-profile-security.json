@@ -19,7 +19,12 @@
             "address": null
         },
         "security": {
-            "two_factor": true
+            "two_factor": true,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/investor-profile-security",
+                "method": "put"
+            }
         },
         "linked": {
             "accounts": [

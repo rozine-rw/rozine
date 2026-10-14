@@ -64,7 +64,8 @@ class BusinessHomeController extends Controller
         $section = $request->route('section');
         $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), (string) $request->route('business')),
             'section' => is_string($section) ? $section : 'company', 'landing' => $section === null,
-            'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true]);
+            'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
+            'login_alerts' => $request->user()?->getAttribute('login_alerts') !== false]);
 
         return Inertia::render('business/profile', $resource->resolve($request));
     }

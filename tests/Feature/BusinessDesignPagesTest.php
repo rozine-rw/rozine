@@ -62,7 +62,7 @@ it('opens Profile on the verified registration and mandate, with every design se
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
         'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => null, 'legal' => null, 'actions' => ['save_company' => null],
-        'security' => ['two_factor' => false]])
+        'security' => ['two_factor' => false, 'login_alerts' => true, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]])
         ->and(array_diff_key($props['registration'], ['people' => true]))->toBe(['name' => 'Synthetic business', 'company_code' => 'COMPANY-001',
             'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020, 'signatories_required' => 1])
         ->and($props['registration']['people'])->toEqualCanonicalizing([
@@ -84,9 +84,9 @@ it('opens Profile on the verified registration and mandate, with every design se
     }
     $this->actingAs($user)->get("/business/{$business}/profile/billing")->assertNotFound();
 
-    $user->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save();
+    $user->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now(), 'login_alerts' => false])->save();
     expect(($this->props)($user->refresh(), 'business.profile', ['business' => $business, 'section' => 'security'], 'business/profile')['security'])
-        ->toBe(['two_factor' => true]);
+        ->toBe(['two_factor' => true, 'login_alerts' => false, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]);
 });
 
 it('opens Market with its shell links only, as no secondary-market read exists', function (): void {

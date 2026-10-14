@@ -677,6 +677,9 @@ const rw: Catalog = {
     'business.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
     'business.profile.security.two_factor_on':
         'Birakora · kode ya porogaramu yemeza iyo winjira',
+    'business.profile.security.login_alerts': 'Imenyesha ryo kwinjira',
+    'business.profile.security.login_alerts_hint':
+        'Imeri igihe igikoresho gishya cyinjiye',
     'business.profile.security.two_factor_off':
         'Ntibikora · ongeraho kode ya porogaramu yemeza iyo winjira',
     'business.profile.security.password': 'Hindura ijambobanga',
@@ -3552,6 +3555,9 @@ const rw: Catalog = {
     'investor.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
     'investor.profile.security.two_factor_on':
         'Birakora · kode ya porogaramu yemeza iyo winjira',
+    'investor.profile.security.login_alerts': 'Imenyesha ryo kwinjira',
+    'investor.profile.security.login_alerts_hint':
+        'Nyoherereza imeri igikoresho gishya cyinjiye',
     'investor.profile.security.two_factor_off':
         'Ntibikora · ongeraho kode ya porogaramu yemeza iyo winjira',
     'investor.profile.security.password': 'Hindura ijambobanga',

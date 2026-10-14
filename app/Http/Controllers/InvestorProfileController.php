@@ -46,7 +46,7 @@ class InvestorProfileController extends Controller
 
         return Inertia::render('investor/profile', (new InvestorProfileResource([...$facts, 'section' => $request->validated('section') ?? 'overview',
             'name' => (string) $user?->getAttribute('name'), 'email' => (string) $user?->getAttribute('email'), 'member_since' => $joined->toIso8601String(),
-            'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true]))->resolve($request));
+            'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true, 'login_alerts' => $user?->getAttribute('login_alerts') !== false]))->resolve($request));
     }
 
     public function link(LinkPayoutAccountRequest $request, LinkPayoutAccount $action): RedirectResponse

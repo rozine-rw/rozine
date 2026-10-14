@@ -28,7 +28,7 @@ class InvestorProfileResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, statement_months: list<string>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
+        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, login_alerts: bool, statement_months: list<string>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
         $data = $this->resource;
         $verified = $data['kyc'] === 'verified';
         $profile = fn (array $query = []): array => self::link('investor.profile', $query);
@@ -38,7 +38,8 @@ class InvestorProfileResource extends JsonResource
                 'member_since' => $data['member_since']],
             'personal' => ['name' => $data['name'], 'email' => $data['email'], 'phone' => null, 'id_type' => $data['document']['id_type'] ?? null,
                 'id_number' => $data['document']['id_number'] ?? null, 'country' => null, 'address' => null],
-            'security' => ['two_factor' => $data['two_factor']],
+            'security' => ['two_factor' => $data['two_factor'], 'login_alerts' => $data['login_alerts'],
+                'update_login_alerts' => ['url' => route('login-alerts.update', [], false), 'method' => 'put']],
             'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => $data['linkable']
                 ? ['url' => route('investor.profile.unlink', ['method' => $method['id']], false), 'method' => 'post'] : null], $data['methods']), 'banks' => $data['banks']],
             'statements' => ['annual' => null, 'monthly' => array_map(fn (string $month): array => self::monthly($month), $data['statement_months'])],

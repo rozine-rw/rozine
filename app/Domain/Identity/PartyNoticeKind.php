@@ -38,6 +38,6 @@ enum PartyNoticeKind: string
     {
         return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
-            self::AuditorJobOffered], true);
+            self::AuditorJobOffered, self::NewDevice], true);
     }
 }

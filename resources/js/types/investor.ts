@@ -707,7 +707,12 @@ export type InvestorProfileProps = {
         country: string | null;
         address: null;
     };
-    security: { two_factor: boolean };
+    security: {
+        two_factor: boolean;
+        /** Whether a new device's sign-in is also e-mailed (the design's Login alerts). */
+        login_alerts: boolean;
+        update_login_alerts: { url: string; method: 'put' };
+    };
     linked: {
         accounts: LinkedAccount[];
         banks: { code: string; name: string }[];

@@ -677,6 +677,9 @@ const fr: Catalog = {
     'business.profile.security.two_factor': 'Authentification à deux facteurs',
     'business.profile.security.two_factor_on':
         "Activée · code d'une application d'authentification à la connexion",
+    'business.profile.security.login_alerts': 'Alertes de connexion',
+    'business.profile.security.login_alerts_hint':
+        "E-mail lors d'une connexion depuis un nouvel appareil",
     'business.profile.security.two_factor_off':
         "Désactivée · ajoutez un code d'application d'authentification à la connexion",
     'business.profile.security.password': 'Changer le mot de passe',
@@ -3566,6 +3569,9 @@ const fr: Catalog = {
     'investor.profile.security.two_factor': 'Authentification à deux facteurs',
     'investor.profile.security.two_factor_on':
         "Activée · code d'une application d'authentification à la connexion",
+    'investor.profile.security.login_alerts': 'Alertes de connexion',
+    'investor.profile.security.login_alerts_hint':
+        "M'envoyer un e-mail lors d'une connexion depuis un nouvel appareil",
     'investor.profile.security.two_factor_off':
         "Désactivée · ajoutez un code d'application d'authentification à la connexion",
     'investor.profile.security.password': 'Changer le mot de passe',

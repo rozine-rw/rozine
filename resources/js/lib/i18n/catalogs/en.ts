@@ -657,6 +657,8 @@ const en = {
     'business.profile.security.two_factor': 'Two-factor authentication',
     'business.profile.security.two_factor_on':
         'On · authenticator app code at sign-in',
+    'business.profile.security.login_alerts': 'Sign-in alerts',
+    'business.profile.security.login_alerts_hint': 'Email on new device',
     'business.profile.security.two_factor_off':
         'Off · add an authenticator app code at sign-in',
     'business.profile.security.password': 'Change password',
@@ -3445,6 +3447,9 @@ const en = {
     'investor.profile.security.two_factor': 'Two-factor authentication',
     'investor.profile.security.two_factor_on':
         'On · authenticator app code at sign-in',
+    'investor.profile.security.login_alerts': 'Login alerts',
+    'investor.profile.security.login_alerts_hint':
+        'Email me on new device sign-in',
     'investor.profile.security.two_factor_off':
         'Off · add an authenticator app code at sign-in',
     'investor.profile.security.password': 'Change password',

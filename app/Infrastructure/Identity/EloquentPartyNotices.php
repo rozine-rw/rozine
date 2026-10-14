@@ -9,6 +9,7 @@ use App\Domain\Identity\PartyNoticeKind;
 use App\Models\PartyNotice;
 use App\Models\PartyNoticeDelivery;
 use App\Models\User;
+use App\Notifications\Account\NewDeviceSignIn;
 use App\Notifications\Auditor\AccreditationDecided;
 use App\Notifications\Auditor\AuditJobType;
 use App\Notifications\Auditor\JobOffered;
@@ -131,6 +132,7 @@ final readonly class EloquentPartyNotices implements PartyNotices
     private function message(PartyNoticeKind $kind, array $facts): RozineMail
     {
         return match ($kind) {
+            PartyNoticeKind::NewDevice => new NewDeviceSignIn($facts['device'], CarbonImmutable::parse($facts['signed_in_at']), route('security.edit')),
             PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
             PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
                 route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),

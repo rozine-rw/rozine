@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import BusinessProfile from '@/pages/business/profile';
 import type {
@@ -50,6 +50,32 @@ vi.mock('@inertiajs/react', async () => {
             >
                 {children}
             </a>
+        ),
+        Form: ({
+            action,
+            method,
+            children,
+            className,
+        }: {
+            action: string;
+            method: string;
+            children: ReactNode;
+            className?: string;
+        }) => (
+            <form
+                className={className}
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    inertia.puts.push({
+                        url: `${method} ${action}`,
+                        data: Object.fromEntries(
+                            new FormData(event.currentTarget),
+                        ),
+                    });
+                }}
+            >
+                {children}
+            </form>
         ),
         useForm: <T extends Record<string, unknown>>(initial: T) => {
             const [data, setState] = useState(initial);
@@ -477,6 +503,24 @@ describe('Business account sections', () => {
         expect(
             screen.getByRole('link', { name: /Two-factor authentication/u }),
         ).toHaveTextContent('Off · add an authenticator app code at sign-in');
+    });
+
+    it('switches the sign-in alert e-mail off', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(securityFixture)} />);
+
+        expect(screen.getByText('Email on new device')).toBeInTheDocument();
+        const toggle = screen.getByRole('switch', { name: 'Sign-in alerts' });
+
+        expect(toggle).toBeChecked();
+        await user.click(toggle);
+        expect(inertia.puts).toEqual([
+            {
+                url: 'put /preview/business-profile-security',
+                data: { enabled: '0' },
+            },
+        ]);
     });
 
     it('lists the people on the mandate with their roles and permissions, read-only', () => {

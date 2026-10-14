@@ -57,7 +57,7 @@ it('shows the account, its verified state and its verified funding methods, with
         ->and($props['identity'])->toBe(['name' => $user->name, 'email' => $user->email, 'investor_type' => 'individual', 'kyc' => 'verified',
             'member_since' => $user->created_at->toIso8601String()])
         ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'country' => null, 'address' => null])
-        ->and($props['security'])->toBe(['two_factor' => false])
+        ->and($props['security'])->toBe(['two_factor' => false, 'login_alerts' => true, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']])
         ->and($props['linked'])->toBe(['accounts' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
             'verified' => true, 'unlink' => ['url' => '/investor/profile/linked-accounts/'.$fixture['method']->id.'/unlink', 'method' => 'post']]],
             'banks' => array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS)])
@@ -107,12 +107,12 @@ it('reports whether two-factor sign-in is on', function (): void {
     $fixture['user']->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save();
 
     $this->actingAs($fixture['user']->refresh())->get(route('investor.profile', ['section' => 'security']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('security', ['two_factor' => true])
+        ->assertInertia(fn (Assert $page) => $page->where('security.two_factor', true)
             ->where('links.security_settings', ['url' => '/settings/security', 'method' => 'get']));
 
-    $fixture['user']->forceFill(['two_factor_confirmed_at' => null])->save();
+    $fixture['user']->forceFill(['two_factor_confirmed_at' => null, 'login_alerts' => false])->save();
     $this->get(route('investor.profile', ['section' => 'security']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('security', ['two_factor' => false]));
+        ->assertInertia(fn (Assert $page) => $page->where('security', ['two_factor' => false, 'login_alerts' => false, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]));
 });
 
 it('shows a person still being verified where their verification stands, with no wallet', function (?string $status, string $kyc): void {

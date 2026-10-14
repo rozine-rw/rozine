@@ -6,6 +6,7 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { MethodMark } from '@/components/investor/wallet/funding';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
+import { LoginAlerts } from '@/components/rozine/login-alerts';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatMonthYearLong, formatMonthYear } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -299,10 +300,10 @@ function Field({
 }
 
 /**
- * Security center (design L3934–3975): whether two-factor sign-in is on, and the way to change the
- * password. Both are managed on the account's security settings, so each row opens them. The
- * design's login alerts and account deletion have no command for an Investor, so they are left
- * out.
+ * Security center (design L3934–3975): whether two-factor sign-in is on, the login alerts switch,
+ * and the way to change the password. Two-factor and the password are managed on the account's
+ * security settings, so those rows open them. The design's account deletion has no command for an
+ * Investor, so it is left out.
  */
 export function SecurityCenter({
     security,
@@ -352,6 +353,14 @@ export function SecurityCenter({
                         />
                     </span>
                 </Link>
+                <LoginAlerts
+                    enabled={security.login_alerts}
+                    action={security.update_login_alerts}
+                    title={t('investor.profile.security.login_alerts')}
+                    hint={t('investor.profile.security.login_alerts_hint')}
+                    onClass="bg-[#17795a]"
+                    glyph={glyph}
+                />
             </div>
             <div className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
                 <Link

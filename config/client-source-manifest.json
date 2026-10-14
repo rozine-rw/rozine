@@ -255,6 +255,7 @@
         "resources/js/routes/investor/verification/index.ts",
         "resources/js/routes/investor/wallet/index.ts",
         "resources/js/routes/investor/wallet/operations/index.ts",
+        "resources/js/routes/login-alerts/index.ts",
         "resources/js/routes/login/index.ts",
         "resources/js/routes/passkey/index.ts",
         "resources/js/routes/password/confirm/index.ts",
@@ -548,6 +549,7 @@
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
+        "resources/js/components/rozine/login-alerts.tsx",
         "resources/js/components/rozine/logo.tsx",
         "resources/js/components/rozine/operation-notice.tsx",
         "resources/js/components/rozine/proof-file-list.tsx",
@@ -704,10 +706,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 673,
-        "generated": 272,
+        "totalTrackedSources": 675,
+        "generated": 273,
         "declarationOnly": 18,
-        "authoredExecutable": 383
+        "authoredExecutable": 384
     },
-    "coverageSetSha256": "b2c3320611aff56a632f02822dc16d00295bb91e30b781c70f3dedc0c84237a3"
+    "coverageSetSha256": "7fafe3dac7e18f83f98a7429e5f9b5f4e811197fa871f5657d79e0164ac4cad5"
 }

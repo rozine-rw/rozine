@@ -463,9 +463,7 @@ describe('Profile', () => {
         expect(
             screen.getByRole('link', { name: /Change password/u }),
         ).toHaveAttribute('href', '/preview/investor-profile-security');
-        expect(screen.queryByText(/Login alerts/u)).not.toBeInTheDocument();
         expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
-        expect(screen.queryByRole('switch')).not.toBeInTheDocument();
         unmount();
 
         const off = profile(securityFixture);
@@ -475,6 +473,42 @@ describe('Profile', () => {
         expect(
             screen.getByRole('link', { name: /Two-factor authentication/u }),
         ).toHaveTextContent('Off · add an authenticator app code at sign-in');
+    });
+
+    it('switches the login alert e-mail off and on', async () => {
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <InvestorProfile {...profile(securityFixture)} />,
+        );
+
+        expect(
+            screen.getByText('Email me on new device sign-in'),
+        ).toBeInTheDocument();
+        await user.click(screen.getByRole('switch', { name: 'Login alerts' }));
+        expect(inertia.posts).toEqual([
+            {
+                url: '/preview/investor-profile-security',
+                data: { enabled: '0' },
+            },
+        ]);
+        expect(inertia.forms).toContainEqual({
+            action: '/preview/investor-profile-security',
+            method: 'put',
+        });
+        unmount();
+
+        const off = profile(securityFixture);
+
+        off.security.login_alerts = false;
+        render(<InvestorProfile {...off} />);
+        expect(
+            screen.getByRole('switch', { name: 'Login alerts' }),
+        ).not.toBeChecked();
+        await user.click(screen.getByRole('switch', { name: 'Login alerts' }));
+        expect(inertia.posts[1]).toEqual({
+            url: '/preview/investor-profile-security',
+            data: { enabled: '1' },
+        });
     });
 
     it.each([
