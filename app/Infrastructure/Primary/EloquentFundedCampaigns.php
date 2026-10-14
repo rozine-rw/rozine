@@ -32,14 +32,15 @@ use RuntimeException;
  * authenticates historical funding and purchases; locking takes only Business then campaign
  * gates in the caller's transaction. The caller places staff locks between those calls and
  * retains the full financial order through commit. No verified-fact or lock cache is retained.
- * Current admission and issuance remain unavailable; only authenticated terminal failed closing
- * settles original principal through the journal. Historical funding never supplies current admission authority.
+ * Current admission remains unavailable. Authenticated terminal failed closing refunds original
+ * principal; authenticated success delegates complete Holding issuance to its Primary collaborator.
+ * Historical funding never supplies current admission authority; ordinary runtime binding stays closed.
  */
 final class EloquentFundedCampaigns implements FundedCampaigns
 {
     public function __construct(private RetainedFundedCampaignFacts $facts, private RetainedFundedClosing $closings,
         private CampaignFundingEvidence $fundings, private WalletPostings $wallets, private PrimaryReturnedCash $returned,
-        private CanonicalJson $json, private CampaignClosureEvidence $closures) {}
+        private CanonicalJson $json, private CampaignClosureEvidence $closures, private RetainedPrimaryIssuance $issuance) {}
 
     public function funded(?string $before, int $limit): array
     {
@@ -85,7 +86,7 @@ final class EloquentFundedCampaigns implements FundedCampaigns
     public function issue(FundedCampaign $campaign, IssueInstruction $instruction): void
     {
         $this->assertTransaction();
-        throw new CommandRejection('FUNDING_SOURCE_UNAVAILABLE', 409);
+        $this->issuance->issue($campaign, $instruction);
     }
 
     public function failClose(FundedCampaign $campaign, FailedClosing $closing): void

@@ -162,13 +162,13 @@ it('refuses corrupted complete-return membership even when native immutability w
     expect(fn () => app(BusinessExposureStore::class)->current($campaign->businessId))->toThrow(RuntimeException::class, 'CAMPAIGN_CLOSURE_INTEGRITY_FAILED');
 });
 
-it('keeps successful issuance gated after failure and refuses attempts to admit reused confirmed ordinals', function (): void {
+it('refuses issue without closing authority after failure and refuses attempts to admit reused confirmed ordinals', function (): void {
     ['campaign' => $campaign] = PrimaryFailedClosingFixture::close();
     PrimaryHoldingFixture::flushDeferredChecks();
     $id = PrimaryHoldingFixture::id();
     expect(fn () => DB::transaction(fn () => app(EloquentFundedCampaigns::class)->issue($campaign,
         new IssueInstruction($id, $id, $id, now()->toIso8601String(), now()->toDateString(), [], now()->toIso8601String()))))
-        ->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE')
+        ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_UNAVAILABLE')
         ->and(DB::table('primary_holdings')->count())->toBe(0);
     expect(fn () => DB::transaction(function (): void {
         $root = (array) DB::table('primary_reservations')->first();
