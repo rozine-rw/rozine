@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 const StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.url = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.get = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.head = (options?: Route
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 const StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm = (options?: 
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm.get = (options?: Ro
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm.head = (options?: R
 StaffDashboardControlleraed298dd70b90860f777bd895fb5a55a.form = StaffDashboardControlleraed298dd70b90860f777bd895fb5a55aForm
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 const StaffDashboardController750aeb224105761400ee952169bd178c = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ StaffDashboardController750aeb224105761400ee952169bd178c.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 StaffDashboardController750aeb224105761400ee952169bd178c.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ StaffDashboardController750aeb224105761400ee952169bd178c.url = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 StaffDashboardController750aeb224105761400ee952169bd178c.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ StaffDashboardController750aeb224105761400ee952169bd178c.get = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 StaffDashboardController750aeb224105761400ee952169bd178c.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ StaffDashboardController750aeb224105761400ee952169bd178c.head = (options?: Route
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 const StaffDashboardController750aeb224105761400ee952169bd178cForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const StaffDashboardController750aeb224105761400ee952169bd178cForm = (options?: 
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 StaffDashboardController750aeb224105761400ee952169bd178cForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ StaffDashboardController750aeb224105761400ee952169bd178cForm.get = (options?: Ro
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 StaffDashboardController750aeb224105761400ee952169bd178cForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

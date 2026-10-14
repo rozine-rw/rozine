@@ -86,6 +86,7 @@
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffLedgerController.ts",
         "resources/js/actions/App/Http/Controllers/StaffMessagingController.ts",
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
@@ -202,6 +203,7 @@
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/api/v1/staff/investor-verifications/index.ts",
         "resources/js/routes/api/v1/staff/investors/index.ts",
+        "resources/js/routes/api/v1/staff/ledger/index.ts",
         "resources/js/routes/api/v1/staff/messaging/index.ts",
         "resources/js/routes/api/v1/staff/reconciliation/index.ts",
         "resources/js/routes/api/v1/staff/staff/index.ts",
@@ -294,6 +296,7 @@
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
         "resources/js/routes/staff/investors/index.ts",
+        "resources/js/routes/staff/ledger/index.ts",
         "resources/js/routes/staff/messaging/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
         "resources/js/routes/staff/sections/index.ts",
@@ -716,8 +719,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 685,
-        "generated": 282,
+        "totalTrackedSources": 688,
+        "generated": 285,
         "declarationOnly": 18,
         "authoredExecutable": 385
     },

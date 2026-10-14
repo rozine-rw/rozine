@@ -28,11 +28,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *   anyone else sees them as not tracked. Nothing can be assigned or escalated yet, so no break has
  *   an owner or an action.
  *
+ * - Live activity: the six newest ledger postings, each opening its ledger entry, for whoever may
+ *   view the ledger; anyone else sees it as not tracked.
+ *
  * The platform does not record a treasury position, default rate, secondary volume, note health,
- * late or at-risk notes, frozen accounts, sector exposure, a ledger feed or collections yet, so
+ * late or at-risk notes, frozen accounts, sector exposure or collections yet, so
  * those are sent as null and the console shows them as not tracked.
  *
  * @phpstan-import-type OpenBreak from \App\Application\Operations\BrowseReconciliation
+ * @phpstan-import-type Entry from \App\Application\Operations\Contracts\LedgerJournal
  *
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Dashboard array{
@@ -41,7 +45,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
  * }
- * @phpstan-type Page array{dashboard: Dashboard, breaks: list<OpenBreak>|null, roles: list<string>, permissions: list<string>}
+ * @phpstan-type Page array{dashboard: Dashboard, breaks: list<OpenBreak>|null, activity: list<Entry>|null, roles: list<string>, permissions: list<string>}
  */
 class StaffDashboardResource extends JsonResource
 {
@@ -83,7 +87,13 @@ class StaffDashboardResource extends JsonResource
                 'age_days' => $break['age_days'], 'owner' => null, 'actions' => (object) []], $page['breaks']),
             'capital_raised' => [...$board['capital'], 'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'],
                 'amount' => $money($bar['amount']), 'height_pct' => $bar['height_pct']], $board['capital']['bars'])],
-            'portfolio_health' => null, 'activity' => null,
+            'portfolio_health' => null,
+            'activity' => $page['activity'] === null ? null : array_map(function (array $entry) use ($prefix): array {
+                $row = StaffLedgerResource::row($entry, ['url' => route($prefix.'staff.ledger.index', ['entry' => $entry['id']], false), 'method' => 'get']);
+
+                return ['id' => $row['id'], 'kind' => $row['kind'], 'summary' => $row['from'].' → '.$row['to'], 'amount' => $row['amount'], 'at' => $row['at'],
+                    'link' => $row['link']];
+            }, $page['activity']),
             'funnel' => array_map(fn (string $stage, ?int $value): array => ['stage' => $stage, 'count' => $value,
                 'width_pct' => $value === null || $widest === 0 ? 0 : intdiv($value * 100, $widest)], array_keys($funnel), $funnel),
             'pending_applications' => array_map(fn (array $entry): array => ['id' => (string) $entry['id'], 'business' => (string) $entry['business'],

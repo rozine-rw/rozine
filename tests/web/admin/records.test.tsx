@@ -45,7 +45,9 @@ describe('Ledger', () => {
             screen.getByRole('searchbox', { name: 'Search the ledger' }),
             'contra{Enter}',
         );
-        expect(inertia.reload).toEqual([{ data: { q: 'contra' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { q: 'contra', entry: undefined, limit: undefined } },
+        ]);
     });
 
     it('says when nothing is in range or the search found nothing', () => {

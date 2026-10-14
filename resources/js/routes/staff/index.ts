@@ -10,12 +10,13 @@ import staff from './staff'
 import events from './events'
 import reconciliation from './reconciliation'
 import messaging from './messaging'
+import ledger from './ledger'
 import investorVerifications from './investor-verifications'
 import stagingMailTesters from './staging-mail-testers'
 import changes from './changes'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,7 +31,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -39,7 +40,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -49,7 +50,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -59,7 +60,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -69,7 +70,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +80,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:22
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/admin/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -107,6 +108,7 @@ const staffNamespace = {
     events: Object.assign(events, events),
     reconciliation: Object.assign(reconciliation, reconciliation),
     messaging: Object.assign(messaging, messaging),
+    ledger: Object.assign(ledger, ledger),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
     stagingMailTesters: Object.assign(stagingMailTesters, stagingMailTesters),
     changes: Object.assign(changes, changes),

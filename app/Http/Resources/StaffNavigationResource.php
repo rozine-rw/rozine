@@ -34,6 +34,7 @@ class StaffNavigationResource extends JsonResource
         'applications' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],
         'disbursements' => ['permission' => 'disbursements.view', 'route' => 'staff.disbursements.index'],
         'reconciliation' => ['permission' => 'reconciliation.view', 'route' => 'staff.reconciliation.index'],
+        'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */
@@ -68,6 +69,6 @@ class StaffNavigationResource extends JsonResource
             'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'finance' => $links['reconciliation'] ?? $pendingPage('finance'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
-            'repayments' => null, 'ledger' => null, 'mail_testers' => $mailTesters];
+            'repayments' => null, 'mail_testers' => $mailTesters];
     }
 }
