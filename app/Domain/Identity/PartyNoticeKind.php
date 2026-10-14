@@ -22,6 +22,7 @@ enum PartyNoticeKind: string
     case PasswordChanged = 'security.password_changed';
     case PayoutAccountLinked = 'security.payout_account_linked';
     case PayoutAccountUnlinked = 'security.payout_account_unlinked';
+    case NewDevice = 'security.new_device';
     case BusinessDepositReceived = 'business.deposit_received';
     case BusinessApplicationApproved = 'business.application_approved';
     case BusinessRaiseExpired = 'business.raise_expired';

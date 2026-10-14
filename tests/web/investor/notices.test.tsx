@@ -315,4 +315,34 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             'Payout account unlinkedMTN MoMo +250 788 ···· 456 is no longer linked. If this was not you, contact Rozine support now.',
         );
     });
+    it('words a new device sign-in as a security notice', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.unread = 1;
+        inbox.notices = [
+            {
+                ...first,
+                id: 'device',
+                kind: 'security.new_device',
+                facts: { device: 'Firefox on Android' },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: /Notifications, \d+ unread/u }),
+        );
+
+        expect(
+            await within(panel).findByRole('button', {
+                name: /A new device signed in/u,
+            }),
+        ).toHaveTextContent(
+            'A new device signed inFirefox on Android signed in to your account. If this was not you, reset your password now and contact Rozine support.',
+        );
+    });
 });

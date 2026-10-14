@@ -4663,6 +4663,9 @@ const rw: Catalog = {
         'Ijambo ry’ibanga ryawe ryahinduwe',
     'investor.notices.security.password_changed.body':
         'Niba atari wowe, hindura ijambo ry’ibanga ubu kandi uvugane n’ubufasha bwa Rozine.',
+    'investor.notices.security.new_device.title': 'Igikoresho gishya cyinjiye',
+    'investor.notices.security.new_device.body':
+        '{device} cyinjiye kuri konti yawe. Niba atari wowe, hindura ijambobanga ubu kandi uhamagare ubufasha bwa Rozine.',
     'investor.notices.security.payout_account_linked.title':
         'Konti yo kwishyurirwaho yahujwe',
     'investor.notices.security.payout_account_linked.body':

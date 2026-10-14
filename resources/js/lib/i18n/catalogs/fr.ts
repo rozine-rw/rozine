@@ -4689,6 +4689,10 @@ const fr: Catalog = {
         'Votre mot de passe a été modifié',
     'investor.notices.security.password_changed.body':
         "Si ce n'était pas vous, réinitialisez votre mot de passe maintenant et contactez le support Rozine.",
+    'investor.notices.security.new_device.title':
+        'Connexion depuis un nouvel appareil',
+    'investor.notices.security.new_device.body':
+        "{device} s'est connecté à votre compte. Si ce n'était pas vous, réinitialisez votre mot de passe et contactez immédiatement le support Rozine.",
     'investor.notices.security.payout_account_linked.title':
         'Compte de versement lié',
     'investor.notices.security.payout_account_linked.body':

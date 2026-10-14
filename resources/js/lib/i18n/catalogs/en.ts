@@ -4478,6 +4478,9 @@ const en = {
         'Your password was changed',
     'investor.notices.security.password_changed.body':
         'If this was not you, reset your password now and contact Rozine support.',
+    'investor.notices.security.new_device.title': 'A new device signed in',
+    'investor.notices.security.new_device.body':
+        '{device} signed in to your account. If this was not you, reset your password now and contact Rozine support.',
     'investor.notices.security.payout_account_linked.title':
         'Payout account linked',
     'investor.notices.security.payout_account_linked.body':

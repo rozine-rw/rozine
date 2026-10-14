@@ -63,6 +63,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'security.new_device': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <rect x="4" y="5" width="16" height="11" rx="2" {...stroke} />
+                <path d="M9 20h6M12 16v4" {...stroke} />
+            </>
+        ),
+    },
     'security.payout_account_linked': {
         bar: 'bg-[#b07a12]',
         tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
@@ -434,6 +444,10 @@ function body(
             return t('investor.notices.verification.approved.body');
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
+        case 'security.new_device':
+            return t('investor.notices.security.new_device.body', {
+                device: notice.facts.device,
+            });
         case 'security.payout_account_linked':
             return t('investor.notices.security.payout_account_linked.body', {
                 account: notice.facts.account,

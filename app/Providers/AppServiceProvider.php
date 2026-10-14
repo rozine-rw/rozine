@@ -50,6 +50,7 @@ use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\Contracts\StatementTextExtractor;
+use App\Application\Identity\Contracts\AccountDevices;
 use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Application\Identity\Contracts\IdentityAccessStore;
@@ -59,6 +60,7 @@ use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
 use App\Application\Identity\Contracts\InvestorVerificationStore;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\Contracts\StaffDirectoryStore;
+use App\Application\Identity\RecognizeSignInDevice;
 use App\Application\Operations\Contracts\ActivityTrailStore;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
@@ -137,6 +139,7 @@ use App\Infrastructure\Environment\EloquentStagingMailTesterStore;
 use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementStore;
 use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
+use App\Infrastructure\Identity\EloquentAccountDevices;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
 use App\Infrastructure\Identity\EloquentIdentityAccessStore;
 use App\Infrastructure\Identity\EloquentIdentityRepository;
@@ -183,12 +186,15 @@ use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use App\Infrastructure\Wallet\UnavailablePayoutAccountVerifier;
 use App\Infrastructure\Wallet\UnavailableWithdrawalProvider;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Markdown;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -272,6 +278,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PrimaryAdmission::class, CurrentPrimaryAdmission::class);
         $this->app->bind(RiskAcknowledgements::class, EloquentRiskAcknowledgements::class);
         $this->app->bind(PartyNotices::class, EloquentPartyNotices::class);
+        $this->app->bind(AccountDevices::class, EloquentAccountDevices::class);
         $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);
         $this->app->bind(PrimaryCommitmentView::class, EloquentPrimaryCommitmentView::class);
@@ -324,6 +331,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureHead();
+        $this->recognizeSignInDevices();
         RateLimiter::for('changes', fn (Request $request): Limit => Limit::perMinute(30)->by('changes:'.$request->user()?->getAuthIdentifier()));
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
@@ -333,6 +341,23 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('disbursement-step-up-account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('disbursement-step-up-ip:'.$request->ip()),
         ]);
+    }
+
+    /**
+     * Each web sign-in is matched to a device token kept in a long-lived, HTTP-only cookie; a new
+     * device gets a fresh token and, after the account's first device, a notice (BRS NTF-R01).
+     */
+    protected function recognizeSignInDevices(): void
+    {
+        Event::listen(Login::class, function (Login $event): void {
+            $request = request();
+            $known = $request->cookie(RecognizeSignInDevice::COOKIE);
+            $token = $this->app->make(RecognizeSignInDevice::class)->handle((int) $event->user->getAuthIdentifier(),
+                is_string($known) ? $known : null, $request->userAgent());
+            if ($token !== null) {
+                Cookie::queue(Cookie::forever(RecognizeSignInDevice::COOKIE, $token, httpOnly: true));
+            }
+        });
     }
 
     /**
