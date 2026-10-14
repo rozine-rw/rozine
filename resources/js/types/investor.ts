@@ -1065,7 +1065,8 @@ export type C3InvestorWalletProps = InvestorPageContract & {
     receipt: (WalletEntry & { receipt: Receipt }) | DepositIntent | null;
     /** C4 and Phase 2. */
     earnings: null;
-    exports: null;
+    /** The statement downloads; null where no statement is served (previews). */
+    exports: { csv: RouteLink; pdf: RouteLink } | null;
     links: C3InvestorShellLinks & {
         close: RouteLink;
         deposit: RouteLink;

@@ -37,9 +37,11 @@ use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -133,6 +135,48 @@ final class EloquentWalletStore implements WalletStore
                 'holds' => $this->purchases->activeHolds($partyId), 'deposits' => $deposits, 'history' => ['movement' => $movement, ...$history],
                 'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
         });
+    }
+
+    public function statement(int $userId, ?int $contextRevision, ?string $from, ?string $to): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($from, $to): array {
+            $wallet = InvestorWallet::query()->where('party_id', (string) $identity['party']['id'])->first();
+            $zone = (string) config('app.timezone');
+            $starts = $from === null ? null : CarbonImmutable::parse($from, $zone)->startOfDay();
+            $ends = $to === null ? null : CarbonImmutable::parse($to, $zone)->addDay()->startOfDay();
+            $rows = [];
+            if ($wallet !== null) {
+                foreach ($this->recordedBetween(WalletDepositCredit::query()->where('wallet_id', $wallet->id), $starts, $ends)->orderByDesc('id')->get() as $credit) {
+                    $entry = $this->historyEntry($credit);
+                    $rows[] = ['occurred_at' => $entry['occurred_at'], 'movement' => 'external', 'kind' => 'deposit', 'deal_name' => null,
+                        'counterparty' => $entry['counterparty'], 'direction' => 'in', 'amount' => $entry['amount'], 'reference' => $this->creditReceipt($credit)['reference']];
+                }
+                $entries = $this->recordedBetween(LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+                    ->where('source_type', 'primary_reservation'), $starts, $ends)->orderByDesc('id')->get();
+                $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($entries->pluck('source_id')->all())));
+                foreach ($entries as $ledgerEntry) {
+                    $entry = $this->internalEntry($ledgerEntry, $labels);
+                    $rows[] = ['occurred_at' => $entry['occurred_at'], 'movement' => 'internal', 'kind' => $entry['kind'], 'deal_name' => $entry['deal_name'],
+                        'counterparty' => null, 'direction' => 'internal', 'amount' => $entry['amount'], 'reference' => 'RZW-'.strtoupper(substr($ledgerEntry->id, -10))];
+                }
+            }
+            usort($rows, fn (array $left, array $right): int => [CarbonImmutable::parse($right['occurred_at']), $right['reference']]
+                <=> [CarbonImmutable::parse($left['occurred_at']), $left['reference']]);
+
+            return ['generated_at' => now()->utc()->toIso8601String(), 'from' => $from, 'to' => $to, 'rows' => $rows];
+        });
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    private function recordedBetween(Builder $query, ?CarbonImmutable $starts, ?CarbonImmutable $ends): Builder
+    {
+        return $query->when($starts !== null, fn (Builder $query) => $query->where('created_at', '>=', $starts))
+            ->when($ends !== null, fn (Builder $query) => $query->where('created_at', '<', $ends));
     }
 
     /** @return array<string, mixed> */

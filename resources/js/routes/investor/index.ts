@@ -755,7 +755,7 @@ checkout.form = checkoutForm
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 export const wallet = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -770,7 +770,7 @@ wallet.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 wallet.url = (options?: RouteQueryOptions) => {
@@ -779,7 +779,7 @@ wallet.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 wallet.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -789,7 +789,7 @@ wallet.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 wallet.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -799,7 +799,7 @@ wallet.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 const walletForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -809,7 +809,7 @@ const walletForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 walletForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -819,7 +819,7 @@ walletForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::wallet
-* @see app/Http/Controllers/InvestorWalletController.php:25
+* @see app/Http/Controllers/InvestorWalletController.php:29
 * @route '/investor/wallet'
 */
 walletForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

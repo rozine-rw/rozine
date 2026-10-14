@@ -53,6 +53,37 @@ afterEach(() => {
 });
 
 describe('Wallet (C3)', () => {
+    it('offers the statement as a PDF or a spreadsheet download, and nothing in a preview', async () => {
+        const user = userEvent.setup();
+        const props = wallet();
+
+        props.exports = {
+            csv: { url: '/investor/wallet/statement.csv', method: 'get' },
+            pdf: { url: '/investor/wallet/statement.pdf', method: 'get' },
+        };
+        const { unmount } = render(<InvestorWallet {...props} />);
+        const toggle = screen.getByRole('button', { name: 'Export' });
+
+        expect(toggle).toHaveAttribute('aria-expanded', 'false');
+        await user.click(toggle);
+        expect(
+            screen.getByRole('link', { name: /Download PDF/u }),
+        ).toHaveAttribute('href', '/investor/wallet/statement.pdf');
+        expect(
+            screen.getByRole('link', { name: /Download Excel/u }),
+        ).toHaveAttribute('href', '/investor/wallet/statement.csv');
+        fireEvent.click(screen.getByRole('link', { name: /Download Excel/u }));
+        expect(
+            screen.queryByRole('link', { name: /Download PDF/u }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(<InvestorWallet {...wallet()} />);
+        expect(
+            screen.queryByRole('button', { name: 'Export' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows the total with its breakdown, the live hold and the history, with withdrawal hidden', () => {
         vi.useFakeTimers({ now: new Date('2026-10-02T07:00:00Z') });
         render(<InvestorWallet {...wallet()} />);

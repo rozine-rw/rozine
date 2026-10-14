@@ -63,7 +63,8 @@ it('renders the live wallet with real routes, the literal lookup token and nothi
         ->and($props['funding'])->toBe(['kind' => null, 'policy' => ['version' => $fixture['policy']->version, 'synthetic' => true,
             'fee' => ['currency' => 'RWF', 'amount' => '0'], 'minimum' => ['currency' => 'RWF', 'amount' => '1000'], 'maximum' => ['currency' => 'RWF', 'amount' => '1000000']],
             'methods' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']], 'picks' => [], 'quote' => null])
-        ->and([$props['holds'], $props['deposits'], $props['receipt'], $props['earnings'], $props['exports']])->toBe([[], [], null, null, null])
+        ->and([$props['holds'], $props['deposits'], $props['receipt'], $props['earnings']])->toBe([[], [], null, null])
+        ->and($props['exports'])->toBe(['csv' => ['url' => '/investor/wallet/statement.csv', 'method' => 'get'], 'pdf' => ['url' => '/investor/wallet/statement.pdf', 'method' => 'get']])
         ->and(InvestorWallet::query()->where('party_id', $fixture['party']->id)->exists())->toBeFalse();
 });
 

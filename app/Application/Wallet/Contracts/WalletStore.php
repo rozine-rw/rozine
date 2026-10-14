@@ -24,6 +24,15 @@ interface WalletStore
     public function page(int $userId, ?int $contextRevision, array $query): array;
 
     /**
+     * The caller's wallet statement: every credited deposit and every internal transfer recorded
+     * between `from` and `to` (inclusive calendar days, either open), newest first, each with the
+     * reference its receipt carries. An Investor with no wallet gets an empty statement.
+     *
+     * @return array{generated_at: string, from: string|null, to: string|null, rows: list<array{occurred_at: string, movement: string, kind: string, deal_name: string|null, counterparty: string|null, direction: string, amount: array{currency: string, amount: string}, reference: string}>}
+     */
+    public function statement(int $userId, ?int $contextRevision, ?string $from, ?string $to): array;
+
+    /**
      * Records a deposit intent and its dispatch outbox row, or journals the refusal. Never credits.
      *
      * @param  array{currency: string, amount: string}  $amount

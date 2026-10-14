@@ -19,8 +19,8 @@ import type { C3InvestorWalletProps } from '@/types/investor';
 /**
  * Wallet (MVP-INVESTOR-SCR-08, design L2835–3095; C3 v2 §2a): the ledger total and its breakdown,
  * live checkout holds, deposit through a linked account under a versioned deposit policy, recorded
- * deposit intents, and the history with external cash apart from internal transfers. Withdrawal,
- * earnings and exports are hidden in C3. Deposit intents still `pending` or `unknown` are polled,
+ * deposit intents, and the history with external cash apart from internal transfers, with its
+ * statement downloads. Withdrawal and earnings are hidden in C3. Deposit intents still `pending` or `unknown` are polled,
  * boundedly, for fresh facts. The design's Rozine Plus upsell is outside the MVP.
  */
 /** What a wallet change reloads: the wallet's facts and actions, never the deposit form. */
@@ -97,7 +97,7 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
         <>
             <DepositIntents deposits={props.deposits} />
             <PollStopped {...poll} className="mt-2" />
-            <WalletHistory history={props.history} />
+            <WalletHistory history={props.history} exports={props.exports} />
             {props.receipt !== null && (
                 <ReceiptSheet receipt={props.receipt} close={closeReceipt} />
             )}

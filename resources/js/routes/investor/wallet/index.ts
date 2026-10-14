@@ -1,8 +1,107 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import operations from './operations'
 /**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+export const statement = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statement.url(args, options),
+    method: 'get',
+})
+
+statement.definition = {
+    methods: ["get","head"],
+    url: '/investor/wallet/statement.{format}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+statement.url = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { format: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            format: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        format: args.format,
+    }
+
+    return statement.definition.url
+            .replace('{format}', parsedArgs.format.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+statement.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: statement.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+statement.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: statement.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+const statementForm = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statement.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+statementForm.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statement.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::statement
+* @see app/Http/Controllers/InvestorWalletController.php:40
+* @route '/investor/wallet/statement.{format}'
+*/
+statementForm.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: statement.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+statement.form = statementForm
+
+/**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:35
+* @see app/Http/Controllers/InvestorWalletController.php:57
 * @route '/investor/wallet/deposits'
 */
 export const deposit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +116,7 @@ deposit.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:35
+* @see app/Http/Controllers/InvestorWalletController.php:57
 * @route '/investor/wallet/deposits'
 */
 deposit.url = (options?: RouteQueryOptions) => {
@@ -26,7 +125,7 @@ deposit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:35
+* @see app/Http/Controllers/InvestorWalletController.php:57
 * @route '/investor/wallet/deposits'
 */
 deposit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,7 +135,7 @@ deposit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:35
+* @see app/Http/Controllers/InvestorWalletController.php:57
 * @route '/investor/wallet/deposits'
 */
 const depositForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -46,7 +145,7 @@ const depositForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:35
+* @see app/Http/Controllers/InvestorWalletController.php:57
 * @route '/investor/wallet/deposits'
 */
 depositForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,6 +156,7 @@ depositForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 deposit.form = depositForm
 
 const wallet = {
+    statement: Object.assign(statement, statement),
     deposit: Object.assign(deposit, deposit),
     operations: Object.assign(operations, operations),
 }

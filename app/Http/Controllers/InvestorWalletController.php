@@ -7,15 +7,19 @@ namespace App\Http\Controllers;
 use App\Application\Operations\ReadChanges;
 use App\Application\Wallet\FindWalletOperation;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\GetInvestorWalletStatement;
 use App\Application\Wallet\RecordDepositIntent;
 use App\Http\Requests\Investor\DepositRequest;
 use App\Http\Requests\Investor\ShowWalletOperationRequest;
 use App\Http\Requests\Investor\ShowWalletRequest;
+use App\Http\Requests\Investor\ShowWalletStatementRequest;
 use App\Http\Resources\InvestorWalletResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class InvestorWalletController extends Controller
 {
@@ -30,6 +34,24 @@ class InvestorWalletController extends Controller
             $context === null ? null : (int) $context, $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt']))), 'changes_cursor' => $cursor]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('investor/wallet', $resource->resolve($request));
+    }
+
+    /** The statement as a private, never-cached attachment: CSV for spreadsheets or a PDF. */
+    public function statement(ShowWalletStatementRequest $request, GetInvestorWalletStatement $action, string $format): HttpResponse
+    {
+        $context = $request->validated('identity_context_revision');
+        $from = $request->validated('from');
+        $to = $request->validated('to');
+        $document = $action->handle((int) $request->user()?->getAuthIdentifier(), $context === null ? null : (int) $context,
+            is_string($from) ? $from : null, is_string($to) ? $to : null);
+        $response = new HttpResponse($format === 'pdf' ? $document->pdf() : $document->csv(), 200, [
+            'Content-Type' => $format === 'pdf' ? 'application/pdf' : 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition('attachment', 'rozine-wallet-statement.'.$format));
+
+        return $response;
     }
 
     public function deposit(DepositRequest $request, RecordDepositIntent $action): OperationResource
