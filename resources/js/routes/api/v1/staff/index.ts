@@ -11,7 +11,7 @@ import reconciliation from './reconciliation'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -26,7 +26,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -35,7 +35,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -45,7 +45,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -55,7 +55,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -75,7 +75,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:22
 * @route '/api/v1/staff/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
