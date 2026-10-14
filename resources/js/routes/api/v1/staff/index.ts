@@ -7,6 +7,7 @@ import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
 import events from './events'
+import reconciliation from './reconciliation'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
@@ -99,6 +100,7 @@ const staffNamespace = {
     dashboard: Object.assign(dashboard, dashboard),
     staff: Object.assign(staff, staff),
     events: Object.assign(events, events),
+    reconciliation: Object.assign(reconciliation, reconciliation),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
 }
 

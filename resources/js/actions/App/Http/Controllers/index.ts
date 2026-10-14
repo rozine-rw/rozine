@@ -22,6 +22,7 @@ import StaffAuditorDirectoryController from './StaffAuditorDirectoryController'
 import StaffDashboardController from './StaffDashboardController'
 import StaffDirectoryController from './StaffDirectoryController'
 import StaffActivityController from './StaffActivityController'
+import StaffReconciliationController from './StaffReconciliationController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
@@ -73,6 +74,7 @@ const Controllers = {
     StaffDashboardController: Object.assign(StaffDashboardController, StaffDashboardController),
     StaffDirectoryController: Object.assign(StaffDirectoryController, StaffDirectoryController),
     StaffActivityController: Object.assign(StaffActivityController, StaffActivityController),
+    StaffReconciliationController: Object.assign(StaffReconciliationController, StaffReconciliationController),
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),

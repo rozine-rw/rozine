@@ -37,6 +37,7 @@ use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffReconciliationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -234,6 +235,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/dashboard', StaffDashboardController::class)->name('api.v1.staff.dashboard');
     Route::get('v1/staff/staff', [StaffDirectoryController::class, 'index'])->name('api.v1.staff.staff.index');
     Route::get('v1/staff/activity', [StaffActivityController::class, 'index'])->name('api.v1.staff.events.index');
+    Route::get('v1/staff/reconciliation', StaffReconciliationController::class)->name('api.v1.staff.reconciliation.index');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {

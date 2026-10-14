@@ -1309,11 +1309,12 @@ export type ReconciliationDayClose = { business_date: KigaliDate } & (
 
 /**
  * An open break, in the Today shape without its commands, tied to the account it sits on and
- * linking to its record. Assigning and escalating wait on the unsigned D-25/28/54 policy.
+ * linking to its record, or null when the viewer may not open that record. Assigning and
+ * escalating wait on the unsigned D-25/28/54 policy.
  */
 export type ReconciliationBreakRecord = Omit<ReconciliationBreak, 'actions'> & {
     account_id: string;
-    link: RouteLink;
+    link: RouteLink | null;
 };
 
 export type AdminReconciliationProps = AdminFrameShellProps &

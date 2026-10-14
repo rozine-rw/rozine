@@ -48,6 +48,7 @@ use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
@@ -285,6 +286,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/dashboard', StaffDashboardController::class)->name('staff.dashboard');
     Route::get('admin/staff', [StaffDirectoryController::class, 'index'])->name('staff.staff.index');
     Route::get('admin/activity', [StaffActivityController::class, 'index'])->name('staff.events.index');
+    Route::get('admin/reconciliation', StaffReconciliationController::class)->name('staff.reconciliation.index');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {
