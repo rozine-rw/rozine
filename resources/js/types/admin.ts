@@ -1,4 +1,5 @@
 import type { BusinessRating, NoteStatus } from './business';
+import type { InvestorNotice } from './investor';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -1476,4 +1477,48 @@ export type AdminStagingMailTestersProps = AdminFrameShellProps & {
     server_recipients: string[];
     testers: StagingMailTester[];
     add: RouteAction;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Messaging History (staff-messaging-v1, BRS v2.0 NTF-R01)                           */
+/* ------------------------------------------------------------------------------------------ */
+
+/** The category a notice is filed under, after the design's message categories. */
+export type MessageCategory =
+    | 'onboarding'
+    | 'wallet'
+    | 'fundraising'
+    | 'portfolio'
+    | 'reporting'
+    | 'security'
+    | 'underwriting'
+    | 'payments'
+    | 'audits'
+    | 'general';
+
+/**
+ * One notice receipt: who it reached, the notice's kind (worded from the participant's catalog),
+ * the automation that sent it, the channel and whether it arrived. A mail can fail; an in-app
+ * notice is delivered when it is recorded.
+ */
+export type MessageHistoryRow = {
+    id: string;
+    recipient: string;
+    recipient_kind: 'person' | 'business';
+    kind: InvestorNotice['kind'];
+    category: MessageCategory;
+    source: 'automation';
+    channel: 'in_app' | 'mail';
+    status: 'delivered' | 'sent' | 'failed';
+    at: string;
+};
+
+export type AdminMessagingProps = AdminFrameShellProps & {
+    contract_version: 'staff-messaging-v1';
+    server_time: string;
+    history: MessageHistoryRow[];
+    /** The next page of older receipts, or null when this page holds the oldest. */
+    older: RouteLink | null;
+    /** Back to the newest receipts, sent only on an older page. */
+    newest: RouteLink | null;
 };

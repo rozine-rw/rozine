@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "26af0d26880181bba2671f19506c4df0d8699a8e4cd17d7393c4f89a481487da",
-    "coverageSetSha256": "7fafe3dac7e18f83f98a7429e5f9b5f4e811197fa871f5657d79e0164ac4cad5",
+    "sourceManifestSha256": "eb9d62a3c36b67320414d05873b5ab37bce1e1c931e87e1ff85ec5a36d559f0a",
+    "coverageSetSha256": "90c5a92fecd27b3291a3690eebbcbfed2afa0f7fd60320c178dfa331b9846f7f",
     "thresholds": {
         "critical": {
             "global": {
@@ -370,6 +370,7 @@
         "resources/js/pages/admin/exceptions.tsx",
         "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
+        "resources/js/pages/admin/messaging.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",

@@ -49,8 +49,9 @@ class StaffNavigationResource extends JsonResource
         }
 
         // Every other design section opens its pending page until its screen is wired. Payments is
-        // the disbursement queue, Finance is reconciliation, and Compliance the investor identity
-        // review queue, for whoever may see them. These are web pages, so they keep web URLs.
+        // the disbursement queue, Finance is reconciliation, Compliance the investor identity review
+        // queue and Messaging its History tab, for whoever may see them. These are web pages, so
+        // they keep web URLs.
         $pendingPage = fn (string $slug): array => ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
         $pending = [];
         foreach (StaffSectionController::SECTIONS as $slug => $section) {
@@ -65,6 +66,8 @@ class StaffNavigationResource extends JsonResource
 
         return [...$links, ...array_diff_key($pending, $links),
             'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'finance' => $links['reconciliation'] ?? $pendingPage('finance'), 'compliance' => $compliance,
+            'messaging' => in_array('messaging.view', $permissions, true)
+                ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
             'repayments' => null, 'ledger' => null, 'mail_testers' => $mailTesters];
     }
 }

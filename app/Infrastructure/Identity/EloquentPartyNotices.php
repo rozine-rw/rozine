@@ -26,6 +26,7 @@ use App\Notifications\RozineMail;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 use Throwable;
 
 /**
@@ -34,6 +35,7 @@ use Throwable;
  * the event commits, and each send leaves a `sent` or `failed` receipt.
  *
  * @phpstan-import-type Inbox from PartyNotices
+ * @phpstan-import-type Delivery from PartyNotices
  */
 final readonly class EloquentPartyNotices implements PartyNotices
 {
@@ -81,6 +83,35 @@ final readonly class EloquentPartyNotices implements PartyNotices
         return $this->listed($this->held($partyId), $limit);
     }
 
+    public function deliveries(?string $search, ?string $before, int $limit): array
+    {
+        $person = DB::table('users')->select('name')->whereColumn('users.party_id', 'party_notices.party_id')->orderBy('users.id')->limit(1);
+        $rows = DB::table('party_notice_deliveries')->join('party_notices', 'party_notices.id', '=', 'party_notice_deliveries.party_notice_id')
+            ->leftJoin('users', 'users.id', '=', 'party_notice_deliveries.user_id')
+            ->leftJoin('business_profiles', 'business_profiles.entity_party_id', '=', 'party_notices.party_id')
+            ->select(['party_notice_deliveries.id', 'party_notices.kind', 'party_notice_deliveries.channel', 'party_notice_deliveries.status',
+                'party_notice_deliveries.created_at', 'users.name as mailed', 'business_profiles.id as business'])
+            ->selectRaw("business_profiles.profile->>'name' as business_name")->selectSub($person, 'person')
+            ->when($before !== null, fn ($query) => $query->where('party_notice_deliveries.id', '<', $before))
+            ->when($search !== null, function ($query) use ($search, $person): void {
+                $like = '%'.addcslashes(mb_strtolower($search), '%_\\').'%';
+                $filed = array_values(array_map(fn (PartyNoticeKind $kind): string => $kind->value, array_filter(PartyNoticeKind::cases(),
+                    fn (PartyNoticeKind $kind): bool => str_contains($kind->category(), mb_strtolower($search)))));
+                $query->where(fn ($match) => $match->whereRaw('lower(party_notices.kind) like ?', [$like])->orWhereIn('party_notices.kind', $filed)
+                    ->orWhereRaw('lower(users.name) like ?', [$like])
+                    ->orWhereRaw("lower(business_profiles.profile->>'name') like ?", [$like])
+                    ->orWhereRaw('lower(('.$person->toSql().')) like ?', [$like]));
+            })
+            ->orderByDesc('party_notice_deliveries.id')->limit(max(1, min(100, $limit)))->get();
+
+        $deliveries = [];
+        foreach ($rows as $row) {
+            $deliveries[] = $this->delivery($row);
+        }
+
+        return $deliveries;
+    }
+
     public function partyUnread(string $partyId): int
     {
         return $this->held($partyId)->whereNull('read_at')->count();
@@ -89,6 +120,18 @@ final readonly class EloquentPartyNotices implements PartyNotices
     public function markPartyRead(string $partyId, ?string $noticeId): int
     {
         return $this->read($this->held($partyId), $noticeId);
+    }
+
+    /** @return Delivery */
+    private function delivery(stdClass $row): array
+    {
+        return ['id' => (string) $row->id, 'kind' => (string) $row->kind, 'channel' => $row->channel === 'mail' ? 'mail' : 'in_app',
+            'status' => match ($row->status) {
+                'sent' => 'sent', 'failed' => 'failed', default => 'delivered'
+            },
+            'recipient' => (string) ($row->mailed ?? $row->business_name ?? $row->person ?? ''),
+            'recipient_kind' => $row->mailed === null && $row->business !== null ? 'business' : 'person',
+            'delivered_at' => CarbonImmutable::parse((string) $row->created_at)->utc()->toIso8601String()];
     }
 
     /**

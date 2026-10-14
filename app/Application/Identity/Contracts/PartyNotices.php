@@ -13,6 +13,10 @@ use App\Domain\Identity\PartyNoticeKind;
  *
  * @phpstan-type Notice array{id: string, kind: string, facts: array<string, mixed>, created_at: string, read: bool}
  * @phpstan-type Inbox array{unread: int, notices: list<Notice>}
+ * @phpstan-type Delivery array{
+ *     id: string, kind: string, channel: 'in_app'|'mail', status: 'delivered'|'sent'|'failed', recipient: string,
+ *     recipient_kind: 'person'|'business', delivered_at: string
+ * }
  */
 interface PartyNotices
 {
@@ -67,4 +71,14 @@ interface PartyNotices
      * and returns how many were newly read.
      */
     public function markPartyRead(string $partyId, ?string $noticeId): int;
+
+    /**
+     * Every delivery receipt, newest first, with the notice's kind and who it reached: the account
+     * a mail went to, or the Party's Business or account for an in-app notice. A search matches the
+     * recipient's name, the kind or its category; `before` continues after a receipt id. Grants nothing: the
+     * caller has checked staff authority.
+     *
+     * @return list<Delivery>
+     */
+    public function deliveries(?string $search, ?string $before, int $limit): array;
 }

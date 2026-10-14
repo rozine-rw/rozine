@@ -45,4 +45,26 @@ enum PartyNoticeKind: string
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
             self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::HoldingIssued], true);
     }
+
+    /**
+     * The category Admin Messaging History files the notice under, after the design's message
+     * categories.
+     *
+     * @return 'onboarding'|'wallet'|'fundraising'|'portfolio'|'reporting'|'security'|'underwriting'|'payments'|'audits'
+     */
+    public function category(): string
+    {
+        return match ($this) {
+            self::VerificationApproved, self::VerificationRejected => 'onboarding',
+            self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
+            self::BusinessWithdrawalReturned => 'wallet',
+            self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
+            self::HoldingIssued => 'portfolio',
+            self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing => 'reporting',
+            self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
+            self::BusinessApplicationApproved => 'underwriting',
+            self::BusinessDisbursementSent => 'payments',
+            self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered => 'audits',
+        };
+    }
 }
