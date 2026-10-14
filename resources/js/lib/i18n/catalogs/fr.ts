@@ -4691,6 +4691,9 @@ const fr: Catalog = {
     'investor.notices.primary.refunded.title': 'Levée remboursée',
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
+    'investor.notices.primary.report_published.title': 'Rapport mensuel publié',
+    'investor.notices.primary.report_published.body':
+        '{business} a publié son rapport de {month}, vérifié par {partner}.',
     'investor.notices.security.password_changed.title':
         'Votre mot de passe a été modifié',
     'investor.notices.security.password_changed.body':

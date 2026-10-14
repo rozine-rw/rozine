@@ -3,9 +3,16 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Primary\Contracts\BusinessHolders;
 use App\Models\AuditReportPublication;
+use App\Models\PartyNotice;
+use App\Notifications\Investor\ReportPublished;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Tests\Support\AuditSealingFixture as Fixture;
+use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryHoldingFixture;
 
 /*
  * The Investor-facing facts of a Business's published monthly reports (FR-103, FR-110): only a
@@ -49,4 +56,43 @@ it('never reads a Flash audit or a report whose publication is not published', f
     Fixture::cosign($flash);
     expect(AuditReportPublication::query()->sole()->status)->toBe('published')
         ->and(app(PublishedMonthlyReports::class)->forBusiness($flash['audit']['business']))->toBe([]);
+});
+
+it('tells each holder of the business, once, when its monthly report publishes', function (): void {
+    Notification::fake();
+    $holder = InvestorWalletFixture::ready();
+    app()->instance(BusinessHolders::class, new class($holder['party']->id) implements BusinessHolders
+    {
+        public function __construct(private readonly string $partyId) {}
+
+        public function parties(string $businessId): array
+        {
+            return [$this->partyId];
+        }
+    });
+    $fixture = Fixture::ready(kind: 'monthly');
+    Fixture::seal($fixture);
+    expect(PartyNotice::query()->where('kind', 'primary.report_published')->exists())->toBeFalse();
+
+    Fixture::cosign($fixture);
+    $notice = PartyNotice::query()->where('kind', 'primary.report_published')->sole();
+    expect($notice->party_id)->toBe($holder['party']->id)
+        ->and($notice->event_key)->toBe('report-published:'.$fixture['report']->id.':'.$holder['party']->id)
+        ->and($notice->facts)->toMatchArray(['business_id' => $fixture['audit']['business'], 'report_id' => $fixture['report']->id])
+        ->and($notice->facts['period'])->toMatch('/^\d{4}-\d{2}$/')
+        ->and($notice->facts['partner'])->not->toBe('');
+    Notification::assertSentToTimes($holder['user'], ReportPublished::class, 1);
+});
+
+it('names the distinct Parties holding any of a business\'s Holdings', function (): void {
+    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed(['540', '540', '1080'], buyers: [0 => 'same', 1 => 'same']);
+    $closing = PrimaryHoldingFixture::issuedClosing($campaign);
+    foreach ($commitments as $commitment) {
+        PrimaryHoldingFixture::insert($commitment->id, $closing);
+    }
+    $parties = DB::table('primary_holdings')->distinct()->orderBy('party_id')->pluck('party_id')->all();
+
+    expect($parties)->toHaveCount(2)
+        ->and(app(BusinessHolders::class)->parties($campaign->business_id))->toBe($parties)
+        ->and(app(BusinessHolders::class)->parties(strtolower((string) Str::ulid())))->toBe([]);
 });

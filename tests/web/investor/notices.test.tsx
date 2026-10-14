@@ -51,7 +51,7 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             name: /RWF|verified|another look|password/u,
         });
 
-        expect(items).toHaveLength(5);
+        expect(items).toHaveLength(6);
         expect(items[0]).toHaveTextContent(
             'Deposit receivedRWF 250,000 is now in your wallet.',
         );
@@ -63,9 +63,12 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             'Compliance could not verify your details: The photo of your ID is blurred. Upload a sharper photo.',
         );
         expect(items[3]).toHaveTextContent(
-            'Raise refundedThe Karongi Freight Ltd raise closed without reaching its target. RWF 150,000 is back in your wallet, with no fee.',
+            'Monthly report publishedKarongi Freight Ltd published its September 2026 report, verified by Diane Uwase, CPA.',
         );
         expect(items[4]).toHaveTextContent(
+            'Raise refundedThe Karongi Freight Ltd raise closed without reaching its target. RWF 150,000 is back in your wallet, with no fee.',
+        );
+        expect(items[5]).toHaveTextContent(
             'Your password was changedIf this was not you, reset your password now and contact Rozine support.',
         );
         expect(within(items[0]).getByLabelText('Unread')).toBeInTheDocument();

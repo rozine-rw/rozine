@@ -4479,6 +4479,10 @@ const en = {
     'investor.notices.primary.refunded.title': 'Raise refunded',
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
+    'investor.notices.primary.report_published.title':
+        'Monthly report published',
+    'investor.notices.primary.report_published.body':
+        '{business} published its {month} report, verified by {partner}.',
     'investor.notices.security.password_changed.title':
         'Your password was changed',
     'investor.notices.security.password_changed.body':

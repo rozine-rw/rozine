@@ -19,6 +19,7 @@ enum PartyNoticeKind: string
     case WithdrawalSent = 'wallet.withdrawal_sent';
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
+    case ReportPublished = 'primary.report_published';
     case PasswordChanged = 'security.password_changed';
     case PayoutAccountLinked = 'security.payout_account_linked';
     case PayoutAccountUnlinked = 'security.payout_account_unlinked';
@@ -38,6 +39,6 @@ enum PartyNoticeKind: string
     {
         return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
-            self::AuditorJobOffered, self::NewDevice], true);
+            self::AuditorJobOffered, self::NewDevice, self::ReportPublished], true);
     }
 }

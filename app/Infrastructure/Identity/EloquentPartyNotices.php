@@ -17,6 +17,7 @@ use App\Notifications\Business\ApplicationDecided;
 use App\Notifications\Business\ApplicationOutcome;
 use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
 use App\Notifications\Investor\RaiseExpired;
+use App\Notifications\Investor\ReportPublished;
 use App\Notifications\Investor\VerificationDecided;
 use App\Notifications\Investor\WalletTransfer;
 use App\Notifications\Investor\WalletTransferCompleted;
@@ -134,6 +135,8 @@ final readonly class EloquentPartyNotices implements PartyNotices
         return match ($kind) {
             PartyNoticeKind::NewDevice => new NewDeviceSignIn($facts['device'], CarbonImmutable::parse($facts['signed_in_at']), route('security.edit')),
             PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
+            PartyNoticeKind::ReportPublished => new ReportPublished($facts['business'], CarbonImmutable::parse($facts['period'].'-01')->format('F Y'),
+                $facts['partner'], route('investor.portfolio')),
             PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
                 route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),
             PartyNoticeKind::BusinessApplicationApproved => new ApplicationDecided(ApplicationOutcome::Approved, $facts['business'], $facts['amount'],

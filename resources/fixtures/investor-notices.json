@@ -49,6 +49,22 @@
             "read_action": null
         },
         {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9c",
+            "kind": "primary.report_published",
+            "facts": {
+                "business": "Karongi Freight Ltd",
+                "period": "2026-09",
+                "partner": "Diane Uwase, CPA"
+            },
+            "created_at": "2026-10-08T10:15:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
             "id": "01k7nq0c2y6w8e4t1v3x5z7b9a",
             "kind": "primary.refunded",
             "facts": {

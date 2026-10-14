@@ -2,7 +2,12 @@ import { router, useHttp } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
+import {
+    formatDate,
+    formatDateTime,
+    formatMonthYearLong,
+    formatRwf,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { InvestorNotice, InvestorNotices } from '@/types/investor';
 import type { RouteAction, RouteLink } from '@/types/routing';
@@ -44,6 +49,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
+                {...stroke}
+            />
+        ),
+    },
+    'primary.report_published': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: (
+            <path
+                d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4.5"
                 {...stroke}
             />
         ),
@@ -435,6 +450,15 @@ function body(
             return t('investor.notices.primary.refunded.body', {
                 amount: formatRwf(notice.facts),
                 business: notice.facts.business,
+            });
+        case 'primary.report_published':
+            return t('investor.notices.primary.report_published.body', {
+                business: notice.facts.business,
+                month: formatMonthYearLong(
+                    `${notice.facts.period}-01T00:00:00+02:00`,
+                    locale,
+                ),
+                partner: notice.facts.partner,
             });
         case 'verification.rejected':
             return t('investor.notices.verification.rejected.body', {

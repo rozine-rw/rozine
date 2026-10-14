@@ -1415,6 +1415,10 @@ export type InvestorNotice = {
       }
     | { kind: 'wallet.withdrawal_returned'; facts: Money & { account: string } }
     | { kind: 'primary.refunded'; facts: Money & { business: string } }
+    | {
+          kind: 'primary.report_published';
+          facts: { business: string; period: string; partner: string };
+      }
     | { kind: 'verification.approved'; facts: never[] }
     | { kind: 'security.password_changed'; facts: never[] }
     | { kind: 'security.new_device'; facts: { device: string } }

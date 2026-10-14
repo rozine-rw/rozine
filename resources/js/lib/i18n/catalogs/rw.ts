@@ -4665,6 +4665,10 @@ const rw: Catalog = {
     'investor.notices.primary.refunded.title': 'Amafaranga yawe yagarutse',
     'investor.notices.primary.refunded.body':
         'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',
+    'investor.notices.primary.report_published.title':
+        'Raporo y’ukwezi yasohotse',
+    'investor.notices.primary.report_published.body':
+        '{business} yasohoye raporo yayo ya {month}, yemejwe na {partner}.',
     'investor.notices.security.password_changed.title':
         'Ijambo ry’ibanga ryawe ryahinduwe',
     'investor.notices.security.password_changed.body':

@@ -20,6 +20,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\BusinessHolders;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Identity\IdentityViolation;
@@ -51,7 +52,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         private OperationJournal $journal, private CanonicalJson $json, private AuditReportWindow $window, private AuditSourceFactsStore $sourceFacts,
         private MonthlyReportReview $reviewPolicy, private StatementStore $statements,
         private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff,
-        private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders) {}
 
     /** How long before a monthly review window closes the Business is reminded (BRS NTF-R01). */
     private const int CLOSING_REMINDER_HOURS = 2;
@@ -77,6 +78,22 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             'due_at' => $monthly ? $publication->due_at?->utc()->format('Y-m-d\TH:i:s\Z') : $this->window->dueAt(is_string($period) ? $period : null),
             'business_id' => $publication->business_id, 'report_id' => $reportId,
         ], 'business-report-sealed:'.$publication->id);
+    }
+
+    /**
+     * Tells every holder of the Business's notes, in-app and by e-mail, that a monthly report was
+     * published (FR-103, FR-110), once per report. A Flash audit, or a report still in review, tells nobody.
+     */
+    private function noticeHolders(AuditReportPublication $publication): void
+    {
+        $seal = AuditReportSeal::query()->where('audit_report_id', $publication->audit_report_id)->firstOrFail();
+        $period = $seal->payload['report']['period'] ?? null;
+        $parties = $publication->status === 'published' && is_string($period) ? $this->holders->parties($publication->business_id) : [];
+        foreach ($parties as $partyId) {
+            $this->notices->record($partyId, PartyNoticeKind::ReportPublished, ['business' => (string) $seal->payload['business']['profile']['name'],
+                'period' => substr($period, 0, 7), 'partner' => (string) $seal->payload['auditor_name'], 'business_id' => $publication->business_id,
+                'report_id' => $publication->audit_report_id], 'report-published:'.$publication->audit_report_id.':'.$partyId);
+        }
     }
 
     /**
@@ -220,6 +237,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         }
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $complete ? 'published' : 'pending',
                             'published_at' => $complete ? $at : null])->save();
+                        $this->noticeHolders($publication);
 
                         return $this->receipt($publication, $signature);
                     });
@@ -689,6 +707,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     $this->event($publication, $command, 'staff', $userId, null, ['review' => $review, 'decision' => $decision], at: $at);
                     $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $publish ? 'published' : 'escalated',
                         'review' => $review, 'published_at' => $publish ? $at : null, 'published_reason' => $publish ? 'staff_resolved' : null])->save();
+                    $this->noticeHolders($publication);
 
                     return $this->reviewReceipt($publication, $publish ? 'REPORT_PUBLISHED' : ($escalate ? 'REPORT_DISPUTE_ESCALATED' : 'REPORT_DISPUTE_AMENDMENT_REQUIRED'));
                 });
@@ -722,6 +741,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                                 $this->event($publication, 'report.auto_approve', 'system', null, null, ['published_reason' => 'auto_approved'], at: $at);
                                 $publication->forceFill(['revision' => $publication->revision + 1, 'status' => 'published',
                                     'published_at' => $at, 'published_reason' => 'auto_approved'])->save();
+                                $this->noticeHolders($publication);
 
                                 return 1;
                             });
