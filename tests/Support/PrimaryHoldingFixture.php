@@ -130,14 +130,29 @@ final class PrimaryHoldingFixture
     }
 
     /**
-     * The campaign's disbursement approved and dispatched, its payout in flight with no observed
-     * outcome: sent to the provider, or a send whose delivery is unknown.
+     * The campaign's disbursement approved and dispatched, its payout in flight: sent to the
+     * provider, or a send whose delivery is unknown, optionally with an applied non-final provider
+     * observation.
      */
-    public static function inFlight(BusinessCampaign $campaign, bool $sent = true): void
+    /** The campaign's disbursement authorized by its maker, still awaiting the second approver. */
+    public static function awaitingApproval(BusinessCampaign $campaign): void
     {
-        DB::transaction(function () use ($campaign, $sent): void {
+        DB::transaction(fn (): array => self::authorized($campaign, []));
+    }
+
+    public static function inFlight(BusinessCampaign $campaign, bool $sent = true, ?string $observed = null): void
+    {
+        DB::transaction(function () use ($campaign, $sent, $observed): void {
             [$disbursement, $event, $maker, $checker] = self::authorized($campaign, []);
-            self::dispatch($disbursement, $event, $maker, $checker, $sent);
+            [$intent, $operation] = self::dispatch($disbursement, $event, $maker, $checker, $sent);
+            if ($observed !== null) {
+                $observation = self::id();
+                DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
+                    'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'query', 'state' => $observed,
+                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+                    'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => null,
+                    'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
+            }
         });
     }
 

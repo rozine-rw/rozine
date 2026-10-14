@@ -84,6 +84,7 @@ use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
 use App\Application\Wallet\Contracts\BusinessWithdrawals;
 use App\Application\Wallet\Contracts\DepositProvider;
@@ -176,6 +177,7 @@ use App\Infrastructure\Primary\RetainedInvestorCheckoutFacts;
 use App\Infrastructure\Primary\RetainedIssuedHoldings;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
@@ -314,6 +316,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
         $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
+        // Secondary trading stays off until Phase 3 acceptance (BRS v2.0 §12).
+        $this->app->bind(SecondaryMarket::class, UnavailableSecondaryMarket::class);
     }
 
     /**

@@ -144,10 +144,12 @@ it('opens an issued commitment as issued, linked to its Holding, and leaves it o
     $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitments', []));
 });
 
-it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, ?bool $sent, string $state, ?array $closing): void {
+it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, ?bool $sent, string $state, ?array $closing, ?string $observed = null): void {
     ['campaign' => $campaign, 'commitments' => [$commitment]] = PrimaryHoldingFixture::committed(fund: $fund);
     if ($sent !== null) {
-        PrimaryHoldingFixture::inFlight($campaign, $sent);
+        PrimaryHoldingFixture::inFlight($campaign, $sent, $observed);
+    } elseif ($observed === 'approval') {
+        PrimaryHoldingFixture::awaitingApproval($campaign);
     }
     $user = User::query()->where('party_id', PrimaryReservationRecord::query()->whereKey($commitment->primary_reservation_id)->value('party_id'))->sole();
 
@@ -161,8 +163,11 @@ it('lists purchases awaiting issue apart from the Holdings: confirmed while the 
 })->with([
     'raise open' => [false, null, 'confirmed', null],
     'funding locked' => [true, null, 'funded', ['stage' => 'awaiting_disbursement']],
+    'payout awaiting its second approver' => [true, null, 'funded', ['stage' => 'awaiting_disbursement'], 'approval'],
     'payout sent' => [true, true, 'funded', ['stage' => 'in_flight', 'provider' => 'pending']],
     'payout send unconfirmed' => [true, false, 'funded', ['stage' => 'in_flight', 'provider' => 'unknown']],
+    'provider reports pending' => [true, false, 'funded', ['stage' => 'in_flight', 'provider' => 'pending'], 'pending'],
+    'provider reports unknown' => [true, true, 'funded', ['stage' => 'in_flight', 'provider' => 'unknown'], 'unknown'],
 ]);
 
 it('shows a purchase whose funded raise failed its closing as failed, with the refund, and leaves it off Portfolio', function (): void {

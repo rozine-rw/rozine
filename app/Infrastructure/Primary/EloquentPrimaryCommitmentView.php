@@ -22,9 +22,10 @@ use RuntimeException;
  * Reads the commitment through the Investor-authorized retained facts first; only then the
  * Party's own recorded confirmation and refund, and the campaign's title and lifecycle. Once the
  * campaign's funding is locked the commitment is `funded`, awaiting the disbursement or with its
- * payout in flight, until the Holding issued from it makes it `issued`. When the campaign closed,
- * the closure's refund makes it `cancelled` by the Business, `expired` or `failed_closing`, with
- * the wallet's receipt for that refund.
+ * payout in flight, until the Holding issued from it makes it `issued`. When the campaign expired
+ * or failed its closing, the closure's refund makes it `expired` or `failed_closing`, with the
+ * wallet's receipt for that refund (`cancelled` by the Business if a cancellation ever returned
+ * one). A closure that returned nothing to this purchase leaves it refused.
  *
  * @phpstan-import-type OperationRecord from OperationRecords
  */
@@ -66,7 +67,7 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
         $holding = $funded ? $this->holdings->ofCommitment($userId, $commitmentId) : null;
         $state = match (true) {
             $refund !== null => 'cancelled',
-            $returned !== null => $campaign['closure'] === 'cancelled' ? 'cancelled' : $campaign['closure'],
+            $returned !== null => $campaign['closure'],
             $holding !== null => 'issued',
             $funded => 'funded',
             default => 'confirmed',
@@ -76,11 +77,7 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
         return ['identity_context_revision' => $context, 'commitment' => ['id' => $commitmentId, 'revision' => $facts['revision'],
             'campaign_id' => $facts['campaign_id'], 'reservation_id' => $facts['reservation_id'], 'deal_name' => $campaign['title'],
             'units' => $units, 'ordinals' => $facts['ordinal_ranges'], 'principal' => $facts['principal'], 'rights' => $facts['rights'],
-            'state' => $state, 'cancelled_by' => match (true) {
-                $refund !== null => 'investor',
-                $returned !== null && $campaign['closure'] === 'cancelled' => 'business',
-                default => null,
-            }, 'closing' => match (true) {
+            'state' => $state, 'cancelled_by' => $refund !== null ? 'investor' : ($returned !== null && $campaign['closure'] === 'cancelled' ? 'business' : null), 'closing' => match (true) {
                 $state !== 'funded' => null,
                 $inFlight === null => ['stage' => 'awaiting_disbursement'],
                 default => ['stage' => 'in_flight', 'provider' => $inFlight],
@@ -95,27 +92,22 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
 
     /**
      * The refund a campaign closure returned to this purchase: the `primary_refund` posting the
-     * closure bound to its reservation, as the wallet's receipt for it, against the reserve request
-     * that opened the purchase. A closure that bound no return to it (a legacy closure recorded
-     * before cash returns were bound) leaves the commitment refused.
+     * closure bound to its reservation (the closure evidence has already verified the binding and
+     * its amount), as the wallet's receipt for it, against the reserve request that opened the
+     * purchase. A closure that bound no return to it (a legacy closure recorded before cash returns
+     * were bound) leaves the commitment refused.
      *
      * @param  array{currency: string, amount: string}  $principal
      * @return array<string, mixed>
      */
     private function closureRefund(string $actor, string $campaignId, string $reservationId, array $principal, string $units, string $policyVersion): array
     {
-        $return = DB::selectOne("SELECT r.return_entry_id, r.origin_operation_id, r.principal, e.created_at FROM primary_campaign_closure_returns r
-            JOIN ledger_entries e ON e.id = r.return_entry_id WHERE r.primary_reservation_id = ? AND r.return_kind = 'primary_refund'", [$reservationId]);
-        if ($return === null) {
-            throw new CommandRejection('COMMITMENT_STATE_UNAVAILABLE', 409);
-        }
-        $return = (array) $return;
+        $return = (array) (DB::selectOne("SELECT r.return_entry_id, r.origin_operation_id, e.created_at FROM primary_campaign_closure_returns r
+            JOIN ledger_entries e ON e.id = r.return_entry_id WHERE r.primary_reservation_id = ? AND r.return_kind = 'primary_refund'", [$reservationId])
+            ?? throw new CommandRejection('COMMITMENT_STATE_UNAVAILABLE', 409));
         $recorded = CarbonImmutable::parse((string) $return['created_at'])->setTimezone((string) config('app.timezone'))->toIso8601String();
         $origin = array_find($this->operations->forTarget($actor, 'primary.reserve', 'campaign', $campaignId),
-            fn (array $operation): bool => $operation['operation_id'] === $return['origin_operation_id']);
-        if ($origin === null || (string) $return['principal'] !== $principal['amount']) {
-            throw new RuntimeException('COMMITMENT_INTEGRITY_FAILED');
-        }
+            fn (array $operation): bool => $operation['operation_id'] === $return['origin_operation_id']) ?? throw new RuntimeException('COMMITMENT_INTEGRITY_FAILED');
         $entryId = (string) $return['return_entry_id'];
 
         return ['receipt_id' => $entryId, 'operation_id' => $origin['operation_id'], 'request_id' => $origin['request_id'], 'code' => 'COMMITMENT_REFUNDED',
