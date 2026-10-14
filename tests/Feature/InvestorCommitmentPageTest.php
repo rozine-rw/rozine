@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
 use App\Domain\Operations\CommandRejection;
+use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
@@ -104,6 +106,23 @@ it('shows a commitment whose campaign is funded as awaiting its disbursement, un
     ($this->refund)((string) Str::uuid());
     $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertOk()
         ->assertInertia(fn ($page) => $page->where('commitment.state', 'cancelled'));
+});
+
+it('shows a commitment whose raise expired with the refund the expiry settlement returned to the wallet', function (): void {
+    $this->travelTo($this->campaign->expires_at);
+    expect(app(BusinessCampaignStore::class)->expireDue(10))->toBe(1);
+    $refund = LedgerEntry::query()->where('kind', 'primary_refund')->sole();
+
+    $commitment = $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertOk()
+        ->viewData('page')['props']['commitment'];
+    expect([$commitment['state'], $commitment['cancelled_by'], $commitment['closing'], $commitment['holding']])->toBe(['expired', null, null, null])
+        ->and($commitment['refund'])->toMatchArray(['receipt_id' => $refund->id, 'operation_id' => $refund->origin_operation_id, 'code' => 'COMMITMENT_REFUNDED',
+            'recorded_at' => $refund->payload['recorded_at'], 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'units' => '3',
+            'reference' => 'RZW-'.strtoupper(substr($refund->id, -10)), 'disclosure_version' => null,
+            'link' => ['url' => '/investor/wallet?receipt='.$refund->id, 'method' => 'get']]);
+    $wallet = $this->get($commitment['refund']['link']['url'])->assertOk()->viewData('page')['props']['receipt']['receipt'];
+    expect($wallet)->toMatchArray(array_diff_key($commitment['refund'], ['revision' => true, 'policy_version' => true]));
+    $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn ($page) => $page->where('commitments', []));
 });
 
 it('refuses to present a commitment whose recorded evidence does not bind to it', function (Closure $records): void {

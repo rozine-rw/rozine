@@ -8,9 +8,11 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryFailedClosingFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
 
@@ -162,3 +164,19 @@ it('lists purchases awaiting issue apart from the Holdings: confirmed while the 
     'payout sent' => [true, true, 'funded', ['stage' => 'in_flight', 'provider' => 'pending']],
     'payout send unconfirmed' => [true, false, 'funded', ['stage' => 'in_flight', 'provider' => 'unknown']],
 ]);
+
+it('shows a purchase whose funded raise failed its closing as failed, with the refund, and leaves it off Portfolio', function (): void {
+    ['campaign' => $campaign] = PrimaryFailedClosingFixture::close();
+    PrimaryHoldingFixture::flushDeferredChecks();
+    $purchase = $campaign->commitments[0];
+    $user = User::query()->where('party_id', $purchase->partyId)->sole();
+    $refund = DB::table('primary_campaign_closure_returns')->where('primary_commitment_id', $purchase->id)->sole();
+
+    $this->actingAs($user)->get(route('investor.commitments.show', $purchase->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('commitment.state', 'failed_closing')->where('commitment.cancelled_by', null)
+            ->where('commitment.closing', null)->where('commitment.holding', null)
+            ->where('commitment.refund.receipt_id', $refund->return_entry_id)->where('commitment.refund.code', 'COMMITMENT_REFUNDED')
+            ->where('commitment.refund.amount', ['currency' => 'RWF', 'amount' => $purchase->principal])
+            ->where('commitment.refund.link', ['url' => '/investor/wallet?receipt='.$refund->return_entry_id, 'method' => 'get']));
+    $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('holdings', [])->where('commitments', []));
+});

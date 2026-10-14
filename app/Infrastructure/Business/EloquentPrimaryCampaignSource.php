@@ -72,10 +72,13 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $publication = $this->publications->find($campaignId);
         $title = $publication['title'] ?? null;
         $business = $publication['public_evidence']['business']['name'] ?? null;
+        $closure = $this->closures->find($campaignId);
+        /** @var 'cancelled'|'expired'|'failed_closing'|null $phase */
+        $phase = $closure === null ? null : $closure['phase'];
 
         return ['title' => is_string($title) ? $title : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
             'business' => is_string($business) ? $business : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
-            'closed' => $this->closures->find($campaignId) !== null];
+            'closed' => $closure !== null, 'closure' => $phase];
     }
 
     /** @return CampaignInput */

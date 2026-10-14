@@ -10,7 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `C3InvestorCommitmentProps` (investor-primary-v1) for both transports. It shapes already
  * authorized facts and adds real routes only. No cancel action is offered yet: the server cannot
- * yet tell a raising campaign from a funded one here, so the cancel command alone decides.
+ * yet tell a raising campaign from a funded one here, so the cancel command alone decides. The
+ * Investor's own refund links to its cancel request; a closure's refund opens its wallet receipt.
  * A destination with no live route yet is null; Portfolio and Profile are web pages only, so the
  * API carries their links as null.
  */
@@ -52,7 +53,9 @@ class InvestorCommitmentResource extends JsonResource
         unset($shown['reservation_id']);
 
         return [...$shown, 'confirmation' => [...$confirmation, 'link' => $link],
-            'refund' => $refund === null ? null : [...$refund, 'link' => self::lookup($request, $context, $commitment, (string) $refund['request_id'])],
+            'refund' => $refund === null ? null : [...$refund, 'link' => $commitment['cancelled_by'] === 'investor'
+                ? self::lookup($request, $context, $commitment, (string) $refund['request_id'])
+                : self::link($request, 'investor.wallet', ['receipt' => (string) $refund['receipt_id']])],
             'holding' => $holding === null ? null : ['id' => $holding['id'], 'link' => self::link($request, 'investor.holdings.show', ['holding' => $holding['id']])],
             'actions' => ['cancel' => null], 'link' => $link];
     }
