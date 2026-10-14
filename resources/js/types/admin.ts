@@ -273,7 +273,7 @@ export type FunnelStage =
 export type AdminTodayProps = AdminFrameShellProps & {
     kpis: TodayKpi[];
     attention: AttentionTile[];
-    /** Null while reconciliation breaks are not tracked; empty when none is open. */
+    /** Null for a viewer who may not view reconciliation; empty when no break is open. */
     breaks: ReconciliationBreak[] | null;
     capital_raised: {
         from: string | null;

@@ -54,12 +54,22 @@ class StaffReconciliationResource extends JsonResource
                 'ledger' => $money($account['ledger']), 'statement' => $money($account['statement']),
                 'difference' => $money((string) BigInteger::of($account['ledger'])->minus($account['statement'])), 'feed' => ['state' => 'available']], $page['accounts']),
             'breaks' => array_map(fn (array $break): array => ['id' => $break['id'], 'reference' => $break['reference'], 'account_id' => $break['account_id'],
-                'description' => strtr(self::KINDS[$break['kind']], [':flow' => self::FLOWS[$break['flow']][$break['account_id']]]),
+                'description' => self::describe($break),
                 'gap' => $money($break['amount']), 'opened_at' => $break['opened_at'], 'age_days' => $break['age_days'], 'owner' => null,
                 'link' => match (true) {
                     $break['party_id'] !== null && $investors => ['url' => route($prefix.'staff.investors.index', ['investor' => $break['party_id']], false), 'method' => 'get'],
                     $break['business_id'] !== null && $businesses => ['url' => route($prefix.'staff.businesses.index', ['business' => $break['business_id']], false), 'method' => 'get'],
                     default => null,
                 }], $page['breaks'])];
+    }
+
+    /**
+     * What the provider reported for a break, in the words the console shows.
+     *
+     * @param  array{account_id: 'deposits'|'withdrawals', flow: 'investor'|'business', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict'}  $break
+     */
+    public static function describe(array $break): string
+    {
+        return strtr(self::KINDS[$break['kind']], [':flow' => self::FLOWS[$break['flow']][$break['account_id']]]);
     }
 }
