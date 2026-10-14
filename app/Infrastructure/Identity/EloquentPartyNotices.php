@@ -131,9 +131,17 @@ final readonly class EloquentPartyNotices implements PartyNotices
         };
     }
 
-    /** @param  list<int>  $accounts */
+    /**
+     * Sends only for a notice that committed: a callback can outlive a commit that failed at its
+     * deferred constraints, and must neither e-mail that event nor fail the next one.
+     *
+     * @param  list<int>  $accounts
+     */
     private function mail(string $noticeId, array $accounts, RozineMail $message): void
     {
+        if (! PartyNotice::query()->whereKey($noticeId)->exists()) {
+            return;
+        }
         foreach (User::query()->whereKey($accounts)->orderBy('id')->get() as $user) {
             try {
                 $user->notifyNow($message);

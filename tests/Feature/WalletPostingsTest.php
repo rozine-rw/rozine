@@ -55,7 +55,7 @@ function postingMoney(string $amount): WalletMoney
 it('holds, commits and refunds exactly, keeping each bucket once in the total', function (): void {
     ['user' => $user, 'wallet' => $wallet] = fundedWallet();
     $postings = app(WalletPostings::class);
-    $source = PrimaryReservationFixture::postingSource($wallet, '20000');
+    $source = PrimaryReservationFixture::postingSource($wallet, '20000', PrimaryReservationFixture::campaign());
 
     $hold = $postings->hold($wallet, postingMoney('20000'), $source);
     expect([$hold->kind, $hold->walletId, $hold->sourceType, $hold->sourceId, $hold->originOperationId, $hold->amount, $hold->replayed])

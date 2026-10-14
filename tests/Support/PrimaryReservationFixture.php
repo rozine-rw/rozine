@@ -27,11 +27,13 @@ use Illuminate\Support\Str;
 final class PrimaryReservationFixture
 {
     /** A real retained source for isolated wallet-port tests; no synthetic cash is added. */
-    public static function postingSource(LockedWallet $wallet, string $principal): PostingSource
+    /** Pass a published campaign when the test reads the wallet page, which names each live hold's deal. */
+    public static function postingSource(LockedWallet $wallet, string $principal, ?BusinessCampaign $campaign = null): PostingSource
     {
         $units = BigInteger::of($principal)->dividedBy(5000)->toInt();
         $root = PrimaryReservationRecord::factory()->withInitialVersion(false)->create([
             'party_id' => $wallet->partyId, 'units' => $units, 'principal' => $principal,
+            ...($campaign === null ? [] : ['business_campaign_id' => $campaign->id]),
         ]);
 
         return new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
