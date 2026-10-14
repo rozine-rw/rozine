@@ -14,6 +14,9 @@ interface BusinessNoticeAudience
     /** The Business's entity Party. */
     public function entityParty(string $businessId): string;
 
+    /** The Business's entity Party, or null for a business with no profile, such as a synthetic payout's. */
+    public function findEntityParty(string $businessId): ?string;
+
     /**
      * The accounts of the current mandate's people holding `business.view`, in a stable order.
      *

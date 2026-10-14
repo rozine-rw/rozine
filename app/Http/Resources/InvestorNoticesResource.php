@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
  */
 class InvestorNoticesResource extends JsonResource
 {
-    /** Where each kind opens, by route name and parameters. */
+    /** Where each kind opens, by route name and parameters; a parameter starting with `:` takes that notice fact. */
     private const array DESTINATIONS = [
         'verification.approved' => ['investor.deals', []],
         'verification.rejected' => ['investor.verification', []],
@@ -27,6 +27,8 @@ class InvestorNoticesResource extends JsonResource
         'wallet.withdrawal_returned' => ['investor.wallet', []],
         'primary.refunded' => ['investor.wallet', []],
         'primary.report_published' => ['investor.portfolio', []],
+        'primary.raise_funded' => ['investor.portfolio', []],
+        'primary.holding_issued' => ['investor.holdings.show', ['holding' => ':holding_id']],
         'security.password_changed' => ['investor.profile', ['section' => 'security']],
         'security.new_device' => ['investor.profile', ['section' => 'security']],
         'security.payout_account_linked' => ['investor.profile', ['section' => 'linked']],
@@ -48,7 +50,9 @@ class InvestorNoticesResource extends JsonResource
 
         return ['unread' => $inbox['unread'],
             'notices' => array_map(fn (array $notice): array => [...$notice,
-                'link' => $this->link($prefix, ...self::DESTINATIONS[$notice['kind']]),
+                'link' => $this->link($prefix, self::DESTINATIONS[$notice['kind']][0],
+                    array_map(fn (string $value): string => str_starts_with($value, ':') ? (string) $notice['facts'][substr($value, 1)] : $value,
+                        self::DESTINATIONS[$notice['kind']][1])),
                 'read_action' => $notice['read'] ? null : ['url' => route($prefix.static::NOTICES.'.read', ['notice' => $notice['id']], false), 'method' => 'post'],
             ], $inbox['notices']),
             'actions' => ['read_all' => $inbox['unread'] === 0 ? null : ['url' => route($prefix.static::NOTICES.'.read_all', [], false), 'method' => 'post']]];

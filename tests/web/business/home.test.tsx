@@ -55,29 +55,35 @@ describe('Business Home', () => {
             name: /RWF|audit report/u,
         });
 
-        expect(items).toHaveLength(8);
+        expect(items).toHaveLength(10);
         expect(items[0]).toHaveTextContent(
             'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
         );
         expect(items[1]).toHaveTextContent(
-            'Deposit receivedRWF 2,500,000 is now in your Business wallet.',
+            'Funds sentRWF 6,000,000 for Cold Room Upgrade was sent to Bank of Kigali Account ····2231.',
         );
         expect(items[2]).toHaveTextContent(
-            'Withdrawal sentRWF 800,000 was sent to Bank of Kigali Account ····2231.',
+            'Raise fully fundedCold Room Upgrade reached its target of RWF 6,000,000. Rozine now prepares the payout to your account.',
         );
         expect(items[3]).toHaveTextContent(
-            "Withdrawal returnedThe payout of RWF 300,000 to MTN MoMo +250 788 ···· 456 didn't go through. It's back in your Business wallet.",
+            'Deposit receivedRWF 2,500,000 is now in your Business wallet.',
         );
         expect(items[4]).toHaveTextContent(
-            'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
+            'Withdrawal sentRWF 800,000 was sent to Bank of Kigali Account ····2231.',
         );
         expect(items[5]).toHaveTextContent(
-            'Review window closingYour window to co-sign or dispute the audit report closes at',
+            "Withdrawal returnedThe payout of RWF 300,000 to MTN MoMo +250 788 ···· 456 didn't go through. It's back in your Business wallet.",
         );
         expect(items[6]).toHaveTextContent(
-            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+            'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
         );
         expect(items[7]).toHaveTextContent(
+            'Review window closingYour window to co-sign or dispute the audit report closes at',
+        );
+        expect(items[8]).toHaveTextContent(
+            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+        );
+        expect(items[9]).toHaveTextContent(
             'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
         );
 

@@ -4479,6 +4479,18 @@ const en = {
     'investor.notices.primary.refunded.title': 'Raise refunded',
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
+    'investor.notices.primary.raise_funded.title': 'Raise funded',
+    'investor.notices.primary.raise_funded.body':
+        'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.holding_issued.title': 'Investment confirmed',
+    'investor.notices.primary.holding_issued.body':
+        'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    'investor.notices.business.raise_funded.title': 'Raise fully funded',
+    'investor.notices.business.raise_funded.body':
+        '{title} reached its target of {principal}. Rozine now prepares the payout to your account.',
+    'investor.notices.business.disbursement_sent.title': 'Funds sent',
+    'investor.notices.business.disbursement_sent.body':
+        '{amount} for {title} was sent to {account}.',
     'investor.notices.primary.report_published.title':
         'Monthly report published',
     'investor.notices.primary.report_published.body':

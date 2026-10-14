@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Disbursement;
 
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -19,6 +20,7 @@ use App\Application\Disbursement\VerifiedPayoutEvent;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\VerifyAuthenticator;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -31,6 +33,7 @@ use App\Domain\Disbursement\IssueSchedule;
 use App\Domain\Disbursement\PayoutOutcome;
 use App\Domain\Disbursement\Reconciliation;
 use App\Domain\Disbursement\StaffIndependence;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\Disbursement;
@@ -80,7 +83,8 @@ final class EloquentDisbursementStore implements DisbursementStore
     public function __construct(private FundedCampaigns $funding, private PayoutDestinations $destinations, private StaffConnections $connections,
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
         private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation,
-        private IdentityAccessStore $identities, private FundedPurchaseChanges $purchases) {}
+        private IdentityAccessStore $identities, private FundedPurchaseChanges $purchases, private PartyNotices $notices,
+        private BusinessNoticeAudience $audience) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -411,6 +415,13 @@ final class EloquentDisbursementStore implements DisbursementStore
             $this->funding->issue($campaign, new IssueInstruction($closingId, $disbursement->id, $intent->operation_id, $effectiveAt,
                 $schedule->effectiveDate, $schedule->dueDates, $recordedAt->toIso8601String()));
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
+            // The Business is told the funds reached its verified account (BRS v2.0 NTF-R01); a
+            // synthetic payout's business has no profile and tells nobody.
+            $party = $this->audience->findEntityParty($disbursement->business_id);
+            $party === null || $this->notices->record($party, PartyNoticeKind::BusinessDisbursementSent, [
+                'title' => (string) $disbursement->payload['title'], 'amount' => $disbursement->amount, 'currency' => 'RWF',
+                'account' => $this->maskedDestination($disbursement), 'reference' => $closingId, 'business_id' => $disbursement->business_id,
+                'campaign_id' => $disbursement->business_campaign_id], 'business-disbursement-sent:'.$disbursement->id);
 
             return 'matched_success';
         }

@@ -16,6 +16,7 @@ use App\Notifications\Auditor\JobOffered;
 use App\Notifications\Business\ApplicationDecided;
 use App\Notifications\Business\ApplicationOutcome;
 use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
+use App\Notifications\Investor\InvestmentConfirmed;
 use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\ReportPublished;
 use App\Notifications\Investor\VerificationDecided;
@@ -137,6 +138,9 @@ final readonly class EloquentPartyNotices implements PartyNotices
             PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
             PartyNoticeKind::ReportPublished => new ReportPublished($facts['business'], CarbonImmutable::parse($facts['period'].'-01')->format('F Y'),
                 $facts['partner'], route('investor.portfolio')),
+            PartyNoticeKind::HoldingIssued => new InvestmentConfirmed($facts['business'], $facts['amount'], (int) $facts['units'], $facts['expected_return'],
+                $facts['maturity_value'], CarbonImmutable::parse($facts['maturity_date'], 'Africa/Kigali'), $facts['reference'],
+                route('investor.holdings.show', ['holding' => $facts['holding_id']])),
             PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
                 route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),
             PartyNoticeKind::BusinessApplicationApproved => new ApplicationDecided(ApplicationOutcome::Approved, $facts['business'], $facts['amount'],

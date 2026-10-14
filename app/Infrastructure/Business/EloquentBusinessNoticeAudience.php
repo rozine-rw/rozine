@@ -17,6 +17,11 @@ final readonly class EloquentBusinessNoticeAudience implements BusinessNoticeAud
         return BusinessProfile::query()->whereKey($businessId)->sole()->entity_party_id;
     }
 
+    public function findEntityParty(string $businessId): ?string
+    {
+        return BusinessProfile::query()->whereKey($businessId)->value('entity_party_id');
+    }
+
     public function recipients(string $businessId): array
     {
         $business = BusinessProfile::query()->whereKey($businessId)->sole();

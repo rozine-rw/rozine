@@ -63,6 +63,21 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             />
         ),
     },
+    'primary.raise_funded': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
+    'primary.holding_issued': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
+                <path d="M8 10h8M8 14h5" {...stroke} />
+            </>
+        ),
+    },
     'verification.approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -102,6 +117,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         bar: 'bg-[#b3383c]',
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
+    },
+    'business.raise_funded': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
+    'business.disbursement_sent': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
     },
     'business.deposit_received': {
         bar: 'bg-[#17795a]',
@@ -450,6 +475,40 @@ function body(
             return t('investor.notices.primary.refunded.body', {
                 amount: formatRwf(notice.facts),
                 business: notice.facts.business,
+            });
+        case 'primary.raise_funded':
+            return t('investor.notices.primary.raise_funded.body', {
+                business: notice.facts.business,
+                amount: formatRwf(notice.facts),
+                units: notice.facts.units,
+            });
+        case 'primary.holding_issued':
+            return t('investor.notices.primary.holding_issued.body', {
+                business: notice.facts.business,
+                units: notice.facts.units,
+                amount: formatRwf(notice.facts),
+                maturity: formatRwf({
+                    currency: 'RWF',
+                    amount: notice.facts.maturity_value,
+                }),
+                date: formatDate(
+                    `${notice.facts.maturity_date}T00:00:00+02:00`,
+                    locale,
+                ),
+            });
+        case 'business.raise_funded':
+            return t('investor.notices.business.raise_funded.body', {
+                title: notice.facts.title,
+                principal: formatRwf({
+                    currency: 'RWF',
+                    amount: notice.facts.principal,
+                }),
+            });
+        case 'business.disbursement_sent':
+            return t('investor.notices.business.disbursement_sent.body', {
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+                account: notice.facts.account,
             });
         case 'primary.report_published':
             return t('investor.notices.primary.report_published.body', {

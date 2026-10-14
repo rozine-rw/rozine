@@ -31,7 +31,7 @@ class BusinessNoticesResource extends JsonResource
                         ['business' => $business, 'application' => (string) $notice['facts']['application_id']], false),
                     'business.report_sealed', 'business.report_review_closing' => route($prefix.'business.audit-reports.show',
                         ['business' => $business, 'report' => (string) $notice['facts']['report_id']], false),
-                    'business.raise_expired' => route($prefix.'business.campaigns.show', ['business' => $business, 'campaign' => (string) $notice['facts']['campaign_id']], false),
+                    'business.raise_expired', 'business.raise_funded', 'business.disbursement_sent' => route($prefix.'business.campaigns.show', ['business' => $business, 'campaign' => (string) $notice['facts']['campaign_id']], false),
                     default => route($prefix.'business.wallet.show', ['business' => $business], false),
                 }, 'method' => 'get'],
                 'read_action' => $notice['read'] ? null

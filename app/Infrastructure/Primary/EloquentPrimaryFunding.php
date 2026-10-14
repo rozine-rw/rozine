@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Primary;
 
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\PrimaryFundingCandidate;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\FundingAdmission;
@@ -24,7 +27,7 @@ use RuntimeException;
 final class EloquentPrimaryFunding implements PrimaryFunding
 {
     public function __construct(private PrimaryCampaignSource $campaigns, private PrimaryReservations $reservations, private CanonicalJson $json, private CampaignFundingEvidence $fundings,
-        private ChangeFeed $changes) {}
+        private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
 
     public function lock(string $campaignId, Closure $admit): array
     {
@@ -70,9 +73,34 @@ final class EloquentPrimaryFunding implements PrimaryFunding
                     'wallet_id' => $purchase['cash']['wallet_id'], 'origin_operation_id' => $purchase['cash']['origin_operation_id']]);
                 $this->changes->record(ChangeScope::party($purchase['party_id']), 'purchase', $purchase['reservation_id']);
             }
+            $this->noticeFunded($campaignId, $campaign['business_id'], (string) $candidate->principal, $purchases);
 
             return $payload;
         });
+    }
+
+    /**
+     * Tells each buying Party, with its units and amount, and the Business that the raise is fully
+     * funded (BRS v2.0 NTF-R01), once per campaign.
+     *
+     * @param  list<array<string, mixed>>  $purchases
+     */
+    private function noticeFunded(string $campaignId, string $businessId, string $principal, array $purchases): void
+    {
+        $presentation = $this->campaigns->presentation($campaignId);
+        $held = [];
+        foreach ($purchases as $purchase) {
+            $party = (string) $purchase['party_id'];
+            $held[$party] = [($held[$party][0] ?? 0) + (int) $purchase['units'], ($held[$party][1] ?? 0) + (int) $purchase['principal']];
+        }
+        ksort($held, SORT_STRING);
+        foreach ($held as $party => [$units, $amount]) {
+            $this->notices->record($party, PartyNoticeKind::RaiseFunded, ['business' => $presentation['business'], 'title' => $presentation['title'],
+                'units' => (string) $units, 'amount' => (string) $amount, 'currency' => 'RWF', 'campaign_id' => $campaignId], 'raise-funded:'.$campaignId.':'.$party);
+        }
+        $this->notices->record($this->audience->entityParty($businessId), PartyNoticeKind::BusinessRaiseFunded, ['title' => $presentation['title'],
+            'principal' => $principal, 'investors' => (string) count($held), 'currency' => 'RWF', 'business_id' => $businessId, 'campaign_id' => $campaignId],
+            'business-raise-funded:'.$campaignId);
     }
 
     /** @return list<array<string, mixed>> */

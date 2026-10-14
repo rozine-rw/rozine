@@ -50,7 +50,8 @@ it('offers a released application for publication before anything is listed', fu
 
     $props = ($this->props)($user, $business);
 
-    expect($props)->toMatchArray(['rating' => null, 'live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 0,
+    // The sealed report awaiting the Business and the approved application are its two unread notices.
+    expect($props)->toMatchArray(['rating' => null, 'live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
         'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'create_application' => null,
         'today' => [['kind' => 'application_approved', 'title' => $application->refresh()->draft['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
             'link' => ['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']]],

@@ -8,8 +8,8 @@ namespace App\Domain\Identity;
  * The in-app notices a Party receives (BRS v2.0 NTF-R01), each from one recorded event. A kind
  * names the facts it carries; the client words them from its catalogs, and the notice opens the
  * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal
- * a Business's approved application and its expired raise, and an Audit Partner's accreditation
- * decision and job offers are also e-mailed. A Business's notices belong to its entity Party.
+ * an issued Holding, a Business's approved application and its expired raise, and an Audit
+ * Partner's accreditation decision and job offers are also e-mailed. A Business's notices belong to its entity Party.
  */
 enum PartyNoticeKind: string
 {
@@ -20,6 +20,8 @@ enum PartyNoticeKind: string
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case ReportPublished = 'primary.report_published';
+    case RaiseFunded = 'primary.raise_funded';
+    case HoldingIssued = 'primary.holding_issued';
     case PasswordChanged = 'security.password_changed';
     case PayoutAccountLinked = 'security.payout_account_linked';
     case PayoutAccountUnlinked = 'security.payout_account_unlinked';
@@ -27,6 +29,8 @@ enum PartyNoticeKind: string
     case BusinessDepositReceived = 'business.deposit_received';
     case BusinessApplicationApproved = 'business.application_approved';
     case BusinessRaiseExpired = 'business.raise_expired';
+    case BusinessRaiseFunded = 'business.raise_funded';
+    case BusinessDisbursementSent = 'business.disbursement_sent';
     case BusinessWithdrawalSent = 'business.withdrawal_sent';
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
     case BusinessReportSealed = 'business.report_sealed';
@@ -39,6 +43,6 @@ enum PartyNoticeKind: string
     {
         return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
-            self::AuditorJobOffered, self::NewDevice, self::ReportPublished], true);
+            self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::HoldingIssued], true);
     }
 }

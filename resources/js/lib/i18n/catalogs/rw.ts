@@ -4665,6 +4665,18 @@ const rw: Catalog = {
     'investor.notices.primary.refunded.title': 'Amafaranga yawe yagarutse',
     'investor.notices.primary.refunded.body':
         'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',
+    'investor.notices.primary.raise_funded.title': 'Ikusanyamari ryuzuye',
+    'investor.notices.primary.raise_funded.body':
+        "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {units} ibitswe kugeza amafaranga yoherejwe.",
+    'investor.notices.primary.holding_issued.title': 'Ishoramari ryemejwe',
+    'investor.notices.primary.holding_issued.body':
+        'Impapuro zawe {units} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+    'investor.notices.business.raise_funded.title': 'Ikusanyamari ryuzuye',
+    'investor.notices.business.raise_funded.body':
+        '{title} yageze ku ntego yayo ya {principal}. Rozine iri gutegura kohereza amafaranga kuri konti yawe.',
+    'investor.notices.business.disbursement_sent.title': 'Amafaranga yoherejwe',
+    'investor.notices.business.disbursement_sent.body':
+        '{amount} ya {title} yoherejwe kuri {account}.',
     'investor.notices.primary.report_published.title':
         'Raporo y’ukwezi yasohotse',
     'investor.notices.primary.report_published.body':

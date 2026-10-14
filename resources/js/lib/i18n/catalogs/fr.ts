@@ -4691,6 +4691,19 @@ const fr: Catalog = {
     'investor.notices.primary.refunded.title': 'Levée remboursée',
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
+    'investor.notices.primary.raise_funded.title': 'Levée financée',
+    'investor.notices.primary.raise_funded.body':
+        "La levée de {business} est entièrement financée. Vos {amount} pour {units} titres sont réservés jusqu'à l'envoi des fonds.",
+    'investor.notices.primary.holding_issued.title': 'Investissement confirmé',
+    'investor.notices.primary.holding_issued.body':
+        "Vos {units} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+    'investor.notices.business.raise_funded.title':
+        'Levée entièrement financée',
+    'investor.notices.business.raise_funded.body':
+        '{title} a atteint son objectif de {principal}. Rozine prépare maintenant le versement sur votre compte.',
+    'investor.notices.business.disbursement_sent.title': 'Fonds envoyés',
+    'investor.notices.business.disbursement_sent.body':
+        '{amount} pour {title} ont été envoyés vers {account}.',
     'investor.notices.primary.report_published.title': 'Rapport mensuel publié',
     'investor.notices.primary.report_published.body':
         '{business} a publié son rapport de {month}, vérifié par {partner}.',

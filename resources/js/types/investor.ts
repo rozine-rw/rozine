@@ -1416,6 +1416,20 @@ export type InvestorNotice = {
     | { kind: 'wallet.withdrawal_returned'; facts: Money & { account: string } }
     | { kind: 'primary.refunded'; facts: Money & { business: string } }
     | {
+          kind: 'primary.raise_funded';
+          facts: Money & { business: string; title: string; units: string };
+      }
+    | {
+          kind: 'primary.holding_issued';
+          facts: Money & {
+              business: string;
+              units: string;
+              expected_return: string;
+              maturity_value: string;
+              maturity_date: string;
+          };
+      }
+    | {
           kind: 'primary.report_published';
           facts: { business: string; period: string; partner: string };
       }
@@ -1467,6 +1481,19 @@ export type InvestorNotice = {
     | {
           kind: 'business.report_review_closing';
           facts: { due_at: string };
+      }
+    | {
+          kind: 'business.raise_funded';
+          facts: {
+              currency: 'RWF';
+              title: string;
+              principal: string;
+              investors: string;
+          };
+      }
+    | {
+          kind: 'business.disbursement_sent';
+          facts: Money & { title: string; account: string };
       }
     | {
           kind: 'business.raise_expired';

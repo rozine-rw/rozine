@@ -355,15 +355,15 @@ test('preview routes do not exist in production, staging or demo', function (str
 
 test('the Investor bell previews its notices and a read that changes nothing', function () {
     $this->get('/preview/investor-notices')->assertOk()
-        ->assertJsonPath('data.unread', 2)->assertJsonCount(6, 'data.notices')
+        ->assertJsonPath('data.unread', 2)->assertJsonCount(8, 'data.notices')
         ->assertJsonPath('data.notices.0.kind', 'wallet.deposit_received');
     $this->post('/preview/investor-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
 });
 
 test('the Business bell previews its notices and a read that changes nothing', function () {
     $this->get('/preview/business-notices')->assertOk()
-        ->assertJsonPath('data.unread', 1)->assertJsonCount(8, 'data.notices')
-        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.2.kind', 'business.withdrawal_sent');
+        ->assertJsonPath('data.unread', 1)->assertJsonCount(10, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.4.kind', 'business.withdrawal_sent');
     $this->post('/preview/business-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
 });
 
