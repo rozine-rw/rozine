@@ -4393,6 +4393,13 @@ const en = {
     'investor.notices.failed': 'Your notifications could not be loaded.',
     'investor.notices.retry': 'Try again',
     'investor.notices.empty': 'No notifications yet.',
+    'investor.notices.business.deposit_received.title': 'Deposit received',
+    'investor.notices.business.deposit_received.body':
+        '{amount} is now in your Business wallet.',
+    'investor.notices.business.raise_expired.title':
+        'Raise closed without full funding',
+    'investor.notices.business.raise_expired.body':
+        '{title} closed at its deadline with {committed} of {target} committed. Investors were refunded and no fee was charged.',
     'investor.notices.wallet.deposit_received.title': 'Deposit received',
     'investor.notices.wallet.deposit_received.body':
         '{amount} is now in your wallet.',

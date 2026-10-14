@@ -65,6 +65,13 @@ Route::get('preview/investor-notices', fn () => response()->json(['data' => json
 
 Route::post('preview/investor-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
 
+/* The Business bell's notices, as the live `business.notices.index` JSON answers them. */
+
+Route::get('preview/business-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/business-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/business-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
 Route::get('preview/{fixture}', function (string $fixture) {
     $path = resource_path("fixtures/ui/{$fixture}.json");
 

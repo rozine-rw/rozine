@@ -1348,6 +1348,16 @@ export type InvestorNotice = {
     | { kind: 'verification.approved'; facts: never[] }
     | { kind: 'security.password_changed'; facts: never[] }
     | { kind: 'verification.rejected'; facts: { reason: string } }
+    | { kind: 'business.deposit_received'; facts: Money }
+    | {
+          kind: 'business.raise_expired';
+          facts: {
+              currency: 'RWF';
+              title: string;
+              target: string;
+              committed: string;
+          };
+      }
 );
 
 /** The account's newest notices behind the bell, with the unread count. */

@@ -53,6 +53,21 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
+    'business.deposit_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
+    },
+    'business.raise_expired': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 8v4l2.5 2.5" {...stroke} />
+            </>
+        ),
+    },
 };
 
 /** The account's notices, loaded when the bell opens them and again after a retry or a read. */
@@ -310,5 +325,21 @@ function body(
             return t('investor.notices.verification.approved.body');
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
+        case 'business.deposit_received':
+            return t('investor.notices.business.deposit_received.body', {
+                amount: formatRwf(notice.facts),
+            });
+        case 'business.raise_expired':
+            return t('investor.notices.business.raise_expired.body', {
+                title: notice.facts.title,
+                committed: formatRwf({
+                    currency: 'RWF',
+                    amount: notice.facts.committed,
+                }),
+                target: formatRwf({
+                    currency: 'RWF',
+                    amount: notice.facts.target,
+                }),
+            });
     }
 }

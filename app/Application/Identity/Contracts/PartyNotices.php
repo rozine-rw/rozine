@@ -18,11 +18,13 @@ interface PartyNotices
 {
     /**
      * Records one notice for an event inside the caller's transaction. Replaying an event key
-     * records nothing new.
+     * records nothing new. An e-mailed kind goes to the named accounts, or, when none are named,
+     * to the Party's own accounts.
      *
      * @param  array<string, string>  $facts
+     * @param  list<int>|null  $mailTo
      */
-    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey): void;
+    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null): void;
 
     /**
      * Records one notice for an event on the account itself, for the account's Party; an account
@@ -48,4 +50,21 @@ interface PartyNotices
      * returns how many were newly read. A notice that is not theirs is not found.
      */
     public function markRead(int $userId, ?string $noticeId): int;
+
+    /**
+     * A Party's newest notices and how many are unread, for a caller that already holds
+     * authority over that Party (a Business's entity Party, read under Business authority).
+     *
+     * @return Inbox
+     */
+    public function partyInbox(string $partyId, int $limit): array;
+
+    /** How many of a Party's notices are unread, for a caller holding authority over it. */
+    public function partyUnread(string $partyId): int;
+
+    /**
+     * Marks one of a Party's notices read, or all of them, for a caller holding authority over it,
+     * and returns how many were newly read.
+     */
+    public function markPartyRead(string $partyId, ?string $noticeId): int;
 }

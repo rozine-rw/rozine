@@ -49,6 +49,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessWalletController.ts",
@@ -154,6 +155,7 @@
         "resources/js/routes/api/v1/business/audit-reports/operations/index.ts",
         "resources/js/routes/api/v1/business/campaigns/index.ts",
         "resources/js/routes/api/v1/business/index.ts",
+        "resources/js/routes/api/v1/business/notices/index.ts",
         "resources/js/routes/api/v1/business/repayments/index.ts",
         "resources/js/routes/api/v1/business/repayments/operations/index.ts",
         "resources/js/routes/api/v1/business/wallet/index.ts",
@@ -225,6 +227,7 @@
         "resources/js/routes/business/audit-reports/operations/index.ts",
         "resources/js/routes/business/campaigns/index.ts",
         "resources/js/routes/business/index.ts",
+        "resources/js/routes/business/notices/index.ts",
         "resources/js/routes/business/repayments/index.ts",
         "resources/js/routes/business/repayments/operations/index.ts",
         "resources/js/routes/business/wallet/index.ts",
@@ -697,8 +700,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 666,
-        "generated": 265,
+        "totalTrackedSources": 669,
+        "generated": 268,
         "declarationOnly": 18,
         "authoredExecutable": 383
     },

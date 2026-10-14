@@ -8,17 +8,20 @@ use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -47,7 +50,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
         private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignProgress $progress, private CampaignFundingEvidence $fundings,
-        private ChangeFeed $changes) {}
+        private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -457,6 +460,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             'exposure_reservation_id' => $campaign->exposure_reservation_id, 'principal' => $campaign->principal,
             'phase' => $phase, 'actor_user_id' => $userId, 'closed_at' => $closedAt, 'payload' => $payload, 'sha256' => $this->hash($payload)])->save();
 
+        if ($phase === 'expired') {
+            $publication = $this->publications->find($campaign->id);
+            $this->notices->record($this->audience->entityParty($campaign->business_id), PartyNoticeKind::BusinessRaiseExpired, [
+                'business' => (string) ($publication['public_evidence']['business']['name'] ?? ''), 'title' => (string) ($publication['title'] ?? ''),
+                'target' => (string) $campaign->principal, 'committed' => (string) $returned->refundedPrincipal, 'currency' => 'RWF',
+                'business_id' => $campaign->business_id, 'campaign_id' => $campaign->id,
+            ], 'business-raise-expired:'.$campaign->id, $this->audience->recipients($campaign->business_id));
+        }
         if ($bindings !== []) {
             DB::table('primary_campaign_closure_returns')->insert(array_map(fn (array $binding): array => [
                 ...$binding, 'business_campaign_closure_id' => $closure->id,

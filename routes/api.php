@@ -16,6 +16,7 @@ use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
@@ -67,6 +68,12 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 
 Route::get('v1/business/{business}', [BusinessHomeController::class, 'show'])->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])
     ->whereUlid('business')->name('api.v1.business.show');
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.notices.')->group(function (): void {
+    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->name('index');
+    Route::post('{business}/notices/read-all', [BusinessNoticesController::class, 'readAll'])->whereUlid('business')->name('read_all');
+    Route::post('{business}/notices/{notice}/read', [BusinessNoticesController::class, 'read'])->whereUlid(['business', 'notice'])->name('read');
+});
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');

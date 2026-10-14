@@ -9,6 +9,7 @@ use App\Domain\Identity\PartyNoticeKind;
 use App\Models\PartyNotice;
 use App\Models\PartyNoticeDelivery;
 use App\Models\User;
+use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
 use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\VerificationDecided;
 use App\Notifications\RozineMail;
@@ -18,14 +19,14 @@ use Throwable;
 
 /**
  * Notices in `party_notices`, receipts in `party_notice_deliveries`. The in-app receipt is written
- * with the notice; an e-mailed kind goes to each of the Party's accounts once the event commits,
- * and each send leaves a `sent` or `failed` receipt.
+ * with the notice; an e-mailed kind goes to each named account (by default the Party's own) once
+ * the event commits, and each send leaves a `sent` or `failed` receipt.
  *
  * @phpstan-import-type Inbox from PartyNotices
  */
 final readonly class EloquentPartyNotices implements PartyNotices
 {
-    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey): void
+    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null): void
     {
         $notice = new PartyNotice;
         $notice->forceFill(['party_id' => $partyId, 'kind' => $kind->value, 'event_key' => $eventKey, 'facts' => $facts,
@@ -37,7 +38,7 @@ final readonly class EloquentPartyNotices implements PartyNotices
         $id = (string) PartyNotice::query()->where('event_key', $eventKey)->value('id');
         $this->receipt($id, 'in_app', null, 'delivered', null);
         if ($kind->mailed()) {
-            DB::afterCommit(fn () => $this->mail($id, $partyId, $this->message($kind, $facts)));
+            DB::afterCommit(fn () => $this->mail($id, $mailTo ?? $this->accounts($partyId), $this->message($kind, $facts)));
         }
     }
 
@@ -51,11 +52,7 @@ final readonly class EloquentPartyNotices implements PartyNotices
 
     public function inbox(int $userId, int $limit): array
     {
-        $notices = $this->owned($userId)->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get();
-
-        return ['unread' => $this->unread($userId), 'notices' => array_values($notices->map(fn (PartyNotice $notice): array => [
-            'id' => $notice->id, 'kind' => $notice->kind, 'facts' => $notice->facts,
-            'created_at' => $notice->created_at->toIso8601String(), 'read' => $notice->read_at !== null])->all())];
+        return $this->listed($this->owned($userId), $limit);
     }
 
     public function unread(int $userId): int
@@ -65,7 +62,41 @@ final readonly class EloquentPartyNotices implements PartyNotices
 
     public function markRead(int $userId, ?string $noticeId): int
     {
-        $query = $this->owned($userId)->whereNull('read_at');
+        return $this->read($this->owned($userId), $noticeId);
+    }
+
+    public function partyInbox(string $partyId, int $limit): array
+    {
+        return $this->listed($this->held($partyId), $limit);
+    }
+
+    public function partyUnread(string $partyId): int
+    {
+        return $this->held($partyId)->whereNull('read_at')->count();
+    }
+
+    public function markPartyRead(string $partyId, ?string $noticeId): int
+    {
+        return $this->read($this->held($partyId), $noticeId);
+    }
+
+    /**
+     * @param  Builder<PartyNotice>  $notices
+     * @return Inbox
+     */
+    private function listed(Builder $notices, int $limit): array
+    {
+        $page = (clone $notices)->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get();
+
+        return ['unread' => (clone $notices)->whereNull('read_at')->count(), 'notices' => array_values($page->map(fn (PartyNotice $notice): array => [
+            'id' => $notice->id, 'kind' => $notice->kind, 'facts' => $notice->facts,
+            'created_at' => $notice->created_at->toIso8601String(), 'read' => $notice->read_at !== null])->all())];
+    }
+
+    /** @param  Builder<PartyNotice>  $notices */
+    private function read(Builder $notices, ?string $noticeId): int
+    {
+        $query = $notices->whereNull('read_at');
 
         return ($noticeId === null ? $query : $query->whereKey($noticeId))->update(['read_at' => now('UTC')->format('Y-m-d H:i:s.u')]);
     }
@@ -76,19 +107,34 @@ final readonly class EloquentPartyNotices implements PartyNotices
         return PartyNotice::query()->where('party_id', User::query()->whereKey($userId)->whereNotNull('party_id')->select('party_id'));
     }
 
+    /** @return Builder<PartyNotice> */
+    private function held(string $partyId): Builder
+    {
+        return PartyNotice::query()->where('party_id', $partyId);
+    }
+
+    /** @return list<int> */
+    private function accounts(string $partyId): array
+    {
+        return array_values(array_map(intval(...), User::query()->where('party_id', $partyId)->orderBy('id')->pluck('id')->all()));
+    }
+
     /** @param  array<string, string>  $facts */
     private function message(PartyNoticeKind $kind, array $facts): RozineMail
     {
         return match ($kind) {
             PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
+            PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
+                route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),
             PartyNoticeKind::VerificationApproved => VerificationDecided::approved(route('investor.deals')),
             default => VerificationDecided::rejected($facts['reason'], route('investor.verification')),
         };
     }
 
-    private function mail(string $noticeId, string $partyId, RozineMail $message): void
+    /** @param  list<int>  $accounts */
+    private function mail(string $noticeId, array $accounts, RozineMail $message): void
     {
-        foreach (User::query()->where('party_id', $partyId)->orderBy('id')->get() as $user) {
+        foreach (User::query()->whereKey($accounts)->orderBy('id')->get() as $user) {
             try {
                 $user->notifyNow($message);
                 $this->receipt($noticeId, 'mail', $user->id, 'sent', null);

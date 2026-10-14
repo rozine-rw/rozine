@@ -26,6 +26,7 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
 use App\Notifications\Investor\RaiseExpired;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
@@ -49,6 +50,7 @@ beforeEach(function (): void {
     $this->store->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
         $fixture['application']->id, $fixture['application']->refresh()->revision, 'listing-fee-waiver-1', (string) Str::uuid());
     $this->campaign = BusinessCampaign::query()->where('business_application_id', $fixture['application']->id)->sole();
+    $this->owners = $fixture['audit']['authority']['users'];
     $this->changeAuthority = function (string $change, string $partyId): void {
         if ($change === 'current') {
             return;
@@ -390,4 +392,31 @@ it('tells each refunded Investor in-app and by e-mail once, and leaves a release
 
     $this->actingAs($investor['user'])->getJson(route('investor.notices'))->assertOk()
         ->assertJsonPath('data.notices.0.kind', 'primary.refunded')->assertJsonPath('data.notices.0.link.url', '/investor/wallet');
+});
+
+it('tells the Business its raise expired once, in-app and by e-mail to each mandate holder who may view it (BRS NTF-R01)', function (): void {
+    Notification::fake();
+    ($this->purchase)('confirmed', '3');
+    ($this->purchase)('held');
+    $this->travelTo($this->campaign->expires_at);
+    expect($this->store->expireDue(1))->toBe(1)->and($this->store->expireDue(1))->toBe(0);
+
+    $business = BusinessProfile::query()->whereKey($this->campaign->business_id)->sole();
+    $notice = PartyNotice::query()->where('kind', 'business.raise_expired')->sole();
+    expect([$notice->party_id, $notice->facts, $notice->event_key])->toEqual([$business->entity_party_id, ['business' => $business->profile['name'],
+        'business_id' => $business->id, 'campaign_id' => $this->campaign->id, 'committed' => '15000', 'currency' => 'RWF',
+        'target' => (string) $this->campaign->principal, 'title' => $notice->facts['title']], 'business-raise-expired:'.$this->campaign->id])
+        ->and($notice->facts['title'])->toBeString()->not->toBe('')
+        ->and(PartyNoticeDelivery::query()->where('party_notice_id', $notice->id)->where('channel', 'mail')->orderBy('user_id')->pluck('user_id')->all())
+        ->toBe(User::query()->whereIn('id', array_map(fn (User $owner): int => $owner->id, $this->owners))->orderBy('id')->pluck('id')->all());
+    $url = route('business.campaigns.show', ['business' => $business->id, 'campaign' => $this->campaign->id]);
+    foreach ($this->owners as $owner) {
+        Notification::assertSentToTimes($owner, BusinessRaiseExpired::class, 1);
+        Notification::assertSentTo($owner, BusinessRaiseExpired::class, fn (BusinessRaiseExpired $mail): bool => [$mail->businessName, $mail->target, $mail->committed, $mail->url]
+            === [$business->profile['name'], (string) $this->campaign->principal, '15000', $url]);
+    }
+
+    $this->actingAs($this->owners[0])->getJson(route('business.notices.index', $business->id))->assertOk()->assertJsonPath('data.unread', 1)
+        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')
+        ->assertJsonPath('data.notices.0.link', ['url' => "/business/{$business->id}/campaigns/{$this->campaign->id}", 'method' => 'get']);
 });

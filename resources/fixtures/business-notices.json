@@ -1,0 +1,50 @@
+{
+    "unread": 1,
+    "notices": [
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9d",
+            "kind": "business.raise_expired",
+            "facts": {
+                "business": "GreenLeaf Agro",
+                "title": "Solar Dryer Expansion",
+                "target": "12000000",
+                "committed": "7450000",
+                "currency": "RWF",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "campaign_id": "01K7NQ0C2Y6W8E4T1V3X5Z7B01"
+            },
+            "created_at": "2026-10-13T09:15:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/business-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9c",
+            "kind": "business.deposit_received",
+            "facts": {
+                "amount": "2500000",
+                "currency": "RWF",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00"
+            },
+            "created_at": "2026-10-12T14:20:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        }
+    ],
+    "actions": {
+        "read_all": {
+            "url": "/preview/business-notices/read",
+            "method": "post"
+        }
+    }
+}

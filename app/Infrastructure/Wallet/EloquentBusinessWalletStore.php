@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Wallet;
 
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\NoteServicing;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
@@ -14,6 +16,7 @@ use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\SyntheticDepositAdmission;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Wallet\DepositOutcome;
@@ -51,7 +54,8 @@ use RuntimeException;
 final class EloquentBusinessWalletStore implements BusinessWalletStore
 {
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing, private SyntheticDepositAdmission $admission) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing, private SyntheticDepositAdmission $admission,
+        private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
 
     /**
      * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
@@ -540,6 +544,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         $credit->forceFill(['intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id, 'provider_event_id' => $event->id,
             'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited, 'payload' => $creditPayload,
             'sha256' => hash('sha256', $this->json->encode($creditPayload)), 'created_at' => $recordedAt])->save();
+        $businessId = (string) BusinessWallet::query()->whereKey($intent->wallet_id)->value('business_id');
+        $this->notices->record($this->audience->entityParty($businessId), PartyNoticeKind::BusinessDepositReceived,
+            ['amount' => (string) $intent->credited, 'currency' => 'RWF', 'business_id' => $businessId], 'business-deposit:'.$credit->id);
         // Surface an unbalanced or unbound entry here rather than at commit; the balance check seals the entry.
         DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_deposit_credit_bound, ledger_lines_entry_business_deposit_credit_bound IMMEDIATE');
         DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_deposit_credit_bound, ledger_lines_entry_business_deposit_credit_bound DEFERRED');

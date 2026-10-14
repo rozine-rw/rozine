@@ -4605,6 +4605,13 @@ const fr: Catalog = {
     'investor.notices.failed': "Vos notifications n'ont pas pu être chargées.",
     'investor.notices.retry': 'Réessayer',
     'investor.notices.empty': 'Aucune notification pour le moment.',
+    'investor.notices.business.deposit_received.title': 'Dépôt reçu',
+    'investor.notices.business.deposit_received.body':
+        "{amount} est maintenant dans le portefeuille de l'entreprise.",
+    'investor.notices.business.raise_expired.title':
+        'Levée clôturée sans financement complet',
+    'investor.notices.business.raise_expired.body':
+        "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',

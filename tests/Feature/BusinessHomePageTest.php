@@ -62,7 +62,7 @@ it('offers a released application for publication before anything is listed', fu
             'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
             'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
             'wallet' => ['url' => "/business/{$business}/wallet", 'method' => 'get'],
-            'deposit' => ['url' => "/business/{$business}/wallet?kind=deposit", 'method' => 'get'], 'withdraw' => null, 'notifications' => null,
+            'deposit' => ['url' => "/business/{$business}/wallet?kind=deposit", 'method' => 'get'], 'withdraw' => null, 'notifications' => ['url' => "/business/{$business}/notices", 'method' => 'get'],
             'rating' => ['url' => "/business/{$business}/rating", 'method' => 'get'], 'apply' => null]);
 });
 

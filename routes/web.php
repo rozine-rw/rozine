@@ -15,6 +15,7 @@ use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
@@ -175,6 +176,12 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.notices.')->group(function (): void {
+    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->name('index');
+    Route::post('{business}/notices/read-all', [BusinessNoticesController::class, 'readAll'])->whereUlid('business')->name('read_all');
+    Route::post('{business}/notices/{notice}/read', [BusinessNoticesController::class, 'read'])->whereUlid(['business', 'notice'])->name('read');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.wallet.')->group(function (): void {

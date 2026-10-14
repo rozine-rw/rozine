@@ -4573,6 +4573,14 @@ const rw: Catalog = {
     'investor.notices.failed': 'Imenyesha ryawe ntiryashoboye gufunguka.',
     'investor.notices.retry': 'Ongera ugerageze',
     'investor.notices.empty': 'Nta menyesha rirahari.',
+    'investor.notices.business.deposit_received.title':
+        'Amafaranga yashyizwe kuri konti',
+    'investor.notices.business.deposit_received.body':
+        "{amount} ubu ari mu gikapu cy'ikigo.",
+    'investor.notices.business.raise_expired.title':
+        'Ubukangurambaga bwarangiye budashyitse',
+    'investor.notices.business.raise_expired.body':
+        '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
     'investor.notices.wallet.deposit_received.title':
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':
