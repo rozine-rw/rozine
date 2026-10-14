@@ -69,6 +69,7 @@ use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
 use App\Application\Operations\Contracts\ReconciliationStore;
 use App\Application\Primary\Contracts\CampaignCommitments;
+use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\HoldingSource;
@@ -129,6 +130,7 @@ use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Business\RetainedInvestorDeals;
 use App\Infrastructure\Business\UnavailableNoteServicing;
+use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
 use App\Infrastructure\Disbursement\EloquentStaffConnections;
@@ -323,6 +325,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
+        $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
         $this->app->singleton(SyntheticDisbursementSources::class);
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
         $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);

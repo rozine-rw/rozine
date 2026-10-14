@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -17,7 +18,7 @@ use RuntimeException;
  * scheduled instalments still due, net of the earnings fee and labelled as a projection; nothing
  * has been received until servicing pays it, so every gain is zero. Confirmed purchases no Holding
  * has issued from yet are listed apart and never counted among the Holdings: `confirmed` while the
- * raise is open, `funded` once its funding is locked, awaiting the disbursement that issues them.
+ * raise is open, `funded` once its funding is locked, awaiting or with the payout in flight that issues them.
  *
  * @phpstan-import-type HeldPosition from HoldingFigures
  * @phpstan-import-type Card from HoldingFigures
@@ -32,13 +33,14 @@ use RuntimeException;
  *     payouts: list<PayoutMonth>, industries: list<array{name: string, accent: string, amount: Money, share_pct: int}>,
  *     risk: list<array{band: string, share_pct: int}>,
  *     concentration: array{status: 'concentrated', business: string, share_pct: int}|array{status: 'balanced'}|null,
- *     commitments: list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|null}>}
+ *     commitments: list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|array{stage: 'in_flight', provider: 'pending'|'unknown'}|null}>}
  */
 final class GetInvestorPortfolio
 {
     public const array TABS = ['active', 'matured', 'secondary', 'saved'];
 
-    public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue,
+        private CampaignDisbursementProgress $disbursements) {}
 
     /**
      * Idle cash is the available wallet bucket as the ledger reports it, or null when there is
@@ -102,12 +104,20 @@ final class GetInvestorPortfolio
         return $card ?? throw new RuntimeException('HOLDING_PRESENTATION_UNAVAILABLE');
     }
 
-    /** @return list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|null}> */
+    /** @return list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|array{stage: 'in_flight', provider: 'pending'|'unknown'}|null}> */
     private function commitments(int $userId): array
     {
-        return array_map(fn (array $commitment): array => ['id' => $commitment['commitment_id'], 'deal_name' => $commitment['deal_name'], 'units' => $commitment['units'],
-            'principal' => $commitment['principal'], 'state' => $commitment['funded'] ? 'funded' : 'confirmed',
-            'closing' => $commitment['funded'] ? ['stage' => 'awaiting_disbursement'] : null], $this->holdings->awaitingIssue($userId));
+        return array_map(function (array $commitment): array {
+            $inFlight = $commitment['funded'] ? $this->disbursements->inFlight($commitment['campaign_id']) : null;
+
+            return ['id' => $commitment['commitment_id'], 'deal_name' => $commitment['deal_name'], 'units' => $commitment['units'],
+                'principal' => $commitment['principal'], 'state' => $commitment['funded'] ? 'funded' : 'confirmed',
+                'closing' => match (true) {
+                    ! $commitment['funded'] => null,
+                    $inFlight === null => ['stage' => 'awaiting_disbursement'],
+                    default => ['stage' => 'in_flight', 'provider' => $inFlight],
+                }];
+        }, $this->holdings->awaitingIssue($userId));
     }
 
     /** @return list<HeldPosition> */

@@ -142,8 +142,11 @@ it('opens an issued commitment as issued, linked to its Holding, and leaves it o
     $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitments', []));
 });
 
-it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, string $state, ?array $closing): void {
-    ['commitments' => [$commitment]] = PrimaryHoldingFixture::committed(fund: $fund);
+it('lists purchases awaiting issue apart from the Holdings: confirmed while the raise is open, funded once it is locked', function (bool $fund, ?bool $sent, string $state, ?array $closing): void {
+    ['campaign' => $campaign, 'commitments' => [$commitment]] = PrimaryHoldingFixture::committed(fund: $fund);
+    if ($sent !== null) {
+        PrimaryHoldingFixture::inFlight($campaign, $sent);
+    }
     $user = User::query()->where('party_id', PrimaryReservationRecord::query()->whereKey($commitment->primary_reservation_id)->value('party_id'))->sole();
 
     $this->actingAs($user)->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('holdings', [])
@@ -151,8 +154,11 @@ it('lists purchases awaiting issue apart from the Holdings: confirmed while the 
         ->where('commitments', [['id' => $commitment->id, 'deal_name' => $page->toArray()['props']['commitments'][0]['deal_name'], 'units' => '1080',
             'principal' => ['currency' => 'RWF', 'amount' => '5400000'], 'state' => $state, 'closing' => $closing,
             'link' => ['url' => '/investor/commitments/'.$commitment->id, 'method' => 'get']]]));
-    $this->get(route('investor.commitments.show', $commitment->id))->assertOk()->assertInertia(fn (Assert $page) => $page->where('commitment.state', $state));
+    $this->get(route('investor.commitments.show', $commitment->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('commitment.state', $state)->where('commitment.closing', $closing));
 })->with([
-    'raise open' => [false, 'confirmed', null],
-    'funding locked' => [true, 'funded', ['stage' => 'awaiting_disbursement']],
+    'raise open' => [false, null, 'confirmed', null],
+    'funding locked' => [true, null, 'funded', ['stage' => 'awaiting_disbursement']],
+    'payout sent' => [true, true, 'funded', ['stage' => 'in_flight', 'provider' => 'pending']],
+    'payout send unconfirmed' => [true, false, 'funded', ['stage' => 'in_flight', 'provider' => 'unknown']],
 ]);

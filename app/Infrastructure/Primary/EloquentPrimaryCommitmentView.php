@@ -7,6 +7,7 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Operations\Contracts\OperationRecords;
+use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Primary\Contracts\PrimaryCheckout;
@@ -18,8 +19,8 @@ use RuntimeException;
 /**
  * Reads the commitment through the Investor-authorized retained facts first; only then the
  * Party's own recorded confirmation and refund, and the campaign's title and lifecycle. Once the
- * campaign's funding is locked the commitment is `funded`, awaiting the disbursement, until the
- * Holding issued from it makes it `issued`. A closed campaign without this Party's refund is
+ * campaign's funding is locked the commitment is `funded`, awaiting the disbursement or with its
+ * payout in flight, until the Holding issued from it makes it `issued`. A closed campaign without this Party's refund is
  * still refused until its settlement sources are wired.
  *
  * @phpstan-import-type OperationRecord from OperationRecords
@@ -27,7 +28,8 @@ use RuntimeException;
 final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentView
 {
     public function __construct(private PrimaryPurchaseIndex $index, private PrimaryCheckout $checkout, private PrimaryCampaignSource $campaigns,
-        private CampaignFundingEvidence $fundings, private OperationRecords $operations, private GetIdentityContext $identity, private InvestorHoldings $holdings) {}
+        private CampaignFundingEvidence $fundings, private OperationRecords $operations, private GetIdentityContext $identity, private InvestorHoldings $holdings,
+        private CampaignDisbursementProgress $disbursements) {}
 
     public function show(int $userId, ?int $contextRevision, string $commitmentId): array
     {
@@ -65,11 +67,16 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
             default => 'confirmed',
         };
         $units = $facts['units'];
+        $inFlight = $state === 'funded' ? $this->disbursements->inFlight($facts['campaign_id']) : null;
 
         return ['identity_context_revision' => $context, 'commitment' => ['id' => $commitmentId, 'revision' => $facts['revision'],
             'campaign_id' => $facts['campaign_id'], 'reservation_id' => $facts['reservation_id'], 'deal_name' => $campaign['title'],
             'units' => $units, 'ordinals' => $facts['ordinal_ranges'], 'principal' => $facts['principal'], 'rights' => $facts['rights'],
-            'state' => $state, 'cancelled_by' => $refund === null ? null : 'investor', 'closing' => $state === 'funded' ? ['stage' => 'awaiting_disbursement'] : null,
+            'state' => $state, 'cancelled_by' => $refund === null ? null : 'investor', 'closing' => match (true) {
+                $state !== 'funded' => null,
+                $inFlight === null => ['stage' => 'awaiting_disbursement'],
+                default => ['stage' => 'in_flight', 'provider' => $inFlight],
+            },
             'terms' => $facts['terms'],
             'confirmation' => $this->receipt($confirmed, $commitmentId, 'RZC-', $confirmation['confirmed_at'], $facts['principal'], $units,
                 $facts['terms']['policy_version'], $facts['terms']['disclosure_version']),
