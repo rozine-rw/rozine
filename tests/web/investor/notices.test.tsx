@@ -229,4 +229,52 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
 
         expect(await openBell(user)).toBeInTheDocument();
     });
+
+    it('words a sent and a returned withdrawal with the account they went to', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'sent',
+                kind: 'wallet.withdrawal_sent',
+                facts: {
+                    amount: '100000',
+                    currency: 'RWF',
+                    account: 'MTN MoMo +250 788 ···· 456',
+                    received: '100000',
+                },
+            },
+            {
+                ...first,
+                id: 'returned',
+                kind: 'wallet.withdrawal_returned',
+                facts: {
+                    amount: '50000',
+                    currency: 'RWF',
+                    account: 'Bank of Kigali ···· 4417',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Withdrawal/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Withdrawal sentRWF 100,000 was sent to MTN MoMo +250 788 ···· 456.',
+        );
+        expect(items[1]).toHaveTextContent(
+            "Withdrawal returnedThe payout of RWF 50,000 to Bank of Kigali ···· 4417 didn't go through. It's back in your wallet.",
+        );
+    });
 });

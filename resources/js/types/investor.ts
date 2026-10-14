@@ -938,6 +938,8 @@ export type WalletBalances = {
     total: Money;
     breakdown: { available: Money; held: Money; committed: Money };
     pending_deposits: Money;
+    /** Cash held for withdrawals the provider has not yet paid or returned; outside `total`. */
+    pending_withdrawals: Money;
 };
 
 /** Explicitly synthetic and versioned in fixtures; never frozen as live policy (H6). */
@@ -953,6 +955,15 @@ export type DepositRefusal =
     | 'VALIDATION_FAILED'
     | 'DEPOSIT_METHOD_UNVERIFIED'
     | 'POLICY_INPUT_REQUIRED';
+
+/** What a deposit panel offers: the policy, the verified methods and the server's quote. */
+export type DepositFunding = {
+    kind: 'deposit' | null;
+    policy: DepositPolicy | null;
+    methods: FundingMethod[];
+    picks: Money[];
+    quote: DepositQuote | null;
+};
 
 export type DepositQuote = {
     amount: Money;
@@ -979,6 +990,49 @@ export type DepositIntent = {
     link: RouteLink;
 };
 
+/** The withdrawal rule (BRS LED-R04): RWF 1,000 to 2,000,000, no Rozine fee, the provider's charge shown first. */
+export type WithdrawalTerms = {
+    version: string;
+    minimum: Money;
+    maximum: Money;
+    charge: Money;
+    /** The server's reading of an entered amount; null until one is entered. */
+    quote: WithdrawalQuote | null;
+};
+
+export type WithdrawalRefusal =
+    | 'VALIDATION_FAILED'
+    | 'INSUFFICIENT_AVAILABLE_FUNDS'
+    | 'WITHDRAWAL_METHOD_UNVERIFIED';
+
+export type WithdrawalQuote = {
+    amount: Money;
+    charge: Money;
+    /** What reaches the account: the amount less the provider's charge. */
+    received: Money;
+    refusal: WithdrawalRefusal | null;
+};
+
+/**
+ * A recorded withdrawal. Its amount left the available balance when it was recorded; a verified
+ * success pays it out and a verified failure returns it, adding `settled_receipt` either way.
+ */
+export type WalletWithdrawal = {
+    id: string;
+    request_id: string;
+    amount: Money;
+    charge: Money;
+    received: Money;
+    method: FundingMethod;
+    created_at: string;
+    state: ProviderOutcomeState;
+    /** WITHDRAWAL_RECORDED, immutable. */
+    request_receipt: Receipt;
+    /** WITHDRAWAL_PAID or WITHDRAWAL_RETURNED, once a verified outcome ended it. */
+    settled_receipt: Receipt | null;
+    link: RouteLink;
+};
+
 /** A live checkout reservation holding wallet cash. */
 export type CheckoutHold = {
     reservation_id: string;
@@ -994,7 +1048,7 @@ export type WalletEntry =
     | {
           id: string;
           movement: 'external';
-          kind: 'deposit';
+          kind: 'deposit' | 'withdrawal';
           direction: 'in' | 'out';
           amount: Money;
           counterparty: string;
@@ -1043,26 +1097,29 @@ export type C3InvestorWalletProps = InvestorPageContract & {
     wallet: WalletBalances;
     holds: CheckoutHold[];
     /**
-     * Deposit only: withdrawal stays hidden until it has its own contract (H6). A null `policy`
-     * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+     * A null `policy` means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+     * A null `withdrawal` means no payout provider is available here, so withdrawal is not offered.
      */
-    funding: {
-        kind: 'deposit' | null;
-        policy: DepositPolicy | null;
-        methods: FundingMethod[];
-        picks: Money[];
-        quote: DepositQuote | null;
+    funding: Omit<DepositFunding, 'kind'> & {
+        kind: 'deposit' | 'withdraw' | null;
+        withdrawal: WithdrawalTerms | null;
     };
     /** Pending and unknown first. */
     deposits: DepositIntent[];
+    /** Unsettled first. */
+    withdrawals: WalletWithdrawal[];
     history: {
         movement: WalletMovement;
         filters: { key: WalletMovement; active: boolean; link: RouteLink }[];
         items: WalletEntry[];
         pagination: Pagination;
     };
-    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
-    receipt: (WalletEntry & { receipt: Receipt }) | DepositIntent | null;
+    /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
+    receipt:
+        | (WalletEntry & { receipt: Receipt })
+        | DepositIntent
+        | WalletWithdrawal
+        | null;
     /** C4 and Phase 2. */
     earnings: null;
     /** The statement downloads; null where no statement is served (previews). */
@@ -1070,15 +1127,18 @@ export type C3InvestorWalletProps = InvestorPageContract & {
     links: C3InvestorShellLinks & {
         close: RouteLink;
         deposit: RouteLink;
+        withdraw: RouteLink;
         /** Null until linking an account has a live route; the prompt then names no destination. */
         link_account: RouteLink | null;
         /** The operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
+        /** The withdrawal operation lookup, with the same token. */
+        withdraw_operation: RouteLink;
         /** The change beacon (S4-E), with its render-time cursor; null in previews. */
         changes?: RouteLink | null;
     };
-    actions: { deposit: RouteAction };
-    preview_outcome?: C3PreviewOutcome<'wallet.deposit'>;
+    actions: { deposit: RouteAction; withdraw: RouteAction };
+    preview_outcome?: C3PreviewOutcome<'wallet.deposit' | 'wallet.withdraw'>;
 };
 
 /* Deals and deal detail (v2 §2b) ---------------------------------------------------------- */
@@ -1344,6 +1404,11 @@ export type InvestorNotice = {
     read_action: RouteAction | null;
 } & (
     | { kind: 'wallet.deposit_received'; facts: Money }
+    | {
+          kind: 'wallet.withdrawal_sent';
+          facts: Money & { account: string; received: string };
+      }
+    | { kind: 'wallet.withdrawal_returned'; facts: Money & { account: string } }
     | { kind: 'primary.refunded'; facts: Money & { business: string } }
     | { kind: 'verification.approved'; facts: never[] }
     | { kind: 'security.password_changed'; facts: never[] }

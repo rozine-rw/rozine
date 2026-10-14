@@ -111,6 +111,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::get('wallet/statement.{format}', [InvestorWalletController::class, 'statement'])->whereIn('format', ['csv', 'pdf'])->name('wallet.statement');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::post('wallet/withdrawals', [InvestorWalletController::class, 'withdraw'])->name('wallet.withdraw');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
     Route::get('risk-statements', [InvestorRiskAcknowledgementController::class, 'show'])->name('risks.show');
     Route::post('risk-statements/acknowledgements', [InvestorRiskAcknowledgementController::class, 'store'])->name('risks.acknowledge');

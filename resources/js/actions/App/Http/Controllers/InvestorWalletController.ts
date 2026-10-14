@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 const show3c9a2007c468f412440bc67237ebcaa4 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show3c9a2007c468f412440bc67237ebcaa4.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 show3c9a2007c468f412440bc67237ebcaa4.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ show3c9a2007c468f412440bc67237ebcaa4.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 show3c9a2007c468f412440bc67237ebcaa4.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ show3c9a2007c468f412440bc67237ebcaa4.get = (options?: RouteQueryOptions): RouteD
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 show3c9a2007c468f412440bc67237ebcaa4.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ show3c9a2007c468f412440bc67237ebcaa4.head = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 const show3c9a2007c468f412440bc67237ebcaa4Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const show3c9a2007c468f412440bc67237ebcaa4Form = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 show3c9a2007c468f412440bc67237ebcaa4Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ show3c9a2007c468f412440bc67237ebcaa4Form.get = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/api/v1/investor/wallet'
 */
 show3c9a2007c468f412440bc67237ebcaa4Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ show3c9a2007c468f412440bc67237ebcaa4Form.head = (options?: RouteQueryOptions): R
 show3c9a2007c468f412440bc67237ebcaa4.form = show3c9a2007c468f412440bc67237ebcaa4Form
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 const show4671c6f2d06d3b1a1756b850eef449a4 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ show4671c6f2d06d3b1a1756b850eef449a4.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 show4671c6f2d06d3b1a1756b850eef449a4.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ show4671c6f2d06d3b1a1756b850eef449a4.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 show4671c6f2d06d3b1a1756b850eef449a4.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ show4671c6f2d06d3b1a1756b850eef449a4.get = (options?: RouteQueryOptions): RouteD
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 show4671c6f2d06d3b1a1756b850eef449a4.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ show4671c6f2d06d3b1a1756b850eef449a4.head = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 const show4671c6f2d06d3b1a1756b850eef449a4Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const show4671c6f2d06d3b1a1756b850eef449a4Form = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 show4671c6f2d06d3b1a1756b850eef449a4Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ show4671c6f2d06d3b1a1756b850eef449a4Form.get = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::show
-* @see app/Http/Controllers/InvestorWalletController.php:29
+* @see app/Http/Controllers/InvestorWalletController.php:31
 * @route '/investor/wallet'
 */
 show4671c6f2d06d3b1a1756b850eef449a4Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const show = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 const statement1a5b5799e6abc9ddd7704d2c3493ed07 = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -187,7 +187,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 statement1a5b5799e6abc9ddd7704d2c3493ed07.url = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07.url = (args: { format: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 statement1a5b5799e6abc9ddd7704d2c3493ed07.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -224,7 +224,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07.get = (args: { format: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 statement1a5b5799e6abc9ddd7704d2c3493ed07.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -234,7 +234,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07.head = (args: { format: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 const statement1a5b5799e6abc9ddd7704d2c3493ed07Form = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -244,7 +244,7 @@ const statement1a5b5799e6abc9ddd7704d2c3493ed07Form = (args: { format: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 statement1a5b5799e6abc9ddd7704d2c3493ed07Form.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -254,7 +254,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07Form.get = (args: { format: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/api/v1/investor/wallet/statement.{format}'
 */
 statement1a5b5799e6abc9ddd7704d2c3493ed07Form.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -270,7 +270,7 @@ statement1a5b5799e6abc9ddd7704d2c3493ed07Form.head = (args: { format: string | n
 statement1a5b5799e6abc9ddd7704d2c3493ed07.form = statement1a5b5799e6abc9ddd7704d2c3493ed07Form
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 const statement3cf98fdf8207fa62376cda121c4f9f3a = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -285,7 +285,7 @@ statement3cf98fdf8207fa62376cda121c4f9f3a.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 statement3cf98fdf8207fa62376cda121c4f9f3a.url = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -312,7 +312,7 @@ statement3cf98fdf8207fa62376cda121c4f9f3a.url = (args: { format: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 statement3cf98fdf8207fa62376cda121c4f9f3a.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -322,7 +322,7 @@ statement3cf98fdf8207fa62376cda121c4f9f3a.get = (args: { format: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 statement3cf98fdf8207fa62376cda121c4f9f3a.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -332,7 +332,7 @@ statement3cf98fdf8207fa62376cda121c4f9f3a.head = (args: { format: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 const statement3cf98fdf8207fa62376cda121c4f9f3aForm = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -342,7 +342,7 @@ const statement3cf98fdf8207fa62376cda121c4f9f3aForm = (args: { format: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 statement3cf98fdf8207fa62376cda121c4f9f3aForm.get = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -352,7 +352,7 @@ statement3cf98fdf8207fa62376cda121c4f9f3aForm.get = (args: { format: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::statement
-* @see app/Http/Controllers/InvestorWalletController.php:40
+* @see app/Http/Controllers/InvestorWalletController.php:42
 * @route '/investor/wallet/statement.{format}'
 */
 statement3cf98fdf8207fa62376cda121c4f9f3aForm.head = (args: { format: string | number } | [format: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -379,7 +379,7 @@ export const statement = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/api/v1/investor/wallet/deposits'
 */
 const depositae3238b5c3bb70f8cceb8f3faa5c4434 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -394,7 +394,7 @@ depositae3238b5c3bb70f8cceb8f3faa5c4434.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/api/v1/investor/wallet/deposits'
 */
 depositae3238b5c3bb70f8cceb8f3faa5c4434.url = (options?: RouteQueryOptions) => {
@@ -403,7 +403,7 @@ depositae3238b5c3bb70f8cceb8f3faa5c4434.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/api/v1/investor/wallet/deposits'
 */
 depositae3238b5c3bb70f8cceb8f3faa5c4434.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -413,7 +413,7 @@ depositae3238b5c3bb70f8cceb8f3faa5c4434.post = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/api/v1/investor/wallet/deposits'
 */
 const depositae3238b5c3bb70f8cceb8f3faa5c4434Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -423,7 +423,7 @@ const depositae3238b5c3bb70f8cceb8f3faa5c4434Form = (options?: RouteQueryOptions
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/api/v1/investor/wallet/deposits'
 */
 depositae3238b5c3bb70f8cceb8f3faa5c4434Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -434,7 +434,7 @@ depositae3238b5c3bb70f8cceb8f3faa5c4434Form.post = (options?: RouteQueryOptions)
 depositae3238b5c3bb70f8cceb8f3faa5c4434.form = depositae3238b5c3bb70f8cceb8f3faa5c4434Form
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/investor/wallet/deposits'
 */
 const deposit9dabf7c7723af4e74eb0694975135af9 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -449,7 +449,7 @@ deposit9dabf7c7723af4e74eb0694975135af9.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/investor/wallet/deposits'
 */
 deposit9dabf7c7723af4e74eb0694975135af9.url = (options?: RouteQueryOptions) => {
@@ -458,7 +458,7 @@ deposit9dabf7c7723af4e74eb0694975135af9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/investor/wallet/deposits'
 */
 deposit9dabf7c7723af4e74eb0694975135af9.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -468,7 +468,7 @@ deposit9dabf7c7723af4e74eb0694975135af9.post = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/investor/wallet/deposits'
 */
 const deposit9dabf7c7723af4e74eb0694975135af9Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -478,7 +478,7 @@ const deposit9dabf7c7723af4e74eb0694975135af9Form = (options?: RouteQueryOptions
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::deposit
-* @see app/Http/Controllers/InvestorWalletController.php:57
+* @see app/Http/Controllers/InvestorWalletController.php:59
 * @route '/investor/wallet/deposits'
 */
 deposit9dabf7c7723af4e74eb0694975135af9Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -499,8 +499,129 @@ export const deposit = {
 }
 
 /**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/api/v1/investor/wallet/withdrawals'
+*/
+const withdraw5d66adbb47313333c3a9a71120e5ad3a = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw5d66adbb47313333c3a9a71120e5ad3a.url(options),
+    method: 'post',
+})
+
+withdraw5d66adbb47313333c3a9a71120e5ad3a.definition = {
+    methods: ["post"],
+    url: '/api/v1/investor/wallet/withdrawals',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/api/v1/investor/wallet/withdrawals'
+*/
+withdraw5d66adbb47313333c3a9a71120e5ad3a.url = (options?: RouteQueryOptions) => {
+    return withdraw5d66adbb47313333c3a9a71120e5ad3a.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/api/v1/investor/wallet/withdrawals'
+*/
+withdraw5d66adbb47313333c3a9a71120e5ad3a.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw5d66adbb47313333c3a9a71120e5ad3a.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/api/v1/investor/wallet/withdrawals'
+*/
+const withdraw5d66adbb47313333c3a9a71120e5ad3aForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw5d66adbb47313333c3a9a71120e5ad3a.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/api/v1/investor/wallet/withdrawals'
+*/
+withdraw5d66adbb47313333c3a9a71120e5ad3aForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw5d66adbb47313333c3a9a71120e5ad3a.url(options),
+    method: 'post',
+})
+
+withdraw5d66adbb47313333c3a9a71120e5ad3a.form = withdraw5d66adbb47313333c3a9a71120e5ad3aForm
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/investor/wallet/withdrawals'
+*/
+const withdraw82d1289d5a7435036368e0763d63ef40 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw82d1289d5a7435036368e0763d63ef40.url(options),
+    method: 'post',
+})
+
+withdraw82d1289d5a7435036368e0763d63ef40.definition = {
+    methods: ["post"],
+    url: '/investor/wallet/withdrawals',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/investor/wallet/withdrawals'
+*/
+withdraw82d1289d5a7435036368e0763d63ef40.url = (options?: RouteQueryOptions) => {
+    return withdraw82d1289d5a7435036368e0763d63ef40.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/investor/wallet/withdrawals'
+*/
+withdraw82d1289d5a7435036368e0763d63ef40.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw82d1289d5a7435036368e0763d63ef40.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/investor/wallet/withdrawals'
+*/
+const withdraw82d1289d5a7435036368e0763d63ef40Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw82d1289d5a7435036368e0763d63ef40.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorWalletController::withdraw
+* @see app/Http/Controllers/InvestorWalletController.php:68
+* @route '/investor/wallet/withdrawals'
+*/
+withdraw82d1289d5a7435036368e0763d63ef40Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw82d1289d5a7435036368e0763d63ef40.url(options),
+    method: 'post',
+})
+
+withdraw82d1289d5a7435036368e0763d63ef40.form = withdraw82d1289d5a7435036368e0763d63ef40Form
+
+/**
+* Multiple routes resolve to \App\Http\Controllers\InvestorWalletController::withdraw, so this export is a
+* dictionary keyed by URI rather than a callable. Call a specific route with `withdraw['<uri>'](...)`,
+* or import the route by name from your generated `routes/` directory.
+*/
+export const withdraw = {
+    '/api/v1/investor/wallet/withdrawals': withdraw5d66adbb47313333c3a9a71120e5ad3a,
+    '/investor/wallet/withdrawals': withdraw82d1289d5a7435036368e0763d63ef40,
+}
+
+/**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 const operationb23efe0fdae3213a4d89cbf03d1b2cc1 = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -515,7 +636,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 operationb23efe0fdae3213a4d89cbf03d1b2cc1.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -542,7 +663,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1.url = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 operationb23efe0fdae3213a4d89cbf03d1b2cc1.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -552,7 +673,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1.get = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 operationb23efe0fdae3213a4d89cbf03d1b2cc1.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -562,7 +683,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1.head = (args: { request_id: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 const operationb23efe0fdae3213a4d89cbf03d1b2cc1Form = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -572,7 +693,7 @@ const operationb23efe0fdae3213a4d89cbf03d1b2cc1Form = (args: { request_id: strin
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 operationb23efe0fdae3213a4d89cbf03d1b2cc1Form.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -582,7 +703,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1Form.get = (args: { request_id: string 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/api/v1/investor/wallet-operations/{request_id}'
 */
 operationb23efe0fdae3213a4d89cbf03d1b2cc1Form.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -598,7 +719,7 @@ operationb23efe0fdae3213a4d89cbf03d1b2cc1Form.head = (args: { request_id: string
 operationb23efe0fdae3213a4d89cbf03d1b2cc1.form = operationb23efe0fdae3213a4d89cbf03d1b2cc1Form
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 const operationb844d10b7ae7ce79217f9292aff548a8 = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -613,7 +734,7 @@ operationb844d10b7ae7ce79217f9292aff548a8.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 operationb844d10b7ae7ce79217f9292aff548a8.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -640,7 +761,7 @@ operationb844d10b7ae7ce79217f9292aff548a8.url = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 operationb844d10b7ae7ce79217f9292aff548a8.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -650,7 +771,7 @@ operationb844d10b7ae7ce79217f9292aff548a8.get = (args: { request_id: string | nu
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 operationb844d10b7ae7ce79217f9292aff548a8.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -660,7 +781,7 @@ operationb844d10b7ae7ce79217f9292aff548a8.head = (args: { request_id: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 const operationb844d10b7ae7ce79217f9292aff548a8Form = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -670,7 +791,7 @@ const operationb844d10b7ae7ce79217f9292aff548a8Form = (args: { request_id: strin
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 operationb844d10b7ae7ce79217f9292aff548a8Form.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -680,7 +801,7 @@ operationb844d10b7ae7ce79217f9292aff548a8Form.get = (args: { request_id: string 
 
 /**
 * @see \App\Http\Controllers\InvestorWalletController::operation
-* @see app/Http/Controllers/InvestorWalletController.php:66
+* @see app/Http/Controllers/InvestorWalletController.php:77
 * @route '/investor/wallet-operations/{request_id}'
 */
 operationb844d10b7ae7ce79217f9292aff548a8Form.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -705,6 +826,6 @@ export const operation = {
     '/investor/wallet-operations/{request_id}': operationb844d10b7ae7ce79217f9292aff548a8,
 }
 
-const InvestorWalletController = { show, statement, deposit, operation }
+const InvestorWalletController = { show, statement, deposit, withdraw, operation }
 
 export default InvestorWalletController

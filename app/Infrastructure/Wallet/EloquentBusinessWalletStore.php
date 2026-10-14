@@ -279,7 +279,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 return ['disposition' => $replay->disposition, 'state' => $this->currentState($intent->id), 'credited' => false, 'replayed' => true];
             }
             // Provider event keys are one namespace across owners: a key the other owner already consumed is a conflict here.
-            $consumedElsewhere = DB::table('wallet_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+            $consumedElsewhere = DB::table('wallet_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('wallet_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
             $current = $this->currentState($intent->id);
             $outcome = DepositOutcome::transition($current, $event->state);
             $disposition = match (true) {

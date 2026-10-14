@@ -77,6 +77,7 @@ final readonly class WalletStatementDocument
     {
         return match ($row['kind']) {
             'deposit' => 'Deposit from '.$row['counterparty'],
+            'withdrawal' => 'Withdrawal to '.$row['counterparty'],
             'hold' => 'Held for '.$row['deal_name'],
             'hold_release' => 'Hold released - '.$row['deal_name'],
             'commitment' => 'Committed to '.$row['deal_name'],

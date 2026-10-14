@@ -4095,6 +4095,8 @@ const fr: Catalog = {
         "Ce n'est pas encore disponible : une règle requise n'a pas été définie.",
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         "Ce compte n'est pas encore vérifié pour les dépôts.",
+    'settlement.refusal.WITHDRAWAL_METHOD_UNVERIFIED':
+        'Choisissez un compte vérifié pour le retrait.',
     'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
         "Aucune réservation d'emprunt n'est enregistrée pour cette demande : elle ne peut pas être publiée.",
     'settlement.refusal.SIGNATURES_REQUIRED':
@@ -4203,6 +4205,30 @@ const fr: Catalog = {
     'investor.wallet.c3.not_credited_failed':
         "Le paiement a été confirmé comme non effectué. Rien n'a été crédité.",
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
+    'investor.wallet.c3.funding': 'Mouvements de fonds',
+    'investor.wallet.c3.withdraw_unavailable':
+        'Les retraits ne sont pas disponibles sur votre compte pour le moment.',
+    'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
+    'investor.wallet.c3.provider_charge': 'Frais du prestataire',
+    'investor.wallet.c3.withdraw_terms':
+        'Retirez entre {minimum} et {maximum} à la fois. Conditions {version}.',
+    'investor.wallet.c3.withdraw_only_on_success':
+        'Le montant quitte votre solde disponible maintenant et est versé dès que le prestataire confirme. Si le versement échoue, il revient dans votre portefeuille.',
+    'investor.wallet.c3.withdrawals': 'Retraits',
+    'investor.wallet.c3.withdrawal_to': 'Retrait vers {method}',
+    'investor.wallet.c3.withdrawal.pending': "En cours d'envoi",
+    'investor.wallet.c3.withdrawal.unknown':
+        "En cours d'envoi — nous vérifions auprès du prestataire",
+    'investor.wallet.c3.withdrawal.succeeded': 'Versé',
+    'investor.wallet.c3.withdrawal.failed':
+        "N'a pas abouti — remboursé dans votre portefeuille",
+    'investor.wallet.c3.withdrawal_waiting':
+        "Réservé pour ce retrait jusqu'à la confirmation du prestataire. Il reste hors de votre solde disponible en attendant.",
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID': 'Reçu de versement',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED':
+        'Reçu de remboursement',
+    'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Retrait vers {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
     'business.publish.release.awaiting':
@@ -4615,6 +4641,12 @@ const fr: Catalog = {
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',
+    'investor.notices.wallet.withdrawal_sent.title': 'Retrait envoyé',
+    'investor.notices.wallet.withdrawal_sent.body':
+        '{amount} a été envoyé vers {account}.',
+    'investor.notices.wallet.withdrawal_returned.title': 'Retrait remboursé',
+    'investor.notices.wallet.withdrawal_returned.body':
+        "Le versement de {amount} vers {account} n'a pas abouti. Il est de retour dans votre portefeuille.",
     'investor.notices.primary.refunded.title': 'Levée remboursée',
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",

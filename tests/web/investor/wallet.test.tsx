@@ -84,7 +84,7 @@ describe('Wallet (C3)', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('shows the total with its breakdown, the live hold and the history, with withdrawal hidden', () => {
+    it('shows the total with its breakdown, the live hold and the history, with withdraw beside deposit', () => {
         vi.useFakeTimers({ now: new Date('2026-10-02T07:00:00Z') });
         render(<InvestorWallet {...wallet()} />);
 
@@ -102,7 +102,13 @@ describe('Wallet (C3)', () => {
             'href',
             '/preview/investor-wallet-deposit',
         );
-        expect(screen.queryByText(/withdraw/iu)).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Withdraw' })).toHaveAttribute(
+            'href',
+            '/preview/investor-wallet-withdraw',
+        );
+        expect(
+            screen.queryByRole('region', { name: 'Withdrawals' }),
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Earnings history')).not.toBeInTheDocument();
 
         const holds = screen.getByRole('region', { name: 'Held for checkout' });
@@ -351,7 +357,7 @@ describe('Wallet (C3)', () => {
 
         act(() => vi.advanceTimersByTime(POLL_INTERVAL_MS));
         expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['wallet', 'deposits', 'history'],
+            only: ['wallet', 'deposits', 'withdrawals', 'history'],
         });
 
         for (let poll = 1; poll < POLL_LIMIT; poll += 1) {

@@ -23,6 +23,21 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
+    'wallet.withdrawal_sent': {
+        bar: 'bg-[#0c1830] dark:bg-rz-slate',
+        tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
+        icon: <path d="M12 19V5M5 12l7-7 7 7" {...stroke} />,
+    },
+    'wallet.withdrawal_returned': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        icon: (
+            <path
+                d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
+                {...stroke}
+            />
+        ),
+    },
     'primary.refunded': {
         bar: 'bg-[#17795a]',
         tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
@@ -311,6 +326,19 @@ function body(
         case 'wallet.deposit_received':
             return t('investor.notices.wallet.deposit_received.body', {
                 amount: formatRwf(notice.facts),
+            });
+        case 'wallet.withdrawal_sent':
+            return t('investor.notices.wallet.withdrawal_sent.body', {
+                amount: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.received,
+                }),
+                account: notice.facts.account,
+            });
+        case 'wallet.withdrawal_returned':
+            return t('investor.notices.wallet.withdrawal_returned.body', {
+                amount: formatRwf(notice.facts),
+                account: notice.facts.account,
             });
         case 'primary.refunded':
             return t('investor.notices.primary.refunded.body', {

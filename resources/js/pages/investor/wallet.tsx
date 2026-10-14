@@ -3,25 +3,29 @@ import { InvestorShell } from '@/components/investor/investor-shell';
 import {
     BalanceCard,
     DepositPanel,
+    WithdrawPanel,
 } from '@/components/investor/wallet/funding';
 import {
     DepositIntents,
     HoldsList,
     ReceiptSheet,
     WalletHistory,
+    WithdrawalList,
 } from '@/components/investor/wallet/history';
 import { PollStopped } from '@/components/rozine/c3-notice';
 import { useBoundedPoll } from '@/hooks/use-bounded-poll';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
+import { cn } from '@/lib/utils';
 import type { C3InvestorWalletProps } from '@/types/investor';
 
 /**
  * Wallet (MVP-INVESTOR-SCR-08, design L2835–3095; C3 v2 §2a): the ledger total and its breakdown,
- * live checkout holds, deposit through a linked account under a versioned deposit policy, recorded
- * deposit intents, and the history with external cash apart from internal transfers, with its
- * statement downloads. Withdrawal and earnings are hidden in C3. Deposit intents still `pending` or `unknown` are polled,
- * boundedly, for fresh facts. The design's Rozine Plus upsell is outside the MVP.
+ * live checkout holds, deposit through a linked account under a versioned deposit policy, withdrawal
+ * to the Investor's own verified account (BRS LED-R04), recorded deposits and withdrawals, and the
+ * history with external cash apart from internal transfers, with its statement downloads. Earnings
+ * are hidden in C3. Deposits and withdrawals still `pending` or `unknown` are polled, boundedly, for
+ * fresh facts. The design's Rozine Plus upsell is outside the MVP.
  */
 /** What a wallet change reloads: the wallet's facts and actions, never the deposit form. */
 const BEACON_RELOADS = [
@@ -29,18 +33,27 @@ const BEACON_RELOADS = [
     'allowed_actions',
     'wallet',
     'deposits',
+    'withdrawals',
     'history',
     'receipt',
 ];
+
+const unsettled = (state: string): boolean =>
+    state === 'pending' || state === 'unknown';
 
 export default function InvestorWallet(props: C3InvestorWalletProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const kind = props.funding.kind ?? (wide ? 'deposit' : null);
-    const inFlight = props.deposits.some(
-        (deposit) => deposit.state === 'pending' || deposit.state === 'unknown',
-    );
-    const poll = useBoundedPoll(inFlight, ['wallet', 'deposits', 'history']);
+    const inFlight =
+        props.deposits.some((deposit) => unsettled(deposit.state)) ||
+        props.withdrawals.some((withdrawal) => unsettled(withdrawal.state));
+    const poll = useBoundedPoll(inFlight, [
+        'wallet',
+        'deposits',
+        'withdrawals',
+        'history',
+    ]);
     const closeReceipt = () =>
         router.visit(props.links.close, { preserveScroll: true });
 
@@ -52,15 +65,42 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
                     'wallet.deposit',
                 )}
             />
-            {kind === null ? (
-                <Link
-                    href={props.links.deposit}
-                    preserveScroll
-                    className="mt-3.5 flex items-center justify-center gap-[7px] rounded-2xl bg-rz-accent-fill py-[13px] text-[13px] font-semibold text-white shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]"
-                >
-                    {t('investor.wallet.deposit')}
-                </Link>
-            ) : (
+            <nav
+                aria-label={t('investor.wallet.c3.funding')}
+                className="mt-3.5 flex gap-2"
+            >
+                {(['deposit', 'withdraw'] as const).map((option) => (
+                    <Link
+                        key={option}
+                        href={props.links[option]}
+                        preserveScroll
+                        aria-current={kind === option ? 'true' : undefined}
+                        className={cn(
+                            'flex flex-1 items-center justify-center gap-[7px] rounded-2xl py-[13px] text-[13px] font-semibold shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]',
+                            option === 'deposit'
+                                ? 'bg-rz-accent-fill text-white'
+                                : 'bg-[#0c1830] text-white dark:bg-rz-surface-muted',
+                            kind !== null && kind !== option && 'opacity-60',
+                        )}
+                    >
+                        {t(`investor.wallet.${option}`)}
+                    </Link>
+                ))}
+            </nav>
+            {kind === 'withdraw' && (
+                <WithdrawPanel
+                    funding={props.funding}
+                    action={props.actions.withdraw}
+                    available={props.wallet.breakdown.available}
+                    allowed_actions={props.allowed_actions}
+                    identity_context_revision={props.identity_context_revision}
+                    preview_outcome={props.preview_outcome}
+                    operation={props.links.withdraw_operation}
+                    close={wide ? null : props.links.close}
+                    wide={wide}
+                />
+            )}
+            {kind === 'deposit' && (
                 <DepositPanel
                     key={kind}
                     funding={props.funding}
@@ -96,6 +136,7 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
     const right = (
         <>
             <DepositIntents deposits={props.deposits} />
+            <WithdrawalList withdrawals={props.withdrawals} />
             <PollStopped {...poll} className="mt-2" />
             <WalletHistory history={props.history} exports={props.exports} />
             {props.receipt !== null && (

@@ -12,7 +12,10 @@ use App\Models\User;
 use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
 use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\VerificationDecided;
+use App\Notifications\Investor\WalletTransfer;
+use App\Notifications\Investor\WalletTransferCompleted;
 use App\Notifications\RozineMail;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -126,6 +129,8 @@ final readonly class EloquentPartyNotices implements PartyNotices
             PartyNoticeKind::RaiseRefunded => new RaiseExpired($facts['business'], $facts['amount'], route('investor.wallet')),
             PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
                 route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),
+            PartyNoticeKind::WithdrawalSent => new WalletTransferCompleted(WalletTransfer::Withdrawal, $facts['received'], $facts['account'],
+                $facts['reference'], $facts['available'], CarbonImmutable::parse($facts['completed_at']), route('investor.wallet')),
             PartyNoticeKind::VerificationApproved => VerificationDecided::approved(route('investor.deals')),
             default => VerificationDecided::rejected($facts['reason'], route('investor.verification')),
         };

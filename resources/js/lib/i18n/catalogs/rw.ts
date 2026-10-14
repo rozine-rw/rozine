@@ -4074,6 +4074,8 @@ const rw: Catalog = {
         'Ibi ntibiraboneka: hari amabwiriza akenewe atarashyirwaho.',
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         'Iyo konti ntiragenzurwa ngo ikoreshwe mu kubitsa.',
+    'settlement.refusal.WITHDRAWAL_METHOD_UNVERIFIED':
+        'Hitamo konti yemejwe yo kubikurizaho.',
     'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
         "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye, bityo ntishobora gushyirwa ku rutonde.",
     'settlement.refusal.SIGNATURES_REQUIRED':
@@ -4181,6 +4183,32 @@ const rw: Catalog = {
         'Byemejwe ko ubwishyu butarangiye. Nta cyashyizwe kuri konti.',
     'investor.wallet.c3.credit_receipt':
         'Inyemezabwishyu yo gushyira kuri konti',
+    'investor.wallet.c3.funding': 'Kwimura amafaranga',
+    'investor.wallet.c3.withdraw_unavailable':
+        'Kubikuza ntibishoboka kuri konti yawe ubu.',
+    'investor.wallet.c3.withdraw_available': 'Ayo ushobora kubikuza: {amount}',
+    'investor.wallet.c3.provider_charge': "Amafaranga y'utanga serivisi",
+    'investor.wallet.c3.withdraw_terms':
+        'Bikuza hagati ya {minimum} na {maximum} icyarimwe. Amabwiriza {version}.',
+    'investor.wallet.c3.withdraw_only_on_success':
+        'Amafaranga ava ku yo ushobora gukoresha ubu, akoherezwa iyo utanga serivisi abyemeje. Iyo kohereza binaniranye, agaruka mu gikapu cyawe.',
+    'investor.wallet.c3.withdrawals': 'Ibyabikujwe',
+    'investor.wallet.c3.withdrawal_to': 'Kubikuza kuri {method}',
+    'investor.wallet.c3.withdrawal.pending': 'Biroherezwa',
+    'investor.wallet.c3.withdrawal.unknown':
+        'Biroherezwa — turi kubaza utanga serivisi',
+    'investor.wallet.c3.withdrawal.succeeded': 'Byoherejwe',
+    'investor.wallet.c3.withdrawal.failed':
+        'Ntibyakunze — byagarutse mu gikapu cyawe',
+    'investor.wallet.c3.withdrawal_waiting':
+        'Byabikiwe uku kubikuza kugeza utanga serivisi abyemeje. Hagati aho ntibiba mu yo ushobora gukoresha.',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID':
+        'Inyemezabwishyu yo kohereza',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED':
+        'Inyemezabwishyu yo kugarura',
+    'investor.wallet.c3.entry.withdrawal_in':
+        'Byagarutse bivuye kuri {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza kuri {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
     'business.publish.release.awaiting':
@@ -4585,6 +4613,13 @@ const rw: Catalog = {
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':
         '{amount} ubu ari mu gikapu cyawe.',
+    'investor.notices.wallet.withdrawal_sent.title': 'Ibyabikujwe byoherejwe',
+    'investor.notices.wallet.withdrawal_sent.body':
+        '{amount} byoherejwe kuri {account}.',
+    'investor.notices.wallet.withdrawal_returned.title':
+        'Ibyabikujwe byagarutse',
+    'investor.notices.wallet.withdrawal_returned.body':
+        'Kohereza {amount} kuri {account} ntibyakunze. Byagarutse mu gikapu cyawe.',
     'investor.notices.primary.refunded.title': 'Amafaranga yawe yagarutse',
     'investor.notices.primary.refunded.body':
         'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',

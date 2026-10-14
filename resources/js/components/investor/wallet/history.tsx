@@ -13,6 +13,7 @@ import type {
     CheckoutHold,
     DepositIntent,
     WalletEntry,
+    WalletWithdrawal,
 } from '@/types/investor';
 import type { ProviderOutcomeState, Receipt } from '@/types/settlement';
 
@@ -29,6 +30,11 @@ const ENTRY_ICON: Record<
     { icon: IconName; tint: string; tone: IconTone }
 > = {
     deposit: { icon: 'money-out', tint: 'bg-rz-accent-soft', tone: 'blue' },
+    withdrawal: {
+        icon: 'bank',
+        tint: 'bg-[rgba(194,102,31,.10)]',
+        tone: 'amber',
+    },
     hold: {
         icon: 'hourglass',
         tint: 'bg-[rgba(194,102,31,.10)]',
@@ -205,12 +211,79 @@ export function DepositIntents({ deposits }: { deposits: DepositIntent[] }) {
     );
 }
 
+/**
+ * Recorded withdrawals: each left the available balance when it was recorded, and reads "on its
+ * way" until the provider's verified outcome pays it out or returns it (H15: no provider reference).
+ */
+export function WithdrawalList({
+    withdrawals,
+}: {
+    withdrawals: WalletWithdrawal[];
+}) {
+    const { t, locale } = useTranslation();
+
+    if (withdrawals.length === 0) {
+        return null;
+    }
+
+    return (
+        <section
+            aria-label={t('investor.wallet.c3.withdrawals')}
+            className="mt-4"
+        >
+            <h2 className="text-sm font-semibold text-rz-ink">
+                {t('investor.wallet.c3.withdrawals')}
+            </h2>
+            <ul className="mt-2 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                {withdrawals.map((withdrawal) => (
+                    <li
+                        key={withdrawal.id}
+                        className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider"
+                    >
+                        <Link
+                            href={withdrawal.link}
+                            preserveScroll
+                            className="flex items-center gap-[11px] px-[13px] py-3"
+                        >
+                            <EntryTile kind="withdrawal" />
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
+                                    {t('investor.wallet.c3.withdrawal_to', {
+                                        method: withdrawal.method.label,
+                                    })}
+                                </span>
+                                <span className="mt-px block text-[11px] text-rz-secondary">
+                                    {formatDate(withdrawal.created_at, locale)}{' '}
+                                    ·{' '}
+                                    <span
+                                        className={cn(
+                                            'font-semibold',
+                                            INTENT_TONE[withdrawal.state],
+                                        )}
+                                    >
+                                        {t(
+                                            `investor.wallet.c3.withdrawal.${withdrawal.state}`,
+                                        )}
+                                    </span>
+                                </span>
+                            </span>
+                            <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">
+                                {formatRwf(withdrawal.amount)}
+                            </span>
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
 function entryLabel(
     t: ReturnType<typeof useTranslation>['t'],
     entry: WalletEntry,
 ): string {
     if (entry.movement === 'external') {
-        return t(`investor.wallet.c3.entry.deposit_${entry.direction}`, {
+        return t(`investor.wallet.c3.entry.${entry.kind}_${entry.direction}`, {
             counterparty: entry.counterparty,
         });
     }
@@ -427,6 +500,10 @@ const isIntent = (
     receipt: NonNullable<C3InvestorWalletProps['receipt']>,
 ): receipt is DepositIntent => 'intent_receipt' in receipt;
 
+const isWithdrawal = (
+    receipt: NonNullable<C3InvestorWalletProps['receipt']>,
+): receipt is WalletWithdrawal => 'request_receipt' in receipt;
+
 /**
  * A receipt (design L4637–4703): the immutable record of what was recorded, with its reference and
  * policy version. A deposit intent shows its recorded intent receipt and, only after a verified
@@ -450,18 +527,55 @@ export function ReceiptSheet({
     ];
 
     const intent = isIntent(receipt) ? receipt : null;
-    const title = intent
-        ? t('investor.wallet.c3.deposit_from', { method: intent.method.label })
-        : entryLabel(t, receipt as WalletEntry);
-    const rows = intent
-        ? [
-              [
-                  t('investor.wallet.receipt.status'),
-                  t(`investor.wallet.c3.intent.${intent.state}`),
-              ] as [string, string],
-              ...recordRows(intent.intent_receipt),
-          ]
-        : recordRows((receipt as WalletEntry & { receipt: Receipt }).receipt);
+    const withdrawal = isWithdrawal(receipt) ? receipt : null;
+    const entry =
+        intent === null && withdrawal === null
+            ? (receipt as WalletEntry & { receipt: Receipt })
+            : null;
+    const title =
+        intent !== null
+            ? t('investor.wallet.c3.deposit_from', {
+                  method: intent.method.label,
+              })
+            : withdrawal !== null
+              ? t('investor.wallet.c3.withdrawal_to', {
+                    method: withdrawal.method.label,
+                })
+              : entryLabel(t, entry as WalletEntry);
+    const rows: [string, string][] =
+        intent !== null
+            ? [
+                  [
+                      t('investor.wallet.receipt.status'),
+                      t(`investor.wallet.c3.intent.${intent.state}`),
+                  ],
+                  ...recordRows(intent.intent_receipt),
+              ]
+            : withdrawal !== null
+              ? [
+                    [
+                        t('investor.wallet.receipt.status'),
+                        t(`investor.wallet.c3.withdrawal.${withdrawal.state}`),
+                    ],
+                    [
+                        t('investor.wallet.c3.provider_charge'),
+                        formatRwf(withdrawal.charge),
+                    ],
+                    [
+                        t('investor.wallet.result.withdraw'),
+                        formatRwf(withdrawal.received),
+                    ],
+                    ...recordRows(withdrawal.request_receipt),
+                ]
+              : recordRows(
+                    (entry as WalletEntry & { receipt: Receipt }).receipt,
+                );
+    const tile: WalletEntry['kind'] =
+        intent !== null
+            ? 'deposit'
+            : withdrawal !== null
+              ? 'withdrawal'
+              : (entry as WalletEntry).kind;
 
     return (
         <LocalSheet
@@ -471,14 +585,7 @@ export function ReceiptSheet({
             className="lg:rounded-2xl"
         >
             <div className="flex shrink-0 items-center gap-[11px] border-b border-[#eef2f9] px-4 pt-3.5 pb-3 dark:border-rz-divider">
-                <EntryTile
-                    kind={
-                        intent === null
-                            ? (receipt as WalletEntry).kind
-                            : 'deposit'
-                    }
-                    large
-                />
+                <EntryTile kind={tile} large />
                 <p className="min-w-0 flex-1 text-sm font-semibold text-rz-ink">
                     {title}
                 </p>
@@ -513,6 +620,30 @@ export function ReceiptSheet({
                             </p>
                             <ReceiptRows
                                 rows={recordRows(intent.credit_receipt)}
+                            />
+                        </>
+                    ))}
+                {withdrawal !== null &&
+                    (withdrawal.settled_receipt === null ? (
+                        <p
+                            role="status"
+                            className="mx-4 mt-2 rounded-xl bg-rz-surface-sunken px-3 py-2.5 text-[11.5px] leading-[1.5] text-rz-secondary"
+                        >
+                            {t('investor.wallet.c3.withdrawal_waiting')}
+                        </p>
+                    ) : (
+                        <>
+                            <p className="mt-2 px-4 text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                                {withdrawal.state === 'succeeded'
+                                    ? t(
+                                          'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID',
+                                      )
+                                    : t(
+                                          'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED',
+                                      )}
+                            </p>
+                            <ReceiptRows
+                                rows={recordRows(withdrawal.settled_receipt)}
                             />
                         </>
                     ))}

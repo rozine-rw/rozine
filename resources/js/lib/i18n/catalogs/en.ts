@@ -3901,6 +3901,8 @@ const en = {
         "This isn't available yet: a required policy hasn't been set.",
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         "That account isn't verified for deposits yet.",
+    'settlement.refusal.WITHDRAWAL_METHOD_UNVERIFIED':
+        'Choose a verified account to withdraw to.',
     'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
         "No borrowing reservation is on record for this application, so it can't be listed.",
     'settlement.refusal.SIGNATURES_REQUIRED':
@@ -4005,6 +4007,29 @@ const en = {
     'investor.wallet.c3.not_credited_failed':
         'The payment was confirmed as not completed. Nothing was credited.',
     'investor.wallet.c3.credit_receipt': 'Credit receipt',
+    'investor.wallet.c3.funding': 'Move money',
+    'investor.wallet.c3.withdraw_unavailable':
+        "Withdrawals aren't available on your account right now.",
+    'investor.wallet.c3.withdraw_available': 'Available to withdraw: {amount}',
+    'investor.wallet.c3.provider_charge': 'Provider charge',
+    'investor.wallet.c3.withdraw_terms':
+        'Withdraw between {minimum} and {maximum} at a time. Terms {version}.',
+    'investor.wallet.c3.withdraw_only_on_success':
+        'The amount leaves your available balance now and is paid out once the provider confirms. If the payout fails, it comes back to your wallet.',
+    'investor.wallet.c3.withdrawals': 'Withdrawals',
+    'investor.wallet.c3.withdrawal_to': 'Withdrawal to {method}',
+    'investor.wallet.c3.withdrawal.pending': 'Sending',
+    'investor.wallet.c3.withdrawal.unknown':
+        "Sending — we're checking with the provider",
+    'investor.wallet.c3.withdrawal.succeeded': 'Paid out',
+    'investor.wallet.c3.withdrawal.failed':
+        "Didn't go through — returned to your wallet",
+    'investor.wallet.c3.withdrawal_waiting':
+        'Held for this withdrawal until the provider confirms. It stays out of your available balance meanwhile.',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID': 'Payout receipt',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED': 'Return receipt',
+    'investor.wallet.c3.entry.withdrawal_in': 'Returned from {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal to {counterparty}',
     'business.publish.intro':
         "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
     'business.publish.release.awaiting':
@@ -4403,6 +4428,12 @@ const en = {
     'investor.notices.wallet.deposit_received.title': 'Deposit received',
     'investor.notices.wallet.deposit_received.body':
         '{amount} is now in your wallet.',
+    'investor.notices.wallet.withdrawal_sent.title': 'Withdrawal sent',
+    'investor.notices.wallet.withdrawal_sent.body':
+        '{amount} was sent to {account}.',
+    'investor.notices.wallet.withdrawal_returned.title': 'Withdrawal returned',
+    'investor.notices.wallet.withdrawal_returned.body':
+        "The payout of {amount} to {account} didn't go through. It's back in your wallet.",
     'investor.notices.primary.refunded.title': 'Raise refunded',
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',

@@ -15,6 +15,7 @@ use App\Application\Wallet\GetBusinessWallet;
 use App\Application\Wallet\GetInvestorWallet;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Application\Wallet\RecordDepositIntent;
+use App\Application\Wallet\RecordWithdrawal;
 use App\Models\BusinessDepositCredit;
 use App\Models\BusinessDepositDispatch;
 use App\Models\BusinessDepositIntent;
@@ -32,6 +33,7 @@ use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositDispatch;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
+use App\Models\WalletWithdrawalEvent;
 use Carbon\Carbon;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Database\QueryException;
@@ -650,7 +652,7 @@ it('refuses UAT deposits from an Investor who is not a named wallet tester, even
     $methods = [];
     foreach ([$onServerList, $namedForMail] as $user) {
         $methods[$user->id] = app(SyntheticWalletFixtures::class)->prepareInvestor((string) $user->party_id)['method_id'];
-        expect(app(GetInvestorWallet::class)->handle($user->id, 1)['allowed_actions'])->toBe(['wallet.deposit']);
+        expect(app(GetInvestorWallet::class)->handle($user->id, 1)['allowed_actions'])->toBe(['wallet.deposit', 'wallet.withdraw']);
     }
 
     asStaging();
@@ -740,3 +742,24 @@ it('refuses a named tester\'s UAT deposit once their Investor role or verificati
     'Investor role revoked' => [fn (Party $party) => RoleMembership::query()->where('party_id', $party->id)->where('role', 'investor')->update(['status' => 'revoked'])],
     'identity no longer verified' => [fn (Party $party) => $party->forceFill(['verified_at' => null])->save()],
 ]);
+
+it('settles UAT withdrawals through their signed outcome: paid to the good number, returned from the declining one', function (): void {
+    asStaging();
+    $tester = stagingTester();
+    app(RecordDepositIntent::class)->handle($tester['user']->id, 1, (string) Str::uuid(), ['currency' => 'RWF', 'amount' => '200000'], $tester['method']->id);
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0);
+
+    foreach ([[$tester['method'], '50000'], [$tester['declining'], '30000']] as [$method, $amount]) {
+        expect(app(RecordWithdrawal::class)->handle($tester['user']->id, 1, (string) Str::uuid(),
+            ['currency' => 'RWF', 'amount' => $amount], $method->id)['status'])->toBe('completed');
+    }
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)->and(Artisan::output())->toContain('Settled 2 synthetic deposits; 0 left for the next run.')
+        ->and(WalletWithdrawalEvent::query()->orderBy('amount')->get()->map->only(['state', 'disposition', 'environment', 'amount'])->all())
+        ->toBe([['state' => 'failed', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '30000'],
+            ['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '50000']])
+        ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1, [])['wallet']['breakdown']['available'])->toBe(['currency' => 'RWF', 'amount' => '150000']);
+
+    app()->terminate();
+    expect(WalletWithdrawalEvent::query()->count())->toBe(2);
+});

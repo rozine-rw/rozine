@@ -22,6 +22,8 @@ class InvestorNoticesResource extends JsonResource
         'verification.approved' => ['investor.deals', []],
         'verification.rejected' => ['investor.verification', []],
         'wallet.deposit_received' => ['investor.wallet', []],
+        'wallet.withdrawal_sent' => ['investor.wallet', []],
+        'wallet.withdrawal_returned' => ['investor.wallet', []],
         'primary.refunded' => ['investor.wallet', []],
         'security.password_changed' => ['investor.profile', ['section' => 'security']],
     ];
