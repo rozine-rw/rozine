@@ -22,6 +22,7 @@ use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\VerifyAuthenticator;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Domain\Disbursement\DisbursementReason;
 use App\Domain\Disbursement\DisbursementState;
 use App\Domain\Disbursement\DisbursementViolation;
@@ -79,7 +80,7 @@ final class EloquentDisbursementStore implements DisbursementStore
     public function __construct(private FundedCampaigns $funding, private PayoutDestinations $destinations, private StaffConnections $connections,
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
         private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation,
-        private IdentityAccessStore $identities) {}
+        private IdentityAccessStore $identities, private FundedPurchaseChanges $purchases) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -303,6 +304,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                 return;
             }
             (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => $sent ? 'sent' : 'unsent', 'created_at' => now('UTC')])->save();
+            $this->purchases->record($disbursement->business_campaign_id);
             $state = $this->state($disbursement);
             if ($state->state === 'queued') {
                 $this->appendEvent($disbursement, $state->revision + 1, 'dispatched', null, null, null, ['sent' => $sent, 'intent_id' => $intent->id]);
@@ -523,6 +525,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => 'queued', 'created_at' => now('UTC')])->save();
         $event = $this->appendEvent($disbursement, $state->revision + 1, 'intent_recorded', $userId, $operationId, $requestId,
             ['reason' => $reason, 'intent_id' => $intent->id, 'recheck' => ['state' => 'passed', 'policy_version' => $recheck->policyVersion]]);
+        $this->purchases->record($disbursement->business_campaign_id);
         $intentId = $intent->id;
         DB::afterCommit(function () use ($intentId): void {
             try {
@@ -646,8 +649,9 @@ final class EloquentDisbursementStore implements DisbursementStore
      *
      * Lock order: this transaction-scoped advisory lock is the LEAF lock of every observation
      * path. It is taken after the disbursement and intent rows (and, for requery, after the
-     * Business and staff locks), and nothing is locked after it: the holder only reads events and
-     * inserts one. A waiter therefore never holds anything the holder needs, so it adds no cycle.
+     * Business and staff locks), and nothing is locked after it but the change feed's per-subject
+     * leaf: the holder only reads events, inserts one and, for an applied one, records the funded
+     * purchases' changes. A waiter therefore never holds anything the holder needs, so it adds no cycle.
      */
     private function lockProviderEventIdentity(string $provider, string $eventId): void
     {
@@ -682,6 +686,9 @@ final class EloquentDisbursementStore implements DisbursementStore
             'observed_at' => $event->observedAt, 'effective_at' => $event->effectiveAt, 'disposition' => $outcome->disposition,
             'mismatches' => $outcome->disposition === 'unverifiable' ? $mismatches : [], 'evidence' => $event->evidence, 'created_at' => now('UTC')]);
         $record->save();
+        if ($outcome->disposition === 'applied') {
+            $this->purchases->record(Disbursement::query()->findOrFail($intent->disbursement_id)->business_campaign_id);
+        }
 
         return $outcome->disposition;
     }

@@ -6,10 +6,12 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\PrimaryFundingCandidate;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\FundingAdmission;
 use App\Models\PrimaryCampaignFunding;
@@ -21,7 +23,8 @@ use RuntimeException;
 
 final class EloquentPrimaryFunding implements PrimaryFunding
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private PrimaryReservations $reservations, private CanonicalJson $json, private CampaignFundingEvidence $fundings) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private PrimaryReservations $reservations, private CanonicalJson $json, private CampaignFundingEvidence $fundings,
+        private ChangeFeed $changes) {}
 
     public function lock(string $campaignId, Closure $admit): array
     {
@@ -65,6 +68,7 @@ final class EloquentPrimaryFunding implements PrimaryFunding
                     'commitment_id' => $purchase['commitment_id'], 'reservation_id' => $purchase['reservation_id'],
                     'commit_entry_id' => $purchase['cash']['commit_entry_id'], 'hold_entry_id' => $purchase['cash']['hold_entry_id'],
                     'wallet_id' => $purchase['cash']['wallet_id'], 'origin_operation_id' => $purchase['cash']['origin_operation_id']]);
+                $this->changes->record(ChangeScope::party($purchase['party_id']), 'purchase', $purchase['reservation_id']);
             }
 
             return $payload;

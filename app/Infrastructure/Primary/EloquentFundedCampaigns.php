@@ -12,11 +12,13 @@ use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Disbursement\DisbursementViolation;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
 use App\Infrastructure\Business\RetainedFundedCampaignFacts;
@@ -40,7 +42,8 @@ final class EloquentFundedCampaigns implements FundedCampaigns
 {
     public function __construct(private RetainedFundedCampaignFacts $facts, private RetainedFundedClosing $closings,
         private CampaignFundingEvidence $fundings, private WalletPostings $wallets, private PrimaryReturnedCash $returned,
-        private CanonicalJson $json, private CampaignClosureEvidence $closures, private RetainedPrimaryIssuance $issuance) {}
+        private CanonicalJson $json, private CampaignClosureEvidence $closures, private RetainedPrimaryIssuance $issuance,
+        private ChangeFeed $changes) {}
 
     public function funded(?string $before, int $limit): array
     {
@@ -158,6 +161,10 @@ final class EloquentFundedCampaigns implements FundedCampaigns
                 DB::table('primary_campaign_closure_returns')->insert(['business_campaign_closure_id' => $record->id, ...$binding]);
             }
             DB::select('SELECT check_primary_campaign_closure_returns(?, false)', [$record->id]);
+            foreach ($payload['cash_returns'] as $binding) {
+                $this->changes->record(ChangeScope::party($binding['party_id']), 'wallet', $binding['wallet_id']);
+                $this->changes->record(ChangeScope::party($binding['party_id']), 'purchase', $binding['primary_reservation_id']);
+            }
         });
     }
 

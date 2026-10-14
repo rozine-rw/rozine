@@ -416,7 +416,8 @@ it('tells the Business its raise expired once, in-app and by e-mail to each mand
             === [$business->profile['name'], (string) $this->campaign->principal, '15000', $url]);
     }
 
-    $this->actingAs($this->owners[0])->getJson(route('business.notices.index', $business->id))->assertOk()->assertJsonPath('data.unread', 1)
+    // The approved application and its sealed audit report left their own unread notices earlier.
+    $this->actingAs($this->owners[0])->getJson(route('business.notices.index', $business->id))->assertOk()->assertJsonPath('data.unread', 3)
         ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')
         ->assertJsonPath('data.notices.0.link', ['url' => "/business/{$business->id}/campaigns/{$this->campaign->id}", 'method' => 'get']);
 });
