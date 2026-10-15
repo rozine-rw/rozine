@@ -62,6 +62,7 @@ use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
+use App\Http\Controllers\StaffSystemHealthController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -313,6 +314,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
     Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
+    Route::get('admin/system-health', StaffSystemHealthController::class)->name('staff.system-health.index');
     Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');
 });
 

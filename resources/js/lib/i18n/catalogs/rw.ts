@@ -865,7 +865,8 @@ const rw: Catalog = {
     'admin.section.system_health.title': 'Ubuzima bwa sisitemu',
     'admin.section.system_health.subtitle':
         "Kugenzura ibimenyetso by'urusobe, hamwe n'inama",
-    'admin.section.system_health.search': 'Shakisha serivisi…',
+    'admin.section.system_health.search':
+        'Shakisha ikimenyetso ukoresheje izina cyangwa uko gihagaze…',
     'admin.nav.engines': 'Moteri',
     'admin.section.engines.title': 'Moteri',
     'admin.section.engines.subtitle':
@@ -5584,6 +5585,72 @@ const rw: Catalog = {
     'admin.section.complaints.search':
         'Shakisha ukoresheje nimero cyangwa umukiriya…',
     'admin.kyc.complaints_link': 'Ibirego',
+    'admin.health.status.critical': 'Bikomeye',
+    'admin.health.status.watch': 'Gukurikiranwa',
+    'admin.health.status.healthy': 'Ni byiza',
+    'admin.health.status.untracked': 'Ntibikurikiranwa',
+    'admin.health.overall.critical': 'Hakenewe ubutabazi',
+    'admin.health.overall.watch': 'Birakora ariko hari ibyo kwitondera',
+    'admin.health.overall.healthy': 'Sisitemu zose ni nzima',
+    'admin.health.overall.critical.sub':
+        '{critical} bikomeye, {watch} byo gukurikiranwa',
+    'admin.health.overall.watch.sub': {
+        one: 'Ikimenyetso {count} gikeneye kurebwa',
+        other: 'Ibimenyetso {count} bikeneye kurebwa',
+    },
+    'admin.health.overall.healthy.sub':
+        'Buri kimenyetso gikurikiranwa kiri mu rugero',
+    'admin.health.not_tracked': 'Ntibirakurikiranwa',
+    'admin.health.ledger.label': 'Ubuziranenge bw’igitabo cy’imari',
+    'admin.health.ledger.value.healthy': 'Biringaniye',
+    'admin.health.ledger.value.critical': 'Ntibiringaniye',
+    'admin.health.ledger.value.watch': {
+        one: 'Ikinyuranyo {count} gifunguye',
+        other: 'Ibinyuranyo {count} bifunguye',
+    },
+    'admin.health.ledger.detail': {
+        one: 'Konti {count} y’utanga serivisi yahujwe',
+        other: 'Konti {count} z’utanga serivisi zahujwe',
+    },
+    'admin.health.ledger.rec.healthy':
+        'Ihererekanya ryose rirahuye. Nta gukosora intoki bikenewe.',
+    'admin.health.ledger.rec.watch':
+        'Hari igisubizo cy’utanga serivisi igitabo kitabashije gukurikira. Kirebe muri Guhuza konti.',
+    'admin.health.ledger.rec.critical':
+        'Konti y’ihererekanya ntigihura n’utanga serivisi. Yirebe muri Guhuza konti.',
+    'admin.health.ledger.action': 'Fungura Guhuza konti',
+    'admin.health.capital.label': 'Imari iri mu nzira',
+    'admin.health.capital.detail': {
+        one: 'Ukusanya {count} kuri gukorwa cyangwa gutegereje kwishyurwa',
+        other: 'Ukusanya {count} kuri gukorwa cyangwa gutegereje kwishyurwa',
+    },
+    'admin.health.capital.rec':
+        'Amafaranga arimo aragenda. Komeza umurongo wo kwishyura ube usukuye.',
+    'admin.health.queue.label': 'Umurongo w’isuzuma',
+    'admin.health.queue.detail': 'ubusabe butegereje gusuzumwa',
+    'admin.health.queue.rec.watch':
+        'Ubusabe buri kwiyongera. Shyiraho umusesenguzi.',
+    'admin.health.queue.rec.healthy': 'Umurongo nta busabe burimo.',
+    'admin.health.queue.action': 'Fungura umurongo',
+    'admin.health.events.label': 'Ibikorwa byanditswe',
+    'admin.health.events.value': '{count}/isaha',
+    'admin.health.events.detail': {
+        one: 'Igikorwa {count} cyanditswe muri rusange',
+        other: 'Ibikorwa {count} byanditswe muri rusange',
+    },
+    'admin.health.events.rec.healthy':
+        'Ibikorwa birimo kwandikwa no gukwirakwizwa.',
+    'admin.health.events.rec.watch': 'Nta gikorwa cyanditswe mu isaha ishize.',
+    'admin.health.default_rate.label': 'Igipimo cyo kunanirwa kwishyura',
+    'admin.health.default_rate.detail': 'Bizatangira kwishyura nibitangira',
+    'admin.health.arrears.label': 'Igipimo cy’ibirarane',
+    'admin.health.arrears.detail': 'Bizatangira kwishyura nibitangira',
+    'admin.health.outstanding.label': 'Ibisigaye kwishyurwa',
+    'admin.health.outstanding.detail': 'Bizatangira kwishyura nibitangira',
+    'admin.health.treasury.label': 'Uko isanduku ihagaze',
+    'admin.health.treasury.detail': 'Nta mafaranga y’isanduku arandikwa',
+    'admin.health.frozen.label': 'Konti zahagaritswe',
+    'admin.health.frozen.detail': 'Guhagarika konti ntibiraboneka',
     'admin.complaints.title': 'Ibirego',
     'admin.complaints.caption':
         'Emeza ko cyakiriwe mu masaha 4 ugikemure mu masaha 48, cyangwa ubwire umukiriya impamvu n’igihe (BRS CMP-R03).',

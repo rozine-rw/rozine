@@ -99,6 +99,7 @@
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffSystemHealthController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
         "resources/js/actions/App/index.ts",
@@ -220,6 +221,7 @@
         "resources/js/routes/api/v1/staff/primary-market/index.ts",
         "resources/js/routes/api/v1/staff/reconciliation/index.ts",
         "resources/js/routes/api/v1/staff/staff/index.ts",
+        "resources/js/routes/api/v1/staff/system-health/index.ts",
         "resources/js/routes/appearance/index.ts",
         "resources/js/routes/audit/index.ts",
         "resources/js/routes/audit/seals/index.ts",
@@ -323,6 +325,7 @@
         "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staff/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
+        "resources/js/routes/staff/system-health/index.ts",
         "resources/js/routes/storage/index.ts",
         "resources/js/routes/storage/local/index.ts",
         "resources/js/routes/two-factor/index.ts",
@@ -687,6 +690,7 @@
         "resources/js/pages/admin/reports.tsx",
         "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
+        "resources/js/pages/admin/system-health.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",
@@ -745,10 +749,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 714,
-        "generated": 306,
+        "totalTrackedSources": 718,
+        "generated": 309,
         "declarationOnly": 19,
-        "authoredExecutable": 389
+        "authoredExecutable": 390
     },
-    "coverageSetSha256": "ef7dbd9504da531b3a3f2ec18f9371de894f966a7ed206cc1aa9e1f2196b778c"
+    "coverageSetSha256": "f64ddbbd83cbc3ba179a09ef377145e959fb4c6629ff96690e598e14d6844f02"
 }

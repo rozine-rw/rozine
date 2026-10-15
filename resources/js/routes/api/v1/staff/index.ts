@@ -15,6 +15,7 @@ import primaryMarket from './primary-market'
 import payments from './payments'
 import coverage from './coverage'
 import complaints from './complaints'
+import systemHealth from './system-health'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
@@ -115,6 +116,7 @@ const staffNamespace = {
     payments: Object.assign(payments, payments),
     coverage: Object.assign(coverage, coverage),
     complaints: Object.assign(complaints, complaints),
+    systemHealth: Object.assign(systemHealth, systemHealth),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
 }
 

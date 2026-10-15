@@ -866,7 +866,8 @@ const fr: Catalog = {
     'admin.section.system_health.title': 'État du système',
     'admin.section.system_health.subtitle':
         "Suivi des signaux de l'écosystème, avec recommandations",
-    'admin.section.system_health.search': 'Rechercher un service…',
+    'admin.section.system_health.search':
+        'Rechercher un signal par nom ou statut…',
     'admin.nav.engines': 'Moteurs',
     'admin.section.engines.title': 'Moteurs',
     'admin.section.engines.subtitle':
@@ -5613,6 +5614,78 @@ const fr: Catalog = {
         "Chaque réclamation avec sa référence, ses délais d'accusé de réception de 4 heures et de résolution de 48 heures, et sa conversation.",
     'admin.section.complaints.search': 'Rechercher par référence ou client…',
     'admin.kyc.complaints_link': 'Réclamations',
+    'admin.health.status.critical': 'Critique',
+    'admin.health.status.watch': 'À surveiller',
+    'admin.health.status.healthy': 'Sain',
+    'admin.health.status.untracked': 'Non suivi',
+    'admin.health.overall.critical': 'Intervention requise',
+    'admin.health.overall.watch': 'Fonctionne avec des alertes',
+    'admin.health.overall.healthy': 'Tous les systèmes sont sains',
+    'admin.health.overall.critical.sub':
+        '{critical} critiques, {watch} à surveiller',
+    'admin.health.overall.watch.sub': {
+        one: '{count} signal à examiner',
+        other: '{count} signaux à examiner',
+    },
+    'admin.health.overall.healthy.sub':
+        'Chaque signal suivi est dans la tolérance',
+    'admin.health.not_tracked': 'Pas encore suivi',
+    'admin.health.ledger.label': 'Intégrité du grand livre',
+    'admin.health.ledger.value.healthy': 'Équilibré',
+    'admin.health.ledger.value.critical': 'Déséquilibré',
+    'admin.health.ledger.value.watch': {
+        one: '{count} écart ouvert',
+        other: '{count} écarts ouverts',
+    },
+    'admin.health.ledger.detail': {
+        one: '{count} compte prestataire rapproché',
+        other: '{count} comptes prestataire rapprochés',
+    },
+    'admin.health.ledger.rec.healthy':
+        'Tous les mouvements sont rapprochés. Aucune correction manuelle nécessaire.',
+    'admin.health.ledger.rec.watch':
+        'Un résultat du prestataire que le grand livre n’a pas pu suivre est ouvert. Examinez-le dans le Rapprochement.',
+    'admin.health.ledger.rec.critical':
+        'Un compte de compensation ne correspond plus au prestataire. Examinez-le dans le Rapprochement.',
+    'admin.health.ledger.action': 'Ouvrir le Rapprochement',
+    'admin.health.capital.label': 'Capitaux en transit',
+    'admin.health.capital.detail': {
+        one: '{count} levée en cours ou en attente de décaissement',
+        other: '{count} levées en cours ou en attente de décaissement',
+    },
+    'admin.health.capital.rec':
+        'Les liquidités circulent. Gardez la file des décaissements à jour.',
+    'admin.health.queue.label': 'File de souscription',
+    'admin.health.queue.detail': 'demandes en attente d’examen',
+    'admin.health.queue.rec.watch':
+        'Un retard s’accumule. Affectez un analyste.',
+    'admin.health.queue.rec.healthy': 'La file est vide.',
+    'admin.health.queue.action': 'Ouvrir la file',
+    'admin.health.events.label': 'Débit des événements',
+    'admin.health.events.value': '{count}/h',
+    'admin.health.events.detail': {
+        one: '{count} action enregistrée au total',
+        other: '{count} actions enregistrées au total',
+    },
+    'admin.health.events.rec.healthy':
+        'Les actions sont enregistrées et propagées.',
+    'admin.health.events.rec.watch':
+        'Aucune action enregistrée au cours de la dernière heure.',
+    'admin.health.default_rate.label': 'Taux de défaut',
+    'admin.health.default_rate.detail':
+        'Commence avec le service des remboursements',
+    'admin.health.arrears.label': 'Taux d’arriérés',
+    'admin.health.arrears.detail':
+        'Commence avec le service des remboursements',
+    'admin.health.outstanding.label': 'Remboursements restants',
+    'admin.health.outstanding.detail':
+        'Commence avec le service des remboursements',
+    'admin.health.treasury.label': 'Position de trésorerie',
+    'admin.health.treasury.detail':
+        'Aucun solde de trésorerie n’est encore enregistré',
+    'admin.health.frozen.label': 'Comptes gelés',
+    'admin.health.frozen.detail':
+        'Le gel des comptes n’est pas encore disponible',
     'admin.complaints.title': 'Réclamations',
     'admin.complaints.caption':
         'Accuser réception sous 4 heures et résoudre sous 48, ou dire au client pourquoi et quand (BRS CMP-R03).',

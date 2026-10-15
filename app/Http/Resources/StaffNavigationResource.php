@@ -40,6 +40,7 @@ class StaffNavigationResource extends JsonResource
         'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
         'coverage' => ['permission' => 'audit.partners.verify', 'route' => 'staff.coverage.index'],
         'complaints' => ['permission' => 'complaints.answer', 'route' => 'staff.complaints.index'],
+        'system_health' => ['permission' => 'health.view', 'route' => 'staff.system-health.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */

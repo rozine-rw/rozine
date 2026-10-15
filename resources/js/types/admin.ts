@@ -1673,3 +1673,62 @@ export type AdminMessagingProps = AdminFrameShellProps & {
     /** Back to the newest receipts, sent only on an older page. */
     newest: RouteLink | null;
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: System Health, `staff-system-health-v1`                                             */
+/* ------------------------------------------------------------------------------------------ */
+
+export type StaffSystemHealthPageContract = {
+    contract_version: 'staff-system-health-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type HealthStatus = 'critical' | 'watch' | 'healthy' | 'untracked';
+
+/** Each signal's readings, as the server records them; untracked signals carry none. Only a signal that needs a look links to the page that resolves it. */
+export type HealthSignal =
+    | {
+          key: 'ledger';
+          status: 'critical' | 'watch' | 'healthy';
+          facts: { accounts: number; unmatched: number; breaks: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'capital';
+          status: 'healthy';
+          facts: { amount: string; raises: number };
+          action: null;
+      }
+    | {
+          key: 'queue';
+          status: 'watch' | 'healthy';
+          facts: { pending: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'events';
+          status: 'watch' | 'healthy';
+          facts: { last_hour: number; total: number };
+          action: null;
+      }
+    | {
+          key:
+              | 'default_rate'
+              | 'arrears'
+              | 'outstanding'
+              | 'treasury'
+              | 'frozen';
+          status: 'untracked';
+          facts: never[];
+          action: null;
+      };
+
+export type AdminSystemHealthProps = AdminFrameShellProps &
+    StaffSystemHealthPageContract & {
+        /** How many tracked signals are critical or on watch. */
+        overall: { critical: number; watch: number };
+        /** Worst first: critical, watch, healthy, then the untracked signals. */
+        signals: HealthSignal[];
+    };

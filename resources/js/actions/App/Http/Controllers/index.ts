@@ -31,6 +31,7 @@ import StaffPrimaryMarketController from './StaffPrimaryMarketController'
 import StaffPaymentsController from './StaffPaymentsController'
 import StaffCoverageController from './StaffCoverageController'
 import StaffComplaintController from './StaffComplaintController'
+import StaffSystemHealthController from './StaffSystemHealthController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
@@ -94,6 +95,7 @@ const Controllers = {
     StaffPaymentsController: Object.assign(StaffPaymentsController, StaffPaymentsController),
     StaffCoverageController: Object.assign(StaffCoverageController, StaffCoverageController),
     StaffComplaintController: Object.assign(StaffComplaintController, StaffComplaintController),
+    StaffSystemHealthController: Object.assign(StaffSystemHealthController, StaffSystemHealthController),
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),

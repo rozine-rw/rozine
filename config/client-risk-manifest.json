@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "21b988ac4b7e53e3d72b5028143c257927ecd75ec9b35cd0a0920ec0f56b1cf9",
-    "coverageSetSha256": "ef7dbd9504da531b3a3f2ec18f9371de894f966a7ed206cc1aa9e1f2196b778c",
+    "coverageSetSha256": "f64ddbbd83cbc3ba179a09ef377145e959fb4c6629ff96690e598e14d6844f02",
     "thresholds": {
         "critical": {
             "global": {
@@ -381,6 +381,7 @@
         "resources/js/pages/admin/reports.tsx",
         "resources/js/pages/admin/section.tsx",
         "resources/js/pages/admin/staging-mail-testers.tsx",
+        "resources/js/pages/admin/system-health.tsx",
         "resources/js/pages/admin/today.tsx",
         "resources/js/pages/audit/verify-seal.tsx",
         "resources/js/pages/auditor/audit.tsx",

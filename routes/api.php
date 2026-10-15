@@ -46,6 +46,7 @@ use App\Http\Controllers\StaffMessagingController;
 use App\Http\Controllers\StaffPaymentsController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
+use App\Http\Controllers\StaffSystemHealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -252,6 +253,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/payments', StaffPaymentsController::class)->name('api.v1.staff.payments.index');
     Route::get('v1/staff/coverage', StaffCoverageController::class)->name('api.v1.staff.coverage.index');
     Route::get('v1/staff/complaints', [StaffComplaintController::class, 'index'])->name('api.v1.staff.complaints.index');
+    Route::get('v1/staff/system-health', StaffSystemHealthController::class)->name('api.v1.staff.system-health.index');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {

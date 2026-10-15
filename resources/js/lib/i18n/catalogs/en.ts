@@ -830,7 +830,7 @@ const en = {
     'admin.section.system_health.title': 'System Health',
     'admin.section.system_health.subtitle':
         'Signal monitoring across the ecosystem, with recommendations',
-    'admin.section.system_health.search': 'Search services…',
+    'admin.section.system_health.search': 'Search signals by name or status…',
     'admin.nav.engines': 'Engines',
     'admin.section.engines.title': 'Engines',
     'admin.section.engines.subtitle':
@@ -5418,6 +5418,73 @@ const en = {
         'Every complaint with its reference, its 4-hour acknowledgement and 48-hour resolution clocks, and its conversation.',
     'admin.section.complaints.search': 'Search by reference or customer…',
     'admin.kyc.complaints_link': 'Complaints',
+    'admin.health.status.critical': 'Critical',
+    'admin.health.status.watch': 'Watch',
+    'admin.health.status.healthy': 'Healthy',
+    'admin.health.status.untracked': 'Not tracked',
+    'admin.health.overall.critical': 'Attention required',
+    'admin.health.overall.watch': 'Operating with warnings',
+    'admin.health.overall.healthy': 'All systems healthy',
+    'admin.health.overall.critical.sub':
+        '{critical} critical, {watch} watch signals',
+    'admin.health.overall.watch.sub': {
+        one: '{count} signal needs a look',
+        other: '{count} signals need a look',
+    },
+    'admin.health.overall.healthy.sub':
+        'Every tracked signal is within tolerance',
+    'admin.health.not_tracked': 'Not tracked yet',
+    'admin.health.ledger.label': 'Ledger integrity',
+    'admin.health.ledger.value.healthy': 'Balanced',
+    'admin.health.ledger.value.critical': 'Out of balance',
+    'admin.health.ledger.value.watch': {
+        one: '{count} open break',
+        other: '{count} open breaks',
+    },
+    'admin.health.ledger.detail': {
+        one: '{count} provider account reconciled',
+        other: '{count} provider accounts reconciled',
+    },
+    'admin.health.ledger.rec.healthy':
+        'All movements reconcile. No manual correction needed.',
+    'admin.health.ledger.rec.watch':
+        'A provider outcome the ledger could not follow is open. Review it in Reconciliation.',
+    'admin.health.ledger.rec.critical':
+        'A clearing account no longer matches the provider. Review it in Reconciliation.',
+    'admin.health.ledger.action': 'Open Reconciliation',
+    'admin.health.capital.label': 'Capital in flight',
+    'admin.health.capital.detail': {
+        one: '{count} raise filling or awaiting disbursement',
+        other: '{count} raises filling or awaiting disbursement',
+    },
+    'admin.health.capital.rec':
+        'Liquidity is flowing. Keep the disbursement queue clear.',
+    'admin.health.queue.label': 'Underwriting queue',
+    'admin.health.queue.detail': 'applications awaiting review',
+    'admin.health.queue.rec.watch':
+        'A backlog is building. Assign an underwriter.',
+    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.action': 'Open the queue',
+    'admin.health.events.label': 'Event throughput',
+    'admin.health.events.value': '{count}/h',
+    'admin.health.events.detail': {
+        one: '{count} action recorded in total',
+        other: '{count} actions recorded in total',
+    },
+    'admin.health.events.rec.healthy':
+        'Actions are being recorded and propagated.',
+    'admin.health.events.rec.watch':
+        'No actions were recorded in the last hour.',
+    'admin.health.default_rate.label': 'Default rate',
+    'admin.health.default_rate.detail': 'Starts when repayments are serviced',
+    'admin.health.arrears.label': 'Arrears ratio',
+    'admin.health.arrears.detail': 'Starts when repayments are serviced',
+    'admin.health.outstanding.label': 'Outstanding repayments',
+    'admin.health.outstanding.detail': 'Starts when repayments are serviced',
+    'admin.health.treasury.label': 'Treasury position',
+    'admin.health.treasury.detail': 'No treasury balance is recorded yet',
+    'admin.health.frozen.label': 'Frozen accounts',
+    'admin.health.frozen.detail': 'Account freezes are not available yet',
     'admin.complaints.title': 'Complaints',
     'admin.complaints.caption':
         'Acknowledge within 4 hours and resolve within 48, or tell the customer why and when (BRS CMP-R03).',
