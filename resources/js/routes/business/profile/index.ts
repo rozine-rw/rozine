@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessContactController::company
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 export const company = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ company.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::company
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 company.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ company.url = (args: { business: string | number } | [business: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::company
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 company.put = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -53,7 +53,7 @@ company.put = (args: { business: string | number } | [business: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::company
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 const companyForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -68,7 +68,7 @@ const companyForm = (args: { business: string | number } | [business: string | n
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::company
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 companyForm.put = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

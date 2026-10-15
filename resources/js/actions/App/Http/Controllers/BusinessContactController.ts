@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessContactController::update
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 export const update = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -16,7 +16,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::update
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 update.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ update.url = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::update
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 update.put = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -53,7 +53,7 @@ update.put = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::update
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 const updateForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -68,7 +68,7 @@ const updateForm = (args: { business: string | number } | [business: string | nu
 
 /**
 * @see \App\Http\Controllers\BusinessContactController::update
-* @see app/Http/Controllers/BusinessContactController.php:27
+* @see app/Http/Controllers/BusinessContactController.php:25
 * @route '/business/{business}/profile/company'
 */
 updateForm.put = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
