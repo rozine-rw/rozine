@@ -1200,7 +1200,8 @@ export type AdminBookProps = AdminFrameShellProps &
         pagination: Pagination;
     };
 
-export type ExceptionKind = 'arrears' | 'halt' | 'variance';
+/** `audit` is a Flash Audit unfinished after its 24-hour clock (BRS AUD-R07). */
+export type ExceptionKind = 'arrears' | 'halt' | 'variance' | 'audit';
 
 /** A server-counted filter over the open exceptions; `all` is every open one. */
 export type ExceptionChip = {
@@ -1219,8 +1220,8 @@ export type ExceptionItem = {
     kind: ExceptionKind;
     reference: string;
     /**
-     * What the exception is about; an account subject (a statement variance) and an Investor
-     * subject (a halt on their account) have no note.
+     * What the exception is about; an account subject (a statement variance), an Investor
+     * subject (a halt on their account) and a Business subject of an overdue audit have no note.
      */
     subject: { kind: 'business' | 'account' | 'investor'; label: string };
     note_title: string | null;

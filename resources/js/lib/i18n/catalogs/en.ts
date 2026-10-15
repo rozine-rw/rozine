@@ -5204,6 +5204,7 @@ const en = {
     'admin.exceptions.kind.arrears': 'Arrears',
     'admin.exceptions.kind.halt': 'Halt',
     'admin.exceptions.kind.variance': 'Variance',
+    'admin.exceptions.kind.audit': 'Overdue audit',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
     'admin.exceptions.col.subject': 'Exception',

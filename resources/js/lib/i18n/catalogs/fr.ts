@@ -5396,6 +5396,7 @@ const fr: Catalog = {
     'admin.exceptions.kind.arrears': 'Arriérés',
     'admin.exceptions.kind.halt': 'Suspension',
     'admin.exceptions.kind.variance': 'Écart',
+    'admin.exceptions.kind.audit': 'Audit en retard',
     'admin.exceptions.col.reference': 'Référence',
     'admin.exceptions.col.kind': 'Type',
     'admin.exceptions.col.subject': 'Exception',

@@ -30,6 +30,7 @@ const KIND_TONE: Record<ExceptionKind, Tone> = {
     arrears: 'red',
     halt: 'purple',
     variance: 'amber',
+    audit: 'blue',
 };
 
 function Row({ item }: { item: ExceptionItem }) {

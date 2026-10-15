@@ -5365,6 +5365,7 @@ const rw: Catalog = {
     'admin.exceptions.kind.arrears': 'Ibirarane',
     'admin.exceptions.kind.halt': 'Byahagaritswe',
     'admin.exceptions.kind.variance': 'Ikinyuranyo',
+    'admin.exceptions.kind.audit': 'Igenzura ryatinze',
     'admin.exceptions.col.reference': 'Indango',
     'admin.exceptions.col.kind': 'Ubwoko',
     'admin.exceptions.col.subject': 'Ikidasanzwe',

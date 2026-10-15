@@ -226,4 +226,50 @@ describe('Exceptions', () => {
             within(rowOf('HLD-00ABCD')).queryByRole('link'),
         ).not.toBeInTheDocument();
     });
+    it('shows a Flash Audit unfinished after 24 hours as an overdue audit on its Business, with its own filter', () => {
+        const page = props(exceptionsFixture);
+
+        page.chips = [
+            ...page.chips.map((chip) => ({ ...chip, active: false })),
+            {
+                key: 'audit',
+                count: 1,
+                link: { url: '/admin/exceptions?kind=audit', method: 'get' },
+                active: true,
+            },
+        ];
+        page.exceptions = [
+            {
+                ...page.exceptions[0],
+                id: 'aud',
+                kind: 'audit',
+                reference: 'AUD-00ABCD',
+                subject: { kind: 'business', label: 'Sebeya Logistics' },
+                note_title: null,
+                description:
+                    'Flash audit unfinished after 24 hours: offered to a partner, not yet accepted',
+                amount: null,
+                dpd: null,
+                owner: null,
+                link: {
+                    url: '/admin/businesses?business=01k0',
+                    method: 'get',
+                },
+            },
+        ];
+        render(<AdminExceptions {...page} />);
+
+        const row = rowOf('AUD-00ABCD');
+
+        expect(row).toHaveTextContent('Overdue audit');
+        expect(row).toHaveTextContent('Sebeya Logistics');
+        expect(row).toHaveTextContent(
+            'Flash audit unfinished after 24 hours: offered to a partner, not yet accepted',
+        );
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Filter by kind' }),
+            ).getByRole('link', { name: /Overdue audit/ }),
+        ).toHaveAttribute('href', '/admin/exceptions?kind=audit');
+    });
 });
