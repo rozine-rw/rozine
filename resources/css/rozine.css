@@ -499,3 +499,19 @@
         transform: translateY(0) scale(1);
     }
 }
+
+/*
+ * WCAG 2.2 SC 2.3.3: a person who asks their system for reduced motion gets none of the app's
+ * entrances, spinners, pulses or transitions. Every page loads this stylesheet through app.css, so
+ * the rule also covers the Pulse and Auditor keyframes.
+ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
