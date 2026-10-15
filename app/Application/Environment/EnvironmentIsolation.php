@@ -94,6 +94,16 @@ class EnvironmentIsolation
             throw new LogicException('ISOLATION_DEMO_FLAGS_DENIED');
         }
 
+        $uatSeedEnabled = $this->config->get('isolation.uat_seed_enabled');
+
+        if (! is_bool($uatSeedEnabled)) {
+            throw new LogicException('ISOLATION_FLAGS_MUST_BE_BOOLEAN');
+        }
+
+        if ($uatSeedEnabled && $profile !== 'uat') {
+            throw new LogicException('ISOLATION_UAT_SEED_DENIED');
+        }
+
         if ($this->config->get('isolation.live_money_enabled') !== false) {
             throw new LogicException('ISOLATION_LIVE_MONEY_NOT_ACTIVATED');
         }
@@ -229,13 +239,20 @@ class EnvironmentIsolation
         $this->assertSafeConfiguration();
 
         return in_array($this->profile(), ['local', 'testing'], true)
-            || ($this->profile() === 'demo' && $this->config->get('isolation.demo_enabled') === true);
+            || ($this->profile() === 'demo' && $this->config->get('isolation.demo_enabled') === true)
+            || ($this->profile() === 'uat' && $this->config->get('isolation.uat_seed_enabled') === true);
     }
 
+    /**
+     * Staging seeding is additive only: its switch never allows a wipe, refresh or rollback.
+     */
     public function canReset(): bool
     {
-        return $this->canSeed() && ($this->profile() !== 'demo'
-            || $this->config->get('isolation.demo_reset_enabled') === true);
+        return $this->canSeed() && match ($this->profile()) {
+            'demo' => $this->config->get('isolation.demo_reset_enabled') === true,
+            'uat' => false,
+            default => true,
+        };
     }
 
     public function assertSeedingAllowed(): void
