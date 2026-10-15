@@ -6,8 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\SaveBusinessContact;
 use App\Application\Identity\AuthorizeActiveRole;
-use App\Domain\Business\BusinessContact;
-use App\Domain\Operations\CommandRejection;
 use App\Http\Requests\Business\SaveBusinessContactRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
@@ -29,11 +27,8 @@ class BusinessContactController extends Controller
         $userId = (int) $request->user()?->getAuthIdentifier();
         $business = (string) $request->route('business');
         $revision = (int) ($request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision']);
-        try {
-            $result = $action->handle($userId, $revision, $business, (string) $request->validated('request_id'), $request->safe()->only(BusinessContact::FIELDS));
-        } catch (CommandRejection $rejection) {
-            $result = ['status' => 'rejected', 'code' => $rejection->reason, 'field_errors' => $rejection->fieldErrors];
-        }
+        $result = $action->handle($userId, $revision, $business, (string) $request->validated('request_id'),
+            $request->safe()->only(['email', 'phone', 'province', 'district', 'sector', 'cell', 'street']));
         if ($result['status'] !== 'completed') {
             /** @var array<string, list<string>> $fields */
             $fields = $result['field_errors'];
