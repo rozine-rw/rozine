@@ -110,6 +110,9 @@ describe('BusinessPanel', () => {
 
         render(<BusinessPanel {...props} idle />);
 
+        expect(
+            screen.getByRole('textbox', { name: 'Name of business' }),
+        ).toBeInTheDocument();
         fireEvent.change(screen.getByPlaceholderText('e.g. GreenLeaf Agro'), {
             target: { value: 'New Co' },
         });
