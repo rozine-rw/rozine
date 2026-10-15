@@ -561,6 +561,12 @@ describe('Profile', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
         await user.click(
+            screen.getByRole('button', { name: /Where is my money held\?/u }),
+        );
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(
             screen.getByRole('button', {
                 name: /Will a sale be guaranteed\?/u,
             }),
