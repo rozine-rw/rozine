@@ -73,7 +73,7 @@ it('lists every halt in force and every open variance, oldest first, with what i
         ->and(array_map(fn (array $chip): array => [$chip['key'], $chip['count'], $chip['link']['url'], $chip['active']], $props['chips']))->toBe([
             ['all', 3, '/admin/exceptions', true], ['arrears', 0, '/admin/exceptions?kind=arrears', false],
             ['halt', 2, '/admin/exceptions?kind=halt', false], ['variance', 1, '/admin/exceptions?kind=variance', false],
-            ['audit', 0, '/admin/exceptions?kind=audit', false],
+            ['audit', 0, '/admin/exceptions?kind=audit', false], ['complaint', 0, '/admin/exceptions?kind=complaint', false],
         ])
         ->and($props['exceptions'][0])->toEqual(['id' => $hold->id, 'kind' => 'halt', 'reference' => 'HLD-'.Str::upper(Str::substr($hold->id, -6)),
             'subject' => ['kind' => 'investor', 'label' => 'Aline Uwase'], ...$common,
@@ -99,7 +99,7 @@ it('filters by kind, searches, and opens the rest on request', function (): void
 
     $halts = ($this->page)($staff, ['kind' => 'halt']);
     expect(array_column($halts['exceptions'], 'kind'))->toBe(['halt', 'halt'])
-        ->and(array_column($halts['chips'], 'active'))->toBe([false, false, true, false, false])
+        ->and(array_column($halts['chips'], 'active'))->toBe([false, false, true, false, false, false])
         ->and($halts['counts']['open'])->toBe(3);
 
     $search = ($this->page)($staff, ['q' => 'aline', 'kind' => 'variance']);
@@ -107,6 +107,7 @@ it('filters by kind, searches, and opens the rest on request', function (): void
         ->and(array_map(fn (array $chip): array => [$chip['count'], $chip['link']['url']], $search['chips']))->toBe([
             [1, '/admin/exceptions?q=aline'], [0, '/admin/exceptions?q=aline&kind=arrears'],
             [1, '/admin/exceptions?q=aline&kind=halt'], [0, '/admin/exceptions?q=aline&kind=variance'], [0, '/admin/exceptions?q=aline&kind=audit'],
+            [0, '/admin/exceptions?q=aline&kind=complaint'],
         ]);
 
     $first = ($this->page)($staff, ['limit' => 1]);
@@ -157,7 +158,7 @@ it('names the partner of an accepted Flash Audit left unsealed, and drops it onc
 });
 
 it('names a case it does not know plainly, and shows an empty list before anything is open', function (): void {
-    $props = (new StaffExceptionsResource(['variances' => [], 'audits' => [], 'halts' => [['id' => '01k0000000000000000000abcd', 'party_id' => '01k0000000000000000000abce',
+    $props = (new StaffExceptionsResource(['variances' => [], 'audits' => [], 'complaints' => [], 'halts' => [['id' => '01k0000000000000000000abcd', 'party_id' => '01k0000000000000000000abce',
         'name' => 'Aline Uwase', 'cause' => 'court_freeze', 'scope' => ['future_scope'], 'effective_at' => '2027-01-22T08:00:00+02:00', 'expires_at' => null,
         'age_days' => 1]], 'search' => '', 'kind' => null, 'limit' => 50, 'roles' => ['treasury'], 'permissions' => ['exceptions.view']]))->resolve(request());
 

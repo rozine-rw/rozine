@@ -19,8 +19,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * account can be verified, the section offers the link form with its banks and an unlink action
  * on each account; elsewhere neither is offered. Statements lists a monthly wallet
  * statement for each month with wallet activity, opening the wallet statement PDF for that month; a
- * month not yet over is marked open. There is no annual summary yet. Rozine Plus, the help center, the terms and the privacy note
- * have no approved content yet and show their empty state. The verification link opens the
+ * month not yet over is marked open. There is no annual summary yet. Rozine Plus, the help center's
+ * answers, the terms and the privacy note have no approved content yet and show their empty state. The
+ * help center's support chat is real: it lists the Investor's complaints with their reference, clocks and
+ * conversation (BRS v2.0 CMP-R03), offers a reply on each one not yet resolved, and opens a new one. The verification link opens the
  * verification flow, or the verified page once the identity is verified.
  */
 class InvestorProfileResource extends JsonResource
@@ -28,7 +30,7 @@ class InvestorProfileResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, login_alerts: bool, statement_months: list<string>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
+        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, login_alerts: bool, statement_months: list<string>, complaints: list<array{id: string, reference: string, status: string, opened_at: string, acknowledge_by: string, resolve_by: string, messages: list<array<string, mixed>>}>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
         $data = $this->resource;
         $verified = $data['kyc'] === 'verified';
         $profile = fn (array $query = []): array => self::link('investor.profile', $query);
@@ -42,6 +44,9 @@ class InvestorProfileResource extends JsonResource
                 'update_login_alerts' => ['url' => route('login-alerts.update', [], false), 'method' => 'put']],
             'linked' => ['accounts' => array_map(fn (array $method): array => [...$method, 'verified' => true, 'unlink' => $data['linkable']
                 ? ['url' => route('investor.profile.unlink', ['method' => $method['id']], false), 'method' => 'post'] : null], $data['methods']), 'banks' => $data['banks']],
+            'support' => ['open' => ['url' => route('investor.complaints.store', [], false), 'method' => 'post'],
+                'complaints' => array_map(fn (array $complaint): array => [...$complaint, 'reply' => $complaint['status'] === 'resolved' ? null
+                    : ['url' => route('investor.complaints.reply', ['complaint' => $complaint['id']], false), 'method' => 'post']], $data['complaints'])],
             'statements' => ['annual' => null, 'monthly' => array_map(fn (string $month): array => self::monthly($month), $data['statement_months'])],
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => self::link('investor.portfolio'), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => $profile(),
                 'wallet' => $verified ? self::link('investor.wallet') : null, 'notifications' => null, 'launcher' => self::link('dashboard'),

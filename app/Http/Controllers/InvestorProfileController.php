@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Identity\ListInvestorComplaints;
 use App\Application\Primary\GetInvestorDeals;
 use App\Application\Primary\GetInvestorProfile;
 use App\Application\Wallet\LinkPayoutAccount;
@@ -36,7 +37,7 @@ class InvestorProfileController extends Controller
         'PAYOUT_ACCOUNT_NOT_FOUND' => 'That account is no longer linked.',
     ];
 
-    public function show(ShowProfileRequest $request, GetInvestorProfile $profile): Response
+    public function show(ShowProfileRequest $request, GetInvestorProfile $profile, ListInvestorComplaints $complaints): Response
     {
         $context = $request->validated('identity_context_revision');
         $user = $request->user();
@@ -46,7 +47,8 @@ class InvestorProfileController extends Controller
 
         return Inertia::render('investor/profile', (new InvestorProfileResource([...$facts, 'section' => $request->validated('section') ?? 'overview',
             'name' => (string) $user?->getAttribute('name'), 'email' => (string) $user?->getAttribute('email'), 'member_since' => $joined->toIso8601String(),
-            'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true, 'login_alerts' => $user?->getAttribute('login_alerts') !== false]))->resolve($request));
+            'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true, 'login_alerts' => $user?->getAttribute('login_alerts') !== false,
+            'complaints' => $complaints->handle((int) $user?->getAuthIdentifier())]))->resolve($request));
     }
 
     public function link(LinkPayoutAccountRequest $request, LinkPayoutAccount $action): RedirectResponse

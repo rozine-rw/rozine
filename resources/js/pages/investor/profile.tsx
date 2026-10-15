@@ -11,6 +11,7 @@ import {
     Statements,
     SubHeading,
 } from '@/components/investor/profile/profile-parts';
+import { SupportChat } from '@/components/investor/profile/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import type { InvestorProfileProps } from '@/types/investor';
@@ -72,6 +73,7 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                     sub === 'help' ||
                     sub === 'terms' ||
                     sub === 'privacy') && <PendingContent kind={sub} />}
+                {sub === 'help' && <SupportChat support={props.support} />}
                 {sub === 'linked' && props.linked !== null && (
                     <LinkedAccounts
                         linked={props.linked}

@@ -71,6 +71,13 @@
             ]
         },
         "statements": null,
+        "support": {
+            "open": {
+                "url": "/preview/investor-profile-help",
+                "method": "post"
+            },
+            "complaints": []
+        },
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",

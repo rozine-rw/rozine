@@ -9,7 +9,8 @@ namespace App\Domain\Identity;
  * names the facts it carries; the client words them from its catalogs, and the notice opens the
  * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal
  * an issued Holding, a Business's approved application and its expired raise, and an Audit
- * Partner's accreditation decision and job offers are also e-mailed. A Business's notices belong to its entity Party.
+ * Partner's accreditation decision and job offers are also e-mailed. Rozine's answer to a complaint and its
+ * resolution are in-app only. A Business's notices belong to its entity Party.
  */
 enum PartyNoticeKind: string
 {
@@ -39,6 +40,8 @@ enum PartyNoticeKind: string
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';
     case AuditorAccreditationRenewalDue = 'auditor.accreditation_renewal_due';
+    case ComplaintAnswered = 'support.complaint_answered';
+    case ComplaintResolved = 'support.complaint_resolved';
 
     public function mailed(): bool
     {
@@ -51,7 +54,7 @@ enum PartyNoticeKind: string
      * The category Admin Messaging History files the notice under, after the design's message
      * categories.
      *
-     * @return 'onboarding'|'wallet'|'fundraising'|'portfolio'|'reporting'|'security'|'underwriting'|'payments'|'audits'
+     * @return 'onboarding'|'wallet'|'fundraising'|'portfolio'|'reporting'|'security'|'underwriting'|'payments'|'audits'|'support'
      */
     public function category(): string
     {
@@ -67,6 +70,7 @@ enum PartyNoticeKind: string
             self::BusinessDisbursementSent => 'payments',
             self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
             self::AuditorAccreditationRenewalDue => 'audits',
+            self::ComplaintAnswered, self::ComplaintResolved => 'support',
         };
     }
 }

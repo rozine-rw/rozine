@@ -31,6 +31,7 @@ const KIND_TONE: Record<ExceptionKind, Tone> = {
     halt: 'purple',
     variance: 'amber',
     audit: 'blue',
+    complaint: 'green',
 };
 
 function Row({ item }: { item: ExceptionItem }) {

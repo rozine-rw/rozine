@@ -33,6 +33,7 @@ use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
+use App\Http\Controllers\StaffComplaintController;
 use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
@@ -250,6 +251,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/primary-market', StaffPrimaryMarketController::class)->name('api.v1.staff.primary-market.index');
     Route::get('v1/staff/payments', StaffPaymentsController::class)->name('api.v1.staff.payments.index');
     Route::get('v1/staff/coverage', StaffCoverageController::class)->name('api.v1.staff.coverage.index');
+    Route::get('v1/staff/complaints', [StaffComplaintController::class, 'index'])->name('api.v1.staff.complaints.index');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {

@@ -1071,6 +1071,7 @@ const en = {
     'admin.messaging.category.underwriting': 'Underwriting',
     'admin.messaging.category.payments': 'Payments',
     'admin.messaging.category.audits': 'Audits',
+    'admin.messaging.category.support': 'Support',
     'admin.messaging.category.general': 'General',
     'admin.messaging.no_match': 'No messages match your search.',
     'admin.messaging.older': 'Older messages',
@@ -4480,6 +4481,33 @@ const en = {
         'Accreditation renewal due',
     'investor.notices.auditor.accreditation_renewal_due.body':
         'Licence {licence} expires on {date}. Upload the renewal from your profile to keep taking audit jobs.',
+    'investor.notices.support.complaint_answered.title':
+        'Rozine answered your complaint',
+    'investor.notices.support.complaint_answered.body':
+        'There is a new answer on complaint {reference}. Open the Help center to read it.',
+    'investor.notices.support.complaint_resolved.title': 'Complaint resolved',
+    'investor.notices.support.complaint_resolved.body':
+        'Complaint {reference} is resolved. Open the Help center to read the resolution.',
+    'investor.support.title': 'Rozine Support',
+    'investor.support.open': 'Contact Rozine Support',
+    'investor.support.clocks':
+        'We acknowledge within 4 hours and resolve within 48',
+    'investor.support.reference': 'Reference {reference}',
+    'investor.support.greeting':
+        'Tell us what went wrong. Your message opens a complaint with a reference number. We acknowledge it within 4 hours and resolve it within 48 hours, or tell you why and when.',
+    'investor.support.cma':
+        'You can take a complaint to the Capital Market Authority at any stage.',
+    'investor.support.closed': 'This complaint is resolved.',
+    'investor.support.new': 'New message',
+    'investor.support.message': 'Your message',
+    'investor.support.placeholder': 'Type your message…',
+    'investor.support.send': 'Send',
+    'investor.support.list': 'Your complaints',
+    'investor.support.opened': 'Opened {at}',
+    'investor.support.resolution': 'Resolution · {at}',
+    'investor.support.status.awaiting': 'Awaiting reply',
+    'investor.support.status.answered': 'Answered',
+    'investor.support.status.resolved': 'Resolved',
     'investor.notices.auditor.job_offered.title': 'New audit job',
     'investor.notices.auditor.job_offered.body_flash':
         'Flash audit at {business}, {location}. Accept by {time}.',
@@ -5206,6 +5234,7 @@ const en = {
     'admin.exceptions.kind.halt': 'Halt',
     'admin.exceptions.kind.variance': 'Variance',
     'admin.exceptions.kind.audit': 'Overdue audit',
+    'admin.exceptions.kind.complaint': 'Complaint',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
     'admin.exceptions.col.subject': 'Exception',
@@ -5383,6 +5412,50 @@ const en = {
     'admin.coverage.empty_title': 'No districts reported',
     'admin.coverage.empty_body':
         'Districts appear here once the core tracks Audit Partner coverage.',
+    'admin.nav.complaints': 'Complaints',
+    'admin.section.complaints.title': 'Complaints',
+    'admin.section.complaints.subtitle':
+        'Every complaint with its reference, its 4-hour acknowledgement and 48-hour resolution clocks, and its conversation.',
+    'admin.section.complaints.search': 'Search by reference or customer…',
+    'admin.kyc.complaints_link': 'Complaints',
+    'admin.complaints.title': 'Complaints',
+    'admin.complaints.caption':
+        'Acknowledge within 4 hours and resolve within 48, or tell the customer why and when (BRS CMP-R03).',
+    'admin.complaints.table': 'Complaints',
+    'admin.complaints.stats.unresolved': 'Unresolved',
+    'admin.complaints.stats.awaiting': 'Awaiting acknowledgement',
+    'admin.complaints.stats.late': 'Past a clock',
+    'admin.complaints.col.reference': 'Reference',
+    'admin.complaints.col.status': 'Status',
+    'admin.complaints.col.clock': 'Next clock',
+    'admin.complaints.col.open': 'Conversation',
+    'admin.complaints.status.awaiting': 'Awaiting',
+    'admin.complaints.status.answered': 'Answered',
+    'admin.complaints.status.resolved': 'Resolved',
+    'admin.complaints.late.acknowledge': 'Not acknowledged within 4 hours',
+    'admin.complaints.late.resolve': 'Not resolved within 48 hours',
+    'admin.complaints.role.investor': 'Investor',
+    'admin.complaints.role.business': 'Business',
+    'admin.complaints.acknowledge_by': 'Acknowledge by {time}',
+    'admin.complaints.resolve_by': 'Resolve by {time}',
+    'admin.complaints.done': 'Closed',
+    'admin.complaints.open': 'Open',
+    'admin.complaints.open_named': 'Open complaint {reference}',
+    'admin.complaints.empty_title': 'No complaints',
+    'admin.complaints.empty_body':
+        'A complaint appears here as soon as a customer sends one in the app.',
+    'admin.complaints.drawer': 'Complaint {reference}',
+    'admin.complaints.from.customer': 'Customer · {time}',
+    'admin.complaints.from.staff': 'Rozine · {time}',
+    'admin.complaints.from.resolution': 'Resolution · {time}',
+    'admin.complaints.answer.label': 'Your answer',
+    'admin.complaints.answer.placeholder': 'Write to the customer…',
+    'admin.complaints.answer.resolves': 'This answer resolves the complaint',
+    'admin.complaints.answer.send': 'Send answer',
+    'admin.complaints.answer.hint':
+        'The customer reads this in the app and gets a notice. A resolution closes the complaint.',
+    'admin.complaints.closed':
+        'This complaint is resolved. Nothing more can be added.',
 } as const;
 
 export default en;

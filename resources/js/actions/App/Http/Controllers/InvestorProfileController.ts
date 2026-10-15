@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 export const verified = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ verified.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 verified.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ verified.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 verified.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ verified.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 verified.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ verified.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 const verifiedForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const verifiedForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 verifiedForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ verifiedForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::verified
-* @see app/Http/Controllers/InvestorProfileController.php:78
+* @see app/Http/Controllers/InvestorProfileController.php:80
 * @route '/investor/verified'
 */
 verifiedForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ verified.form = verifiedForm
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::show
-* @see app/Http/Controllers/InvestorProfileController.php:39
+* @see app/Http/Controllers/InvestorProfileController.php:40
 * @route '/investor/profile'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 export const link = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ link.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 link.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ link.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 link.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ link.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 const linkForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const linkForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 linkForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -219,7 +219,7 @@ link.form = linkForm
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 export const unlink = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -234,7 +234,7 @@ unlink.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlink.url = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -261,7 +261,7 @@ unlink.url = (args: { method: string | number } | [method: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlink.post = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -271,7 +271,7 @@ unlink.post = (args: { method: string | number } | [method: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 const unlinkForm = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -281,7 +281,7 @@ const unlinkForm = (args: { method: string | number } | [method: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlinkForm.post = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

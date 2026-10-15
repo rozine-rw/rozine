@@ -686,6 +686,30 @@ export type StatementFile = {
     link: RouteLink;
 };
 
+/** Awaiting Rozine's acknowledgement, answered by staff, or closed by staff's resolution. */
+export type ComplaintStatus = 'awaiting' | 'answered' | 'resolved';
+
+/**
+ * One complaint (BRS v2.0 CMP-R03) with its reference, its 4-hour acknowledgement and 48-hour
+ * resolution clocks and its whole conversation; `reply` is null once it is resolved.
+ */
+export type InvestorComplaint = {
+    id: string;
+    reference: string;
+    status: ComplaintStatus;
+    opened_at: string;
+    acknowledge_by: string;
+    resolve_by: string;
+    messages: {
+        id: string;
+        author: 'customer' | 'staff';
+        body: string;
+        resolves: boolean;
+        at: string;
+    }[];
+    reply: { url: string; method: 'post' } | null;
+};
+
 export type InvestorProfileProps = {
     section: ProfileSection;
     identity: {
@@ -721,6 +745,14 @@ export type InvestorProfileProps = {
         annual: StatementFile | null;
         monthly: StatementFile[];
     } | null;
+    /**
+     * The Help center's support chat (BRS v2.0 CMP-R03): the Investor's complaints, newest first,
+     * and where a first message opens a new one.
+     */
+    support: {
+        open: { url: string; method: 'post' };
+        complaints: InvestorComplaint[];
+    };
     /** A destination with no live route yet is null and its row hidden (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
         deals: RouteLink;
@@ -1464,6 +1496,10 @@ export type InvestorNotice = {
     | {
           kind: 'auditor.accreditation_renewal_due';
           facts: { licence: string; expires_on: string };
+      }
+    | {
+          kind: 'support.complaint_answered' | 'support.complaint_resolved';
+          facts: { reference: string };
       }
     | {
           kind: 'auditor.job_offered';

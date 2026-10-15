@@ -18,7 +18,7 @@ class ListExceptionsRequest extends FormRequest
     /** @return array<string, list<mixed>> */
     public function rules(): array
     {
-        return ['q' => ['sometimes', 'nullable', 'string', 'max:120'], 'kind' => ['sometimes', 'nullable', Rule::in(['arrears', 'halt', 'variance', 'audit'])],
+        return ['q' => ['sometimes', 'nullable', 'string', 'max:120'], 'kind' => ['sometimes', 'nullable', Rule::in(['arrears', 'halt', 'variance', 'audit', 'complaint'])],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:500']];
     }
 }

@@ -1122,6 +1122,7 @@ const rw: Catalog = {
     'admin.messaging.category.underwriting': 'Isesengura',
     'admin.messaging.category.payments': 'Kwishyura',
     'admin.messaging.category.audits': 'Igenzura',
+    'admin.messaging.category.support': 'Ubufasha',
     'admin.messaging.category.general': 'Rusange',
     'admin.messaging.no_match': 'Nta butumwa buhuye n’ibyo washakishije.',
     'admin.messaging.older': 'Ubutumwa bwa kera',
@@ -4664,6 +4665,33 @@ const rw: Catalog = {
         'Igihe cyo kuvugurura uruhushya kirageze',
     'investor.notices.auditor.accreditation_renewal_due.body':
         "Uruhushya {licence} ruzarangira ku wa {date}. Ohereza uruhushya ruvuguruye uhereye kuri porofayili yawe kugira ngo ukomeze kwakira imirimo y'igenzura.",
+    'investor.notices.support.complaint_answered.title':
+        'Rozine yashubije ikirego cyawe',
+    'investor.notices.support.complaint_answered.body':
+        'Hari igisubizo gishya ku kirego {reference}. Fungura ahabonekera ubufasha kugira ngo ugisome.',
+    'investor.notices.support.complaint_resolved.title': 'Ikirego cyakemutse',
+    'investor.notices.support.complaint_resolved.body':
+        'Ikirego {reference} cyakemutse. Fungura ahabonekera ubufasha kugira ngo usome uko cyakemuwe.',
+    'investor.support.title': 'Ubufasha bwa Rozine',
+    'investor.support.open': 'Vugana n’ubufasha bwa Rozine',
+    'investor.support.clocks':
+        'Twemeza ko twakiriye mu masaha 4, tugakemura mu masaha 48',
+    'investor.support.reference': 'Nimero {reference}',
+    'investor.support.greeting':
+        'Tubwire ikitagenze neza. Ubutumwa bwawe butangiza ikirego gifite nimero yacyo. Twemeza ko twacyakiriye mu masaha 4 tukagikemura mu masaha 48, cyangwa tukakubwira impamvu n’igihe.',
+    'investor.support.cma':
+        'Ushobora kugeza ikirego ku Kigo gishinzwe Isoko ry’Imari n’Imigabane igihe icyo ari cyo cyose.',
+    'investor.support.closed': 'Iki kirego cyakemutse.',
+    'investor.support.new': 'Ubutumwa bushya',
+    'investor.support.message': 'Ubutumwa bwawe',
+    'investor.support.placeholder': 'Andika ubutumwa bwawe…',
+    'investor.support.send': 'Ohereza',
+    'investor.support.list': 'Ibirego byawe',
+    'investor.support.opened': 'Cyatanzwe {at}',
+    'investor.support.resolution': 'Uko cyakemuwe · {at}',
+    'investor.support.status.awaiting': 'Gitegereje igisubizo',
+    'investor.support.status.answered': 'Cyashubijwe',
+    'investor.support.status.resolved': 'Cyakemutse',
     'investor.notices.auditor.job_offered.title': "Umurimo mushya w'igenzura",
     'investor.notices.auditor.job_offered.body_flash':
         'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',
@@ -5367,6 +5395,7 @@ const rw: Catalog = {
     'admin.exceptions.kind.halt': 'Byahagaritswe',
     'admin.exceptions.kind.variance': 'Ikinyuranyo',
     'admin.exceptions.kind.audit': 'Igenzura ryatinze',
+    'admin.exceptions.kind.complaint': 'Ikirego',
     'admin.exceptions.col.reference': 'Indango',
     'admin.exceptions.col.kind': 'Ubwoko',
     'admin.exceptions.col.subject': 'Ikidasanzwe',
@@ -5548,6 +5577,52 @@ const rw: Catalog = {
     'admin.coverage.empty_title': 'Nta karere katanzwe',
     'admin.coverage.empty_body':
         'Uturere tugaragara hano iyo sisitemu nkuru itangiye gukurikirana aho abafatanyabikorwa b’igenzura bakorera.',
+    'admin.nav.complaints': 'Ibirego',
+    'admin.section.complaints.title': 'Ibirego',
+    'admin.section.complaints.subtitle':
+        'Buri kirego n’inimero yacyo, igihe cy’amasaha 4 cyo kwemeza ko cyakiriwe n’icy’amasaha 48 cyo kugikemura, n’ibiganiro byacyo.',
+    'admin.section.complaints.search':
+        'Shakisha ukoresheje nimero cyangwa umukiriya…',
+    'admin.kyc.complaints_link': 'Ibirego',
+    'admin.complaints.title': 'Ibirego',
+    'admin.complaints.caption':
+        'Emeza ko cyakiriwe mu masaha 4 ugikemure mu masaha 48, cyangwa ubwire umukiriya impamvu n’igihe (BRS CMP-R03).',
+    'admin.complaints.table': 'Ibirego',
+    'admin.complaints.stats.unresolved': 'Bitarakemuka',
+    'admin.complaints.stats.awaiting': 'Bitegereje kwemezwa',
+    'admin.complaints.stats.late': 'Byarengeje igihe',
+    'admin.complaints.col.reference': 'Nimero',
+    'admin.complaints.col.status': 'Uko bihagaze',
+    'admin.complaints.col.clock': 'Igihe gikurikira',
+    'admin.complaints.col.open': 'Ibiganiro',
+    'admin.complaints.status.awaiting': 'Gitegereje',
+    'admin.complaints.status.answered': 'Cyashubijwe',
+    'admin.complaints.status.resolved': 'Cyakemutse',
+    'admin.complaints.late.acknowledge':
+        'Ntiharemezwa ko cyakiriwe mu masaha 4',
+    'admin.complaints.late.resolve': 'Ntikirakemuka mu masaha 48',
+    'admin.complaints.role.investor': 'Umushoramari',
+    'admin.complaints.role.business': 'Ikigo',
+    'admin.complaints.acknowledge_by': 'Emeza bitarenze {time}',
+    'admin.complaints.resolve_by': 'Kemura bitarenze {time}',
+    'admin.complaints.done': 'Cyafunzwe',
+    'admin.complaints.open': 'Fungura',
+    'admin.complaints.open_named': 'Fungura ikirego {reference}',
+    'admin.complaints.empty_title': 'Nta birego',
+    'admin.complaints.empty_body':
+        'Ikirego kigaragara hano umukiriya akimara kucyohereza muri porogaramu.',
+    'admin.complaints.drawer': 'Ikirego {reference}',
+    'admin.complaints.from.customer': 'Umukiriya · {time}',
+    'admin.complaints.from.staff': 'Rozine · {time}',
+    'admin.complaints.from.resolution': 'Uko cyakemuwe · {time}',
+    'admin.complaints.answer.label': 'Igisubizo cyawe',
+    'admin.complaints.answer.placeholder': 'Andikira umukiriya…',
+    'admin.complaints.answer.resolves': 'Iki gisubizo gikemura ikirego',
+    'admin.complaints.answer.send': 'Ohereza igisubizo',
+    'admin.complaints.answer.hint':
+        'Umukiriya agisoma muri porogaramu kandi akabona ubutumwa. Igisubizo gikemura gifunga ikirego.',
+    'admin.complaints.closed':
+        'Iki kirego cyakemutse. Nta kindi gishobora kongerwaho.',
 };
 
 export default rw;

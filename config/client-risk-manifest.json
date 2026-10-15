@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "2a499a91f3a4fdae2b8249cbf754ccc1c5414f4cc90855a53aca2c7cff5527d9",
-    "coverageSetSha256": "2c09ba25df743ed8f6dd2cc9ded854afd521a62300482ad0b222c59461264fbb",
+    "coverageSetSha256": "75094f3080c95976dc0b4151af03ea7baf3c426a4c87334e7aaa258975d5e6e0",
     "thresholds": {
         "critical": {
             "global": {
@@ -242,6 +242,7 @@
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
+        "resources/js/components/investor/profile/support-chat.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -364,6 +365,7 @@
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/book.tsx",
+        "resources/js/pages/admin/complaints.tsx",
         "resources/js/pages/admin/coverage.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",

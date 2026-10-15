@@ -37,6 +37,8 @@ class InvestorNoticesResource extends JsonResource
         'auditor.accreditation_rejected' => ['auditor.profile', []],
         'auditor.job_offered' => ['auditor.jobs.index', []],
         'auditor.accreditation_renewal_due' => ['auditor.profile', []],
+        'support.complaint_answered' => ['investor.profile', ['section' => 'help']],
+        'support.complaint_resolved' => ['investor.profile', ['section' => 'help']],
     ];
 
     /** The route names of the bell's read actions. */

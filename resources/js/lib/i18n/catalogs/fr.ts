@@ -1130,6 +1130,7 @@ const fr: Catalog = {
     'admin.messaging.category.underwriting': 'Analyse',
     'admin.messaging.category.payments': 'Paiements',
     'admin.messaging.category.audits': 'Audits',
+    'admin.messaging.category.support': 'Assistance',
     'admin.messaging.category.general': 'Général',
     'admin.messaging.no_match':
         'Aucun message ne correspond à votre recherche.',
@@ -4693,6 +4694,33 @@ const fr: Catalog = {
         "Renouvellement de l'accréditation à prévoir",
     'investor.notices.auditor.accreditation_renewal_due.body':
         "La licence {licence} expire le {date}. Téléversez le renouvellement depuis votre profil pour continuer à accepter des missions d'audit.",
+    'investor.notices.support.complaint_answered.title':
+        'Rozine a répondu à votre réclamation',
+    'investor.notices.support.complaint_answered.body':
+        "Une nouvelle réponse est disponible pour la réclamation {reference}. Ouvrez le centre d'aide pour la lire.",
+    'investor.notices.support.complaint_resolved.title': 'Réclamation résolue',
+    'investor.notices.support.complaint_resolved.body':
+        "La réclamation {reference} est résolue. Ouvrez le centre d'aide pour lire la résolution.",
+    'investor.support.title': 'Assistance Rozine',
+    'investor.support.open': "Contacter l'assistance Rozine",
+    'investor.support.clocks':
+        'Accusé de réception sous 4 heures, résolution sous 48',
+    'investor.support.reference': 'Référence {reference}',
+    'investor.support.greeting':
+        'Dites-nous ce qui ne va pas. Votre message ouvre une réclamation avec un numéro de référence. Nous en accusons réception sous 4 heures et la résolvons sous 48 heures, ou nous vous disons pourquoi et quand.',
+    'investor.support.cma':
+        'Vous pouvez saisir la Capital Market Authority à tout moment.',
+    'investor.support.closed': 'Cette réclamation est résolue.',
+    'investor.support.new': 'Nouveau message',
+    'investor.support.message': 'Votre message',
+    'investor.support.placeholder': 'Écrivez votre message…',
+    'investor.support.send': 'Envoyer',
+    'investor.support.list': 'Vos réclamations',
+    'investor.support.opened': 'Ouverte le {at}',
+    'investor.support.resolution': 'Résolution · {at}',
+    'investor.support.status.awaiting': 'En attente de réponse',
+    'investor.support.status.answered': 'Répondue',
+    'investor.support.status.resolved': 'Résolue',
     'investor.notices.auditor.job_offered.title': "Nouvelle mission d'audit",
     'investor.notices.auditor.job_offered.body_flash':
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',
@@ -5398,6 +5426,7 @@ const fr: Catalog = {
     'admin.exceptions.kind.halt': 'Suspension',
     'admin.exceptions.kind.variance': 'Écart',
     'admin.exceptions.kind.audit': 'Audit en retard',
+    'admin.exceptions.kind.complaint': 'Réclamation',
     'admin.exceptions.col.reference': 'Référence',
     'admin.exceptions.col.kind': 'Type',
     'admin.exceptions.col.subject': 'Exception',
@@ -5578,6 +5607,51 @@ const fr: Catalog = {
     'admin.coverage.empty_title': 'Aucun district signalé',
     'admin.coverage.empty_body':
         'Les districts apparaissent ici dès que le système central suit la couverture des partenaires d’audit.',
+    'admin.nav.complaints': 'Réclamations',
+    'admin.section.complaints.title': 'Réclamations',
+    'admin.section.complaints.subtitle':
+        "Chaque réclamation avec sa référence, ses délais d'accusé de réception de 4 heures et de résolution de 48 heures, et sa conversation.",
+    'admin.section.complaints.search': 'Rechercher par référence ou client…',
+    'admin.kyc.complaints_link': 'Réclamations',
+    'admin.complaints.title': 'Réclamations',
+    'admin.complaints.caption':
+        'Accuser réception sous 4 heures et résoudre sous 48, ou dire au client pourquoi et quand (BRS CMP-R03).',
+    'admin.complaints.table': 'Réclamations',
+    'admin.complaints.stats.unresolved': 'Non résolues',
+    'admin.complaints.stats.awaiting': "En attente d'accusé",
+    'admin.complaints.stats.late': 'Délai dépassé',
+    'admin.complaints.col.reference': 'Référence',
+    'admin.complaints.col.status': 'Statut',
+    'admin.complaints.col.clock': 'Prochain délai',
+    'admin.complaints.col.open': 'Conversation',
+    'admin.complaints.status.awaiting': 'En attente',
+    'admin.complaints.status.answered': 'Répondue',
+    'admin.complaints.status.resolved': 'Résolue',
+    'admin.complaints.late.acknowledge':
+        'Pas d’accusé de réception sous 4 heures',
+    'admin.complaints.late.resolve': 'Non résolue sous 48 heures',
+    'admin.complaints.role.investor': 'Investisseur',
+    'admin.complaints.role.business': 'Entreprise',
+    'admin.complaints.acknowledge_by': 'Accuser réception avant {time}',
+    'admin.complaints.resolve_by': 'Résoudre avant {time}',
+    'admin.complaints.done': 'Close',
+    'admin.complaints.open': 'Ouvrir',
+    'admin.complaints.open_named': 'Ouvrir la réclamation {reference}',
+    'admin.complaints.empty_title': 'Aucune réclamation',
+    'admin.complaints.empty_body':
+        "Une réclamation apparaît ici dès qu'un client l'envoie depuis l'application.",
+    'admin.complaints.drawer': 'Réclamation {reference}',
+    'admin.complaints.from.customer': 'Client · {time}',
+    'admin.complaints.from.staff': 'Rozine · {time}',
+    'admin.complaints.from.resolution': 'Résolution · {time}',
+    'admin.complaints.answer.label': 'Votre réponse',
+    'admin.complaints.answer.placeholder': 'Écrivez au client…',
+    'admin.complaints.answer.resolves': 'Cette réponse résout la réclamation',
+    'admin.complaints.answer.send': 'Envoyer la réponse',
+    'admin.complaints.answer.hint':
+        "Le client la lit dans l'application et reçoit une notification. Une résolution clôt la réclamation.",
+    'admin.complaints.closed':
+        'Cette réclamation est résolue. Rien ne peut plus y être ajouté.',
 };
 
 export default fr;

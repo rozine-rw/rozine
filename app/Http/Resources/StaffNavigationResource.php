@@ -39,6 +39,7 @@ class StaffNavigationResource extends JsonResource
         'primary_market' => ['permission' => 'primary.view', 'route' => 'staff.primary-market.index'],
         'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
         'coverage' => ['permission' => 'audit.partners.verify', 'route' => 'staff.coverage.index'],
+        'complaints' => ['permission' => 'complaints.answer', 'route' => 'staff.complaints.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */

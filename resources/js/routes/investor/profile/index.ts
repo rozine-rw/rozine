@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 export const link = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ link.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 link.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ link.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 link.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ link.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 const linkForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const linkForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::link
-* @see app/Http/Controllers/InvestorProfileController.php:52
+* @see app/Http/Controllers/InvestorProfileController.php:54
 * @route '/investor/profile/linked-accounts'
 */
 linkForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ link.form = linkForm
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 export const unlink = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ unlink.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlink.url = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -99,7 +99,7 @@ unlink.url = (args: { method: string | number } | [method: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlink.post = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -109,7 +109,7 @@ unlink.post = (args: { method: string | number } | [method: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 const unlinkForm = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -119,7 +119,7 @@ const unlinkForm = (args: { method: string | number } | [method: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorProfileController::unlink
-* @see app/Http/Controllers/InvestorProfileController.php:58
+* @see app/Http/Controllers/InvestorProfileController.php:60
 * @route '/investor/profile/linked-accounts/{method}/unlink'
 */
 unlinkForm.post = (args: { method: string | number } | [method: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

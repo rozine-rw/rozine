@@ -26,6 +26,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
+use App\Http\Controllers\InvestorComplaintController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorHoldingController;
 use App\Http\Controllers\InvestorMarketController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
+use App\Http\Controllers\StaffComplaintController;
 use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
@@ -117,6 +119,8 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
     Route::post('profile/linked-accounts', [InvestorProfileController::class, 'link'])->name('profile.link');
     Route::post('profile/linked-accounts/{method}/unlink', [InvestorProfileController::class, 'unlink'])->whereUlid('method')->name('profile.unlink');
+    Route::post('complaints', [InvestorComplaintController::class, 'store'])->name('complaints.store');
+    Route::post('complaints/{complaint}/messages', [InvestorComplaintController::class, 'reply'])->whereUlid('complaint')->name('complaints.reply');
     Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
     Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
@@ -304,6 +308,8 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
+    Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
+    Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {

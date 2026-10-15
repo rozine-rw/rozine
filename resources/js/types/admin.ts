@@ -60,6 +60,7 @@ export type AdminOptionalSection =
     | 'exceptions'
     | 'reconciliation'
     | 'coverage'
+    | 'complaints'
     | 'reports'
     | 'mail_testers'
     | AdminPendingSection;
@@ -1201,7 +1202,12 @@ export type AdminBookProps = AdminFrameShellProps &
     };
 
 /** `audit` is a Flash Audit unfinished after its 24-hour clock (BRS AUD-R07). */
-export type ExceptionKind = 'arrears' | 'halt' | 'variance' | 'audit';
+export type ExceptionKind =
+    | 'arrears'
+    | 'halt'
+    | 'variance'
+    | 'audit'
+    | 'complaint';
 
 /** A server-counted filter over the open exceptions; `all` is every open one. */
 export type ExceptionChip = {
@@ -1444,6 +1450,55 @@ export type AdminCoverageProps = AdminFrameShellProps &
         districts: CoverageDistrict[];
     };
 
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Complaints (BRS v2.0 CMP-R03), `staff-complaints-v1`                                */
+/* ------------------------------------------------------------------------------------------ */
+
+export type ComplaintStatusKey = 'awaiting' | 'answered' | 'resolved';
+
+/** Which clock a complaint is past: its 4-hour acknowledgement or its 48-hour resolution. */
+export type ComplaintLate = 'acknowledge' | 'resolve' | null;
+
+export type ComplaintStatKey = 'unresolved' | 'awaiting' | 'late';
+
+/** One complaint as the list shows it; `link` opens it in the drawer. */
+export type ComplaintRow = {
+    id: string;
+    reference: string;
+    customer: string;
+    role: 'investor' | 'business';
+    status: ComplaintStatusKey;
+    late: ComplaintLate;
+    opened_at: string;
+    acknowledge_by: string;
+    resolve_by: string;
+    messages: number;
+    link: RouteLink;
+};
+
+/** The complaint open in the drawer, with its whole conversation; `answer` is null once resolved. */
+export type ComplaintDetail = Omit<ComplaintRow, 'messages' | 'link'> & {
+    messages: {
+        id: string;
+        author: 'customer' | 'staff';
+        body: string;
+        resolves: boolean;
+        at: string;
+    }[];
+    close: RouteLink;
+    answer: { url: string; method: 'post' } | null;
+};
+
+export type AdminComplaintsProps = AdminFrameShellProps & {
+    contract_version: 'staff-complaints-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+    stats: { key: ComplaintStatKey; value: StatValue }[];
+    complaints: ComplaintRow[];
+    complaint: ComplaintDetail | null;
+};
+
 export type ReportPackKind = 'regulator' | 'board' | 'export';
 
 /**
@@ -1589,6 +1644,7 @@ export type MessageCategory =
     | 'underwriting'
     | 'payments'
     | 'audits'
+    | 'support'
     | 'general';
 
 /**

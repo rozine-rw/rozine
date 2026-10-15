@@ -513,7 +513,6 @@ describe('Profile', () => {
 
     it.each([
         [planFixture, 'Rozine Plus', 'Rozine Plus is not open yet'],
-        [helpFixture, 'Help center', 'Coming to the app soon'],
         [termsFixture, 'Terms & Conditions', 'Coming to the app soon'],
         [privacyFixture, 'Privacy Note', 'Coming to the app soon'],
     ])(
@@ -529,4 +528,65 @@ describe('Profile', () => {
             expect(screen.queryByRole('button')).not.toBeInTheDocument();
         },
     );
+
+    it('shows the Help center answers as pending, with the support chat over real complaints', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorProfile {...profile(helpFixture)} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Help center' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Coming to the app soon')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /CMP-00000001/u }),
+        ).toHaveTextContent('Answered');
+        expect(
+            screen.getByRole('button', { name: /CMP-00000002/u }),
+        ).toHaveTextContent('Resolved');
+
+        /* The floating button opens the complaint not yet resolved, and a reply goes to it. */
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(within(chat).getByText('Reference CMP-00000001')).toBeInTheDocument();
+        expect(
+            within(chat).getByText(/We are checking it with the provider/u),
+        ).toBeInTheDocument();
+        expect(
+            within(chat).getByText(
+                'You can take a complaint to the Capital Market Authority at any stage.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'Any news?',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.posts).toHaveLength(1);
+        expect(inertia.posts[0].url).toBe('/preview/investor-profile-help');
+        expect(inertia.posts[0].data).toMatchObject({ body: 'Any news?' });
+        expect(String(inertia.posts[0].data.request_id)).toMatch(
+            /^[0-9a-f-]{36}$/u,
+        );
+
+        /* A resolved complaint takes nothing more; a new message starts a new one. */
+        await user.click(within(chat).getByRole('button', { name: 'Close' }));
+        await user.click(screen.getByRole('button', { name: /CMP-00000002/u }));
+        const resolved = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(resolved).getByText('This complaint is resolved.'),
+        ).toBeInTheDocument();
+        expect(within(resolved).getByText(/^Resolution ·/u)).toBeInTheDocument();
+        await user.click(
+            within(resolved).getByRole('button', { name: 'New message' }),
+        );
+        expect(
+            within(resolved).getByText(/Your message opens a complaint/u),
+        ).toBeInTheDocument();
+        expect(within(resolved).getByLabelText('Your message')).toBeInTheDocument();
+    });
 });

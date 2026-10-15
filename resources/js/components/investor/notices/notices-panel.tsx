@@ -190,6 +190,21 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
+    'support.complaint_answered': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        icon: (
+            <path
+                d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
+                {...stroke}
+            />
+        ),
+    },
+    'support.complaint_resolved': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(23,121,90,.1)] text-[#17795a]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
     'auditor.accreditation_renewal_due': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
@@ -593,6 +608,11 @@ function body(
         case 'auditor.accreditation_rejected':
             return t('investor.notices.auditor.accreditation_rejected.body', {
                 reason: notice.facts.reason,
+            });
+        case 'support.complaint_answered':
+        case 'support.complaint_resolved':
+            return t(`investor.notices.${notice.kind}.body`, {
+                reference: notice.facts.reference,
             });
         case 'auditor.accreditation_renewal_due':
             return t(

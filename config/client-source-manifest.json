@@ -60,6 +60,7 @@
         "resources/js/actions/App/Http/Controllers/EmailVerificationCodeController.ts",
         "resources/js/actions/App/Http/Controllers/EnterAppController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorComplaintController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorHoldingController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
@@ -81,6 +82,7 @@
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
         "resources/js/actions/App/Http/Controllers/StaffAuditorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffBusinessDirectoryController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffComplaintController.ts",
         "resources/js/actions/App/Http/Controllers/StaffCoverageController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDashboardController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDirectoryController.ts",
@@ -202,6 +204,7 @@
         "resources/js/routes/api/v1/staff/auditors/index.ts",
         "resources/js/routes/api/v1/staff/auditors/licence/index.ts",
         "resources/js/routes/api/v1/staff/businesses/index.ts",
+        "resources/js/routes/api/v1/staff/complaints/index.ts",
         "resources/js/routes/api/v1/staff/coverage/index.ts",
         "resources/js/routes/api/v1/staff/disbursements/index.ts",
         "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
@@ -263,6 +266,7 @@
         "resources/js/routes/identity/staff-people/index.ts",
         "resources/js/routes/index.ts",
         "resources/js/routes/investor/commitments/index.ts",
+        "resources/js/routes/investor/complaints/index.ts",
         "resources/js/routes/investor/deals/index.ts",
         "resources/js/routes/investor/holdings/index.ts",
         "resources/js/routes/investor/index.ts",
@@ -300,6 +304,7 @@
         "resources/js/routes/staff/auditors/licence/index.ts",
         "resources/js/routes/staff/businesses/index.ts",
         "resources/js/routes/staff/changes/index.ts",
+        "resources/js/routes/staff/complaints/index.ts",
         "resources/js/routes/staff/coverage/index.ts",
         "resources/js/routes/staff/disbursements/index.ts",
         "resources/js/routes/staff/disbursements/operations/index.ts",
@@ -540,6 +545,7 @@
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
+        "resources/js/components/investor/profile/support-chat.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -662,6 +668,7 @@
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/book.tsx",
+        "resources/js/pages/admin/complaints.tsx",
         "resources/js/pages/admin/coverage.tsx",
         "resources/js/pages/admin/disbursements.tsx",
         "resources/js/pages/admin/events.tsx",
@@ -735,10 +742,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 704,
-        "generated": 299,
+        "totalTrackedSources": 711,
+        "generated": 304,
         "declarationOnly": 18,
-        "authoredExecutable": 387
+        "authoredExecutable": 389
     },
-    "coverageSetSha256": "2c09ba25df743ed8f6dd2cc9ded854afd521a62300482ad0b222c59461264fbb"
+    "coverageSetSha256": "75094f3080c95976dc0b4151af03ea7baf3c426a4c87334e7aaa258975d5e6e0"
 }
