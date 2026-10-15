@@ -49,6 +49,7 @@ function Select({
         <span className="relative block">
             <select
                 id={id}
+                aria-describedby={`${id}-error`}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 className={`${INPUT} cursor-pointer appearance-none pr-[38px]`}
@@ -139,6 +140,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 >
                     <input
                         id="company-email"
+                        aria-describedby="company-email-error"
                         type="email"
                         value={data.email}
                         onChange={(event) =>
@@ -155,6 +157,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 >
                     <input
                         id="company-phone"
+                        aria-describedby="company-phone-error"
                         inputMode="numeric"
                         maxLength={10}
                         value={data.phone}

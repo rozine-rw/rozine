@@ -135,6 +135,7 @@ export function StepBank({
                     <Icon name="bank" />
                 </span>
                 <select
+                    aria-describedby="bank-error"
                     id="bank"
                     value={data.bank}
                     onChange={(event) =>
@@ -205,6 +206,7 @@ export function StepBank({
                 </button>
             </div>
             <input
+                aria-describedby="account-name-error"
                 id="account_name"
                 value={data.account_name}
                 onChange={(event) =>
@@ -227,6 +229,7 @@ export function StepBank({
                 {t('business.onboarding.bank.account_number')}
             </label>
             <input
+                aria-describedby="account-number-error"
                 id="account_number"
                 inputMode="numeric"
                 maxLength={16}
@@ -270,6 +273,7 @@ export function StepBank({
 
                     return (
                         <button
+                            aria-describedby="signatories-error"
                             key={person.id}
                             type="button"
                             role="checkbox"

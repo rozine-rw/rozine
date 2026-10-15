@@ -101,6 +101,7 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                         {t('business.onboarding.documents.certificate_number')}
                     </label>
                     <input
+                        aria-describedby="certificate-number-error"
                         id="certificate-number"
                         value={form.data.number}
                         onChange={(event) =>

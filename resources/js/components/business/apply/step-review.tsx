@@ -249,7 +249,7 @@ function ReduceOffer({
                     }
                 }}
                 aria-invalid={control.error !== undefined || undefined}
-                aria-describedby="accepted-principal-help"
+                aria-describedby="accepted-principal-help accepted-principal-error"
                 className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-[15px] font-semibold text-rz-ink outline-none focus:border-rz-focus-border"
             />
             <p
@@ -581,6 +581,7 @@ export function StepReview({
 
                             return (
                                 <button
+                                    aria-describedby="disclosures-error"
                                     key={disclosure.key}
                                     type="button"
                                     role="checkbox"
@@ -677,7 +678,7 @@ export function StepReview({
                             aria-invalid={
                                 errors.signature_name !== undefined || undefined
                             }
-                            aria-describedby="signature-help"
+                            aria-describedby="signature-help signature-error"
                             className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
                         />
                         <p

@@ -198,7 +198,7 @@ export function DisputeSheet({
                                 errors.supporting_text !== undefined ||
                                 undefined
                             }
-                            aria-describedby="dispute-supporting-help dispute-supporting-count dispute-proof-rule"
+                            aria-describedby="dispute-supporting-help dispute-supporting-count dispute-proof-rule dispute-supporting-error"
                             className="w-full resize-none rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[11px] text-sm text-rz-ink outline-none focus:border-rz-focus-border"
                         />
                         <p
@@ -268,6 +268,7 @@ export function DisputeSheet({
                             tabIndex={-1}
                         />
                         <button
+                            aria-describedby="dispute-files-error"
                             type="button"
                             onClick={() => picker.current?.click()}
                             disabled={files.length >= PROOF_FILE_LIMIT}

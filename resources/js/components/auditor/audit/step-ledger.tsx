@@ -373,6 +373,7 @@ export function StepLedger({
                         type="button"
                         onClick={() => pick(null)}
                         disabled={!canUpload}
+                        aria-describedby="auditor-ledger-document-error auditor-ledger-replaces-error"
                         className="mt-[9px] flex w-full items-center justify-center gap-[9px] rounded-xl border-[1.5px] border-dashed border-rz-secondary bg-[#f8fafc] p-3.5 dark:bg-rz-surface-sunken"
                     >
                         <span
