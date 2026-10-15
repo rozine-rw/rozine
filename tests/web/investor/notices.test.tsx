@@ -354,4 +354,46 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             'A new device signed inFirefox on Android signed in to your account. If this was not you, reset your password now and contact Rozine support.',
         );
     });
+
+    it('words an answered and a resolved complaint with its reference', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.unread = 2;
+        inbox.notices = [
+            {
+                ...first,
+                id: 'answered',
+                kind: 'support.complaint_answered',
+                facts: { reference: 'CMP-00000001' },
+            },
+            {
+                ...first,
+                id: 'resolved',
+                kind: 'support.complaint_resolved',
+                facts: { reference: 'CMP-00000002' },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: /Notifications, \d+ unread/u }),
+        );
+
+        expect(
+            await within(panel).findByRole('button', {
+                name: /Rozine answered your complaint/u,
+            }),
+        ).toHaveTextContent(
+            'Rozine answered your complaintThere is a new answer on complaint CMP-00000001.',
+        );
+        expect(
+            within(panel).getByRole('button', { name: /Complaint resolved/u }),
+        ).toHaveTextContent(
+            'Complaint resolvedComplaint CMP-00000002 is resolved. Open it to read the resolution.',
+        );
+    });
 });

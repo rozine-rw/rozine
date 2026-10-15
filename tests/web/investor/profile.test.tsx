@@ -532,6 +532,7 @@ describe('Profile', () => {
     it('shows the Help center answers as pending, with the support chat over real complaints', async () => {
         const user = userEvent.setup();
 
+        inertia.succeed = true;
         render(<InvestorProfile {...profile(helpFixture)} />);
 
         expect(
@@ -549,9 +550,11 @@ describe('Profile', () => {
         await user.click(
             screen.getByRole('button', { name: 'Contact Rozine Support' }),
         );
-        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+        let chat = screen.getByRole('dialog', { name: 'Rozine Support' });
 
-        expect(within(chat).getByText('Reference CMP-00000001')).toBeInTheDocument();
+        expect(
+            within(chat).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
         expect(
             within(chat).getByText(/We are checking it with the provider/u),
         ).toBeInTheDocument();
@@ -571,22 +574,63 @@ describe('Profile', () => {
         expect(String(inertia.posts[0].data.request_id)).toMatch(
             /^[0-9a-f-]{36}$/u,
         );
+        expect(within(chat).getByLabelText('Your message')).toHaveValue('');
 
-        /* A resolved complaint takes nothing more; a new message starts a new one. */
+        /* A resolved complaint takes nothing more; a new message starts a new one, then follows it. */
         await user.click(within(chat).getByRole('button', { name: 'Close' }));
         await user.click(screen.getByRole('button', { name: /CMP-00000002/u }));
-        const resolved = screen.getByRole('dialog', { name: 'Rozine Support' });
+        chat = screen.getByRole('dialog', { name: 'Rozine Support' });
 
         expect(
-            within(resolved).getByText('This complaint is resolved.'),
+            within(chat).getByText('This complaint is resolved.'),
         ).toBeInTheDocument();
-        expect(within(resolved).getByText(/^Resolution ·/u)).toBeInTheDocument();
+        expect(within(chat).getByText(/^Resolution ·/u)).toBeInTheDocument();
         await user.click(
-            within(resolved).getByRole('button', { name: 'New message' }),
+            within(chat).getByRole('button', { name: 'New message' }),
         );
         expect(
-            within(resolved).getByText(/Your message opens a complaint/u),
+            within(chat).getByText(/Your message opens a complaint/u),
         ).toBeInTheDocument();
-        expect(within(resolved).getByLabelText('Your message')).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'Something else.',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.posts[1].url).toBe('/preview/investor-profile-help');
+        expect(
+            within(chat).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
+
+        /* The scrim closes the panel too. */
+        await user.click(screen.getByTestId('support-scrim'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('opens a fresh conversation when nothing is open, and shows a refusal on the message', async () => {
+        const user = userEvent.setup();
+        const page = profile(helpFixture);
+
+        page.support.complaints = [];
+        inertia.errors = { body: 'Tell us what happened.' };
+        render(<InvestorProfile {...page} />);
+
+        expect(screen.queryByText('Your complaints')).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText(
+                'We acknowledge within 4 hours and resolve within 48',
+            ),
+        ).toBeInTheDocument();
+        expect(within(chat).getByRole('alert')).toHaveTextContent(
+            'Tell us what happened.',
+        );
+        expect(within(chat).getByLabelText('Your message')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
     });
 });

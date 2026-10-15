@@ -172,6 +172,35 @@
         ],
         "linked": null,
         "legal": null,
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": [
+                {
+                    "id": "01k7a0c0000000000000000003",
+                    "reference": "CMP-00000003",
+                    "status": "awaiting",
+                    "opened_at": "2026-10-14T08:00:00+02:00",
+                    "acknowledge_by": "2026-10-14T12:00:00+02:00",
+                    "resolve_by": "2026-10-16T08:00:00+02:00",
+                    "messages": [
+                        {
+                            "id": "01k7a0c0000000000000000301",
+                            "author": "customer",
+                            "body": "Our disbursement has not reached the bank account.",
+                            "resolves": false,
+                            "at": "2026-10-14T08:00:00+02:00"
+                        }
+                    ],
+                    "reply": {
+                        "url": "/preview/business-profile-support",
+                        "method": "post"
+                    }
+                }
+            ]
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",

@@ -4668,30 +4668,30 @@ const rw: Catalog = {
     'investor.notices.support.complaint_answered.title':
         'Rozine yashubije ikirego cyawe',
     'investor.notices.support.complaint_answered.body':
-        'Hari igisubizo gishya ku kirego {reference}. Fungura ahabonekera ubufasha kugira ngo ugisome.',
+        'Hari igisubizo gishya ku kirego {reference}.',
     'investor.notices.support.complaint_resolved.title': 'Ikirego cyakemutse',
     'investor.notices.support.complaint_resolved.body':
-        'Ikirego {reference} cyakemutse. Fungura ahabonekera ubufasha kugira ngo usome uko cyakemuwe.',
-    'investor.support.title': 'Ubufasha bwa Rozine',
-    'investor.support.open': 'Vugana n’ubufasha bwa Rozine',
-    'investor.support.clocks':
+        'Ikirego {reference} cyakemutse. Gifungure usome uko cyakemuwe.',
+    'support.chat.title': 'Ubufasha bwa Rozine',
+    'support.chat.open': 'Vugana n’ubufasha bwa Rozine',
+    'support.chat.clocks':
         'Twemeza ko twakiriye mu masaha 4, tugakemura mu masaha 48',
-    'investor.support.reference': 'Nimero {reference}',
-    'investor.support.greeting':
+    'support.chat.reference': 'Nimero {reference}',
+    'support.chat.greeting':
         'Tubwire ikitagenze neza. Ubutumwa bwawe butangiza ikirego gifite nimero yacyo. Twemeza ko twacyakiriye mu masaha 4 tukagikemura mu masaha 48, cyangwa tukakubwira impamvu n’igihe.',
-    'investor.support.cma':
+    'support.chat.cma':
         'Ushobora kugeza ikirego ku Kigo gishinzwe Isoko ry’Imari n’Imigabane igihe icyo ari cyo cyose.',
-    'investor.support.closed': 'Iki kirego cyakemutse.',
-    'investor.support.new': 'Ubutumwa bushya',
-    'investor.support.message': 'Ubutumwa bwawe',
-    'investor.support.placeholder': 'Andika ubutumwa bwawe…',
-    'investor.support.send': 'Ohereza',
-    'investor.support.list': 'Ibirego byawe',
-    'investor.support.opened': 'Cyatanzwe {at}',
-    'investor.support.resolution': 'Uko cyakemuwe · {at}',
-    'investor.support.status.awaiting': 'Gitegereje igisubizo',
-    'investor.support.status.answered': 'Cyashubijwe',
-    'investor.support.status.resolved': 'Cyakemutse',
+    'support.chat.closed': 'Iki kirego cyakemutse.',
+    'support.chat.new': 'Ubutumwa bushya',
+    'support.chat.message': 'Ubutumwa bwawe',
+    'support.chat.placeholder': 'Andika ubutumwa bwawe…',
+    'support.chat.send': 'Ohereza',
+    'support.chat.list': 'Ibirego byawe',
+    'support.chat.opened': 'Cyatanzwe {at}',
+    'support.chat.resolution': 'Uko cyakemuwe · {at}',
+    'support.chat.status.awaiting': 'Gitegereje igisubizo',
+    'support.chat.status.answered': 'Cyashubijwe',
+    'support.chat.status.resolved': 'Cyakemutse',
     'investor.notices.auditor.job_offered.title': "Umurimo mushya w'igenzura",
     'investor.notices.auditor.job_offered.body_flash':
         'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',

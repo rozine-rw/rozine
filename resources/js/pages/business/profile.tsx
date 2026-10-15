@@ -13,6 +13,7 @@ import {
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
+import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { BusinessProfileProps } from '@/types/business';
@@ -37,6 +38,7 @@ export default function BusinessProfile({
     security,
     linked,
     legal,
+    support,
     links,
     actions,
 }: BusinessProfileProps) {
@@ -126,7 +128,12 @@ export default function BusinessProfile({
                         ) : (
                             <LinkedAccounts linked={linked} />
                         ))}
-                    {section === 'support' && <PendingSection kind="support" />}
+                    {section === 'support' && (
+                        <>
+                            <PendingSection kind="support" />
+                            <SupportChat support={support} />
+                        </>
+                    )}
                     {(section === 'terms' || section === 'privacy') &&
                         (legal === null ? (
                             <PendingSection kind={section} />

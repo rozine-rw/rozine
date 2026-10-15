@@ -4697,30 +4697,30 @@ const fr: Catalog = {
     'investor.notices.support.complaint_answered.title':
         'Rozine a répondu à votre réclamation',
     'investor.notices.support.complaint_answered.body':
-        "Une nouvelle réponse est disponible pour la réclamation {reference}. Ouvrez le centre d'aide pour la lire.",
+        'Une nouvelle réponse est disponible pour la réclamation {reference}.',
     'investor.notices.support.complaint_resolved.title': 'Réclamation résolue',
     'investor.notices.support.complaint_resolved.body':
-        "La réclamation {reference} est résolue. Ouvrez le centre d'aide pour lire la résolution.",
-    'investor.support.title': 'Assistance Rozine',
-    'investor.support.open': "Contacter l'assistance Rozine",
-    'investor.support.clocks':
+        'La réclamation {reference} est résolue. Ouvrez-la pour lire la résolution.',
+    'support.chat.title': 'Assistance Rozine',
+    'support.chat.open': "Contacter l'assistance Rozine",
+    'support.chat.clocks':
         'Accusé de réception sous 4 heures, résolution sous 48',
-    'investor.support.reference': 'Référence {reference}',
-    'investor.support.greeting':
+    'support.chat.reference': 'Référence {reference}',
+    'support.chat.greeting':
         'Dites-nous ce qui ne va pas. Votre message ouvre une réclamation avec un numéro de référence. Nous en accusons réception sous 4 heures et la résolvons sous 48 heures, ou nous vous disons pourquoi et quand.',
-    'investor.support.cma':
+    'support.chat.cma':
         'Vous pouvez saisir la Capital Market Authority à tout moment.',
-    'investor.support.closed': 'Cette réclamation est résolue.',
-    'investor.support.new': 'Nouveau message',
-    'investor.support.message': 'Votre message',
-    'investor.support.placeholder': 'Écrivez votre message…',
-    'investor.support.send': 'Envoyer',
-    'investor.support.list': 'Vos réclamations',
-    'investor.support.opened': 'Ouverte le {at}',
-    'investor.support.resolution': 'Résolution · {at}',
-    'investor.support.status.awaiting': 'En attente de réponse',
-    'investor.support.status.answered': 'Répondue',
-    'investor.support.status.resolved': 'Résolue',
+    'support.chat.closed': 'Cette réclamation est résolue.',
+    'support.chat.new': 'Nouveau message',
+    'support.chat.message': 'Votre message',
+    'support.chat.placeholder': 'Écrivez votre message…',
+    'support.chat.send': 'Envoyer',
+    'support.chat.list': 'Vos réclamations',
+    'support.chat.opened': 'Ouverte le {at}',
+    'support.chat.resolution': 'Résolution · {at}',
+    'support.chat.status.awaiting': 'En attente de réponse',
+    'support.chat.status.answered': 'Répondue',
+    'support.chat.status.resolved': 'Résolue',
     'investor.notices.auditor.job_offered.title': "Nouvelle mission d'audit",
     'investor.notices.auditor.job_offered.body_flash':
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',

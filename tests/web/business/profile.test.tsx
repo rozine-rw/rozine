@@ -103,6 +103,14 @@ vi.mock('@inertiajs/react', async () => {
                     inertia.puts.push({ url, data: transform(data) });
                     options.onSuccess?.();
                 },
+                post: (url: string, options: { onSuccess?: () => void }) => {
+                    inertia.puts.push({
+                        url: `post ${url}`,
+                        data: transform(data),
+                    });
+                    options.onSuccess?.();
+                },
+                reset: () => setState(initial),
             };
         },
     };
@@ -594,7 +602,6 @@ describe('Business account sections', () => {
     });
 
     it.each([
-        [supportFixture, 'Support center', 'Coming to the app soon', null],
         [linkedFixture, 'Linked accounts', 'No payout account yet', 'linked'],
         [termsFixture, 'Terms & Conditions', 'Coming to the app soon', 'legal'],
         [privacyFixture, 'Privacy Note', 'Coming to the app soon', 'legal'],
@@ -618,4 +625,39 @@ describe('Business account sections', () => {
             expect(screen.getByText(title)).toBeInTheDocument();
         },
     );
+
+    it('shows the support center answers as pending, with the support chat over the Business complaints', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(supportFixture)} />);
+        expect(
+            screen.getByRole('heading', { name: 'Support center' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Coming to the app soon')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /CMP-00000003/u }),
+        ).toHaveTextContent('Awaiting reply');
+
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText(
+                'Our disbursement has not reached the bank account.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'The bank reference is FT123.',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.puts.at(-1)?.url).toBe(
+            'post /preview/business-profile-support',
+        );
+        expect(inertia.puts.at(-1)?.data).toMatchObject({
+            body: 'The bank reference is FT123.',
+        });
+    });
 });

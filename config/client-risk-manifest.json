@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "9621a754bf8e3a1055259ad26cd470b7bef79b784d9886da5b8ed5debc929d92",
-    "coverageSetSha256": "75094f3080c95976dc0b4151af03ea7baf3c426a4c87334e7aaa258975d5e6e0",
+    "coverageSetSha256": "ef7dbd9504da531b3a3f2ec18f9371de894f966a7ed206cc1aa9e1f2196b778c",
     "thresholds": {
         "critical": {
             "global": {
@@ -242,7 +242,6 @@
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
-        "resources/js/components/investor/profile/support-chat.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -284,6 +283,7 @@
         "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
+        "resources/js/components/rozine/support-chat.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",

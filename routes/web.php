@@ -15,6 +15,7 @@ use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
+use App\Http\Controllers\BusinessComplaintController;
 use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessNoticesController;
@@ -197,6 +198,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
     Route::put('{business}/profile/company', [BusinessContactController::class, 'update'])->whereUlid('business')->name('profile.company');
+    Route::post('{business}/complaints', [BusinessComplaintController::class, 'store'])->whereUlid('business')->name('complaints.store');
+    Route::post('{business}/complaints/{complaint}/messages', [BusinessComplaintController::class, 'reply'])->whereUlid(['business', 'complaint'])
+        ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
 });

@@ -241,6 +241,13 @@
                 }
             ]
         },
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",

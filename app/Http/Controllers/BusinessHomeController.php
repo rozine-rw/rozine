@@ -9,6 +9,7 @@ use App\Application\Business\GetBusinessMarket;
 use App\Application\Business\GetBusinessProfile;
 use App\Application\Business\GetBusinessReports;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\ListBusinessComplaints;
 use App\Http\Requests\Business\ShowBusinessHomeRequest;
 use App\Http\Resources\BusinessAuditPrepResource;
 use App\Http\Resources\BusinessHomeResource;
@@ -73,10 +74,12 @@ class BusinessHomeController extends Controller
      * The bare Profile URL lands on the menu (a wide screen opens Company information beside it);
      * `profile/{section}` opens that section on a phone too.
      */
-    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile): Response
+    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile, ListBusinessComplaints $complaints): Response
     {
         $section = $request->route('section');
-        $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), (string) $request->route('business')),
+        $business = (string) $request->route('business');
+        $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), $business),
+            'complaints' => $complaints->handle($this->userId($request), $this->revision($request), $business),
             'section' => is_string($section) ? $section : 'company', 'landing' => $section === null,
             'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'login_alerts' => $request->user()?->getAttribute('login_alerts') !== false]);

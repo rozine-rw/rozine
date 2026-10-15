@@ -49,6 +49,7 @@
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessComplaintController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessContactController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
@@ -249,6 +250,7 @@
         "resources/js/routes/business/audit-reports/index.ts",
         "resources/js/routes/business/audit-reports/operations/index.ts",
         "resources/js/routes/business/campaigns/index.ts",
+        "resources/js/routes/business/complaints/index.ts",
         "resources/js/routes/business/index.ts",
         "resources/js/routes/business/notices/index.ts",
         "resources/js/routes/business/profile/index.ts",
@@ -347,6 +349,7 @@
         "resources/js/types/operation.ts",
         "resources/js/types/routing.ts",
         "resources/js/types/settlement.ts",
+        "resources/js/types/support.ts",
         "resources/js/types/ui.ts",
         "resources/js/types/vite-env.d.ts"
     ],
@@ -545,7 +548,6 @@
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
-        "resources/js/components/investor/profile/support-chat.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -587,6 +589,7 @@
         "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
+        "resources/js/components/rozine/support-chat.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",
@@ -742,10 +745,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 711,
-        "generated": 304,
-        "declarationOnly": 18,
+        "totalTrackedSources": 714,
+        "generated": 306,
+        "declarationOnly": 19,
         "authoredExecutable": 389
     },
-    "coverageSetSha256": "75094f3080c95976dc0b4151af03ea7baf3c426a4c87334e7aaa258975d5e6e0"
+    "coverageSetSha256": "ef7dbd9504da531b3a3f2ec18f9371de894f966a7ed206cc1aa9e1f2196b778c"
 }

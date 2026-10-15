@@ -31,6 +31,7 @@ import type {
     ServicingState,
     Units,
 } from './settlement';
+import type { SupportCenter } from './support';
 
 /**
  * Business app page contracts (Phase 1B). Every figure is a server fact; the client only formats
@@ -1030,6 +1031,8 @@ export type BusinessProfileProps = {
     linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
     /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
+    /** The support center's chat over the Business's complaints (BRS v2.0 CMP-R03). */
+    support: SupportCenter;
     links: BusinessAppLinks & {
         back: RouteLink;
         /** A section with no read open to the business is null and left out of the menu. */

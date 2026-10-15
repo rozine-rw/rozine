@@ -41,6 +41,22 @@ const ROWS: ComplaintRow[] = [
             method: 'get',
         },
     },
+    {
+        id: '01k7a0c0000000000000000003',
+        reference: 'CMP-00000003',
+        customer: 'Musanze Grain Co (Eric Nshuti)',
+        role: 'business',
+        status: 'awaiting',
+        late: null,
+        opened_at: '2026-10-14T08:00:00+00:00',
+        acknowledge_by: '2026-10-14T12:00:00+00:00',
+        resolve_by: '2026-10-16T08:00:00+00:00',
+        messages: 1,
+        link: {
+            url: '/admin/complaints?complaint=01k7a0c0000000000000000003',
+            method: 'get',
+        },
+    },
 ];
 
 const page = (
@@ -89,6 +105,13 @@ const OPEN: NonNullable<AdminComplaintsProps['complaint']> = {
             resolves: false,
             at: ROWS[0].opened_at,
         },
+        {
+            id: 'm2',
+            author: 'staff',
+            body: 'We are checking it.',
+            resolves: false,
+            at: ROWS[0].acknowledge_by,
+        },
     ],
     close: { url: '/admin/complaints', method: 'get' },
     answer: {
@@ -122,11 +145,16 @@ describe('Complaints', () => {
             screen.getByRole('link', { name: 'Open complaint CMP-00000002' }),
         ).toHaveAttribute('href', ROWS[1].link.url);
         expect(screen.getByText(/Resolve by/u)).toBeInTheDocument();
+        expect(screen.getByText(/Acknowledge by/u)).toBeInTheDocument();
+        expect(
+            screen.getByText('Musanze Grain Co (Eric Nshuti) · Business'),
+        ).toBeInTheDocument();
     });
 
     it('answers the open complaint, as a resolution when ticked, with a fresh request', async () => {
         const user = userEvent.setup();
 
+        inertia.succeed = true;
         render(<AdminComplaints {...page(OPEN)} />);
 
         const drawer = screen.getByRole('dialog', {
@@ -153,9 +181,7 @@ describe('Complaints', () => {
             body: 'Refunded to your wallet.',
             resolves: true,
         });
-        expect(inertia.posts[0].data.request_id).toMatch(
-            /^[0-9a-f-]{36}$/u,
-        );
+        expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/u);
     });
 
     it('offers no answer once a complaint is resolved', () => {
@@ -166,10 +192,22 @@ describe('Complaints', () => {
                     status: 'resolved',
                     late: null,
                     answer: null,
+                    messages: [
+                        ...OPEN.messages,
+                        {
+                            id: 'm3',
+                            author: 'staff',
+                            body: 'Refunded.',
+                            resolves: true,
+                            at: ROWS[0].resolve_by,
+                        },
+                    ],
                 })}
             />,
         );
 
+        expect(screen.getByText(/^Resolution ·/u)).toBeInTheDocument();
+        expect(screen.getByText('Closed')).toBeInTheDocument();
         expect(
             screen.getByText(
                 'This complaint is resolved. Nothing more can be added.',

@@ -19,7 +19,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * on, managed on the account's security settings. Linked accounts lists the Business's own verified
  * accounts; there is no link or unlink command for a Business yet, so none is offered and only Rozine
  * support changes them. The legal documents have no Business read yet, so `legal` is null and its
- * section, like the support center, shows an empty state. Every Business read is refused unless its
+ * section shows an empty state. The support center's answers have no approved content either, but
+ * its support chat is real: the Business's complaints with their reference, clocks and conversation
+ * (BRS v2.0 CMP-R03), a reply on each one not yet resolved, and where a first message opens a new one. Every Business read is refused unless its
  * parties are verified, hence `verified`.
  */
 class BusinessProfileResource extends JsonResource
@@ -49,6 +51,10 @@ class BusinessProfileResource extends JsonResource
             'security' => ['two_factor' => $data['two_factor'], 'login_alerts' => $data['login_alerts'],
                 'update_login_alerts' => ['url' => route('login-alerts.update', [], false), 'method' => 'put']],
             'provinces' => self::provinces(), 'legal' => null,
+            'support' => ['open' => ['url' => route('business.complaints.store', $parameters, false), 'method' => 'post'],
+                'complaints' => array_map(fn (array $complaint): array => [...$complaint, 'reply' => $complaint['status'] === 'resolved' ? null
+                    : ['url' => route('business.complaints.reply', [...$parameters, 'complaint' => $complaint['id']], false), 'method' => 'post']],
+                    $data['complaints'])],
             'linked' => ['add' => null, 'accounts' => array_map(fn (array $method): array => ['id' => $method['id'],
                 'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money', 'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => null], $data['methods'])],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', $parameters), ...BusinessHomeResource::tabs($request, $parameters['business']),

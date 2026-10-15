@@ -7,8 +7,8 @@ namespace App\Application\Identity\Contracts;
 use DateTimeImmutable;
 
 /**
- * Complaints (BRS v2.0 CMP-R03). A customer opens one in-app and may add to it until it is
- * resolved; staff holding `complaints.answer` acknowledge, answer and resolve it. Every write is
+ * Complaints (BRS v2.0 CMP-R03). An Investor, or a person acting for a Business, opens one in-app
+ * and may add to it until it is resolved; staff holding `complaints.answer` acknowledge, answer and resolve it. Every write is
  * journaled and idempotent by its request id, and answers a recorded operation result.
  *
  * @phpstan-type Message array{id: string, author: 'customer'|'staff', body: string, resolves: bool, at: string}
@@ -46,6 +46,28 @@ interface Complaints
      * @return list<Thread>
      */
     public function forInvestor(int $userId): array;
+
+    /**
+     * Opens a complaint for a Business the person may view, with its first message. It belongs to
+     * the Business's entity Party, so everyone who may view the Business shares it.
+     *
+     * @return array<string, mixed>
+     */
+    public function openForBusiness(int $userId, int $contextRevision, string $businessId, string $requestId, string $body): array;
+
+    /**
+     * Adds the person's message to one of the Business's complaints that is not resolved.
+     *
+     * @return array<string, mixed>
+     */
+    public function replyForBusiness(int $userId, int $contextRevision, string $businessId, string $requestId, string $complaintId, string $body): array;
+
+    /**
+     * The Business's complaints, newest first, for a person who may view it.
+     *
+     * @return list<Thread>
+     */
+    public function forBusiness(int $userId, int $contextRevision, string $businessId): array;
 
     /**
      * A staff message on a complaint that is not resolved; with `$resolves` it is the resolution.

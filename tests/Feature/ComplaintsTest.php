@@ -11,6 +11,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /*
@@ -178,4 +179,44 @@ it('keeps Complaints to staff who may answer them, and complaints immutable', fu
 
     expect(fn () => DB::table('complaint_messages')->update(['author' => 'staff']))->toThrow(QueryException::class)
         ->and(fn () => DB::table('complaints')->where('id', $complaint->id)->delete())->toThrow(QueryException::class);
+});
+
+it('lets everyone who may view a Business open and follow its complaints from the support center', function (): void {
+    $this->withoutVite();
+    $authority = BusinessAuthorityFixture::make('organization', 2, requiredSignatories: 1);
+    $viewer = $authority['people'][1]->id;
+    $authority['terms']['people'] = array_map(fn (array $person): array => $person['party_id'] === $viewer
+        ? [...$person, 'permissions' => ['business.view']] : $person, $authority['terms']['people']);
+    $business = BusinessAuthorityFixture::configure($authority)['data']['business']['id'];
+    $entityParty = (string) DB::table('business_profiles')->where('id', $business)->value('entity_party_id');
+    $name = (string) DB::table('business_profiles')->where('id', $business)->selectRaw("profile->>'name' AS name")->value('name');
+
+    $this->actingAs($authority['users'][1])->post(route('business.complaints.store', ['business' => $business]), complaintMessage('The disbursement is late.'))
+        ->assertRedirect(route('business.profile', ['business' => $business, 'section' => 'support']))->assertSessionHasNoErrors();
+    $complaint = Complaint::query()->sole();
+    expect($complaint->party_id)->toBe($entityParty)->and($complaint->role)->toBe('business');
+
+    $this->actingAs($authority['users'][0])->post(route('business.complaints.reply', ['business' => $business, 'complaint' => $complaint->id]),
+        complaintMessage('Adding the bank reference.'))->assertSessionHasNoErrors();
+    $this->get(route('business.profile', ['business' => $business, 'section' => 'support']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('business/profile')
+            ->where('support.open', ['url' => '/business/'.$business.'/complaints', 'method' => 'post'])
+            ->where('support.complaints.0.reference', $complaint->reference)
+            ->where('support.complaints.0.reply', ['url' => '/business/'.$business.'/complaints/'.$complaint->id.'/messages', 'method' => 'post'])
+            ->has('support.complaints.0.messages', 2));
+
+    $staff = complaintStaff(['compliance']);
+    $props = [];
+    $this->actingAs($staff)->get(route('staff.complaints.index'))->assertOk()
+        ->assertInertia(function (Assert $page) use (&$props): void {
+            $props = $page->toArray()['props'];
+        });
+    expect($props['complaints'][0])->toMatchArray(['role' => 'business', 'customer' => $name.' ('.$authority['users'][1]->name.')']);
+
+    $this->post(route('staff.complaints.answer', ['complaint' => $complaint->id]), [...complaintMessage('The payout is on its way.'), 'resolves' => false]);
+    expect(PartyNotice::query()->where('party_id', $entityParty)->pluck('kind')->all())->toBe(['support.complaint_answered']);
+
+    $outsider = InvestorWalletFixture::investor()['user'];
+    $this->actingAs($outsider)->post(route('business.complaints.store', ['business' => $business]), complaintMessage('Hello.'))->assertStatus(403);
+    expect(Complaint::query()->count())->toBe(1);
 });

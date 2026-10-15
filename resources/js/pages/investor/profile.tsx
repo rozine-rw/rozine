@@ -11,7 +11,7 @@ import {
     Statements,
     SubHeading,
 } from '@/components/investor/profile/profile-parts';
-import { SupportChat } from '@/components/investor/profile/support-chat';
+import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import type { InvestorProfileProps } from '@/types/investor';

@@ -4484,30 +4484,30 @@ const en = {
     'investor.notices.support.complaint_answered.title':
         'Rozine answered your complaint',
     'investor.notices.support.complaint_answered.body':
-        'There is a new answer on complaint {reference}. Open the Help center to read it.',
+        'There is a new answer on complaint {reference}.',
     'investor.notices.support.complaint_resolved.title': 'Complaint resolved',
     'investor.notices.support.complaint_resolved.body':
-        'Complaint {reference} is resolved. Open the Help center to read the resolution.',
-    'investor.support.title': 'Rozine Support',
-    'investor.support.open': 'Contact Rozine Support',
-    'investor.support.clocks':
+        'Complaint {reference} is resolved. Open it to read the resolution.',
+    'support.chat.title': 'Rozine Support',
+    'support.chat.open': 'Contact Rozine Support',
+    'support.chat.clocks':
         'We acknowledge within 4 hours and resolve within 48',
-    'investor.support.reference': 'Reference {reference}',
-    'investor.support.greeting':
+    'support.chat.reference': 'Reference {reference}',
+    'support.chat.greeting':
         'Tell us what went wrong. Your message opens a complaint with a reference number. We acknowledge it within 4 hours and resolve it within 48 hours, or tell you why and when.',
-    'investor.support.cma':
+    'support.chat.cma':
         'You can take a complaint to the Capital Market Authority at any stage.',
-    'investor.support.closed': 'This complaint is resolved.',
-    'investor.support.new': 'New message',
-    'investor.support.message': 'Your message',
-    'investor.support.placeholder': 'Type your message…',
-    'investor.support.send': 'Send',
-    'investor.support.list': 'Your complaints',
-    'investor.support.opened': 'Opened {at}',
-    'investor.support.resolution': 'Resolution · {at}',
-    'investor.support.status.awaiting': 'Awaiting reply',
-    'investor.support.status.answered': 'Answered',
-    'investor.support.status.resolved': 'Resolved',
+    'support.chat.closed': 'This complaint is resolved.',
+    'support.chat.new': 'New message',
+    'support.chat.message': 'Your message',
+    'support.chat.placeholder': 'Type your message…',
+    'support.chat.send': 'Send',
+    'support.chat.list': 'Your complaints',
+    'support.chat.opened': 'Opened {at}',
+    'support.chat.resolution': 'Resolution · {at}',
+    'support.chat.status.awaiting': 'Awaiting reply',
+    'support.chat.status.answered': 'Answered',
+    'support.chat.status.resolved': 'Resolved',
     'investor.notices.auditor.job_offered.title': 'New audit job',
     'investor.notices.auditor.job_offered.body_flash':
         'Flash audit at {business}, {location}. Accept by {time}.',
