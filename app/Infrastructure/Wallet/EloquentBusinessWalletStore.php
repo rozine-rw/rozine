@@ -105,6 +105,12 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         });
     }
 
+    public function methods(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            fn (array $business): array => array_values($this->verifiedMethods($business['id'])->map(fn (BusinessFundingMethod $method): array => $this->method($method))->all()));
+    }
+
     /**
      * @param  array{currency: string, amount: string}  $amount
      * @return array<string, mixed>

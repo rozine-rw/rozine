@@ -14,8 +14,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * and nothing is editable. `team` is the mandate's people with their roles and permissions, for
  * Permissions & roles; there is no invite, removal or ownership-transfer command, so none is
  * offered. `security` reports whether two-factor sign-in is on, managed on the account's security
- * settings. Linked accounts and the legal documents have no Business read yet, so `linked` and
- * `legal` are null and their sections, like the support center, show an empty state. Every
+ * settings. Linked accounts lists the Business's own verified accounts; there is no link or unlink
+ * command for a Business yet, so none is offered and only Rozine support changes them. The legal
+ * documents have no Business read yet, so `legal` is null and its section, like the support
+ * center, shows an empty state. Every
  * Business read is refused unless its parties are verified, hence `verified`.
  */
 class BusinessProfileResource extends JsonResource
@@ -44,7 +46,9 @@ class BusinessProfileResource extends JsonResource
                 'signatory' => in_array($person['party_id'], $mandate['required_signatories'], true)], $mandate['people']),
             'security' => ['two_factor' => $data['two_factor'], 'login_alerts' => $data['login_alerts'],
                 'update_login_alerts' => ['url' => route('login-alerts.update', [], false), 'method' => 'put']],
-            'provinces' => [], 'linked' => null, 'legal' => null,
+            'provinces' => [], 'legal' => null,
+            'linked' => ['add' => null, 'accounts' => array_map(fn (array $method): array => ['id' => $method['id'],
+                'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money', 'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => null], $data['methods'])],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', $parameters), ...BusinessHomeResource::tabs($request, $parameters['business']),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], 'back' => BusinessHomeResource::link($request, 'business.profile', $parameters),
                 'sections' => array_combine(self::SECTIONS, array_map(fn (string $section): array => BusinessHomeResource::link($request, 'business.profile',

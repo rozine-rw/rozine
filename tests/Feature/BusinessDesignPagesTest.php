@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Domain\Operations\CommandRejection;
+use App\Models\BusinessFundingMethod;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditSealingFixture;
@@ -61,7 +62,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
-        'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => null, 'legal' => null, 'actions' => ['save_company' => null],
+        'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => ['add' => null, 'accounts' => []], 'legal' => null, 'actions' => ['save_company' => null],
         'security' => ['two_factor' => false, 'login_alerts' => true, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]])
         ->and(array_diff_key($props['registration'], ['people' => true]))->toBe(['name' => 'Synthetic business', 'company_code' => 'COMPANY-001',
             'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020, 'signatories_required' => 1])
@@ -83,6 +84,17 @@ it('opens Profile on the verified registration and mandate, with every design se
             ->toMatchArray(['section' => $key, 'landing' => false]);
     }
     $this->actingAs($user)->get("/business/{$business}/profile/billing")->assertNotFound();
+
+    $momo = BusinessFundingMethod::factory()->create(['business_id' => $business]);
+    $bank = BusinessFundingMethod::factory()->create(['business_id' => $business, 'kind' => 'bank', 'label' => 'Bank of Kigali', 'masked' => 'Account ····2231']);
+    BusinessFundingMethod::factory()->revoked()->create(['business_id' => $business]);
+    BusinessFundingMethod::factory()->unverified()->create(['business_id' => $business]);
+    BusinessFundingMethod::factory()->create();
+    expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => 'linked'], 'business/profile')['linked'])
+        ->toBe(['add' => null, 'accounts' => collect([
+            ['id' => $momo->id, 'kind' => 'mobile_money', 'name' => 'MTN MoMo', 'detail' => '+250 788 ···· 456', 'unlink' => null],
+            ['id' => $bank->id, 'kind' => 'bank', 'name' => 'Bank of Kigali', 'detail' => 'Account ····2231', 'unlink' => null],
+        ])->sortBy('id')->values()->all()]);
 
     $user->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now(), 'login_alerts' => false])->save();
     expect(($this->props)($user->refresh(), 'business.profile', ['business' => $business, 'section' => 'security'], 'business/profile')['security'])
