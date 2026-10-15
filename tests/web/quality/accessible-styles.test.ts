@@ -30,3 +30,18 @@ describe('Reduced motion (WCAG 2.2 SC 2.3.3)', () => {
         expect(block).toContain('scroll-behavior: auto !important;');
     });
 });
+
+describe('Visible keyboard focus (WCAG 2.2 SC 2.4.7)', () => {
+    it('rings whatever has keyboard focus, outside every layer, in the audience accent', () => {
+        const shared = css('rozine.css');
+        const rule = /^:focus-visible \{([^}]*)\}/mu.exec(shared)?.[1];
+
+        expect(rule).toContain(
+            'outline: 2px solid var(--rz-accent-fill, var(--rz-admin-fill));',
+        );
+        expect(rule).toContain('outline-offset: 2px;');
+        expect(shared.slice(0, shared.indexOf(':focus-visible {'))).not.toMatch(
+            /@layer[^;{]*\{[^}]*$/u,
+        );
+    });
+});

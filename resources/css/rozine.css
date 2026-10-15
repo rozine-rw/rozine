@@ -501,6 +501,16 @@
 }
 
 /*
+ * WCAG 2.2 SC 2.4.7: whatever has keyboard focus always shows it. Many fields drop the browser's own
+ * outline for a softer border; this ring, in the audience's accent, comes back for keyboard focus and
+ * stays outside any layer so no utility can remove it.
+ */
+:focus-visible {
+    outline: 2px solid var(--rz-accent-fill, var(--rz-admin-fill));
+    outline-offset: 2px;
+}
+
+/*
  * WCAG 2.2 SC 2.3.3: a person who asks their system for reduced motion gets none of the app's
  * entrances, spinners, pulses or transitions. Every page loads this stylesheet through app.css, so
  * the rule also covers the Pulse and Auditor keyframes.
