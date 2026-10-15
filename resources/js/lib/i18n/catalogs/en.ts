@@ -4475,6 +4475,10 @@ const en = {
         'Accreditation needs another look',
     'investor.notices.auditor.accreditation_rejected.body':
         '{reason} Upload a corrected certificate from your profile.',
+    'investor.notices.auditor.accreditation_renewal_due.title':
+        'Accreditation renewal due',
+    'investor.notices.auditor.accreditation_renewal_due.body':
+        'Licence {licence} expires on {date}. Upload the renewal from your profile to keep taking audit jobs.',
     'investor.notices.auditor.job_offered.title': 'New audit job',
     'investor.notices.auditor.job_offered.body_flash':
         'Flash audit at {business}, {location}. Accept by {time}.',

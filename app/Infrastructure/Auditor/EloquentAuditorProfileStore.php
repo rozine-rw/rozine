@@ -106,6 +106,24 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         });
     }
 
+    public function remindRenewals(): int
+    {
+        $now = now()->toDateTimeImmutable();
+        $reminded = 0;
+        AuditorProfile::query()->lazyById(100)->each(function (AuditorProfile $profile) use ($now, &$reminded): void {
+            if (! $this->profiles->renewalDue($profile->state, $now)) {
+                return;
+            }
+            $standing = $profile->state['standing'];
+            $this->notices->record($profile->party_id, PartyNoticeKind::AuditorAccreditationRenewalDue,
+                ['licence' => (string) $standing['licence'], 'expires_on' => (string) $standing['expires_on']],
+                'auditor-accreditation-renewal-due:'.$profile->party_id.':'.$standing['expires_on']);
+            $reminded++;
+        });
+
+        return $reminded;
+    }
+
     /** @return array<string, mixed> */
     public function accreditation(int $userId, int $contextRevision): array
     {

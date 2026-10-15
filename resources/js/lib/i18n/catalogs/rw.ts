@@ -4659,6 +4659,10 @@ const rw: Catalog = {
         'Uruhushya rwawe rugomba kongera gusuzumwa',
     'investor.notices.auditor.accreditation_rejected.body':
         '{reason} Ohereza icyemezo gikosoye uhereye kuri porofayili yawe.',
+    'investor.notices.auditor.accreditation_renewal_due.title':
+        'Igihe cyo kuvugurura uruhushya kirageze',
+    'investor.notices.auditor.accreditation_renewal_due.body':
+        "Uruhushya {licence} ruzarangira ku wa {date}. Ohereza uruhushya ruvuguruye uhereye kuri porofayili yawe kugira ngo ukomeze kwakira imirimo y'igenzura.",
     'investor.notices.auditor.job_offered.title': "Umurimo mushya w'igenzura",
     'investor.notices.auditor.job_offered.body_flash':
         'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',

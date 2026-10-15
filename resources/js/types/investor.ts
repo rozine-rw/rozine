@@ -1462,6 +1462,10 @@ export type InvestorNotice = {
       }
     | { kind: 'auditor.accreditation_rejected'; facts: { reason: string } }
     | {
+          kind: 'auditor.accreditation_renewal_due';
+          facts: { licence: string; expires_on: string };
+      }
+    | {
           kind: 'auditor.job_offered';
           facts: {
               type: 'flash' | 'routine';

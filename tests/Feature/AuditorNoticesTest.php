@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\SubmitAuditorAccreditation;
 use App\Models\AuditAssignment;
 use App\Models\BusinessProfile;
 use App\Models\PartyNotice;
@@ -9,6 +10,8 @@ use App\Models\User;
 use App\Notifications\Auditor\AccreditationDecided;
 use App\Notifications\Auditor\AuditJobType;
 use App\Notifications\Auditor\JobOffered;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
@@ -50,6 +53,37 @@ it('tells the partner why their accreditation was rejected', function (): void {
     expect(PartyNotice::query()->sole()->only(['kind', 'facts']))->toEqual(['kind' => 'auditor.accreditation_rejected', 'facts' => ['reason' => 'Synthetic reviewed evidence.']]);
     Notification::assertSentTo($fixture['user'], AccreditationDecided::class,
         fn (AccreditationDecided $mail): bool => $mail->rejectionReason === 'Synthetic reviewed evidence.');
+});
+
+it('reminds an active partner to renew once, from 45 Kigali days before the licence lapses, unless a renewal is pending', function (): void {
+    $fixture = AuditorFixture::make();
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 1, 'approve', AuditorFixture::submit($fixture['user'])['data']['submission_id']);
+    $renewing = AuditorFixture::make();
+    AuditorFixture::review($renewing['staff'], $renewing['party']->id, 1, 'approve', AuditorFixture::submit($renewing['user'])['data']['submission_id']);
+    $expiresOn = now()->addYear()->format('Y-m-d');
+    $lastDay = CarbonImmutable::parse($expiresOn, 'Africa/Kigali');
+
+    $this->travelTo($lastDay->subDays(46)->setTime(23, 30));
+    expect(Artisan::call('auditors:remind-renewals'))->toBe(0)->and(Artisan::output())->toContain('Reminded 0 Audit Partners to renew.');
+    app(SubmitAuditorAccreditation::class)->handle($renewing['user']->id, 1, 2, 'SYNTHETIC-CPA', $lastDay->addYear()->format('Y-m-d'),
+        'renewal.pdf', "%PDF-1.7\nSynthetic renewal\n%%EOF", (string) Str::uuid(), true);
+
+    $this->travelTo($lastDay->subDays(45)->setTime(0, 5));
+    expect(Artisan::call('auditors:remind-renewals'))->toBe(0)->and(Artisan::output())->toContain('Reminded 1 Audit Partners to renew.');
+    Artisan::call('auditors:remind-renewals');
+    $this->travelTo($lastDay->setTime(23, 59));
+    Artisan::call('auditors:remind-renewals');
+
+    $notice = PartyNotice::query()->where('kind', 'auditor.accreditation_renewal_due')->sole();
+    expect([$notice->party_id, $notice->facts])->toEqual([$fixture['party']->id,
+        ['licence' => 'SYNTHETIC-CPA', 'expires_on' => $expiresOn]]);
+    Notification::assertSentToTimes($fixture['user'], AccreditationDecided::class, 1);
+    Notification::assertCount(2);
+    $this->actingAs($fixture['user'])->getJson(route('auditor.notices'))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'auditor.accreditation_renewal_due')->assertJsonPath('data.notices.0.link', ['url' => '/auditor/profile', 'method' => 'get']);
+
+    $this->travelTo($lastDay->addDay()->setTime(0, 5));
+    expect(Artisan::call('auditors:remind-renewals'))->toBe(0)->and(Artisan::output())->toContain('Reminded 0 Audit Partners to renew.');
 });
 
 it('offers each dispatched job to its partner, and the next partner after a decline', function (): void {

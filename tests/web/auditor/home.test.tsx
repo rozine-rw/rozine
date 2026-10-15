@@ -84,6 +84,59 @@ describe('Auditor Home', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
+    it('reminds the partner to renew a licence that is about to lapse, opening the profile', async () => {
+        inertia.queue.push(
+            answers({
+                data: {
+                    ...inbox,
+                    unread: 1,
+                    notices: [
+                        {
+                            id: '01k7nq0c2y6w8e4t1v3x5z7d09',
+                            kind: 'auditor.accreditation_renewal_due',
+                            facts: {
+                                licence: 'ICPAR/P-2026/0481',
+                                expires_on: '2026-11-24',
+                            },
+                            created_at: '2026-10-10T09:00:00+02:00',
+                            read: false,
+                            link: {
+                                url: '/preview/auditor-profile',
+                                method: 'get',
+                            },
+                            read_action: {
+                                url: '/preview/auditor-notices/read',
+                                method: 'post',
+                            },
+                        },
+                    ],
+                },
+            }),
+        );
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const [item] = await within(panel).findAllByRole('button', {
+            name: /Accreditation renewal due/u,
+        });
+
+        expect(item).toHaveTextContent(
+            'Accreditation renewal dueLicence ICPAR/P-2026/0481 expires on 24 Nov 2026. Upload the renewal from your profile to keep taking audit jobs.',
+        );
+
+        inertia.queue.push(answers({ data: { unread: 0 } }));
+        await user.click(item);
+
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-profile' },
+            ]),
+        );
+    });
+
     it('lays out identity, standing, nearby work and activity from server facts', () => {
         render(<AuditorHome {...fixture()} />);
 

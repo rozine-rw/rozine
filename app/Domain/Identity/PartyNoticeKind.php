@@ -38,6 +38,7 @@ enum PartyNoticeKind: string
     case AuditorAccreditationApproved = 'auditor.accreditation_approved';
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';
+    case AuditorAccreditationRenewalDue = 'auditor.accreditation_renewal_due';
 
     public function mailed(): bool
     {
@@ -64,7 +65,8 @@ enum PartyNoticeKind: string
             self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
             self::BusinessApplicationApproved => 'underwriting',
             self::BusinessDisbursementSent => 'payments',
-            self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered => 'audits',
+            self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
+            self::AuditorAccreditationRenewalDue => 'audits',
         };
     }
 }

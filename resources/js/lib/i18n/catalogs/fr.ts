@@ -4688,6 +4688,10 @@ const fr: Catalog = {
         'Votre accréditation doit être revue',
     'investor.notices.auditor.accreditation_rejected.body':
         '{reason} Téléversez un certificat corrigé depuis votre profil.',
+    'investor.notices.auditor.accreditation_renewal_due.title':
+        "Renouvellement de l'accréditation à prévoir",
+    'investor.notices.auditor.accreditation_renewal_due.body':
+        "La licence {licence} expire le {date}. Téléversez le renouvellement depuis votre profil pour continuer à accepter des missions d'audit.",
     'investor.notices.auditor.job_offered.title': "Nouvelle mission d'audit",
     'investor.notices.auditor.job_offered.body_flash':
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',

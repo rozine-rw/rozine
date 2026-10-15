@@ -190,6 +190,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
+    'auditor.accreditation_renewal_due': {
+        bar: 'bg-[#0c1830] dark:bg-rz-slate',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        icon: (
+            <>
+                <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
+                <path d="M7 11.5V16c3 2 7 2 10 0v-4.5" {...stroke} />
+            </>
+        ),
+    },
     'auditor.job_offered': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
@@ -584,6 +594,14 @@ function body(
             return t('investor.notices.auditor.accreditation_rejected.body', {
                 reason: notice.facts.reason,
             });
+        case 'auditor.accreditation_renewal_due':
+            return t(
+                'investor.notices.auditor.accreditation_renewal_due.body',
+                {
+                    licence: notice.facts.licence,
+                    date: formatDate(notice.facts.expires_on, locale),
+                },
+            );
         case 'auditor.job_offered':
             return t(
                 notice.facts.type === 'flash'
