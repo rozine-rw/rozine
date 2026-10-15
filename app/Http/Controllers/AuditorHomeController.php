@@ -39,6 +39,7 @@ class AuditorHomeController extends Controller
             'engagement' => $engagements->handle($userId, $revision),
             'jobs' => $jobs->handle($userId, $revision),
             'reports' => $reports->handle($userId, $revision, limit: self::RECENT_FILINGS),
+            'track_record' => $reports->trackRecord($userId, $revision),
             'unread_notifications' => $notices->unread($userId),
         ]))->resolve($request));
     }

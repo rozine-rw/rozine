@@ -11,6 +11,7 @@ namespace App\Application\Auditor\Contracts;
  *
  * @phpstan-type FiledReport array{id: string, kind: string, period: string|null, business: string, district: string, sealed_at: string, due_at: string|null, published: bool}
  * @phpstan-type FiledReports array{data: list<FiledReport>, counts: array{all: int, published: int}}
+ * @phpstan-type TrackRecord array{on_time_pct: int|null, clock_expiries: int}
  */
 interface AuditorFiledReportStore
 {
@@ -22,4 +23,13 @@ interface AuditorFiledReportStore
      * @return FiledReports
      */
     public function filed(int $userId, int $contextRevision, ?bool $published, int $limit): array;
+
+    /**
+     * The current Auditor's track record: the whole-percent share of their standing filed reports
+     * that were sealed by their due date (rounded down, null before any report with a due date),
+     * and how many offers ran out on them without being accepted.
+     *
+     * @return TrackRecord
+     */
+    public function trackRecord(int $userId, int $contextRevision): array;
 }
