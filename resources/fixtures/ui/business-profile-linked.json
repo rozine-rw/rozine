@@ -193,11 +193,12 @@
                     "detail": "+250 788 ···· 211",
                     "unlink": {
                         "url": "/preview/business-profile-linked",
-                        "method": "delete"
+                        "method": "post"
                     }
                 }
             ],
-            "add": null
+            "add": null,
+            "banks": []
         },
         "legal": null,
         "support": {

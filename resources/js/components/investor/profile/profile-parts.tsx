@@ -8,6 +8,7 @@ import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { LoginAlerts } from '@/components/rozine/login-alerts';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatMonthYearLong, formatMonthYear } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -579,10 +580,22 @@ type LinkAccountFormProps = {
     banks: LinkedProps['linked']['banks'];
     action: NonNullable<LinkedProps['action']>;
     hasAccounts: boolean;
+    /** The collapsed form's button, and whose name the footnote says an account must be in. */
+    addLabel?: MessageCode;
+    footnote?: MessageCode;
 };
 
-/** The link-a-new-account form, open from the start while nothing is linked yet. */
-function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
+/**
+ * The link-a-new-account form, open from the start while nothing is linked yet. A Business's Linked
+ * accounts reuses it with its own wording.
+ */
+export function LinkAccountForm({
+    banks,
+    action,
+    hasAccounts,
+    addLabel = 'investor.profile.linked.add',
+    footnote = 'investor.profile.linked.footnote',
+}: LinkAccountFormProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(!hasAccounts);
     const form = useForm<{
@@ -753,7 +766,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
                 {t('investor.profile.linked.submit')}
             </button>
             <p className="mt-[9px] text-[10.5px] leading-[1.45] text-rz-secondary">
-                {t('investor.profile.linked.footnote')}
+                {t(footnote)}
             </p>
         </form>
     ) : (
@@ -762,7 +775,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
             onClick={() => setOpen(true)}
             className="mt-3.5 h-[50px] w-full rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
         >
-            {t('investor.profile.linked.add')}
+            {t(addLabel)}
         </button>
     );
 }

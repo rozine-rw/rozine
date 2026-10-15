@@ -834,6 +834,11 @@ const rw: Catalog = {
     'business.profile.linked.unlink': 'Kuraho',
     'business.profile.linked.unlink_named': 'Kuraho {name}',
     'business.profile.linked.add': '+ Huza konti yakiriraho',
+    'business.profile.linked.none':
+        'Nta konti irahuzwa. Huza imwe kugira ngo ushyireho kandi ubikuze amafaranga.',
+    'business.profile.linked.empty': 'Nta konti irahuzwa.',
+    'business.profile.linked.footnote':
+        "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
     'business.profile.legal.updated':
         'Byavuguruwe ku wa {date} · Verisiyo {version}',
     'business.profile.legal.terms_intro':

@@ -1027,8 +1027,15 @@ export type BusinessProfileProps = {
         login_alerts: boolean;
         update_login_alerts: { url: string; method: 'put' };
     };
-    /** Null while there is no Business read: the section shows its empty state. */
-    linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
+    /**
+     * Null while there is no Business read. `add` (with its `banks`) and each account's `unlink` are
+     * offered only to a holder of `business.wallet.withdraw` where an account can be verified.
+     */
+    linked: {
+        accounts: LinkedAccount[];
+        add: RouteAction | null;
+        banks: { code: string; name: string }[];
+    } | null;
     /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
     /** The support center's chat over the Business's complaints (BRS v2.0 CMP-R03). */

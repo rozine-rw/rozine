@@ -19,6 +19,7 @@ use App\Http\Controllers\BusinessComplaintController;
 use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessNoticesController;
+use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
@@ -199,6 +200,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
     Route::put('{business}/profile/company', [BusinessContactController::class, 'update'])->whereUlid('business')->name('profile.company');
+    Route::post('{business}/profile/linked-accounts', [BusinessPayoutAccountController::class, 'link'])->whereUlid('business')->name('profile.link');
+    Route::post('{business}/profile/linked-accounts/{method}/unlink', [BusinessPayoutAccountController::class, 'unlink'])->whereUlid(['business', 'method'])
+        ->name('profile.unlink');
     Route::post('{business}/complaints', [BusinessComplaintController::class, 'store'])->whereUlid('business')->name('complaints.store');
     Route::post('{business}/complaints/{complaint}/messages', [BusinessComplaintController::class, 'reply'])->whereUlid(['business', 'complaint'])
         ->name('complaints.reply');

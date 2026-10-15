@@ -327,7 +327,9 @@ describe('Company information', () => {
 });
 
 describe('Linked accounts', () => {
-    it('lets only removable accounts be unlinked', () => {
+    it('lets only removable accounts be unlinked', async () => {
+        const user = userEvent.setup();
+
         render(<BusinessProfile {...props(linkedFixture)} />);
 
         expect(
@@ -337,28 +339,77 @@ describe('Linked accounts', () => {
             screen.getByText('Business account ····2231'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: 'Unlink Bank of Kigali' }),
+            screen.queryByRole('button', { name: 'Unlink Bank of Kigali' }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Unlink MTN Mobile Money' }),
+        );
+        expect(inertia.puts).toEqual([
+            { url: 'post /preview/business-profile-linked', data: {} },
+        ]);
+        expect(
+            screen.queryByRole('button', { name: '+ Link a payout account' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Unlink MTN Mobile Money' }),
-        ).toHaveAttribute('data-method', 'delete');
-        expect(
-            screen.queryByRole('link', { name: '+ Link a payout account' }),
+            screen.queryByRole('form', { name: 'Link a new account' }),
         ).not.toBeInTheDocument();
     });
 
-    it('offers to link a payout account when there is none', () => {
+    it("links an account in the business's name from the form", async () => {
+        const user = userEvent.setup();
         const page = props(linkedFixture);
 
         page.linked = {
             accounts: [],
-            add: { url: '/business/bank', method: 'get' },
+            add: { url: '/business/linked', method: 'post' },
+            banks: [{ code: 'bk', name: 'Bank of Kigali' }],
         };
         render(<BusinessProfile {...page} />);
 
         expect(
-            screen.getByRole('link', { name: '+ Link a payout account' }),
-        ).toHaveAttribute('href', '/business/bank');
+            screen.getByText(
+                'No account linked yet. Link one to deposit and withdraw.',
+            ),
+        ).toBeInTheDocument();
+        const form = screen.getByRole('form', { name: 'Link a new account' });
+
+        expect(
+            within(form).getByText(
+                "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(form).getByLabelText('MOBILE NUMBER'),
+            '0781234567',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Link account' }),
+        );
+
+        expect(inertia.puts).toEqual([
+            {
+                url: 'post /business/linked',
+                data: {
+                    type: 'mobile',
+                    network: 'mtn',
+                    bank: 'bk',
+                    number: '0781234567',
+                    request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                },
+            },
+        ]);
+        expect(
+            screen.getByRole('button', { name: '+ Link a payout account' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says so when no account is linked and none can be', () => {
+        const page = props(linkedFixture);
+
+        page.linked = { accounts: [], add: null, banks: [] };
+        render(<BusinessProfile {...page} />);
+
+        expect(screen.getByText('No account linked yet.')).toBeInTheDocument();
     });
 
     it('shows nothing until the accounts arrive', () => {

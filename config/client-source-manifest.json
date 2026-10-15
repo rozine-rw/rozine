@@ -53,6 +53,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessContactController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessPayoutAccountController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessWalletController.ts",
@@ -752,8 +753,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 721,
-        "generated": 309,
+        "totalTrackedSources": 722,
+        "generated": 310,
         "declarationOnly": 19,
         "authoredExecutable": 393
     },

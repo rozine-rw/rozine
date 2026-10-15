@@ -17,8 +17,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * people with their roles and permissions, for Permissions & roles; there is no invite, removal or
  * ownership-transfer command, so none is offered. `security` reports whether two-factor sign-in is
  * on, managed on the account's security settings. Linked accounts lists the Business's own verified
- * accounts; there is no link or unlink command for a Business yet, so none is offered and only Rozine
- * support changes them. The legal documents have no Business read yet, so `legal` is null and its
+ * accounts; a holder of `business.wallet.withdraw` gets the link form with its banks and an unlink on
+ * each account wherever an account can be verified, and otherwise none is offered. The legal documents have no Business read yet, so `legal` is null and its
  * section shows an empty state. The support center's answers have no approved content either, but
  * its support chat is real: the Business's complaints with their reference, clocks and conversation
  * (BRS v2.0 CMP-R03), a reply on each one not yet resolved, and where a first message opens a new one. Every Business read is refused unless its
@@ -55,8 +55,10 @@ class BusinessProfileResource extends JsonResource
                 'complaints' => array_map(fn (array $complaint): array => [...$complaint, 'reply' => $complaint['status'] === 'resolved' ? null
                     : ['url' => route('business.complaints.reply', [...$parameters, 'complaint' => $complaint['id']], false), 'method' => 'post']],
                     $data['complaints'])],
-            'linked' => ['add' => null, 'accounts' => array_map(fn (array $method): array => ['id' => $method['id'],
-                'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money', 'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => null], $data['methods'])],
+            'linked' => ['add' => $data['can_link'] ? ['url' => route('business.profile.link', $parameters, false), 'method' => 'post'] : null, 'banks' => $data['banks'],
+                'accounts' => array_map(fn (array $method): array => ['id' => $method['id'], 'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money',
+                    'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => $data['can_link']
+                        ? ['url' => route('business.profile.unlink', [...$parameters, 'method' => $method['id']], false), 'method' => 'post'] : null], $data['methods'])],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', $parameters), ...BusinessHomeResource::tabs($request, $parameters['business']),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], 'back' => BusinessHomeResource::link($request, 'business.profile', $parameters),
                 'sections' => array_combine(self::SECTIONS, array_map(fn (string $section): array => BusinessHomeResource::link($request, 'business.profile',

@@ -806,6 +806,11 @@ const en = {
     'business.profile.linked.unlink': 'Unlink',
     'business.profile.linked.unlink_named': 'Unlink {name}',
     'business.profile.linked.add': '+ Link a payout account',
+    'business.profile.linked.none':
+        'No account linked yet. Link one to deposit and withdraw.',
+    'business.profile.linked.empty': 'No account linked yet.',
+    'business.profile.linked.footnote':
+        "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
     'business.profile.legal.terms_intro':
         'Please read these Terms carefully. By registering your business, starting a raise or otherwise using Rozine, you agree to be bound by these Terms in full. If you do not agree, you must not use the platform.',

@@ -838,6 +838,11 @@ const fr: Catalog = {
     'business.profile.linked.unlink': 'Dissocier',
     'business.profile.linked.unlink_named': 'Dissocier {name}',
     'business.profile.linked.add': '+ Lier un compte de versement',
+    'business.profile.linked.none':
+        'Aucun compte lié. Liez-en un pour déposer et retirer.',
+    'business.profile.linked.empty': 'Aucun compte lié.',
+    'business.profile.linked.footnote':
+        "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
     'business.profile.legal.updated':
         'Dernière mise à jour le {date} · Version {version}',
     'business.profile.legal.terms_intro':
