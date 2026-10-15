@@ -24,6 +24,7 @@ import type {
 import aheadFixture from '../../../resources/fixtures/ui/business-repayments-ahead.json';
 import allocatingFixture from '../../../resources/fixtures/ui/business-repayments-allocating.json';
 import dueFixture from '../../../resources/fixtures/ui/business-repayments-due.json';
+import issuedFixture from '../../../resources/fixtures/ui/business-repayments-issued.json';
 import minimalFixture from '../../../resources/fixtures/ui/business-repayments-live-minimal.json';
 import noneFixture from '../../../resources/fixtures/ui/business-repayments-none.json';
 import overdueFixture from '../../../resources/fixtures/ui/business-repayments-overdue.json';
@@ -530,6 +531,35 @@ describe('Business repayments (business-servicing-v1)', () => {
         expect(
             view.queryByRole('region', { name: 'Repayment schedule' }),
         ).not.toBeInTheDocument();
+    });
+
+    it("shows an issued note's schedule as issued, with nothing due, paid or payable", () => {
+        const page = structuredClone(
+            issuedFixture.props,
+        ) as BusinessRepaymentsEmptyProps;
+
+        render(<BusinessRepayments {...page} />);
+
+        const schedule = within(
+            within(sheet()).getByRole('region', {
+                name: 'Repayment schedule · Kigali Fresh Produce expansion',
+            }),
+        );
+
+        expect(
+            schedule.getByText('Kigali Fresh Produce expansion · as issued'),
+        ).toBeInTheDocument();
+        expect(schedule.getByText('Total to repay')).toBeInTheDocument();
+        expect(schedule.getAllByRole('listitem')).toHaveLength(6);
+        expect(schedule.getByText(/#1 · due/u)).toBeInTheDocument();
+        expect(
+            schedule.getAllByText(/^Principal .+ · return .+$/u),
+        ).toHaveLength(6);
+        expect(
+            screen.queryByText('Nothing to repay yet'),
+        ).not.toBeInTheDocument();
+        expect(within(sheet()).queryByRole('button')).not.toBeInTheDocument();
+        expect(screen.queryByText(/overdue|paid/iu)).not.toBeInTheDocument();
     });
 
     it('draws the empty sheet over the real Home when the server sends it', () => {

@@ -2656,6 +2656,14 @@ const en = {
     'business.repayments.total': 'Total',
     'business.repayments.schedule': 'Repayment schedule',
     'business.repayments.late.title': 'If a payment is late',
+    'business.repayments.issued.lede': '{title} · as issued',
+    'business.repayments.issued.principal': 'Principal',
+    'business.repayments.issued.return': 'Return',
+    'business.repayments.issued.total': 'Total to repay',
+    'business.repayments.issued.split':
+        'Principal {principal} · return {return}',
+    'business.repayments.issued.note':
+        'Each instalment is principal plus return, due on the date shown. Payments, late charges and receipts will show here once repayments open.',
     'business.repayments.none.title': 'Nothing to repay yet',
     'business.repayments.none.body':
         'Repayments start once a raise is funded and paid out to you. Its schedule, what is due and every payment will show here.',

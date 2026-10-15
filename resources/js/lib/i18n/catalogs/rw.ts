@@ -2753,6 +2753,14 @@ const rw: Catalog = {
     'business.repayments.total': 'Igiteranyo',
     'business.repayments.schedule': 'Gahunda yo kwishyura',
     'business.repayments.late.title': 'Iyo ubwishyu butinze',
+    'business.repayments.issued.lede': '{title} · uko byatanzwe',
+    'business.repayments.issued.principal': 'Igishoro',
+    'business.repayments.issued.return': 'Inyungu',
+    'business.repayments.issued.total': 'Igiteranyo cyo kwishyura',
+    'business.repayments.issued.split':
+        'Igishoro {principal} · inyungu {return}',
+    'business.repayments.issued.note':
+        "Buri gice kigizwe n'igishoro n'inyungu, kigomba kwishyurwa ku itariki igaragara. Ubwishyu, amande y'ubukererwe n'inyemezabwishyu bizagaragara hano kwishyura nibimara gufungurwa.",
     'business.repayments.none.title': 'Nta kwishyura birahari',
     'business.repayments.none.body':
         "Kwishyura bitangira iyo amafaranga wakusanyije amaze kuzura no kukugeraho. Ingengabihe, ibigomba kwishyurwa n'ubwishyu bwose bizagaragara hano.",

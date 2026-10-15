@@ -1369,13 +1369,40 @@ export type BusinessRepaymentsProps = BusinessServicingPageContract & {
 };
 
 /**
+ * An issued Note's schedule as it was issued: each instalment's principal and return, the equal
+ * monthly amount the Business pays (BRS glossary). No paid amount, late fee or current claim.
+ */
+export type BusinessIssuedSchedule = {
+    note_id: string;
+    title: string;
+    /** The disbursement's Kigali effective date, which anchors the due dates. */
+    effective_date: KigaliDate | null;
+    principal: Money;
+    return: Money;
+    total: Money;
+    instalments: {
+        index: number;
+        due_on: KigaliDate;
+        principal: Money;
+        return: Money;
+        total: Money;
+    }[];
+};
+
+/**
  * `business.repayments.show` while no note of the business is servicing: no note, servicing or
- * pay panel, and no Pay. The sheet shows its empty state over Home.
+ * pay panel, and no Pay. The sheet shows its empty state over Home, or each issued Note's
+ * schedule as it was issued.
  */
 export type BusinessRepaymentsEmptyProps = Omit<
     BusinessRepaymentsProps,
     'note' | 'servicing' | 'pay'
-> & { note: null; servicing: null; pay: null };
+> & {
+    note: null;
+    servicing: null;
+    pay: null;
+    issued: BusinessIssuedSchedule[];
+};
 
 /** What the Repayments page receives: a servicing note's sheet, or its empty state. */
 export type BusinessRepaymentsPageProps =

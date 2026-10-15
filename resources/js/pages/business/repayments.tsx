@@ -4,6 +4,7 @@ import { BusinessShell } from '@/components/business/business-shell';
 import { DetailSheet } from '@/components/business/detail-sheet';
 import { BlankBody, HomeBody } from '@/components/business/home/home-body';
 import { DueCard } from '@/components/business/repayments/due-card';
+import { IssuedSchedule } from '@/components/business/repayments/issued-schedule';
 import { LatePolicy } from '@/components/business/repayments/late-policy';
 import { PayPanel } from '@/components/business/repayments/pay-panel';
 import { ProgressCard } from '@/components/business/repayments/progress-card';
@@ -43,7 +44,8 @@ const RELOADS = [
  * the next instalment early (`repayment.pay`). Every amount, DPD and date is the server's. A
  * recorded payment is allocated to the note's Investors afterwards; while it is, the page polls
  * within bounds, and it never shows an instalment as paid before the server does. While no note
- * is servicing, the sheet says so and offers nothing to pay.
+ * is servicing, the sheet offers nothing to pay: it shows each issued note's schedule as it was
+ * issued, or says there is nothing to repay.
  */
 export default function BusinessRepayments(props: BusinessRepaymentsPageProps) {
     const { t } = useTranslation();
@@ -103,8 +105,11 @@ function SheetHeading({
     );
 }
 
-/** No note is servicing yet: nothing is due, scheduled or payable, and nothing is offered. */
-function NothingToRepay({ links }: BusinessRepaymentsEmptyProps) {
+/**
+ * No note is servicing yet: nothing is due or payable, and nothing is offered. An issued note shows
+ * its schedule as it was issued; with none, the sheet says there is nothing to repay.
+ */
+function NothingToRepay({ links, issued }: BusinessRepaymentsEmptyProps) {
     const { t } = useTranslation();
 
     return (
@@ -115,17 +120,26 @@ function NothingToRepay({ links }: BusinessRepaymentsEmptyProps) {
         >
             <div className="px-5 pt-[calc(env(safe-area-inset-top)+2px)] pb-10 lg:pt-[18px]">
                 <SheetHeading close={links.close} />
-                <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface px-5 py-10 text-center">
-                    <div className="text-3xl">
-                        <Icon name="inbox-empty" />
+                {issued.length === 0 ? (
+                    <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface px-5 py-10 text-center">
+                        <div className="text-3xl">
+                            <Icon name="inbox-empty" />
+                        </div>
+                        <p className="mt-2.5 text-[14.5px] font-semibold text-rz-ink">
+                            {t('business.repayments.none.title')}
+                        </p>
+                        <p className="mt-1.5 text-[13px] text-rz-secondary">
+                            {t('business.repayments.none.body')}
+                        </p>
                     </div>
-                    <p className="mt-2.5 text-[14.5px] font-semibold text-rz-ink">
-                        {t('business.repayments.none.title')}
-                    </p>
-                    <p className="mt-1.5 text-[13px] text-rz-secondary">
-                        {t('business.repayments.none.body')}
-                    </p>
-                </div>
+                ) : (
+                    issued.map((schedule) => (
+                        <IssuedSchedule
+                            key={schedule.note_id}
+                            schedule={schedule}
+                        />
+                    ))
+                )}
             </div>
         </DetailSheet>
     );

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/api/v1/business/{business}/repayments'
 */
 const pay2ad7d97281c3dff34bb12cd1d03b6d4d = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ pay2ad7d97281c3dff34bb12cd1d03b6d4d.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/api/v1/business/{business}/repayments'
 */
 pay2ad7d97281c3dff34bb12cd1d03b6d4d.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ pay2ad7d97281c3dff34bb12cd1d03b6d4d.url = (args: { business: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/api/v1/business/{business}/repayments'
 */
 pay2ad7d97281c3dff34bb12cd1d03b6d4d.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ pay2ad7d97281c3dff34bb12cd1d03b6d4d.post = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/api/v1/business/{business}/repayments'
 */
 const pay2ad7d97281c3dff34bb12cd1d03b6d4dForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const pay2ad7d97281c3dff34bb12cd1d03b6d4dForm = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/api/v1/business/{business}/repayments'
 */
 pay2ad7d97281c3dff34bb12cd1d03b6d4dForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -74,7 +74,7 @@ pay2ad7d97281c3dff34bb12cd1d03b6d4dForm.post = (args: { business: string | numbe
 pay2ad7d97281c3dff34bb12cd1d03b6d4d.form = pay2ad7d97281c3dff34bb12cd1d03b6d4dForm
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/business/{business}/repayments'
 */
 const pay6a9937ee5fe55dd859e09800922b0c9f = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -89,7 +89,7 @@ pay6a9937ee5fe55dd859e09800922b0c9f.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/business/{business}/repayments'
 */
 pay6a9937ee5fe55dd859e09800922b0c9f.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -116,7 +116,7 @@ pay6a9937ee5fe55dd859e09800922b0c9f.url = (args: { business: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/business/{business}/repayments'
 */
 pay6a9937ee5fe55dd859e09800922b0c9f.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ pay6a9937ee5fe55dd859e09800922b0c9f.post = (args: { business: string | number } 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/business/{business}/repayments'
 */
 const pay6a9937ee5fe55dd859e09800922b0c9fForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -136,7 +136,7 @@ const pay6a9937ee5fe55dd859e09800922b0c9fForm = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:34
+* @see app/Http/Controllers/BusinessRepaymentController.php:35
 * @route '/business/{business}/repayments'
 */
 pay6a9937ee5fe55dd859e09800922b0c9fForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -158,7 +158,7 @@ export const pay = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 const operation51da79a50d67617dfb7d31ed81d2dbc2 = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -173,7 +173,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 operation51da79a50d67617dfb7d31ed81d2dbc2.url = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -199,7 +199,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2.url = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 operation51da79a50d67617dfb7d31ed81d2dbc2.get = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -209,7 +209,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2.get = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 operation51da79a50d67617dfb7d31ed81d2dbc2.head = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -219,7 +219,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2.head = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 const operation51da79a50d67617dfb7d31ed81d2dbc2Form = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -229,7 +229,7 @@ const operation51da79a50d67617dfb7d31ed81d2dbc2Form = (args: { business: string 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 operation51da79a50d67617dfb7d31ed81d2dbc2Form.get = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -239,7 +239,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2Form.get = (args: { business: string | 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/api/v1/business/{business}/repayment-operations/{request_id}'
 */
 operation51da79a50d67617dfb7d31ed81d2dbc2Form.head = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -255,7 +255,7 @@ operation51da79a50d67617dfb7d31ed81d2dbc2Form.head = (args: { business: string |
 operation51da79a50d67617dfb7d31ed81d2dbc2.form = operation51da79a50d67617dfb7d31ed81d2dbc2Form
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 const operation87ce39e586b291eee97cd4ecd19f6c9c = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -270,7 +270,7 @@ operation87ce39e586b291eee97cd4ecd19f6c9c.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 operation87ce39e586b291eee97cd4ecd19f6c9c.url = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -296,7 +296,7 @@ operation87ce39e586b291eee97cd4ecd19f6c9c.url = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 operation87ce39e586b291eee97cd4ecd19f6c9c.get = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -306,7 +306,7 @@ operation87ce39e586b291eee97cd4ecd19f6c9c.get = (args: { business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 operation87ce39e586b291eee97cd4ecd19f6c9c.head = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -316,7 +316,7 @@ operation87ce39e586b291eee97cd4ecd19f6c9c.head = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 const operation87ce39e586b291eee97cd4ecd19f6c9cForm = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -326,7 +326,7 @@ const operation87ce39e586b291eee97cd4ecd19f6c9cForm = (args: { business: string 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 operation87ce39e586b291eee97cd4ecd19f6c9cForm.get = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -336,7 +336,7 @@ operation87ce39e586b291eee97cd4ecd19f6c9cForm.get = (args: { business: string | 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::operation
-* @see app/Http/Controllers/BusinessRepaymentController.php:42
+* @see app/Http/Controllers/BusinessRepaymentController.php:43
 * @route '/business/{business}/repayment-operations/{request_id}'
 */
 operation87ce39e586b291eee97cd4ecd19f6c9cForm.head = (args: { business: string | number, request_id: string | number } | [business: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -363,7 +363,7 @@ export const operation = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -378,7 +378,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -405,7 +405,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -415,7 +415,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -425,7 +425,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -435,7 +435,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -445,7 +445,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:26
+* @see app/Http/Controllers/BusinessRepaymentController.php:27
 * @route '/business/{business}/repayments'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

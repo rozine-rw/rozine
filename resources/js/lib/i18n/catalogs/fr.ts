@@ -2767,6 +2767,14 @@ const fr: Catalog = {
     'business.repayments.total': 'Total',
     'business.repayments.schedule': 'Échéancier',
     'business.repayments.late.title': 'En cas de retard de paiement',
+    'business.repayments.issued.lede': "{title} · tel qu'émis",
+    'business.repayments.issued.principal': 'Capital',
+    'business.repayments.issued.return': 'Rendement',
+    'business.repayments.issued.total': 'Total à rembourser',
+    'business.repayments.issued.split':
+        'Capital {principal} · rendement {return}',
+    'business.repayments.issued.note':
+        "Chaque échéance correspond au capital plus le rendement, due à la date indiquée. Les paiements, frais de retard et reçus apparaîtront ici dès l'ouverture des remboursements.",
     'business.repayments.none.title': 'Rien à rembourser pour le moment',
     'business.repayments.none.body':
         "Les remboursements commencent une fois qu'une levée est financée et que les fonds vous sont versés. Son échéancier, les montants dus et chaque paiement apparaîtront ici.",

@@ -165,7 +165,7 @@ it('opens Repayments on its empty state over the real Home while no note is serv
     $props = ($this->props)($user, 'business.repayments.show', ['business' => $business], 'business/repayments');
 
     expect($props)->toMatchArray(['contract_version' => 'business-servicing-v1', 'identity_context_revision' => 1, 'allowed_actions' => [],
-        'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'receipt' => null, 'recent' => [], 'home' => $home,
+        'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'receipt' => null, 'recent' => [], 'issued' => [], 'home' => $home,
         'actions' => ['pay' => null]])
         ->and((array) $props['bases'])->toBe([])
         ->and($props['server_time'])->toBe(now()->toIso8601String())

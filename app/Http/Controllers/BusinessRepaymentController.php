@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Business\GetBusinessHome;
+use App\Application\Business\GetBusinessRepayments;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Wallet\FindBusinessRepaymentOperation;
 use App\Application\Wallet\PayBusinessRepayment;
@@ -21,14 +21,15 @@ class BusinessRepaymentController extends Controller
 {
     /**
      * The Repayments sheet over Home (web only). No servicing domain is bound yet, so no note of
-     * this Business is servicing: the sheet opens on its empty state over the real Home.
+     * this Business is servicing: the sheet opens on its empty state over the real Home, with each
+     * issued Note's schedule as it was issued.
      */
-    public function show(ShowBusinessHomeRequest $request, AuthorizeActiveRole $identity, GetBusinessHome $home): Response
+    public function show(ShowBusinessHomeRequest $request, AuthorizeActiveRole $identity, GetBusinessRepayments $repayments): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = $request->validated('identity_context_revision') ?? $identity->context($userId, 'business')['context_revision'];
 
-        return Inertia::render('business/repayments', (new BusinessRepaymentsResource($home->handle($userId, (int) $revision, (string) $request->route('business'))))->resolve($request));
+        return Inertia::render('business/repayments', (new BusinessRepaymentsResource($repayments->handle($userId, (int) $revision, (string) $request->route('business'))))->resolve($request));
     }
 
     public function pay(PayRepaymentRequest $request, PayBusinessRepayment $action): OperationResource
