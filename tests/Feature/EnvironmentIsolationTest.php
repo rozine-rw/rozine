@@ -215,6 +215,7 @@ test('unsafe flag combinations cannot activate a demo or money path', function (
 ]);
 
 test('demo reset needs both operator switches', function (bool $enabled, bool $reset, bool $canSeed, bool $canReset) {
+    $this->travelTo('2026-09-14T12:00:00+00:00');
     $isolation = isolatedConfiguration();
     config(['isolation.demo_enabled' => $enabled, 'isolation.demo_reset_enabled' => $reset]);
 
