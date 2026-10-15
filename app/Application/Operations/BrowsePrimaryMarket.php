@@ -13,8 +13,11 @@ use Carbon\CarbonImmutable;
  * The Primary Market Monitor (`primary.view`): every rated raise still filling, newest first, from
  * the same projection Investors browse, with its Kigali days left, and how many published raises
  * ended funded or failed. A raise whose funding lock is recorded has left the market and waits on
- * its disbursement, so it is not listed. Nothing here can feature, pause, fill or fail a raise:
+ * its disbursement, so it is not listed. The funding trend is the cash committed per Kigali day
+ * over the last fourteen days. Nothing here can feature, pause, fill or fail a raise:
  * a raise fills or fails on its own clock (BRS), and no moderation policy is signed.
+ *
+ * @phpstan-import-type Bar from OperationsDashboardStore
  *
  * @phpstan-type Raise array{
  *     campaign_id: string, name: string, industry: string, district: string, rating: array{band: string, score: string},
@@ -28,7 +31,10 @@ final readonly class BrowsePrimaryMarket
 
     public function __construct(private InvestorDealCatalogue $deals, private OperationsDashboardStore $dashboard, private AuthorizeStaffPermission $staff) {}
 
-    /** @return array{raises: list<Raise>, ended: array{funded: int, failed: int}} */
+    /** The design's funding trend reads the last fourteen Kigali days. */
+    private const int TREND_DAYS = 14;
+
+    /** @return array{raises: list<Raise>, ended: array{funded: int, failed: int}, trend: array{from: string, bars: list<Bar>}} */
     public function handle(int $actorId): array
     {
         $this->staff->check($actorId, 'primary.view');
@@ -49,7 +55,9 @@ final readonly class BrowsePrimaryMarket
                 'days_left' => max(0, (int) $today->diffInDays($closes->startOfDay(), false))];
         }
         $notes = $this->dashboard->figures()['notes'];
+        $from = $today->subDays(self::TREND_DAYS - 1);
 
-        return ['raises' => $raises, 'ended' => ['funded' => $notes['funded'] + $notes['repaying'], 'failed' => $notes['failed']]];
+        return ['raises' => $raises, 'ended' => ['funded' => $notes['funded'] + $notes['repaying'], 'failed' => $notes['failed']],
+            'trend' => ['from' => $from->toIso8601String(), 'bars' => $this->dashboard->committed('day', $from->utc()->toIso8601String(), null)]];
     }
 }

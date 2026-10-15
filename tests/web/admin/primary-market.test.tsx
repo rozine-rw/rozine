@@ -61,6 +61,21 @@ const props = (
             { key: 'fill', value: { kind: 'percent', value: '40' } },
             { key: 'completion', value: { kind: 'percent', value: '75' } },
         ],
+        trend: {
+            from: '2026-10-02T00:00:00+02:00',
+            bars: [
+                {
+                    label: '10-14',
+                    amount: { currency: 'RWF', amount: '1000000' },
+                    height_pct: 40,
+                },
+                {
+                    label: '10-15',
+                    amount: { currency: 'RWF', amount: '2500000' },
+                    height_pct: 0,
+                },
+            ],
+        },
         raises: [
             raise({}),
             raise({
@@ -104,6 +119,17 @@ describe('Primary Market Monitor', () => {
         expect(screen.getByText('Capital In Flight')).toBeInTheDocument();
         expect(screen.getByText('40%')).toBeInTheDocument();
         expect(screen.getByText('75%')).toBeInTheDocument();
+
+        const trend = screen.getByRole('region', { name: 'Funding trend' });
+
+        expect(trend).toHaveTextContent(
+            'Cash committed to raises each day, last 14 days.',
+        );
+        expect(within(trend).getByText('10-14')).toBeInTheDocument();
+        expect(within(trend).getByText('2.5M')).toBeInTheDocument();
+        expect(
+            within(trend).queryByText('No funding to chart yet.'),
+        ).not.toBeInTheDocument();
 
         const live = rowOf('RSE-00AAAA');
 
@@ -164,9 +190,16 @@ describe('Primary Market Monitor', () => {
         expect(screen.getByRole('status')).toHaveTextContent(/Kivu/);
         expect(screen.queryByText('No live raises')).not.toBeInTheDocument();
 
-        rerender(<AdminPrimaryMarket {...props({ raises: [] })} />);
+        rerender(
+            <AdminPrimaryMarket
+                {...props({ raises: [], trend: { from: '', bars: [] } })}
+            />,
+        );
 
         expect(screen.getByText('No live raises')).toBeInTheDocument();
+        expect(
+            screen.getByText('No funding to chart yet.'),
+        ).toBeInTheDocument();
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 });

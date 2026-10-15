@@ -5243,6 +5243,8 @@ const en = {
     'admin.primary.lifecycle.inventory_unavailable': 'Unavailable',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Sold out',
     'admin.primary.lifecycle.closing_pending_settlement': 'Closing',
+    'admin.primary.trend.caption':
+        'Cash committed to raises each day, last 14 days.',
     'admin.primary.more': 'More live raises',
     'admin.primary.empty_title': 'No live raises',
     'admin.primary.empty_body':

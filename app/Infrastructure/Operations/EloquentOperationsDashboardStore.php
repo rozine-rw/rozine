@@ -7,6 +7,7 @@ namespace App\Infrastructure\Operations;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -49,11 +50,31 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
     /** @return list<Bar> */
     public function capitalRaised(string $grain, ?string $from, ?string $to): array
     {
-        $buckets = DB::table('primary_holdings')
+        return $this->bars($grain, DB::table('primary_holdings')
             ->selectRaw("date_trunc(?, issued_at AT TIME ZONE 'Africa/Kigali') AS bucket, sum(principal) AS amount", [$grain])
             ->when($from !== null, fn ($query) => $query->where('issued_at', '>=', $from))
             ->when($to !== null, fn ($query) => $query->where('issued_at', '<', $to))
-            ->groupBy('bucket');
+            ->groupBy('bucket'));
+    }
+
+    /** @return list<Bar> */
+    public function committed(string $grain, ?string $from, ?string $to): array
+    {
+        return $this->bars($grain, DB::table('ledger_entries AS e')->join('ledger_lines AS l', 'l.entry_id', '=', 'e.id')
+            ->selectRaw("date_trunc(?, e.created_at AT TIME ZONE 'Africa/Kigali') AS bucket, sum(l.amount) AS amount", [$grain])
+            ->where('e.kind', 'primary_commit')->where('l.direction', 'credit')
+            ->when($from !== null, fn ($query) => $query->where('e.created_at', '>=', $from))
+            ->when($to !== null, fn ($query) => $query->where('e.created_at', '<', $to))
+            ->groupBy('bucket'));
+    }
+
+    /**
+     * Labels each bucket and sizes its bar as a share of the tallest.
+     *
+     * @return list<Bar>
+     */
+    private function bars(string $grain, Builder $buckets): array
+    {
         $rows = DB::query()->fromSub($buckets, 'buckets')
             ->selectRaw('to_char(bucket, ?) AS label, amount::text AS amount', [self::LABELS[$grain]])->orderBy('bucket')->get()->all();
         $tallest = array_reduce($rows, fn (BigDecimal $max, object $row): BigDecimal => BigDecimal::max($max, BigDecimal::of((string) $row->amount)), BigDecimal::zero());

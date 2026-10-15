@@ -1287,6 +1287,11 @@ export type PrimaryMarketRaise = {
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
     StaffPrimaryMarketPageContract & {
         stats: { key: PrimaryMarketStatKey; value: StatValue }[];
+        /** Cash committed per Kigali day over the last fourteen days; days with none are left out. */
+        trend: {
+            from: string;
+            bars: { label: string; amount: Money; height_pct: number }[];
+        };
         raises: PrimaryMarketRaise[];
         pagination: Pagination;
     };

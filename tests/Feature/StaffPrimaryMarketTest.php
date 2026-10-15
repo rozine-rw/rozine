@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
+use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Models\PrimaryReservationRecord;
+use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
@@ -54,20 +57,29 @@ it('lists a live publication with its fill, terms and days left, and offers no m
     InvestorWalletFixture::policy(maximum: null);
     $campaign = PrimaryReservationFixture::campaign();
     $evidence = $campaign->payload['public_evidence'];
+    $investor = PrimaryReservationFixture::investor();
+    $checkout = app(PrimaryCheckout::class);
+    $checkout->reserve($investor['user']->id, 1, $campaign->id, '3', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $version = PrimaryReservationVersion::query()->sole()->payload;
+    $checkout->confirm($investor['user']->id, 1, $campaign->id, PrimaryReservationRecord::query()->sole()->id, 1,
+        $version['terms']['disclosure_version'], $version['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...));
     $props = ($this->page)(primaryMarketStaff(['analyst']));
+    $today = now('Africa/Kigali')->startOfDay();
     $closes = CarbonImmutable::parse($campaign->payload['expires_at'])->setTimezone('Africa/Kigali');
 
     expect($props['contract_version'])->toBe('staff-primary-market-v1')->and($props['allowed_actions'])->toBe([])
         ->and($props['nav']['primary_market'])->toBe(['url' => '/admin/primary-market', 'method' => 'get'])
         ->and($props['stats'])->toBe([['key' => 'active', 'value' => ['kind' => 'count', 'value' => 1]],
-            ['key' => 'in_flight', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '0']]],
-            ['key' => 'fill', 'value' => ['kind' => 'percent', 'value' => '0']], ['key' => 'completion', 'value' => ['kind' => 'percent', 'value' => '0']]])
+            ['key' => 'in_flight', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '15000']]],
+            ['key' => 'fill', 'value' => ['kind' => 'percent', 'value' => $props['stats'][2]['value']['value']]], ['key' => 'completion', 'value' => ['kind' => 'percent', 'value' => '0']]])
+        ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(),
+            'bars' => [['label' => $today->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'height_pct' => 100]]])
         ->and($props['raises'])->toBe([['id' => $campaign->id, 'reference' => 'RSE-'.Str::upper(Str::substr($campaign->id, -6)),
             'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
             'rating' => ['band' => $evidence['rating']['band'], 'score' => $evidence['rating']['score']],
-            'rate_pct' => $campaign->payload['quote']['rate_pct'], 'term_months' => $campaign->payload['quote']['term_months'], 'funded_pct' => '0.0',
-            'raised' => ['currency' => 'RWF', 'amount' => '0'], 'target' => ['currency' => 'RWF', 'amount' => $campaign->payload['principal']],
-            'investors' => 0, 'lifecycle' => 'live',
+            'rate_pct' => $campaign->payload['quote']['rate_pct'], 'term_months' => $campaign->payload['quote']['term_months'], 'funded_pct' => $props['raises'][0]['funded_pct'],
+            'raised' => ['currency' => 'RWF', 'amount' => '15000'], 'target' => ['currency' => 'RWF', 'amount' => $campaign->payload['principal']],
+            'investors' => 1, 'lifecycle' => 'live',
             'opened_at' => CarbonImmutable::parse($campaign->payload['recorded_at'])->setTimezone('Africa/Kigali')->toIso8601String(),
             'closes_at' => $closes->toIso8601String(),
             'days_left' => max(0, (int) now('Africa/Kigali')->startOfDay()->diffInDays($closes->startOfDay(), false))]])
@@ -85,13 +97,16 @@ it('measures fill and completion across raises, leaves funded raises out, search
     ]]));
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, ['figures' => [
         'capital_raised' => '0', 'active_businesses' => 0, 'awaiting_second_approver' => 0, 'disbursed' => '0',
-        'notes' => ['live' => 2, 'funded' => 1, 'repaying' => 2, 'failed' => 1]]]));
+        'notes' => ['live' => 2, 'funded' => 1, 'repaying' => 2, 'failed' => 1]],
+        'committed' => [['label' => '10-15', 'amount' => '250000', 'height_pct' => 100]]]));
     $staff = primaryMarketStaff(['treasury']);
     $props = ($this->page)($staff);
 
     expect(array_column($props['stats'], 'value', 'key'))->toBe(['active' => ['kind' => 'count', 'value' => 2],
         'in_flight' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '4000000']],
         'fill' => ['kind' => 'percent', 'value' => '40'], 'completion' => ['kind' => 'percent', 'value' => '75']])
+        ->and($props['trend'])->toBe(['from' => '2026-10-02T00:00:00+02:00',
+            'bars' => [['label' => '10-15', 'amount' => ['currency' => 'RWF', 'amount' => '250000'], 'height_pct' => 100]]])
         ->and(array_column($props['raises'], 'reference'))->toBe(['RSE-00AAAA', 'RSE-00BBBB'])
         ->and(array_column($props['raises'], 'days_left'))->toBe([5, 0])
         ->and(array_column($props['raises'], 'closes_at'))->toBe(['2026-10-20T10:00:00+02:00', '2026-10-14T10:00:00+02:00']);

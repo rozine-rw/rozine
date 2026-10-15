@@ -39,4 +39,13 @@ interface OperationsDashboardStore
      * @return list<Bar>
      */
     public function capitalRaised(string $grain, ?string $from, ?string $to): array;
+
+    /**
+     * Cash Investors committed to Primary raises per Kigali calendar bucket (each `primary_commit`
+     * posting, when it posted), shaped like `capitalRaised`. A later refund does not reduce it.
+     *
+     * @param  'year'|'month'|'day'|'hour'  $grain
+     * @return list<Bar>
+     */
+    public function committed(string $grain, ?string $from, ?string $to): array;
 }

@@ -5,6 +5,7 @@ import {
     EmptyState,
     HeadCell,
     KpiTile,
+    Panel,
     ROW_RULE,
     ShowMoreLink,
     TABLE_HEAD,
@@ -12,7 +13,7 @@ import {
     useStatFormatter,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatRwf } from '@/lib/rozine/format';
+import { formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPrimaryMarketProps,
@@ -36,6 +37,51 @@ const fillColour = (raise: PrimaryMarketRaise): [string, string] =>
     Number(raise.funded_pct) >= 100
         ? ['bg-[#1d9e75]', 'text-[#1d9e75]']
         : ['bg-[#1e3aff]', 'text-[#1e3aff] dark:text-[#99a3ff]'];
+
+/** "Funding trend": the cash Investors committed per Kigali day, as the server buckets it. */
+function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
+    const { t } = useTranslation();
+
+    return (
+        <Panel
+            label={t('admin.design.primary_market.trend.title')}
+            className="mb-6"
+        >
+            <CardTitle>
+                {t('admin.design.primary_market.trend.title')}
+            </CardTitle>
+            <p className="mt-[3px] text-[12px] text-rz-muted">
+                {t('admin.primary.trend.caption')}
+            </p>
+            <div className="mt-5 flex h-[180px] items-end gap-2.5">
+                {trend.bars.length === 0 && (
+                    <p className="w-full self-center py-6 text-center text-[12.5px] text-rz-faint">
+                        {t('admin.design.primary_market.trend.empty')}
+                    </p>
+                )}
+                {trend.bars.map((bar) => (
+                    <div
+                        key={bar.label}
+                        className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                    >
+                        <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
+                            {formatRwfShort(bar.amount).replace('RWF ', '')}
+                        </span>
+                        <div
+                            className="w-full rounded-t-md bg-[#1e3aff] dark:bg-[#3d57ff]"
+                            style={{
+                                height: `${Math.max(2, bar.height_pct)}%`,
+                            }}
+                        />
+                        <span className="text-[10px] text-rz-muted">
+                            {bar.label}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </Panel>
+    );
+}
 
 function Row({ raise }: { raise: PrimaryMarketRaise }) {
     const { t } = useTranslation();
@@ -97,7 +143,7 @@ function Row({ raise }: { raise: PrimaryMarketRaise }) {
 
 /**
  * Primary Market Monitor (`staff-primary-market-v1`): every raise still filling, with its fill,
- * investors and days left, and the server's four market figures. Read-only: a raise fills or
+ * investors and days left, the server's four market figures and the funding trend. Read-only: a raise fills or
  * fails on its own clock (BRS), so the design's Feature, Pause, Fill and Fail moderation is not
  * offered.
  */
@@ -120,6 +166,7 @@ export default function AdminPrimaryMarket(props: AdminPrimaryMarketProps) {
                     />
                 ))}
             </div>
+            <TrendPanel trend={props.trend} />
             <div className="mb-3.5">
                 <CardTitle>{t('admin.primary.title')}</CardTitle>
                 <p className="mt-[3px] text-[12px] text-rz-muted">

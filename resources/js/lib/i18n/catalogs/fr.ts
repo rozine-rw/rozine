@@ -5436,6 +5436,8 @@ const fr: Catalog = {
     'admin.primary.lifecycle.inventory_unavailable': 'Indisponible',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Épuisée',
     'admin.primary.lifecycle.closing_pending_settlement': 'Clôture en cours',
+    'admin.primary.trend.caption':
+        'Montants engagés dans les levées chaque jour, sur les 14 derniers jours.',
     'admin.primary.more': 'Plus de levées en cours',
     'admin.primary.empty_title': 'Aucune levée en cours',
     'admin.primary.empty_body':
