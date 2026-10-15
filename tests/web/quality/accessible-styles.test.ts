@@ -45,3 +45,54 @@ describe('Visible keyboard focus (WCAG 2.2 SC 2.4.7)', () => {
         );
     });
 });
+
+const tokens = (stylesheet: string, selector: string) => {
+    const start = stylesheet.indexOf(`${selector} {`);
+    const body = stylesheet.slice(start, stylesheet.indexOf('\n}', start));
+
+    return Object.fromEntries(
+        [...body.matchAll(/--(rz-[\w-]+):\s*(#[0-9a-f]{6});/giu)].map(
+            ([, name, value]) => [name, value],
+        ),
+    );
+};
+
+const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((index) => {
+        const channel = parseInt(hex.slice(index, index + 2), 16) / 255;
+
+        return channel <= 0.03928
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+const contrast = (foreground: string, background: string) => {
+    const [light, dark] = [luminance(foreground), luminance(background)].sort(
+        (a, b) => b - a,
+    );
+
+    return (light + 0.05) / (dark + 0.05);
+};
+
+describe('Text contrast (WCAG 2.2 SC 1.4.3)', () => {
+    const shared = css('rozine.css');
+    const light = tokens(shared, ':root');
+    const dark = { ...light, ...tokens(shared, '.dark') };
+
+    it.each([
+        ['light', light, 'rz-muted'],
+        ['light', light, 'rz-business-text'],
+        ['light', light, 'rz-auditor-text'],
+        ['dark', dark, 'rz-muted'],
+        ['dark', dark, 'rz-faint'],
+    ])('keeps %s %s at 4.5:1 or more on every surface', (_, theme, token) => {
+        for (const surface of ['rz-surface', 'rz-page', 'rz-field']) {
+            expect(
+                contrast(theme[token], theme[surface]),
+            ).toBeGreaterThanOrEqual(4.5);
+        }
+    });
+});
