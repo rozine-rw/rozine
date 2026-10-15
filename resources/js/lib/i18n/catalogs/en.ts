@@ -884,8 +884,7 @@ const en = {
     'admin.section.plus.search': 'Search members by name…',
     'admin.nav.finance': 'Finance',
     'admin.section.finance.title': 'Finance Dashboard',
-    'admin.section.finance.subtitle':
-        'Every revenue stream, the RAMP book and the ledger',
+    'admin.section.finance.subtitle': 'Every revenue stream and the ledger',
     'admin.section.finance.search': 'Search finance entries…',
     'admin.nav.messaging': 'Messaging',
     'admin.section.messaging.title': 'Messaging & Automations',
@@ -1110,12 +1109,9 @@ const en = {
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
     'admin.design.finance.tab.streams': 'Revenue streams',
-    'admin.design.finance.tab.ramp': 'RAMP',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
     'admin.design.finance.streams.title': 'Revenue streams',
     'admin.design.finance.streams.empty': 'No revenue to show yet.',
-    'admin.design.finance.ramp.title': 'RAMP',
-    'admin.design.finance.ramp.empty': 'No RAMP positions to show yet.',
     'admin.design.finance.ledger.title': 'Ledger & payouts',
     'admin.design.finance.ledger.empty': 'No ledger entries to show yet.',
     'admin.design.messaging.tab.automations': 'Automations',
@@ -3105,7 +3101,7 @@ const en = {
     'investor.auth.brand_point_2':
         'A flat {min}–{max}% per term, repaid monthly',
     'investor.auth.brand_point_3':
-        'Sell back to Rozine, or on the market, any time',
+        'Sell your units to other investors on the market',
     'investor.auth.type.individual': 'Individual',
     'investor.auth.type.institution': 'Institution',
     'investor.auth.role.individual': 'I am an individual',

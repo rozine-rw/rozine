@@ -926,7 +926,7 @@ const fr: Catalog = {
     'admin.nav.finance': 'Finances',
     'admin.section.finance.title': 'Tableau de bord financier',
     'admin.section.finance.subtitle':
-        'Chaque source de revenus, le registre RAMP et le grand livre',
+        'Chaque source de revenus et le grand livre',
     'admin.section.finance.search': 'Rechercher une écriture…',
     'admin.nav.messaging': 'Messagerie',
     'admin.section.messaging.title': 'Messagerie et automatisations',
@@ -1169,14 +1169,10 @@ const fr: Catalog = {
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
     'admin.design.finance.tab.streams': 'Sources de revenus',
-    'admin.design.finance.tab.ramp': 'RAMP',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
     'admin.design.finance.streams.title': 'Sources de revenus',
     'admin.design.finance.streams.empty':
         'Aucun revenu à afficher pour le moment.',
-    'admin.design.finance.ramp.title': 'RAMP',
-    'admin.design.finance.ramp.empty':
-        'Aucune position RAMP à afficher pour le moment.',
     'admin.design.finance.ledger.title': 'Grand livre et versements',
     'admin.design.finance.ledger.empty':
         'Aucune écriture à afficher pour le moment.',
@@ -3229,7 +3225,7 @@ const fr: Catalog = {
     'investor.auth.brand_point_2':
         'Un taux fixe de {min} à {max} % par durée, remboursé chaque mois',
     'investor.auth.brand_point_3':
-        'Revendez à Rozine, ou sur le marché, à tout moment',
+        "Revendez vos parts à d'autres investisseurs sur le marché",
     'investor.auth.type.individual': 'Particulier',
     'investor.auth.type.institution': 'Institution',
     'investor.auth.role.individual': 'Je suis un particulier',

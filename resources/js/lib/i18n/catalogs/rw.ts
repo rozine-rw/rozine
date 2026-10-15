@@ -923,7 +923,7 @@ const rw: Catalog = {
     'admin.nav.finance': 'Imari',
     'admin.section.finance.title': "Ikibaho cy'imari",
     'admin.section.finance.subtitle':
-        "Buri nkomoko y'amafaranga, igitabo cya RAMP n'igitabo cy'imari",
+        "Buri nkomoko y'amafaranga n'igitabo cy'imari",
     'admin.section.finance.search': 'Shakisha ibyanditswe…',
     'admin.nav.messaging': 'Ubutumwa',
     'admin.section.messaging.title': "Ubutumwa n'ibikora ubwabyo",
@@ -1160,13 +1160,10 @@ const rw: Catalog = {
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
     'admin.design.finance.tab.streams': "Inkomoko z'amafaranga",
-    'admin.design.finance.tab.ramp': 'RAMP',
     'admin.design.finance.tab.ledger': "Igitabo cy'imari n'ubwishyu",
     'admin.design.finance.streams.title': "Inkomoko z'amafaranga",
     'admin.design.finance.streams.empty':
         'Nta mafaranga yinjiye yo kwerekana ubu.',
-    'admin.design.finance.ramp.title': 'RAMP',
-    'admin.design.finance.ramp.empty': 'Nta myanya ya RAMP yo kwerekana ubu.',
     'admin.design.finance.ledger.title': "Igitabo cy'imari n'ubwishyu",
     'admin.design.finance.ledger.empty':
         "Nta nyandiko z'ibaruramari zo kwerekana ubu.",
@@ -3214,7 +3211,7 @@ const rw: Catalog = {
     'investor.auth.brand_point_2':
         'Inyungu idahinduka ya {min}–{max}% ku gihe cyose, yishyurwa buri kwezi',
     'investor.auth.brand_point_3':
-        'Gurisha kuri Rozine, cyangwa ku isoko, igihe cyose',
+        'Gurisha imigabane yawe ku bandi bashoramari ku isoko',
     'investor.auth.type.individual': 'Umuntu ku giti cye',
     'investor.auth.type.institution': 'Ikigo',
     'investor.auth.role.individual': 'Ndi umuntu ku giti cyanjye',
