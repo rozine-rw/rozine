@@ -15,7 +15,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Today leads with the business's latest sealed audit report while it waits for co-signatures,
  * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
- * way in from the web app. The bearer transport keeps reaching it from its business list.
+ * way in from the web app. The bearer transport keeps reaching it from its business list. While a
+ * monthly audit is open, Today also carries its window, linked to "Get ready for your audit" on the
+ * web.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -40,12 +42,15 @@ class BusinessHomeResource extends JsonResource
         $report = $entry['audit_report'] ?? null;
         $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'],
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
+        $audit = $data['audit_window'] ?? null;
+        $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
+            'days_left' => $audit['days_left'], 'sealed_by' => $audit['seal_by'], 'link' => self::link($request, 'business.audit-prep', ['business' => $business])]];
 
         return ['business' => ['name' => $profile['name'], 'company_code' => $profile['company_code'], 'industry' => $profile['industry'], 'district' => $profile['district']],
             'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => $data['unread_notices'],
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => [...$cosign, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+            'today' => [...$cosign, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
             'notes' => $notes, 'headroom' => null,

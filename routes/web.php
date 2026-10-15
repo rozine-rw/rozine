@@ -189,6 +189,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
+    Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.notices.')->group(function (): void {

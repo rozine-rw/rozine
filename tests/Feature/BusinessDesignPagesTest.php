@@ -3,9 +3,14 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Operations\CommandRejection;
+use App\Models\AuditAssignment;
+use App\Models\AuditAssignmentVersion;
 use App\Models\BusinessFundingMethod;
+use App\Models\Party;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
@@ -219,4 +224,55 @@ it('sends the Reports and Profile tabs from every live Business page', function 
         ->toMatchArray($tabs)
         ->and(($this->props)($user, 'business.applications.publish.show', ['business' => $business, 'application' => $campaign->business_application_id], 'business/publish')['shell_links'])
         ->toMatchArray($tabs);
+});
+
+it('opens Get ready for your audit for the open monthly audit until its report is sealed or its deadline passes', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-10-02 10:00', 'Africa/Kigali'));
+    $fixture = AuditSealingFixture::ready(kind: 'monthly');
+    $business = $fixture['audit']['business'];
+    $user = $fixture['audit']['authority']['users'][0];
+    $prep = ($this->link)("/business/{$business}/audit-prep");
+    $audit = ['period' => '2026-09-01', 'window_open' => true, 'days_left' => 5, 'seal_by' => '2026-10-07T21:59:59Z', 'cosign_by' => '2026-10-08T21:59:59Z',
+        'first' => true, 'reassigned' => null];
+
+    $home = ($this->props)($user, 'business.show', ['business' => $business], 'business/home');
+    expect($home['today'][0])->toBe(['kind' => 'audit_window', 'month' => '2026-09-01', 'window_open' => true, 'days_left' => 5,
+        'sealed_by' => '2026-10-07T21:59:59Z', 'link' => $prep])
+        ->and(($this->props)($user, 'business.audit-prep', ['business' => $business], 'business/audit-prep'))
+        ->toBe(['home' => $home, 'audit' => $audit, 'links' => ['close' => ($this->link)("/business/{$business}")]]);
+    $this->actingAs($user)->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()
+        ->assertJsonMissing(['kind' => 'audit_window']);
+
+    AuditSealingFixture::seal($fixture);
+    expect(array_column(($this->props)($user, 'business.show', ['business' => $business], 'business/home')['today'], 'kind'))->not->toContain('audit_window');
+    $this->actingAs($user)->get(route('business.audit-prep', ['business' => $business]))->assertRedirect(route('business.show', ['business' => $business]));
+
+    $this->travelTo(CarbonImmutable::parse('2026-11-03 09:00', 'Africa/Kigali'));
+    $fixture['assignment']->refresh()->forceFill(['status' => 'completed', 'completed_at' => now()])->save();
+    AuditAssignment::factory()->create(['business_id' => $business, 'state' => app(AuditEngagementState::class)->start('routine', now()->toDateTimeImmutable())]);
+    expect(($this->props)($user, 'business.audit-prep', ['business' => $business], 'business/audit-prep')['audit'])
+        ->toBe([...$audit, 'period' => '2026-10-01', 'days_left' => 4, 'seal_by' => '2026-11-07T21:59:59Z', 'cosign_by' => '2026-11-08T21:59:59Z', 'first' => false]);
+
+    $this->travelTo(CarbonImmutable::parse('2026-11-08 00:00', 'Africa/Kigali'));
+    $this->actingAs($user)->get(route('business.audit-prep', ['business' => $business]))->assertRedirect(route('business.show', ['business' => $business]));
+});
+
+it('names the Audit Partner who handed the file over, and leaves a flash audit off audit prep', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-10-03 08:00', 'Africa/Kigali'));
+    [$authority, $business] = ($this->business)();
+    $user = $authority['users'][0];
+    $before = User::factory()->create(['name' => 'Aline Mukamana', 'party_id' => Party::factory()]);
+    $after = User::factory()->create(['name' => 'Eric Habimana', 'party_id' => Party::factory()]);
+    $state = app(AuditEngagementState::class)->start('routine', now()->subDay()->toDateTimeImmutable());
+    $assignment = AuditAssignment::factory()->create(['business_id' => $business, 'party_id' => $after->party_id, 'revision' => 2, 'status' => 'offered',
+        'state' => [...$state, 'status' => 'offered', 'party_id' => $after->party_id, 'offered_at' => $state['original_dispatch_at']]]);
+    AuditAssignmentVersion::factory()->create(['assignment_id' => $assignment->id, 'revision' => 1, 'party_id' => $before->party_id, 'status' => 'offered']);
+    expect(($this->props)($user, 'business.audit-prep', ['business' => $business], 'business/audit-prep')['audit'])
+        ->toBe(['period' => '2026-09-01', 'window_open' => true, 'days_left' => 4, 'seal_by' => '2026-10-07T21:59:59Z', 'cosign_by' => '2026-10-08T21:59:59Z',
+            'first' => true, 'reassigned' => ['from' => 'Aline Mukamana', 'to' => 'Eric Habimana']]);
+
+    [$flash, $flashBusiness] = ($this->business)(code: 'COMPANY-002');
+    AuditAssignment::factory()->create(['business_id' => $flashBusiness, 'state' => app(AuditEngagementState::class)->start('flash', now()->toDateTimeImmutable())]);
+    $this->actingAs($flash['users'][0])->get(route('business.audit-prep', ['business' => $flashBusiness]))
+        ->assertRedirect(route('business.show', ['business' => $flashBusiness]));
 });
