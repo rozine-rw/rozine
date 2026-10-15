@@ -165,11 +165,25 @@ function MessageForm({
  * BRS clocks: acknowledged within 4 hours, resolved within 48. Every complaint is listed with its
  * status and opens the panel on its conversation.
  */
-export function SupportChat({ support }: { support: SupportCenter }) {
+export function SupportChat({
+    support,
+    openRequest = 0,
+}: {
+    support: SupportCenter;
+    /** Raised by a page control (the help center's "Message support") to open the panel. */
+    openRequest?: number;
+}) {
     const { t, locale } = useTranslation();
     const current =
         support.complaints.find((item) => item.status !== 'resolved') ?? null;
     const [openId, setOpenId] = useState<string | null | undefined>(undefined);
+    const [seenRequest, setSeenRequest] = useState(openRequest);
+
+    if (openRequest !== seenRequest) {
+        setSeenRequest(openRequest);
+        setOpenId(LATEST);
+    }
+
     const shown =
         openId === LATEST
             ? current

@@ -3485,9 +3485,94 @@ const en = {
     'investor.profile.pending.plan_title': 'Rozine Plus is not open yet',
     'investor.profile.pending.plan_body':
         'Its bands and charges are still being set. Until then, you invest deal by deal on the terms each deal shows.',
-    'investor.profile.pending.help_title': 'Coming to the app soon',
-    'investor.profile.pending.help_body':
-        'Answers to the questions investors ask most will appear here.',
+    'investor.help.intro':
+        'Answers to the questions investors ask most. Tap any card to read the full answer.',
+    'investor.help.updated': 'Updated {date}',
+    'investor.help.updated_long': 'Last updated {date}',
+    'investor.help.count': { one: '{count} answer', other: '{count} answers' },
+    'investor.help.still_title': 'Still need help?',
+    'investor.help.still_body':
+        'Message us. We acknowledge every message within 4 hours.',
+    'investor.help.still_action': 'Message support',
+    'investor.help.group.start': 'Getting started',
+    'investor.help.group.returns': 'Returns & payouts',
+    'investor.help.group.risk': 'Risk & how businesses are vetted',
+    'investor.help.group.portfolio': 'Building your portfolio',
+    'investor.help.group.secondary': 'Secondary market',
+    'investor.help.group.wallet': 'Wallet, deposits & fees',
+    'investor.help.group.safety': "Your money's safety",
+    'investor.help.group.account': 'Account & support',
+    'investor.help.start.what.q': 'What is Rozine and how does investing work?',
+    'investor.help.start.what.a':
+        "Rozine lets you lend to verified Rwandan businesses through notes. You buy units in a business's raise; once the raise is fully funded, the business repays in equal monthly instalments, and your share of principal and return is credited to your Rozine wallet.\n\nRozine runs inside the Capital Market Authority's regulatory sandbox, so some limits apply while the sandbox lasts.",
+    'investor.help.start.first.q': 'How do I make my first investment?',
+    'investor.help.start.first.a':
+        "Verify your identity, then add money to your wallet from a mobile money or bank account in your own name. Open a deal on Market to see its rating, return, term, schedule and the business's verified figures, choose how many units you want, and confirm.\n\nBefore you confirm, you see the amount, every fee in RWF and exactly what you get back.",
+    'investor.help.start.minimum.q': 'Is there a minimum investment?',
+    'investor.help.start.minimum.a':
+        'Notes are sold in units of RWF 5,000, so you can start with a single unit.\n\nYou can hold at most half of any one raise, and an investment can never be larger than what is left to fill.',
+    'investor.help.returns.when.q': 'How and when are my returns paid?',
+    'investor.help.returns.when.a':
+        "The first instalment is due one month after the money is disbursed, and each later one on the same day of the following month. On each due date, the business's payment is shared among holders in proportion to the units they hold, and credited to their wallets.\n\nThe full schedule is shown before you commit, and it never changes after the note is issued.",
+    'investor.help.returns.yield.q': 'What return can I expect?',
+    'investor.help.returns.yield.a':
+        "Each note has a fixed total return of 10% to 15% of principal for the whole term of 3 to 6 months, set when the raise opens.\n\nRozine's earnings fee is taken from the return part of each payout, never from your principal. Its rate depends on your active capital and is locked for each investment.",
+    'investor.help.returns.guaranteed.q': 'Are my returns guaranteed?',
+    'investor.help.returns.guaranteed.a':
+        'No. The return shown is what the business has agreed to pay, not a guarantee. You can lose some or all of the money you invest if a business does not repay.\n\nDiversifying across several notes limits the effect of any one business.',
+    'investor.help.risk.protected.q': 'Is my capital protected?',
+    'investor.help.risk.protected.a':
+        'No. Your capital is at risk. Every business is checked from its statements and visited by an independent licensed accountant before it can raise, and every month while its note is outstanding. That lowers the risk, but it does not remove it.\n\nNotes cannot be cashed in before they end, so only invest money you will not need during the term.',
+    'investor.help.risk.vetting.q':
+        'How are businesses vetted before they raise?',
+    'investor.help.risk.vetting.a':
+        'A business needs verified annual revenue of at least RWF 30,000,000 and 36 months of bank and mobile money statements (12 for a repeat issuer that paid on time). Rozine sizes each note so that the business earns at least 1.5 times its monthly instalment.\n\nNo note lists until an Audit Partner has visited the premises and sealed a baseline report.',
+    'investor.help.risk.rating.q': 'What is the Rozine rating?',
+    'investor.help.risk.rating.a':
+        'Each business gets one score out of 5.0, to one decimal, shown with a word: Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0). A business must score at least 2.0 to raise.\n\nThe score is recomputed with every sealed monthly report. A new score never changes the terms of a note already issued.',
+    'investor.help.risk.late.q':
+        'What happens if a business pays late or defaults?',
+    'investor.help.risk.late.a':
+        "On the due date, whatever is in the business's wallet is collected and paid out, and anything that arrives later is collected straight away. Late charges of 5% of the unpaid amount at the due date, day 7 and day 30 all go to holders. Rozine takes none of it.\n\nIf the arrears are not cleared by day 31, the note is in default. Recovery is pursued but may not return the full amount.",
+    'investor.help.portfolio.diversify.q': 'How should I diversify?',
+    'investor.help.portfolio.diversify.a':
+        'Spread your money across several businesses, industries and terms rather than one note. If one business pays late, the others soften the effect.\n\nMany investors set a limit for any single note and add variety over time.',
+    'investor.help.portfolio.track.q': 'How do I track my investments?',
+    'investor.help.portfolio.track.a':
+        "Portfolio shows every holding with its principal, what has been paid and what is still due. Each business's sealed monthly report appears on the holding.\n\nEvery payout is listed in your wallet history, and Profile > Statements & tax holds your statements.",
+    'investor.help.portfolio.reinvest.q': 'Can I reinvest my payouts?',
+    'investor.help.portfolio.reinvest.a':
+        'Yes. Payouts land in your wallet, and you can put that balance into another open raise whenever you choose.\n\nNothing is reinvested automatically.',
+    'investor.help.secondary.exit.q': 'Can I exit an investment early?',
+    'investor.help.secondary.exit.a':
+        'The secondary market is not open yet, so for now you hold each note until its last instalment.\n\nWhen it opens, you will be able to list units of a current note for another investor to buy. Late, defaulted or disputed notes cannot be traded.',
+    'investor.help.secondary.price.q': 'How will a resale price be decided?',
+    'investor.help.secondary.price.a':
+        'You will choose the number of units and a whole-franc price per unit. The price can never be higher than the payouts the units still have to come, but it can be lower for a quicker sale.\n\nA listing lasts 7 days and can be relisted at no cost. The seller pays a 2% fee on the sale price; the buyer pays nothing.',
+    'investor.help.secondary.guaranteed.q': 'Will a sale be guaranteed?',
+    'investor.help.secondary.guaranteed.a':
+        'No. A sale needs another investor to buy at your price, so a listing may sell only in part, or not at all.\n\nUnits that do not sell stay yours and keep receiving payouts.',
+    'investor.help.wallet.move.q': 'How do I add or withdraw money?',
+    'investor.help.wallet.move.a':
+        'Deposits come by mobile money or bank from a verified account in your own name. Withdrawals go only to your own verified account, between RWF 1,000 and RWF 2,000,000 each.\n\nManage your accounts under Profile > Linked accounts.',
+    'investor.help.wallet.fees.q': 'What fees does Rozine charge investors?',
+    'investor.help.wallet.fees.a':
+        "Rozine's earnings fee is taken from the return part of each payout: 15% under RWF 1M of active capital, 12% from 1M to 5M, 10% from 5M to 25M, 9% from 25M to 100M and 8% above. It is never charged on principal.\n\nWithdrawals carry no Rozine fee; the provider's own charge is shown before you confirm.",
+    'investor.help.wallet.speed.q': 'How quickly are withdrawals processed?',
+    'investor.help.wallet.speed.a':
+        'Once you confirm, the withdrawal is sent to your account through the payment provider. An unusual request may be held for review for up to 24 hours.\n\nYou can follow each withdrawal in your wallet history. Money committed to an open raise cannot be withdrawn.',
+    'investor.help.safety.held.q': 'Where is my money held?',
+    'investor.help.safety.held.a':
+        "All customer money is held in a segregated client account at a licensed Rwandan bank, separate from Rozine's own money. The total of all wallets is matched to that account every day.\n\nOnly fees that were earned and disclosed can move to Rozine's own account.",
+    'investor.help.safety.stop.q': 'What happens if Rozine has to stop?',
+    'investor.help.safety.stop.a':
+        'New business stops the same day, every commitment in an unfunded raise is refunded in full, and every issued note keeps being serviced to maturity from a dedicated wind-down reserve.\n\nWithdrawals of wallet balances are free during a wind-down.',
+    'investor.help.account.secure.q': 'How is my account kept secure?',
+    'investor.help.account.secure.a':
+        'Add an authenticator app under Profile > Security center for a code at every sign-in, and turn on login alerts to hear about any new device.\n\nRozine never asks for your password or codes by phone, SMS or e-mail.',
+    'investor.help.account.complain.q': 'How do I make a complaint?',
+    'investor.help.account.complain.a':
+        'Message us from this help center. Your complaint gets a reference number; we acknowledge it within 4 hours and aim to resolve it within 48 hours.\n\nYou can take a complaint to the Capital Market Authority at any stage.',
     'investor.profile.pending.terms_title': 'Coming to the app soon',
     'investor.profile.pending.terms_body':
         'The Terms & Conditions will be readable here once they are published.',

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { InvestorShell } from '@/components/investor/investor-shell';
+import { HelpCenter } from '@/components/investor/profile/help-center';
 import {
     AutomationExplainer,
     IdentityCard,
@@ -19,7 +21,7 @@ import type { InvestorProfileProps } from '@/types/investor';
 /**
  * Profile (MVP-INVESTOR-SCR-11, design L2726–2834) with the design's sub-pages (L3884–4140):
  * personal information, Rozine Plus, security center, linked accounts (wallet readiness),
- * statements (MVP-INVESTOR-SCR-10), help center, terms and privacy note. A phone shows the menu and
+ * statements (MVP-INVESTOR-SCR-10), help center (answers and the support chat), terms and privacy note. A phone shows the menu and
  * opens each sub-page full screen; a wide screen keeps the menu beside the open sub-page, with
  * personal information as the resting one, as the design does. Auto-Deploy (MVP-INVESTOR-SCR-09)
  * stays a gated explainer sub-page; the design has no menu row for it outside Rozine Plus.
@@ -27,6 +29,7 @@ import type { InvestorProfileProps } from '@/types/investor';
 export default function InvestorProfile(props: InvestorProfileProps) {
     const { t } = useTranslation();
     const wide = useWide();
+    const [supportRequest, setSupportRequest] = useState(0);
     const sub =
         props.section === 'overview'
             ? wide
@@ -69,11 +72,20 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                         settings={props.links.security_settings}
                     />
                 )}
-                {(sub === 'plan' ||
-                    sub === 'help' ||
-                    sub === 'terms' ||
-                    sub === 'privacy') && <PendingContent kind={sub} />}
-                {sub === 'help' && <SupportChat support={props.support} />}
+                {(sub === 'plan' || sub === 'terms' || sub === 'privacy') && (
+                    <PendingContent kind={sub} />
+                )}
+                {sub === 'help' && (
+                    <>
+                        <HelpCenter
+                            onMessage={() => setSupportRequest((n) => n + 1)}
+                        />
+                        <SupportChat
+                            support={props.support}
+                            openRequest={supportRequest}
+                        />
+                    </>
+                )}
                 {sub === 'linked' && props.linked !== null && (
                     <LinkedAccounts
                         linked={props.linked}

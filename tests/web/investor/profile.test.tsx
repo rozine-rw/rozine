@@ -529,7 +529,62 @@ describe('Profile', () => {
         },
     );
 
-    it('shows the Help center answers as pending, with the support chat over real complaints', async () => {
+    it('opens a Help center answer in full, and messages support from it', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorProfile {...profile(helpFixture)} />);
+
+        expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(9);
+        expect(screen.getByText('4 answers')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Academy|points|referral/iu),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: /What is the Rozine rating\?/u,
+            }),
+        );
+        let sheet = screen.getByRole('dialog', {
+            name: 'What is the Rozine rating?',
+        });
+
+        expect(
+            within(sheet).getByText('Risk & how businesses are vetted'),
+        ).toBeInTheDocument();
+        expect(sheet).toHaveTextContent(
+            'Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0)',
+        );
+        expect(sheet).toHaveTextContent('Last updated 15 October 2026');
+
+        await user.click(within(sheet).getByRole('button', { name: 'Close' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: /Will a sale be guaranteed\?/u,
+            }),
+        );
+        sheet = screen.getByRole('dialog', {
+            name: 'Will a sale be guaranteed?',
+        });
+        await user.click(
+            within(sheet).getByRole('button', { name: 'Message support' }),
+        );
+
+        expect(
+            screen.queryByRole('dialog', {
+                name: 'Will a sale be guaranteed?',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Rozine Support' }),
+            ).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the Help center answers, with the support chat over real complaints', async () => {
         const user = userEvent.setup();
 
         inertia.succeed = true;
@@ -538,7 +593,12 @@ describe('Profile', () => {
         expect(
             screen.getByRole('heading', { name: 'Help center' }),
         ).toBeInTheDocument();
-        expect(screen.getByText('Coming to the app soon')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Coming to the app soon'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Getting started' }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: /CMP-00000001/u }),
         ).toHaveTextContent('Answered');

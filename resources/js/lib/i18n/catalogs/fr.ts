@@ -3610,9 +3610,104 @@ const fr: Catalog = {
         "Rozine Plus n'est pas encore ouvert",
     'investor.profile.pending.plan_body':
         "Ses paliers et ses frais sont encore en cours de définition. D'ici là, vous investissez opération par opération, aux conditions affichées pour chacune.",
-    'investor.profile.pending.help_title': "Bientôt dans l'application",
-    'investor.profile.pending.help_body':
-        'Les réponses aux questions les plus fréquentes des investisseurs apparaîtront ici.',
+    'investor.help.intro':
+        'Les réponses aux questions que les investisseurs posent le plus. Touchez une carte pour lire la réponse complète.',
+    'investor.help.updated': 'Mis à jour le {date}',
+    'investor.help.updated_long': 'Dernière mise à jour le {date}',
+    'investor.help.count': {
+        one: '{count} réponse',
+        other: '{count} réponses',
+    },
+    'investor.help.still_title': 'Besoin d’aide supplémentaire ?',
+    'investor.help.still_body':
+        'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
+    'investor.help.still_action': 'Écrire au support',
+    'investor.help.group.start': 'Premiers pas',
+    'investor.help.group.returns': 'Rendements et versements',
+    'investor.help.group.risk': 'Risque et vérification des entreprises',
+    'investor.help.group.portfolio': 'Construire votre portefeuille',
+    'investor.help.group.secondary': 'Marché secondaire',
+    'investor.help.group.wallet': 'Portefeuille, dépôts et frais',
+    'investor.help.group.safety': 'La sécurité de votre argent',
+    'investor.help.group.account': 'Compte et assistance',
+    'investor.help.start.what.q':
+        'Qu’est-ce que Rozine et comment fonctionne l’investissement ?',
+    'investor.help.start.what.a':
+        'Rozine vous permet de prêter à des entreprises rwandaises vérifiées au moyen de notes. Vous achetez des parts dans la levée d’une entreprise ; une fois la levée entièrement financée, l’entreprise rembourse par mensualités égales, et votre part du principal et du rendement est créditée sur votre portefeuille Rozine.\n\nRozine opère dans le bac à sable réglementaire de l’Autorité des marchés de capitaux ; certaines limites s’appliquent donc pendant sa durée.',
+    'investor.help.start.first.q': 'Comment faire mon premier investissement ?',
+    'investor.help.start.first.a':
+        'Vérifiez votre identité, puis alimentez votre portefeuille depuis un compte mobile money ou bancaire à votre nom. Ouvrez une offre dans Marché pour voir sa note, son rendement, sa durée, son échéancier et les chiffres vérifiés de l’entreprise, choisissez le nombre de parts et confirmez.\n\nAvant de confirmer, vous voyez le montant, chaque frais en RWF et exactement ce que vous recevrez.',
+    'investor.help.start.minimum.q': 'Y a-t-il un investissement minimum ?',
+    'investor.help.start.minimum.a':
+        'Les notes sont vendues par parts de 5 000 RWF ; vous pouvez donc commencer avec une seule part.\n\nVous ne pouvez détenir plus de la moitié d’une levée, et un investissement ne peut jamais dépasser ce qui reste à financer.',
+    'investor.help.returns.when.q':
+        'Comment et quand mes rendements sont-ils versés ?',
+    'investor.help.returns.when.a':
+        'La première mensualité est due un mois après le décaissement, puis chaque mensualité le même jour du mois suivant. À chaque échéance, le paiement de l’entreprise est réparti entre les détenteurs au prorata de leurs parts et crédité sur leurs portefeuilles.\n\nL’échéancier complet est affiché avant votre engagement et ne change jamais après l’émission de la note.',
+    'investor.help.returns.yield.q': 'Quel rendement puis-je attendre ?',
+    'investor.help.returns.yield.a':
+        'Chaque note a un rendement total fixe de 10 % à 15 % du principal pour toute sa durée de 3 à 6 mois, fixé à l’ouverture de la levée.\n\nLes frais sur gains de Rozine sont prélevés sur la part de rendement de chaque versement, jamais sur votre principal. Leur taux dépend de votre capital actif et est figé pour chaque investissement.',
+    'investor.help.returns.guaranteed.q': 'Mes rendements sont-ils garantis ?',
+    'investor.help.returns.guaranteed.a':
+        'Non. Le rendement affiché est ce que l’entreprise s’est engagée à payer, pas une garantie. Vous pouvez perdre tout ou partie de votre investissement si une entreprise ne rembourse pas.\n\nDiversifier sur plusieurs notes limite l’effet d’une seule entreprise.',
+    'investor.help.risk.protected.q': 'Mon capital est-il protégé ?',
+    'investor.help.risk.protected.a':
+        'Non. Votre capital est exposé au risque. Chaque entreprise est contrôlée à partir de ses relevés et visitée par un expert-comptable agréé indépendant avant de pouvoir lever des fonds, puis chaque mois tant que sa note court. Cela réduit le risque sans le supprimer.\n\nLes notes ne peuvent pas être encaissées avant leur terme ; n’investissez que l’argent dont vous n’aurez pas besoin pendant la durée.',
+    'investor.help.risk.vetting.q':
+        'Comment les entreprises sont-elles vérifiées avant une levée ?',
+    'investor.help.risk.vetting.a':
+        'Une entreprise doit justifier d’un chiffre d’affaires annuel vérifié d’au moins 30 000 000 RWF et de 36 mois de relevés bancaires et mobile money (12 pour un émetteur récurrent ayant payé à temps). Rozine dimensionne chaque note pour que l’entreprise gagne au moins 1,5 fois sa mensualité.\n\nAucune note n’est publiée avant qu’un Partenaire d’audit n’ait visité les locaux et scellé un rapport initial.',
+    'investor.help.risk.rating.q': 'Qu’est-ce que la note Rozine ?',
+    'investor.help.risk.rating.a':
+        'Chaque entreprise reçoit une note sur 5,0, à une décimale, accompagnée d’un mot : Solide (4,0 à 5,0), Stable (3,0 à 3,9) ou En difficulté (moins de 3,0). Une entreprise doit obtenir au moins 2,0 pour lever des fonds.\n\nLa note est recalculée à chaque rapport mensuel scellé. Une nouvelle note ne modifie jamais les conditions d’une note déjà émise.',
+    'investor.help.risk.late.q':
+        'Que se passe-t-il si une entreprise paie en retard ou fait défaut ?',
+    'investor.help.risk.late.a':
+        'À l’échéance, ce qui se trouve dans le portefeuille de l’entreprise est prélevé et versé, et tout ce qui arrive ensuite est prélevé immédiatement. Des pénalités de retard de 5 % du montant impayé à l’échéance, au jour 7 et au jour 30 reviennent toutes aux détenteurs. Rozine n’en garde rien.\n\nSi l’arriéré n’est pas réglé au jour 31, la note est en défaut. Un recouvrement est engagé mais peut ne pas restituer la totalité.',
+    'investor.help.portfolio.diversify.q': 'Comment diversifier ?',
+    'investor.help.portfolio.diversify.a':
+        'Répartissez votre argent entre plusieurs entreprises, secteurs et durées plutôt qu’une seule note. Si une entreprise paie en retard, les autres en atténuent l’effet.\n\nBeaucoup d’investisseurs fixent une limite par note et ajoutent de la variété au fil du temps.',
+    'investor.help.portfolio.track.q': 'Comment suivre mes investissements ?',
+    'investor.help.portfolio.track.a':
+        'Portefeuille affiche chaque détention avec son principal, ce qui a été payé et ce qui reste dû. Le rapport mensuel scellé de chaque entreprise apparaît sur la détention.\n\nChaque versement figure dans l’historique de votre portefeuille, et Profil > Relevés et impôts contient vos relevés.',
+    'investor.help.portfolio.reinvest.q': 'Puis-je réinvestir mes versements ?',
+    'investor.help.portfolio.reinvest.a':
+        'Oui. Les versements arrivent sur votre portefeuille et vous pouvez placer ce solde dans une autre levée ouverte quand vous le souhaitez.\n\nRien n’est réinvesti automatiquement.',
+    'investor.help.secondary.exit.q':
+        'Puis-je sortir d’un investissement plus tôt ?',
+    'investor.help.secondary.exit.a':
+        'Le marché secondaire n’est pas encore ouvert ; pour l’instant, vous conservez chaque note jusqu’à sa dernière mensualité.\n\nÀ son ouverture, vous pourrez mettre en vente des parts d’une note à jour pour qu’un autre investisseur les achète. Les notes en retard, en défaut ou contestées ne peuvent pas être échangées.',
+    'investor.help.secondary.price.q':
+        'Comment le prix de revente sera-t-il fixé ?',
+    'investor.help.secondary.price.a':
+        'Vous choisirez le nombre de parts et un prix par part en francs entiers. Le prix ne peut jamais dépasser les versements restant dus sur ces parts, mais il peut être inférieur pour vendre plus vite.\n\nUne annonce dure 7 jours et peut être republiée sans frais. Le vendeur paie des frais de 2 % du prix de vente ; l’acheteur ne paie rien.',
+    'investor.help.secondary.guaranteed.q': 'Une vente sera-t-elle garantie ?',
+    'investor.help.secondary.guaranteed.a':
+        'Non. Une vente nécessite qu’un autre investisseur achète à votre prix ; une annonce peut donc ne se vendre qu’en partie, ou pas du tout.\n\nLes parts invendues restent à vous et continuent de recevoir les versements.',
+    'investor.help.wallet.move.q': 'Comment déposer ou retirer de l’argent ?',
+    'investor.help.wallet.move.a':
+        'Les dépôts arrivent par mobile money ou virement depuis un compte vérifié à votre nom. Les retraits vont uniquement vers votre propre compte vérifié, entre 1 000 et 2 000 000 RWF chacun.\n\nGérez vos comptes dans Profil > Comptes liés.',
+    'investor.help.wallet.fees.q':
+        'Quels frais Rozine facture-t-il aux investisseurs ?',
+    'investor.help.wallet.fees.a':
+        'Les frais sur gains de Rozine sont prélevés sur la part de rendement de chaque versement : 15 % sous 1 M RWF de capital actif, 12 % de 1 M à 5 M, 10 % de 5 M à 25 M, 9 % de 25 M à 100 M et 8 % au-delà. Ils ne s’appliquent jamais au principal.\n\nLes retraits ne comportent aucun frais Rozine ; les frais propres du prestataire sont affichés avant confirmation.',
+    'investor.help.wallet.speed.q':
+        'En combien de temps les retraits sont-ils traités ?',
+    'investor.help.wallet.speed.a':
+        'Une fois confirmé, le retrait est envoyé vers votre compte par le prestataire de paiement. Une demande inhabituelle peut être retenue pour examen jusqu’à 24 heures.\n\nVous pouvez suivre chaque retrait dans l’historique de votre portefeuille. L’argent engagé dans une levée ouverte ne peut pas être retiré.',
+    'investor.help.safety.held.q': 'Où mon argent est-il conservé ?',
+    'investor.help.safety.held.a':
+        'Tout l’argent des clients est conservé sur un compte client cantonné dans une banque rwandaise agréée, séparé des fonds propres de Rozine. Le total de tous les portefeuilles est rapproché de ce compte chaque jour.\n\nSeuls les frais gagnés et communiqués peuvent être transférés sur le compte de Rozine.',
+    'investor.help.safety.stop.q':
+        'Que se passe-t-il si Rozine doit cesser son activité ?',
+    'investor.help.safety.stop.a':
+        'Les nouvelles opérations cessent le jour même, chaque engagement dans une levée non financée est intégralement remboursé, et chaque note émise continue d’être servie jusqu’à son terme grâce à une réserve de liquidation dédiée.\n\nLes retraits des soldes de portefeuille sont gratuits pendant la liquidation.',
+    'investor.help.account.secure.q': 'Comment mon compte est-il sécurisé ?',
+    'investor.help.account.secure.a':
+        'Ajoutez une application d’authentification dans Profil > Centre de sécurité pour un code à chaque connexion, et activez les alertes de connexion pour être prévenu de tout nouvel appareil.\n\nRozine ne vous demande jamais votre mot de passe ni vos codes par téléphone, SMS ou e-mail.',
+    'investor.help.account.complain.q': 'Comment déposer une réclamation ?',
+    'investor.help.account.complain.a':
+        'Écrivez-nous depuis ce centre d’aide. Votre réclamation reçoit un numéro de référence ; nous en accusons réception sous 4 heures et visons à la résoudre sous 48 heures.\n\nVous pouvez saisir l’Autorité des marchés de capitaux à tout moment.',
     'investor.profile.pending.terms_title': "Bientôt dans l'application",
     'investor.profile.pending.terms_body':
         'Les Conditions générales pourront être consultées ici dès leur publication.',

@@ -382,22 +382,21 @@ export function SecurityCenter({
     );
 }
 
-const PENDING_ICON: Record<'plan' | 'help' | 'terms' | 'privacy', IconName> = {
+const PENDING_ICON: Record<'plan' | 'terms' | 'privacy', IconName> = {
     plan: 'flash',
-    help: 'question',
     terms: 'document',
     privacy: 'lock-key',
 };
 
 /**
- * Rozine Plus, the help center, the terms and the privacy note: the design's pages hold copy and
- * figures (Plus bands and charges, answers, legal text) that are not approved yet, so each shows an
+ * Rozine Plus, the terms and the privacy note: the design's pages hold copy and
+ * figures (Plus bands and charges, legal text) that are not approved yet, so each shows an
  * empty state until that content is published.
  */
 export function PendingContent({
     kind,
 }: {
-    kind: 'plan' | 'help' | 'terms' | 'privacy';
+    kind: 'plan' | 'terms' | 'privacy';
 }) {
     const { t } = useTranslation();
 

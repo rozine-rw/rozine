@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "e86e4ffe30dc95bf85cb3e94e73bb2e6c099eff903eb1abe455f8c5ca25be7b4",
-    "coverageSetSha256": "f64ddbbd83cbc3ba179a09ef377145e959fb4c6629ff96690e598e14d6844f02",
+    "coverageSetSha256": "aa8265e44ecc516688f666dc872f69f89d36ee0b59b5c12900c6f154946b214b",
     "thresholds": {
         "critical": {
             "global": {
@@ -241,6 +241,7 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
+        "resources/js/components/investor/profile/help-center.tsx",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
