@@ -11,7 +11,7 @@ use App\Application\Primary\GetRetainedNoteSchedule;
 use App\Domain\Disbursement\DisbursementViolation;
 use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
-use App\Infrastructure\Primary\UnavailablePrimaryAdmission;
+use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Models\BusinessCampaign;
 use App\Models\DepositPolicy;
 use App\Models\PrimaryHolding;
@@ -123,13 +123,13 @@ it('returns no issuance before the actual successful Holding conversion', functi
     expect(DB::transaction(fn () => app(GetRetainedNoteSchedule::class)->find($campaign->campaignId)))->toBeNull();
 });
 
-it('does not activate ordinary admission funded settlement or servicing bindings', function (): void {
+it('leaves the admission, funded settlement and servicing bindings as they are', function (): void {
     app()->instance('env', 'production');
-    expect(get_class(app(PrimaryAdmission::class)))->toBe(UnavailablePrimaryAdmission::class)
+    expect(get_class(app(PrimaryAdmission::class)))->toBe(CurrentPrimaryAdmission::class)
         ->and(get_class(app(FundedCampaigns::class)))->toBe(UnavailableFundedCampaigns::class)
         ->and(get_class(app(NoteServicing::class)))->toBe(UnavailableNoteServicing::class);
     app(GetRetainedNoteSchedule::class);
-    expect(get_class(app(PrimaryAdmission::class)))->toBe(UnavailablePrimaryAdmission::class)
+    expect(get_class(app(PrimaryAdmission::class)))->toBe(CurrentPrimaryAdmission::class)
         ->and(get_class(app(NoteServicing::class)))->toBe(UnavailableNoteServicing::class);
 });
 
