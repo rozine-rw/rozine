@@ -1,4 +1,5 @@
 import type { BusinessRating, NoteStatus } from './business';
+import type { InvestorNotice } from './investor';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -59,6 +60,7 @@ export type AdminOptionalSection =
     | 'exceptions'
     | 'reconciliation'
     | 'coverage'
+    | 'complaints'
     | 'reports'
     | 'mail_testers'
     | AdminPendingSection;
@@ -273,7 +275,7 @@ export type FunnelStage =
 export type AdminTodayProps = AdminFrameShellProps & {
     kpis: TodayKpi[];
     attention: AttentionTile[];
-    /** Null while reconciliation breaks are not tracked; empty when none is open. */
+    /** Null for a viewer who may not view reconciliation; empty when no break is open. */
     breaks: ReconciliationBreak[] | null;
     capital_raised: {
         from: string | null;
@@ -1199,7 +1201,13 @@ export type AdminBookProps = AdminFrameShellProps &
         pagination: Pagination;
     };
 
-export type ExceptionKind = 'arrears' | 'halt' | 'variance';
+/** `audit` is a Flash Audit unfinished after its 24-hour clock (BRS AUD-R07). */
+export type ExceptionKind =
+    | 'arrears'
+    | 'halt'
+    | 'variance'
+    | 'audit'
+    | 'complaint';
 
 /** A server-counted filter over the open exceptions; `all` is every open one. */
 export type ExceptionChip = {
@@ -1217,8 +1225,11 @@ export type ExceptionItem = {
     id: string;
     kind: ExceptionKind;
     reference: string;
-    /** What the exception is about; an account subject (a statement variance) has no note. */
-    subject: { kind: 'business' | 'account'; label: string };
+    /**
+     * What the exception is about; an account subject (a statement variance), an Investor
+     * subject (a halt on their account) and a Business subject of an overdue audit have no note.
+     */
+    subject: { kind: 'business' | 'account' | 'investor'; label: string };
     note_title: string | null;
     description: string;
     amount: Money | null;
@@ -1226,7 +1237,8 @@ export type ExceptionItem = {
     opened_at: string;
     age_days: number;
     owner: Attribution | null;
-    link: RouteLink;
+    /** The record it sits on, null when the viewer may not open it. */
+    link: RouteLink | null;
 };
 
 export type AdminExceptionsProps = AdminFrameShellProps &
@@ -1234,6 +1246,96 @@ export type AdminExceptionsProps = AdminFrameShellProps &
         counts: { open: number; unassigned: number };
         chips: ExceptionChip[];
         exceptions: ExceptionItem[];
+        pagination: Pagination;
+    };
+
+/** The Primary Market Monitor offers no moderation command; `allowed_actions` is always empty. */
+export type StaffPrimaryMarketPageContract = {
+    contract_version: 'staff-primary-market-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type PrimaryMarketStatKey =
+    | 'active'
+    | 'in_flight'
+    | 'fill'
+    | 'completion';
+
+/** Where a raise that is still filling stands, as the Investor projection names it. */
+export type RaiseLifecycle =
+    | 'live'
+    | 'fully_reserved'
+    | 'inventory_unavailable'
+    | 'sold_out_pending_settlement'
+    | 'closing_pending_settlement';
+
+/** One raise still filling: its fill, investors and Kigali days left on its own clock. */
+export type PrimaryMarketRaise = {
+    id: string;
+    reference: string;
+    business: string;
+    sector: string;
+    district: string;
+    rating: Rating;
+    rate_pct: string;
+    term_months: number;
+    funded_pct: string;
+    raised: Money;
+    target: Money;
+    investors: number;
+    lifecycle: RaiseLifecycle;
+    opened_at: string;
+    closes_at: string;
+    days_left: number;
+};
+
+export type AdminPrimaryMarketProps = AdminFrameShellProps &
+    StaffPrimaryMarketPageContract & {
+        stats: { key: PrimaryMarketStatKey; value: StatValue }[];
+        /** Cash committed per Kigali day over the last fourteen days; days with none are left out. */
+        trend: {
+            from: string;
+            bars: { label: string; amount: Money; height_pct: number }[];
+        };
+        raises: PrimaryMarketRaise[];
+        pagination: Pagination;
+    };
+
+/** The Payment Center offers no release, hold or reverse command; `allowed_actions` is always empty. */
+export type StaffPaymentsPageContract = {
+    contract_version: 'staff-payments-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type PaymentsStatKey = 'deposits' | 'withdrawals' | 'disbursed';
+
+/** A withdrawal whose cash is held while its payout waits on the provider's verified outcome. */
+export type PayoutInFlight = {
+    id: string;
+    reference: string;
+    owner: 'investor' | 'business';
+    /** Null when the account has no name on record. */
+    name: string | null;
+    amount: Money;
+    received: Money;
+    account: string;
+    state: 'pending' | 'unknown';
+    requested_at: string;
+};
+
+export type AdminPaymentsProps = AdminFrameShellProps &
+    StaffPaymentsPageContract & {
+        /** The first Kigali day of the fourteen the figures and bars cover. */
+        from: string;
+        stats: { key: PaymentsStatKey; value: Money; count: number }[];
+        in_flight: number;
+        /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
+        bars: { label: string; amount: Money; height_pct: number }[];
+        payouts: PayoutInFlight[];
         pagination: Pagination;
     };
 
@@ -1309,11 +1411,12 @@ export type ReconciliationDayClose = { business_date: KigaliDate } & (
 
 /**
  * An open break, in the Today shape without its commands, tied to the account it sits on and
- * linking to its record. Assigning and escalating wait on the unsigned D-25/28/54 policy.
+ * linking to its record, or null when the viewer may not open that record. Assigning and
+ * escalating wait on the unsigned D-25/28/54 policy.
  */
 export type ReconciliationBreakRecord = Omit<ReconciliationBreak, 'actions'> & {
     account_id: string;
-    link: RouteLink;
+    link: RouteLink | null;
 };
 
 export type AdminReconciliationProps = AdminFrameShellProps &
@@ -1346,6 +1449,55 @@ export type AdminCoverageProps = AdminFrameShellProps &
         stats: { key: CoverageStatKey; value: StatValue }[];
         districts: CoverageDistrict[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Complaints (BRS v2.0 CMP-R03), `staff-complaints-v1`                                */
+/* ------------------------------------------------------------------------------------------ */
+
+export type ComplaintStatusKey = 'awaiting' | 'answered' | 'resolved';
+
+/** Which clock a complaint is past: its 4-hour acknowledgement or its 48-hour resolution. */
+export type ComplaintLate = 'acknowledge' | 'resolve' | null;
+
+export type ComplaintStatKey = 'unresolved' | 'awaiting' | 'late';
+
+/** One complaint as the list shows it; `link` opens it in the drawer. */
+export type ComplaintRow = {
+    id: string;
+    reference: string;
+    customer: string;
+    role: 'investor' | 'business';
+    status: ComplaintStatusKey;
+    late: ComplaintLate;
+    opened_at: string;
+    acknowledge_by: string;
+    resolve_by: string;
+    messages: number;
+    link: RouteLink;
+};
+
+/** The complaint open in the drawer, with its whole conversation; `answer` is null once resolved. */
+export type ComplaintDetail = Omit<ComplaintRow, 'messages' | 'link'> & {
+    messages: {
+        id: string;
+        author: 'customer' | 'staff';
+        body: string;
+        resolves: boolean;
+        at: string;
+    }[];
+    close: RouteLink;
+    answer: { url: string; method: 'post' } | null;
+};
+
+export type AdminComplaintsProps = AdminFrameShellProps & {
+    contract_version: 'staff-complaints-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+    stats: { key: ComplaintStatKey; value: StatValue }[];
+    complaints: ComplaintRow[];
+    complaint: ComplaintDetail | null;
+};
 
 export type ReportPackKind = 'regulator' | 'board' | 'export';
 
@@ -1476,3 +1628,107 @@ export type AdminStagingMailTestersProps = AdminFrameShellProps & {
     testers: StagingMailTester[];
     add: RouteAction;
 };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: Messaging History (staff-messaging-v1, BRS v2.0 NTF-R01)                           */
+/* ------------------------------------------------------------------------------------------ */
+
+/** The category a notice is filed under, after the design's message categories. */
+export type MessageCategory =
+    | 'onboarding'
+    | 'wallet'
+    | 'fundraising'
+    | 'portfolio'
+    | 'reporting'
+    | 'security'
+    | 'underwriting'
+    | 'payments'
+    | 'audits'
+    | 'support'
+    | 'general';
+
+/**
+ * One notice receipt: who it reached, the notice's kind (worded from the participant's catalog),
+ * the automation that sent it, the channel and whether it arrived. A mail can fail; an in-app
+ * notice is delivered when it is recorded.
+ */
+export type MessageHistoryRow = {
+    id: string;
+    recipient: string;
+    recipient_kind: 'person' | 'business';
+    kind: InvestorNotice['kind'];
+    category: MessageCategory;
+    source: 'automation';
+    channel: 'in_app' | 'mail';
+    status: 'delivered' | 'sent' | 'failed';
+    at: string;
+};
+
+export type AdminMessagingProps = AdminFrameShellProps & {
+    contract_version: 'staff-messaging-v1';
+    server_time: string;
+    history: MessageHistoryRow[];
+    /** The next page of older receipts, or null when this page holds the oldest. */
+    older: RouteLink | null;
+    /** Back to the newest receipts, sent only on an older page. */
+    newest: RouteLink | null;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Phase 2: System Health, `staff-system-health-v1`                                             */
+/* ------------------------------------------------------------------------------------------ */
+
+export type StaffSystemHealthPageContract = {
+    contract_version: 'staff-system-health-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type HealthStatus = 'critical' | 'watch' | 'healthy' | 'untracked';
+
+/** Each signal's readings, as the server records them; untracked signals carry none. Only a signal that needs a look links to the page that resolves it. */
+export type HealthSignal =
+    | {
+          key: 'ledger';
+          status: 'critical' | 'watch' | 'healthy';
+          facts: { accounts: number; unmatched: number; breaks: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'capital';
+          status: 'healthy';
+          facts: { amount: string; raises: number };
+          action: null;
+      }
+    | {
+          key: 'queue';
+          status: 'watch' | 'healthy';
+          facts: { pending: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'events';
+          status: 'watch' | 'healthy';
+          facts: { last_hour: number; total: number };
+          action: null;
+      }
+    | {
+          key:
+              | 'default_rate'
+              | 'arrears'
+              | 'outstanding'
+              | 'treasury'
+              | 'frozen';
+          status: 'untracked';
+          facts: never[];
+          action: null;
+      };
+
+export type AdminSystemHealthProps = AdminFrameShellProps &
+    StaffSystemHealthPageContract & {
+        /** How many tracked signals are critical or on watch. */
+        overall: { critical: number; watch: number };
+        /** Worst first: critical, watch, healthy, then the untracked signals. */
+        signals: HealthSignal[];
+    };

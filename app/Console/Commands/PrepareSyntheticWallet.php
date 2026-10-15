@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Application\Wallet\ApplyProviderOutcome;
+use App\Application\Wallet\ApplyWithdrawalOutcome;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
 use App\Application\Wallet\DispatchDepositIntents;
+use App\Application\Wallet\DispatchWithdrawals;
 use App\Domain\Operations\CommandRejection;
 use Database\Seeders\SyntheticWalletSeeder;
 use Illuminate\Console\Command;
@@ -27,13 +29,15 @@ class PrepareSyntheticWallet extends Command
         {--no-policy : Append a withdrawn policy version, so deposits are unavailable}
         {--restrict= : Record a section 11.4 high-risk hold for the Investor with this email}
         {--event= : Deliver a synthetic provider event for the deposit recorded under this request id}
+        {--withdrawal : Deliver the --event for the withdrawal recorded under that request id instead}
         {--state= : The event state: succeeded, failed, unknown or pending}
         {--event-id= : A provider event id to reuse (for duplicate and collision checks)}
         {--amount= : Report this amount instead of the recorded one (for mismatch checks)}';
 
     protected $description = 'Prepare synthetic S3-B wallet scenarios and provider events (local and testing only)';
 
-    public function handle(SyntheticWalletSeeder $seeder, SyntheticWalletFixtures $fixtures, DispatchDepositIntents $dispatch, ApplyProviderOutcome $apply): int
+    public function handle(SyntheticWalletSeeder $seeder, SyntheticWalletFixtures $fixtures, DispatchDepositIntents $dispatch, ApplyProviderOutcome $apply,
+        DispatchWithdrawals $withdrawals, ApplyWithdrawalOutcome $applyWithdrawal): int
     {
         $state = $this->option('state');
         if (! $this->option('seed') && ! $this->option('no-policy') && ! $this->option('restrict') && ! $this->option('event')) {
@@ -62,7 +66,13 @@ class PrepareSyntheticWallet extends Command
             if (is_string($this->option('restrict'))) {
                 $this->line('Section 11.4 hold recorded: '.$fixtures->restrict((string) $seeder->existing($this->option('restrict'))->party_id));
             }
-            if (is_string($this->option('event'))) {
+            if (is_string($this->option('event')) && $this->option('withdrawal')) {
+                $event = $fixtures->withdrawalEvent($this->option('event'), (string) $state, $this->option('event-id') ?: null, $this->option('amount') ?: null);
+                $withdrawals->handle($event['withdrawal_id']);
+                $outcome = $applyWithdrawal->handle($event['message']);
+                $this->line('Event '.$event['message']['event_id'].': '.$outcome['disposition'].($outcome['replayed'] ? ' (replayed)' : '')
+                    .'; withdrawal '.$outcome['state'].($outcome['settled'] ? '; settled once' : '; nothing settled'));
+            } elseif (is_string($this->option('event'))) {
                 $event = $fixtures->event($this->option('event'), (string) $state, $this->option('event-id') ?: null, $this->option('amount') ?: null);
                 $dispatch->handle($event['intent_id']);
                 $outcome = $apply->handle($event['message']);

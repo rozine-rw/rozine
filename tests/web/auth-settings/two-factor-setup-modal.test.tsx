@@ -267,6 +267,9 @@ describe('TwoFactorSetupModal', () => {
         render(<TwoFactorSetupModal {...props} />);
 
         expect(screen.getByTestId('qr-code')).toBeInTheDocument();
+        expect(screen.getByRole('textbox', { name: 'Setup key' })).toHaveValue(
+            'MANUAL-KEY',
+        );
         expect(screen.getByDisplayValue('MANUAL-KEY')).toHaveAttribute(
             'readonly',
         );

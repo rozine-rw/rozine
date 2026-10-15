@@ -1,0 +1,166 @@
+{
+    "component": "business/repayments",
+    "synthetic": true,
+    "props": {
+        "contract_version": "business-servicing-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-12-01T09:00:00+02:00",
+        "allowed_actions": [],
+        "note": null,
+        "servicing": null,
+        "schedule": [],
+        "ladder": null,
+        "pay": null,
+        "receipt": null,
+        "recent": [],
+        "issued": [
+            {
+                "note_id": "01JQ7Z8K4M2N6P9R3S5T7V1W2X",
+                "title": "Kigali Fresh Produce expansion",
+                "effective_date": "2026-01-31",
+                "principal": {
+                    "currency": "RWF",
+                    "amount": "10800000"
+                },
+                "return": {
+                    "currency": "RWF",
+                    "amount": "1198800"
+                },
+                "total": {
+                    "currency": "RWF",
+                    "amount": "11998800"
+                },
+                "instalments": [
+                    {
+                        "index": 1,
+                        "due_on": "2026-02-28",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    },
+                    {
+                        "index": 2,
+                        "due_on": "2026-03-31",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    },
+                    {
+                        "index": 3,
+                        "due_on": "2026-04-30",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    },
+                    {
+                        "index": 4,
+                        "due_on": "2026-05-31",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    },
+                    {
+                        "index": 5,
+                        "due_on": "2026-06-30",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    },
+                    {
+                        "index": 6,
+                        "due_on": "2026-07-31",
+                        "principal": {
+                            "currency": "RWF",
+                            "amount": "1800000"
+                        },
+                        "return": {
+                            "currency": "RWF",
+                            "amount": "199800"
+                        },
+                        "total": {
+                            "currency": "RWF",
+                            "amount": "1999800"
+                        }
+                    }
+                ]
+            }
+        ],
+        "bases": {},
+        "home": null,
+        "shell_links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "reports": null,
+            "market": null,
+            "profile": null
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "top_up": {
+                "url": "/preview/business-wallet-live-minimal",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/preview/business-repayments-operation-{request_id}",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "pay": null
+        }
+    }
+}

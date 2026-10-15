@@ -271,7 +271,8 @@ it('atomically records each purchase wallet and Business refresh once without ex
     $before = (int) DB::table('change_feed')->max('id');
     $instruction = $approved['observe']('2026-01-30T22:30:00+00:00');
     $changes = DB::table('change_feed')->where('id', '>', $before)->get();
-    expect($changes)->toHaveCount(6)->and($changes->where('topic', 'purchase'))->toHaveCount(3)
+    // Each purchase is told once when the provider confirms the payout and once when its Holding issues.
+    expect($changes)->toHaveCount(9)->and($changes->where('topic', 'purchase'))->toHaveCount(6)
         ->and($changes->where('topic', 'wallet'))->toHaveCount(2)->and($changes->where('topic', 'campaign'))->toHaveCount(1);
     PrimaryIssuanceFixture::replay($approved['campaign'], $instruction);
     expect(DB::table('change_feed')->where('id', '>', $before)->get()->toJson())->toBe($changes->toJson());

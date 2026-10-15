@@ -12,7 +12,7 @@ class AdvanceMonthlyReviews extends Command
 {
     protected $signature = 'audits:advance-reviews {--limit=100 : Maximum due reviews to inspect (1-1000)}';
 
-    protected $description = 'Publish eligible undisputed monthly reports after their retained review window';
+    protected $description = 'Remind Businesses of closing monthly review windows, then publish eligible undisputed reports after them';
 
     public function handle(ReviewAuditPublication $reviews): int
     {
@@ -22,6 +22,7 @@ class AdvanceMonthlyReviews extends Command
 
             return self::INVALID;
         }
+        $reminded = $reviews->remindClosing(min(100, $limit));
         $cursor = Cache::get('monthly-audit-review-sweep-cursor');
         $cursor = is_string($cursor) ? $cursor : null;
         $published = 0;
@@ -36,7 +37,7 @@ class AdvanceMonthlyReviews extends Command
             $cursor = $result['next_cursor'];
             Cache::put('monthly-audit-review-sweep-cursor', $cursor);
         } while ($cursor !== null && $inspected < $limit);
-        $this->info('Inspected '.$inspected.' due reviews; published '.$published.'.');
+        $this->info('Reminded '.$reminded.' closing reviews. Inspected '.$inspected.' due reviews; published '.$published.'.');
 
         return self::SUCCESS;
     }

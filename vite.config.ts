@@ -397,12 +397,14 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
             fonts: [
+                /* Only the starter-kit auth and settings screens set Instrument Sans; the product
+                   apps use Inter, so it is fetched where it is used rather than preloaded. */
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
+                    preload: false,
                 }),
-                bunny('Inter', {
-                    weights: [400, 500, 600, 700, 800],
-                }),
+                /* Inter is self-hosted as one variable face in rozine.css; a second, static copy
+                   here would preload five more files ahead of the app on every page. */
             ],
         }),
         inertia(),

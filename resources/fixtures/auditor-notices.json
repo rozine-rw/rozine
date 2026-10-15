@@ -1,0 +1,82 @@
+{
+    "unread": 2,
+    "notices": [
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7d03",
+            "kind": "auditor.job_offered",
+            "facts": {
+                "type": "flash",
+                "business": "Sebeya Logistics",
+                "location": "Musanze",
+                "accept_by": "2026-10-13T16:00:00Z",
+                "assignment_id": "01k7nq0c2y6w8e4t1v3x5z7d10"
+            },
+            "created_at": "2026-10-13T15:00:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/auditor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7d02",
+            "kind": "auditor.job_offered",
+            "facts": {
+                "type": "routine",
+                "business": "GreenLeaf Agro",
+                "location": "Gasabo",
+                "accept_by": "2026-10-12T13:30:00Z",
+                "assignment_id": "01k7nq0c2y6w8e4t1v3x5z7d11"
+            },
+            "created_at": "2026-10-12T11:30:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/auditor-jobs",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/auditor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7d01",
+            "kind": "auditor.accreditation_approved",
+            "facts": {
+                "licence": "ICPAR/P-2026/0481",
+                "expires_on": "2027-10-10"
+            },
+            "created_at": "2026-10-10T09:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7d00",
+            "kind": "auditor.accreditation_rejected",
+            "facts": {
+                "reason": "The certificate scan is unreadable."
+            },
+            "created_at": "2026-10-08T09:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/auditor-profile",
+                "method": "get"
+            },
+            "read_action": null
+        }
+    ],
+    "actions": {
+        "read_all": {
+            "url": "/preview/auditor-notices/read",
+            "method": "post"
+        }
+    }
+}

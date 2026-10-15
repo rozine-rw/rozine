@@ -404,7 +404,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             }
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
-                'allowed_actions' => $allowed ? StaffPermission::forRoles($staff->roles) : [], 'roles' => $allowed ? $staff->roles : []];
+                'allowed_actions' => $allowed ? StaffPermission::forRoles($staff->roles, (bool) config('app.staff_ledger_view_signed_off')) : [], 'roles' => $allowed ? $staff->roles : []];
         }, 3);
     }
 
@@ -420,7 +420,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $changes = IdentityAuditEvent::query()->where('target_type', 'user')->where('target_id', (string) $userId)
                 ->where('action', 'staff.configure')->where('created_at', '>=', $from->startOfSecond())->get();
             foreach ($changes as $change) {
-                if (($change->after['enabled'] ?? false) !== true || ! in_array($permission, StaffPermission::forRoles($change->after['roles'] ?? []), true)) {
+                if (($change->after['enabled'] ?? false) !== true || ! in_array($permission, StaffPermission::forRoles($change->after['roles'] ?? [], (bool) config('app.staff_ledger_view_signed_off')), true)) {
                     return false;
                 }
             }

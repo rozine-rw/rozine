@@ -24,6 +24,14 @@ interface AuditorProfileStore
     /** @return array<string, mixed> */
     public function review(int $actorId, string $partyId, int $expectedRevision, string $decision, ?string $submissionId, string $checkedAt, string $reference, string $reason, string $requestId): array;
 
+    /**
+     * Reminds each active partner whose licence lapses within the renewal notice to upload the
+     * renewal, once per licence expiry.
+     *
+     * @return int the reminders recorded
+     */
+    public function remindRenewals(): int;
+
     /** @return array<string, mixed> */
     public function accreditation(int $userId, int $contextRevision): array;
 

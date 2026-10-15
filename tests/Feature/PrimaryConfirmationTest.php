@@ -20,8 +20,6 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
-use Brick\Math\BigInteger;
-use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -317,13 +315,9 @@ it('refuses an existing commit posting instead of claiming it as a new confirmat
 it('requotes changed fees even when the disclosure version stays the same', function (): void {
     $changedFees = function (UnitRights $rights, array $campaign): PrimaryTerms {
         $terms = PrimaryReservationFixture::terms($rights, $campaign);
-        $fee = BigInteger::zero();
-        foreach ($rights->instalments as $instalment) {
-            $fee = $fee->plus(BigInteger::of($instalment['return'])->multipliedBy(800)->dividedBy(10000, RoundingMode::HalfUp));
-        }
 
         return PrimaryTerms::disclosed($terms->ratePercent, $terms->termMonths, $terms->policyVersion, $terms->disclosureVersion,
-            [...$terms->earningsFee, 'tier' => 'bronze', 'rate_bps' => 800], (string) $fee, $rights);
+            [...$terms->earningsFee, 'tier' => 'bronze', 'rate_bps' => 1200], PrimaryTerms::payoutFeeFor($rights, 1200), $rights);
     };
     $requote = ($this->confirm)(admit: $changedFees);
     expect($requote['code'])->toBe('RESERVATION_REQUOTED')

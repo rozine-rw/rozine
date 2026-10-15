@@ -75,9 +75,9 @@ export function StepBank({
 
     const subtitle = (
         <>
-            <h2 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
+            <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
                 {t('business.onboarding.bank.title')}
-            </h2>
+            </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                 {t('business.onboarding.bank.subtitle', { count: required })}
             </p>
@@ -135,6 +135,7 @@ export function StepBank({
                     <Icon name="bank" />
                 </span>
                 <select
+                    aria-describedby="bank-error"
                     id="bank"
                     value={data.bank}
                     onChange={(event) =>
@@ -205,6 +206,7 @@ export function StepBank({
                 </button>
             </div>
             <input
+                aria-describedby="account-name-error"
                 id="account_name"
                 value={data.account_name}
                 onChange={(event) =>
@@ -227,6 +229,7 @@ export function StepBank({
                 {t('business.onboarding.bank.account_number')}
             </label>
             <input
+                aria-describedby="account-number-error"
                 id="account_number"
                 inputMode="numeric"
                 maxLength={16}
@@ -270,6 +273,7 @@ export function StepBank({
 
                     return (
                         <button
+                            aria-describedby="signatories-error"
                             key={person.id}
                             type="button"
                             role="checkbox"

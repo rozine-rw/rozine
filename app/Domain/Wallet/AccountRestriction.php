@@ -18,4 +18,10 @@ final readonly class AccountRestriction
     {
         return in_array('deposits', $this->scope, true);
     }
+
+    /** Whether the case holds withdrawals: the 11.4 hold always does, any other case by its scope. */
+    public function blocksWithdrawal(): bool
+    {
+        return in_array('withdrawals', $this->scope, true);
+    }
 }

@@ -16,4 +16,11 @@ final class EloquentOperationRecords implements OperationRecords
             ->map(fn (CommandOperation $operation): array => ['operation_id' => (string) $operation->id, 'request_id' => (string) $operation->request_id,
                 'result' => (array) $operation->result, 'recorded_at' => $operation->created_at?->toIso8601String() ?? ''])->all());
     }
+
+    public function requestOf(string $operationId): ?string
+    {
+        $requestId = CommandOperation::query()->whereKey($operationId)->value('request_id');
+
+        return $requestId === null ? null : (string) $requestId;
+    }
 }

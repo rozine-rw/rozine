@@ -89,6 +89,10 @@ export default function InvestorHolding(
             tab="portfolio"
             links={links}
             showTabBar={false}
+            beacon={{
+                link: 'changes' in links ? links.changes : null,
+                reloads: { purchase: { only: ['server_time', 'holding'] } },
+            }}
         >
             {wide ? (
                 <div className="flex h-full flex-col px-[30px] pt-3 pb-3.5">

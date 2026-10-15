@@ -94,6 +94,30 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(0);
     });
 
+    it('opens Partner coverage from the Audit Partner directory for staff who may see it', () => {
+        const auditors = props(auditorsFixture);
+        const { unmount } = render(<AdminParties {...auditors} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Partner coverage' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(
+            <AdminParties
+                {...auditors}
+                nav={{
+                    ...auditors.nav,
+                    coverage: { url: '/admin/coverage', method: 'get' },
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Partner coverage' }),
+        ).toHaveAttribute('href', '/admin/coverage');
+    });
+
     it('lists staff with their role and marks the viewer', () => {
         const fixture = props(staffFixture);
 

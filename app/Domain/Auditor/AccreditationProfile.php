@@ -16,7 +16,25 @@ use DateTimeZone;
  */
 final class AccreditationProfile
 {
+    /** How many Kigali days before the licence lapses the partner is reminded to renew (design: "expires in 45 days"). */
+    public const int RENEWAL_NOTICE_DAYS = 45;
+
     public function __construct(private AuditorStanding $standing) {}
+
+    /**
+     * Whether an active partner's licence lapses within the renewal notice, counted in Kigali
+     * days and including the last valid day, with no renewal already submitted.
+     *
+     * @param  State  $state
+     */
+    public function renewalDue(array $state, DateTimeImmutable $now): bool
+    {
+        $today = $now->setTimezone(new DateTimeZone('Africa/Kigali'))->format('Y-m-d');
+        $expiresOn = $state['standing']['expires_on'];
+
+        return $state['standing']['status'] === 'active' && $state['submission']['status'] !== 'pending' && $expiresOn !== null
+            && $expiresOn >= $today && $expiresOn <= $now->setTimezone(new DateTimeZone('Africa/Kigali'))->modify('+'.self::RENEWAL_NOTICE_DAYS.' days')->format('Y-m-d');
+    }
 
     /** @return State */
     public function empty(): array

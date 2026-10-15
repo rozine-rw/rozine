@@ -72,4 +72,7 @@ interface AuditReportPublicationStore
 
     /** @return array{inspected: int, published: int, blocked: array<string, string>, next_cursor: string|null} */
     public function advanceDue(int $limit = 100, ?string $after = null): array;
+
+    /** Reminds each Business whose monthly review window is about to close, once per report, and returns how many. */
+    public function remindClosing(int $limit = 100): int;
 }

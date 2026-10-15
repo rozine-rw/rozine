@@ -51,12 +51,28 @@ vi.mock('@/layouts/auth-layout', () => ({ default: state.authLayout }));
 vi.mock('@/layouts/settings/layout', () => ({ default: state.settingsLayout }));
 vi.mock('@/layouts/public-layout', () => ({ default: state.publicLayout }));
 
+/** Reads the catalog through the module instance the freshly loaded app provides. */
+async function i18nProbe(): Promise<() => ReactNode> {
+    const { useTranslation } = await import('@/hooks/use-translation');
+
+    return function Probe() {
+        const { t, locale } = useTranslation();
+
+        return <span>{`${locale}: ${t('auth.login.email_label')}`}</span>;
+    };
+}
+
 async function loadApplication(appName: string): Promise<InertiaOptions> {
     vi.resetModules();
     vi.stubEnv('VITE_APP_NAME', appName);
     state.options = undefined;
 
     await import('@/app');
+    await vi.waitFor(() => {
+        if (!state.options) {
+            throw new Error('Not started yet.');
+        }
+    });
 
     if (!state.options) {
         throw new Error('The Inertia application was not configured.');
@@ -119,6 +135,28 @@ describe('application entry point', () => {
         ).toHaveTextContent('Application page');
         expect(screen.getByText('Toast outlet')).toBeInTheDocument();
         expect(screen.getByText('Read failure outlet')).toBeInTheDocument();
+    });
+
+    it('fetches the page’s own catalog before it starts, and starts in English if that fails', async () => {
+        document.documentElement.lang = 'fr';
+        const french = await loadApplication('');
+        const FrenchProbe = await i18nProbe();
+
+        render(french.withApp(<FrenchProbe />));
+        expect(screen.getByText('fr: Adresse e-mail')).toBeInTheDocument();
+
+        vi.doMock('@/lib/i18n/catalogs/rw', () => {
+            throw new Error('offline');
+        });
+        document.documentElement.lang = 'rw';
+        const offline = await loadApplication('');
+        const OfflineProbe = await i18nProbe();
+
+        render(offline.withApp(<OfflineProbe />));
+        expect(screen.getByText('rw: Email address')).toBeInTheDocument();
+
+        vi.doUnmock('@/lib/i18n/catalogs/rw');
+        document.documentElement.lang = '';
     });
 
     it('titles every tab Rozine, whatever name the environment carries', async () => {

@@ -168,6 +168,28 @@ beforeEach(() => {
 });
 
 describe('Compliance identity queue', () => {
+    it('opens Complaints from the queue for staff who may answer them', () => {
+        const { unmount } = renderWithUser(
+            <AdminInvestorVerifications {...queue()} />,
+        );
+
+        expect(
+            screen.queryByRole('link', { name: 'Complaints' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    nav: { ...nav, complaints: link('/admin/complaints') },
+                })}
+            />,
+        );
+        expect(
+            screen.getByRole('link', { name: 'Complaints' }),
+        ).toHaveAttribute('href', '/admin/complaints');
+    });
+
     it('sits under Compliance in the console, which it lights and titles', () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 

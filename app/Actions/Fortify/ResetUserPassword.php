@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Fortify;
 
+use App\Application\Identity\NoticePasswordChange;
 use App\Concerns\PasswordValidationRules;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
@@ -27,5 +28,6 @@ class ResetUserPassword implements ResetsUserPasswords
         $user->forceFill([
             'password' => $input['password'],
         ])->save();
+        app(NoticePasswordChange::class)->handle($user->id);
     }
 }

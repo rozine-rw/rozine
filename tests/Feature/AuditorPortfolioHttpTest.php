@@ -153,6 +153,11 @@ it('never calls the filed reports complete once the read stops at its page size'
 
             return $this->store->filed($userId, $contextRevision, $published, 0);
         }
+
+        public function trackRecord(int $userId, int $contextRevision): array
+        {
+            return $this->store->trackRecord($userId, $contextRevision);
+        }
     };
     app()->instance(AuditorFiledReportStore::class, $store);
     $cut = auditorPortfolioProps($fixture['user']);

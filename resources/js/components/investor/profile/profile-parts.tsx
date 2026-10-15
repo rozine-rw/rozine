@@ -6,7 +6,9 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { MethodMark } from '@/components/investor/wallet/funding';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
+import { LoginAlerts } from '@/components/rozine/login-alerts';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatMonthYearLong, formatMonthYear } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -299,10 +301,10 @@ function Field({
 }
 
 /**
- * Security center (design L3934–3975): whether two-factor sign-in is on, and the way to change the
- * password. Both are managed on the account's security settings, so each row opens them. The
- * design's login alerts and account deletion have no command for an Investor, so they are left
- * out.
+ * Security center (design L3934–3975): whether two-factor sign-in is on, the login alerts switch,
+ * and the way to change the password. Two-factor and the password are managed on the account's
+ * security settings, so those rows open them. The design's account deletion has no command for an
+ * Investor, so it is left out.
  */
 export function SecurityCenter({
     security,
@@ -352,6 +354,14 @@ export function SecurityCenter({
                         />
                     </span>
                 </Link>
+                <LoginAlerts
+                    enabled={security.login_alerts}
+                    action={security.update_login_alerts}
+                    title={t('investor.profile.security.login_alerts')}
+                    hint={t('investor.profile.security.login_alerts_hint')}
+                    onClass="bg-[#17795a]"
+                    glyph={glyph}
+                />
             </div>
             <div className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
                 <Link
@@ -373,22 +383,21 @@ export function SecurityCenter({
     );
 }
 
-const PENDING_ICON: Record<'plan' | 'help' | 'terms' | 'privacy', IconName> = {
+const PENDING_ICON: Record<'plan' | 'terms' | 'privacy', IconName> = {
     plan: 'flash',
-    help: 'question',
     terms: 'document',
     privacy: 'lock-key',
 };
 
 /**
- * Rozine Plus, the help center, the terms and the privacy note: the design's pages hold copy and
- * figures (Plus bands and charges, answers, legal text) that are not approved yet, so each shows an
+ * Rozine Plus, the terms and the privacy note: the design's pages hold copy and
+ * figures (Plus bands and charges, legal text) that are not approved yet, so each shows an
  * empty state until that content is published.
  */
 export function PendingContent({
     kind,
 }: {
-    kind: 'plan' | 'help' | 'terms' | 'privacy';
+    kind: 'plan' | 'terms' | 'privacy';
 }) {
     const { t } = useTranslation();
 
@@ -469,6 +478,8 @@ export function SubHeading({
     back: RouteLink | null;
 }) {
     const { t } = useTranslation();
+    /* Beside the menu (wide) the menu's "Profile" is the page title; alone (phone) this is. */
+    const Heading = back === null ? 'h2' : 'h1';
 
     return (
         <div className="flex items-center gap-3">
@@ -481,7 +492,9 @@ export function SubHeading({
                     <span aria-hidden>←</span>
                 </Link>
             )}
-            <h2 className="text-xl font-semibold text-rz-ink">{title}</h2>
+            <Heading className="text-xl font-semibold text-rz-ink">
+                {title}
+            </Heading>
         </div>
     );
 }
@@ -493,10 +506,10 @@ type LinkedProps = {
 
 /**
  * Linked payout accounts (design L3856–3923) — wallet readiness. Accounts arrive masked; linking
- * sends the details to the server, which verifies ownership (a one-off verification debit, and
- * payouts only to an account in the investor's own name) and answers with field errors. Cards are
- * not a payout rail in the MVP, so the design's debit-card option is left out. Until the server
- * links a link or unlink command, the accounts are listed without it and nothing invites linking.
+ * sends the details, with a fresh `request_id`, to the server, which verifies the account is in the
+ * investor's own name and answers with field errors. Cards are not a payout rail in the MVP, so the
+ * design's debit-card option is left out. Where the server offers no link or unlink command, the
+ * accounts are listed without it and nothing invites linking.
  */
 export function LinkedAccounts({ linked, action }: LinkedProps) {
     const { t } = useTranslation();
@@ -530,6 +543,11 @@ export function LinkedAccounts({ linked, action }: LinkedProps) {
                             <Form
                                 action={account.unlink.url}
                                 method={account.unlink.method}
+                                transform={(data) => ({
+                                    ...data,
+                                    request_id: crypto.randomUUID(),
+                                })}
+                                options={{ preserveScroll: true }}
                             >
                                 <button
                                     type="submit"
@@ -566,10 +584,22 @@ type LinkAccountFormProps = {
     banks: LinkedProps['linked']['banks'];
     action: NonNullable<LinkedProps['action']>;
     hasAccounts: boolean;
+    /** The collapsed form's button, and whose name the footnote says an account must be in. */
+    addLabel?: MessageCode;
+    footnote?: MessageCode;
 };
 
-/** The link-a-new-account form, open from the start while nothing is linked yet. */
-function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
+/**
+ * The link-a-new-account form, open from the start while nothing is linked yet. A Business's Linked
+ * accounts reuses it with its own wording.
+ */
+export function LinkAccountForm({
+    banks,
+    action,
+    hasAccounts,
+    addLabel = 'investor.profile.linked.add',
+    footnote = 'investor.profile.linked.footnote',
+}: LinkAccountFormProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(!hasAccounts);
     const form = useForm<{
@@ -597,6 +627,10 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform((data) => ({
+            ...data,
+            request_id: crypto.randomUUID(),
+        }));
         form.post(action.url, {
             preserveScroll: true,
             onSuccess: () => {
@@ -736,7 +770,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
                 {t('investor.profile.linked.submit')}
             </button>
             <p className="mt-[9px] text-[10.5px] leading-[1.45] text-rz-secondary">
-                {t('investor.profile.linked.footnote')}
+                {t(footnote)}
             </p>
         </form>
     ) : (
@@ -745,7 +779,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
             onClick={() => setOpen(true)}
             className="mt-3.5 h-[50px] w-full rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
         >
-            {t('investor.profile.linked.add')}
+            {t(addLabel)}
         </button>
     );
 }

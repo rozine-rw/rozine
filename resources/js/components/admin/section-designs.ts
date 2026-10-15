@@ -294,19 +294,11 @@ export const SECTION_DESIGNS: Record<
             finance.kpi('investor_fees'),
             finance.kpi('secondary'),
         ],
-        tabs: [
-            finance.tab('streams'),
-            finance.tab('ramp'),
-            finance.tab('ledger'),
-        ],
+        tabs: [finance.tab('streams'), finance.tab('ledger')],
         blocks: [
             finance.block('streams', {
                 tab: 'streams',
                 columns: ['stream', 'paid_by', 'collected'],
-            }),
-            finance.block('ramp', {
-                tab: 'ramp',
-                columns: ['position', 'amount', 'updated'],
             }),
             finance.block('ledger', {
                 tab: 'ledger',

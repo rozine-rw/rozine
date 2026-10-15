@@ -20,7 +20,8 @@ const GRID =
 
 /**
  * The ledger (design Finance → Ledger & payouts, T1650–1688): every money movement, newest first,
- * searchable by type, party or reference. Each row opens its postings. Read-only.
+ * searchable by type, party or reference. Each row opens its postings. A search starts again
+ * from the newest page with no entry open. Read-only.
  */
 export default function AdminLedger(props: AdminLedgerProps) {
     const { t } = useTranslation();
@@ -28,7 +29,11 @@ export default function AdminLedger(props: AdminLedgerProps) {
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         router.reload({
-            data: { q: new FormData(event.currentTarget).get('q') },
+            data: {
+                q: new FormData(event.currentTarget).get('q'),
+                entry: undefined,
+                limit: undefined,
+            },
         });
     };
 

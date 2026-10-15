@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 
 /**
  * The sheet both waitlist flows are claimed in.
@@ -12,6 +13,8 @@ export function PulseModal({
     onClose: () => void;
     children: ReactNode;
 }) {
+    const dialog = useModalDialog<HTMLDivElement>(onClose);
+
     return (
         <>
             <div
@@ -23,6 +26,8 @@ export function PulseModal({
             <div className="fixed inset-0 z-[51] flex items-center justify-center overflow-y-auto p-3">
                 <div
                     onClick={(event) => event.stopPropagation()}
+                    ref={dialog}
+                    tabIndex={-1}
                     role="dialog"
                     aria-modal="true"
                     aria-label={label}

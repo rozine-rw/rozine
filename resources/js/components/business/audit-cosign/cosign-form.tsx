@@ -38,6 +38,7 @@ export function CosignForm({
     return (
         <form onSubmit={submit} noValidate className="mt-[11px]">
             <button
+                aria-describedby="accepted-error"
                 type="button"
                 role="checkbox"
                 aria-checked={accepted}
@@ -94,7 +95,7 @@ export function CosignForm({
                         setNote(event.target.value.slice(0, NOTE_LIMIT))
                     }
                     aria-invalid={errors.note !== undefined || undefined}
-                    aria-describedby="cosign-note-help cosign-note-count"
+                    aria-describedby="cosign-note-help cosign-note-count note-error"
                     className="w-full resize-none rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[11px] text-sm text-rz-ink outline-none focus:border-rz-focus-border"
                 />
                 <p

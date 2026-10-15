@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
+import { MAIN_CONTENT_ID, SkipLink } from '@/components/rozine/skip-link';
 import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
@@ -75,6 +76,7 @@ export function AppFrame({
             <IconGradients
                 app={audience === 'business' ? 'business' : undefined}
             />
+            <SkipLink />
             <ConnectivityNotice message={offlineMessage} />
             <div className="lg:mx-auto lg:flex lg:h-svh lg:min-h-[640px] lg:max-w-[var(--rz-desktop-max)] lg:p-7">
                 <aside className="hidden w-[182px] shrink-0 flex-col rounded-l-[20px] border-r border-rz-border bg-rz-surface px-3 py-[18px] lg:flex">
@@ -139,7 +141,11 @@ export function AppFrame({
                     </div>
                 </aside>
 
-                <main className="relative min-w-0 flex-1 lg:overflow-hidden lg:rounded-r-[20px] lg:bg-rz-page">
+                <main
+                    id={MAIN_CONTENT_ID}
+                    tabIndex={-1}
+                    className="relative min-w-0 flex-1 lg:overflow-hidden lg:rounded-r-[20px] lg:bg-rz-page"
+                >
                     {children}
                 </main>
             </div>

@@ -19,6 +19,7 @@ class ShowDealsRequest extends FormRequest
     public function rules(): array
     {
         return ['identity_context_revision' => ['sometimes', 'integer', 'min:0'], 'sort' => ['sometimes', 'string', Rule::in(GetInvestorDeals::SORTS)],
-            'industry' => ['sometimes', 'string', 'max:120'], 'deal' => ['sometimes', 'string', 'ulid']];
+            'industry' => ['sometimes', 'string', 'max:120'], 'deal' => ['sometimes', 'string', 'ulid'],
+            'units' => ['sometimes', 'integer', 'min:1', 'max:99999'], 'reservation' => ['sometimes', 'string', 'ulid']];
     }
 }

@@ -12,7 +12,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * bound yet, so no note of this Business has a schedule, an amount due or a payable option, and
  * `repayment.pay` is refused before anything is debited. The sheet therefore carries no note,
  * servicing, schedule, ladder or pay panel, and no Pay action; it opens on its empty state over
- * the Business's real Home, with the wallet's deposit panel as its only way on.
+ * the Business's real Home, with the wallet's deposit panel as its only way on. `issued` lists each
+ * issued Note's schedule as it was issued (principal and return per instalment, no paid amounts,
+ * fees or current claim), so the Business sees what it will repay before servicing opens.
  */
 class BusinessRepaymentsResource extends JsonResource
 {
@@ -29,7 +31,7 @@ class BusinessRepaymentsResource extends JsonResource
 
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $data['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'receipt' => null, 'recent' => [],
-            'bases' => (object) [], 'home' => $home,
+            'issued' => $data['issued'] ?? [], 'bases' => (object) [], 'home' => $home,
             'shell_links' => ['home' => $home['links']['home'], 'launcher' => $home['links']['launcher'], 'reports' => $home['links']['reports'], 'market' => $home['links']['market'], 'profile' => $home['links']['profile']],
             'links' => ['close' => $home['links']['home'], 'top_up' => $home['links']['deposit'], 'operation' => ['url' => str_replace($placeholder, '{request_id}', $operation), 'method' => 'get']],
             'actions' => ['pay' => null]];

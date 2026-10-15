@@ -1,5 +1,6 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import type { CSSProperties, ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import type { RouteLink } from '@/types';
 
@@ -37,6 +38,11 @@ export function ColumnSheet({
     children,
 }: ColumnSheetProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLElement>(() =>
+        typeof close === 'function'
+            ? close()
+            : router.visit(close.url, { preserveScroll: true }),
+    );
 
     return (
         <>
@@ -55,6 +61,8 @@ export function ColumnSheet({
                 />
             )}
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

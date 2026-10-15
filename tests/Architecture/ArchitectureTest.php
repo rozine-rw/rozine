@@ -254,6 +254,14 @@ it('has concrete targets for the command outcome boundary', function (): void {
     expect(class_exists(CommandOperation::class))->toBeTrue();
 })->group('arch');
 
+arch('party notices and their receipts are only accessed by their adapter')
+    ->expect(['App\Models\PartyNotice', 'App\Models\PartyNoticeDelivery'])
+    ->toOnlyBeUsedIn(['App\Infrastructure\Identity\EloquentPartyNotices', 'App\Models']);
+
+arch('account devices are only accessed by their adapter')
+    ->expect('App\Models\AccountDevice')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Identity\EloquentAccountDevices', 'App\Models']);
+
 arch('command outcomes are only accessed by the journal adapter')
     ->expect('App\Models\CommandOperation')
     ->toOnlyBeUsedIn(['App\Infrastructure\Operations', 'App\Models', 'Database\Factories']);
@@ -471,10 +479,10 @@ arch('disbursement records are only accessed by the disbursement adapters')
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\DisbursementIndependenceDeclaration'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
 
-arch('Holdings are written and read only by their named Primary issuance collaborators')
+arch('Holdings are written and read only by their named Primary issuance collaborators and the Investor\'s read-only Holdings reader')
     ->expect('App\Models\PrimaryHolding')
     ->toOnlyBeUsedIn(['App\Models', 'Database\Factories', 'App\Infrastructure\Primary\RetainedPrimaryIssuance',
-        'App\Infrastructure\Primary\RetainedIssuedHoldings']);
+        'App\Infrastructure\Primary\RetainedIssuedHoldings', 'App\Infrastructure\Primary\EloquentInvestorHoldings']);
 
 arch('Primary issuance conversion records stay inside their named producer and verifier')
     ->expect('App\Models\PrimaryCampaignIssuance')

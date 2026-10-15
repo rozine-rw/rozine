@@ -1,8 +1,9 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
 import { CapNote } from '@/components/investor/deals/invest-bar';
+import { RiskStatementsStep } from '@/components/investor/deals/risk-statements';
 import { useTimeLeft } from '@/components/investor/deals/time-left';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { CommitmentCard } from '@/components/investor/primary/commitment';
@@ -18,6 +19,7 @@ import { ACCENT_FILL, POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice, useRefusalText } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { useC3Command } from '@/hooks/use-c3-command';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompactBare } from '@/lib/investor/format';
 import { useServerNow } from '@/lib/investor/server-clock';
@@ -117,6 +119,7 @@ export function CheckoutSheet({
     reservation,
     commitment,
     refusal,
+    risks,
     links,
     actions,
     preview_outcome: preview,
@@ -153,6 +156,9 @@ export function CheckoutSheet({
         preview,
     });
     const phone = variant === 'phone';
+    const dialog = useModalDialog<HTMLElement>(() =>
+        router.visit(links.close.url, { preserveScroll: true }),
+    );
     const held =
         reservation !== null && reservation.state === 'held'
             ? reservation
@@ -186,6 +192,8 @@ export function CheckoutSheet({
                 )}
             />
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}
@@ -544,6 +552,13 @@ export function CheckoutSheet({
             <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
                 <C3Notice command={command} />
                 <DealStatusNotice deal={deal} className="mb-[11px]" />
+                {risks?.action && (
+                    <RiskStatementsStep
+                        risks={risks}
+                        action={risks.action}
+                        identityRevision={identityRevision}
+                    />
+                )}
                 {dealLine}
                 <div className="mt-[11px] flex items-center justify-between">
                     <span className={LABEL}>
