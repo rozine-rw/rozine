@@ -562,3 +562,13 @@ arch('returned cash evidence stays behind the wallet and Primary adapters')
 arch('terminal failed closures are written only by Business persistence or the named Primary adapter')
     ->expect('App\\Models\\BusinessCampaignClosure')
     ->toOnlyBeUsedIn(['App\\Infrastructure\\Business', 'App\\Infrastructure\\Primary\\EloquentFundedCampaigns', 'App\\Models', 'Database\\Factories']);
+
+arch('the retained Note schedule consumes only historical issued evidence')
+    ->expect('App\Application\Primary\GetRetainedNoteSchedule')
+    ->not->toUse(['App\Infrastructure', 'App\Models', 'Illuminate', 'App\Application\Business', 'App\Application\Wallet',
+        'App\Domain\Primary\PrimaryTerms', 'App\Domain\Primary\UnitRights', 'App\Domain\Disbursement\IssueSchedule']);
+
+arch('the authenticated issued port has only its named producer verifier and schedule consumers')
+    ->expect('App\Application\Primary\Contracts\IssuedHoldingEvidence')
+    ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\RetainedPrimaryIssuance',
+        'App\Infrastructure\Primary\RetainedIssuedHoldings', 'App\Application\Primary\GetRetainedNoteSchedule']);
