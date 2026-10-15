@@ -626,14 +626,42 @@ describe('Business account sections', () => {
         },
     );
 
-    it('shows the support center answers as pending, with the support chat over the Business complaints', async () => {
+    it('opens a support center answer in full, and messages support from it', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(supportFixture)} />);
+        await user.click(
+            screen.getByRole('button', { name: /Can I repay early\?/u }),
+        );
+        const sheet = screen.getByRole('dialog', {
+            name: 'Can I repay early?',
+        });
+
+        expect(within(sheet).getByText('Repayments')).toBeInTheDocument();
+        expect(sheet).toHaveTextContent(
+            'investors receive exactly the scheduled amounts still owed',
+        );
+        await user.click(
+            within(sheet).getByRole('button', { name: 'Message support' }),
+        );
+
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Rozine Support' }),
+            ).getByText('Our disbursement has not reached the bank account.'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the support center answers, with the support chat over the Business complaints', async () => {
         const user = userEvent.setup();
 
         render(<BusinessProfile {...props(supportFixture)} />);
         expect(
             screen.getByRole('heading', { name: 'Support center' }),
         ).toBeInTheDocument();
-        expect(screen.getByText('Coming to the app soon')).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Capacity & pricing' }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: /CMP-00000003/u }),
         ).toHaveTextContent('Awaiting reply');

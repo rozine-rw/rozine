@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { InvestorShell } from '@/components/investor/investor-shell';
-import { HelpCenter } from '@/components/investor/profile/help-center';
+import {
+    HELP_GROUPS,
+    HELP_UPDATED,
+} from '@/components/investor/profile/help-answers';
 import {
     AutomationExplainer,
     IdentityCard,
@@ -13,6 +16,7 @@ import {
     Statements,
     SubHeading,
 } from '@/components/investor/profile/profile-parts';
+import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
@@ -78,6 +82,9 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                 {sub === 'help' && (
                     <>
                         <HelpCenter
+                            intro="investor.help.intro"
+                            groups={HELP_GROUPS}
+                            updated={HELP_UPDATED}
                             onMessage={() => setSupportRequest((n) => n + 1)}
                         />
                         <SupportChat

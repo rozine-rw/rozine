@@ -3,171 +3,43 @@ import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDateLong } from '@/lib/rozine/format';
 
-/** When the answers were last checked against the BRS (v2.0). */
-const UPDATED = '2026-10-15T12:00:00+02:00';
+import type { MessageCode } from '@/lib/i18n/types';
+
+/** One group of answers: its heading, its glyph and its questions, each a pair of message codes. */
+export type HelpGroup = {
+    key: string;
+    icon: string;
+    heading: MessageCode;
+    questions: readonly { q: MessageCode; a: MessageCode }[];
+};
+
+type Open = { group: HelpGroup; question: HelpGroup['questions'][number] };
 
 /**
- * The help center's answers, in the design's groups (Investor L3884–4140). Each answer restates a
- * BRS v2.0 rule; the design's Learning & rewards group is left out, since no points, tiers,
- * discounts or referral pay are approved.
+ * A help center (design Investor `isHelp`, Business `isSupport`): answers to the questions people
+ * ask most, each card opening its full answer in a pull-up that ends with a way to message
+ * support. `updated` is when the answers were last checked against the BRS.
  */
-const GROUPS = [
-    {
-        key: 'start',
-        icon: '🚀',
-        questions: [
-            {
-                q: 'investor.help.start.what.q',
-                a: 'investor.help.start.what.a',
-            },
-            {
-                q: 'investor.help.start.first.q',
-                a: 'investor.help.start.first.a',
-            },
-            {
-                q: 'investor.help.start.minimum.q',
-                a: 'investor.help.start.minimum.a',
-            },
-        ],
-    },
-    {
-        key: 'returns',
-        icon: '💸',
-        questions: [
-            {
-                q: 'investor.help.returns.when.q',
-                a: 'investor.help.returns.when.a',
-            },
-            {
-                q: 'investor.help.returns.yield.q',
-                a: 'investor.help.returns.yield.a',
-            },
-            {
-                q: 'investor.help.returns.guaranteed.q',
-                a: 'investor.help.returns.guaranteed.a',
-            },
-        ],
-    },
-    {
-        key: 'risk',
-        icon: '🛡️',
-        questions: [
-            {
-                q: 'investor.help.risk.protected.q',
-                a: 'investor.help.risk.protected.a',
-            },
-            {
-                q: 'investor.help.risk.vetting.q',
-                a: 'investor.help.risk.vetting.a',
-            },
-            {
-                q: 'investor.help.risk.rating.q',
-                a: 'investor.help.risk.rating.a',
-            },
-            { q: 'investor.help.risk.late.q', a: 'investor.help.risk.late.a' },
-        ],
-    },
-    {
-        key: 'portfolio',
-        icon: '📊',
-        questions: [
-            {
-                q: 'investor.help.portfolio.diversify.q',
-                a: 'investor.help.portfolio.diversify.a',
-            },
-            {
-                q: 'investor.help.portfolio.track.q',
-                a: 'investor.help.portfolio.track.a',
-            },
-            {
-                q: 'investor.help.portfolio.reinvest.q',
-                a: 'investor.help.portfolio.reinvest.a',
-            },
-        ],
-    },
-    {
-        key: 'secondary',
-        icon: '🔁',
-        questions: [
-            {
-                q: 'investor.help.secondary.exit.q',
-                a: 'investor.help.secondary.exit.a',
-            },
-            {
-                q: 'investor.help.secondary.price.q',
-                a: 'investor.help.secondary.price.a',
-            },
-            {
-                q: 'investor.help.secondary.guaranteed.q',
-                a: 'investor.help.secondary.guaranteed.a',
-            },
-        ],
-    },
-    {
-        key: 'wallet',
-        icon: '👛',
-        questions: [
-            {
-                q: 'investor.help.wallet.move.q',
-                a: 'investor.help.wallet.move.a',
-            },
-            {
-                q: 'investor.help.wallet.fees.q',
-                a: 'investor.help.wallet.fees.a',
-            },
-            {
-                q: 'investor.help.wallet.speed.q',
-                a: 'investor.help.wallet.speed.a',
-            },
-        ],
-    },
-    {
-        key: 'safety',
-        icon: '🏦',
-        questions: [
-            {
-                q: 'investor.help.safety.held.q',
-                a: 'investor.help.safety.held.a',
-            },
-            {
-                q: 'investor.help.safety.stop.q',
-                a: 'investor.help.safety.stop.a',
-            },
-        ],
-    },
-    {
-        key: 'account',
-        icon: '🔒',
-        questions: [
-            {
-                q: 'investor.help.account.secure.q',
-                a: 'investor.help.account.secure.a',
-            },
-            {
-                q: 'investor.help.account.complain.q',
-                a: 'investor.help.account.complain.a',
-            },
-        ],
-    },
-] as const;
-
-type Group = (typeof GROUPS)[number];
-type Open = { group: Group; question: Group['questions'][number] };
-
-/**
- * Help center (design Investor `isHelp`): answers to the questions investors ask most, each card
- * opening its full answer in a pull-up that ends with a way to message support.
- */
-export function HelpCenter({ onMessage }: { onMessage: () => void }) {
+export function HelpCenter({
+    intro,
+    groups,
+    updated,
+    onMessage,
+}: {
+    intro: MessageCode;
+    groups: readonly HelpGroup[];
+    updated: string;
+    onMessage: () => void;
+}) {
     const { t, locale } = useTranslation();
     const [open, setOpen] = useState<Open | null>(null);
 
     return (
         <>
             <p className="mt-1 text-[13px] leading-normal text-rz-secondary">
-                {t('investor.help.intro')}
+                {t(intro)}
             </p>
-            {GROUPS.map((group) => (
+            {groups.map((group) => (
                 <section
                     key={group.key}
                     aria-labelledby={`help-${group.key}`}
@@ -181,10 +53,10 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                             id={`help-${group.key}`}
                             className="flex-1 text-[13px] font-semibold text-rz-ink"
                         >
-                            {t(`investor.help.group.${group.key}`)}
+                            {t(group.heading)}
                         </h3>
                         <span className="text-[11px] text-rz-muted">
-                            {t('investor.help.count', {
+                            {t('support.help.count', {
                                 count: group.questions.length,
                             })}
                         </span>
@@ -209,8 +81,8 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                                     {t(question.a)}
                                 </span>
                                 <span className="mt-2 block text-[10.5px] text-rz-muted">
-                                    {t('investor.help.updated', {
-                                        date: formatDate(UPDATED, locale),
+                                    {t('support.help.updated', {
+                                        date: formatDate(updated, locale),
                                     })}
                                 </span>
                             </button>
@@ -232,7 +104,7 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                         </span>
                         <div className="min-w-0 flex-1">
                             <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                                {t(`investor.help.group.${open.group.key}`)}
+                                {t(open.group.heading)}
                             </p>
                             <h3 className="mt-[3px] text-base leading-[1.35] font-semibold text-rz-ink">
                                 {t(open.question.q)}
@@ -242,8 +114,8 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                     </div>
                     <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-4 pb-[22px]">
                         <span className="inline-flex rounded-[10px] border border-rz-border px-2.5 py-[5px] text-[11px] font-semibold text-rz-secondary">
-                            {t('investor.help.updated_long', {
-                                date: formatDateLong(UPDATED, locale),
+                            {t('support.help.updated_long', {
+                                date: formatDateLong(updated, locale),
                             })}
                         </span>
                         <p className="mt-3.5 text-sm leading-[1.7] whitespace-pre-line text-rz-secondary">
@@ -252,10 +124,10 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                         <div className="mt-5 flex items-center gap-3 rounded-2xl border border-rz-border px-[15px] py-[15px]">
                             <div className="min-w-0 flex-1">
                                 <p className="text-[13px] font-semibold text-rz-ink">
-                                    {t('investor.help.still_title')}
+                                    {t('support.help.still_title')}
                                 </p>
                                 <p className="mt-0.5 text-[12px] text-rz-secondary">
-                                    {t('investor.help.still_body')}
+                                    {t('support.help.still_body')}
                                 </p>
                             </div>
                             <button
@@ -266,7 +138,7 @@ export function HelpCenter({ onMessage }: { onMessage: () => void }) {
                                 }}
                                 className="shrink-0 rounded-[10px] bg-[#1e3aff] px-3.5 py-2 text-[12.5px] font-semibold text-white"
                             >
-                                {t('investor.help.still_action')}
+                                {t('support.help.still_action')}
                             </button>
                         </div>
                     </div>

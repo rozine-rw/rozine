@@ -702,9 +702,89 @@ const fr: Catalog = {
     'business.profile.pending.linked_title': 'Aucun compte de versement',
     'business.profile.pending.linked_body':
         'Les comptes de versement liés à cette entreprise apparaîtront ici.',
-    'business.profile.pending.support_title': "Bientôt dans l'application",
-    'business.profile.pending.support_body':
-        'Les réponses aux questions les plus fréquentes des entreprises apparaîtront ici.',
+    'business.help.intro':
+        'Les réponses aux questions que les entreprises posent le plus. Touchez une carte pour lire la réponse complète.',
+    'business.help.group.start': 'Premiers pas',
+    'business.help.group.capacity': 'Capacité et tarification',
+    'business.help.group.raise': 'Lever une note',
+    'business.help.group.repay': 'Remboursements',
+    'business.help.group.reports': 'Rapports et votre note',
+    'business.help.group.fees': 'Frais et fonds',
+    'business.help.group.investors': 'Investisseurs et marché secondaire',
+    'business.help.group.account': 'Compte et assistance',
+    'business.help.start.what.q':
+        'Qu’est-ce que Rozine et comment aide-t-il mon entreprise ?',
+    'business.help.start.what.a':
+        'Rozine permet aux entreprises rwandaises vérifiées d’emprunter auprès de nombreux investisseurs au moyen d’une note. Vous levez de 3 000 000 à 100 000 000 RWF sur 3 à 6 mois et remboursez par mensualités égales de principal et d’un rendement fixe.\n\nVous ne cédez aucune part de votre entreprise. Chaque investisseur est créancier au prorata de ses parts.',
+    'business.help.start.eligible.q':
+        'Quelles entreprises peuvent lever des fonds ?',
+    'business.help.start.eligible.a':
+        'Une entreprise immatriculée au Rwanda avec un chiffre d’affaires annuel vérifié d’au moins 30 000 000 RWF et 36 mois de relevés bancaires et mobile money. Un émetteur récurrent ayant remboursé sa dernière note Rozine à temps a besoin de 12 mois.\n\nVotre note doit être d’au moins 2,0, et un Partenaire d’audit doit visiter vos locaux et sceller un rapport initial avant la publication de votre levée.',
+    'business.help.start.documents.q': 'De quoi ai-je besoin pour postuler ?',
+    'business.help.start.documents.a':
+        'Vos informations d’immatriculation et vos relevés bancaires et mobile money, téléversés dans l’application. L’application vous indique si autre chose est nécessaire.\n\nIl n’y a pas de frais de dossier pendant le bac à sable.',
+    'business.help.capacity.how.q':
+        'Comment le montant de ma note est-il fixé ?',
+    'business.help.capacity.how.a':
+        'Rozine calcule la trésorerie qui reste chaque mois à votre entreprise après les charges d’exploitation, les prélèvements du propriétaire et les autres remboursements de dettes, et dimensionne la note pour que cette trésorerie couvre 1,5 fois la mensualité. Une entreprise qui la couvrirait moins de 1,25 fois ne se voit pas proposer de note.\n\nUne note ne dépasse jamais 35 % de votre chiffre d’affaires annuel vérifié et se situe entre 3 000 000 et 100 000 000 RWF.',
+    'business.help.capacity.rate.q': 'Quel rendement vais-je payer ?',
+    'business.help.capacity.rate.a':
+        'Un rendement total de 10,0 % à 15,0 % du principal pour toute la durée, fixé selon votre note, avec une petite prime pour les durées plus longues. Il est figé à l’ouverture de la levée.\n\nUn changement ultérieur de votre note ne modifie jamais les conditions d’une note déjà émise.',
+    'business.help.capacity.more.q':
+        'Puis-je lever plus que ce qui m’est proposé ?',
+    'business.help.capacity.more.a':
+        'Non. Une levée ne peut pas dépasser le montant que Rozine calcule à partir de vos chiffres vérifiés.\n\nRembourser à temps et tenir votre vérification mensuelle à jour améliorent votre prochaine offre.',
+    'business.help.raise.time.q':
+        'Combien de temps une levée reste-t-elle ouverte ?',
+    'business.help.raise.time.a':
+        'Une levée est ouverte aux investisseurs pendant 30 jours, ou jusqu’à son financement complet. Les investisseurs achètent des parts de 5 000 RWF, et aucun ne peut détenir plus de la moitié de votre levée.\n\nVous pouvez suivre à tout moment le montant engagé dans l’application.',
+    'business.help.raise.unfunded.q':
+        'Que se passe-t-il si ma levée n’est pas entièrement financée ?',
+    'business.help.raise.unfunded.a':
+        'Si la levée n’atteint pas 100 % en 30 jours, elle expire et chaque investisseur est intégralement remboursé. Rien n’est versé et rien n’est dû.\n\nVous pourrez postuler de nouveau plus tard.',
+    'business.help.raise.schedule.q':
+        'Quand est-ce que je connais mon échéancier ?',
+    'business.help.raise.schedule.a':
+        'Avant tout engagement. La mensualité correspond au principal plus le rendement total, divisé par le nombre de mois. La première mensualité est due un mois après le versement des fonds, puis chaque mensualité le même jour du mois suivant.\n\nPar exemple, 12 000 000 RWF à 11,1 % sur 6 mois donnent 13 332 000 au total, soit 2 222 000 par mois.',
+    'business.help.repay.how.q': 'Comment effectuer un remboursement ?',
+    'business.help.repay.how.a':
+        'Gardez le montant de la mensualité dans votre portefeuille Rozine d’entreprise. À 23 h 59 le jour de l’échéance, il est prélevé et réparti automatiquement entre les détenteurs de la note.\n\nAlimentez le portefeuille depuis un compte bancaire ou mobile money au nom de votre entreprise.',
+    'business.help.repay.early.q': 'Puis-je rembourser par anticipation ?',
+    'business.help.repay.early.a':
+        'Oui. Vous pouvez rembourser tout le solde restant à tout moment, et la note prend alors fin.\n\nLe rendement convenu n’est pas réduit : les investisseurs reçoivent exactement les montants encore prévus.',
+    'business.help.repay.late.q': 'Que se passe-t-il si je paie en retard ?',
+    'business.help.repay.late.a':
+        'Ce qui se trouve dans votre portefeuille à l’échéance est prélevé, et tout ce qui arrive ensuite est prélevé immédiatement. Une pénalité de 5 % du montant impayé s’applique à l’échéance, au jour 7 et au jour 30, plafonnée à 15 % de la mensualité ; tout revient à vos investisseurs.\n\nSi l’arriéré n’est pas réglé au jour 31, la note est en défaut et le recouvrement commence. Parlez-nous tôt si vous prévoyez une difficulté.',
+    'business.help.reports.monthly.q':
+        'Comment fonctionne la vérification mensuelle ?',
+    'business.help.reports.monthly.a':
+        'Chaque mois tant que votre note court, vous fournissez les relevés et registres du mois, votre Partenaire d’audit les contrôle en personne dans vos locaux et scelle un rapport publié à vos investisseurs avant le jour de paiement.\n\nVous êtes averti lorsqu’un rapport scellé vous attend.',
+    'business.help.reports.rating.q': 'Comment ma note Rozine est-elle fixée ?',
+    'business.help.reports.rating.a':
+        'Votre note est un score sur 5,0, affiché comme Solide (4,0 à 5,0), Stable (3,0 à 3,9) ou En difficulté (moins de 3,0). Elle est recalculée à chaque rapport mensuel scellé et publiée à vos détenteurs.\n\nPayer à temps et tenir vos registres prêts pour chaque visite l’aident le plus.',
+    'business.help.reports.dispute.q': 'Et si je conteste un rapport ?',
+    'business.help.reports.dispute.a':
+        'Vous disposez de 24 heures après la remise pour contester un rapport scellé, avec un texte justificatif ou jusqu’à cinq pièces. Tant qu’une contestation est ouverte, votre note est suspendue sur le marché.\n\nSi vous ne contestez pas à temps, le rapport est publié.',
+    'business.help.fees.fees.q': 'Quels frais Rozine facture-t-il ?',
+    'business.help.fees.fees.a':
+        'Chaque frais est affiché en RWF avant votre confirmation, avec le montant que vous recevrez et celui que vous rembourserez.\n\nLe rendement que vous payez est calculé sur le principal complet. Les retraits ne comportent aucun frais Rozine ; les frais du prestataire sont affichés d’abord.',
+    'business.help.fees.funds.q':
+        'Quand est-ce que je reçois les fonds levés ?',
+    'business.help.fees.funds.a':
+        'Dès que votre levée atteint 100 %, les fonds sont versés à votre entreprise et votre échéancier commence.\n\nVous êtes averti lorsque les fonds sont envoyés et pouvez les retirer vers un compte vérifié au nom de votre entreprise.',
+    'business.help.investors.who.q': 'Qui finance ma levée ?',
+    'business.help.investors.who.a':
+        'Des investisseurs vérifiés sur Rozine, chacun détenant des parts de 5 000 RWF de votre note.\n\nVous ne traitez pas avec eux un par un : Rozine répartit chaque paiement entre eux et leur publie vos rapports scellés.',
+    'business.help.investors.secondary.q':
+        'Le marché secondaire me concerne-t-il ?',
+    'business.help.investors.secondary.a':
+        'À l’ouverture du marché secondaire, les investisseurs pourront se revendre des parts de votre note. Cela ne change jamais ce que vous devez ni quand.\n\nTant que votre note est en retard, en défaut ou contestée, ses parts ne peuvent pas être échangées.',
+    'business.help.account.team.q': 'Qui peut agir pour mon entreprise ?',
+    'business.help.account.team.a':
+        'Profil > Autorisations et rôles indique chaque personne de votre compte et ce qu’elle peut faire.\n\nAjoutez une application d’authentification dans le Centre de sécurité pour qu’un code soit demandé à chaque connexion.',
+    'business.help.account.complain.q': 'Comment déposer une réclamation ?',
+    'business.help.account.complain.a':
+        'Écrivez-nous depuis ce centre d’assistance. Votre réclamation reçoit un numéro de référence ; nous en accusons réception sous 4 heures et visons à la résoudre sous 48 heures.\n\nVous pouvez saisir l’Autorité des marchés de capitaux à tout moment.',
     'business.profile.pending.terms_title': "Bientôt dans l'application",
     'business.profile.pending.terms_body':
         'Les Conditions générales pourront être consultées ici dès leur publication.',
@@ -3612,16 +3692,16 @@ const fr: Catalog = {
         "Ses paliers et ses frais sont encore en cours de définition. D'ici là, vous investissez opération par opération, aux conditions affichées pour chacune.",
     'investor.help.intro':
         'Les réponses aux questions que les investisseurs posent le plus. Touchez une carte pour lire la réponse complète.',
-    'investor.help.updated': 'Mis à jour le {date}',
-    'investor.help.updated_long': 'Dernière mise à jour le {date}',
-    'investor.help.count': {
+    'support.help.updated': 'Mis à jour le {date}',
+    'support.help.updated_long': 'Dernière mise à jour le {date}',
+    'support.help.count': {
         one: '{count} réponse',
         other: '{count} réponses',
     },
-    'investor.help.still_title': 'Besoin d’aide supplémentaire ?',
-    'investor.help.still_body':
+    'support.help.still_title': 'Besoin d’aide supplémentaire ?',
+    'support.help.still_body':
         'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
-    'investor.help.still_action': 'Écrire au support',
+    'support.help.still_action': 'Écrire au support',
     'investor.help.group.start': 'Premiers pas',
     'investor.help.group.returns': 'Rendements et versements',
     'investor.help.group.risk': 'Risque et vérification des entreprises',

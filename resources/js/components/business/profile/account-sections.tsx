@@ -159,24 +159,20 @@ export function TeamPermissions({
     );
 }
 
-const PENDING_ICON: Record<
-    'linked' | 'support' | 'terms' | 'privacy',
-    IconName
-> = {
+const PENDING_ICON: Record<'linked' | 'terms' | 'privacy', IconName> = {
     linked: 'card',
-    support: 'question',
     terms: 'document',
     privacy: 'lock-key',
 };
 
 /**
- * A section with nothing to show yet: no linked payout account read, and no approved support
- * answers or legal text. The design draws each with content, so this is its empty state.
+ * A section with nothing to show yet: no linked payout account read, and no approved legal
+ * text. The design draws each with content, so this is its empty state.
  */
 export function PendingSection({
     kind,
 }: {
-    kind: 'linked' | 'support' | 'terms' | 'privacy';
+    kind: 'linked' | 'terms' | 'privacy';
 }) {
     const { t } = useTranslation();
 

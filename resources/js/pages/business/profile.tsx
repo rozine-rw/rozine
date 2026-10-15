@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 import { BusinessShell } from '@/components/business/business-shell';
 import {
     PendingSection,
@@ -10,9 +11,14 @@ import {
     CompanyRecords,
     CompanyRegistrationRecord,
 } from '@/components/business/profile/company-records';
+import {
+    HELP_GROUPS,
+    HELP_UPDATED,
+} from '@/components/business/profile/help-answers';
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
+import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -43,6 +49,7 @@ export default function BusinessProfile({
     actions,
 }: BusinessProfileProps) {
     const { t } = useTranslation();
+    const [supportRequest, setSupportRequest] = useState(0);
 
     return (
         <BusinessShell
@@ -130,8 +137,18 @@ export default function BusinessProfile({
                         ))}
                     {section === 'support' && (
                         <>
-                            <PendingSection kind="support" />
-                            <SupportChat support={support} />
+                            <HelpCenter
+                                intro="business.help.intro"
+                                groups={HELP_GROUPS}
+                                updated={HELP_UPDATED}
+                                onMessage={() =>
+                                    setSupportRequest((n) => n + 1)
+                                }
+                            />
+                            <SupportChat
+                                support={support}
+                                openRequest={supportRequest}
+                            />
                         </>
                     )}
                     {(section === 'terms' || section === 'privacy') &&

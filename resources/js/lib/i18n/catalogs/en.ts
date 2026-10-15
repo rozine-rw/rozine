@@ -678,9 +678,83 @@ const en = {
     'business.profile.pending.linked_title': 'No payout account yet',
     'business.profile.pending.linked_body':
         'Payout accounts linked to this business will show here.',
-    'business.profile.pending.support_title': 'Coming to the app soon',
-    'business.profile.pending.support_body':
-        'Answers to the questions businesses ask most will appear here.',
+    'business.help.intro':
+        'Answers to the questions businesses ask most. Tap any card to read the full answer.',
+    'business.help.group.start': 'Getting started',
+    'business.help.group.capacity': 'Capacity & pricing',
+    'business.help.group.raise': 'Raising a note',
+    'business.help.group.repay': 'Repayments',
+    'business.help.group.reports': 'Reporting & your rating',
+    'business.help.group.fees': 'Fees & funds',
+    'business.help.group.investors': 'Investors & secondary market',
+    'business.help.group.account': 'Account & support',
+    'business.help.start.what.q':
+        'What is Rozine and how does it help my business?',
+    'business.help.start.what.a':
+        'Rozine lets verified Rwandan businesses borrow from many investors through a note. You raise RWF 3,000,000 to 100,000,000 for 3 to 6 months and repay it in equal monthly instalments of principal and a fixed return.\n\nYou give up no ownership in your company. Each investor is owed in proportion to the units they hold.',
+    'business.help.start.eligible.q': 'Which businesses can raise?',
+    'business.help.start.eligible.a':
+        'A Rwandan-registered business with verified annual revenue of at least RWF 30,000,000 and 36 months of bank and mobile money statements. A repeat issuer that repaid its last Rozine note on time needs 12 months.\n\nYour rating must be at least 2.0, and an Audit Partner must visit your premises and seal a baseline report before your raise can list.',
+    'business.help.start.documents.q': 'What do I need to apply?',
+    'business.help.start.documents.a':
+        'Your registration details and your bank and mobile money statements, uploaded in the app. The app tells you if anything else is needed.\n\nThere is no application fee during the sandbox.',
+    'business.help.capacity.how.q': 'How is the size of my note decided?',
+    'business.help.capacity.how.a':
+        'Rozine works out the cash your business has left each month after operating costs, owner drawings and other debt payments, and sizes the note so that this cash covers the monthly instalment 1.5 times. A business that would cover it less than 1.25 times is not offered a note.\n\nA note is never more than 35% of your verified annual revenue, and is between RWF 3,000,000 and 100,000,000.',
+    'business.help.capacity.rate.q': 'What return will I pay?',
+    'business.help.capacity.rate.a':
+        'A total return of 10.0% to 15.0% of principal for the whole term, set by your rating, with a small premium for longer terms. It is fixed when the raise opens.\n\nA later change in your rating never changes the terms of a note already issued.',
+    'business.help.capacity.more.q': 'Can I raise more than I am offered?',
+    'business.help.capacity.more.a':
+        'No. A raise cannot be larger than the size Rozine calculates from your verified figures.\n\nRepaying on time and keeping your monthly verification on track are what improve your next offer.',
+    'business.help.raise.time.q': 'How long does a raise stay open?',
+    'business.help.raise.time.a':
+        'A raise is open to investors for 30 days, or until it is fully funded. Investors buy units of RWF 5,000, and no investor can hold more than half of your raise.\n\nYou can follow how much is committed in the app at any time.',
+    'business.help.raise.unfunded.q':
+        'What happens if my raise is not fully funded?',
+    'business.help.raise.unfunded.a':
+        'If the raise does not reach 100% within 30 days, it expires and every investor is refunded in full. Nothing is paid out and nothing is owed.\n\nYou can apply again later.',
+    'business.help.raise.schedule.q': 'When do I know my repayment schedule?',
+    'business.help.raise.schedule.a':
+        'Before anyone commits. The instalment is the principal plus the total return, divided by the number of months. The first instalment is due one month after the money is paid out, and each later one on the same day of the following month.\n\nFor example, RWF 12,000,000 at 11.1% for 6 months means 13,332,000 in total, or 2,222,000 a month.',
+    'business.help.repay.how.q': 'How do I make a repayment?',
+    'business.help.repay.how.a':
+        "Keep the instalment in your Rozine business wallet. At 23:59 on the due date it is collected and shared among the note's holders automatically.\n\nAdd money to the wallet from a bank or mobile money account in your business's name.",
+    'business.help.repay.early.q': 'Can I repay early?',
+    'business.help.repay.early.a':
+        'Yes. You can repay the whole remaining balance at any time, and the note then ends.\n\nThe return you agreed is not reduced: investors receive exactly the scheduled amounts still owed.',
+    'business.help.repay.late.q': 'What happens if I pay late?',
+    'business.help.repay.late.a':
+        'Whatever is in your wallet at the due date is collected, and anything that arrives later is collected straight away. A late charge of 5% of the unpaid amount is added at the due date, day 7 and day 30, capped at 15% of the instalment; all of it goes to your investors.\n\nIf the arrears are not cleared by day 31, the note is in default and recovery begins. Talk to us early if you expect a problem.',
+    'business.help.reports.monthly.q':
+        'How does the monthly verification work?',
+    'business.help.reports.monthly.a':
+        "Every month while your note is outstanding, you provide the month's statements and records, your Audit Partner checks them in person at your premises, and seals a report that is published to your investors before payment day.\n\nYou are told when a sealed report is waiting for you.",
+    'business.help.reports.rating.q': 'How is my Rozine rating set?',
+    'business.help.reports.rating.a':
+        'Your rating is one score out of 5.0, shown as Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0). It is recomputed with every sealed monthly report and published to your holders.\n\nPaying on time and keeping your records ready for each visit help it most.',
+    'business.help.reports.dispute.q': 'What if I disagree with a report?',
+    'business.help.reports.dispute.a':
+        'You have 24 hours from delivery to dispute a sealed report, with supporting text or up to five proof files. While a dispute is open, your note pauses on the market.\n\nIf you do not dispute it in time, the report is published.',
+    'business.help.fees.fees.q': 'What fees does Rozine charge?',
+    'business.help.fees.fees.a':
+        "Every fee is shown in RWF before you confirm, with the amount you will receive and the amount you will repay.\n\nThe return you pay is calculated on the full principal. Withdrawals carry no Rozine fee; the provider's own charge is shown first.",
+    'business.help.fees.funds.q': 'When do I receive the money raised?',
+    'business.help.fees.funds.a':
+        "Once your raise reaches 100%, the money is paid out to your business and your repayment schedule starts.\n\nYou are notified when the money is sent, and can withdraw it to a verified account in your business's name.",
+    'business.help.investors.who.q': 'Who funds my raise?',
+    'business.help.investors.who.a':
+        'Verified investors on Rozine, each holding units of RWF 5,000 in your note.\n\nYou do not deal with them one by one: Rozine shares each payment among them and publishes your sealed reports to them.',
+    'business.help.investors.secondary.q':
+        'Does the secondary market affect me?',
+    'business.help.investors.secondary.a':
+        'When the secondary market opens, investors will be able to sell units of your note to each other. That never changes what you owe or when.\n\nWhile your note is late, in default or disputed, its units cannot be traded.',
+    'business.help.account.team.q': 'Who can act for my business?',
+    'business.help.account.team.a':
+        'Profile > Permissions & roles shows each person on your account and what they may do.\n\nAdd an authenticator app under Security center so every sign-in needs a code.',
+    'business.help.account.complain.q': 'How do I make a complaint?',
+    'business.help.account.complain.a':
+        'Message us from this support center. Your complaint gets a reference number; we acknowledge it within 4 hours and aim to resolve it within 48 hours.\n\nYou can take a complaint to the Capital Market Authority at any stage.',
     'business.profile.pending.terms_title': 'Coming to the app soon',
     'business.profile.pending.terms_body':
         'The Terms & Conditions will be readable here once they are published.',
@@ -3487,13 +3561,13 @@ const en = {
         'Its bands and charges are still being set. Until then, you invest deal by deal on the terms each deal shows.',
     'investor.help.intro':
         'Answers to the questions investors ask most. Tap any card to read the full answer.',
-    'investor.help.updated': 'Updated {date}',
-    'investor.help.updated_long': 'Last updated {date}',
-    'investor.help.count': { one: '{count} answer', other: '{count} answers' },
-    'investor.help.still_title': 'Still need help?',
-    'investor.help.still_body':
+    'support.help.updated': 'Updated {date}',
+    'support.help.updated_long': 'Last updated {date}',
+    'support.help.count': { one: '{count} answer', other: '{count} answers' },
+    'support.help.still_title': 'Still need help?',
+    'support.help.still_body':
         'Message us. We acknowledge every message within 4 hours.',
-    'investor.help.still_action': 'Message support',
+    'support.help.still_action': 'Message support',
     'investor.help.group.start': 'Getting started',
     'investor.help.group.returns': 'Returns & payouts',
     'investor.help.group.risk': 'Risk & how businesses are vetted',

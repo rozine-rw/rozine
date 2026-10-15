@@ -492,6 +492,7 @@
         "resources/js/components/business/profile/account-sections.tsx",
         "resources/js/components/business/profile/company-form.tsx",
         "resources/js/components/business/profile/company-records.tsx",
+        "resources/js/components/business/profile/help-answers.ts",
         "resources/js/components/business/profile/legal-document.tsx",
         "resources/js/components/business/profile/linked-accounts.tsx",
         "resources/js/components/business/profile/profile-menu.tsx",
@@ -550,7 +551,7 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
-        "resources/js/components/investor/profile/help-center.tsx",
+        "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
@@ -585,6 +586,7 @@
         "resources/js/components/rozine/column-sheet.tsx",
         "resources/js/components/rozine/connectivity-notice.tsx",
         "resources/js/components/rozine/form.tsx",
+        "resources/js/components/rozine/help-center.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
         "resources/js/components/rozine/icon.tsx",
         "resources/js/components/rozine/login-alerts.tsx",
@@ -750,10 +752,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 719,
+        "totalTrackedSources": 721,
         "generated": 309,
         "declarationOnly": 19,
-        "authoredExecutable": 391
+        "authoredExecutable": 393
     },
-    "coverageSetSha256": "aa8265e44ecc516688f666dc872f69f89d36ee0b59b5c12900c6f154946b214b"
+    "coverageSetSha256": "b47a65e88c89fd75c7efc5530d7d77cc066ff6b11e0f4e8447d34e8aaff371de"
 }
