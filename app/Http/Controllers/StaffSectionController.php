@@ -20,7 +20,7 @@ class StaffSectionController extends Controller
     /** URL slug to the frame's section key. */
     public const SECTIONS = [
         'notes' => 'notes', 'secondary-market' => 'secondary_market', 'reports' => 'reports', 'risk' => 'risk',
-        'compliance' => 'compliance', 'payments' => 'payments', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
+        'compliance' => 'compliance', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
         'finance' => 'finance', 'messaging' => 'messaging', 'academies' => 'academies', 'app-control' => 'app_control', 'engines' => 'engines',
         'policies' => 'policies', 'system-health' => 'system_health',
     ];

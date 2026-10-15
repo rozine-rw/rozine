@@ -5232,6 +5232,32 @@ const en = {
     },
     'admin.primary.funded': '{pct}%',
     'admin.primary.raised_of': '{raised} of {target}',
+    'admin.payments.title': 'Payouts in flight',
+    'admin.payments.caption':
+        'Withdrawals whose cash is held while the provider confirms the payout. Each one pays out, or returns to the wallet, on the verified outcome.',
+    'admin.payments.movement.caption':
+        'Credited deposits plus paid-out withdrawals per Kigali day, last 14 days',
+    'admin.payments.kpi.count': {
+        one: '{count} txn · last 14 days',
+        other: '{count} txns · last 14 days',
+    },
+    'admin.payments.kpi.in_flight': 'Payouts in flight',
+    'admin.payments.kpi.in_flight.sub': 'Awaiting the provider',
+    'admin.payments.col.reference': 'Ref',
+    'admin.payments.col.who': 'User',
+    'admin.payments.col.type': 'Type',
+    'admin.payments.col.amount': 'Amount',
+    'admin.payments.col.account': 'To account',
+    'admin.payments.col.state': 'Status',
+    'admin.payments.owner.investor': 'Investor withdrawal',
+    'admin.payments.owner.business': 'Business withdrawal',
+    'admin.payments.state.pending': 'Awaiting provider',
+    'admin.payments.state.unknown': 'Unconfirmed, re-querying',
+    'admin.payments.unnamed': 'Unnamed account',
+    'admin.payments.empty_title': 'No payouts in flight',
+    'admin.payments.empty_body':
+        'Every withdrawal has been paid out or returned.',
+    'admin.payments.more': 'Show all payouts',
     'admin.primary.investors': {
         one: '{count} investor',
         other: '{count} investors',

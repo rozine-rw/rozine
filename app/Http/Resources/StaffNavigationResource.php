@@ -37,6 +37,7 @@ class StaffNavigationResource extends JsonResource
         'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
         'exceptions' => ['permission' => 'exceptions.view', 'route' => 'staff.exceptions.index'],
         'primary_market' => ['permission' => 'primary.view', 'route' => 'staff.primary-market.index'],
+        'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */
@@ -52,7 +53,7 @@ class StaffNavigationResource extends JsonResource
         }
 
         // Every other design section opens its pending page until its screen is wired. Payments is
-        // the disbursement queue, Finance is reconciliation, Risk Center the exceptions, Compliance the investor identity review
+        // the Payment Center, else the disbursement queue (hidden for anyone who sees neither), Finance is reconciliation, Risk Center the exceptions, Compliance the investor identity review
         // queue and Messaging its History tab, for whoever may see them. These are web pages, so
         // they keep web URLs.
         $pendingPage = fn (string $slug): array => ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
@@ -68,7 +69,7 @@ class StaffNavigationResource extends JsonResource
             ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
+            'payments' => $links['payments'] ?? $links['disbursements'], 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
             'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),

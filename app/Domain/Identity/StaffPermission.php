@@ -11,12 +11,12 @@ final class StaffPermission
         'analyst' => ['businesses.view', 'audit.reports.view', 'primary.view'],
         'approver' => ['businesses.view', 'businesses.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view',
             'disbursements.view', 'disbursements.approve', 'disbursements.hold', 'primary.view'],
-        'treasury' => ['businesses.view', 'audit.reports.view', 'disbursements.view', 'disbursements.authorize', 'disbursements.hold', 'disbursements.requery', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'primary.view'],
+        'treasury' => ['businesses.view', 'audit.reports.view', 'disbursements.view', 'disbursements.authorize', 'disbursements.hold', 'disbursements.requery', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'primary.view', 'payments.view'],
         'compliance' => ['businesses.view', 'businesses.verify', 'investors.verify', 'audit.partners.verify', 'audit.reports.view', 'consent.documents.record',
-            'disbursements.view', 'disbursements.hold', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'messaging.view', 'primary.view'],
+            'disbursements.view', 'disbursements.hold', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view'],
         // No superadmin bypass (§10.6, §11.1): disbursements are view-only here, never authorize or approve.
         'superadmin' => ['businesses.view', 'businesses.verify', 'investors.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record',
-            'disbursements.view', 'staging.mail.testers.manage', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'messaging.view', 'primary.view'],
+            'disbursements.view', 'staging.mail.testers.manage', 'reconciliation.view', 'ledger.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view'],
     ];
 
     /**

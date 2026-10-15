@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "b85da0ad7a4266e72d15562142ba48a571fd3c62842012bf876d610e8f2913cf",
-    "coverageSetSha256": "c81d971d2e70042cbed9657c1b328fc7e9184004098c98d09619b54ae04be920",
+    "coverageSetSha256": "2c09ba25df743ed8f6dd2cc9ded854afd521a62300482ad0b222c59461264fbb",
     "thresholds": {
         "critical": {
             "global": {
@@ -372,6 +372,7 @@
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/messaging.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/payments.tsx",
         "resources/js/pages/admin/primary-market.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",

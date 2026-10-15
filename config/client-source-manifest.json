@@ -90,6 +90,7 @@
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffLedgerController.ts",
         "resources/js/actions/App/Http/Controllers/StaffMessagingController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffPaymentsController.ts",
         "resources/js/actions/App/Http/Controllers/StaffPrimaryMarketController.ts",
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
@@ -209,6 +210,7 @@
         "resources/js/routes/api/v1/staff/investors/index.ts",
         "resources/js/routes/api/v1/staff/ledger/index.ts",
         "resources/js/routes/api/v1/staff/messaging/index.ts",
+        "resources/js/routes/api/v1/staff/payments/index.ts",
         "resources/js/routes/api/v1/staff/primary-market/index.ts",
         "resources/js/routes/api/v1/staff/reconciliation/index.ts",
         "resources/js/routes/api/v1/staff/staff/index.ts",
@@ -305,6 +307,7 @@
         "resources/js/routes/staff/investors/index.ts",
         "resources/js/routes/staff/ledger/index.ts",
         "resources/js/routes/staff/messaging/index.ts",
+        "resources/js/routes/staff/payments/index.ts",
         "resources/js/routes/staff/primary-market/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
         "resources/js/routes/staff/sections/index.ts",
@@ -664,6 +667,7 @@
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/messaging.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/payments.tsx",
         "resources/js/pages/admin/primary-market.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
@@ -728,10 +732,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 697,
-        "generated": 293,
+        "totalTrackedSources": 701,
+        "generated": 296,
         "declarationOnly": 18,
-        "authoredExecutable": 386
+        "authoredExecutable": 387
     },
-    "coverageSetSha256": "c81d971d2e70042cbed9657c1b328fc7e9184004098c98d09619b54ae04be920"
+    "coverageSetSha256": "2c09ba25df743ed8f6dd2cc9ded854afd521a62300482ad0b222c59461264fbb"
 }

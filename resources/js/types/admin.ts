@@ -1296,6 +1296,42 @@ export type AdminPrimaryMarketProps = AdminFrameShellProps &
         pagination: Pagination;
     };
 
+/** The Payment Center offers no release, hold or reverse command; `allowed_actions` is always empty. */
+export type StaffPaymentsPageContract = {
+    contract_version: 'staff-payments-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type PaymentsStatKey = 'deposits' | 'withdrawals' | 'disbursed';
+
+/** A withdrawal whose cash is held while its payout waits on the provider's verified outcome. */
+export type PayoutInFlight = {
+    id: string;
+    reference: string;
+    owner: 'investor' | 'business';
+    /** Null when the account has no name on record. */
+    name: string | null;
+    amount: Money;
+    received: Money;
+    account: string;
+    state: 'pending' | 'unknown';
+    requested_at: string;
+};
+
+export type AdminPaymentsProps = AdminFrameShellProps &
+    StaffPaymentsPageContract & {
+        /** The first Kigali day of the fourteen the figures and bars cover. */
+        from: string;
+        stats: { key: PaymentsStatKey; value: Money; count: number }[];
+        in_flight: number;
+        /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
+        bars: { label: string; amount: Money; height_pct: number }[];
+        payouts: PayoutInFlight[];
+        pagination: Pagination;
+    };
+
 /* ------------------------------------------------------------------------------------------ */
 /* Phase 2: Reconciliation (MVP-ADMIN-SCR-04), Partner coverage (MVP-ADMIN-SCR-07) and Reports */
 /* (MVP-ADMIN-SCR-10), read-only proposal                                                      */

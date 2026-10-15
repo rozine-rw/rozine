@@ -13,6 +13,7 @@ import messaging from './messaging'
 import ledger from './ledger'
 import exceptions from './exceptions'
 import primaryMarket from './primary-market'
+import payments from './payments'
 import investorVerifications from './investor-verifications'
 import stagingMailTesters from './staging-mail-testers'
 import changes from './changes'
@@ -113,6 +114,7 @@ const staffNamespace = {
     ledger: Object.assign(ledger, ledger),
     exceptions: Object.assign(exceptions, exceptions),
     primaryMarket: Object.assign(primaryMarket, primaryMarket),
+    payments: Object.assign(payments, payments),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
     stagingMailTesters: Object.assign(stagingMailTesters, stagingMailTesters),
     changes: Object.assign(changes, changes),

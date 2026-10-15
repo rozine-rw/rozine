@@ -5394,6 +5394,32 @@ const rw: Catalog = {
     },
     'admin.primary.funded': '{pct}%',
     'admin.primary.raised_of': '{raised} kuri {target}',
+    'admin.payments.title': 'Ubwishyu buri mu nzira',
+    'admin.payments.caption':
+        'Kubikuza amafaranga yabo afashwe mu gihe utanga serivisi yemeza ubwishyu. Buri kimwe cyishyurwa, cyangwa kigasubira mu gikapu, hakurikijwe igisubizo cyemejwe.',
+    'admin.payments.movement.caption':
+        'Amafaranga yashyizwe kuri konti n’ayabikujwe yishyuwe ku munsi (Kigali), iminsi 14 ishize',
+    'admin.payments.kpi.count': {
+        one: 'Igikorwa {count} · iminsi 14 ishize',
+        other: 'Ibikorwa {count} · iminsi 14 ishize',
+    },
+    'admin.payments.kpi.in_flight': 'Ubwishyu buri mu nzira',
+    'admin.payments.kpi.in_flight.sub': 'Bitegereje utanga serivisi',
+    'admin.payments.col.reference': 'Indango',
+    'admin.payments.col.who': 'Ukoresha',
+    'admin.payments.col.type': 'Ubwoko',
+    'admin.payments.col.amount': 'Amafaranga',
+    'admin.payments.col.account': 'Kuri konti',
+    'admin.payments.col.state': 'Uko bihagaze',
+    'admin.payments.owner.investor': 'Kubikuza k’umushoramari',
+    'admin.payments.owner.business': 'Kubikuza k’ikigo',
+    'admin.payments.state.pending': 'Bitegereje utanga serivisi',
+    'admin.payments.state.unknown': 'Ntibiremezwa, birongera kubazwa',
+    'admin.payments.unnamed': 'Konti itagira izina',
+    'admin.payments.empty_title': 'Nta bwishyu buri mu nzira',
+    'admin.payments.empty_body':
+        'Kubikuza kose kwarishyuwe cyangwa kwasubijwe.',
+    'admin.payments.more': 'Erekana ubwishyu bwose',
     'admin.primary.investors': {
         one: 'Umushoramari {count}',
         other: 'Abashoramari {count}',
