@@ -135,9 +135,9 @@ export function JobHeader({
             </div>
             <div className="mt-3.5 flex items-center justify-between gap-2.5">
                 <div className="min-w-0">
-                    <h2 className="truncate text-[17px] font-bold text-rz-ink">
+                    <h1 className="truncate text-[17px] font-bold text-rz-ink">
                         {business}
-                    </h2>
+                    </h1>
                     <p className="mt-px text-[11.5px] text-rz-secondary">
                         {distanceKm === null
                             ? district

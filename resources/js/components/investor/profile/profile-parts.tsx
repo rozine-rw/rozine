@@ -478,6 +478,8 @@ export function SubHeading({
     back: RouteLink | null;
 }) {
     const { t } = useTranslation();
+    /* Beside the menu (wide) the menu's "Profile" is the page title; alone (phone) this is. */
+    const Heading = back === null ? 'h2' : 'h1';
 
     return (
         <div className="flex items-center gap-3">
@@ -490,7 +492,9 @@ export function SubHeading({
                     <span aria-hidden>←</span>
                 </Link>
             )}
-            <h2 className="text-xl font-semibold text-rz-ink">{title}</h2>
+            <Heading className="text-xl font-semibold text-rz-ink">
+                {title}
+            </Heading>
         </div>
     );
 }

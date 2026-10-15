@@ -234,9 +234,9 @@ function AuditSheet(props: AuditProcedureProps) {
                         <p className="text-[10px] font-bold tracking-[.08em] text-rz-ink uppercase">
                             {t('auditor.audit.eyebrow_monthly')}
                         </p>
-                        <h2 className="truncate text-[17px] font-bold text-rz-ink">
+                        <h1 className="truncate text-[17px] font-bold text-rz-ink">
                             {audit.business} · {period}
-                        </h2>
+                        </h1>
                     </div>
                 </div>
                 {steps}

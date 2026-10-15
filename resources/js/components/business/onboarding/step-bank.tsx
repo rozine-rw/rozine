@@ -75,9 +75,9 @@ export function StepBank({
 
     const subtitle = (
         <>
-            <h2 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
+            <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
                 {t('business.onboarding.bank.title')}
-            </h2>
+            </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                 {t('business.onboarding.bank.subtitle', { count: required })}
             </p>
