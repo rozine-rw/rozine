@@ -35,6 +35,7 @@ class StaffNavigationResource extends JsonResource
         'disbursements' => ['permission' => 'disbursements.view', 'route' => 'staff.disbursements.index'],
         'reconciliation' => ['permission' => 'reconciliation.view', 'route' => 'staff.reconciliation.index'],
         'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
+        'exceptions' => ['permission' => 'exceptions.view', 'route' => 'staff.exceptions.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */
@@ -50,7 +51,7 @@ class StaffNavigationResource extends JsonResource
         }
 
         // Every other design section opens its pending page until its screen is wired. Payments is
-        // the disbursement queue, Finance is reconciliation, Compliance the investor identity review
+        // the disbursement queue, Finance is reconciliation, Risk Center the exceptions, Compliance the investor identity review
         // queue and Messaging its History tab, for whoever may see them. These are web pages, so
         // they keep web URLs.
         $pendingPage = fn (string $slug): array => ['url' => route('staff.sections.show', ['section' => $slug], false), 'method' => 'get'];
@@ -66,7 +67,8 @@ class StaffNavigationResource extends JsonResource
             ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'finance' => $links['reconciliation'] ?? $pendingPage('finance'), 'compliance' => $compliance,
+            'payments' => $links['disbursements'] ?? $pendingPage('payments'), 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
+            'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
             'repayments' => null, 'mail_testers' => $mailTesters];

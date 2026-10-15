@@ -83,23 +83,26 @@ function Row({ item }: { item: ExceptionItem }) {
                 </span>
             </span>
             <div role="cell" className="flex justify-end">
-                <Link
-                    href={item.link}
-                    aria-label={t('admin.exceptions.open_named', {
-                        reference: item.reference,
-                    })}
-                    className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
-                >
-                    {t('admin.disbursements.action.open')}
-                </Link>
+                {item.link !== null && (
+                    <Link
+                        href={item.link}
+                        aria-label={t('admin.exceptions.open_named', {
+                            reference: item.reference,
+                        })}
+                        className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
+                    >
+                        {t('admin.disbursements.action.open')}
+                    </Link>
+                )}
             </div>
         </div>
     );
 }
 
 /**
- * Exceptions (MVP-ADMIN-SCR-06, Phase 2 proposal `staff-exceptions-v1`): every open arrears, halt
- * and variance, aged and owned like a reconciliation break, each linking to its record. The counts
+ * Exceptions (MVP-ADMIN-SCR-06, `staff-exceptions-v1`): every open arrears, halt and variance,
+ * aged and owned like a reconciliation break, each linking to its record where the viewer may
+ * open it. The counts
  * and filters are the server's. Read-only: assigning, escalating, halting and remedies wait on the
  * unsigned D-25/28/54 escalation policy, so no command and no escalation window is shown here.
  */

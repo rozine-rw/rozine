@@ -198,4 +198,32 @@ describe('Exceptions', () => {
             screen.queryByRole('navigation', { name: 'Filter by kind' }),
         ).not.toBeInTheDocument();
     });
+
+    it('offers no Open link on an exception whose record the viewer may not open', () => {
+        const page = props(exceptionsFixture);
+
+        page.exceptions = [
+            {
+                ...page.exceptions[0],
+                id: 'hld',
+                kind: 'halt',
+                reference: 'HLD-00ABCD',
+                subject: { kind: 'investor', label: 'Aline Uwase' },
+                note_title: null,
+                description: 'Account on high-risk hold: withdrawals paused',
+                amount: null,
+                dpd: null,
+                owner: null,
+                link: null,
+            },
+        ];
+        render(<AdminExceptions {...page} />);
+
+        expect(rowOf('HLD-00ABCD')).toHaveTextContent(
+            'Account on high-risk hold: withdrawals paused',
+        );
+        expect(
+            within(rowOf('HLD-00ABCD')).queryByRole('link'),
+        ).not.toBeInTheDocument();
+    });
 });

@@ -83,6 +83,7 @@
         "resources/js/actions/App/Http/Controllers/StaffDashboardController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDisbursementController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffExceptionsController.ts",
         "resources/js/actions/App/Http/Controllers/StaffHomeController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
@@ -200,6 +201,7 @@
         "resources/js/routes/api/v1/staff/disbursements/index.ts",
         "resources/js/routes/api/v1/staff/disbursements/operations/index.ts",
         "resources/js/routes/api/v1/staff/events/index.ts",
+        "resources/js/routes/api/v1/staff/exceptions/index.ts",
         "resources/js/routes/api/v1/staff/index.ts",
         "resources/js/routes/api/v1/staff/investor-verifications/index.ts",
         "resources/js/routes/api/v1/staff/investors/index.ts",
@@ -293,6 +295,7 @@
         "resources/js/routes/staff/disbursements/index.ts",
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/events/index.ts",
+        "resources/js/routes/staff/exceptions/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
         "resources/js/routes/staff/investors/index.ts",
@@ -719,8 +722,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 688,
-        "generated": 285,
+        "totalTrackedSources": 691,
+        "generated": 288,
         "declarationOnly": 18,
         "authoredExecutable": 385
     },

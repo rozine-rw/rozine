@@ -10,6 +10,7 @@ import events from './events'
 import reconciliation from './reconciliation'
 import messaging from './messaging'
 import ledger from './ledger'
+import exceptions from './exceptions'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
@@ -105,6 +106,7 @@ const staffNamespace = {
     reconciliation: Object.assign(reconciliation, reconciliation),
     messaging: Object.assign(messaging, messaging),
     ledger: Object.assign(ledger, ledger),
+    exceptions: Object.assign(exceptions, exceptions),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
 }
 

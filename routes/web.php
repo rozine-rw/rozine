@@ -46,6 +46,7 @@ use App\Http\Controllers\StaffBusinessDirectoryController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffExceptionsController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
@@ -293,6 +294,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/reconciliation', StaffReconciliationController::class)->name('staff.reconciliation.index');
     Route::get('admin/messaging/history', StaffMessagingController::class)->name('staff.messaging.index');
     Route::get('admin/ledger', StaffLedgerController::class)->name('staff.ledger.index');
+    Route::get('admin/exceptions', StaffExceptionsController::class)->name('staff.exceptions.index');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {

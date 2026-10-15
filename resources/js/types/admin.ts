@@ -1218,8 +1218,11 @@ export type ExceptionItem = {
     id: string;
     kind: ExceptionKind;
     reference: string;
-    /** What the exception is about; an account subject (a statement variance) has no note. */
-    subject: { kind: 'business' | 'account'; label: string };
+    /**
+     * What the exception is about; an account subject (a statement variance) and an Investor
+     * subject (a halt on their account) have no note.
+     */
+    subject: { kind: 'business' | 'account' | 'investor'; label: string };
     note_title: string | null;
     description: string;
     amount: Money | null;
@@ -1227,7 +1230,8 @@ export type ExceptionItem = {
     opened_at: string;
     age_days: number;
     owner: Attribution | null;
-    link: RouteLink;
+    /** The record it sits on, null when the viewer may not open it. */
+    link: RouteLink | null;
 };
 
 export type AdminExceptionsProps = AdminFrameShellProps &
