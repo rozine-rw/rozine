@@ -761,7 +761,7 @@ const fr: Catalog = {
         'Chaque mois tant que votre note court, vous fournissez les relevés et registres du mois, votre Partenaire d’audit les contrôle en personne dans vos locaux et scelle un rapport publié à vos investisseurs avant le jour de paiement.\n\nVous êtes averti lorsqu’un rapport scellé vous attend.',
     'business.help.reports.rating.q': 'Comment ma note Rozine est-elle fixée ?',
     'business.help.reports.rating.a':
-        'Votre note est un score sur 5,0, affiché comme Solide (4,0 à 5,0), Stable (3,0 à 3,9) ou En difficulté (moins de 3,0). Elle est recalculée à chaque rapport mensuel scellé et publiée à vos détenteurs.\n\nPayer à temps et tenir vos registres prêts pour chaque visite l’aident le plus.',
+        'Votre note est un score sur 5,0, affiché comme Solide (4,0 à 5,0), Stable (3,0 à 3,9), Faible (2,0 à 2,9) ou En difficulté (moins de 2,0). Elle est recalculée à chaque rapport mensuel scellé et publiée à vos détenteurs.\n\nPayer à temps et tenir vos registres prêts pour chaque visite l’aident le plus.',
     'business.help.reports.dispute.q': 'Et si je conteste un rapport ?',
     'business.help.reports.dispute.a':
         'Vous disposez de 24 heures après la remise pour contester un rapport scellé, avec un texte justificatif ou jusqu’à cinq pièces. Tant qu’une contestation est ouverte, votre note est suspendue sur le marché.\n\nSi vous ne contestez pas à temps, le rapport est publié.',
@@ -3744,7 +3744,7 @@ const fr: Catalog = {
         'Une entreprise doit justifier d’un chiffre d’affaires annuel vérifié d’au moins 30 000 000 RWF et de 36 mois de relevés bancaires et mobile money (12 pour un émetteur récurrent ayant payé à temps). Rozine dimensionne chaque note pour que l’entreprise gagne au moins 1,5 fois sa mensualité.\n\nAucune note n’est publiée avant qu’un Partenaire d’audit n’ait visité les locaux et scellé un rapport initial.',
     'investor.help.risk.rating.q': 'Qu’est-ce que la note Rozine ?',
     'investor.help.risk.rating.a':
-        'Chaque entreprise reçoit une note sur 5,0, à une décimale, accompagnée d’un mot : Solide (4,0 à 5,0), Stable (3,0 à 3,9) ou En difficulté (moins de 3,0). Une entreprise doit obtenir au moins 2,0 pour lever des fonds.\n\nLa note est recalculée à chaque rapport mensuel scellé. Une nouvelle note ne modifie jamais les conditions d’une note déjà émise.',
+        'Chaque entreprise reçoit une note sur 5,0, à une décimale, accompagnée d’un mot : Solide (4,0 à 5,0), Stable (3,0 à 3,9), Faible (2,0 à 2,9) ou En difficulté (moins de 2,0). Une entreprise doit obtenir au moins 2,0 pour lever des fonds.\n\nLa note est recalculée à chaque rapport mensuel scellé. Une nouvelle note ne modifie jamais les conditions d’une note déjà émise.',
     'investor.help.risk.late.q':
         'Que se passe-t-il si une entreprise paie en retard ou fait défaut ?',
     'investor.help.risk.late.a':

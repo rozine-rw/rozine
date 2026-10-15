@@ -553,7 +553,7 @@ describe('Profile', () => {
             within(sheet).getByText('Risk & how businesses are vetted'),
         ).toBeInTheDocument();
         expect(sheet).toHaveTextContent(
-            'Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0)',
+            'Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0)',
         );
         expect(sheet).toHaveTextContent('Last updated 15 October 2026');
 

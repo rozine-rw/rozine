@@ -732,7 +732,7 @@ const en = {
         "Every month while your note is outstanding, you provide the month's statements and records, your Audit Partner checks them in person at your premises, and seals a report that is published to your investors before payment day.\n\nYou are told when a sealed report is waiting for you.",
     'business.help.reports.rating.q': 'How is my Rozine rating set?',
     'business.help.reports.rating.a':
-        'Your rating is one score out of 5.0, shown as Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0). It is recomputed with every sealed monthly report and published to your holders.\n\nPaying on time and keeping your records ready for each visit help it most.',
+        'Your rating is one score out of 5.0, shown as Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0). It is recomputed with every sealed monthly report and published to your holders.\n\nPaying on time and keeping your records ready for each visit help it most.',
     'business.help.reports.dispute.q': 'What if I disagree with a report?',
     'business.help.reports.dispute.a':
         'You have 24 hours from delivery to dispute a sealed report, with supporting text or up to five proof files. While a dispute is open, your note pauses on the market.\n\nIf you do not dispute it in time, the report is published.',
@@ -3608,7 +3608,7 @@ const en = {
         'A business needs verified annual revenue of at least RWF 30,000,000 and 36 months of bank and mobile money statements (12 for a repeat issuer that paid on time). Rozine sizes each note so that the business earns at least 1.5 times its monthly instalment.\n\nNo note lists until an Audit Partner has visited the premises and sealed a baseline report.',
     'investor.help.risk.rating.q': 'What is the Rozine rating?',
     'investor.help.risk.rating.a':
-        'Each business gets one score out of 5.0, to one decimal, shown with a word: Strong (4.0 to 5.0), Stable (3.0 to 3.9) or Distressed (below 3.0). A business must score at least 2.0 to raise.\n\nThe score is recomputed with every sealed monthly report. A new score never changes the terms of a note already issued.',
+        'Each business gets one score out of 5.0, to one decimal, shown with a word: Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0). A business must score at least 2.0 to raise.\n\nThe score is recomputed with every sealed monthly report. A new score never changes the terms of a note already issued.',
     'investor.help.risk.late.q':
         'What happens if a business pays late or defaults?',
     'investor.help.risk.late.a':

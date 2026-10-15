@@ -759,7 +759,7 @@ const rw: Catalog = {
         "Buri kwezi igihe inyandiko yawe ikiriho, utanga inyandiko z'imari n'iz'ibikorwa by'ukwezi, Umufatanyabikorwa wawe w'igenzura akazigenzura aje aho ukorera, agashyira umukono kuri raporo itangazwa ku bashoramari bawe mbere y'umunsi w'ubwishyu.\n\nUmenyeshwa igihe raporo ifite umukono igutegereje.",
     'business.help.reports.rating.q': 'Amanota yanjye ya Rozine agenwa gute?',
     'business.help.reports.rating.a':
-        "Amanota yawe ni umubare umwe kuri 5.0, ugaragazwa nka Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9) cyangwa Iri mu bibazo (munsi ya 3.0). Yongera kubarwa kuri buri raporo y'ukwezi ifite umukono kandi agatangazwa ku bafite inyandiko yawe.\n\nKwishyura ku gihe no gutegura inyandiko zawe kuri buri gusurwa ni byo biyafasha cyane.",
+        "Amanota yawe ni umubare umwe kuri 5.0, ugaragazwa nka Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9), Idakomeye (2.0 kugeza 2.9) cyangwa Iri mu bibazo (munsi ya 2.0). Yongera kubarwa kuri buri raporo y'ukwezi ifite umukono kandi agatangazwa ku bafite inyandiko yawe.\n\nKwishyura ku gihe no gutegura inyandiko zawe kuri buri gusurwa ni byo biyafasha cyane.",
     'business.help.reports.dispute.q': 'Bigenda bite ntemeranya na raporo?',
     'business.help.reports.dispute.a':
         "Ufite amasaha 24 uhereye igihe wayihawe kugira ngo ujurire raporo ifite umukono, utanga ibisobanuro cyangwa inyandiko z'ibimenyetso zigera kuri eshanu. Igihe ubujurire bugisuzumwa, inyandiko yawe ihagarikwa ku isoko.\n\nNiba utajuriye ku gihe, raporo iratangazwa.",
@@ -3727,7 +3727,7 @@ const rw: Catalog = {
         "Ubucuruzi bugomba kugira amafaranga yinjiye ku mwaka yagenzuwe angana nibura na RWF 30,000,000 n'inyandiko za banki na mobile money z'amezi 36 (12 ku bucuruzi bwongera gukusanya bwishyuye ku gihe). Rozine igena ingano ya buri nyandiko ku buryo ubucuruzi bwinjiza nibura inshuro 1.5 z'icyiciro cyabwo cya buri kwezi.\n\nNta nyandiko ishyirwa ku isoko mbere y'uko Umufatanyabikorwa w'igenzura asura aho ubucuruzi bukorera agashyira umukono kuri raporo y'ibanze.",
     'investor.help.risk.rating.q': 'Amanota ya Rozine ni iki?',
     'investor.help.risk.rating.a':
-        "Buri bucuruzi buhabwa amanota kuri 5.0, afite umubare umwe nyuma y'akadomo, aherekejwe n'ijambo: Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9) cyangwa Iri mu bibazo (munsi ya 3.0). Ubucuruzi bugomba kugira nibura 2.0 kugira ngo bukusanye.\n\nAmanota yongera kubarwa kuri buri raporo y'ukwezi ifite umukono. Amanota mashya ntahindura amasezerano y'inyandiko yamaze gutangwa.",
+        "Buri bucuruzi buhabwa amanota kuri 5.0, afite umubare umwe nyuma y'akadomo, aherekejwe n'ijambo: Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9), Intege nke (2.0 kugeza 2.9) cyangwa Mu bibazo (munsi ya 2.0). Ubucuruzi bugomba kugira nibura 2.0 kugira ngo bukusanye.\n\nAmanota yongera kubarwa kuri buri raporo y'ukwezi ifite umukono. Amanota mashya ntahindura amasezerano y'inyandiko yamaze gutangwa.",
     'investor.help.risk.late.q':
         'Bigenda bite iyo ubucuruzi butinze kwishyura cyangwa bunaniwe kwishyura?',
     'investor.help.risk.late.a':
