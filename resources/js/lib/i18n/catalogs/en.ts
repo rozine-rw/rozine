@@ -673,6 +673,8 @@ const en = {
     'business.profile.permissions.business.wallet.withdraw':
         'Withdraw from the wallet',
     'business.profile.permissions.repayment.pay': 'Pay repayments',
+    'business.profile.permissions.business.profile.update':
+        'Edit company information',
     'business.profile.pending.linked_title': 'No payout account yet',
     'business.profile.pending.linked_body':
         'Payout accounts linked to this business will show here.',

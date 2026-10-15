@@ -924,7 +924,8 @@ export type MandatePermission =
     | 'report.cosign'
     | 'business.wallet.deposit'
     | 'business.wallet.withdraw'
-    | 'repayment.pay';
+    | 'repayment.pay'
+    | 'business.profile.update';
 
 export type CompanyProfile = {
     /** The RDB-registered name: shown, never edited here. */
@@ -939,11 +940,12 @@ export type CompanyProfile = {
         cell: string;
         street: string;
     };
+    /** Null while no RDB certificate is held; the registration record shows instead. */
     certificate: {
         number: string;
         status: 'verified' | 'expired';
         expires_on: string | null;
-    };
+    } | null;
     signatories: { name: string; role: string }[];
     /** From the verified mandate (D-64); never assumed to be two. */
     signatories_required: number;

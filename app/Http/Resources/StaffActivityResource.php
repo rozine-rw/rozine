@@ -42,7 +42,7 @@ class StaffActivityResource extends JsonResource
         'campaign.cancel' => ['Cancelled a campaign', 'amber'], 'primary.reserve' => ['Reserved notes', 'blue'],
         'primary.confirm' => ['Confirmed a purchase', 'green'], 'primary.release' => ['Released a reservation', 'grey'],
         'primary.refund' => ['Refunded a reservation', 'amber'], 'wallet.deposit' => ['Started a deposit', 'blue'],
-        'business.wallet.deposit' => ['Started a Business deposit', 'blue'], 'business.wallet.withdraw' => ['Withdrew from the Business wallet', 'blue'], 'repayment.pay' => ['Paid a repayment', 'green'],
+        'business.wallet.deposit' => ['Started a Business deposit', 'blue'], 'business.wallet.withdraw' => ['Withdrew from the Business wallet', 'blue'], 'repayment.pay' => ['Paid a repayment', 'green'], 'business.profile.update' => ['Updated the company information', 'blue'],
         'disbursement.authorize' => ['Authorized a disbursement', 'blue'], 'disbursement.approve' => ['Approved a disbursement', 'green'],
         'disbursement.reject' => ['Rejected a disbursement', 'red'], 'disbursement.hold' => ['Held a disbursement', 'amber'],
         'disbursement.release_hold' => ['Released a disbursement hold', 'blue'], 'disbursement.requery' => ['Re-queried a disbursement', 'grey'],

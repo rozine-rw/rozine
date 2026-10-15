@@ -697,6 +697,8 @@ const rw: Catalog = {
     'business.profile.permissions.business.wallet.withdraw':
         'Kubikuza mu gikapu',
     'business.profile.permissions.repayment.pay': 'Kwishyura',
+    'business.profile.permissions.business.profile.update':
+        "Guhindura amakuru y'ikigo",
     'business.profile.pending.linked_title':
         'Nta konti yo kwakiriraho iracyahari',
     'business.profile.pending.linked_body':

@@ -47,6 +47,7 @@ import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
 import AuditorPortfolioController from './AuditorPortfolioController'
+import BusinessContactController from './BusinessContactController'
 import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
@@ -104,6 +105,7 @@ const Controllers = {
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
     AuditorPortfolioController: Object.assign(AuditorPortfolioController, AuditorPortfolioController),
+    BusinessContactController: Object.assign(BusinessContactController, BusinessContactController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),

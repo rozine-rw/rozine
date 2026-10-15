@@ -58,7 +58,7 @@ it('sends a guest to sign in, refuses a person outside the mandate and validates
         ->assertInertia(fn (Assert $page): Assert => $page->component($component));
 })->with('business pages');
 
-it('opens Profile on the verified registration and mandate, with every design section and nothing editable', function (): void {
+it('opens Profile on the verified registration and mandate, with every design section and only the company information editable', function (): void {
     [$authority, $business] = ($this->business)();
     $user = $authority['users'][0];
     $profile = ($this->link)("/business/{$business}/profile");
@@ -67,8 +67,14 @@ it('opens Profile on the verified registration and mandate, with every design se
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
-        'section' => 'company', 'landing' => true, 'company' => null, 'provinces' => [], 'linked' => ['add' => null, 'accounts' => []], 'legal' => null, 'actions' => ['save_company' => null],
+        'section' => 'company', 'landing' => true, 'linked' => ['add' => null, 'accounts' => []], 'legal' => null,
+        'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
+            'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
+        'actions' => ['save_company' => ($this->link)("/business/{$business}/profile/company", 'put')],
         'security' => ['two_factor' => false, 'login_alerts' => true, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]])
+        ->and($props['provinces'])->toHaveCount(5)
+        ->and($props['provinces'][0])->toBe(['value' => 'Kigali City', 'label' => 'Kigali City', 'districts' => [
+            ['value' => 'Gasabo', 'label' => 'Gasabo'], ['value' => 'Kicukiro', 'label' => 'Kicukiro'], ['value' => 'Nyarugenge', 'label' => 'Nyarugenge']]])
         ->and(array_diff_key($props['registration'], ['people' => true]))->toBe(['name' => 'Synthetic business', 'company_code' => 'COMPANY-001',
             'industry' => 'Retail', 'district' => 'Gasabo', 'established_year' => 2020, 'signatories_required' => 1])
         ->and($props['registration']['people'])->toEqualCanonicalizing([

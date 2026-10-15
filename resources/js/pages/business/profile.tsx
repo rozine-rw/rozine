@@ -97,9 +97,13 @@ export default function BusinessProfile({
                                         action={actions.save_company}
                                     />
                                 )}
-                            {company !== null && (
-                                <CompanyRecords company={company} />
-                            )}
+                            {company !== null &&
+                                company.certificate !== null && (
+                                    <CompanyRecords
+                                        company={company}
+                                        certificate={company.certificate}
+                                    />
+                                )}
                             {registration !== null && (
                                 <CompanyRegistrationRecord
                                     registration={registration}

@@ -49,6 +49,7 @@
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessContactController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
@@ -243,6 +244,7 @@
         "resources/js/routes/business/campaigns/index.ts",
         "resources/js/routes/business/index.ts",
         "resources/js/routes/business/notices/index.ts",
+        "resources/js/routes/business/profile/index.ts",
         "resources/js/routes/business/repayments/index.ts",
         "resources/js/routes/business/repayments/operations/index.ts",
         "resources/js/routes/business/wallet/index.ts",
@@ -726,8 +728,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 695,
-        "generated": 291,
+        "totalTrackedSources": 697,
+        "generated": 293,
         "declarationOnly": 18,
         "authoredExecutable": 386
     },

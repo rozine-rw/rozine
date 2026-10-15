@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults, validateParameters } from './../../wayfinder'
 import auditReports from './audit-reports'
 import repayments from './repayments'
+import profile937a89 from './profile'
 import notices from './notices'
 import wallet from './wallet'
 import applications from './applications'
@@ -690,7 +691,7 @@ const business = {
     show: Object.assign(show, show),
     reports: Object.assign(reports, reports),
     market: Object.assign(market, market),
-    profile: Object.assign(profile, profile),
+    profile: Object.assign(profile, profile937a89),
     rating: Object.assign(rating, rating),
     auditPrep: Object.assign(auditPrep, auditPrep),
     notices: Object.assign(notices, notices),

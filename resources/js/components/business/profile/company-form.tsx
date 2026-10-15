@@ -86,7 +86,8 @@ type CompanyFormProps = {
 
 /**
  * "Company information" (design L1726–1743). The registered name comes from RDB and is shown
- * read-only; contact details and the address are the business's to keep current.
+ * read-only; contact details and the address are the business's to keep current. Each save
+ * carries a fresh `request_id`, so a repeated click is answered once.
  */
 export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
     const { t } = useTranslation();
@@ -109,6 +110,10 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
         <form
             onSubmit={(event) => {
                 event.preventDefault();
+                form.transform((current) => ({
+                    ...current,
+                    request_id: crypto.randomUUID(),
+                }));
                 form.put(action.url, {
                     preserveScroll: true,
                     onSuccess: () => show(t('business.profile.company.saved')),
@@ -173,6 +178,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-province"
                         label={t('business.profile.company.province')}
+                        error={errors.province}
                     >
                         <Select
                             id="company-province"
@@ -212,6 +218,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-sector"
                         label={t('business.profile.company.sector')}
+                        error={errors.sector}
                     >
                         <input
                             id="company-sector"
@@ -228,6 +235,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-cell"
                         label={t('business.profile.company.cell')}
+                        error={errors.cell}
                     >
                         <input
                             id="company-cell"
@@ -245,6 +253,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 <Field
                     id="company-street"
                     label={t('business.profile.company.street')}
+                    error={errors.street}
                 >
                     <input
                         id="company-street"

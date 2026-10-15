@@ -697,6 +697,8 @@ const fr: Catalog = {
     'business.profile.permissions.business.wallet.withdraw':
         'Retirer du portefeuille',
     'business.profile.permissions.repayment.pay': 'Payer les remboursements',
+    'business.profile.permissions.business.profile.update':
+        "Modifier les informations de l'entreprise",
     'business.profile.pending.linked_title': 'Aucun compte de versement',
     'business.profile.pending.linked_body':
         'Les comptes de versement liés à cette entreprise apparaîtront ici.',

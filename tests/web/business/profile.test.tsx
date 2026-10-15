@@ -79,6 +79,7 @@ vi.mock('@inertiajs/react', async () => {
         ),
         useForm: <T extends Record<string, unknown>>(initial: T) => {
             const [data, setState] = useState(initial);
+            let transform = (current: T): Record<string, unknown> => current;
 
             return {
                 data,
@@ -93,8 +94,13 @@ vi.mock('@inertiajs/react', async () => {
                     ),
                 errors: inertia.errors,
                 processing: inertia.processing,
+                transform: (
+                    callback: (current: T) => Record<string, unknown>,
+                ) => {
+                    transform = callback;
+                },
                 put: (url: string, options: { onSuccess?: () => void }) => {
-                    inertia.puts.push({ url, data });
+                    inertia.puts.push({ url, data: transform(data) });
                     options.onSuccess?.();
                 },
             };
@@ -230,6 +236,9 @@ describe('Company information', () => {
                     sector: 'Remera',
                     cell: 'Rukiri',
                     street: 'KG 11 Ave',
+                    request_id: expect.stringMatching(
+                        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+                    ),
                 },
             },
         ]);
@@ -461,6 +470,25 @@ describe('Company information on record', () => {
         expect(
             screen.getByText('1 on the mandate · need 1+'),
         ).toBeInTheDocument();
+    });
+
+    it('edits the contact details beside the registration record while no RDB certificate is held', () => {
+        const page = props(companyFixture);
+
+        page.company = {
+            ...(page.company as CompanyProfile),
+            certificate: null,
+            signatories: [],
+        };
+        page.registration = props(recordFixture).registration;
+        render(<BusinessProfile {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Save changes' }),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('RDB certificate')).not.toBeInTheDocument();
+        expect(screen.getByText('On record')).toBeInTheDocument();
+        expect(screen.getByText('People on the mandate')).toBeInTheDocument();
     });
 
     it('shows contact details read-only when the server offers no save', () => {
