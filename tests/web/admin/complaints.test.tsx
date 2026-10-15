@@ -182,6 +182,29 @@ describe('Complaints', () => {
             resolves: true,
         });
         expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/u);
+        expect(within(drawer).getByText(/^Rozine ·/u)).toBeInTheDocument();
+        expect(within(drawer).getByLabelText('Your answer')).toHaveValue('');
+    });
+
+    it('shows a refused answer on the form', () => {
+        inertia.errors = { body: 'This complaint is already resolved.' };
+        render(<AdminComplaints {...page(OPEN)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'This complaint is already resolved.',
+        );
+    });
+
+    it('says when there are no complaints, and when a search matches none', () => {
+        const empty = { ...page(), complaints: [] };
+        const { unmount } = render(<AdminComplaints {...empty} />);
+
+        expect(screen.getByText('No complaints')).toBeInTheDocument();
+        unmount();
+
+        render(<AdminComplaints {...empty} search="nobody" />);
+        expect(screen.queryByText('No complaints')).not.toBeInTheDocument();
+        expect(screen.getAllByText(/nobody/u).length).toBeGreaterThan(0);
     });
 
     it('offers no answer once a complaint is resolved', () => {
