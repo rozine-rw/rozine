@@ -7,6 +7,10 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\InvestorHoldings;
+use App\Application\Primary\Contracts\RetainedNoteSchedules;
+use App\Application\Primary\RetainedHoldingSchedule;
+use App\Application\Primary\RetainedNoteInstalment;
+use App\Application\Primary\RetainedNoteSchedule;
 use App\Models\PrimaryHolding;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,35 +18,50 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Reads `primary_holdings`, which the database keeps immutable and bound to their issued closing,
- * and the confirmed purchases still awaiting one: no Holding, no refund entry and no closure.
- * The issue receipt's operation is the disbursement intent's, from the Holding's own payload, with
- * the request id that operation was recorded under.
+ * Selects the Party's `primary_holdings` rows, then builds every figure from the complete
+ * authenticated issued source (the retained Note schedule) in one read transaction: a Holding the
+ * source does not carry for that Party, or any native/envelope disagreement, fails closed. Also
+ * lists the confirmed purchases still awaiting one: no Holding, no refund entry and no closure.
+ * The issue receipt's operation is the disbursement intent's, with the request id that operation
+ * was recorded under.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  */
 final readonly class EloquentInvestorHoldings implements InvestorHoldings
 {
-    public function __construct(private OperationRecords $operations, private PrimaryCampaignSource $campaigns) {}
+    public function __construct(private OperationRecords $operations, private PrimaryCampaignSource $campaigns,
+        private RetainedNoteSchedules $schedules) {}
 
     public function forInvestor(int $userId): array
     {
-        return array_values($this->owned($userId)->orderByDesc('issued_at')->orderByDesc('id')->get()
-            ->map(fn (PrimaryHolding $holding): array => $this->record($holding))->all());
+        return DB::transaction(function () use ($userId): array {
+            $snapshots = [];
+
+            return array_values($this->owned($userId)->orderByDesc('issued_at')->orderByDesc('id')->get()
+                ->map(function (PrimaryHolding $holding) use (&$snapshots): array {
+                    $snapshots[$holding->business_campaign_id] ??= $this->snapshot($holding->business_campaign_id);
+
+                    return $this->record($holding, $snapshots[$holding->business_campaign_id]);
+                })->all());
+        });
     }
 
     public function find(int $userId, string $holdingId): ?array
     {
-        $holding = $this->owned($userId)->whereKey(strtolower($holdingId))->first();
+        return DB::transaction(function () use ($userId, $holdingId): ?array {
+            $holding = $this->owned($userId)->whereKey(strtolower($holdingId))->first();
 
-        return $holding === null ? null : $this->record($holding);
+            return $holding === null ? null : $this->record($holding, $this->snapshot($holding->business_campaign_id));
+        });
     }
 
     public function ofCommitment(int $userId, string $commitmentId): ?array
     {
-        $holding = $this->owned($userId)->where('commitment_id', strtolower($commitmentId))->first();
+        return DB::transaction(function () use ($userId, $commitmentId): ?array {
+            $holding = $this->owned($userId)->where('commitment_id', strtolower($commitmentId))->first();
 
-        return $holding === null ? null : $this->record($holding);
+            return $holding === null ? null : $this->record($holding, $this->snapshot($holding->business_campaign_id));
+        });
     }
 
     public function awaitingIssue(int $userId): array
@@ -75,25 +94,36 @@ final readonly class EloquentInvestorHoldings implements InvestorHoldings
         return PrimaryHolding::query()->where('party_id', User::query()->whereKey($userId)->whereNotNull('party_id')->select('party_id'));
     }
 
-    /** @return IssuedHoldingRecord */
-    private function record(PrimaryHolding $holding): array
+    private function snapshot(string $campaignId): RetainedNoteSchedule
     {
-        $money = fn (mixed $amount): array => ['currency' => 'RWF', 'amount' => (string) $amount];
+        return $this->schedules->find($campaignId) ?? throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED');
+    }
+
+    /** @return IssuedHoldingRecord */
+    private function record(PrimaryHolding $holding, RetainedNoteSchedule $snapshot): array
+    {
+        $issued = array_values(array_filter($snapshot->holdings, fn (RetainedHoldingSchedule $candidate): bool => $candidate->holdingId === $holding->id));
+        $source = count($issued) === 1 ? $issued[0] : null;
+        if ($source === null || $source->partyId !== $holding->party_id || $source->commitmentId !== $holding->commitment_id
+            || $snapshot->campaignId !== $holding->business_campaign_id) {
+            throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED');
+        }
+        $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
         /** @var IssuedHoldingRecord['rights'] $rights */
-        $rights = $holding->rights;
+        $rights = $source->rights;
         /** @var IssuedHoldingRecord['terms'] $terms */
-        $terms = $holding->terms;
+        $terms = $source->terms;
         /** @var array{receipt: array{receipt_id: string, operation_id: string}} $payload */
         $payload = $holding->payload;
 
-        return ['id' => $holding->id, 'campaign_id' => $holding->business_campaign_id, 'commitment_id' => $holding->commitment_id,
-            'units' => (string) $holding->units, 'principal' => $money($holding->principal),
-            'ordinals' => array_map(fn (array $range): array => ['first' => (string) $range['first'], 'last' => (string) $range['last']], $holding->ordinals),
+        return ['id' => $source->holdingId, 'campaign_id' => $snapshot->campaignId, 'commitment_id' => $source->commitmentId,
+            'units' => (string) $source->units, 'principal' => $money($source->principal),
+            'ordinals' => array_map(fn (array $range): array => ['first' => (string) $range['first'], 'last' => (string) $range['last']], $source->ordinals),
             'rights' => $rights, 'terms' => $terms,
-            'schedule' => array_map(fn (array $entry): array => ['index' => (int) $entry['index'], 'due_on' => (string) $entry['due_date'],
-                'principal' => $entry['principal'], 'return' => $entry['return']], $holding->schedule),
+            'schedule' => array_map(fn (RetainedNoteInstalment $instalment): array => ['index' => $instalment->index, 'due_on' => $instalment->dueDate,
+                'principal' => $money($instalment->principal), 'return' => $money($instalment->contractualReturn)], $source->instalments),
             'issued_at' => $holding->issued_at->utc()->toIso8601String(), 'disbursement_effective_at' => $holding->disbursement_effective_at->utc()->toIso8601String(),
-            'effective_date' => $holding->effective_date->format('Y-m-d'),
+            'effective_date' => $snapshot->closing->effectiveDate ?? throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED'),
             'receipt' => ['receipt_id' => $holding->receipt_id, 'operation_id' => $payload['receipt']['operation_id'],
                 'request_id' => $this->operations->requestOf($payload['receipt']['operation_id']) ?? throw new RuntimeException('HOLDING_ISSUE_RECEIPT_UNAVAILABLE')]];
     }

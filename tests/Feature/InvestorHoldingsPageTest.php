@@ -84,6 +84,37 @@ it('keeps an Investor with no Holding on the empty Portfolio', function (): void
             ->where('concentration', null)->where('totals.next_payout', null)->where('totals.businesses', 0));
 });
 
+it('builds Holding figures from the authenticated issue and fails closed when a native column disagrees with it', function (string $read): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+    PrimaryHoldingFixture::flushDeferredChecks();
+    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER primary_holdings_protected');
+    try {
+        $rights = $holding->rights;
+        $rights['total_return']['amount'] = '1';
+        $holding->forceFill(['rights' => $rights])->save();
+    } finally {
+        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER primary_holdings_protected');
+    }
+
+    $this->withoutExceptionHandling()->actingAs($user);
+    $url = $read === 'holding' ? route('investor.holdings.show', $holding->id) : route('investor.portfolio');
+    expect(fn () => $this->get($url))->toThrow(RuntimeException::class, 'PRIMARY_ISSUANCE_INTEGRITY_FAILED');
+})->with(['holding', 'portfolio']);
+
+it('fails closed on an Investor Holding read when the issued membership is partial', function (): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+    PrimaryHoldingFixture::flushDeferredChecks();
+    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER ALL');
+    try {
+        DB::table('primary_holdings')->where('business_campaign_id', $holding->business_campaign_id)->where('party_id', '!=', $holding->party_id)->delete();
+    } finally {
+        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER ALL');
+    }
+
+    $this->withoutExceptionHandling()->actingAs($user);
+    expect(fn () => $this->get(route('investor.holdings.show', $holding->id)))->toThrow(RuntimeException::class, 'PRIMARY_ISSUANCE_INTEGRITY_FAILED');
+});
+
 it('opens a Holding with its issue as recorded, its maturity value and its next instalment', function (): void {
     ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
     $receipt = $holding->payload['receipt'];
@@ -105,7 +136,7 @@ it('opens a Holding with its issue as recorded, its maturity value and its next 
         ->and($issue)->toMatchArray(['id' => $holding->id, 'campaign_id' => $holding->business_campaign_id, 'units' => '1000',
             'ordinals' => [['first' => '1', 'last' => '1000']], 'effective_date' => '2026-10-10', 'disbursement_effective_at' => '2026-10-09T22:30:00+00:00'])
         ->and(array_column($issue['schedule'], 'due_on'))->toBe(['2026-11-10', '2026-12-10', '2027-01-10', '2027-02-10', '2027-03-10', '2027-04-10'])
-        ->and($issue['terms'])->toBe(['rate_pct' => $holding->terms['rate_pct'], 'term_months' => 6, 'total_return' => $holding->rights['total_return'],
+        ->and($issue['terms'])->toEqual(['rate_pct' => $holding->terms['rate_pct'], 'term_months' => 6, 'total_return' => $holding->rights['total_return'],
             'earnings_fee' => $holding->terms['earnings_fee'], 'policy_version' => $holding->terms['policy_version'], 'disclosure_version' => $holding->terms['disclosure_version']])
         ->and($issue['issue_receipt'])->toMatchArray(['receipt_id' => $holding->receipt_id, 'operation_id' => $receipt['operation_id'], 'code' => 'HOLDING_ISSUED',
             'request_id' => CommandOperation::query()->whereKey($receipt['operation_id'])->value('request_id'),
