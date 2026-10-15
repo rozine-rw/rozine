@@ -13,6 +13,7 @@ import ledger from './ledger'
 import exceptions from './exceptions'
 import primaryMarket from './primary-market'
 import payments from './payments'
+import coverage from './coverage'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
@@ -111,6 +112,7 @@ const staffNamespace = {
     exceptions: Object.assign(exceptions, exceptions),
     primaryMarket: Object.assign(primaryMarket, primaryMarket),
     payments: Object.assign(payments, payments),
+    coverage: Object.assign(coverage, coverage),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
 }
 

@@ -1722,6 +1722,7 @@ const fr: Catalog = {
         "ex. MTN confirme l'annulation complète de MM-88213 ; destination revérifiée.",
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
+    'admin.parties.coverage_link': 'Couverture des partenaires',
     'admin.parties.chip.all': 'Tous',
     'admin.parties.chip.healthy': 'Sains',
     'admin.parties.chip.watch': 'Sous surveillance',

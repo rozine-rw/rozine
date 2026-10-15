@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\Contracts\AuditCoverage;
 use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\Contracts\AuditLedgerEvidence;
 use App\Application\Auditor\Contracts\AuditLedgerExtractionQueue;
@@ -111,6 +112,7 @@ use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\Contracts\WithdrawalProvider;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Infrastructure\Auditor\EloquentAuditAssignmentStore;
+use App\Infrastructure\Auditor\EloquentAuditCoverage;
 use App\Infrastructure\Auditor\EloquentAuditEngagementStore;
 use App\Infrastructure\Auditor\EloquentAuditLedgerEvidence;
 use App\Infrastructure\Auditor\EloquentAuditLedgerExtractionQueue;
@@ -311,6 +313,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(LedgerJournal::class, EloquentLedgerJournal::class);
         $this->app->bind(AccountHolds::class, EloquentAccountHolds::class);
         $this->app->bind(OverdueAudits::class, EloquentOverdueAudits::class);
+        $this->app->bind(AuditCoverage::class, EloquentAuditCoverage::class);
         $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(InvestorHoldings::class, EloquentInvestorHoldings::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);

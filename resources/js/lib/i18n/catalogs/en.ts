@@ -1644,6 +1644,7 @@ const en = {
         'e.g. MTN confirmed reference MM-88213 reversed in full; destination re-verified.',
     'admin.parties.policy_title': 'Business eligibility rules',
     'admin.parties.filter': 'Filter by status',
+    'admin.parties.coverage_link': 'Partner coverage',
     'admin.parties.chip.all': 'All',
     'admin.parties.chip.healthy': 'Healthy',
     'admin.parties.chip.watch': 'Watch',

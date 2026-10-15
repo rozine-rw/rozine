@@ -38,6 +38,7 @@ class StaffNavigationResource extends JsonResource
         'exceptions' => ['permission' => 'exceptions.view', 'route' => 'staff.exceptions.index'],
         'primary_market' => ['permission' => 'primary.view', 'route' => 'staff.primary-market.index'],
         'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
+        'coverage' => ['permission' => 'audit.partners.verify', 'route' => 'staff.coverage.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */
