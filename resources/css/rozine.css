@@ -510,6 +510,12 @@
     outline-offset: 2px;
 }
 
+/* A modal dialog takes focus itself when it opens; the dialog is not a control to ring. */
+[role='dialog'][tabindex='-1']:focus-visible,
+[role='alertdialog'][tabindex='-1']:focus-visible {
+    outline: none;
+}
+
 /*
  * WCAG 2.2 SC 2.3.3: a person who asks their system for reduced motion gets none of the app's
  * entrances, spinners, pulses or transitions. Every page loads this stylesheet through app.css, so

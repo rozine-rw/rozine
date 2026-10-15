@@ -11,6 +11,7 @@ import { StepHeading } from '@/components/business/apply/step-heading';
 import { InstalmentSchedule } from '@/components/business/apply/step-raise';
 import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatDayMonth, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -98,6 +99,7 @@ function DocumentSheet({
     onClose: () => void;
 }) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(onClose);
     const title = t(`business.apply.review.document.${document.kind}`);
 
     return (
@@ -109,6 +111,8 @@ function DocumentSheet({
                 className="absolute inset-0 animate-[rz-scrim_.22s_ease] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px]"
             />
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}

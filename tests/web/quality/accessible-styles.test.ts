@@ -44,6 +44,12 @@ describe('Visible keyboard focus (WCAG 2.2 SC 2.4.7)', () => {
             /@layer[^;{]*\{[^}]*$/u,
         );
     });
+
+    it('rings only the controls inside a modal dialog, not the dialog holding focus itself', () => {
+        expect(css('rozine.css')).toMatch(
+            /\[role='dialog'\]\[tabindex='-1'\]:focus-visible,\s*\[role='alertdialog'\]\[tabindex='-1'\]:focus-visible \{\s*outline: none;\s*\}/u,
+        );
+    });
 });
 
 const tokens = (stylesheet: string, selector: string) => {

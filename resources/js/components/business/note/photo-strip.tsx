@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import type { NotePhoto } from '@/types/business';
 
@@ -72,6 +73,7 @@ export function PhotoStrip({ photos }: { photos: NotePhoto[] }) {
     const [open, setOpen] = useState<number | null>(null);
     const step = (from: number, by: number) =>
         setOpen((from + by + photos.length) % photos.length);
+    const dialog = useModalDialog<HTMLDivElement>(undefined, open !== null);
 
     useEffect(() => {
         if (open === null) {
@@ -126,6 +128,8 @@ export function PhotoStrip({ photos }: { photos: NotePhoto[] }) {
 
             {open !== null && (
                 <div
+                    ref={dialog}
+                    tabIndex={-1}
                     role="dialog"
                     aria-modal="true"
                     aria-label={photos[open].caption}

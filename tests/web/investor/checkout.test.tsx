@@ -108,6 +108,18 @@ describe('Checkout: the indicative step', () => {
         );
     });
 
+    it('takes focus when it opens and goes back to the deals on Escape', () => {
+        render(<InvestorCheckout {...props()} />);
+
+        expect(screen.getByRole('dialog', { name: 'Checkout' })).toHaveFocus();
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+
+        expect(inertia.visit).toHaveBeenCalledWith('/preview/investor-deals', {
+            preserveScroll: true,
+        });
+    });
+
     it('shows the server’s indicative quote with no maturity date before issue, then offers Reserve', () => {
         render(<InvestorCheckout {...props()} />);
 

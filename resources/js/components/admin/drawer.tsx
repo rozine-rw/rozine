@@ -1,6 +1,6 @@
 import { Link, router } from '@inertiajs/react';
-import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -21,17 +21,9 @@ type DrawerProps = {
 export function Drawer({ label, close, children, className }: DrawerProps) {
     const { t } = useTranslation();
 
-    useEffect(() => {
-        const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                router.visit(close.url, { preserveScroll: true });
-            }
-        };
-
-        window.addEventListener('keydown', onKey);
-
-        return () => window.removeEventListener('keydown', onKey);
-    }, [close.url]);
+    const dialog = useModalDialog<HTMLDivElement>(() =>
+        router.visit(close.url, { preserveScroll: true }),
+    );
 
     return (
         <>
@@ -43,6 +35,8 @@ export function Drawer({ label, close, children, className }: DrawerProps) {
                 className="fixed inset-0 z-[52] animate-[rz-scrim_.18s_ease] bg-[rgba(8,14,28,.34)] backdrop-blur-[2px] lg:absolute"
             />
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

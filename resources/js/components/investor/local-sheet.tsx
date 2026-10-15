@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 
@@ -25,17 +25,7 @@ export function LocalSheet({
     className,
     children,
 }: LocalSheetProps) {
-    useEffect(() => {
-        const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-
-        window.addEventListener('keydown', onKey);
-
-        return () => window.removeEventListener('keydown', onKey);
-    }, [onClose]);
+    const dialog = useModalDialog<HTMLElement>(onClose);
 
     return (
         <>
@@ -47,6 +37,8 @@ export function LocalSheet({
                 className="fixed inset-0 z-[60] animate-[rz-scrim_.2s_ease_both] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px] lg:absolute lg:z-[44] lg:rounded-[20px] lg:bg-[rgba(8,14,28,.28)]"
             />
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

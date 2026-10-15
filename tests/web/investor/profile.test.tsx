@@ -670,6 +670,17 @@ describe('Profile', () => {
         /* The scrim closes the panel too. */
         await user.click(screen.getByTestId('support-scrim'));
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        /* Escape closes it, and focus returns to the button that opened it. */
+        const opener = screen.getByRole('button', {
+            name: 'Contact Rozine Support',
+        });
+        await user.click(opener);
+        expect(
+            screen.getByRole('dialog', { name: 'Rozine Support' }),
+        ).toHaveFocus();
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
     it('opens a fresh conversation when nothing is open, and shows a refusal on the message', async () => {

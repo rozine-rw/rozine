@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import {
     formatSigned,
@@ -452,11 +453,14 @@ type ProofLightboxProps = {
 /** A published image full size (design L4507–4541): its caption and counter, and nothing else. */
 function ProofLightbox({ photos, index, onMove, onClose }: ProofLightboxProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(onClose);
     const photo = photos[index];
     const many = photos.length > 1;
 
     return (
         <div
+            ref={dialog}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={photo.caption}

@@ -1,6 +1,7 @@
 import { router, useHttp } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import {
     formatDate,
@@ -284,17 +285,7 @@ export function NoticesPanel({
 }) {
     const { t, locale } = useTranslation();
 
-    useEffect(() => {
-        const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-
-        window.addEventListener('keydown', onKey);
-
-        return () => window.removeEventListener('keydown', onKey);
-    }, [onClose]);
+    const dialog = useModalDialog<HTMLElement>(onClose);
 
     const open = async (notice: InvestorNotice) => {
         if (notice.read_action !== null) {
@@ -323,6 +314,8 @@ export function NoticesPanel({
                 className="fixed inset-0 z-[70] animate-[rz-scrim_.22s_ease_both] bg-[rgba(10,15,28,.32)]"
             />
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={t('investor.notices.title')}

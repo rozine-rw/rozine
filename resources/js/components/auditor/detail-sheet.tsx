@@ -1,6 +1,7 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { ClockChip } from '@/components/auditor/clock';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -32,6 +33,11 @@ export function DetailSheet({
     children,
 }: DetailSheetProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLElement>(
+        dismissible
+            ? () => router.visit(close.url, { preserveScroll: true })
+            : undefined,
+    );
     const scrim =
         'absolute inset-0 z-[48] hidden animate-[rz-scrim_.26s_ease] rounded-2xl bg-[rgba(8,14,28,.28)] lg:block';
 
@@ -47,6 +53,8 @@ export function DetailSheet({
                 <div className={cn(scrim, 'cursor-default')} />
             )}
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

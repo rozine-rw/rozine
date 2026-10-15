@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "780140217ae7354d95abf7939d75426a7c8939afb966f0af108d502b4ae03396",
-    "coverageSetSha256": "daaf65b8776deb55f51fd28aa115e03c768c37ca1ec013958454191df91d274d",
+    "sourceManifestSha256": "d2487e6261218636232f63186beb45ed849a286e3226d4ccabb19a2b9c09243f",
+    "coverageSetSha256": "d1c88151f16371a8e7e147d114137e5655cd72e6ceb957666492507d9befa851",
     "thresholds": {
         "critical": {
             "global": {
@@ -332,6 +332,7 @@
         "resources/js/hooks/use-initials.tsx",
         "resources/js/hooks/use-mobile-navigation.ts",
         "resources/js/hooks/use-mobile.tsx",
+        "resources/js/hooks/use-modal-dialog.ts",
         "resources/js/hooks/use-online.ts",
         "resources/js/hooks/use-operation-command.ts",
         "resources/js/hooks/use-reconnect-refresh.ts",

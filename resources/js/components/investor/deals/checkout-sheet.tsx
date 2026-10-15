@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
@@ -19,6 +19,7 @@ import { ACCENT_FILL, POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice, useRefusalText } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { useC3Command } from '@/hooks/use-c3-command';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompactBare } from '@/lib/investor/format';
 import { useServerNow } from '@/lib/investor/server-clock';
@@ -155,6 +156,9 @@ export function CheckoutSheet({
         preview,
     });
     const phone = variant === 'phone';
+    const dialog = useModalDialog<HTMLElement>(() =>
+        router.visit(links.close.url, { preserveScroll: true }),
+    );
     const held =
         reservation !== null && reservation.state === 'held'
             ? reservation
@@ -188,6 +192,8 @@ export function CheckoutSheet({
                 )}
             />
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

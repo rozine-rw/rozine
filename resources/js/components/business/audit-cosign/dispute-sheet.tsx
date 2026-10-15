@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { FieldError } from '@/components/rozine/form';
 import { formatFileSize } from '@/components/rozine/proof-file-list';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
 /** The most a dispute's supporting text may hold. */
@@ -76,6 +77,7 @@ export function DisputeSheet({
     onClose: () => void;
 }) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(busy ? undefined : onClose);
     const [supporting, setSupporting] = useState('');
     const [files, setFiles] = useState<File[]>([]);
     const [problems, setProblems] = useState<string[]>([]);
@@ -137,6 +139,8 @@ export function DisputeSheet({
                 className="absolute inset-0 animate-[rz-scrim_.22s_ease] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px]"
             />
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}

@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -189,6 +190,10 @@ export function SupportChat({
             ? current
             : (support.complaints.find((item) => item.id === openId) ?? null);
     const isOpen = openId !== undefined;
+    const dialog = useModalDialog<HTMLDivElement>(
+        () => setOpenId(undefined),
+        isOpen,
+    );
     const target = shown === null ? support.open : shown.reply;
     const listRef = useRef<HTMLDivElement>(null);
 
@@ -240,6 +245,8 @@ export function SupportChat({
                         className="absolute inset-0 bg-[rgba(12,24,48,.32)]"
                     />
                     <div
+                        ref={dialog}
+                        tabIndex={-1}
                         role="dialog"
                         aria-modal="true"
                         aria-label={t('support.chat.title')}
