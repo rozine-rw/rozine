@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { AppFrame } from '@/components/rozine/app-frame';
@@ -44,5 +45,28 @@ describe('AppFrame', () => {
             'aria-current',
             'page',
         );
+    });
+
+    it('starts with a link that skips past the navigation to the page', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <AppFrame
+                audience="business"
+                nav={[]}
+                active="home"
+                launcher={link('/launcher')}
+            >
+                <p>Home</p>
+            </AppFrame>,
+        );
+
+        await user.tab();
+        const skip = screen.getByRole('link', { name: 'Skip to content' });
+
+        expect(skip).toHaveFocus();
+        expect(skip).toHaveAttribute('href', '#main-content');
+        expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+        expect(screen.getByRole('main')).toHaveAttribute('tabindex', '-1');
     });
 });

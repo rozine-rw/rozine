@@ -420,6 +420,7 @@ const en = {
     'business.apply.submitted.stage.approved': 'Approved',
     'business.apply.submitted.stage.published': 'Published',
     'business.apply.submitted.back_home': 'Back to Home',
+    'app.skip_to_content': 'Skip to content',
     'app.sheet.close': 'Close',
     'business.publish.title': 'Publish to the Investor feed',
     'business.publish.body_fee':

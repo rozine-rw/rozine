@@ -430,6 +430,7 @@ const rw: Catalog = {
     'business.apply.submitted.stage.published': 'Yatangajwe',
     'business.apply.submitted.back_home': 'Subira Ahabanza',
 
+    'app.skip_to_content': 'Jya ku bikubiyemo',
     'app.sheet.close': 'Funga',
     'business.publish.title': "Tangaza ku rubuga rw'abashoramari",
     'business.publish.body_fee':

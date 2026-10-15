@@ -72,6 +72,10 @@ describe('Admin System Health', () => {
     it('says every tracked signal is healthy, and that the rest are not tracked yet', () => {
         render(<AdminSystemHealth {...props()} />);
 
+        expect(
+            screen.getByRole('link', { name: 'Skip to content' }),
+        ).toHaveAttribute('href', '#main-content');
+        expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
         expect(screen.getByRole('status')).toHaveTextContent(
             'All systems healthy',
         );

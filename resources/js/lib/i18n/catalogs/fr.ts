@@ -433,6 +433,7 @@ const fr: Catalog = {
     'business.apply.submitted.stage.published': 'Publiée',
     'business.apply.submitted.back_home': "Retour à l'accueil",
 
+    'app.skip_to_content': 'Aller au contenu',
     'app.sheet.close': 'Fermer',
     'business.publish.title': 'Publier sur le fil des investisseurs',
     'business.publish.body_fee':

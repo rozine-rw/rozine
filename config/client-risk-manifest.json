@@ -16,7 +16,7 @@
     },
     "nonCriticalApprovals": {},
     "sourceManifestSha256": "618aae131e8a4060333029e74b4002310c806e8880115ea213092cd6191d046f",
-    "coverageSetSha256": "b47a65e88c89fd75c7efc5530d7d77cc066ff6b11e0f4e8447d34e8aaff371de",
+    "coverageSetSha256": "daaf65b8776deb55f51fd28aa115e03c768c37ca1ec013958454191df91d274d",
     "thresholds": {
         "critical": {
             "global": {
@@ -286,6 +286,7 @@
         "resources/js/components/rozine/proof-file-list.tsx",
         "resources/js/components/rozine/read-failure-notice.tsx",
         "resources/js/components/rozine/role-icon.tsx",
+        "resources/js/components/rozine/skip-link.tsx",
         "resources/js/components/rozine/support-chat.tsx",
         "resources/js/components/rozine/toast.tsx",
         "resources/js/components/site/app-entry.tsx",
