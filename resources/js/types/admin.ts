@@ -1242,6 +1242,55 @@ export type AdminExceptionsProps = AdminFrameShellProps &
         pagination: Pagination;
     };
 
+/** The Primary Market Monitor offers no moderation command; `allowed_actions` is always empty. */
+export type StaffPrimaryMarketPageContract = {
+    contract_version: 'staff-primary-market-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type PrimaryMarketStatKey =
+    | 'active'
+    | 'in_flight'
+    | 'fill'
+    | 'completion';
+
+/** Where a raise that is still filling stands, as the Investor projection names it. */
+export type RaiseLifecycle =
+    | 'live'
+    | 'fully_reserved'
+    | 'inventory_unavailable'
+    | 'sold_out_pending_settlement'
+    | 'closing_pending_settlement';
+
+/** One raise still filling: its fill, investors and Kigali days left on its own clock. */
+export type PrimaryMarketRaise = {
+    id: string;
+    reference: string;
+    business: string;
+    sector: string;
+    district: string;
+    rating: Rating;
+    rate_pct: string;
+    term_months: number;
+    funded_pct: string;
+    raised: Money;
+    target: Money;
+    investors: number;
+    lifecycle: RaiseLifecycle;
+    opened_at: string;
+    closes_at: string;
+    days_left: number;
+};
+
+export type AdminPrimaryMarketProps = AdminFrameShellProps &
+    StaffPrimaryMarketPageContract & {
+        stats: { key: PrimaryMarketStatKey; value: StatValue }[];
+        raises: PrimaryMarketRaise[];
+        pagination: Pagination;
+    };
+
 /* ------------------------------------------------------------------------------------------ */
 /* Phase 2: Reconciliation (MVP-ADMIN-SCR-04), Partner coverage (MVP-ADMIN-SCR-07) and Reports */
 /* (MVP-ADMIN-SCR-10), read-only proposal                                                      */

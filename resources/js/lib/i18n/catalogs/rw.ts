@@ -5378,6 +5378,37 @@ const rw: Catalog = {
     'admin.exceptions.filtered_title': 'Nta kidasanzwe cy’ubu bwoko',
     'admin.exceptions.filtered_body':
         'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
+    'admin.primary.title': 'Ubukusanyamari buri gukorwa',
+    'admin.primary.caption':
+        'Ubukusanyamari bwose butaruzura, ubushya mbere. Ubukusanyamari buzura cyangwa bukananirwa ku gihe cyabwo, bityo nta kugenzura kuri hano.',
+    'admin.primary.col.raise': 'Ubukusanyamari',
+    'admin.primary.col.funded': 'Ayabonetse',
+    'admin.primary.col.progress': 'Aho bigeze',
+    'admin.primary.col.closes': 'Birangira',
+    'admin.primary.yield': 'Inyungu {rate}%',
+    'admin.primary.term': {
+        one: 'Ukwezi {count}',
+        other: 'Amezi {count}',
+    },
+    'admin.primary.funded': '{pct}%',
+    'admin.primary.raised_of': '{raised} kuri {target}',
+    'admin.primary.investors': {
+        one: 'Umushoramari {count}',
+        other: 'Abashoramari {count}',
+    },
+    'admin.primary.days_left': {
+        one: 'Hasigaye umunsi {count}',
+        other: 'Hasigaye iminsi {count}',
+    },
+    'admin.primary.closes_today': 'Birarangira',
+    'admin.primary.lifecycle.fully_reserved': 'Byose byafashwe',
+    'admin.primary.lifecycle.inventory_unavailable': 'Ntibiboneka',
+    'admin.primary.lifecycle.sold_out_pending_settlement': 'Byashize',
+    'admin.primary.lifecycle.closing_pending_settlement': 'Birarangira',
+    'admin.primary.more': 'Ubundi bukusanyamari buri gukorwa',
+    'admin.primary.empty_title': 'Nta bukusanyamari buri gukorwa',
+    'admin.primary.empty_body':
+        'Ubukusanyamari bugaragara hano iyo itangazwa ryabwo rimaze guhabwa amanota no gufungurwa.',
     'admin.nav.reconciliation': 'Guhuza konti',
     'admin.nav.coverage': 'Aho abafatanyabikorwa bakorera',
     'admin.nav.reports': 'Raporo',

@@ -12,6 +12,7 @@ import reconciliation from './reconciliation'
 import messaging from './messaging'
 import ledger from './ledger'
 import exceptions from './exceptions'
+import primaryMarket from './primary-market'
 import investorVerifications from './investor-verifications'
 import stagingMailTesters from './staging-mail-testers'
 import changes from './changes'
@@ -111,6 +112,7 @@ const staffNamespace = {
     messaging: Object.assign(messaging, messaging),
     ledger: Object.assign(ledger, ledger),
     exceptions: Object.assign(exceptions, exceptions),
+    primaryMarket: Object.assign(primaryMarket, primaryMarket),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
     stagingMailTesters: Object.assign(stagingMailTesters, stagingMailTesters),
     changes: Object.assign(changes, changes),

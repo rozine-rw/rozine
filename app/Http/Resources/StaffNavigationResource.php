@@ -36,6 +36,7 @@ class StaffNavigationResource extends JsonResource
         'reconciliation' => ['permission' => 'reconciliation.view', 'route' => 'staff.reconciliation.index'],
         'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
         'exceptions' => ['permission' => 'exceptions.view', 'route' => 'staff.exceptions.index'],
+        'primary_market' => ['permission' => 'primary.view', 'route' => 'staff.primary-market.index'],
     ];
 
     /** @return array<string, array{url: string, method: string}|null> */

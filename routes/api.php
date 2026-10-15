@@ -41,6 +41,7 @@ use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
 use App\Http\Controllers\StaffLedgerController;
 use App\Http\Controllers\StaffMessagingController;
+use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -244,6 +245,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/messaging/history', StaffMessagingController::class)->name('api.v1.staff.messaging.index');
     Route::get('v1/staff/ledger', StaffLedgerController::class)->name('api.v1.staff.ledger.index');
     Route::get('v1/staff/exceptions', StaffExceptionsController::class)->name('api.v1.staff.exceptions.index');
+    Route::get('v1/staff/primary-market', StaffPrimaryMarketController::class)->name('api.v1.staff.primary-market.index');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {

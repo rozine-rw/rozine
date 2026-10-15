@@ -89,6 +89,7 @@
         "resources/js/actions/App/Http/Controllers/StaffInvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffLedgerController.ts",
         "resources/js/actions/App/Http/Controllers/StaffMessagingController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffPrimaryMarketController.ts",
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
@@ -207,6 +208,7 @@
         "resources/js/routes/api/v1/staff/investors/index.ts",
         "resources/js/routes/api/v1/staff/ledger/index.ts",
         "resources/js/routes/api/v1/staff/messaging/index.ts",
+        "resources/js/routes/api/v1/staff/primary-market/index.ts",
         "resources/js/routes/api/v1/staff/reconciliation/index.ts",
         "resources/js/routes/api/v1/staff/staff/index.ts",
         "resources/js/routes/appearance/index.ts",
@@ -301,6 +303,7 @@
         "resources/js/routes/staff/investors/index.ts",
         "resources/js/routes/staff/ledger/index.ts",
         "resources/js/routes/staff/messaging/index.ts",
+        "resources/js/routes/staff/primary-market/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
         "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staff/index.ts",
@@ -659,6 +662,7 @@
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/messaging.tsx",
         "resources/js/pages/admin/parties.tsx",
+        "resources/js/pages/admin/primary-market.tsx",
         "resources/js/pages/admin/reconciliation.tsx",
         "resources/js/pages/admin/repayments.tsx",
         "resources/js/pages/admin/reports.tsx",
@@ -722,10 +726,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 691,
-        "generated": 288,
+        "totalTrackedSources": 695,
+        "generated": 291,
         "declarationOnly": 18,
-        "authoredExecutable": 385
+        "authoredExecutable": 386
     },
-    "coverageSetSha256": "90c5a92fecd27b3291a3690eebbcbfed2afa0f7fd60320c178dfa331b9846f7f"
+    "coverageSetSha256": "c81d971d2e70042cbed9657c1b328fc7e9184004098c98d09619b54ae04be920"
 }

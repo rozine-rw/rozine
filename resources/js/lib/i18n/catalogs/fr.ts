@@ -5409,6 +5409,37 @@ const fr: Catalog = {
     'admin.exceptions.filtered_title': 'Aucune exception de ce type',
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
+    'admin.primary.title': 'Levées en cours',
+    'admin.primary.caption':
+        'Chaque levée encore ouverte, la plus récente d’abord. Une levée se remplit ou échoue selon son propre délai, il n’y a donc pas de modération ici.',
+    'admin.primary.col.raise': 'Levée',
+    'admin.primary.col.funded': 'Financé',
+    'admin.primary.col.progress': 'Progression',
+    'admin.primary.col.closes': 'Clôture',
+    'admin.primary.yield': 'Rendement {rate} %',
+    'admin.primary.term': {
+        one: '{count} mois',
+        other: '{count} mois',
+    },
+    'admin.primary.funded': '{pct} %',
+    'admin.primary.raised_of': '{raised} sur {target}',
+    'admin.primary.investors': {
+        one: '{count} investisseur',
+        other: '{count} investisseurs',
+    },
+    'admin.primary.days_left': {
+        one: '{count} jour restant',
+        other: '{count} jours restants',
+    },
+    'admin.primary.closes_today': 'Clôture en cours',
+    'admin.primary.lifecycle.fully_reserved': 'Entièrement réservée',
+    'admin.primary.lifecycle.inventory_unavailable': 'Indisponible',
+    'admin.primary.lifecycle.sold_out_pending_settlement': 'Épuisée',
+    'admin.primary.lifecycle.closing_pending_settlement': 'Clôture en cours',
+    'admin.primary.more': 'Plus de levées en cours',
+    'admin.primary.empty_title': 'Aucune levée en cours',
+    'admin.primary.empty_body':
+        'Une levée apparaît ici dès que sa publication est notée et ouverte.',
     'admin.nav.reconciliation': 'Rapprochement',
     'admin.nav.coverage': 'Couverture des partenaires',
     'admin.nav.reports': 'Rapports',

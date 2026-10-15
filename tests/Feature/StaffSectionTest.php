@@ -45,8 +45,8 @@ test('Compliance opens the investor identity review queue for compliance officer
         ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/compliance'));
 });
 
-test('the Business directory and Audit Partner network are live screens, not pending sections', function (): void {
-    expect(StaffSectionController::SECTIONS)->not->toHaveKeys(['businesses', 'auditors']);
+test('the Business directory, Audit Partner network and Primary Market are live screens, not pending sections', function (): void {
+    expect(StaffSectionController::SECTIONS)->not->toHaveKeys(['businesses', 'auditors', 'primary-market']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/businesses')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/parties')->where('kind', 'business'));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/auditors')->assertForbidden();
@@ -61,7 +61,7 @@ test('participants and guests cannot open a console section, and unknown section
 });
 
 test('Oversight lists the design\'s Reports, which opens its section page from the sidebar and the Audit desk command', function (): void {
-    expect(StaffSectionController::SECTIONS)->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 3, 3))
+    expect(StaffSectionController::SECTIONS)->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 2, 3))
         ->toBe(['reports', 'risk', 'compliance']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/reports')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'reports')
