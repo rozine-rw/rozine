@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d2487e6261218636232f63186beb45ed849a286e3226d4ccabb19a2b9c09243f",
-    "coverageSetSha256": "d1c88151f16371a8e7e147d114137e5655cd72e6ceb957666492507d9befa851",
+    "sourceManifestSha256": "8f49ba91658b0c7bc1ee7d2597212aea8e2b76fe2e7f5e24a86f7c0ec2239b14",
+    "coverageSetSha256": "ac6d9b3f0bf2de148fbaa5a640ee55da5f1b333a42cca8889b7cabadba4de405",
     "thresholds": {
         "critical": {
             "global": {
@@ -192,6 +192,7 @@
         "resources/js/components/business/rating/score-card.tsx",
         "resources/js/components/business/repayments/components.tsx",
         "resources/js/components/business/repayments/due-card.tsx",
+        "resources/js/components/business/repayments/issued-schedule.tsx",
         "resources/js/components/business/repayments/late-policy.tsx",
         "resources/js/components/business/repayments/pay-panel.tsx",
         "resources/js/components/business/repayments/progress-card.tsx",
