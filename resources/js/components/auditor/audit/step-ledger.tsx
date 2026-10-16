@@ -313,7 +313,7 @@ export function StepLedger({
                     }
                     placeholder={t('auditor.ledger.observed_placeholder')}
                     aria-invalid={errors.observed_stock ? true : undefined}
-                    className="mt-1.5 w-full rounded-xl border-[1.5px] border-[#dbe3f0] bg-[#f6f9fd] px-3.5 py-[13px] text-[15px] font-bold text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:border-rz-border dark:bg-rz-surface-sunken"
+                    className="mt-1.5 w-full rounded-xl border-[1.5px] border-[#dbe3f0] bg-[#f6f9fd] px-3.5 py-[13px] text-[15px] font-bold text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border dark:border-rz-border dark:bg-rz-surface-sunken"
                 />
                 {errors.observed_stock && (
                     <p className="mt-1.5 text-[11.5px] font-semibold text-rz-danger-text">

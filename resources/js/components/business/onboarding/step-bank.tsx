@@ -216,7 +216,7 @@ export function StepBank({
                 aria-invalid={
                     form.errors.account_name !== undefined || undefined
                 }
-                className="mt-1.5 w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                className="mt-1.5 w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
             />
             <FieldError id="account-name-error">
                 {form.errors.account_name}
@@ -243,7 +243,7 @@ export function StepBank({
                 placeholder={t(
                     'business.onboarding.bank.account_number_placeholder',
                 )}
-                className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm tracking-[.05em] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm tracking-[.05em] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
             />
             <FieldError id="account-number-error">
                 {form.errors.account_number}

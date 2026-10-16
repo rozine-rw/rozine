@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vite-plus/test';
 
@@ -94,11 +94,52 @@ describe('Text contrast (WCAG 2.2 SC 1.4.3)', () => {
         ['light', light, 'rz-auditor-text'],
         ['dark', dark, 'rz-muted'],
         ['dark', dark, 'rz-faint'],
+        ['light', light, 'rz-placeholder'],
+        ['dark', dark, 'rz-placeholder'],
     ])('keeps %s %s at 4.5:1 or more on every surface', (_, theme, token) => {
         for (const surface of ['rz-surface', 'rz-page', 'rz-field']) {
             expect(
                 contrast(theme[token], theme[surface]),
             ).toBeGreaterThanOrEqual(4.5);
+        }
+    });
+});
+
+describe('Placeholder contrast (WCAG 2.2 SC 1.4.3)', () => {
+    it('keeps the Pulse input placeholder at 4.5:1 or more on its input and page', () => {
+        const pulse = css('pulse.css');
+        const light = tokens(pulse, '.rz-pulse');
+        const dark = { ...light, ...tokens(pulse, '.dark .rz-pulse') };
+
+        for (const background of ['#ffffff', '#f7f9fd']) {
+            expect(
+                contrast(light['rz-placeholder'], background),
+            ).toBeGreaterThanOrEqual(4.5);
+        }
+
+        for (const background of [dark['rz-page'], '#0c0d13', '#12131a']) {
+            expect(
+                contrast(dark['rz-placeholder'], background),
+            ).toBeGreaterThanOrEqual(4.5);
+        }
+    });
+
+    it('never draws form placeholders in the decorative faint grey', () => {
+        const sources = [
+            ...readdirSync(path.resolve(__dirname, '../../../resources/js'), {
+                recursive: true,
+                encoding: 'utf8',
+            }),
+        ].filter((file) => file.endsWith('.tsx'));
+
+        for (const file of sources) {
+            expect(
+                readFileSync(
+                    path.resolve(__dirname, '../../../resources/js', file),
+                    'utf8',
+                ),
+                file,
+            ).not.toContain('placeholder:text-rz-faint');
         }
     });
 });
