@@ -24,12 +24,12 @@ use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use App\Models\PartyNotice;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessAuthorityFixture;
 
 /**
  * A funded Business with two mandate holders: the first holds every permission, the second may only view.

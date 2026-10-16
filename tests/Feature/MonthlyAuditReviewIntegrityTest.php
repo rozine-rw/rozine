@@ -23,6 +23,8 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\StatementVerification;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -31,8 +33,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Mockery\Expectation;
 use Mockery\MockInterface;
-use Tests\Support\AuditSealingFixture as Fixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

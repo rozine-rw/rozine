@@ -16,12 +16,12 @@ use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\Support\BusinessAuthorityFixture;
 
 /**
  * A configured Business with two mandate holders: the first may deposit, the second may only view.

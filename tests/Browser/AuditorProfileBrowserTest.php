@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditorFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

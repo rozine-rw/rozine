@@ -17,14 +17,14 @@ use App\Domain\Operations\OperationResult;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

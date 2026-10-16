@@ -7,13 +7,13 @@ use App\Application\Business\SaveBusinessApplication;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Models\AuditAssignment;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Symfony\Component\Process\Process;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\BusinessApplicationFixture;
 use Tests\TestCase;
 
 uses(TestCase::class, DatabaseTruncation::class);

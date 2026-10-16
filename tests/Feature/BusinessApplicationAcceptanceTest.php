@@ -19,15 +19,15 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
-use Tests\Support\ConsentFixture;
 
 it('submits a sole-trader application with immutable pinned terms and an exact recoverable receipt', function (): void {
     $fixture = BusinessQuoteFixture::ready();

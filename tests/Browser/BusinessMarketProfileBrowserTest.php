@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Support\BrowserJourney;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\TestCase;
 
 /*

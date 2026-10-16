@@ -8,11 +8,11 @@ use App\Models\BusinessProfile;
 use App\Models\PartyNotice;
 use App\Notifications\Business\ApplicationDecided;
 use App\Notifications\Business\ApplicationOutcome;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

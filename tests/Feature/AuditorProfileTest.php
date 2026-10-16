@@ -18,12 +18,12 @@ use App\Models\AuditorProfileVersion;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditorFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

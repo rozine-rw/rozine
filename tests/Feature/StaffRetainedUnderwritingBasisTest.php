@@ -10,14 +10,14 @@ use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\StaffAccount;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

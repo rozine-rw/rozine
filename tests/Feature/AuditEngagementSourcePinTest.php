@@ -10,15 +10,15 @@ use App\Models\AuditEngagementAcceptance;
 use App\Models\AuditReport;
 use App\Models\StatementVerification;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-25T10:00:00Z'));

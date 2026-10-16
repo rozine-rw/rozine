@@ -23,15 +23,15 @@ use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\ConsentFixture;
 
 it('does not manufacture terms or acceptance when an Auditor reads an unconfigured catalog', function (): void {
     $actor = AuditorFixture::make();

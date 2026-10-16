@@ -8,13 +8,13 @@ use App\Application\Auditor\VerifyAuditReportSeal;
 use App\Application\Identity\Contracts\ConsentCatalog;
 use App\Console\Commands\PrepareCheckpointTwo;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Database\Seeders\CheckpointTwoSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\ConsentFixture;
 
 beforeEach(function (): void {
     Storage::fake('local');

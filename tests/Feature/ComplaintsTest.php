@@ -7,11 +7,11 @@ use App\Models\Complaint;
 use App\Models\ComplaintMessage;
 use App\Models\PartyNotice;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /*

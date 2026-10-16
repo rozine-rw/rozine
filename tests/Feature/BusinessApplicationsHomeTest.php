@@ -8,12 +8,12 @@ use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Models\RoleMembership;
 use App\Models\VerifiedOrganizationIdentity;
+use Database\Factories\Scenarios\BusinessApplicationFixture as DraftFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessApplicationFixture as DraftFixture;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

@@ -6,12 +6,12 @@ use App\Models\BusinessCampaign;
 use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Models\WalletDepositCredit;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Database\Seeders\SyntheticWalletSeeder;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

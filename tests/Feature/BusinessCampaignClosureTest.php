@@ -10,13 +10,13 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditSealingFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

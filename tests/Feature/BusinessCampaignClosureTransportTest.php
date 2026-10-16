@@ -11,11 +11,11 @@ use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

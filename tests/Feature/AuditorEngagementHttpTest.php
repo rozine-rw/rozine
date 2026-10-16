@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Models\AuditEngagementAcceptance;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
 use Tests\TestCase;
 
 beforeEach(function (): void {

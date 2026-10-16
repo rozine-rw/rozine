@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessConnections;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessProfile;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\BusinessAuthorityFixture;
 
 it('refuses a declaration read without an outer transaction before taking a lock', function (): void {
     expect(DB::transactionLevel())->toBe(0)

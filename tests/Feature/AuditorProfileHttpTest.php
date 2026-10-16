@@ -11,13 +11,13 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpFoundation\Response;
-use Tests\Support\AuditorFixture;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;

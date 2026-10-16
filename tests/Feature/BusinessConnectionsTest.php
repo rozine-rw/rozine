@@ -7,10 +7,10 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

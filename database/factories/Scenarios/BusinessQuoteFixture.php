@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support;
+namespace Database\Factories\Scenarios;
 
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\EvaluateBusinessApplication;

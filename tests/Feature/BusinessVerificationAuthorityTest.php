@@ -9,12 +9,12 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\StatementVerification;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

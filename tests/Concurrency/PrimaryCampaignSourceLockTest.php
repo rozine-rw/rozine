@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Models\BusinessCampaign;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
 
 it('refuses to return an unlocked source outside the caller transaction', function (): void {
     expect(DB::transactionLevel())->toBe(0);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Auditor\AuditEngagementDocuments;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
 
 it('retains the exact original engagement text and hashes its bytes', function (): void {
     $documents = AuditEngagementFixture::documents();

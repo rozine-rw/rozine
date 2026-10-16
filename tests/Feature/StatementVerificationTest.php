@@ -30,17 +30,17 @@ use App\Models\StatementExtraction;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditorIndependenceFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditorIndependenceFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\StatementFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

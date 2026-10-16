@@ -9,11 +9,11 @@ use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessCreditFactsFixture;
 
 it('records encrypted versioned credit facts once without placing private source facts in the journal', function (): void {
     $fixture = BusinessApplicationFixture::make();

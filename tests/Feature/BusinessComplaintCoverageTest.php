@@ -6,9 +6,9 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Complaint;
 use App\Models\ComplaintMessage;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 
 /*
  * A Business's complaint chat when a message is refused, a staff answer resent with different

@@ -15,15 +15,15 @@ use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
 use App\Models\AuditSigningKeyRevocation;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture as Fixture;
-use Tests\Support\AuditSourceFactsFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

@@ -9,14 +9,14 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as QuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
-use Tests\Support\BusinessQuoteFixture as QuoteFixture;
-use Tests\Support\ConsentFixture;
 use Tests\TestCase;
 
 uses(TestCase::class, DatabaseTruncation::class);

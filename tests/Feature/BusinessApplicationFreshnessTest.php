@@ -8,12 +8,12 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Models\BusinessApplicationQuote;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
-use Tests\Support\ConsentFixture;
 
 beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-25T03:00:00Z'));

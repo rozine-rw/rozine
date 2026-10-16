@@ -11,13 +11,13 @@ use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessExposureReservation;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\BusinessApplicationFixture as DraftFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as QuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessApplicationFixture as DraftFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessQuoteFixture as QuoteFixture;
-use Tests\Support\ConsentFixture;
 
 beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-25T03:00:00Z'));

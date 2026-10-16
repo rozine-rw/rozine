@@ -13,10 +13,10 @@ use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 
 it('records a sole trader or actual company mandate without imposing two directors', function (string $kind, int $count): void {
     $fixture = BusinessAuthorityFixture::make($kind, $count);

@@ -13,14 +13,14 @@ use App\Models\AuditReportSignature;
 use App\Models\AuditSigningKeyRevocation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture as Fixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

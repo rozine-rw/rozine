@@ -35,6 +35,7 @@ use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
 use App\Models\WalletWithdrawalEvent;
 use Carbon\Carbon;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
@@ -43,7 +44,6 @@ use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 beforeEach(function (): void {

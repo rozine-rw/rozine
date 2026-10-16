@@ -17,11 +17,11 @@ use App\Models\Party;
 use App\Models\StaffPersonIdentity;
 use App\Models\User;
 use App\Models\VerifiedPersonIdentity;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\DisbursementFixture;
 
 /*

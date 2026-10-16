@@ -11,12 +11,12 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 /**
  * @param  list<Closure(): void>  $operations

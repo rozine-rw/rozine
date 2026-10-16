@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support;
+namespace Database\Factories\Scenarios;
 
 use App\Application\Auditor\ConfirmAuditStepUp;
 use App\Application\Auditor\CosignAuditReport;
@@ -11,7 +11,7 @@ use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\SealAuditReport;
 use App\Application\Auditor\StartAuditReport;
 use App\Models\AuditReport;
-use App\Models\AuditSigningKey;
+use Database\Factories\AuditSigningKeyFactory;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use RuntimeException;
@@ -60,7 +60,7 @@ final class AuditSealingFixture
     {
         ['user' => $user, 'report' => $report] = $fixture;
         $user->forceFill(['two_factor_secret' => encrypt('JBSWY3DPEHPK3PXP'), 'two_factor_confirmed_at' => now()->subMinute()])->save();
-        $key = AuditSigningKey::factory()->create();
+        $key = AuditSigningKeyFactory::new()->create();
         $page = app(GetAuditProcedure::class)->handle($user->id, 1, $report->id);
         $preview = $page['seal'];
         $ids = array_values(array_unique([$page['sources']['verification']['id'], $page['sources']['source_facts']['source']['id'],

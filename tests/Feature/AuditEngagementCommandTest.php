@@ -6,12 +6,12 @@ use App\Application\Auditor\GetAuditEngagementTerms;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\AuditEngagementRelease;
 use App\Models\StaffAccount;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
 
 beforeEach(function (): void {
     $this->termsFile = tempnam(sys_get_temp_dir(), 'rozine-terms-');

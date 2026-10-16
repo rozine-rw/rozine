@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\AuditorFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 
 it('admits the exact conservative radius boundary and prefers fewest active then oldest assignment then stable ID', function (): void {
     $policy = new AuditorDispatch(new AuditorStanding);

@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Models\Party;
 use App\Models\VerifiedPersonIdentity;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /** @extends Factory<VerifiedPersonIdentity> */
 class VerifiedPersonIdentityFactory extends Factory
@@ -15,9 +16,9 @@ class VerifiedPersonIdentityFactory extends Factory
     public function definition(): array
     {
         return [
-            'identity_digest' => hash('sha256', fake()->uuid()),
+            'identity_digest' => hash('sha256', (string) Str::uuid()),
             'party_id' => Party::factory()->state(['verified_at' => now()]),
-            'evidence_reference' => 'fixture:'.fake()->uuid(),
+            'evidence_reference' => 'fixture:'.Str::uuid(),
         ];
     }
 }

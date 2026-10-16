@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

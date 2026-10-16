@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Models\Party;
 use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<VerifiedOrganizationIdentity>
@@ -21,9 +22,9 @@ class VerifiedOrganizationIdentityFactory extends Factory
     public function definition(): array
     {
         return [
-            'registry_digest' => hash('sha256', 'rdb:'.fake()->uuid()),
+            'registry_digest' => hash('sha256', 'rdb:'.Str::uuid()),
             'party_id' => Party::factory()->state(['kind' => 'organization', 'verified_at' => now()]),
-            'evidence_reference' => 'fixture:'.fake()->uuid(),
+            'evidence_reference' => 'fixture:'.Str::uuid(),
         ];
     }
 }

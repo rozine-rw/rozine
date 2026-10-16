@@ -12,12 +12,12 @@ use App\Models\AuditConflictDeclaration;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

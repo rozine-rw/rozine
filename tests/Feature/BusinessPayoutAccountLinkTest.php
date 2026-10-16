@@ -9,9 +9,9 @@ use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\PartyNotice;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 
 /*
  * Profile > Linked accounts (Business.dc.html L1829–1840): a holder of `business.wallet.withdraw` links

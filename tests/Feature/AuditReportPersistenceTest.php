@@ -10,12 +10,12 @@ use App\Models\AuditReportVersion;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationVersion;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as Fixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @return array<string, mixed> */
 function persistedAuditReportFixture(string $kind = 'flash'): array

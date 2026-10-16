@@ -15,9 +15,9 @@ use App\Models\AuditReportVersion;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\BusinessQuoteFixture as Fixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @return array<string, mixed> */
 function procedureReportFixture(string $kind = 'flash'): array

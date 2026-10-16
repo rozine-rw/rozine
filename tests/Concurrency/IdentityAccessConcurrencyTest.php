@@ -90,22 +90,22 @@ use App\Models\StatementVerification;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use App\Models\VerifiedPersonIdentity;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditorIndependenceFixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditEngagementFixture;
 use Tests\Support\AuditLedgerFixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditorIndependenceFixture;
-use Tests\Support\AuditSourceFactsFixture;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
-use Tests\Support\ConsentFixture;
-use Tests\Support\StatementFixture;
 
 function concurrentIdentityOperator(): User
 {

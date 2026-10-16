@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Underwriting\CashFlowEvidence;
 use App\Domain\Underwriting\UnderwritingViolation;
 use Brick\Math\BigRational;
-use Tests\Support\UnderwritingEvidenceFixture;
+use Database\Factories\Scenarios\UnderwritingEvidenceFixture;
 
 it('reproduces the approved complete-month mean and max-deduction vectors', function (array $example): void {
     $months = UnderwritingEvidenceFixture::months($example['months']);

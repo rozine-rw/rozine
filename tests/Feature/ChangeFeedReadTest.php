@@ -11,10 +11,10 @@ use App\Domain\Operations\ChangeScope;
 use App\Models\BusinessProfile;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 use function Pest\Laravel\actingAs;

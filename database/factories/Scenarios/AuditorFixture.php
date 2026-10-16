@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support;
+namespace Database\Factories\Scenarios;
 
 use App\Application\Auditor\RecordAuditorStanding;
 use App\Application\Auditor\SubmitAuditorAccreditation;

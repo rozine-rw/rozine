@@ -13,12 +13,12 @@ use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
 use App\Models\CommandOperation;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->withoutVite();

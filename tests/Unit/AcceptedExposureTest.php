@@ -9,7 +9,7 @@ use App\Domain\Underwriting\EngineScorecard;
 use App\Domain\Underwriting\FlatReturnPricing;
 use App\Domain\Underwriting\LoanCapacity;
 use App\Domain\Underwriting\UnderwritingViolation;
-use Tests\Support\UnderwritingEvidenceFixture;
+use Database\Factories\Scenarios\UnderwritingEvidenceFixture;
 
 it('counts each accepted economic commitment once across evidence sources', function (): void {
     $obligations = [['id' => 'already-reported', 'principal' => '3000000', 'service_by_month' => []]];

@@ -17,12 +17,12 @@ use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 it('resumes an existing draft without creating a second application or rewriting its history', function (): void {
     $fixture = BusinessApplicationFixture::make();

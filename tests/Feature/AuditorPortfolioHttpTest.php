@@ -11,11 +11,11 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditSealingFixture;
 
 use function Pest\Laravel\actingAs;
 

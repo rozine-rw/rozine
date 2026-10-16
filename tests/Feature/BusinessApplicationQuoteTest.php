@@ -15,14 +15,14 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationVersion;
 use App\Models\BusinessCreditSnapshot;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 /**
  * Underwriting months are Africa/Kigali months, which start at 22:00 UTC on the last day of the UTC month.

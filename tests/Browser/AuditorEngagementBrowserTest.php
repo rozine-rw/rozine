@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Models\AuditEngagementAcceptance;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use PragmaRX\Google2FA\Google2FA;
 use Symfony\Component\Process\Process;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
 use Tests\TestCase;
 
 uses(TestCase::class, DatabaseTruncation::class);

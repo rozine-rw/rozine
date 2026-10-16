@@ -15,16 +15,16 @@ use App\Models\AuditAssignmentVersion;
 use App\Models\AuditorProfile;
 use App\Models\BusinessApplication;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

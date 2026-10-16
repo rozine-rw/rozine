@@ -18,10 +18,10 @@ use App\Models\CommandOperation;
 use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessAuthorityFixture;
 
 /** A test-only servicing note: one quote, and every applied repayment recorded. */
 final class FakeNoteServicing implements NoteServicing

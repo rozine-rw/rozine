@@ -23,6 +23,10 @@ use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditorIndependenceFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\QueryException;
@@ -32,10 +36,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditorIndependenceFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

@@ -9,10 +9,10 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\AuditSigningKeyRevocation;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

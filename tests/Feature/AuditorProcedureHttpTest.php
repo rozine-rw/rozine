@@ -9,11 +9,11 @@ use App\Application\Evidence\IngestStatement;
 use App\Models\AuditReport;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as Fixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSourceFactsFixture;
-use Tests\Support\BusinessQuoteFixture as Fixture;
 
 beforeEach(function (): void {
     $this->withoutVite();

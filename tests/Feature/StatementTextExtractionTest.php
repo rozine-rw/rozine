@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Infrastructure\Evidence\PdfAndCsvTextExtractor;
-use Tests\Support\StatementFixture;
+use Database\Factories\Scenarios\StatementFixture;
 
 it('extracts text from a real PDF without treating it as verified financial data', function (): void {
     $result = app(PdfAndCsvTextExtractor::class)->extract(StatementFixture::pdf(), 'application/pdf');

@@ -11,11 +11,11 @@ use App\Models\Party;
 use App\Models\User;
 use App\Models\WalletProviderEvent;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /*

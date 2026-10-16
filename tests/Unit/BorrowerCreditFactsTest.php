@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\BorrowerCreditFacts;
-use Tests\Support\BusinessCreditFactsFixture;
-use Tests\Support\UnderwritingEvidenceFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\UnderwritingEvidenceFixture;
 
 it('preserves explicitly unknown history and factual adverse or repeat conduct', function (): void {
     $normalizer = new BorrowerCreditFacts;

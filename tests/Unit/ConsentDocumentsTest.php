@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Identity\ConsentDocuments;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\ConsentFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 
 it('binds consent hashes to the exact original text and matches every explicit acceptance', function (): void {
     $policy = new ConsentDocuments;

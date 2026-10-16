@@ -16,11 +16,11 @@ use App\Models\AuditStepUpProof;
 use App\Models\CommandOperation;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 /**
  * @param  list<Closure(): void>  $operations

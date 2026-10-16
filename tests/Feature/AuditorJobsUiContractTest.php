@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Models\AuditAssignment;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\AuditAssignmentFixture as Fixture;
 
 use function Pest\Laravel\actingAs;
 

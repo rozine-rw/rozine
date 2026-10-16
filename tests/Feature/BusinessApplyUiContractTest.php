@@ -8,12 +8,12 @@ use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\BusinessApplicationFixture as DraftFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as QuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\BusinessApplicationFixture as DraftFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\BusinessQuoteFixture as QuoteFixture;
-use Tests\Support\ConsentFixture;
 
 use function Pest\Laravel\actingAs;
 

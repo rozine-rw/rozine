@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support;
+namespace Database\Factories\Scenarios;
 
 use App\Application\Auditor\AcceptAuditEngagementTerms;
 use App\Application\Auditor\RecordAuditEngagementTerms;

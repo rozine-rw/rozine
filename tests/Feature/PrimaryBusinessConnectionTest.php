@@ -13,9 +13,9 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 

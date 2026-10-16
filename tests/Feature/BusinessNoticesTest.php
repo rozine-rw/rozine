@@ -13,9 +13,9 @@ use App\Models\DepositPolicy;
 use App\Models\PartyNotice;
 use App\Models\PartyNoticeDelivery;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessAuthorityFixture;
 
 /*
  * In-app notices behind the Business's bell (BRS v2.0 NTF-R01): held by the Business's entity Party,

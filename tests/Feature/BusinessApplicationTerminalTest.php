@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSubmission;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessQuoteFixture;
 
 it('keeps a submitted application terminal even under direct database mutations', function (string $change): void {
     $fixture = BusinessQuoteFixture::ready();

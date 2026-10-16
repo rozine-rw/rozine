@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Business\ApplicationDraft;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
 
 it('preserves exact whole franc requests and incomplete draft facts', function (): void {
     $draft = new ApplicationDraft;

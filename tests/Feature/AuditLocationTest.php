@@ -13,13 +13,13 @@ use App\Models\AuditLocation;
 use App\Models\AuditLocationVersion;
 use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditorFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 9, 24)->setTime(10, 0)->utc());

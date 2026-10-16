@@ -14,14 +14,14 @@ use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessQuoteFixture;
 
 beforeEach(function (): void {
     $this->withoutVite();

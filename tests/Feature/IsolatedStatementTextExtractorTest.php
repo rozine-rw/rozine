@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Evidence\Contracts\StatementTextExtractor;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Process;
-use Tests\Support\StatementFixture;
 
 it('extracts a benign PDF in a bounded child with no application environment or temporary plaintext fallback', function (): void {
     $result = app(StatementTextExtractor::class)->extract(StatementFixture::pdf(), 'application/pdf');

@@ -7,6 +7,8 @@ namespace Tests\Support;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\StartAuditReport;
 use App\Models\AuditReport;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Support\Str;
 use RuntimeException;
 

@@ -13,6 +13,8 @@ use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
 use App\Models\AuditStepUpProof;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -20,8 +22,6 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

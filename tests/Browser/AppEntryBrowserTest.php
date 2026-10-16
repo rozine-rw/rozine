@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Str;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\TestCase;
 

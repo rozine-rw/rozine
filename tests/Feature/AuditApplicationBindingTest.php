@@ -15,12 +15,12 @@ use App\Models\BusinessApplicationVersion;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as Fixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessQuoteFixture as Fixture;
 
 /** @param array<string, mixed> $fixture
  * @return array<string, mixed>

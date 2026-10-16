@@ -7,10 +7,10 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

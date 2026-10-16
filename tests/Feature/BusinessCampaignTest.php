@@ -6,10 +6,10 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessCreditFactsFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

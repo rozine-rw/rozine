@@ -28,6 +28,7 @@ use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
 use App\Notifications\Investor\RaiseExpired;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Mockery\CompositeExpectation;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 

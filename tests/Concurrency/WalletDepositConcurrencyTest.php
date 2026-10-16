@@ -17,11 +17,11 @@ use App\Models\LedgerLine;
 use App\Models\WalletDepositCredit;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletProviderEvent;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 
 /**

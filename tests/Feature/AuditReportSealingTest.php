@@ -16,13 +16,13 @@ use App\Models\AuditSigningKey;
 use App\Models\AuditSigningKeyRevocation;
 use App\Models\AuditStepUpProof;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditLedgerFixture;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

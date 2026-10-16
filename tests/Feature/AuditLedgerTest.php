@@ -14,11 +14,11 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\BusinessQuoteFixture as Fixture;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\BusinessQuoteFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

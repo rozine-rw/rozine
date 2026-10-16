@@ -11,9 +11,9 @@ use App\Models\AuditPublicationEvent;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSignature;
 use App\Models\AuditSigningKeyRevocation;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

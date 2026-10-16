@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
 
 use function Pest\Laravel\actingAs;
 

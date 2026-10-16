@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Auditor\AuditSourceFacts;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
 
 function auditSourceFactsNow(): DateTimeImmutable
 {

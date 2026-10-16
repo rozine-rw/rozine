@@ -9,13 +9,13 @@ use App\Models\BusinessCampaign;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture as QuoteFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
-use Tests\Support\BusinessQuoteFixture as QuoteFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 

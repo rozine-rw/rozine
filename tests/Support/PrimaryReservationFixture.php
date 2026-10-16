@@ -21,6 +21,7 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Brick\Math\BigInteger;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Str;
 
 /** Synthetic admission is deliberately explicit; it is not production eligibility or fee policy. */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Evidence\StatementAuditReview;
 use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\StatementFixture;
+use Database\Factories\Scenarios\StatementFixture;
 
 it('verifies reconciled source observations without adding a credit decision or report approval', function (): void {
     $input = StatementFixture::reconciliation();

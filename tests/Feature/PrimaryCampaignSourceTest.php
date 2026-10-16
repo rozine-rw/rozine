@@ -14,10 +14,10 @@ use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessCreditFactsFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

@@ -27,7 +27,7 @@ The scheduler runs `audits:advance-offers` and `statements:extract` every minute
 
 Rerunning preserves all accounts, passwords, workflow progress and existing records. It does not reset, truncate or re-date evidence. Keep the manifest with its database. If the manifest is stale, missing while reserved accounts remain, or the database already has unrelated consent/engagement releases, the command refuses to overwrite them. Use a separate clean local installation for a fresh pack; do not run `migrate:fresh` against a database you want to retain. Pending deadlines and credential/evidence freshness continue to follow real time.
 
-The pack requires Composer development dependencies and `Tests\Support` scenario builders. It runs the same application actions used by the acceptance tests. Local environments allow loopback PostgreSQL databases named `rozine`, `rozine_manual` or `rozine_test`; testing is restricted to `rozine_test`. UAT, demo and production are refused. Tests use the dedicated `rozine_test` database, never the manual-testing database.
+The pack's scenario builders ship in `Database\Factories\Scenarios`, so it loads under the deployed `composer install --no-dev` and needs no Faker or test classes. It runs the same application actions used by the acceptance tests. Local environments allow loopback PostgreSQL databases named `rozine`, `rozine_manual` or `rozine_test`; testing is restricted to `rozine_test`. UAT, demo and production are refused. Tests use the dedicated `rozine_test` database, never the manual-testing database.
 
 ## Logins
 

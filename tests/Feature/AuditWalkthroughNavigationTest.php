@@ -7,15 +7,15 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditSealingFixture as Fixture;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

@@ -24,10 +24,10 @@ use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Models\WalletWithdrawal;
 use App\Models\WalletWithdrawalEvent;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 

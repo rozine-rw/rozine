@@ -6,7 +6,7 @@ use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\AuditorFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 
 /** Independent WGS84 reference distances: geographiclib/geographiclib-python, test/test_geodesic.py. */
 it('bounds independent inverse geodesic vectors in both directions', function (string $latitude, string $longitude, string $otherLatitude, string $otherLongitude, float $reference): void {

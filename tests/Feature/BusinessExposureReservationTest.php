@@ -10,11 +10,11 @@ use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessExposureReservation;
 use App\Models\BusinessProfile;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessQuoteFixture;
 
 it('reserves full accepted principal only at the final required signature and replays one effect', function (): void {
     $fixture = BusinessQuoteFixture::ready(2);

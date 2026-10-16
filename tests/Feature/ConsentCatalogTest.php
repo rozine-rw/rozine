@@ -8,10 +8,10 @@ use App\Application\Identity\WithCurrentConsent;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Models\ConsentRelease;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\ConsentFixture;
 
 it('has no implied approved terms before a consent release is recorded', function (): void {
     expect(app(WithCurrentConsent::class)->handle(fn (?array $release): ?array => $release))->toBeNull();

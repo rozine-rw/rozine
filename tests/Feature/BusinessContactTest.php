@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Models\BusinessContactVersion;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 
 /*
  * The Profile's "Company information" (Business.dc.html L1726–1743): a mandate holder with

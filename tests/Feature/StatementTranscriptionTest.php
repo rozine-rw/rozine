@@ -9,13 +9,13 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\CommandOperation;
 use App\Models\StatementEvidence;
 use App\Models\StatementTranscription;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\StatementFixture;
 
 it('requires original evidence before recording and leaves empty reads side effect free', function (): void {
     $fixture = BusinessApplicationFixture::make();

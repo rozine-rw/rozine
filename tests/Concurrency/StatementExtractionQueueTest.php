@@ -10,11 +10,11 @@ use App\Application\Evidence\IngestStatement;
 use App\Domain\Evidence\StatementSource;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\StatementFixture;
 
 it('processes a committed original once and keeps the recorded ingestion receipt immutable', function (): void {
     $fixture = BusinessApplicationFixture::make();

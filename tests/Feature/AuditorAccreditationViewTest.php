@@ -12,8 +12,8 @@ use App\Models\AuditorProfile;
 use App\Models\AuditorProfileVersion;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Str;
-use Tests\Support\AuditorFixture;
 
 beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-24T21:59:59Z'));

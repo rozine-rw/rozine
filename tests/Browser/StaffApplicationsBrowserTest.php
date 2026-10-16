@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessCampaign;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\BrowserJourney;
 use Tests\TestCase;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Business\ApplicationEvidence;
 use App\Domain\Underwriting\CashFlowEvidence;
-use Tests\Support\UnderwritingEvidenceFixture as Fixture;
+use Database\Factories\Scenarios\UnderwritingEvidenceFixture as Fixture;
 
 /**
  * @param  array<string, mixed>  $overrides

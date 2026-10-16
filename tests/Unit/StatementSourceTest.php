@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Evidence\StatementSource;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\StatementFixture;
+use Database\Factories\Scenarios\StatementFixture;
 
 it('describes the exact original bytes without trusting an upload content type', function (): void {
     $source = new StatementSource;

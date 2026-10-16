@@ -6,10 +6,10 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 it('isolates a failure at the outer PostgreSQL commit and retains later campaign progress across reconnect', function (): void {

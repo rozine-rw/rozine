@@ -580,3 +580,9 @@ arch('the authenticated issued port has only its named producer verifier and sch
     ->expect('App\Application\Primary\Contracts\IssuedHoldingEvidence')
     ->toOnlyBeUsedIn(['App\Providers', 'App\Infrastructure\Primary\RetainedPrimaryIssuance',
         'App\Infrastructure\Primary\RetainedIssuedHoldings', 'App\Application\Primary\GetRetainedNoteSchedule']);
+
+arch('the staging seed pack loads under the deployed composer install --no-dev autoloader')
+    ->expect(['Database\Seeders', 'Database\Factories\Scenarios', 'Database\Factories\UserFactory', 'Database\Factories\PartyFactory',
+        'Database\Factories\RoleMembershipFactory', 'Database\Factories\VerifiedPersonIdentityFactory', 'Database\Factories\VerifiedOrganizationIdentityFactory',
+        'Database\Factories\BusinessProfileFactory', 'Database\Factories\AuditAssignmentFactory', 'Database\Factories\AuditSigningKeyFactory'])
+    ->not->toUse(['Tests', 'Faker', 'fake', 'Mockery', 'Pest']);

@@ -9,13 +9,13 @@ use App\Models\AuditReportSeal;
 use App\Models\AuditStepUpProof;
 use App\Models\CommandOperation;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\AuditSourceFactsFixture;
 use Tests\Support\BrowserJourney;
-use Tests\Support\BusinessAuthorityFixture;
 use Tests\TestCase;
 
 /*

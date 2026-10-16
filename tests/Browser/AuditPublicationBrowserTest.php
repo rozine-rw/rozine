@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSignature;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use PragmaRX\Google2FA\Google2FA;
 use Symfony\Component\Process\Process;
-use Tests\Support\AuditSealingFixture;
 use Tests\TestCase;
 
 uses(TestCase::class, DatabaseTruncation::class);

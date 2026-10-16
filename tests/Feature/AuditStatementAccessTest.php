@@ -21,13 +21,13 @@ use App\Models\BusinessMandate;
 use App\Models\IdentityOperator;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
+use Database\Factories\Scenarios\AuditAssignmentFixture as Fixture;
+use Database\Factories\Scenarios\AuditorFixture;
+use Database\Factories\Scenarios\AuditorIndependenceFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture as Fixture;
-use Tests\Support\AuditorFixture;
-use Tests\Support\AuditorIndependenceFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\StatementFixture;
 
 it('requires an accepted assignment and leaves missing audit evidence explicitly unavailable', function (): void {
     $this->freezeSecond();

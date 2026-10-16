@@ -12,14 +12,14 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\AuditSourceSnapshot;
 use App\Models\CommandOperation;
 use App\Models\RoleMembership;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture as Fixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditSourceFactsFixture as Fixture;
 
 /**
  * @param  array<string, mixed>  $fixture

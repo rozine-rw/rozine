@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use App\Models\AuditDisputeProof;
 use App\Models\AuditReportPublication;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

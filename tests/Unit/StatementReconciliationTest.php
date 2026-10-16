@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\StatementFixture;
+use Database\Factories\Scenarios\StatementFixture;
 
 it('reconciles all rails without counting financing or transfers as revenue or double deducting draws and debt', function (): void {
     $fixture = StatementFixture::reconciliation();

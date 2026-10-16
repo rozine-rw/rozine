@@ -5,13 +5,13 @@ declare(strict_types=1);
 use App\Application\Auditor\RecordIsolatedAuditSourceFacts;
 use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 use Symfony\Component\Process\Process;
-use Tests\Support\AuditSourceFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
 use Tests\TestCase;
 
 uses(TestCase::class, DatabaseTruncation::class);

@@ -16,13 +16,13 @@ use App\Models\StatementEvidence;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\User;
+use Database\Factories\Scenarios\BusinessApplicationFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessApplicationFixture;
-use Tests\Support\BusinessAuthorityFixture;
-use Tests\Support\StatementFixture;
 
 it('starts with missing evidence without inventing observations or mutating state on read', function (): void {
     $fixture = BusinessApplicationFixture::make();

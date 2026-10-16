@@ -7,12 +7,12 @@ use App\Models\AuditEngagementRelease;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditEngagementFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditEngagementFixture;
-use Tests\Support\AuditorFixture;
 
 beforeEach(function (): void {
     $this->withoutVite();

@@ -11,13 +11,13 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorIndependenceVersion;
 use App\Models\CommandOperation;
+use Database\Factories\Scenarios\AuditorIndependenceFixture as Independence;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Tests\Support\AuditorIndependenceFixture as Independence;
-use Tests\Support\BusinessAuthorityFixture;
 
 beforeEach(function (): void {
     $this->freezeTime();

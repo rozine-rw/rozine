@@ -13,10 +13,10 @@ use App\Models\DepositPolicy;
 use App\Models\LedgerAccount;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
+use Database\Factories\Scenarios\BusinessAuthorityFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Support\BusinessAuthorityFixture;
 
 /** Runs the change in its own savepoint and fires deferred checks, as a commit would. */
 function businessRepaymentRejects(Closure $change, string $message): void

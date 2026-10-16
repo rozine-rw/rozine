@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessExposureReservation;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessCreditFactsFixture;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessCreditFactsFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();

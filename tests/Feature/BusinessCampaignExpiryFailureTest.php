@@ -13,6 +13,7 @@ use App\Models\BusinessCampaignClosure;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Database\Factories\Scenarios\AuditSealingFixture;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -20,7 +21,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 

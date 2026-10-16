@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Models\AuditReportPublication;
 use App\Models\BusinessProfile;
 use App\Models\PartyNotice;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
-use Tests\Support\AuditSealingFixture as Fixture;
 
 /*
  * The Business's audit-report notices (BRS v2.0 NTF-R01): a sealed report awaiting its approval,

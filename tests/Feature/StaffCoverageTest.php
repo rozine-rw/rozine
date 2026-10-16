@@ -7,10 +7,10 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Resources\StaffCoverageResource;
 use App\Models\BusinessProfile;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
 
 /*
  * Partner coverage (MVP-ADMIN-SCR-07) from live records: each district a Business operates in,

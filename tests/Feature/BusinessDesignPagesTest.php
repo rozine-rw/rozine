@@ -12,9 +12,9 @@ use App\Models\BusinessFundingMethod;
 use App\Models\Party;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\BusinessAuthorityFixture as AuthorityFixture;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 /*

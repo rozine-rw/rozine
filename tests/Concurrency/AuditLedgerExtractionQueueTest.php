@@ -10,11 +10,11 @@ use App\Application\Evidence\Contracts\StatementTextExtractor;
 use App\Application\Evidence\GetAuditStatementVerification;
 use App\Models\AuditLedgerExtraction;
 use App\Models\AuditLedgerOriginal;
+use Database\Factories\Scenarios\StatementFixture;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\AuditLedgerFixture;
-use Tests\Support\StatementFixture;
 
 it('extracts committed report originals without changing a receipt or Business verification', function (): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();

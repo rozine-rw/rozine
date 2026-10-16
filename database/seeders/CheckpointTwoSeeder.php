@@ -7,6 +7,10 @@ namespace Database\Seeders;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditSealingFixture;
+use Database\Factories\Scenarios\AuditSourceFactsFixture;
+use Database\Factories\Scenarios\BusinessQuoteFixture;
+use Database\Factories\Scenarios\ConsentFixture;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,15 +18,12 @@ use Illuminate\Support\Facades\Validator;
 use JsonException;
 use LogicException;
 use PragmaRX\Google2FA\Google2FA;
-use Tests\Support\AuditSealingFixture;
-use Tests\Support\AuditSourceFactsFixture;
-use Tests\Support\BusinessQuoteFixture;
-use Tests\Support\ConsentFixture;
 
 /**
  * Opt-in development data. Reuses the acceptance scenarios and their real
- * application actions; requires Composer's development autoloader. Also runs on
- * staging's own database once its owner-approved seed switch is on.
+ * application actions through the shipped Database\Factories\Scenarios builders,
+ * so it runs without Composer's development packages. Also runs on staging's own
+ * database once its owner-approved seed switch is on.
  *
  * @phpstan-type Account array{id: int, label: string, email: string, mfa: bool}
  * @phpstan-type Scenario array{business: string, application: string, assignment: string, report: string|null, business_path: string, auditor_path: string, operations_path: string, report_path: string|null}

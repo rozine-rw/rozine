@@ -7,10 +7,10 @@ use App\Application\Primary\Contracts\BusinessHolders;
 use App\Models\AuditReportPublication;
 use App\Models\PartyNotice;
 use App\Notifications\Investor\ReportPublished;
+use Database\Factories\Scenarios\AuditSealingFixture as Fixture;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-use Tests\Support\AuditSealingFixture as Fixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
 

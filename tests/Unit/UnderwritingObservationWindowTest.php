@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Domain\Underwriting\CashFlowEvidence;
 use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Domain\Underwriting\UnderwritingViolation;
-use Tests\Support\UnderwritingEvidenceFixture as Fixture;
+use Database\Factories\Scenarios\UnderwritingEvidenceFixture as Fixture;
 
 it('selects the latest complete baseline or repeat window without consuming partial months', function (bool $repeat, int $count, string $first): void {
     $months = [...Fixture::months(42), [...Fixture::months(1)[0], 'month' => '2026-09'], [...Fixture::months(1)[0], 'month' => '2026-10']];

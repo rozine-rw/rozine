@@ -11,12 +11,12 @@ use App\Notifications\Auditor\AccreditationDecided;
 use App\Notifications\Auditor\AuditJobType;
 use App\Notifications\Auditor\JobOffered;
 use Carbon\CarbonImmutable;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditorFixture;
 
 /*
  * The notices behind the Auditor bell (BRS v2.0 NTF-R01): the verification desk's accreditation

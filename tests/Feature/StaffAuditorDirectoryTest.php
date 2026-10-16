@@ -12,12 +12,12 @@ use App\Models\AuditorProfile;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
+use Database\Factories\Scenarios\AuditAssignmentFixture;
+use Database\Factories\Scenarios\AuditorFixture;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
-use Tests\Support\AuditAssignmentFixture;
-use Tests\Support\AuditorFixture;
 
 beforeEach(function (): void {
     $this->officer = auditorDirectoryStaff(['compliance']);
