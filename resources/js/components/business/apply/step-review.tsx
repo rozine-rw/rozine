@@ -679,7 +679,7 @@ export function StepReview({
                                 errors.signature_name !== undefined || undefined
                             }
                             aria-describedby="signature-help signature-error"
-                            className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                            className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
                         />
                         <p
                             id="signature-help"
