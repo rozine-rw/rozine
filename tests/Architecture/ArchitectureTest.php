@@ -210,7 +210,15 @@ arch('infrastructure concretions are reached through their container binding')
         'App\Infrastructure\Primary\RetainedPrimaryReservation', 'App\Infrastructure\Primary\RetainedHeldClaimRelease',
         'App\Infrastructure\Primary\RetainedPrimaryIssuance', 'App\Infrastructure\Primary\RetainedIssuedHoldings',
         'App\Infrastructure\Primary\RetainedFundedClosing', 'App\Infrastructure\Primary\PrimaryIssuancePayload',
-        'App\Infrastructure\Wallet\RetainedPrimaryIssueCash']);
+        'App\Infrastructure\Wallet\RetainedPrimaryIssueCash', 'App\Infrastructure\Business\RetainedStaffUnderwritingBasis']);
+
+arch('retained underwriting evidence is private to the authorized staff application queue')
+    ->expect('App\Infrastructure\Business\RetainedStaffUnderwritingBasis')
+    ->toOnlyBeUsedIn('App\Infrastructure\Business\EloquentStaffApplicationQueue');
+
+arch('the retained staff underwriting projection keeps collaborators behind contracts')
+    ->expect('App\Infrastructure\Business\RetainedStaffUnderwritingBasis')
+    ->not->toUse('App\Infrastructure');
 
 arch('campaign progress is private to the Business campaign page and the Investor deals')
     ->expect('App\Infrastructure\Business\CampaignProgress')
