@@ -7,6 +7,135 @@ use SebastianBergmann\CodeCoverage\Serialization\Unserializer;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
+it('records passes only from the controlling runner while preserving fork failures', function (): void {
+    $root = dirname(__DIR__, 2);
+    $temporary = sys_get_temp_dir().'/rozine-shard-origin-'.bin2hex(random_bytes(8));
+    $files = new Filesystem;
+    $files->makeDirectory($temporary, 0700, true);
+    file_put_contents($temporary.'/ForkOriginTest.php', <<<'PHP'
+<?php
+class ForkOriginTest extends PHPUnit\Framework\TestCase
+{
+    public function testFork(): void
+    {
+        $pid = pcntl_fork();
+        self::assertNotSame(-1, $pid);
+        if ($pid === 0) {
+            if (getenv('SHARD_FIXTURE_CHILD_FAILURE') === '1') {
+                self::fail('Planted child failure.');
+            }
+            exit(0);
+        }
+        pcntl_waitpid($pid, $status);
+        self::assertTrue(pcntl_wifexited($status));
+        self::assertSame(0, pcntl_wexitstatus($status), 'Parent retains child failure.');
+    }
+    public function testAfterOne(): void { self::assertTrue(true); }
+    public function testAfterTwo(): void { self::assertTrue(true); }
+}
+PHP);
+    try {
+        foreach ([false, true] as $childFails) {
+            $destination = $temporary.'/executed.jsonl';
+            $process = new Process(['php', $root.'/vendor/bin/phpunit', '--no-configuration',
+                '--bootstrap', $root.'/scripts/quality/php-shard-bootstrap.php', $temporary.'/ForkOriginTest.php'], $root,
+                ['PHP_SHARD_TEST_IDS' => $destination, 'PHP_SHARD_CATALOG' => false, 'SHARD_FIXTURE_CHILD_FAILURE' => $childFails ? '1' : '0']);
+            $process->setTimeout(30)->run();
+            $records = file($destination, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if ($records === false) {
+                throw new RuntimeException('Cannot read fork evidence.');
+            }
+            $ids = array_map(fn (string $line): string => base64_decode(json_decode($line, true, flags: JSON_THROW_ON_ERROR)['id'], true)
+                ?: throw new RuntimeException('Invalid fork evidence identity.'), $records);
+            expect($process->getExitCode())->toBe($childFails ? 1 : 0)
+                ->and($ids)->toBe($childFails
+                    ? ['ForkOriginTest::testAfterOne', 'ForkOriginTest::testAfterTwo']
+                    : ['ForkOriginTest::testFork', 'ForkOriginTest::testAfterOne', 'ForkOriginTest::testAfterTwo']);
+            if ($childFails) {
+                expect($process->getOutput())->toContain('Parent retains child failure.');
+            }
+        }
+    } finally {
+        $files->deleteDirectory($temporary);
+    }
+});
+
+it('keeps native time-balanced partitions deterministic and complete as classes change', function (): void {
+    $root = dirname(__DIR__, 2);
+    $temporary = sys_get_temp_dir().'/rozine-shard-balance-'.bin2hex(random_bytes(8));
+    $testDirectory = str_repeat('../', substr_count(trim($root, '/'), '/') + 1).ltrim($temporary.'/tests', '/');
+    $files = new Filesystem;
+    $files->makeDirectory($temporary.'/tests/.pest', 0700, true);
+    file_put_contents($temporary.'/phpunit.xml', '<phpunit><testsuites><testsuite name="fixture"><directory>tests</directory></testsuite></testsuites></phpunit>');
+    $addClass = function (int $index) use ($temporary): void {
+        file_put_contents($temporary.'/tests/Balance'.$index.'Test.php', '<?php
+namespace ShardFixtures;
+class Balance'.$index.'Test extends \\PHPUnit\\Framework\\TestCase {
+    public function testFirst(): void { self::assertTrue(true); }
+    public function testSecond(): void { self::assertTrue(true); }
+}');
+    };
+    foreach (range(1, 6) as $index) {
+        $addClass($index);
+    }
+    $timings = ['ShardFixtures\\Balance1Test' => 40.0, 'ShardFixtures\\Balance2Test' => 20.0,
+        'ShardFixtures\\Balance3Test' => 10.0, 'ShardFixtures\\Balance4Test' => 8.0, 'ShardFixtures\\Balance5Test' => 5.0];
+    $catalog = function (?int $shard = null) use ($root, $temporary, $testDirectory): array {
+        $destination = $temporary.'/catalog.json';
+        $process = new Process(['php', $root.'/vendor/bin/pest', '--configuration', $temporary.'/phpunit.xml',
+            '--test-directory='.$testDirectory,
+            '--bootstrap', $root.'/scripts/quality/php-shard-bootstrap.php', '--ci', '--no-tia',
+            ...($shard === null ? ['--list-tests'] : ['--shard='.$shard.'/4'])], $root,
+            ['PHP_SHARD_TEST_IDS' => $shard === null ? false : $destination, 'PHP_SHARD_CATALOG' => $shard === null ? $destination : false]);
+        $process->setTimeout(30)->mustRun();
+
+        if ($shard === null) {
+            $contents = file_get_contents($destination);
+            if ($contents === false) {
+                throw new RuntimeException('Cannot read the fixture catalog.');
+            }
+
+            return json_decode($contents, true, flags: JSON_THROW_ON_ERROR);
+        }
+        $records = file($destination, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if ($records === false) {
+            throw new RuntimeException('Cannot read the fixture execution.');
+        }
+
+        return array_map(fn (string $line): string => json_decode($line, true, flags: JSON_THROW_ON_ERROR)['id'], $records);
+    };
+    try {
+        foreach ([false, true] as $changedClasses) {
+            if ($changedClasses) {
+                $addClass(7);
+                unset($timings['ShardFixtures\\Balance2Test']);
+            }
+            file_put_contents($temporary.'/tests/.pest/shards.json', json_encode(['timings' => $timings], JSON_THROW_ON_ERROR));
+            $expected = $catalog();
+            expect($expected)->toHaveCount($changedClasses ? 14 : 12);
+            $previous = null;
+            foreach (range(1, 2) as $attempt) {
+                $partitions = array_map(fn (int $shard): array => $catalog($shard), range(1, 4));
+                foreach ($partitions as $partition) {
+                    expect($partition)->toBe(array_values(array_intersect($expected, $partition)));
+                }
+                $actual = array_merge(...$partitions);
+                expect(count(array_unique($actual)))->toBe(count($expected));
+                sort($actual);
+                $sortedExpected = $expected;
+                sort($sortedExpected);
+                expect($actual)->toBe($sortedExpected);
+                if ($previous !== null) {
+                    expect($partitions)->toBe($previous);
+                }
+                $previous = $partitions;
+            }
+        }
+    } finally {
+        $files->deleteDirectory($temporary);
+    }
+});
+
 it('merges native coverage only after every test and shard is accounted for', function (): void {
     $root = dirname(__DIR__, 2);
     $temporary = sys_get_temp_dir().'/rozine-shards-'.bin2hex(random_bytes(8));
