@@ -1,0 +1,229 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Business;
+
+use App\Application\Business\Contracts\BusinessAuthorityStore;
+use App\Application\Identity\AuthorizeEntityRole;
+use App\Application\Identity\AuthorizeStaffPermission;
+use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\WithVerifiedParties;
+use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Business\MandateAuthority;
+use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\OperationResult;
+use App\Models\BusinessMandate;
+use App\Models\BusinessProfile;
+use Closure;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+/**
+ * @phpstan-import-type Profile from MandateAuthority
+ * @phpstan-import-type Terms from MandateAuthority
+ * @phpstan-import-type Business from BusinessAuthorityStore
+ * @phpstan-import-type AuditContext from BusinessAuthorityStore
+ * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
+ */
+final class EloquentBusinessAuthorityStore implements BusinessAuthorityStore
+{
+    public function __construct(
+        private AuthorizeStaffPermission $staff,
+        private AuthorizeEntityRole $roles,
+        private IdentityRepository $identities,
+        private IdentityAccessStore $auditAccess,
+        private WithVerifiedParties $verifiedParties,
+        private MandateAuthority $authority,
+        private OperationJournal $journal,
+    ) {}
+
+    /** @return array{ids: list<string>, next_cursor: string|null} */
+    public function discover(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array
+    {
+        if ($limit < 1 || $limit > 50 || ($before !== null && ! Str::isUlid($before))) {
+            throw new CommandRejection('APPLICATION_PAGE_INVALID', 422);
+        }
+
+        return $this->auditAccess->withActiveRole($userId, 'business', null, $contextRevision, function (array $identity) use ($before, $limit): array {
+            $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+            $query = BusinessProfile::query()->join('business_mandates', 'business_mandates.business_id', '=', 'business_profiles.id')
+                ->whereColumn('business_mandates.version', 'business_profiles.mandate_version')
+                ->whereJsonContains('business_mandates.terms->people', [['party_id' => $identity['party']['id'], 'permissions' => ['business.view']]])
+                ->where('business_mandates.terms->status', 'active')->where('business_mandates.terms->effective_at', '<=', $now)
+                ->whereRaw("(business_mandates.terms->>'expires_at' IS NULL OR business_mandates.terms->>'expires_at' > ?)", [$now]);
+            if ($before !== null) {
+                $query->where('business_profiles.id', '<', strtolower($before));
+            }
+            $ids = $query->orderByDesc('business_profiles.id')->limit($limit + 1)->pluck('business_profiles.id')->all();
+            $hasMore = count($ids) > $limit;
+            if ($hasMore) {
+                array_pop($ids);
+            }
+
+            return ['ids' => array_values($ids), 'next_cursor' => $hasMore ? $ids[count($ids) - 1] : null];
+        });
+    }
+
+    /**
+     * @param  Profile  $profile
+     * @param  Terms  $terms
+     * @return array<string, mixed>
+     */
+    public function configure(int $actorId, string $entityKind, string $entityPartyId, array $profile, array $terms, int $expectedRevision, string $evidenceReference, string $reason, string $requestId): array
+    {
+        $profile = $this->authority->profile($entityKind, $profile, now()->year);
+        $terms = $this->authority->normalize($entityKind, $entityPartyId, $terms);
+        if ($expectedRevision < 0 || trim($evidenceReference) === '' || mb_strlen($evidenceReference) > 255 || trim($reason) === '' || mb_strlen($reason) > 2000) {
+            throw new CommandRejection('MANDATE_EVIDENCE_REQUIRED', 422);
+        }
+
+        return DB::transaction(function () use ($actorId, $entityKind, $entityPartyId, $profile, $terms, $expectedRevision, $evidenceReference, $reason, $requestId): array {
+            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['business-entity:'.$entityPartyId]);
+            $business = BusinessProfile::query()->where('entity_party_id', $entityPartyId)->lockForUpdate()->first();
+
+            return $this->journal->execute('staff:'.$actorId, $actorId, 'business.authority.configure', $requestId, 'business.entity', $entityPartyId,
+                ['entity_kind' => $entityKind, 'profile' => $profile, 'terms' => $terms, 'expected_revision' => $expectedRevision,
+                    'evidence_reference' => $evidenceReference, 'reason' => $reason],
+                function (string $type, string $id) use ($actorId, $entityKind, $profile, $terms): void {
+                    $this->staff->handle($actorId, 'businesses.verify', function () use ($entityKind, $id, $profile, $terms): void {
+                        if ($terms['status'] === 'active') {
+                            $this->verifiedParties->handle($entityKind, $id, array_column($terms['people'], 'party_id'), fn (): bool => true,
+                                $profile['company_code'] === null ? null : 'RDB:'.$profile['company_code']);
+                        }
+                    });
+                }, function () use ($business, $actorId, $entityKind, $entityPartyId, $profile, $terms, $expectedRevision, $evidenceReference, $reason): OperationResult {
+                    if (($business->revision ?? 0) !== $expectedRevision) {
+                        throw new CommandRejection('VERSION_CONFLICT', 409, $business->revision ?? 0);
+                    }
+                    if (($business === null && $terms['status'] === 'revoked') || ($business !== null && $business->entity_kind !== $entityKind)) {
+                        throw new CommandRejection('MANDATE_REQUIRED', 403);
+                    }
+                    $record = $business ?? new BusinessProfile;
+                    $version = ($business->mandate_version ?? 0) + 1;
+                    $record->forceFill(['entity_party_id' => $entityPartyId, 'entity_kind' => $entityKind, 'profile' => $profile,
+                        'revision' => $expectedRevision + 1, 'mandate_version' => $version])->save();
+                    (new BusinessMandate)->forceFill(['business_id' => $record->id, 'version' => $version, 'terms' => $terms, 'profile' => $profile,
+                        'actor_user_id' => $actorId, 'evidence_reference' => $evidenceReference, 'reason' => $reason,
+                        'policy_version' => 'engineering-2026-09-23.4'])->save();
+
+                    return new OperationResult('BUSINESS_AUTHORITY_RECORDED', ['business' => [
+                        'id' => $record->id, 'revision' => $record->revision, 'mandate_version' => $version,
+                    ]], $record->revision, ['businesses.view', 'businesses.verify']);
+                });
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business, AccessSnapshot): TResult  $operation
+     * @param  list<string>  $additionalPartyIds
+     * @return TResult
+     */
+    public function withAuthority(int $userId, int $contextRevision, string $businessId, string $permission, ?int $mandateVersion, Closure $operation, array $additionalPartyIds = []): mixed
+    {
+        return DB::transaction(function () use ($userId, $contextRevision, $businessId, $permission, $mandateVersion, $operation, $additionalPartyIds): mixed {
+            $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
+            $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
+            $actor = $this->identities->forUser($userId)['party']['id'] ?? null;
+            $people = $mandate?->terms['people'] ?? [];
+            $visible = array_filter($people, fn (array $person): bool => $person['party_id'] === $actor && in_array('business.view', $person['permissions'], true));
+            if ($business === null || $mandate === null || $visible === []) {
+                throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+            }
+            $terms = $mandate->terms;
+            $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+            if ($terms['status'] !== 'active' || $terms['effective_at'] > $now || ($terms['expires_at'] !== null && $terms['expires_at'] <= $now)) {
+                throw new CommandRejection('MANDATE_REQUIRED', 403);
+            }
+
+            return $this->roles->handle($userId, 'business', $contextRevision, $business->entity_kind, $business->entity_party_id,
+                array_column($people, 'party_id'), function (array $identity) use ($business, $terms, $people, $permission, $mandateVersion, $operation): mixed {
+                    $this->authority->requirePermission($people, $identity['party']['id'] ?? '', $permission);
+                    if ($mandateVersion !== null && $mandateVersion !== $business->mandate_version) {
+                        throw new CommandRejection('MANDATE_STALE', 409, $business->revision);
+                    }
+
+                    return $operation(['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
+                        'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms], $identity);
+                }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code'], $additionalPartyIds);
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(Business): TResult  $operation
+     * @return TResult
+     */
+    public function withReview(int $actorId, string $businessId, bool $requireVerified, Closure $operation, array $additionalPersonPartyIds = []): mixed
+    {
+        return DB::transaction(function () use ($actorId, $businessId, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
+            $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
+
+            return $this->staff->handle($actorId, 'businesses.verify', function () use ($business, $requireVerified, $operation, $additionalPersonPartyIds): mixed {
+                $mandate = $business === null ? null : BusinessMandate::query()->where('business_id', $business->id)->where('version', $business->mandate_version)->first();
+                if ($business === null || $mandate === null) {
+                    throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+                }
+                $terms = $mandate->terms;
+                $record = ['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
+                    'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms];
+                if (! $requireVerified) {
+                    return $operation($record);
+                }
+                $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+                if ($terms['status'] !== 'active' || $terms['effective_at'] > $now || ($terms['expires_at'] !== null && $terms['expires_at'] <= $now)) {
+                    throw new CommandRejection('MANDATE_REQUIRED', 403);
+                }
+
+                return $this->verifiedParties->handle($business->entity_kind, $business->entity_party_id, array_values(array_unique([...array_column($terms['people'], 'party_id'), ...$additionalPersonPartyIds])),
+                    fn (): mixed => $operation($record), $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
+            });
+        }, 3);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  list<string>  $candidateIds
+     * @param  Closure(AuditContext): TResult  $operation
+     * @return TResult
+     */
+    public function withAudit(?int $userId, ?int $contextRevision, string $businessId, array $candidateIds, bool $requireVerified, Closure $operation): mixed
+    {
+        return DB::transaction(function () use ($userId, $contextRevision, $businessId, $candidateIds, $requireVerified, $operation): mixed {
+            $business = BusinessProfile::query()->lockForUpdate()->find($businessId);
+            $mandates = BusinessMandate::query()->where('business_id', $businessId)->orderBy('version')->get();
+            $mandate = $mandates->firstWhere('version', $business?->mandate_version);
+            if ($business === null || $mandate === null) {
+                throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+            }
+            $terms = $mandate->terms;
+            $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+            $current = $terms['status'] === 'active' && $terms['effective_at'] <= $now && ($terms['expires_at'] === null || $terms['expires_at'] > $now);
+            $ties = [];
+            foreach ($mandates as $index => $version) {
+                $next = $mandates->get($index + 1);
+                $ended = $next === null ? $now : max($next->terms['effective_at'], $next->created_at->utc()->format('Y-m-d\TH:i:s\Z'));
+                foreach ($version->terms['people'] as $person) {
+                    $ties[$person['party_id']] = ['current' => $version->version === $mandate->version && $current, 'ended_at' => $ended];
+                }
+            }
+
+            return $this->auditAccess->withAuditAccess($userId, $contextRevision, $business->entity_kind, $business->entity_party_id,
+                array_column($terms['people'], 'party_id'), $candidateIds, $requireVerified,
+                function (array $eligible, ?string $actorPartyId, bool $verified) use ($business, $terms, $current, $ties, $requireVerified, $operation): mixed {
+                    if ($requireVerified && ! $current) {
+                        throw new CommandRejection('MANDATE_REQUIRED', 403);
+                    }
+
+                    return $operation(['business' => ['id' => $business->id, 'entity_kind' => $business->entity_kind, 'entity_party_id' => $business->entity_party_id,
+                        'profile' => $business->profile, 'revision' => $business->revision, 'mandate_version' => $business->mandate_version, 'mandate' => $terms],
+                        'candidate_ids' => $eligible, 'actor_party_id' => $actorPartyId, 'current' => $current && $verified, 'role_ties' => $ties]);
+                }, $business->profile['company_code'] === null ? null : 'RDB:'.$business->profile['company_code']);
+        }, 3);
+    }
+}

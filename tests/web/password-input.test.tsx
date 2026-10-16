@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import PasswordInput from '@/components/password-input';
 import { renderWithUser } from './helpers/render-with-user';
 

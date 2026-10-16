@@ -1,0 +1,31 @@
+{
+    "component": "business/auth/register",
+    "props": {
+        "lookup": {
+            "company_code": "102938475",
+            "registered_name": "Karongi Freight Ltd",
+            "masked_phone": "+250 788 *** 245",
+            "masked_email": "op***@ka***.rw"
+        },
+        "links": {
+            "login": {
+                "url": "/preview/business-login",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "lookup": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            },
+            "verify": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            },
+            "resend": {
+                "url": "/preview/business-register-matched",
+                "method": "post"
+            }
+        }
+    }
+}

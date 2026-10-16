@@ -1,0 +1,13 @@
+{
+    "component": "audit/verify-seal",
+    "synthetic": true,
+    "props": {
+        "seal": {
+            "report_id": "SYN-RPT-2026-08",
+            "digest": "93ee088c9273fad00ec60eba1c3dcddd9b10bef2cf90f3811fab159e33e039e7",
+            "seal_status": "valid",
+            "amends_id": null,
+            "amended_by": null
+        }
+    }
+}

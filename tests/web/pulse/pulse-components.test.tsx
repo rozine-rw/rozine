@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import {
     AuditIcon,
     CheckIcon,
@@ -321,6 +321,10 @@ describe('Pulse signup controls', () => {
             </SignupFields>,
         );
 
+        expect(screen.getByPlaceholderText('Name')).toHaveAccessibleName();
+        expect(
+            screen.getByRole('textbox', { name: 'Phone number' }),
+        ).toBeInTheDocument();
         await user.type(screen.getByPlaceholderText('Name'), ' A');
         await user.selectOptions(screen.getByLabelText('Province'), 'Kigali');
         await user.selectOptions(screen.getByLabelText('District'), 'Kicukiro');
@@ -368,6 +372,8 @@ describe('Pulse signup controls', () => {
         );
 
         const contact = screen.getByPlaceholderText('you@email.com');
+
+        expect(contact).toHaveAccessibleName('Email address');
 
         expect(contact).not.toHaveAttribute('aria-invalid');
         expect(screen.getByLabelText('District')).toHaveDisplayValue(

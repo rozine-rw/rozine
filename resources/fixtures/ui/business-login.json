@@ -1,0 +1,11 @@
+{
+    "component": "business/auth/login",
+    "props": {
+        "links": {
+            "register": {
+                "url": "/preview/business-register",
+                "method": "get"
+            }
+        }
+    }
+}

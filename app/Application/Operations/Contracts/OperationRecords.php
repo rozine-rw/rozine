@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Operations\Contracts;
+
+/**
+ * Recorded command outcomes for a projection that has already authorized their target. Read
+ * only: it never executes, replays or changes an operation, and returns each result unchanged.
+ *
+ * @phpstan-type OperationRecord array{operation_id: string, request_id: string, result: array<string, mixed>, recorded_at: string}
+ * @phpstan-type OperationAttribution array{operation_id: string, actor_key: string, command: string, recorded_at: string}
+ */
+interface OperationRecords
+{
+    /**
+     * Every operation one actor recorded for one command on one target, oldest first.
+     *
+     * @return list<OperationRecord>
+     */
+    public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array;
+
+    /** The request id an operation was recorded under, or null for an unknown operation. */
+    public function requestOf(string $operationId): ?string;
+
+    /**
+     * Who recorded one operation, by which command and when; null for an unknown operation. It
+     * never returns the operation's request or result.
+     *
+     * @return OperationAttribution|null
+     */
+    public function attribution(string $operationId): ?array;
+}

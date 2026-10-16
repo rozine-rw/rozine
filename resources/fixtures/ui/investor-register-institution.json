@@ -1,0 +1,53 @@
+{
+    "component": "investor/auth/access",
+    "props": {
+        "mode": "register",
+        "pitch": {
+            "rate_min_pct": "10",
+            "rate_max_pct": "15",
+            "term_min_months": 3,
+            "term_max_months": 6,
+            "unit_price": {
+                "currency": "RWF",
+                "amount": "5000"
+            }
+        },
+        "investor_type": "institution",
+        "links": {
+            "login": {
+                "url": "/preview/investor-login",
+                "method": "get"
+            },
+            "register": {
+                "url": "/preview/investor-register",
+                "method": "get"
+            },
+            "individual": {
+                "url": "/preview/investor-sign-up",
+                "method": "get"
+            },
+            "institution": {
+                "url": "/preview/investor-sign-up-institution",
+                "method": "get"
+            },
+            "pick_individual": {
+                "url": "/preview/investor-register",
+                "method": "get"
+            },
+            "pick_institution": {
+                "url": "/preview/investor-register-institution",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "login": {
+                "url": "/preview/investor-deals",
+                "method": "post"
+            },
+            "start": {
+                "url": "/preview/investor-sign-up-address",
+                "method": "post"
+            }
+        }
+    }
+}

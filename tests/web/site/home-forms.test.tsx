@@ -1,6 +1,13 @@
 import { act, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import Home from '@/pages/home';
 
 const mocks = vi.hoisted(() => ({
@@ -17,19 +24,19 @@ vi.mock('@/lib/pass-card-image', () => ({
     downloadPassCard: mocks.download,
 }));
 
-const mountSite = () => {
+const renderSite = () => {
     const ref = createRef<Home>();
-
-    render(<Home ref={ref} />);
-
+    const { unmount } = render(<Home ref={ref} />);
     const instance = ref.current;
 
     if (!instance) {
         throw new Error('The site did not mount.');
     }
 
-    return instance;
+    return { site: instance, leavePage: unmount };
 };
+
+const mountSite = () => renderSite().site;
 
 /** The options object the component hands to the Inertia router. */
 const lastPostOptions = () =>
@@ -287,6 +294,12 @@ describe('a business asking to borrow', () => {
 });
 
 describe('the card a signup can keep', () => {
+    // The saved/failed note clears itself after 2.2s of real time; hold the clock so a slow run
+    // cannot let it expire before the assertion reads it.
+    beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+
     it('hands the investor the card they are looking at', async () => {
         const site = mountSite();
 
@@ -422,6 +435,31 @@ describe('the card a signup can keep', () => {
 
         expect(site.state.B.shareMsg).toBe('');
     });
+
+    it('drops the waiting note when the visitor leaves before it clears', async () => {
+        vi.useFakeTimers();
+
+        const { site, leavePage } = renderSite();
+
+        act(() => {
+            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
+        });
+        await act(async () => {
+            await site.invVals().shareBtns[0].on();
+        });
+
+        expect(site.state.shareMsg).toBe('Card saved to your device');
+
+        leavePage();
+
+        const touchesState = vi.spyOn(site, 'setState');
+
+        act(() => {
+            vi.advanceTimersByTime(2400);
+        });
+
+        expect(touchesState).not.toHaveBeenCalled();
+    });
 });
 
 describe('keeping the glass layer in step with the page', () => {
@@ -479,6 +517,7 @@ describe('keeping the glass layer in step with the page', () => {
 
         expect(remeasure).toHaveBeenCalledTimes(2);
 
+        site.componentWillUnmount();
         delete (window as { ResizeObserver?: unknown }).ResizeObserver;
     });
 });

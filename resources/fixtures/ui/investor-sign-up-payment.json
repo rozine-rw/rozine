@@ -1,0 +1,58 @@
+{
+    "component": "investor/auth/sign-up",
+    "props": {
+        "step": "payment",
+        "draft": {
+            "investor_type": "individual",
+            "first_name": "",
+            "last_name": "",
+            "address": "",
+            "id_type": "national_id",
+            "id_number": "",
+            "company_code": "",
+            "country": "Rwanda",
+            "province": "",
+            "district": "",
+            "sector": "",
+            "cell": "",
+            "email": "",
+            "phone_country": "+250",
+            "phone": "",
+            "secret": "pin",
+            "payment_method": null,
+            "otp_sent": false,
+            "payment_verified": false
+        },
+        "countries": ["Rwanda", "Kenya", "Uganda", "Tanzania"],
+        "documents": {
+            "terms": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "privacy": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            }
+        },
+        "links": {
+            "back": {
+                "url": "/preview/investor-sign-up-security",
+                "method": "get"
+            }
+        },
+        "actions": {
+            "save": {
+                "url": "/preview/investor-sign-up-agree",
+                "method": "post"
+            },
+            "send_otp": {
+                "url": "/preview/investor-sign-up-payment-sent",
+                "method": "post"
+            },
+            "finish": {
+                "url": "/preview/investor-verification",
+                "method": "post"
+            }
+        }
+    }
+}

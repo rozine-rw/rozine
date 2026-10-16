@@ -1,0 +1,652 @@
+{
+  "schemaVersion": 1,
+  "status": "DERIVED FROM INSPECTION 2026-09-07 - AWAITING BRAND OWNER CONFIRMATION",
+  "purpose": "Maps the 31 non-semantic Figma exports to what each one actually depicts, so a brand decision can name an artwork instead of a filename. Identity hashes for the same files are also recorded in brand-source-manifest.json; this file adds meaning, not provenance.",
+  "method": "Colours read from element fills with export artefacts removed; artworks grouped by identical path geometry ignoring colour; depictions confirmed by viewing the matching PNG renders.",
+  "findings": {
+    "distinctArtworks": 8,
+    "totalFiles": 31,
+    "markIsAStar": "Confirmed by inspection. The approved V1.0 brand system describes the mark as the wing, and the live runtime asset is still rozine-wing-white.png. Every frame in this package uses a five-pointed star with a swept lower-left tail. The guide's wing language describes the previous mark.",
+    "crimsonIsNotADesignColour": "#BA0D3B appears 48 times across 18 frames and every occurrence is <circle r=\"0.5\"> on canvases 2796-7545 units wide - roughly one fifteen-thousandth of the width. It is invisible at any rendered size and carries no design meaning. It is Figma export residue, not a brand colour.",
+    "packageColoursDifferFromGuide": "The package uses #0039FF, #1D9E75 and #C2661F where the approved system specifies #0A5CFF, #12A150 and #DD8A00.",
+    "competingPrimaryLockups": "Two lockups exist in full colourway sets: detached leading star, and star integrated at the i. Only one can be the primary."
+  },
+  "artworks": {
+    "rozine-lockup-detached-star": {
+      "label": "Rozine horizontal lockup, detached leading star",
+      "note": "The star leads, set apart from the wordmark.",
+      "frames": [
+        "Frame 83",
+        "Frame 84",
+        "Frame 89",
+        "Frame 92",
+        "Frame 95",
+        "Frame 96",
+        "Frame 101",
+        "Frame 102"
+      ]
+    },
+    "rozine-lockup-integrated-star": {
+      "label": "Rozine wordmark, star integrated at the i",
+      "note": "The star replaces the dot of the i. Same treatment the role wordmarks use.",
+      "frames": [
+        "Frame 85",
+        "Frame 90",
+        "Frame 93",
+        "Frame 97",
+        "Frame 98",
+        "Frame 103",
+        "Frame 104"
+      ]
+    },
+    "rozine-lockup-integrated-star-defective": {
+      "label": "Rozine wordmark, star integrated at the i - DEFECTIVE EXPORT",
+      "note": "Same artwork as the integrated-star lockup but exported unflattened: 19 paths instead of 7, with a stray rectangle left on the e. Not a master. It is also the only blue-on-white export of this lockup, so a clean re-export is needed if this lockup is chosen.",
+      "frames": [
+        "Frame 86"
+      ]
+    },
+    "star-mark": {
+      "label": "Star mark, standalone",
+      "note": "The star alone. Three clear-space crops exist; see clearSpace on each entry.",
+      "frames": [
+        "Frame 87",
+        "Frame 88",
+        "Frame 91",
+        "Frame 94",
+        "Frame 99",
+        "Frame 100",
+        "Frame 105",
+        "Frame 106",
+        "Frame 111",
+        "Frame 112",
+        "Frame 113"
+      ]
+    },
+    "app-icon-gradient": {
+      "label": "App icon, gradient",
+      "note": "Rounded square, blue gradient, pale star. Uses #8594FF and #F5B686, neither of which is in the approved palette, and the guide prohibits effects on the mark. Needs an explicit exception if it is to ship.",
+      "frames": [
+        "Frame 107"
+      ]
+    },
+    "role-wordmark-investor": {
+      "label": "Investor role wordmark",
+      "note": "Star integrated at the i of investor.",
+      "frames": [
+        "Frame 108"
+      ]
+    },
+    "role-wordmark-business": {
+      "label": "Business role wordmark",
+      "note": "Star integrated at the i of business.",
+      "frames": [
+        "Frame 109"
+      ]
+    },
+    "role-wordmark-auditor": {
+      "label": "Auditor role wordmark",
+      "note": "Star integrated at the i of auditor.",
+      "frames": [
+        "Frame 110"
+      ]
+    }
+  },
+  "files": [
+    {
+      "frame": "Frame 83",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "core blue mark on white",
+      "visibleFills": [
+        "#0039FF"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 83.svg",
+        "sha256": "c9ea0598bd91b591ac1654ee87b34772e64f3ae27cd7c8a2d584c1b78f6a1469"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 83.png",
+        "sha256": "289d1b56401f2641b85a927b39acfe5910a36902b462907bc53cc67f34b5145f"
+      }
+    },
+    {
+      "frame": "Frame 84",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "#0039FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 84.svg",
+        "sha256": "27a34f1c797b6358f0f87a0c796c822500089210ea9ad4e0b7d0dd43b60ce6d4"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 84.png",
+        "sha256": "00227a7d350ad78fe1ce2728baf603e986428a506ecfc8ecd7fc243fc55231ec"
+      }
+    },
+    {
+      "frame": "Frame 85",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "#0039FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 85.svg",
+        "sha256": "38b9ee94f3a319dac464425cd077b3fc887ef155a71372aec38311d9435d6a5d"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 85.png",
+        "sha256": "71faba618f283d0cc79487b83802451ad37cda2ace05fb31dd9069bf1b8f1d5f"
+      }
+    },
+    {
+      "frame": "Frame 86",
+      "artwork": "rozine-lockup-integrated-star-defective",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "white",
+        "#0039FF"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 86.svg",
+        "sha256": "4abd753edf7d940e3b98d4729eab588d2c2047020a470c1e2a7605aa17aeab0c"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 86.png",
+        "sha256": "7b2de8f7e3b41e304b1f8852594e6063b98a16f305428698277c3e56294796d4"
+      },
+      "status": "REJECT - defective export"
+    },
+    {
+      "frame": "Frame 87",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "core blue mark on white",
+      "visibleFills": [
+        "#0039FF"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 87.svg",
+        "sha256": "f336e412ff1e4a34dde0868d1085dfecf21b1dd803b28bca09323aaf24e44dcb"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 87.png",
+        "sha256": "c13e22dca791af4648ef483b73465c455898eaa9215e95922b8f89dd1957fd88"
+      },
+      "clearSpace": "medium (75% of canvas)"
+    },
+    {
+      "frame": "Frame 88",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "#0039FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 88.svg",
+        "sha256": "f7af296e3d24786b5debecbee40c8b51136180d68ed5a3f6140e6f8b33a5e461"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 88.png",
+        "sha256": "ad46e5a02d144035fbc21f293707dd27502b3a3dd50152e52e8a93f7594b295c"
+      },
+      "clearSpace": "medium (75% of canvas)"
+    },
+    {
+      "frame": "Frame 89",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "business green mark on white",
+      "visibleFills": [
+        "#1D9E75"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 89.svg",
+        "sha256": "ee9bda428ca2208349e3e9ceb98e7a4daae6c39886a51c0d0c08b72d69c03ae8"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 89.png",
+        "sha256": "adf3c5fcae8af6ee5855f89b17f3f16dd283411d5fa59016701bd53ced73204f"
+      }
+    },
+    {
+      "frame": "Frame 90",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "business green mark on white",
+      "visibleFills": [
+        "#1D9E75"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 90.svg",
+        "sha256": "07a65f40388f16b357dfc25d3e33b19c6312eeda43566b7962d64881b799b65d"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 90.png",
+        "sha256": "0294cadf2b08ac2f992d4c537126db48b6c6b72d26fac41cac967e4ee62f1dd3"
+      }
+    },
+    {
+      "frame": "Frame 91",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "business green mark on white",
+      "visibleFills": [
+        "#1D9E75"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 91.svg",
+        "sha256": "51bf4b20ca605a4851cdabecd06c42bd69b5236cfa859d1f43f6185ada502e8b"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 91.png",
+        "sha256": "05ff3b5f4db84e3fce0d83aa6afe2a510541f2cb06876e50caa066718222e0ad"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 92",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "white mark on business green",
+      "visibleFills": [
+        "#1D9E75",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 92.svg",
+        "sha256": "7977401ee02ef817e546e3cf7d64e3feb06a31bc2ab3cd9a535f605ddd3c6469"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 92.png",
+        "sha256": "74862a0544b5b13e81daa1e8b4f2e9f5dff342ca75402448684a5b0f83670eee"
+      }
+    },
+    {
+      "frame": "Frame 93",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "white mark on business green",
+      "visibleFills": [
+        "#1D9E75",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 93.svg",
+        "sha256": "4f45916c234495f4bf01304e97840d776bb333d92b7672493fb44dcbab86773f"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 93.png",
+        "sha256": "3b16d611710dcd181eafd9e315ef022cf11394eef493756b38b751072370c752"
+      }
+    },
+    {
+      "frame": "Frame 94",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on business green",
+      "visibleFills": [
+        "#1D9E75",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 94.svg",
+        "sha256": "e5332dfdd653debed4004934c704288798750dc0dd1a17769da40d464af8fe08"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 94.png",
+        "sha256": "53ed83ef9a1f2225294daed6d0346322d5e9a9d4efd5a410e625327cb453dd4d"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 95",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "auditor orange mark on white",
+      "visibleFills": [
+        "#C2661F"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 95.svg",
+        "sha256": "85546d5d9783963e958fc7cff5d4e6e2af807f99155442c9e7a0d877a62d566a"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 95.png",
+        "sha256": "8879210f687a75cf123eab44d66799b9f793ce5f6e71f5856751be7dc5d0d927"
+      }
+    },
+    {
+      "frame": "Frame 96",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "white mark on auditor orange",
+      "visibleFills": [
+        "#C2661F",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 96.svg",
+        "sha256": "1fbe867850abbc539d3f11aa2aefb64f764f8e56ae7e69543ee02129cd002b55"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 96.png",
+        "sha256": "edf6bac964a12e75025354d20326fafac5aea26db69e3e25e665186b5e185ccd"
+      }
+    },
+    {
+      "frame": "Frame 97",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "auditor orange mark on white",
+      "visibleFills": [
+        "#C2661F"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 97.svg",
+        "sha256": "54de7cd5518471384336581ba8d9747297bca2352b06f344117bdacab5eb9d4d"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 97.png",
+        "sha256": "7de33259529c57c12fb459610845ad60f7ae2406e84853a2afab4c4bf4567825"
+      }
+    },
+    {
+      "frame": "Frame 98",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "white mark on auditor orange",
+      "visibleFills": [
+        "#C2661F",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 98.svg",
+        "sha256": "923de7245cd4050dfd46b9763cdc14d67661f78d03676776e9d024079854f661"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 98.png",
+        "sha256": "3502ba7b08a4f7fa9b35e55c6ebdc07464dc2235106f17f351ea9613482a843e"
+      }
+    },
+    {
+      "frame": "Frame 99",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "auditor orange mark on white",
+      "visibleFills": [
+        "#C2661F"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 99.svg",
+        "sha256": "85a7207afd542f9a8e5add4928cf7bc9a548d298225502cbdc29ad8340e0171f"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 99.png",
+        "sha256": "1f587ad6c8dc297ae984574afd239dcc83470871e4854f0e824a0a5df70b526d"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 100",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on auditor orange",
+      "visibleFills": [
+        "#C2661F",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 100.svg",
+        "sha256": "709c2f97ad1a2f3573069ef8cb9c9cba7a608f04f7f6c47a15e95434bac65989"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 100.png",
+        "sha256": "b598a7e5589e77df78907276d189574d65b16617925aaa189c0b60652b54c4fa"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 101",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "monochrome black mark on white",
+      "visibleFills": [
+        "black"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 101.svg",
+        "sha256": "f1a2e7cd7f48fb12461a3eb619d4a3aa26b5ea879bae4a2af40f369190996c13"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 101.png",
+        "sha256": "dc3e6cdd1676d3125c24ce0837f144a9c517a6b47eef5130d07abd059bae1a25"
+      }
+    },
+    {
+      "frame": "Frame 102",
+      "artwork": "rozine-lockup-detached-star",
+      "viewBox": "0 0 7545 2796",
+      "colourway": "white mark on monochrome black",
+      "visibleFills": [
+        "black",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 102.svg",
+        "sha256": "af23d2990743a23a9dfa9dd33dc613fcec712e00fc1799f7430959ce01483cee"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 102.png",
+        "sha256": "217924c2d75def1bafd72a07cf141104bb5a4ca68928d1eb5258c0038fcdabdd"
+      }
+    },
+    {
+      "frame": "Frame 103",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "monochrome black mark on white",
+      "visibleFills": [
+        "black"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 103.svg",
+        "sha256": "3f7d5a8eed20fc5551eda0a877efb92d4456ac89934dfbc0ed795be56cb3ca44"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 103.png",
+        "sha256": "ab3e37c08408fb9f9059706d343500a032d19f8e2e34844959b9643abec538da"
+      }
+    },
+    {
+      "frame": "Frame 104",
+      "artwork": "rozine-lockup-integrated-star",
+      "viewBox": "0 0 5766 2796",
+      "colourway": "white mark on monochrome black",
+      "visibleFills": [
+        "black",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 104.svg",
+        "sha256": "aa69e1f433a2038e992e69194da8bc4a1d9b619d79d7e5f2f4df4c91b0f5f2f9"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 104.png",
+        "sha256": "20951f78699bef04782169369eacb211b56bba18bf87de6aa895c7dc3f56220a"
+      }
+    },
+    {
+      "frame": "Frame 105",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "monochrome black mark on white",
+      "visibleFills": [
+        "black"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 105.svg",
+        "sha256": "5dedf692ae71b6c7a779717e885b6a918231a0649c06c292f26251d48bb55df6"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 105.png",
+        "sha256": "64a041c5f486766c1974e32dbd51183b2e876c087960fef6e4a3eab3d02beac7"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 106",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on monochrome black",
+      "visibleFills": [
+        "black",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 106.svg",
+        "sha256": "3af379e4522197e5600f0eebaddf4806637eddab4d57949a07d4364cb57b228b"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 106.png",
+        "sha256": "1d6153230c61cd428a33e53f93a2b9647f6daea3a2ee73d44be8a37175e07c4d"
+      },
+      "clearSpace": "medium"
+    },
+    {
+      "frame": "Frame 107",
+      "artwork": "app-icon-gradient",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on #8594FF",
+      "visibleFills": [
+        "#8594FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 107.svg",
+        "sha256": "1f196141fe9a3d9bbea634675196ea7f573b8b70d347b86ac4f8b1f05885c7d1"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 107.png",
+        "sha256": "d485f3105235905e14e555cc8fce6ab4fb39733e03c4d46f6369d61b14f371d6"
+      }
+    },
+    {
+      "frame": "Frame 108",
+      "artwork": "role-wordmark-investor",
+      "viewBox": "0 0 7170 2231",
+      "colourway": "core blue mark on white",
+      "visibleFills": [
+        "#0039FF"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 108.svg",
+        "sha256": "ceb32dd4ad507cd71df27b52a5486ee5369e66e2dc57fbebdc11920de552569a"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 108.png",
+        "sha256": "b0b9427cd95d1c474b3e5a69e70f2ad133d94db69395597ea4c0dbdd3932fc50"
+      }
+    },
+    {
+      "frame": "Frame 109",
+      "artwork": "role-wordmark-business",
+      "viewBox": "0 0 7277 2231",
+      "colourway": "business green mark on white",
+      "visibleFills": [
+        "#1D9E75"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 109.svg",
+        "sha256": "3924a192994889f29892f0a5aba0640cd25a4edca96645259c972a1f8f0372fe"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 109.png",
+        "sha256": "fdae725919efa6855aa8ba03963637e2dc3ae8aed967a5220840246d38d8e0e7"
+      }
+    },
+    {
+      "frame": "Frame 110",
+      "artwork": "role-wordmark-auditor",
+      "viewBox": "0 0 6169 2231",
+      "colourway": "auditor orange mark on white",
+      "visibleFills": [
+        "#C2661F"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 110.svg",
+        "sha256": "8aee98d9244dead634a133a3197c7177ee832f9322d2f701abb64af32d214f0f"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 110.png",
+        "sha256": "39f96945fb21f82286f30262ed73b2b9d79a25d6626fcad57dba9557a8c9d93d"
+      }
+    },
+    {
+      "frame": "Frame 111",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "core blue mark on white",
+      "visibleFills": [
+        "#0039FF"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 111.svg",
+        "sha256": "44866680b78bba78364629e3c240e84ca2f9b50c1620d7dd9921da3c79ce06fd"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 111.png",
+        "sha256": "e4a6b6e5862f3855ff72dc62b2e39939af37d1e8877fd7c87695c045c3efbe9b"
+      },
+      "clearSpace": "tight (82% of canvas)"
+    },
+    {
+      "frame": "Frame 112",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "#0039FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 112.svg",
+        "sha256": "047f938f812ea29f5d783b174fdc9c48d3eeace3657a0af5d5a5cba83665b0e2"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 112.png",
+        "sha256": "8c9a1e30dd5de3f76b3ec30262fb2416251321879869bf7cd5420d17980c77c4"
+      },
+      "clearSpace": "tight (82% of canvas)"
+    },
+    {
+      "frame": "Frame 113",
+      "artwork": "star-mark",
+      "viewBox": "0 0 2796 2796",
+      "colourway": "white mark on core blue",
+      "visibleFills": [
+        "#0039FF",
+        "white"
+      ],
+      "svg": {
+        "path": "docs/New Logo/Frame 113.svg",
+        "sha256": "f7367f7c36dc66190894b198f38ad40b32409e16c7b9b8889bd78e84094fc115"
+      },
+      "png": {
+        "path": "docs/New Logo/Frame 113.png",
+        "sha256": "e1cc17852de37b76e19b2d7fc8070bca68a8ad4f14e6f63dd131af7725e6a3cf"
+      },
+      "clearSpace": "generous (57% of canvas)"
+    }
+  ]
+}

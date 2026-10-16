@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import { BusinessPanel } from '@/components/pulse/business-panel';
 import type { BusinessFigures } from '@/components/pulse/business-panel';
 import { InvestorPanel } from '@/components/pulse/investor-panel';
@@ -110,6 +110,9 @@ describe('BusinessPanel', () => {
 
         render(<BusinessPanel {...props} idle />);
 
+        expect(
+            screen.getByRole('textbox', { name: 'Name of business' }),
+        ).toBeInTheDocument();
         fireEvent.change(screen.getByPlaceholderText('e.g. GreenLeaf Agro'), {
             target: { value: 'New Co' },
         });

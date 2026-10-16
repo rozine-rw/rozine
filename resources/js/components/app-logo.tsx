@@ -1,7 +1,8 @@
-import { usePage } from '@inertiajs/react';
+import { useTranslation } from '@/hooks/use-translation';
 
+/** The Rozine mark and name. The name is the product's, never the environment's APP_NAME. */
 export default function AppLogo() {
-    const { name } = usePage().props;
+    const { t } = useTranslation();
 
     return (
         <>
@@ -14,7 +15,7 @@ export default function AppLogo() {
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm">
                 <span className="mb-0.5 truncate leading-tight font-semibold">
-                    {name}
+                    {t('common.brand.name')}
                 </span>
             </div>
         </>

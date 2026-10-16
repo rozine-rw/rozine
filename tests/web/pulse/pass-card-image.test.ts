@@ -1,4 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import { downloadPassCard, drawPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 

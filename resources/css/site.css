@@ -769,3 +769,11 @@ body:has(.rz-site) {
         display: none !important;
     }
 }
+
+/* The staging/demo app entry: on narrow phones keep only "Sign in"; the login page links on to
+   registration, so the header still fits beside the audience toggle and Help. */
+@media (max-width: 560px) {
+    .rz-site .rz-app-entry-secondary {
+        display: none !important;
+    }
+}

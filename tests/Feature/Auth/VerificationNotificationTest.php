@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\Account\OneTimeCode;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 
@@ -18,7 +20,7 @@ test('sends verification notification', function () {
         ->post(route('verification.send'))
         ->assertRedirect(route('home'));
 
-    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentTo($user, OneTimeCode::class);
 });
 
 test('does not send verification notification if email is verified', function () {
@@ -28,7 +30,7 @@ test('does not send verification notification if email is verified', function ()
 
     $this->actingAs($user)
         ->post(route('verification.send'))
-        ->assertRedirect(route('dashboard', absolute: false));
+        ->assertRedirect(route('enter', absolute: false));
 
     Notification::assertNothingSent();
 });

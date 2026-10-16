@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Models\User;
+use App\Notifications\RozineMail;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+/*
+|--------------------------------------------------------------------------
+| UI fixture previews (local and testing only)
+|--------------------------------------------------------------------------
+|
+| Renders a Phase 1B page from a deterministic fixture in resources/fixtures/ui
+| so the UI can be reviewed before its server Resource exists. Fixtures carry
+| synthetic data only. These routes are never registered in any other
+| environment, and they are deliberately unnamed so Wayfinder never emits a
+| client helper that production builds would lack.
+|
+*/
+
+if (! app()->environment(['local', 'testing'])) {
+    return;
+}
+
+/*
+| Mail templates render the same way: every Rozine email, filled from the
+| synthetic resources/fixtures/mail.php and addressed to an unsaved account.
+*/
+
+Route::get('preview/mail', function (): string {
+    /** @var array<string, Closure(): (RozineMail|VerifyEmail|ResetPassword)> $previews */
+    $previews = require resource_path('fixtures/mail.php');
+
+    $links = array_map(
+        fn (string $template): string => '<li><a href="'.e(url("preview/mail/{$template}")).'">'.e($template).'</a></li>',
+        array_keys($previews),
+    );
+
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Rozine mail previews</title></head><body><ul>'.implode('', $links).'</ul></body></html>';
+});
+
+Route::get('preview/mail/{template}', function (string $template): MailMessage {
+    /** @var array<string, Closure(): (RozineMail|VerifyEmail|ResetPassword)> $previews */
+    $previews = require resource_path('fixtures/mail.php');
+
+    abort_unless(isset($previews[$template]), 404);
+
+    $recipient = (new User)->forceFill(['id' => 1, 'name' => 'Aline Uwase', 'email' => 'aline.uwase@example.test']);
+
+    return $previews[$template]()->toMail($recipient);
+})->where('template', '[a-z0-9.-]+');
+
+/*
+| The Investor bell's notices, as the live `investor.notices` JSON answers them, and a read that
+| changes nothing, so the panel can be reviewed from any Deals preview.
+*/
+
+Route::get('preview/investor-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/investor-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/investor-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
+/* The Business bell's notices, as the live `business.notices.index` JSON answers them. */
+
+Route::get('preview/business-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/business-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/business-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
+/* The Auditor bell's notices, as the live `auditor.notices` JSON answers them. */
+
+Route::get('preview/auditor-notices', fn () => response()->json(['data' => json_decode(
+    (string) file_get_contents(resource_path('fixtures/auditor-notices.json')), true, flags: JSON_THROW_ON_ERROR)]));
+
+Route::post('preview/auditor-notices/read', fn () => response()->json(['data' => ['unread' => 0]]));
+
+Route::get('preview/{fixture}', function (string $fixture) {
+    $path = resource_path("fixtures/ui/{$fixture}.json");
+
+    abort_unless(is_file($path), 404);
+
+    /** @var array{component: string, props: array<string, mixed>} $page */
+    $page = json_decode((string) file_get_contents($path), true, flags: JSON_THROW_ON_ERROR);
+
+    return Inertia::render($page['component'], $page['props']);
+})->where('fixture', '[a-z0-9-]+');

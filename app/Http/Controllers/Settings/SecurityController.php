@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Settings;
 
+use App\Application\Identity\NoticePasswordChange;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Settings\LoginAlertsUpdateRequest;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
 use Illuminate\Http\RedirectResponse;
@@ -57,13 +61,27 @@ class SecurityController extends Controller
     /**
      * Update the user's password.
      */
-    public function update(PasswordUpdateRequest $request): RedirectResponse
+    public function update(PasswordUpdateRequest $request, NoticePasswordChange $notice): RedirectResponse
     {
         $request->user()->update([
             'password' => $request->password,
         ]);
+        $notice->handle($request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
+
+        return back();
+    }
+
+    /**
+     * Turn the e-mailed login alert for a new device on or off. The in-app notice is always kept.
+     */
+    public function updateLoginAlerts(LoginAlertsUpdateRequest $request): RedirectResponse
+    {
+        $request->user()->forceFill(['login_alerts' => $request->boolean('enabled')])->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $request->boolean('enabled')
+            ? __('Login alerts are on.') : __('Login alerts are off.')]);
 
         return back();
     }

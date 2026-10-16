@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -13,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'Rozine'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,5 +124,18 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staff Ledger View Signoff
+    |--------------------------------------------------------------------------
+    |
+    | The proposed Treasury, Compliance and superadmin `ledger.view` allocation
+    | (#222) stays held until Robert's affirmative #99 P2 signoff. Set this
+    | only once that signoff is recorded.
+    |
+    */
+
+    'staff_ledger_view_signed_off' => (bool) env('STAFF_LEDGER_VIEW_SIGNED_OFF', false),
 
 ];

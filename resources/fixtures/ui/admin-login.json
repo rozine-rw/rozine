@@ -1,0 +1,11 @@
+{
+    "component": "admin/auth/login",
+    "props": {
+        "links": {
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

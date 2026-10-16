@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { OTPInputContext } from 'input-otp';
 import type { RenderProps } from 'input-otp';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vite-plus/test';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import {

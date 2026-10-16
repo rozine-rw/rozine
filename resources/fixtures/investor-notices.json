@@ -1,0 +1,140 @@
+{
+    "unread": 2,
+    "notices": [
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9d",
+            "kind": "wallet.deposit_received",
+            "facts": {
+                "amount": "250000",
+                "currency": "RWF"
+            },
+            "created_at": "2026-10-13T08:42:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/investor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9c",
+            "kind": "verification.approved",
+            "facts": [],
+            "created_at": "2026-10-12T16:05:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/investor-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9b",
+            "kind": "verification.rejected",
+            "facts": {
+                "reason": "The photo of your ID is blurred. Upload a sharper photo."
+            },
+            "created_at": "2026-10-10T11:20:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-verification",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b8a",
+            "kind": "primary.holding_issued",
+            "facts": {
+                "business": "Karongi Freight Ltd",
+                "units": "40",
+                "amount": "200000",
+                "expected_return": "11400",
+                "maturity_value": "211400",
+                "maturity_date": "2027-04-10",
+                "currency": "RWF"
+            },
+            "created_at": "2026-10-09T12:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-holding-karongi",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b8b",
+            "kind": "primary.raise_funded",
+            "facts": {
+                "business": "Karongi Freight Ltd",
+                "title": "Cold chain trucks",
+                "units": "40",
+                "amount": "200000",
+                "currency": "RWF"
+            },
+            "created_at": "2026-10-09T09:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9c",
+            "kind": "primary.report_published",
+            "facts": {
+                "business": "Karongi Freight Ltd",
+                "period": "2026-09",
+                "partner": "Diane Uwase, CPA"
+            },
+            "created_at": "2026-10-08T10:15:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b9a",
+            "kind": "primary.refunded",
+            "facts": {
+                "amount": "150000",
+                "currency": "RWF",
+                "business": "Karongi Freight Ltd"
+            },
+            "created_at": "2026-10-08T09:15:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7b98",
+            "kind": "security.password_changed",
+            "facts": [],
+            "created_at": "2026-10-06T19:02:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/investor-profile-security",
+                "method": "get"
+            },
+            "read_action": null
+        }
+    ],
+    "actions": {
+        "read_all": {
+            "url": "/preview/investor-notices/read",
+            "method": "post"
+        }
+    }
+}

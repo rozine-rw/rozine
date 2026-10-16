@@ -1,6 +1,10 @@
 name: Deploy (staging)
 
-# Auto-deploy to the Contabo staging box (staging.rozine.rw) on merge/push to uat.
+# Deploys to the Contabo staging box (staging.rozine.rw) from uat.
+#
+# Deployment is gated: the `admission` job must grant D-68 admission for the
+# exact candidate SHA before `deploy` may touch the server. This applies to
+# manual dispatch too — there is no ungated path to the environment.
 on:
   push:
     branches: [uat]
@@ -10,14 +14,36 @@ concurrency:
   group: deploy-staging
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
 jobs:
+  admission:
+    uses: ./.github/workflows/deployment-admission.yml
+    with:
+      target_branch: uat
+      environment: staging
+
   deploy:
+    needs: admission
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout uat
-        uses: actions/checkout@v7
+      - name: Checkout the admitted commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Require the separately approved staging runtime identity
+        env:
+          UAT_RUNTIME_USER: ${{ vars.STAGING_RUNTIME_USER }}
+        run: |
+          [[ "$UAT_RUNTIME_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || {
+            echo 'Staging runtime identity is not configured; no server changes made.' >&2
+            exit 1
+          }
 
       - name: Set up SSH
         run: |
@@ -27,39 +53,27 @@ jobs:
           ssh-keyscan -H "${{ secrets.STAGING_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Rsync source to server
+        # Excludes are anchored to the repository root: an unanchored 'vendor' or 'storage' also
+        # skipped resources/views/vendor/mail (the mail theme) and every other nested folder of that name.
         run: |
           rsync -az --delete \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude 'node_modules' \
-            --exclude 'vendor' \
-            --exclude '.env' \
-            --exclude 'storage' \
-            --exclude 'bootstrap/cache' \
-            --exclude 'public/build' \
-            --exclude 'public/storage' \
+            --exclude '/.git' \
+            --exclude '/.github' \
+            --exclude '/node_modules' \
+            --exclude '/vendor' \
+            --exclude '/.env' \
+            --exclude '/storage' \
+            --exclude '/bootstrap/cache' \
+            --exclude '/public/build' \
+            --exclude '/public/storage' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new" \
             ./ "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}:/var/www/rozine/"
 
       - name: Build, migrate & reload on server
+        env:
+          UAT_RUNTIME_USER: ${{ vars.STAGING_RUNTIME_USER }}
         run: |
+          [[ "$UAT_RUNTIME_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
           ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
-            "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" 'bash -lc "
-              set -euo pipefail
-              cd /var/www/rozine
-              composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-              # Wayfinder builds the typed client from the Laravel route list
-              # during the asset build, and Laravel answers from the route
-              # cache left by the previous run. Drop stale caches first, or a
-              # release that adds a route builds a client without it.
-              # NOTE: this block is wrapped in single quotes on the ssh line,
-              # so nothing in here may contain an apostrophe.
-              php artisan optimize:clear
-              npm ci --no-audit --no-fund || npm install --no-audit --no-fund
-              npm run build
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
-              php artisan queue:restart
-            "'
+            "${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }}" \
+            "bash -s -- /var/www/rozine uat ${UAT_RUNTIME_USER}" < .github/scripts/deploy-remote.sh

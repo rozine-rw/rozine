@@ -1,0 +1,53 @@
+{
+    "component": "auditor/conflicts",
+    "props": {
+        "contract_version": "auditor-filing-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-10-03T17:00:00Z",
+        "allowed_actions": [],
+        "conflicts": [
+            {
+                "assignment_id": "01k6kt4s8d2f6g0h3j7k1l5z9x",
+                "business_id": "01k5yp2c8d4e0f6g2h8j4k0l6m",
+                "conflict": {
+                    "conflict_id": "01k6h8p2q6r0s4t8u2v6w0x4y8",
+                    "kind": "financial_interest",
+                    "declared_at": "2026-09-22T08:40:00Z",
+                    "note": "I hold a 5% stake in the supplier that services this business.",
+                    "blocking": true,
+                    "status": "closed"
+                }
+            }
+        ],
+        "links": {
+            "home": {
+                "url": "/auditor",
+                "method": "get"
+            },
+            "jobs": {
+                "url": "/auditor/jobs",
+                "method": "get"
+            },
+            "portfolio": null,
+            "profile": {
+                "url": "/auditor/profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "conflicts": {
+                "url": "/auditor/conflicts",
+                "method": "get"
+            },
+            "operation": {
+                "url": "/auditor/assignment-operations/{request_id}",
+                "method": "get"
+            }
+        },
+        "pagination": {
+            "next": null
+        }
+    }
+}

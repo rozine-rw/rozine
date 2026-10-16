@@ -1,0 +1,1110 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Wallet;
+
+use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\Contracts\PartyNotices;
+use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
+use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Operations\Contracts\OperationRecords;
+use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
+use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\WalletStore;
+use App\Application\Wallet\Contracts\WithdrawalProvider;
+use App\Application\Wallet\DepositInstruction;
+use App\Application\Wallet\SyntheticDepositAdmission;
+use App\Application\Wallet\SyntheticWalletGuard;
+use App\Application\Wallet\VerifiedDepositEvent;
+use App\Application\Wallet\VerifiedWithdrawalEvent;
+use App\Application\Wallet\WithdrawalInstruction;
+use App\Domain\Identity\PartyNoticeKind;
+use App\Domain\Operations\ChangeScope;
+use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\OperationResult;
+use App\Domain\Wallet\AccountRestriction;
+use App\Domain\Wallet\DepositOutcome;
+use App\Domain\Wallet\DepositPolicyTerms;
+use App\Domain\Wallet\JournalEntry;
+use App\Domain\Wallet\WalletBalance;
+use App\Domain\Wallet\WalletMoney;
+use App\Domain\Wallet\WithdrawalTerms;
+use App\Models\DepositPolicy;
+use App\Models\InvestorAccountRestriction;
+use App\Models\InvestorFundingMethod;
+use App\Models\InvestorWallet;
+use App\Models\LedgerEntry;
+use App\Models\LedgerLine;
+use App\Models\WalletDepositCredit;
+use App\Models\WalletDepositDispatch;
+use App\Models\WalletDepositIntent;
+use App\Models\WalletProviderEvent;
+use App\Models\WalletWithdrawal;
+use App\Models\WalletWithdrawalDispatch;
+use App\Models\WalletWithdrawalEvent;
+use Carbon\CarbonImmutable;
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use RuntimeException;
+
+/**
+ * The wallet adapter. Lock order: the investor's user and Party (current authority), then the
+ * wallet, then an intent. A deposit writes its intent, dispatch outbox row and journal receipt in
+ * one transaction and never touches the ledger; a withdrawal writes its record, the hold on its
+ * available cash, its outbox row and its receipt in one transaction. No provider is called while
+ * any lock is held.
+ *
+ * @phpstan-type Policy array{model: DepositPolicy, terms: DepositPolicyTerms}
+ */
+final class EloquentWalletStore implements WalletStore
+{
+    /** Each internal ledger posting as the history shows it: kind, from and to bucket, and its receipt code. */
+    private const array INTERNAL = [
+        'primary_hold' => ['hold', 'available', 'held', 'PRIMARY_RESERVED'],
+        'primary_release' => ['hold_release', 'held', 'available', 'PRIMARY_RELEASED'],
+        'primary_commit' => ['commitment', 'held', 'committed', 'PRIMARY_COMMITTED'],
+        'primary_refund' => ['commitment_refund', 'committed', 'available', 'COMMITMENT_REFUNDED'],
+    ];
+
+    public function __construct(private AuthorizeActiveRole $authority, private OperationJournal $journal, private CanonicalJson $json,
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private ChangeFeed $changes, private SyntheticDepositAdmission $admission,
+        private PartyNotices $notices, private PrimaryPurchaseIndex $purchases, private OperationRecords $operations,
+        private WithdrawalProvider $payouts) {}
+
+    /**
+     * @param  array{currency: string, amount: string}  $amount
+     * @return array<string, mixed>
+     */
+    public function deposit(int $userId, int $contextRevision, string $requestId, array $amount, string $methodId): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision,
+            function (array $identity) use ($userId, $contextRevision, $requestId, $amount, $methodId): array {
+                $partyId = (string) $identity['party']['id'];
+                $wallet = $this->lockWallet($partyId);
+                $input = ['identity_context_revision' => $contextRevision, 'amount' => ['currency' => $amount['currency'], 'amount' => $amount['amount']], 'method_id' => $methodId];
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'wallet.deposit', $requestId, 'investor_wallet', $wallet->id, $input,
+                    function (): void {}, function (string $operationId) use ($wallet, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
+                        $data = ['wallet_id' => $wallet->id];
+                        $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
+                        if (! $this->admission->admitsInvestor($partyId)) {
+                            throw new CommandRejection('SYNTHETIC_TESTER_REQUIRED', 403, data: $data);
+                        }
+                        $method = $this->verifiedMethods($partyId)->firstWhere('id', $methodId) ?? throw new CommandRejection('DEPOSIT_METHOD_UNVERIFIED', data: $data);
+                        if ($this->depositBlocked($partyId)) {
+                            throw new CommandRejection('RESTRICTION_ACTIVE', data: $data);
+                        }
+                        $money = $amount['currency'] === 'RWF' ? WalletMoney::fromInput($amount['amount']) : null;
+                        $error = $money === null ? 'Enter a whole RWF amount of at most 12 digits.' : $policy['terms']->boundsError($money);
+                        if ($money === null || $error !== null) {
+                            throw new CommandRejection('VALIDATION_FAILED', 422, fieldErrors: ['amount' => [(string) $error]], data: $data);
+                        }
+                        $intent = $this->recordIntent($wallet, $method, $policy, $money, $operationId, $requestId, $userId);
+                        $this->changes->record(ChangeScope::party($partyId), 'wallet', $wallet->id);
+
+                        return new OperationResult('DEPOSIT_INTENT_RECORDED', [...$data, 'intent_id' => $intent->id,
+                            'receipt' => $this->intentReceipt($intent)], 1, policyVersion: $policy['terms']->version);
+                    });
+            });
+    }
+
+    /**
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @return array<string, mixed>
+     */
+    public function page(int $userId, ?int $contextRevision, array $query): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($query): array {
+            $partyId = (string) $identity['party']['id'];
+            $wallet = InvestorWallet::query()->where('party_id', $partyId)->first();
+            $policy = $this->applicablePolicy();
+            $methods = $this->verifiedMethods($partyId);
+            $cases = $this->currentCases($partyId);
+            $canDeposit = $policy !== null && $methods->isNotEmpty() && ! $this->depositBlocked($partyId) && $this->admission->admitsInvestor($partyId);
+            $terms = $this->withdrawalTerms();
+            $canWithdraw = $terms !== null && $methods->isNotEmpty() && ! $this->withdrawalBlocked($partyId) && $this->admission->admitsInvestor($partyId);
+            $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
+            $deposits = $wallet === null ? [] : $this->deposits($wallet);
+            $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
+            $history = match (true) {
+                $wallet === null => ['items' => [], 'next_before' => null],
+                $movement === 'internal' => $this->internalHistory($wallet, $query['before'] ?? null),
+                default => $this->history($wallet, $query['before'] ?? null),
+            };
+
+            return ['identity_context_revision' => $identity['context_revision'],
+                'allowed_actions' => array_keys(array_filter(['wallet.deposit' => $canDeposit, 'wallet.withdraw' => $canWithdraw])),
+                'wallet' => $this->balances($wallet, $cases->first()?->effective_at->toIso8601String()),
+                'funding' => ['kind' => $kind, 'policy' => $policy === null ? null : [
+                    'version' => $policy['terms']->version, 'synthetic' => $policy['terms']->synthetic, 'fee' => $policy['terms']->fee->money(),
+                    'minimum' => $policy['terms']->minimum?->money(), 'maximum' => $policy['terms']->maximum?->money()],
+                    'methods' => $methods->map(fn (InvestorFundingMethod $method): array => $this->method($method))->values()->all(), 'picks' => [],
+                    'quote' => $this->quote($policy, $methods->isNotEmpty(), $kind, $query['amount'] ?? null),
+                    'withdrawal' => $terms === null ? null : ['version' => WithdrawalTerms::VERSION, 'minimum' => $terms->minimum()->money(),
+                        'maximum' => $terms->maximum()->money(), 'charge' => $terms->providerCharge->money(),
+                        'quote' => $kind === 'withdraw' ? $this->withdrawalQuote($terms, $wallet, $methods->isNotEmpty(), $query['amount'] ?? null) : null]],
+                'holds' => $this->purchases->activeHolds($partyId), 'deposits' => $deposits,
+                'withdrawals' => $wallet === null ? [] : $this->withdrawals($wallet), 'history' => ['movement' => $movement, ...$history],
+                'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
+        });
+    }
+
+    public function statement(int $userId, ?int $contextRevision, ?string $from, ?string $to): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($from, $to): array {
+            $wallet = InvestorWallet::query()->where('party_id', (string) $identity['party']['id'])->first();
+            $zone = (string) config('app.timezone');
+            $starts = $from === null ? null : CarbonImmutable::parse($from, $zone)->startOfDay();
+            $ends = $to === null ? null : CarbonImmutable::parse($to, $zone)->addDay()->startOfDay();
+            $rows = [];
+            if ($wallet !== null) {
+                foreach ($this->recordedBetween(WalletDepositCredit::query()->where('wallet_id', $wallet->id), $starts, $ends)->orderByDesc('id')->get() as $credit) {
+                    $entry = $this->historyEntry($credit);
+                    $rows[] = ['occurred_at' => $entry['occurred_at'], 'movement' => 'external', 'kind' => 'deposit', 'deal_name' => null,
+                        'counterparty' => $entry['counterparty'], 'direction' => 'in', 'amount' => $entry['amount'], 'reference' => $this->creditReceipt($credit)['reference']];
+                }
+                foreach ($this->recordedBetween($this->payouts($wallet), $starts, $ends)->orderByDesc('id')->get() as $payout) {
+                    $entry = $this->payoutEntry($payout);
+                    $rows[] = ['occurred_at' => $entry['occurred_at'], 'movement' => 'external', 'kind' => 'withdrawal', 'deal_name' => null,
+                        'counterparty' => $entry['counterparty'], 'direction' => 'out', 'amount' => $entry['amount'], 'reference' => $this->entryReference($payout)];
+                }
+                $entries = $this->recordedBetween(LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+                    ->where('source_type', 'primary_reservation'), $starts, $ends)->orderByDesc('id')->get();
+                $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($entries->pluck('source_id')->all())));
+                foreach ($entries as $ledgerEntry) {
+                    $entry = $this->internalEntry($ledgerEntry, $labels);
+                    $rows[] = ['occurred_at' => $entry['occurred_at'], 'movement' => 'internal', 'kind' => $entry['kind'], 'deal_name' => $entry['deal_name'],
+                        'counterparty' => null, 'direction' => 'internal', 'amount' => $entry['amount'], 'reference' => 'RZW-'.strtoupper(substr($ledgerEntry->id, -10))];
+                }
+            }
+            usort($rows, fn (array $left, array $right): int => [CarbonImmutable::parse($right['occurred_at']), $right['reference']]
+                <=> [CarbonImmutable::parse($left['occurred_at']), $left['reference']]);
+
+            return ['generated_at' => now()->utc()->toIso8601String(), 'from' => $from, 'to' => $to, 'rows' => $rows];
+        });
+    }
+
+    public function statementMonths(int $userId, ?int $contextRevision): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity): array {
+            $wallet = InvestorWallet::query()->where('party_id', (string) $identity['party']['id'])->first();
+            if ($wallet === null) {
+                return [];
+            }
+            $zone = (string) config('app.timezone');
+            $instants = [...WalletDepositCredit::query()->where('wallet_id', $wallet->id)->pluck('created_at')->all(),
+                ...$this->payouts($wallet)->pluck('created_at')->all(),
+                ...LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+                    ->where('source_type', 'primary_reservation')->pluck('created_at')->all()];
+            $months = array_values(array_unique(array_map(fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-01'), $instants)));
+            rsort($months);
+
+            return $months;
+        });
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    private function recordedBetween(Builder $query, ?CarbonImmutable $starts, ?CarbonImmutable $ends): Builder
+    {
+        return $query->when($starts !== null, fn (Builder $query) => $query->where('created_at', '>=', $starts))
+            ->when($ends !== null, fn (Builder $query) => $query->where('created_at', '<', $ends));
+    }
+
+    /** @return array<string, mixed> */
+    public function findDeposit(int $userId, int $contextRevision, string $requestId): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($requestId): array {
+            $partyId = (string) $identity['party']['id'];
+            $walletId = InvestorWallet::query()->where('party_id', $partyId)->value('id');
+
+            return $this->journal->find('party:'.$partyId, 'wallet.deposit', $requestId, function (string $type, string $id) use ($walletId): void {
+                ($type === 'investor_wallet' && $id === $walletId) || throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+            });
+        });
+    }
+
+    /** @return array{disposition: string, state: string, credited: bool, replayed: bool} */
+    public function applyOutcome(VerifiedDepositEvent $event, string $environment): array
+    {
+        return DB::transaction(function () use ($event, $environment): array {
+            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['wallet-provider-event|'.$event->provider.'|'.$event->eventId]);
+            $walletId = WalletDepositIntent::query()->where('provider', $event->provider)
+                ->where('provider_reference_sha256', hash('sha256', $event->providerReference))->value('wallet_id')
+                ?? throw new CommandRejection('DEPOSIT_REFERENCE_UNKNOWN', 404);
+            $wallet = InvestorWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
+            $intent = WalletDepositIntent::query()->where('provider_reference_sha256', hash('sha256', $event->providerReference))->lockForUpdate()->sole();
+            $this->intentPayload($intent);
+            $existing = WalletProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->get();
+            $replay = $existing->firstWhere('content_sha256', $event->contentSha256);
+            if ($replay !== null) {
+                return ['disposition' => $replay->disposition, 'state' => $this->currentState($intent->id), 'credited' => false, 'replayed' => true];
+            }
+            // Provider event keys are one namespace across owners: a key the other owner already consumed is a conflict here.
+            $consumedElsewhere = DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || WalletWithdrawalEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+            $current = $this->currentState($intent->id);
+            $outcome = DepositOutcome::transition($current, $event->state);
+            $disposition = match (true) {
+                $existing->isNotEmpty() || $consumedElsewhere => 'key_conflict',
+                $event->environment !== $environment || $event->currency !== $intent->currency || $event->amount !== $intent->amount => 'mismatch',
+                default => $outcome->disposition,
+            };
+            $record = new WalletProviderEvent;
+            $record->forceFill(['provider' => $event->provider, 'provider_event_id' => $event->eventId, 'intent_id' => $intent->id,
+                'content_sha256' => $event->contentSha256, 'state' => $event->state, 'amount' => $event->amount, 'currency' => $event->currency,
+                'environment' => $event->environment, 'observed_at' => $event->observedAt, 'disposition' => $disposition, 'evidence' => $event->evidence,
+                'created_at' => now('UTC')])->save();
+            $credited = $disposition === 'applied' && $outcome->credits();
+            if ($credited) {
+                $this->postCredit($intent, $record);
+                $this->notices->record($wallet->party_id, PartyNoticeKind::DepositReceived,
+                    ['amount' => $intent->credited, 'currency' => $intent->currency], 'wallet-deposit:'.$intent->id);
+            }
+            if ($disposition === 'applied') {
+                $this->changes->record(ChangeScope::party($wallet->party_id), 'wallet', $wallet->id);
+            }
+
+            return ['disposition' => $disposition, 'state' => $disposition === 'applied' ? $outcome->state : $current, 'credited' => $credited, 'replayed' => false];
+        }, 3);
+    }
+
+    /** @return list<DepositInstruction> */
+    public function claimDispatches(?string $intentId, int $limit, bool $resendInterrupted, string $environment): array
+    {
+        return DB::transaction(function () use ($intentId, $limit, $resendInterrupted, $environment): array {
+            $queued = $this->queuedDispatches($intentId)->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all();
+            $interrupted = $resendInterrupted && count($queued) < $limit ? $this->interruptedDispatches($intentId)
+                ->orderBy('id')->limit($limit - count($queued))->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all() : [];
+            foreach ($queued as $queuedIntent) {
+                (new WalletDepositDispatch)->forceFill(['intent_id' => $queuedIntent, 'phase' => 'claimed', 'created_at' => now('UTC')])->save();
+            }
+
+            return array_values(WalletDepositIntent::query()->whereIn('id', [...$queued, ...$interrupted])->orderBy('id')->get()
+                ->map(fn (WalletDepositIntent $intent): DepositInstruction => new DepositInstruction($intent->id, $intent->operation_id,
+                    $intent->provider_reference, $this->intentPayload($intent)['amount'], $intent->currency, $environment))->all());
+        }, 3);
+    }
+
+    public function claimableDispatches(bool $resendInterrupted): int
+    {
+        return $this->queuedDispatches(null)->count() + ($resendInterrupted ? $this->interruptedDispatches(null)->count() : 0);
+    }
+
+    /**
+     * Queued dispatches no claim has taken yet.
+     *
+     * @return Builder<WalletDepositDispatch>
+     */
+    private function queuedDispatches(?string $intentId): Builder
+    {
+        return WalletDepositDispatch::query()->where('phase', 'queued')
+            ->whereNotIn('intent_id', WalletDepositDispatch::query()->where('phase', 'claimed')->select('intent_id'))
+            ->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
+    }
+
+    /**
+     * Claims still without a send outcome five minutes on: their send was interrupted.
+     *
+     * @return Builder<WalletDepositDispatch>
+     */
+    private function interruptedDispatches(?string $intentId): Builder
+    {
+        return WalletDepositDispatch::query()->where('phase', 'claimed')
+            ->whereNotIn('intent_id', WalletDepositDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('intent_id'))
+            ->where('created_at', '<', now()->subMinutes(5))->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
+    }
+
+    public function recordDispatch(string $intentId, bool $acknowledged): void
+    {
+        DB::insert("INSERT INTO wallet_deposit_dispatches (id, intent_id, phase, created_at) VALUES (?, ?, ?, now())
+            ON CONFLICT (intent_id) WHERE phase IN ('acknowledged', 'unacknowledged') DO NOTHING",
+            [strtolower((string) Str::ulid()), $intentId, $acknowledged ? 'acknowledged' : 'unacknowledged']);
+    }
+
+    /**
+     * Ledger-derived buckets. Pending deposits are the recorded intents with no final outcome yet,
+     * outside the total because nothing has been credited for them. Pending withdrawals are the
+     * cash held for a withdrawal the provider has not yet paid or returned; it has left the total.
+     *
+     * @return array<string, mixed>
+     */
+    private function balances(?InvestorWallet $wallet, ?string $restrictedSince): array
+    {
+        $sums = $wallet === null ? collect() : DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.wallet_id', $wallet->id)->groupBy('ledger_accounts.kind', 'ledger_lines.direction')
+            ->selectRaw('ledger_accounts.kind AS kind, ledger_lines.direction AS direction, sum(ledger_lines.amount)::text AS total')->get()
+            ->mapWithKeys(fn (object $row): array => [$row->kind.'.'.$row->direction => (string) $row->total]);
+        $bucket = fn (string $kind): WalletMoney => WalletBalance::bucket(WalletMoney::of($sums['investor_'.$kind.'.credit'] ?? '0'), WalletMoney::of($sums['investor_'.$kind.'.debit'] ?? '0'));
+        $final = WalletProviderEvent::query()->where('disposition', 'applied')->whereIn('state', ['succeeded', 'failed'])->select('intent_id');
+        $pending = $wallet === null ? '0' : (string) WalletDepositIntent::query()->where('wallet_id', $wallet->id)->whereNotIn('id', $final)
+            ->selectRaw('coalesce(sum(amount), 0)::text AS pending')->value('pending');
+        $balance = new WalletBalance($bucket('available'), $bucket('held'), $bucket('committed'), WalletMoney::of($pending));
+
+        return ['revision' => $wallet === null ? 0 : LedgerEntry::query()->where('wallet_id', $wallet->id)->count(),
+            'status' => $restrictedSince === null ? 'active' : 'restricted',
+            'restriction' => $restrictedSince === null ? null : ['code' => 'RESTRICTION_ACTIVE', 'since' => $restrictedSince],
+            'total' => $balance->total()->money(), 'breakdown' => ['available' => $balance->available->money(), 'held' => $balance->held->money(),
+                'committed' => $balance->committed->money()], 'pending_deposits' => $balance->pendingDeposits->money(),
+            'pending_withdrawals' => $bucket('withdrawing')->money()];
+    }
+
+    /**
+     * The server's reading of an entered amount under the applicable policy. No policy, no quote:
+     * an absent policy is never priced as a zero fee.
+     *
+     * @param  Policy|null  $policy
+     * @return array<string, mixed>|null
+     */
+    private function quote(?array $policy, bool $hasMethod, ?string $kind, ?string $amount): ?array
+    {
+        if ($kind !== 'deposit' || $amount === null || $amount === '' || $policy === null) {
+            return null;
+        }
+        $terms = $policy['terms'];
+        $money = WalletMoney::fromInput(ltrim($amount, '0'));
+        if ($money === null) {
+            return ['amount' => WalletMoney::zero()->money(), 'fee' => $terms->fee->money(), 'credited' => WalletMoney::zero()->money(), 'refusal' => 'VALIDATION_FAILED'];
+        }
+        $refusal = ! $hasMethod ? 'DEPOSIT_METHOD_UNVERIFIED' : ($terms->boundsError($money) === null ? null : 'VALIDATION_FAILED');
+
+        return ['amount' => $money->money(), 'fee' => $terms->fee->money(),
+            'credited' => ($money->compareTo($terms->fee) > 0 ? $terms->credited($money) : WalletMoney::zero())->money(), 'refusal' => $refusal];
+    }
+
+    /**
+     * The latest deposits, pending and unknown first, each with its immutable intent receipt and,
+     * only after a verified success, its separate credit receipt. No provider fact is included.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function deposits(InvestorWallet $wallet, ?string $only = null): array
+    {
+        $intents = WalletDepositIntent::query()->where('wallet_id', $wallet->id)->when($only !== null, fn ($query) => $query->whereKey($only))
+            ->orderByDesc('id')->limit(20)->get();
+        $credits = WalletDepositCredit::query()->whereIn('intent_id', $intents->pluck('id'))->get()->keyBy('intent_id');
+        $methods = InvestorFundingMethod::query()->whereIn('id', $intents->pluck('method_id'))->get()->keyBy('id');
+        $deposits = $intents->map(function (WalletDepositIntent $intent) use ($credits, $methods): array {
+            $credit = $credits->get($intent->id);
+
+            return ['id' => $intent->id, 'request_id' => $intent->request_id, 'amount' => WalletMoney::of($intent->amount)->money(),
+                'method' => $this->method($methods->get($intent->method_id) ?? throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED')), 'created_at' => $this->intentPayload($intent)['recorded_at'],
+                'state' => $this->currentState($intent->id), 'intent_receipt' => $this->intentReceipt($intent),
+                'credit_receipt' => $credit === null ? null : $this->creditReceipt($credit)];
+        });
+
+        return array_values($deposits->sortBy(fn (array $deposit): int => DepositOutcome::isFinal($deposit['state']) ? 1 : 0)->values()->all());
+    }
+
+    /**
+     * External cash movements: each credited deposit and each paid withdrawal, newest first, twenty
+     * to a page.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function history(InvestorWallet $wallet, ?string $before): array
+    {
+        $credits = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->orderByDesc('id')->limit(21)->get();
+        $payouts = $this->payouts($wallet)->when($before !== null, fn ($query) => $query->where('id', '<', $before))->orderByDesc('id')->limit(21)->get();
+        $movements = [...$credits->all(), ...$payouts->all()];
+        usort($movements, fn (Model $left, Model $right): int => strcmp((string) $right->getKey(), (string) $left->getKey()));
+        $page = array_slice($movements, 0, 20);
+
+        return ['items' => array_map(fn (WalletDepositCredit|LedgerEntry $movement): array => $movement instanceof WalletDepositCredit
+            ? $this->historyEntry($movement) : $this->payoutEntry($movement), $page),
+            'next_before' => count($movements) > 20 ? (string) $page[19]->getKey() : null];
+    }
+
+    /**
+     * Internal transfers between the Investor's own buckets: each purchase hold, its release, its
+     * commitment and its refund, newest first, twenty to a page, named by the deal it was for.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function internalHistory(InvestorWallet $wallet, ?string $before): array
+    {
+        $entries = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+            ->where('source_type', 'primary_reservation')->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->orderByDesc('id')->limit(21)->get();
+        $page = $entries->take(20);
+        $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($page->pluck('source_id')->all())));
+
+        return ['items' => array_values($page->map(fn (LedgerEntry $entry): array => $this->internalEntry($entry, $labels))->all()),
+            'next_before' => $entries->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /**
+     * @param  array<string, array{campaign_id: string, deal_name: string, units: string, policy_version: string}>  $labels
+     * @return array<string, mixed>
+     */
+    private function internalEntry(LedgerEntry $entry, array $labels): array
+    {
+        [$kind, $from, $to] = self::INTERNAL[$entry->kind];
+
+        return ['id' => $entry->id, 'movement' => 'internal', 'kind' => $kind, 'from' => $from, 'to' => $to,
+            'amount' => WalletMoney::of($this->debited($entry))->money(),
+            'deal_name' => ($labels[$entry->source_id] ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED'))['deal_name'],
+            'occurred_at' => (string) $entry->payload['recorded_at']];
+    }
+
+    /**
+     * The receipt of one internal transfer: the posting the ledger recorded, under the policy the
+     * purchase was quoted with, against the request that opened the purchase.
+     *
+     * @param  array{campaign_id: string, deal_name: string, units: string, policy_version: string}  $label
+     * @return array<string, mixed>
+     */
+    private function internalReceipt(LedgerEntry $entry, string $partyId, array $label): array
+    {
+        $origin = array_find($this->operations->forTarget('party:'.$partyId, 'primary.reserve', 'campaign', $label['campaign_id']),
+            fn (array $operation): bool => $operation['operation_id'] === $entry->origin_operation_id)
+            ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED');
+
+        return ['receipt_id' => $entry->id, 'operation_id' => $origin['operation_id'], 'request_id' => $origin['request_id'],
+            'code' => self::INTERNAL[$entry->kind][3], 'recorded_at' => (string) $entry->payload['recorded_at'],
+            'amount' => WalletMoney::of($this->debited($entry))->money(), 'units' => $label['units'],
+            'reference' => 'RZW-'.strtoupper(substr($entry->id, -10)), 'revision' => 1, 'policy_version' => $label['policy_version'], 'disclosure_version' => null];
+    }
+
+    private function debited(LedgerEntry $entry): string
+    {
+        return (string) LedgerLine::query()->where('entry_id', $entry->id)->where('direction', 'debit')->value('amount');
+    }
+
+    /** @return array<string, mixed> */
+    private function historyEntry(WalletDepositCredit $credit): array
+    {
+        $intent = WalletDepositIntent::query()->whereKey($credit->intent_id)->sole();
+
+        return ['id' => $credit->id, 'movement' => 'external', 'kind' => 'deposit', 'direction' => 'in', 'amount' => WalletMoney::of($credit->amount)->money(),
+            'counterparty' => InvestorFundingMethod::query()->whereKey($intent->method_id)->sole()->label, 'occurred_at' => $this->creditReceipt($credit)['recorded_at']];
+    }
+
+    /**
+     * The receipt the page was asked to open, if it is this wallet's: a deposit intent, a withdrawal,
+     * a credited deposit's or paid withdrawal's history entry with its receipt, or an internal transfer
+     * with its posting receipt. Anyone else's id opens nothing.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function openedReceipt(InvestorWallet $wallet, ?string $id): ?array
+    {
+        if ($id === null) {
+            return null;
+        }
+        $deposit = $this->deposits($wallet, strtolower($id));
+        if ($deposit !== []) {
+            return ['type' => 'deposit', 'deposit' => $deposit[0]];
+        }
+        $withdrawal = $this->withdrawals($wallet, strtolower($id));
+        if ($withdrawal !== []) {
+            return ['type' => 'withdrawal', 'withdrawal' => $withdrawal[0]];
+        }
+        $credit = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->whereKey(strtolower($id))->first();
+        if ($credit !== null) {
+            return ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+        }
+        $payout = $this->payouts($wallet)->whereKey(strtolower($id))->first();
+        if ($payout !== null) {
+            return ['type' => 'entry', 'entry' => $this->payoutEntry($payout),
+                'receipt' => $this->settledReceipt(WalletWithdrawal::query()->whereKey($payout->source_id)->sole(), $payout)];
+        }
+        $entry = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
+            ->where('source_type', 'primary_reservation')->whereKey(strtolower($id))->first();
+        if ($entry === null) {
+            return null;
+        }
+        $labels = $this->purchases->walletLabels($wallet->party_id, [$entry->source_id]);
+
+        return ['type' => 'entry', 'entry' => $this->internalEntry($entry, $labels),
+            'receipt' => $this->internalReceipt($entry, $wallet->party_id, $labels[$entry->source_id])];
+    }
+
+    /** @return array{id: string, kind: string, label: string, masked: string} */
+    private function method(InvestorFundingMethod $method): array
+    {
+        return ['id' => $method->id, 'kind' => $method->kind, 'label' => $method->label, 'masked' => $method->masked];
+    }
+
+    /**
+     * @param  array{currency: string, amount: string}  $amount
+     * @return array<string, mixed>
+     */
+    public function withdraw(int $userId, int $contextRevision, string $requestId, array $amount, string $methodId): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision,
+            function (array $identity) use ($userId, $contextRevision, $requestId, $amount, $methodId): array {
+                $partyId = (string) $identity['party']['id'];
+                $wallet = $this->lockWallet($partyId);
+                $input = ['identity_context_revision' => $contextRevision, 'amount' => ['currency' => $amount['currency'], 'amount' => $amount['amount']], 'method_id' => $methodId];
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'wallet.withdraw', $requestId, 'investor_wallet', $wallet->id, $input,
+                    function (): void {}, function (string $operationId) use ($wallet, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
+                        $data = ['wallet_id' => $wallet->id];
+                        $terms = $this->withdrawalTerms() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
+                        if (! $this->admission->admitsInvestor($partyId)) {
+                            throw new CommandRejection('SYNTHETIC_TESTER_REQUIRED', 403, data: $data);
+                        }
+                        $method = $this->verifiedMethods($partyId)->firstWhere('id', $methodId) ?? throw new CommandRejection('WITHDRAWAL_METHOD_UNVERIFIED', data: $data);
+                        if ($this->withdrawalBlocked($partyId)) {
+                            throw new CommandRejection('RESTRICTION_ACTIVE', data: $data);
+                        }
+                        $money = $amount['currency'] === 'RWF' ? WalletMoney::fromInput($amount['amount']) : null;
+                        $error = $money === null ? 'Enter a whole RWF amount of at most 12 digits.' : $terms->boundsError($money, $this->available($wallet->id));
+                        if ($money === null || $error !== null) {
+                            throw new CommandRejection('VALIDATION_FAILED', 422, fieldErrors: ['amount' => [(string) $error]], data: $data);
+                        }
+                        $withdrawal = $this->recordWithdrawal($wallet, $method, $terms, $money, $operationId, $requestId, $userId);
+                        $this->changes->record(ChangeScope::party($partyId), 'wallet', $wallet->id);
+
+                        return new OperationResult('WITHDRAWAL_RECORDED', [...$data, 'withdrawal_id' => $withdrawal->id,
+                            'receipt' => $this->withdrawalReceipt($withdrawal)], 1, policyVersion: WithdrawalTerms::VERSION);
+                    });
+            });
+    }
+
+    /** @return array<string, mixed> */
+    public function findWithdrawal(int $userId, int $contextRevision, string $requestId): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($requestId): array {
+            $partyId = (string) $identity['party']['id'];
+            $walletId = InvestorWallet::query()->where('party_id', $partyId)->value('id');
+
+            return $this->journal->find('party:'.$partyId, 'wallet.withdraw', $requestId, function (string $type, string $id) use ($walletId): void {
+                ($type === 'investor_wallet' && $id === $walletId) || throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+            });
+        });
+    }
+
+    /** @return array{disposition: string, state: string, settled: bool, replayed: bool} */
+    public function applyWithdrawalOutcome(VerifiedWithdrawalEvent $event, string $environment): array
+    {
+        return DB::transaction(function () use ($event, $environment): array {
+            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['wallet-provider-event|'.$event->provider.'|'.$event->eventId]);
+            $digest = hash('sha256', $event->providerReference);
+            $walletId = WalletWithdrawal::query()->where('provider', $event->provider)->where('provider_reference_sha256', $digest)->value('wallet_id')
+                ?? throw new CommandRejection('WITHDRAWAL_REFERENCE_UNKNOWN', 404);
+            $wallet = InvestorWallet::query()->whereKey($walletId)->lockForUpdate()->sole();
+            $withdrawal = WalletWithdrawal::query()->where('provider_reference_sha256', $digest)->lockForUpdate()->sole();
+            $this->withdrawalPayload($withdrawal);
+            $existing = WalletWithdrawalEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->get();
+            $replay = $existing->firstWhere('content_sha256', $event->contentSha256);
+            if ($replay !== null) {
+                return ['disposition' => $replay->disposition, 'state' => $this->withdrawalState($withdrawal->id), 'settled' => false, 'replayed' => true];
+            }
+            // Provider event keys are one namespace across deposits and withdrawals of both owners.
+            $consumedElsewhere = WalletProviderEvent::query()->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+            $current = $this->withdrawalState($withdrawal->id);
+            $outcome = DepositOutcome::transition($current, $event->state);
+            $disposition = match (true) {
+                $existing->isNotEmpty() || $consumedElsewhere => 'key_conflict',
+                $event->environment !== $environment || $event->currency !== $withdrawal->currency || $event->amount !== $withdrawal->received => 'mismatch',
+                default => $outcome->disposition,
+            };
+            $record = new WalletWithdrawalEvent;
+            $record->forceFill(['provider' => $event->provider, 'provider_event_id' => $event->eventId, 'withdrawal_id' => $withdrawal->id,
+                'content_sha256' => $event->contentSha256, 'state' => $event->state, 'amount' => $event->amount, 'currency' => $event->currency,
+                'environment' => $event->environment, 'observed_at' => $event->observedAt, 'disposition' => $disposition, 'evidence' => $event->evidence,
+                'created_at' => now('UTC')])->save();
+            $settled = $disposition === 'applied' && DepositOutcome::isFinal($outcome->state);
+            if ($settled) {
+                $paid = $outcome->state === 'succeeded';
+                $entry = $this->postWithdrawal($withdrawal, $paid ? 'withdrawal_payout' : 'withdrawal_return', $record);
+                $facts = ['amount' => $withdrawal->amount, 'currency' => $withdrawal->currency,
+                    'account' => InvestorFundingMethod::query()->whereKey($withdrawal->method_id)->sole()->label];
+                $paid
+                    ? $this->notices->record($wallet->party_id, PartyNoticeKind::WithdrawalSent, [...$facts, 'received' => $withdrawal->received,
+                        'reference' => $this->entryReference($entry), 'available' => $this->available($wallet->id)->amount(),
+                        'completed_at' => (string) $entry->payload['recorded_at']], 'wallet-withdrawal:'.$withdrawal->id)
+                    : $this->notices->record($wallet->party_id, PartyNoticeKind::WithdrawalReturned, $facts, 'wallet-withdrawal:'.$withdrawal->id);
+            }
+            if ($disposition === 'applied') {
+                $this->changes->record(ChangeScope::party($wallet->party_id), 'wallet', $wallet->id);
+            }
+
+            return ['disposition' => $disposition, 'state' => $disposition === 'applied' ? $outcome->state : $current, 'settled' => $settled, 'replayed' => false];
+        }, 3);
+    }
+
+    /** @return list<WithdrawalInstruction> */
+    public function claimWithdrawals(?string $withdrawalId, int $limit, bool $resendInterrupted, string $environment): array
+    {
+        return DB::transaction(function () use ($withdrawalId, $limit, $resendInterrupted, $environment): array {
+            $queued = $this->queuedWithdrawals($withdrawalId)->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('withdrawal_id')->all();
+            $interrupted = $resendInterrupted && count($queued) < $limit ? $this->interruptedWithdrawals($withdrawalId)
+                ->orderBy('id')->limit($limit - count($queued))->lock('FOR UPDATE SKIP LOCKED')->pluck('withdrawal_id')->all() : [];
+            foreach ($queued as $queuedWithdrawal) {
+                (new WalletWithdrawalDispatch)->forceFill(['withdrawal_id' => $queuedWithdrawal, 'phase' => 'claimed', 'created_at' => now('UTC')])->save();
+            }
+
+            return array_values(WalletWithdrawal::query()->whereIn('id', [...$queued, ...$interrupted])->orderBy('id')->get()
+                ->map(fn (WalletWithdrawal $withdrawal): WithdrawalInstruction => new WithdrawalInstruction($withdrawal->id, $withdrawal->operation_id,
+                    $withdrawal->provider_reference, $withdrawal->method_id, $this->withdrawalPayload($withdrawal)['received'], $withdrawal->currency,
+                    $environment))->all());
+        }, 3);
+    }
+
+    public function claimableWithdrawals(bool $resendInterrupted): int
+    {
+        return $this->queuedWithdrawals(null)->count() + ($resendInterrupted ? $this->interruptedWithdrawals(null)->count() : 0);
+    }
+
+    public function recordWithdrawalDispatch(string $withdrawalId, bool $acknowledged): void
+    {
+        DB::insert("INSERT INTO wallet_withdrawal_dispatches (id, withdrawal_id, phase, created_at) VALUES (?, ?, ?, now())
+            ON CONFLICT (withdrawal_id) WHERE phase IN ('acknowledged', 'unacknowledged') DO NOTHING",
+            [strtolower((string) Str::ulid()), $withdrawalId, $acknowledged ? 'acknowledged' : 'unacknowledged']);
+    }
+
+    /**
+     * Queued withdrawal dispatches no claim has taken yet.
+     *
+     * @return Builder<WalletWithdrawalDispatch>
+     */
+    private function queuedWithdrawals(?string $withdrawalId): Builder
+    {
+        return WalletWithdrawalDispatch::query()->where('phase', 'queued')
+            ->whereNotIn('withdrawal_id', WalletWithdrawalDispatch::query()->where('phase', 'claimed')->select('withdrawal_id'))
+            ->when($withdrawalId !== null, fn (Builder $query) => $query->where('withdrawal_id', $withdrawalId));
+    }
+
+    /**
+     * Withdrawal claims still without a send outcome five minutes on: their send was interrupted.
+     *
+     * @return Builder<WalletWithdrawalDispatch>
+     */
+    private function interruptedWithdrawals(?string $withdrawalId): Builder
+    {
+        return WalletWithdrawalDispatch::query()->where('phase', 'claimed')
+            ->whereNotIn('withdrawal_id', WalletWithdrawalDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('withdrawal_id'))
+            ->where('created_at', '<', now()->subMinutes(5))->when($withdrawalId !== null, fn (Builder $query) => $query->where('withdrawal_id', $withdrawalId));
+    }
+
+    /**
+     * The withdrawal terms, while a payout provider is available here. With none, withdrawals are
+     * not offered at all rather than accepted for a provider that cannot pay.
+     */
+    private function withdrawalTerms(): ?WithdrawalTerms
+    {
+        return $this->guard->allowed() ? new WithdrawalTerms(WalletMoney::of($this->payouts->charge())) : null;
+    }
+
+    /** Whether any current case's recorded scope covers withdrawals. The 11.4 hold always does. */
+    private function withdrawalBlocked(string $partyId): bool
+    {
+        return $this->currentCases($partyId)->contains(fn (InvestorAccountRestriction $case): bool => (new AccountRestriction($case->cause, $case->scope))->blocksWithdrawal());
+    }
+
+    /** The wallet's spendable balance, from its postings. */
+    private function available(string $walletId): WalletMoney
+    {
+        $sums = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.wallet_id', $walletId)->where('ledger_accounts.kind', 'investor_available')
+            ->selectRaw("coalesce(sum(ledger_lines.amount) FILTER (WHERE ledger_lines.direction = 'credit'), 0)::text AS credits,
+                coalesce(sum(ledger_lines.amount) FILTER (WHERE ledger_lines.direction = 'debit'), 0)::text AS debits")->first();
+
+        return WalletBalance::bucket(WalletMoney::of((string) ($sums->credits ?? '0')), WalletMoney::of((string) ($sums->debits ?? '0')));
+    }
+
+    /**
+     * Records the withdrawal with its hold and its queued dispatch. The hold is checked here, before
+     * commit, so an overdraw surfaces as the refusal it is.
+     */
+    private function recordWithdrawal(InvestorWallet $wallet, InvestorFundingMethod $method, WithdrawalTerms $terms, WalletMoney $amount, string $operationId, string $requestId, int $userId): WalletWithdrawal
+    {
+        $reference = 'syw_'.bin2hex(random_bytes(20));
+        $withdrawal = new WalletWithdrawal;
+        $withdrawal->id = strtolower((string) Str::ulid());
+        $recordedAt = now('UTC')->toImmutable()->startOfSecond();
+        $payload = ['withdrawal_id' => $withdrawal->id, 'wallet_id' => $wallet->id, 'party_id' => $wallet->party_id, 'operation_id' => $operationId,
+            'request_id' => strtolower($requestId), 'method_id' => $method->id, 'terms_version' => WithdrawalTerms::VERSION,
+            'amount' => $amount->amount(), 'provider_charge' => $terms->providerCharge->amount(), 'received' => $terms->received($amount)->amount(),
+            'currency' => 'RWF', 'provider' => $this->payouts->name(), 'actor_user_id' => $userId, 'recorded_at' => $recordedAt->toIso8601String()];
+        $withdrawal->forceFill(['wallet_id' => $wallet->id, 'party_id' => $wallet->party_id, 'method_id' => $method->id, 'operation_id' => $operationId,
+            'request_id' => $payload['request_id'], 'terms_version' => WithdrawalTerms::VERSION, 'amount' => $payload['amount'],
+            'provider_charge' => $payload['provider_charge'], 'received' => $payload['received'], 'currency' => 'RWF', 'provider' => $payload['provider'],
+            'provider_reference' => $reference, 'provider_reference_sha256' => hash('sha256', $reference), 'payload' => $payload,
+            'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();
+        $this->postWithdrawal($withdrawal, 'withdrawal_hold', null);
+        (new WalletWithdrawalDispatch)->forceFill(['withdrawal_id' => $withdrawal->id, 'phase' => 'queued', 'created_at' => $recordedAt])->save();
+
+        return $withdrawal;
+    }
+
+    /** Posts one balanced withdrawal movement of the withdrawal's whole amount and seals it at once. */
+    private function postWithdrawal(WalletWithdrawal $withdrawal, string $kind, ?WalletWithdrawalEvent $event): LedgerEntry
+    {
+        $journal = JournalEntry::withdrawal($kind, WalletMoney::of($withdrawal->amount));
+        $recordedAt = now('UTC')->toImmutable()->startOfSecond();
+        $entry = new LedgerEntry;
+        $entry->id = strtolower((string) Str::ulid());
+        $lines = array_map(fn ($line): array => ['account' => $line->account, 'direction' => $line->direction, 'amount' => $line->amount->amount()], $journal->lines);
+        $entryPayload = ['entry_id' => $entry->id, 'wallet_id' => $withdrawal->wallet_id, 'kind' => $kind, 'source_type' => 'wallet_withdrawal',
+            'source_id' => $withdrawal->id, 'operation_id' => $withdrawal->operation_id, 'request_id' => $withdrawal->request_id,
+            'provider_event_id' => $event?->id, 'policy_version' => $withdrawal->terms_version, 'lines' => $lines, 'recorded_at' => $recordedAt->toIso8601String()];
+        $entry->forceFill(['wallet_id' => $withdrawal->wallet_id, 'kind' => $kind, 'source_type' => 'wallet_withdrawal', 'source_id' => $withdrawal->id,
+            'origin_operation_id' => $withdrawal->operation_id, 'currency' => 'RWF', 'payload' => $entryPayload,
+            'sha256' => hash('sha256', $this->json->encode($entryPayload)), 'created_at' => $recordedAt])->save();
+        foreach ($journal->lines as $line) {
+            (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $withdrawal->wallet_id),
+                'direction' => $line->direction, 'amount' => $line->amount->amount(), 'created_at' => $recordedAt])->save();
+        }
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced DEFERRED');
+
+        return $entry;
+    }
+
+    /**
+     * The withdrawal's provider state: its applied final outcome, else its latest applied non-final
+     * outcome, else pending.
+     */
+    private function withdrawalState(string $withdrawalId): string
+    {
+        $applied = WalletWithdrawalEvent::query()->where('withdrawal_id', $withdrawalId)->where('disposition', 'applied');
+
+        return (clone $applied)->whereIn('state', ['succeeded', 'failed'])->value('state')
+            ?? $applied->orderByDesc('created_at')->orderByDesc('id')->value('state') ?? 'pending';
+    }
+
+    /**
+     * The withdrawal's sealed facts; a row whose payload does not match its hash and columns is an
+     * integrity failure, never a readable withdrawal.
+     *
+     * @return array<string, mixed>
+     */
+    private function withdrawalPayload(WalletWithdrawal $withdrawal): array
+    {
+        $payload = $withdrawal->payload;
+        $columns = ['withdrawal_id' => $withdrawal->id, 'wallet_id' => $withdrawal->wallet_id, 'party_id' => $withdrawal->party_id,
+            'operation_id' => $withdrawal->operation_id, 'request_id' => $withdrawal->request_id, 'method_id' => $withdrawal->method_id,
+            'terms_version' => $withdrawal->terms_version, 'amount' => $withdrawal->amount, 'provider_charge' => $withdrawal->provider_charge,
+            'received' => $withdrawal->received, 'provider' => $withdrawal->provider];
+        if (! hash_equals($withdrawal->sha256, hash('sha256', $this->json->encode($payload))) || array_intersect_key($payload, $columns) !== $columns) {
+            throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+        }
+
+        return $payload;
+    }
+
+    /**
+     * WITHDRAWAL_RECORDED: the request and its hold were durably recorded, not that any money left.
+     *
+     * @return array<string, mixed>
+     */
+    private function withdrawalReceipt(WalletWithdrawal $withdrawal): array
+    {
+        $payload = $this->withdrawalPayload($withdrawal);
+
+        return ['receipt_id' => $withdrawal->id, 'operation_id' => $withdrawal->operation_id, 'request_id' => $withdrawal->request_id,
+            'code' => 'WITHDRAWAL_RECORDED', 'recorded_at' => $payload['recorded_at'], 'amount' => WalletMoney::of($withdrawal->amount)->money(),
+            'units' => null, 'reference' => 'RZX-'.strtoupper(substr($withdrawal->id, -10)), 'revision' => 1,
+            'policy_version' => $withdrawal->terms_version, 'disclosure_version' => null];
+    }
+
+    /**
+     * WITHDRAWAL_PAID or WITHDRAWAL_RETURNED: the posting that ended the withdrawal, against the
+     * request that opened it.
+     *
+     * @return array<string, mixed>
+     */
+    private function settledReceipt(WalletWithdrawal $withdrawal, LedgerEntry $entry): array
+    {
+        return ['receipt_id' => $entry->id, 'operation_id' => $withdrawal->operation_id, 'request_id' => $withdrawal->request_id,
+            'code' => $entry->kind === 'withdrawal_payout' ? 'WITHDRAWAL_PAID' : 'WITHDRAWAL_RETURNED', 'recorded_at' => (string) $entry->payload['recorded_at'],
+            'amount' => WalletMoney::of($withdrawal->amount)->money(), 'units' => null, 'reference' => $this->entryReference($entry), 'revision' => 1,
+            'policy_version' => $withdrawal->terms_version, 'disclosure_version' => null];
+    }
+
+    private function entryReference(LedgerEntry $entry): string
+    {
+        return 'RZW-'.strtoupper(substr($entry->id, -10));
+    }
+
+    /**
+     * The latest withdrawals, unsettled first, each with its request receipt and, once a verified
+     * outcome ended it, the receipt of the payout or the return.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function withdrawals(InvestorWallet $wallet, ?string $only = null): array
+    {
+        $withdrawals = WalletWithdrawal::query()->where('wallet_id', $wallet->id)->when($only !== null, fn ($query) => $query->whereKey($only))
+            ->orderByDesc('id')->limit(20)->get();
+        $endings = LedgerEntry::query()->where('source_type', 'wallet_withdrawal')->whereIn('source_id', $withdrawals->pluck('id'))
+            ->whereIn('kind', ['withdrawal_payout', 'withdrawal_return'])->get()->keyBy('source_id');
+        $methods = InvestorFundingMethod::query()->whereIn('id', $withdrawals->pluck('method_id'))->get()->keyBy('id');
+        $listed = $withdrawals->map(function (WalletWithdrawal $withdrawal) use ($endings, $methods): array {
+            $ending = $endings->get($withdrawal->id);
+
+            return ['id' => $withdrawal->id, 'request_id' => $withdrawal->request_id, 'amount' => WalletMoney::of($withdrawal->amount)->money(),
+                'charge' => WalletMoney::of($withdrawal->provider_charge)->money(), 'received' => WalletMoney::of($withdrawal->received)->money(),
+                'method' => $this->method($methods->get($withdrawal->method_id) ?? throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED')),
+                'created_at' => $this->withdrawalPayload($withdrawal)['recorded_at'], 'state' => $this->withdrawalState($withdrawal->id),
+                'request_receipt' => $this->withdrawalReceipt($withdrawal),
+                'settled_receipt' => $ending === null ? null : $this->settledReceipt($withdrawal, $ending)];
+        });
+
+        return array_values($listed->sortBy(fn (array $withdrawal): int => $withdrawal['settled_receipt'] === null ? 0 : 1)->values()->all());
+    }
+
+    /**
+     * A paid withdrawal as the external history shows it: money out to the Investor's own account.
+     *
+     * @return array<string, mixed>
+     */
+    private function payoutEntry(LedgerEntry $entry): array
+    {
+        $withdrawal = WalletWithdrawal::query()->whereKey($entry->source_id)->sole();
+
+        return ['id' => $entry->id, 'movement' => 'external', 'kind' => 'withdrawal', 'direction' => 'out', 'amount' => WalletMoney::of($withdrawal->amount)->money(),
+            'counterparty' => InvestorFundingMethod::query()->whereKey($withdrawal->method_id)->sole()->label, 'occurred_at' => (string) $entry->payload['recorded_at']];
+    }
+
+    /**
+     * The wallet's withdrawal payouts.
+     *
+     * @return Builder<LedgerEntry>
+     */
+    private function payouts(InvestorWallet $wallet): Builder
+    {
+        return LedgerEntry::query()->where('wallet_id', $wallet->id)->where('kind', 'withdrawal_payout')->where('source_type', 'wallet_withdrawal');
+    }
+
+    /**
+     * The withdrawal quote for an entered amount: the provider's charge, what reaches the account,
+     * and why the amount would be refused, if it would.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function withdrawalQuote(?WithdrawalTerms $terms, ?InvestorWallet $wallet, bool $hasMethod, ?string $amount): ?array
+    {
+        if ($amount === null || $amount === '' || $terms === null) {
+            return null;
+        }
+        $money = WalletMoney::fromInput(ltrim($amount, '0'));
+        if ($money === null) {
+            return ['amount' => WalletMoney::zero()->money(), 'charge' => $terms->providerCharge->money(), 'received' => WalletMoney::zero()->money(), 'refusal' => 'VALIDATION_FAILED'];
+        }
+        $available = $wallet === null ? WalletMoney::zero() : $this->available($wallet->id);
+        $refusal = match (true) {
+            ! $hasMethod => 'WITHDRAWAL_METHOD_UNVERIFIED',
+            $terms->boundsError($money, $available) === null => null,
+            $money->compareTo($available) > 0 && $money->compareTo($terms->maximum()) <= 0 && $money->compareTo($terms->minimum()) >= 0 => 'INSUFFICIENT_AVAILABLE_FUNDS',
+            default => 'VALIDATION_FAILED',
+        };
+
+        return ['amount' => $money->money(), 'charge' => $terms->providerCharge->money(),
+            'received' => ($money->compareTo($terms->providerCharge) > 0 ? $terms->received($money) : WalletMoney::zero())->money(), 'refusal' => $refusal];
+    }
+
+    public function afterCommit(Closure $callback): void
+    {
+        DB::afterCommit($callback);
+    }
+
+    public function transactionOpen(): bool
+    {
+        return app('db.transactions')->callbackApplicableTransactions()->isNotEmpty();
+    }
+
+    /** The Party's wallet, created on first use, locked for the rest of the transaction. */
+    private function lockWallet(string $partyId): InvestorWallet
+    {
+        DB::insert("INSERT INTO investor_wallets (id, party_id, currency, created_at) VALUES (?, ?, 'RWF', now()) ON CONFLICT (party_id) DO NOTHING",
+            [strtolower((string) Str::ulid()), $partyId]);
+
+        return InvestorWallet::query()->where('party_id', $partyId)->lockForUpdate()->sole();
+    }
+
+    /**
+     * The current applicable deposit policy: the latest version already in effect, unless that
+     * version withdrew deposits. Synthetic versions apply only where the synthetic provider does.
+     *
+     * @return Policy|null
+     */
+    private function applicablePolicy(): ?array
+    {
+        $policy = $this->guard->allowed() ? DepositPolicy::query()->where('effective_at', '<=', now())->orderByDesc('effective_at')->orderByDesc('id')->first() : null;
+        if ($policy === null || $policy->status !== 'active') {
+            return null;
+        }
+
+        return ['model' => $policy, 'terms' => new DepositPolicyTerms($policy->version, $policy->synthetic, WalletMoney::of((string) $policy->fee),
+            $policy->minimum === null ? null : WalletMoney::of($policy->minimum), $policy->maximum === null ? null : WalletMoney::of($policy->maximum))];
+    }
+
+    /** @return Collection<int, InvestorFundingMethod> */
+    private function verifiedMethods(string $partyId): Collection
+    {
+        return InvestorFundingMethod::query()->where('party_id', $partyId)->whereNotNull('verified_at')->where('verified_at', '<=', now())
+            ->whereNull('revoked_at')->orderBy('id')->get();
+    }
+
+    /**
+     * The current applicable account cases: in effect and not expired, earliest first. A case that
+     * has expired, or has not started, is not a restriction at all.
+     *
+     * @return Collection<int, InvestorAccountRestriction>
+     */
+    private function currentCases(string $partyId): Collection
+    {
+        return InvestorAccountRestriction::query()->where('party_id', $partyId)->where('effective_at', '<=', now())
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))->orderBy('effective_at')->orderBy('id')->get();
+    }
+
+    /** Whether any current case's recorded scope covers deposits. The 11.4 hold never does. */
+    private function depositBlocked(string $partyId): bool
+    {
+        return $this->currentCases($partyId)->contains(fn (InvestorAccountRestriction $case): bool => (new AccountRestriction($case->cause, $case->scope))->blocksDeposit());
+    }
+
+    /** @param Policy $policy */
+    private function recordIntent(InvestorWallet $wallet, InvestorFundingMethod $method, array $policy, WalletMoney $amount, string $operationId, string $requestId, int $userId): WalletDepositIntent
+    {
+        $terms = $policy['terms'];
+        $reference = 'syn_'.bin2hex(random_bytes(20));
+        $intent = new WalletDepositIntent;
+        $intent->id = strtolower((string) Str::ulid());
+        $recordedAt = now('UTC')->toImmutable()->startOfSecond();
+        $payload = ['intent_id' => $intent->id, 'wallet_id' => $wallet->id, 'party_id' => $wallet->party_id, 'operation_id' => $operationId,
+            'request_id' => strtolower($requestId), 'method_id' => $method->id, 'policy_id' => $policy['model']->id, 'policy_version' => $terms->version,
+            'amount' => $amount->amount(), 'fee' => $terms->fee->amount(), 'credited' => $terms->credited($amount)->amount(), 'currency' => 'RWF',
+            'provider' => $this->provider->name(), 'actor_user_id' => $userId, 'recorded_at' => $recordedAt->toIso8601String()];
+        $intent->forceFill(['wallet_id' => $wallet->id, 'party_id' => $wallet->party_id, 'operation_id' => $operationId, 'request_id' => $payload['request_id'],
+            'method_id' => $method->id, 'policy_id' => $policy['model']->id, 'amount' => $payload['amount'], 'fee' => $payload['fee'],
+            'credited' => $payload['credited'], 'currency' => 'RWF', 'provider' => $payload['provider'], 'provider_reference' => $reference,
+            'provider_reference_sha256' => hash('sha256', $reference), 'payload' => $payload,
+            'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();
+        (new WalletDepositDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => 'queued', 'created_at' => $recordedAt])->save();
+
+        return $intent;
+    }
+
+    /**
+     * The intent's provider state: its applied final outcome, else its latest applied non-final
+     * outcome, else pending. Duplicates, conflicts, mismatches and after-final events never move it.
+     */
+    private function currentState(string $intentId): string
+    {
+        $applied = WalletProviderEvent::query()->where('intent_id', $intentId)->where('disposition', 'applied');
+
+        return (clone $applied)->whereIn('state', ['succeeded', 'failed'])->value('state')
+            ?? $applied->orderByDesc('created_at')->orderByDesc('id')->value('state') ?? 'pending';
+    }
+
+    /**
+     * Posts the one balanced credit for an applied success and its separate DEPOSIT_CREDITED receipt.
+     * The receipt keeps the originating operation; the entry and event are internal provenance.
+     */
+    private function postCredit(WalletDepositIntent $intent, WalletProviderEvent $event): void
+    {
+        $payload = $this->intentPayload($intent);
+        $journal = JournalEntry::depositCredit(WalletMoney::of($intent->amount), WalletMoney::of($intent->fee));
+        $recordedAt = now('UTC')->toImmutable()->startOfSecond();
+        $entry = new LedgerEntry;
+        $entry->id = strtolower((string) Str::ulid());
+        $lines = array_map(fn ($line): array => ['account' => $line->account, 'direction' => $line->direction, 'amount' => $line->amount->amount()], $journal->lines);
+        $entryPayload = ['entry_id' => $entry->id, 'wallet_id' => $intent->wallet_id, 'kind' => $journal->kind, 'source_type' => 'wallet_deposit_intent',
+            'source_id' => $intent->id, 'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'provider_event_id' => $event->id,
+            'policy_version' => $payload['policy_version'], 'lines' => $lines, 'recorded_at' => $recordedAt->toIso8601String()];
+        $entry->forceFill(['wallet_id' => $intent->wallet_id, 'kind' => $journal->kind, 'source_type' => 'wallet_deposit_intent', 'source_id' => $intent->id,
+            'origin_operation_id' => $intent->operation_id, 'currency' => 'RWF', 'payload' => $entryPayload, 'sha256' => hash('sha256', $this->json->encode($entryPayload)), 'created_at' => $recordedAt])->save();
+        foreach ($journal->lines as $line) {
+            (new LedgerLine)->forceFill(['entry_id' => $entry->id, 'account_id' => $this->account($line->account, $intent->wallet_id),
+                'direction' => $line->direction, 'amount' => $line->amount->amount(), 'created_at' => $recordedAt])->save();
+        }
+        // Surface an unbalanced entry here rather than at commit; the check seals the entry, and
+        // any other entry this transaction writes is still checked at commit.
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced DEFERRED');
+        $credit = new WalletDepositCredit;
+        $credit->id = strtolower((string) Str::ulid());
+        $creditPayload = ['receipt_id' => $credit->id, 'intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id,
+            'provider_event_id' => $event->id, 'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited,
+            'policy_version' => $payload['policy_version'], 'recorded_at' => $recordedAt->toIso8601String()];
+        $credit->forceFill(['intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id, 'provider_event_id' => $event->id,
+            'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited, 'payload' => $creditPayload,
+            'sha256' => hash('sha256', $this->json->encode($creditPayload)), 'created_at' => $recordedAt])->save();
+    }
+
+    /** A ledger account's id, created on first use. Investor buckets belong to the wallet; the rest are platform accounts. */
+    private function account(string $kind, string $walletId): string
+    {
+        $owned = str_starts_with($kind, 'investor_');
+        DB::insert('INSERT INTO ledger_accounts (id, wallet_id, kind, currency, created_at) VALUES (?, ?, ?, \'RWF\', now())
+            ON CONFLICT '.($owned ? '(wallet_id, kind) WHERE wallet_id IS NOT NULL' : '(kind) WHERE wallet_id IS NULL').' DO NOTHING',
+            [strtolower((string) Str::ulid()), $owned ? $walletId : null, $kind]);
+
+        return (string) DB::table('ledger_accounts')->where('kind', $kind)
+            ->when($owned, fn ($query) => $query->where('wallet_id', $walletId), fn ($query) => $query->whereNull('wallet_id'))->value('id');
+    }
+
+    /**
+     * The intent's sealed facts. A row whose payload does not match its hash and columns is an
+     * integrity failure, never a readable deposit.
+     *
+     * @return array<string, mixed>
+     */
+    private function intentPayload(WalletDepositIntent $intent): array
+    {
+        $payload = $intent->payload;
+        $columns = ['intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'party_id' => $intent->party_id, 'operation_id' => $intent->operation_id,
+            'request_id' => $intent->request_id, 'method_id' => $intent->method_id, 'policy_id' => $intent->policy_id, 'amount' => $intent->amount,
+            'fee' => $intent->fee, 'credited' => $intent->credited, 'provider' => $intent->provider];
+        if (! hash_equals($intent->sha256, hash('sha256', $this->json->encode($payload))) || array_intersect_key($payload, $columns) !== $columns) {
+            throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED');
+        }
+
+        return $payload;
+    }
+
+    /**
+     * DEPOSIT_CREDITED: its own receipt identity, with the originating command's operation and
+     * request. The ledger entry and provider event behind it stay internal.
+     *
+     * @return array<string, mixed>
+     */
+    private function creditReceipt(WalletDepositCredit $credit): array
+    {
+        $payload = $credit->payload;
+        $columns = ['receipt_id' => $credit->id, 'intent_id' => $credit->intent_id, 'wallet_id' => $credit->wallet_id, 'ledger_entry_id' => $credit->ledger_entry_id,
+            'provider_event_id' => $credit->provider_event_id, 'operation_id' => $credit->operation_id, 'request_id' => $credit->request_id, 'amount' => $credit->amount];
+        if (! hash_equals($credit->sha256, hash('sha256', $this->json->encode($payload))) || array_intersect_key($payload, $columns) !== $columns) {
+            throw new RuntimeException('WALLET_CREDIT_INTEGRITY_FAILED');
+        }
+
+        return ['receipt_id' => $credit->id, 'operation_id' => $credit->operation_id, 'request_id' => $credit->request_id, 'code' => 'DEPOSIT_CREDITED',
+            'recorded_at' => $payload['recorded_at'], 'amount' => WalletMoney::of($credit->amount)->money(), 'units' => null,
+            'reference' => 'RZC-'.strtoupper(substr($credit->id, -10)), 'revision' => 1, 'policy_version' => $payload['policy_version'], 'disclosure_version' => null];
+    }
+
+    /**
+     * DEPOSIT_INTENT_RECORDED: the request was durably recorded, not that any money moved.
+     *
+     * @return array<string, mixed>
+     */
+    private function intentReceipt(WalletDepositIntent $intent): array
+    {
+        $payload = $this->intentPayload($intent);
+
+        return ['receipt_id' => $intent->id, 'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id,
+            'code' => 'DEPOSIT_INTENT_RECORDED', 'recorded_at' => $payload['recorded_at'], 'amount' => ['currency' => 'RWF', 'amount' => $intent->amount],
+            'units' => null, 'reference' => 'RZD-'.strtoupper(substr($intent->id, -10)), 'revision' => 1,
+            'policy_version' => $payload['policy_version'], 'disclosure_version' => null];
+    }
+}

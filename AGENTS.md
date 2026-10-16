@@ -120,7 +120,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Work is promoted `feat/*` → `dev` → `uat` → `main`. Branch new work off `dev`, never off `main`.
 - `uat` auto-deploys to staging.rozine.rw and `main` auto-deploys to rozine.rw, so a change reaching `main` is in production.
 - Never open a pull request from a feature branch straight to `main`, and never merge to `main` before the same commits have run on `uat`. "Ship it to main" means promote it through the chain, not retarget the PR.
-- Each hop is its own pull request, and each waits for its checks before merging.
+- Each hop is its own pull request.
+- **Into `dev`:** a PR waits for the approved POC PHP/web safety and static checks, board checks and combined ten-minute execution budget, its focused tests pass locally, and it has had its independent review at the exact head. A dev push may reuse fresh original successful evidence for its identical entire Git tree; changed or unverifiable trees execute POC. Full coverage/concurrency validation remains available through explicit `validation=full` dispatch. `dev` deploys nowhere.
+- **If a `dev` push run fails,** the author of the breaking change fixes forward immediately, and nothing is promoted from `dev` while it is red.
+- **Into `uat`:** the promotion waits for its applicable POC checks or validated identical-tree reuse. The 2026-10-07 approved staging amendment permits fresh trusted original POC proof under the combined 600-second execution budget, bound to the entire Git tree and original successful run/attempt. The newest exact-current-UAT push/dispatch must succeed; admission verifies original provenance, current tip, exact merged promotion and genuine non-author approval of its final head. Newer matching failures, skipped/cancelled work and expired or unverifiable evidence cannot be hidden by stale success. Manual `validation=auto` defaults dev/UAT to POC; explicit full dispatch always executes. Queueing is disclosed separately.
+- **Into `main`:** the PR waits for every full check. Production admission retains full exact-candidate target-push coverage/concurrency validation and independent approval; POC/reuse does not substitute for it. No merge or deployment is authorized merely by changing CI policy.
 
 - Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
 
@@ -213,3 +217,35 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+<!--VITE PLUS START-->
+
+# Using Vite+, the Unified Toolchain for the Web
+
+This project is using Vite+, a unified toolchain built on top of Vite, Rolldown, Vitest, tsdown, Oxlint, Oxfmt, and Vite Task. Vite+ wraps runtime management, package management, and frontend tooling in a single global CLI called `vp`. Vite+ is distinct from Vite, and it invokes Vite through `vp dev` and `vp build`. Run `vp help` to print a list of commands and `vp <command> --help` for information about a specific command.
+
+Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.dev/guide/.
+
+## Built-in Commands vs Scripts
+
+`vp <name>` runs a built-in command. `vp run <name>` runs a `package.json` script or a `vite.config.ts` task. Scripts cannot overwrite built-ins, so `vp dev` and `vp run dev` may do different things. Check `package.json` and `vite.config.ts` first, and run `vp run <name>` when the project defines a script or task with that name.
+
+## Tool Versions
+
+Run `vp toolchain` to show versions and relationships in the active Vite+
+release. Add a tool name to select part of the graph. For example, run
+`vp toolchain vite`. Use `--global` to ignore the local `vite-plus` package. Use
+`vp why <package>` to show the package-manager dependency graph.
+
+## Review Checklist
+
+- [ ] Run `vp install` after pulling remote changes and before getting started.
+- [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
+- [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
+- [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
+
+<!--VITE PLUS END-->
+
+## Shared agent coordination
+
+Before starting or handing off work, read and follow [the shared coordination instructions](docs/agent-coordination.md). Keep coordination rules there; the existing development, testing and deployment instructions above remain in force.
