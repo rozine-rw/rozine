@@ -136,7 +136,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $businessContacts = require database_path('migrations/2026_10_15_022904_create_business_contact_versions_table.php');
     $complaints = require database_path('migrations/2026_10_15_053241_create_complaints_tables.php');
     $dependentShape = fn (): array => [
-        DB::select("SELECT table_name, column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns
+        DB::select("SELECT table_name, column_name, data_type, udt_name, is_nullable, column_default,
+            character_maximum_length, numeric_precision, numeric_scale, datetime_precision, is_identity, identity_generation,
+            identity_start, identity_increment, identity_minimum, identity_maximum, identity_cycle, is_generated, generation_expression, collation_name
+            FROM information_schema.columns
             WHERE table_schema = current_schema() AND table_name IN ('business_contact_versions', 'complaints', 'complaint_messages') ORDER BY table_name, ordinal_position"),
         DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid IN
             ('business_contact_versions'::regclass, 'complaints'::regclass, 'complaint_messages'::regclass) ORDER BY conname"),
