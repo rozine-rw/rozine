@@ -321,6 +321,10 @@ describe('Pulse signup controls', () => {
             </SignupFields>,
         );
 
+        expect(screen.getByPlaceholderText('Name')).toHaveAccessibleName();
+        expect(
+            screen.getByRole('textbox', { name: 'Phone number' }),
+        ).toBeInTheDocument();
         await user.type(screen.getByPlaceholderText('Name'), ' A');
         await user.selectOptions(screen.getByLabelText('Province'), 'Kigali');
         await user.selectOptions(screen.getByLabelText('District'), 'Kicukiro');
@@ -368,6 +372,8 @@ describe('Pulse signup controls', () => {
         );
 
         const contact = screen.getByPlaceholderText('you@email.com');
+
+        expect(contact).toHaveAccessibleName('Email address');
 
         expect(contact).not.toHaveAttribute('aria-invalid');
         expect(screen.getByLabelText('District')).toHaveDisplayValue(

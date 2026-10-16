@@ -71,17 +71,21 @@ it('renders the Business wallet with real routes, the literal lookup token and n
     $props = businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)));
 
     expect($props['contract_version'])->toBe('business-servicing-v1')->and($props['identity_context_revision'])->toBe(1)
-        ->and($props['allowed_actions'])->toBe(['business.wallet.deposit'])
+        ->and($props['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw'])
         ->and($props['business'])->toBe(['id' => $business, 'name' => 'Synthetic business'])
         ->and($props['wallet'])->toBe(['revision' => 0, 'status' => 'active', 'restriction' => null,
-            'available' => ['currency' => 'RWF', 'amount' => '0'], 'pending_deposits' => ['currency' => 'RWF', 'amount' => '0']])
+            'available' => ['currency' => 'RWF', 'amount' => '0'], 'pending_deposits' => ['currency' => 'RWF', 'amount' => '0'],
+            'pending_withdrawals' => ['currency' => 'RWF', 'amount' => '0']])
         ->and($props['funding']['policy']['version'])->toBe($fixture['policy']->version)
         ->and($props['funding']['methods'])->toBe([['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']])
-        ->and([$props['deposits'], $props['receipt'], $props['history']['items']])->toBe([[], null, []])
+        ->and([$props['deposits'], $props['withdrawals'], $props['receipt'], $props['history']['items']])->toBe([[], [], null, []])
         ->and($props['links'])->toMatchArray(['close' => ['url' => '/business/'.$business, 'method' => 'get'], 'repayments' => ['url' => '/business/'.$business.'/repayments', 'method' => 'get'],
             'deposit' => ['url' => '/business/'.$business.'/wallet?kind=deposit', 'method' => 'get'],
-            'operation' => ['url' => '/business/'.$business.'/wallet-operations/{request_id}?command=business.wallet.deposit&identity_context_revision=1', 'method' => 'get']])
-        ->and($props['actions'])->toBe(['deposit' => ['url' => '/business/'.$business.'/wallet/deposits', 'method' => 'post']])
+            'withdraw' => ['url' => '/business/'.$business.'/wallet?kind=withdraw', 'method' => 'get'],
+            'operation' => ['url' => '/business/'.$business.'/wallet-operations/{request_id}?command=business.wallet.deposit&identity_context_revision=1', 'method' => 'get'],
+            'withdrawal_operation' => ['url' => '/business/'.$business.'/wallet-operations/{request_id}?command=business.wallet.withdraw&identity_context_revision=1', 'method' => 'get']])
+        ->and($props['actions'])->toBe(['deposit' => ['url' => '/business/'.$business.'/wallet/deposits', 'method' => 'post'],
+            'withdraw' => ['url' => '/business/'.$business.'/wallet/withdrawals', 'method' => 'post']])
         ->and($props['shell_links'])->toBe(['home' => ['url' => '/business/'.$business, 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
             'reports' => ['url' => '/business/'.$business.'/reports', 'method' => 'get'], 'market' => ['url' => '/business/'.$business.'/market', 'method' => 'get'],
             'profile' => ['url' => '/business/'.$business.'/profile', 'method' => 'get']])
@@ -93,7 +97,7 @@ it('offers no deposit without an active policy or the mandate permission, and re
     $fixture = businessWalletFixture(policy: false);
     $business = $fixture['business']->id;
 
-    expect(businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)))['allowed_actions'])->toBe([])
+    expect(businessWalletPage($this->actingAs($fixture['depositor'])->get(route('business.wallet.show', $business)))['allowed_actions'])->toBe(['business.wallet.withdraw'])
         ->and(businessWalletPage($this->actingAs($fixture['viewer'])->get(route('business.wallet.show', $business)))['allowed_actions'])->toBe([]);
     $this->actingAs($fixture['depositor'])->postJson(route('business.wallet.deposit', $business), businessWalletDepositBody($fixture))
         ->assertStatus(409)->assertJsonPath('code', 'POLICY_INPUT_REQUIRED');

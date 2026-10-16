@@ -13,6 +13,7 @@ import type {
     AuditorActivity,
     AuditorHomeProps,
 } from '@/types/auditor';
+import inbox from '../../../resources/fixtures/auditor-notices.json';
 import liveMinimalFixture from '../../../resources/fixtures/ui/auditor-home-live-minimal.json';
 import homeFixture from '../../../resources/fixtures/ui/auditor-home.json';
 import { renderWithUser } from '../helpers/render-with-user';
@@ -35,6 +36,107 @@ afterEach(() => {
 });
 
 describe('Auditor Home', () => {
+    it("opens the partner's notices behind the bell: accreditation decisions and job offers (BRS NTF-R01)", async () => {
+        inertia.queue.push(answers({ data: inbox }));
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const items = await within(panel).findAllByRole('button', {
+            name: /audit|Accreditation/u,
+        });
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-notices',
+            method: 'get',
+        });
+        expect(items).toHaveLength(4);
+        expect(items[0]).toHaveTextContent(
+            'New audit jobFlash audit at Sebeya Logistics, Musanze. Accept by',
+        );
+        expect(items[1]).toHaveTextContent(
+            'New audit jobRoutine audit at GreenLeaf Agro, Gasabo. Accept by',
+        );
+        expect(items[2]).toHaveTextContent(
+            'Accreditation activeLicence ICPAR/P-2026/0481 is verified until 10 Oct 2027. You can now take audit jobs.',
+        );
+        expect(items[3]).toHaveTextContent(
+            'Accreditation needs another lookThe certificate scan is unreadable. Upload a corrected certificate from your profile.',
+        );
+
+        inertia.queue.push(answers({ data: { unread: 1 } }));
+        await user.click(items[0]);
+
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([{ url: '/preview/auditor-jobs' }]),
+        );
+        expect(inertia.calls[1]).toMatchObject({
+            url: '/preview/auditor-notices/read',
+            method: 'post',
+        });
+
+        await user.click(
+            within(panel).getByRole('button', { name: 'Close notifications' }),
+        );
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('reminds the partner to renew a licence that is about to lapse, opening the profile', async () => {
+        inertia.queue.push(
+            answers({
+                data: {
+                    ...inbox,
+                    unread: 1,
+                    notices: [
+                        {
+                            id: '01k7nq0c2y6w8e4t1v3x5z7d09',
+                            kind: 'auditor.accreditation_renewal_due',
+                            facts: {
+                                licence: 'ICPAR/P-2026/0481',
+                                expires_on: '2026-11-24',
+                            },
+                            created_at: '2026-10-10T09:00:00+02:00',
+                            read: false,
+                            link: {
+                                url: '/preview/auditor-profile',
+                                method: 'get',
+                            },
+                            read_action: {
+                                url: '/preview/auditor-notices/read',
+                                method: 'post',
+                            },
+                        },
+                    ],
+                },
+            }),
+        );
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const [item] = await within(panel).findAllByRole('button', {
+            name: /Accreditation renewal due/u,
+        });
+
+        expect(item).toHaveTextContent(
+            'Accreditation renewal dueLicence ICPAR/P-2026/0481 expires on 24 Nov 2026. Upload the renewal from your profile to keep taking audit jobs.',
+        );
+
+        inertia.queue.push(answers({ data: { unread: 0 } }));
+        await user.click(item);
+
+        await waitFor(() =>
+            expect(inertia.visits).toEqual([
+                { url: '/preview/auditor-profile' },
+            ]),
+        );
+    });
+
     it('lays out identity, standing, nearby work and activity from server facts', () => {
         render(<AuditorHome {...fixture()} />);
 
@@ -84,7 +186,7 @@ describe('Auditor Home', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('2d ago · 2.1% variance')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications, 2 unread' }),
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Withdraw' }),
@@ -263,7 +365,7 @@ describe('Auditor Home', () => {
             screen.queryByRole('link', { name: 'Statement' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /Notifications/ }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
         expect(screen.queryByText(/RWF/u)).not.toBeInTheDocument();
         expect(
@@ -323,7 +425,7 @@ describe('Auditor Home', () => {
             screen.getByText('Nothing has happened on your files yet.'),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications' }),
+            screen.getByRole('button', { name: 'Notifications' }),
         ).toBeInTheDocument();
         expect(screen.getAllByText('—')).toHaveLength(3);
         expect(screen.getByText('2')).toHaveClass('text-rz-ink');

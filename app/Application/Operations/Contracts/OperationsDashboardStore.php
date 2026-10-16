@@ -24,6 +24,9 @@ namespace App\Application\Operations\Contracts;
  *     notes: array{live: int, funded: int, repaying: int, failed: int}
  * }
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
+ * @phpstan-type Movement array{amount: string, count: int}
+ * @phpstan-type Movements array{deposits: Movement, withdrawals: Movement, disbursed: Movement}
+ * @phpstan-type Payout array{id: string, owner: 'investor'|'business', name: string|null, amount: string, received: string, account: string, state: 'pending'|'unknown', requested_at: string}
  */
 interface OperationsDashboardStore
 {
@@ -39,4 +42,39 @@ interface OperationsDashboardStore
      * @return list<Bar>
      */
     public function capitalRaised(string $grain, ?string $from, ?string $to): array;
+
+    /**
+     * Cash Investors committed to Primary raises per Kigali calendar bucket (each `primary_commit`
+     * posting, when it posted), shaped like `capitalRaised`. A later refund does not reduce it.
+     *
+     * @param  'year'|'month'|'day'|'hour'  $grain
+     * @return list<Bar>
+     */
+    public function committed(string $grain, ?string $from, ?string $to): array;
+
+    /**
+     * The money that moved since `$from` (inclusive): every credited deposit's gross amount
+     * (Investor and Business), every withdrawal paid out (Investor and Business), and every
+     * disbursement that closed with issued notes, each summed with its count.
+     *
+     * @return Movements
+     */
+    public function movements(string $from): array;
+
+    /**
+     * Credited deposits plus paid-out withdrawals per Kigali calendar bucket, shaped like
+     * `capitalRaised`.
+     *
+     * @param  'year'|'month'|'day'|'hour'  $grain
+     * @return list<Bar>
+     */
+    public function moved(string $grain, ?string $from, ?string $to): array;
+
+    /**
+     * Every withdrawal, Investor or Business, whose cash is held but not yet paid out or returned,
+     * oldest first: `unknown` when the last applied provider observation says so, else `pending`.
+     *
+     * @return list<Payout>
+     */
+    public function payoutsInFlight(): array;
 }

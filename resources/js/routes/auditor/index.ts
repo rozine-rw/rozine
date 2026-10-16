@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import notices5868c6 from './notices'
 import reports from './reports'
 import engagement from './engagement'
 import jobs from './jobs'
@@ -9,7 +10,7 @@ import availability from './availability'
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -24,7 +25,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -33,7 +34,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,7 +44,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -53,7 +54,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +64,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +74,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:28
+* @see app/Http/Controllers/AuditorHomeController.php:30
 * @route '/auditor'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -169,9 +170,91 @@ profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 profile.form = profileForm
 
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+export const notices = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notices.url(options),
+    method: 'get',
+})
+
+notices.definition = {
+    methods: ["get","head"],
+    url: '/auditor/notices',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+notices.url = (options?: RouteQueryOptions) => {
+    return notices.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+notices.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+notices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: notices.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+const noticesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+noticesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\AuditorNoticesController::notices
+* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @route '/auditor/notices'
+*/
+noticesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: notices.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+notices.form = noticesForm
+
 const auditor = {
     home: Object.assign(home, home),
     profile: Object.assign(profile, profile),
+    notices: Object.assign(notices, notices5868c6),
     reports: Object.assign(reports, reports),
     engagement: Object.assign(engagement, engagement),
     jobs: Object.assign(jobs, jobs),

@@ -29,4 +29,14 @@ final class GetBusinessWallet
     {
         return $this->store->summary($userId, $contextRevision, $businessId);
     }
+
+    /**
+     * The Business's own verified accounts, for Profile > Linked accounts.
+     *
+     * @return list<array{id: string, kind: string, label: string, masked: string}>
+     */
+    public function methods(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->store->methods($userId, $contextRevision, $businessId);
+    }
 }

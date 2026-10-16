@@ -156,17 +156,18 @@ describe('A designed section that is not wired yet', () => {
         ).toHaveAttribute('aria-selected', 'true');
         expect(screen.getByText('No revenue to show yet.')).toBeVisible();
 
-        fireEvent.click(within(tabs).getByRole('tab', { name: 'RAMP' }));
-
-        expect(within(tabs).getByRole('tab', { name: 'RAMP' })).toHaveAttribute(
-            'aria-selected',
-            'true',
+        fireEvent.click(
+            within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
         );
+
+        expect(
+            within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
+        ).toHaveAttribute('aria-selected', 'true');
         expect(
             within(tabs).getByRole('tab', { name: 'Revenue streams' }),
         ).toHaveAttribute('aria-selected', 'false');
         expect(
-            screen.getByText('No RAMP positions to show yet.'),
+            screen.getByText('No ledger entries to show yet.'),
         ).toBeVisible();
         expect(
             screen.queryByText('No revenue to show yet.'),

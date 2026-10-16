@@ -56,6 +56,7 @@ export function SignupFields({
                 <input
                     value={details.name}
                     onChange={(event) => onChange({ name: event.target.value })}
+                    aria-label={nameLabel}
                     className="rz-ipt h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-3.5 text-[14px] text-[var(--rz-fg)] outline-none"
                     placeholder={namePlaceholder}
                 />
@@ -138,6 +139,11 @@ export function SignupFields({
                     value={details.contact}
                     onChange={(event) =>
                         onChange({ contact: event.target.value })
+                    }
+                    aria-label={
+                        details.contactMethod === 'phone'
+                            ? 'Phone number'
+                            : 'Email address'
                     }
                     aria-invalid={contactError ? true : undefined}
                     aria-describedby={

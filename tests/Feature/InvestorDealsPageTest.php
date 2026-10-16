@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
@@ -45,7 +46,7 @@ beforeEach(function (): void {
     };
 });
 
-it('lists the live publication with allowlisted facts, live fill and no quote or checkout', function (): void {
+it('lists the live publication with allowlisted facts, live fill, no quote and a checkout for the focused deal', function (): void {
     $props = ($this->deals)()->assertOk()->assertInertia(fn ($page) => $page->component('investor/deals'))->viewData('page')['props'];
     $card = $props['deals'][0];
     $principal = $this->campaign->payload['principal'];
@@ -53,7 +54,7 @@ it('lists the live publication with allowlisted facts, live fill and no quote or
     $months = $this->evidence['period']['months'];
 
     expect($props)->toMatchArray(['contract_version' => 'investor-primary-v1', 'identity_context_revision' => 1, 'allowed_actions' => [],
-        'gate' => ['status' => 'eligible'], 'unread_notifications' => 0, 'quote' => null])
+        'gate' => ['status' => 'eligible'], 'unread_notifications' => 1, 'quote' => null])
         ->and($props['wallet'])->toBe(['available' => ['currency' => 'RWF', 'amount' => '10000000'], 'next_payout' => null])
         ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated'])
         ->and($props['sorts'][0])->toBe(['key' => 'all', 'active' => true, 'link' => ['url' => '/investor/deals', 'method' => 'get']])
@@ -61,7 +62,8 @@ it('lists the live publication with allowlisted facts, live fill and no quote or
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])
         ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'],
-            'notifications' => null, 'checkout' => null, 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
+            'notifications' => ['url' => '/investor/notices', 'method' => 'get'], 'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get'],
+            'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get']])
         ->and($props['deals'])->toHaveCount(1)
         ->and($card)->toMatchArray(['campaign_id' => $this->campaign->id, 'revision' => 1, 'name' => $this->evidence['business']['name'],
@@ -160,7 +162,8 @@ it('opens one deal with its deck, and refuses one that is unknown or closed', fu
     $this->actingAs($this->investor['user'])->get(route('investor.deals.show', $this->campaign->id))->assertOk()
         ->assertInertia(fn ($page) => $page->component('investor/deal')->where('deal.campaign_id', $this->campaign->id)
             ->where('quote', null)->where('gate', ['status' => 'eligible'])
-            ->where('links', ['back' => ['url' => '/investor/deals', 'method' => 'get'], 'checkout' => null])
+            ->where('links', ['back' => ['url' => '/investor/deals', 'method' => 'get'],
+                'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get']])
             ->where('home.focus.campaign_id', $this->campaign->id));
     $this->actingAs($this->investor['user'])->get(route('investor.deals.show', strtolower((string) Str::ulid())))->assertNotFound();
 
@@ -170,6 +173,36 @@ it('opens one deal with its deck, and refuses one that is unknown or closed', fu
     expect([$props['deals'], $props['focus']])->toBe([[], null]);
     Sanctum::actingAs($this->investor['user'], ['investor:read']);
     $this->getJson(route('api.v1.investor.deals.show', $this->campaign->id))->assertNotFound()->assertJsonPath('code', 'DEAL_NOT_FOUND');
+});
+
+it('shows the business\'s published monthly reports on the deal, healthy only when operating and matched', function (): void {
+    $report = fn (string $id, string $period, string $status, bool $differences): array => ['report_id' => $id, 'period' => $period,
+        'inflow' => '34600000', 'outflow' => '31500000', 'net' => '3100000', 'operational_status' => $status, 'differences' => $differences,
+        'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'sealed_on' => '2026-09-07'],
+        'auditor_note' => $differences ? 'Cash differed by RWF 1.' : '', 'business_note' => $id === 'r1' ? 'Sales held steady.' : ''];
+    app()->instance(PublishedMonthlyReports::class, new /** @phpstan-import-type PublishedMonthlyReport from PublishedMonthlyReports */ class([$report('r1', '2026-08', 'active', false), $report('r2', '2026-07', 'active', true), $report('r3', '2026-06', 'suspended', false)], $this->campaign->business_id) implements PublishedMonthlyReports
+    {
+        /** @param list<PublishedMonthlyReport> $reports */
+        public function __construct(private array $reports, private string $businessId) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return $businessId === $this->businessId ? $this->reports : [];
+        }
+    });
+
+    $updates = $this->actingAs($this->investor['user'])->get(route('investor.deals.show', $this->campaign->id))->assertOk()
+        ->viewData('page')['props']['deal']['updates'];
+
+    expect($updates[0])->toBe(['id' => 'r1', 'month' => '2026-08-01T00:00:00+02:00', 'status' => 'healthy', 'summary' => 'Verified · figures match the statements',
+        'net' => ['currency' => 'RWF', 'amount' => '3100000'], 'inflow' => ['currency' => 'RWF', 'amount' => '34600000'],
+        'outflow' => ['currency' => 'RWF', 'amount' => '31500000'], 'business_note' => 'Sales held steady.',
+        'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'verified_on' => '2026-09-07T00:00:00+02:00'],
+        'auditor_note' => '', 'photos' => []])
+        ->and(array_column($updates, 'status'))->toBe(['healthy', 'watch', 'watch'])
+        ->and(array_column($updates, 'summary'))->toBe(['Verified · figures match the statements', 'Watch · the Audit Partner noted a difference',
+            'Watch · operations suspended when audited'])
+        ->and(app(InvestorDealCatalogue::class)->updates(strtolower((string) Str::ulid())))->toBe([]);
 });
 
 it('never lists an unrated publication', function (): void {
@@ -214,6 +247,16 @@ it('sorts and filters the deck by industry and focuses the requested deal', func
         public function deal(string $campaignId): ?array
         {
             return array_find(self::DEALS, fn (array $deal): bool => $deal['campaign_id'] === $campaignId);
+        }
+
+        public function card(string $campaignId): ?array
+        {
+            return $this->deal($campaignId);
+        }
+
+        public function updates(string $campaignId): array
+        {
+            return [];
         }
     });
     $ids = fn (array $query): array => array_column(($this->deals)($query)->viewData('page')['props']['deals'], 'campaign_id');

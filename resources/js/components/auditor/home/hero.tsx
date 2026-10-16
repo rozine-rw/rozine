@@ -113,9 +113,9 @@ export function Hero({
                     <p className="text-[11.5px] font-medium text-white/82">
                         {greeting}
                     </p>
-                    <p className="truncate text-[17px] font-bold text-white">
+                    <h1 className="truncate text-[17px] font-bold text-white">
                         {auditor.name}
-                    </p>
+                    </h1>
                     {affiliation !== '' && (
                         <p className="mt-0.5 truncate text-[11px] text-white/80">
                             {affiliation}

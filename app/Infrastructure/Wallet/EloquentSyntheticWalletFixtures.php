@@ -7,18 +7,21 @@ namespace App\Infrastructure\Wallet;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\SyntheticWalletFixtures;
+use App\Application\Wallet\Contracts\SyntheticWithdrawalSigner;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Models\DepositPolicy;
 use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorFundingMethod;
 use App\Models\WalletDepositIntent;
+use App\Models\WalletWithdrawal;
 use Illuminate\Support\Str;
 use LogicException;
 
 /** Synthetic wallet rows for local, testing and UAT checks. Every write is append-only. */
 final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
 {
-    public function __construct(private SyntheticWalletGuard $guard, private SyntheticEventSigner $signer, private EnvironmentIsolation $isolation) {}
+    public function __construct(private SyntheticWalletGuard $guard, private SyntheticEventSigner $signer, private EnvironmentIsolation $isolation,
+        private SyntheticWithdrawalSigner $payouts) {}
 
     /** @return array{method_id: string, policy_version: string} */
     public function prepareInvestor(string $partyId): array
@@ -92,6 +95,22 @@ final class EloquentSyntheticWalletFixtures implements SyntheticWalletFixtures
         return ['intent_id' => $intent->id, 'message' => $this->signer->sign(['provider' => 'synthetic',
             'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(16)), 'reference' => $intent->provider_reference, 'state' => $state,
             'amount' => $amount ?? $intent->amount, 'currency' => 'RWF', 'environment' => $this->isolation->profile(),
+            'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)])];
+    }
+
+    /** @return array{withdrawal_id: string, message: array<string, string>} */
+    public function withdrawalEvent(string $requestId, string $state, ?string $eventId, ?string $amount): array
+    {
+        $this->guard->assertAllowed();
+        $withdrawals = WalletWithdrawal::query()->where('request_id', strtolower($requestId))->get();
+        if ($withdrawals->count() !== 1) {
+            throw new LogicException('WALLET_SYNTHETIC_WITHDRAWAL_NOT_FOUND: no single withdrawal was recorded under that request id.');
+        }
+        $withdrawal = $withdrawals->sole();
+
+        return ['withdrawal_id' => $withdrawal->id, 'message' => $this->payouts->sign(['provider' => 'synthetic',
+            'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(16)), 'reference' => $withdrawal->provider_reference, 'state' => $state,
+            'amount' => $amount ?? $withdrawal->received, 'currency' => 'RWF', 'environment' => $this->isolation->profile(),
             'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)])];
     }
 

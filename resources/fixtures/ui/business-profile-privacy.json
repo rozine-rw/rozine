@@ -75,7 +75,12 @@
             }
         ],
         "security": {
-            "two_factor": false
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/business-profile-security",
+                "method": "put"
+            }
         },
         "provinces": [
             {
@@ -235,6 +240,13 @@
                     "body": "For any privacy question, or to exercise a data right or contact our Data Protection Officer, email privacy@rozine.rw. We will respond within a reasonable time and in accordance with applicable law."
                 }
             ]
+        },
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
         },
         "links": {
             "home": {

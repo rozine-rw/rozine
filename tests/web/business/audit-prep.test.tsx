@@ -19,6 +19,7 @@ vi.mock('@inertiajs/react', () => ({
             {children}
         </a>
     ),
+    useHttp: () => ({ submit: () => new Promise(() => undefined) }),
 }));
 
 const props = (fixture: { props: unknown }) =>

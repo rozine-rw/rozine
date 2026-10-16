@@ -29,6 +29,14 @@ interface BusinessWalletStore
     public function summary(int $userId, int $contextRevision, string $businessId): array;
 
     /**
+     * The Business's own verified, unrevoked accounts, oldest first: those it deposits from and
+     * withdraws to.
+     *
+     * @return list<array{id: string, kind: string, label: string, masked: string}>
+     */
+    public function methods(int $userId, int $contextRevision, string $businessId): array;
+
+    /**
      * @param  array{currency: string, amount: string}  $amount
      * @return array<string, mixed>
      */

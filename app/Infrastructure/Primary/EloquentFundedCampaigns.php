@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
 use App\Domain\Disbursement\DisbursementViolation;
+use App\Domain\Identity\PartyNoticeKind;
+use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
 use App\Infrastructure\Business\RetainedFundedCampaignFacts;
@@ -40,7 +45,8 @@ final class EloquentFundedCampaigns implements FundedCampaigns
 {
     public function __construct(private RetainedFundedCampaignFacts $facts, private RetainedFundedClosing $closings,
         private CampaignFundingEvidence $fundings, private WalletPostings $wallets, private PrimaryReturnedCash $returned,
-        private CanonicalJson $json, private CampaignClosureEvidence $closures, private RetainedPrimaryIssuance $issuance) {}
+        private CanonicalJson $json, private CampaignClosureEvidence $closures, private RetainedPrimaryIssuance $issuance,
+        private ChangeFeed $changes, private PrimaryCampaignSource $campaigns, private PartyNotices $notices) {}
 
     public function funded(?string $before, int $limit): array
     {
@@ -87,6 +93,30 @@ final class EloquentFundedCampaigns implements FundedCampaigns
     {
         $this->assertTransaction();
         $this->issuance->issue($campaign, $instruction);
+        $this->noticeIssued($campaign->campaignId);
+    }
+
+    /**
+     * Tells each Investor, once per Holding, that the disbursement issued it (BRS v2.0 NTF-R01):
+     * the units, the amount, the expected return and maturity value net of the payout fee, and the
+     * last due date. A replayed issue finds the same Holdings and records nothing new.
+     */
+    private function noticeIssued(string $campaignId): void
+    {
+        $business = $this->campaigns->presentation($campaignId)['business'];
+        foreach (DB::table('primary_holdings')->where('business_campaign_id', $campaignId)->orderBy('id')->get() as $holding) {
+            /** @var array{total_return: array{amount: string}} $rights */
+            $rights = json_decode((string) $holding->rights, true, flags: JSON_THROW_ON_ERROR);
+            /** @var array{payout_fee: array{amount: string}} $terms */
+            $terms = json_decode((string) $holding->terms, true, flags: JSON_THROW_ON_ERROR);
+            /** @var non-empty-list<array{due_date: string}> $schedule */
+            $schedule = json_decode((string) $holding->schedule, true, flags: JSON_THROW_ON_ERROR);
+            $return = (int) $rights['total_return']['amount'] - (int) $terms['payout_fee']['amount'];
+            $this->notices->record((string) $holding->party_id, PartyNoticeKind::HoldingIssued, ['business' => $business, 'units' => (string) $holding->units,
+                'amount' => (string) $holding->principal, 'expected_return' => (string) $return, 'maturity_value' => (string) ((int) $holding->principal + $return),
+                'maturity_date' => (string) end($schedule)['due_date'], 'currency' => 'RWF', 'reference' => (string) $holding->receipt_id,
+                'holding_id' => (string) $holding->id, 'campaign_id' => $campaignId], 'holding-issued:'.$holding->id);
+        }
     }
 
     public function failClose(FundedCampaign $campaign, FailedClosing $closing): void
@@ -158,6 +188,10 @@ final class EloquentFundedCampaigns implements FundedCampaigns
                 DB::table('primary_campaign_closure_returns')->insert(['business_campaign_closure_id' => $record->id, ...$binding]);
             }
             DB::select('SELECT check_primary_campaign_closure_returns(?, false)', [$record->id]);
+            foreach ($payload['cash_returns'] as $binding) {
+                $this->changes->record(ChangeScope::party($binding['party_id']), 'wallet', $binding['wallet_id']);
+                $this->changes->record(ChangeScope::party($binding['party_id']), 'purchase', $binding['primary_reservation_id']);
+            }
         });
     }
 

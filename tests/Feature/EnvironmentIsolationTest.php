@@ -8,6 +8,7 @@ use App\Models\StagingMailTester;
 use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\EnvironmentSafetyServiceProvider;
+use Carbon\CarbonImmutable;
 use Database\Seeders\CheckpointTwoSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -218,6 +219,7 @@ test('unsafe flag combinations cannot activate a demo or money path', function (
 test('demo reset needs both operator switches', function (bool $enabled, bool $reset, bool $canSeed, bool $canReset) {
     $this->travelTo('2026-09-14T12:00:00+00:00');
     $isolation = isolatedConfiguration();
+    $this->travelTo(CarbonImmutable::parse((string) config('isolation.demo_flags.expires_at'), 'UTC')->subDay());
     config(['isolation.demo_enabled' => $enabled, 'isolation.demo_reset_enabled' => $reset]);
 
     expect($isolation->canSeed())->toBe($canSeed)

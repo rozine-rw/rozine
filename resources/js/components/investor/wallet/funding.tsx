@@ -11,8 +11,12 @@ import { formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     C3InvestorWalletProps,
+    DepositFunding,
+    FundingMethod,
     PayoutAccountKind,
 } from '@/types/investor';
+import type { Money } from '@/types/money';
+import type { RouteAction, RouteLink } from '@/types/routing';
 import type { C3PreviewOutcome } from '@/types/settlement';
 
 /** Mobile-money and bank marks, drawn rather than loaded (the design's logo files are missing). */
@@ -118,12 +122,21 @@ export function BalanceCard({
                 </p>
             )}
             <div className="relative mt-3 flex items-center justify-between border-t border-white/[.16] pt-[11px]">
-                <span className="text-[11.5px] text-white">
-                    {wallet.pending_deposits.amount === '0'
-                        ? t('investor.wallet.c3.no_pending')
-                        : t('investor.wallet.c3.pending_deposits', {
-                              amount: formatRwf(wallet.pending_deposits),
-                          })}
+                <span className="flex flex-col text-[11.5px] text-white">
+                    <span>
+                        {wallet.pending_deposits.amount === '0'
+                            ? t('investor.wallet.c3.no_pending')
+                            : t('investor.wallet.c3.pending_deposits', {
+                                  amount: formatRwf(wallet.pending_deposits),
+                              })}
+                    </span>
+                    {wallet.pending_withdrawals.amount !== '0' && (
+                        <span>
+                            {t('investor.wallet.pending_withdrawal', {
+                                amount: formatRwf(wallet.pending_withdrawals),
+                            })}
+                        </span>
+                    )}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/90">
                     <LogoMark className="size-[15px] text-white/90" />
@@ -134,17 +147,84 @@ export function BalanceCard({
     );
 }
 
+/** The verified accounts to pay from or to, as a radio group. */
+function MethodChoices({
+    methods,
+    method,
+    choose,
+    sending = false,
+}: {
+    methods: FundingMethod[];
+    method: string;
+    choose: (id: string) => void;
+    sending?: boolean;
+}) {
+    const { t } = useTranslation();
+    const label = sending
+        ? t('investor.wallet.method_to')
+        : t('investor.wallet.method');
+
+    return (
+        <>
+            <p className="mt-3.5 text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                {label}
+            </p>
+            <div
+                role="radiogroup"
+                aria-label={label}
+                className="mt-1.5 flex flex-col gap-2"
+            >
+                {methods.map((option) => {
+                    const on = option.id === method;
+
+                    return (
+                        <button
+                            key={option.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            onClick={() => choose(option.id)}
+                            className={cn(
+                                'flex items-center gap-[11px] rounded-xl border-[1.5px] px-[11px] py-[9px] text-left',
+                                on
+                                    ? 'border-[#d6e4ff] bg-rz-page dark:border-rz-investor'
+                                    : 'border-rz-border bg-rz-surface',
+                            )}
+                        >
+                            <MethodMark kind={option.kind} />
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[13px] font-semibold text-rz-ink">
+                                    {option.label}
+                                </span>
+                                <span className="block text-[11px] text-rz-secondary">
+                                    {option.masked}
+                                </span>
+                            </span>
+                            <span
+                                className={cn(
+                                    'size-[17px] shrink-0 rounded-full border-2 border-[#d6e4ff] dark:border-rz-border',
+                                    on && 'bg-rz-accent-fill',
+                                )}
+                            />
+                        </button>
+                    );
+                })}
+            </div>
+        </>
+    );
+}
+
 /** How long an entered amount must settle before the server prices it. */
 const FUNDING_DEBOUNCE_MS = 300;
 
-type DepositPanelProps<Name extends string> = Pick<
-    C3InvestorWalletProps,
-    'funding' | 'actions' | 'identity_context_revision'
-> & {
+type DepositPanelProps<Name extends string> = {
+    funding: Omit<DepositFunding, 'kind'>;
+    actions: { deposit: RouteAction };
+    identity_context_revision: number;
     allowed_actions: readonly string[];
     preview_outcome?: C3PreviewOutcome<Name>;
-    operation: C3InvestorWalletProps['links']['operation'];
-    close: C3InvestorWalletProps['links']['close'] | null;
+    operation: RouteLink;
+    close: RouteLink | null;
     wide: boolean;
     /** The deposit command: the Investor's `wallet.deposit` unless a Business wallet names its own. */
     command?: Name;
@@ -153,7 +233,7 @@ type DepositPanelProps<Name extends string> = Pick<
 };
 
 /**
- * The deposit panel (design L2880–2923; withdrawal stays hidden until it has its own contract, H6).
+ * The deposit panel (design L2880–2923).
  * The fee and what is credited come from the server's quote under a versioned deposit policy; a
  * synthetic policy says so. The form shows only under a policy, with a linked method, while
  * `allowed_actions` offers `wallet.deposit` (S3-B fact 1); otherwise the panel explains that
@@ -323,48 +403,11 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     </button>
                 ))}
             </div>
-            <p className={cn(label, 'mt-3.5')}>{t('investor.wallet.method')}</p>
-            <div
-                role="radiogroup"
-                aria-label={t('investor.wallet.method')}
-                className="mt-1.5 flex flex-col gap-2"
-            >
-                {funding.methods.map((option) => {
-                    const on = option.id === method;
-
-                    return (
-                        <button
-                            key={option.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={on}
-                            onClick={() => setMethod(option.id)}
-                            className={cn(
-                                'flex items-center gap-[11px] rounded-xl border-[1.5px] px-[11px] py-[9px] text-left',
-                                on
-                                    ? 'border-[#d6e4ff] bg-rz-page dark:border-rz-investor'
-                                    : 'border-rz-border bg-rz-surface',
-                            )}
-                        >
-                            <MethodMark kind={option.kind} />
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-[13px] font-semibold text-rz-ink">
-                                    {option.label}
-                                </span>
-                                <span className="block text-[11px] text-rz-secondary">
-                                    {option.masked}
-                                </span>
-                            </span>
-                            <span
-                                className={cn(
-                                    'size-[17px] shrink-0 rounded-full border-2 border-[#d6e4ff] dark:border-rz-border',
-                                    on && 'bg-rz-accent-fill',
-                                )}
-                            />
-                        </button>
-                    );
-                })}
-            </div>
+            <MethodChoices
+                methods={funding.methods}
+                method={method}
+                choose={setMethod}
+            />
             <dl
                 aria-busy={pricing || undefined}
                 className={cn(
@@ -430,6 +473,256 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
             </button>
             <p className="mt-2 text-center text-[10.5px] leading-[1.4] text-rz-secondary">
                 {t('investor.wallet.c3.intent_only')}
+            </p>
+        </form>
+    );
+}
+
+type WithdrawPanelProps<Name extends string> = {
+    funding: Pick<C3InvestorWalletProps['funding'], 'withdrawal' | 'methods'>;
+    action: RouteAction;
+    available: Money;
+    allowed_actions: readonly string[];
+    identity_context_revision: number;
+    preview_outcome?: C3PreviewOutcome<Name>;
+    operation: RouteLink;
+    close: RouteLink | null;
+    wide: boolean;
+    /** The withdrawal command: the Investor's `wallet.withdraw` unless a Business wallet names its own. */
+    command?: Name;
+    /** What the command carries beyond the amount and method, such as a Business wallet's owner. */
+    payload?: Record<string, unknown>;
+};
+
+/**
+ * The withdrawal panel (design wallet panel, withdraw variant; BRS LED-R04): to one of the
+ * Investor's own verified accounts, RWF 1,000 to 2,000,000, no Rozine fee, with the provider's
+ * charge and what reaches the account quoted by the server before confirming. It shows only while
+ * `allowed_actions` offers `wallet.withdraw`. The amount leaves the available balance at once and
+ * is paid out only on the provider's verified success; a failure returns it.
+ */
+export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
+    funding,
+    action,
+    available,
+    allowed_actions: allowed,
+    identity_context_revision: identityRevision,
+    preview_outcome: preview,
+    operation,
+    close,
+    wide,
+    command: name = 'wallet.withdraw' as Name,
+    payload = {},
+}: WithdrawPanelProps<Name>) {
+    const { t } = useTranslation();
+    const terms = funding.withdrawal;
+    const quote = terms?.quote ?? null;
+    const [amount, setAmountState] = useState(quote?.amount.amount ?? '');
+    const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
+    const [pricing, setPricing] = useState(false);
+    const timer = useRef<number | undefined>(undefined);
+    const command = useC3Command<Name>({
+        actions: { [name]: action } as Partial<Record<Name, RouteAction>>,
+        lookup: operation,
+        lookupQuery: { identity_context_revision: identityRevision },
+        allowed,
+        preview,
+        only: [
+            'wallet',
+            'funding',
+            'withdrawals',
+            'history',
+            'allowed_actions',
+        ],
+    });
+
+    useEffect(() => () => window.clearTimeout(timer.current), []);
+
+    const header = !wide && (
+        <div className="flex items-center justify-between">
+            <h2 className="text-[13.5px] font-semibold text-rz-ink">
+                {t('investor.wallet.panel.withdraw')}
+            </h2>
+            {close !== null && (
+                <Link
+                    href={close}
+                    preserveScroll
+                    aria-label={t('app.sheet.close')}
+                    className="flex size-[26px] items-center justify-center rounded-[10px] border border-rz-border bg-[#f3f6fc] text-sm text-rz-secondary dark:bg-rz-surface-muted"
+                >
+                    <span aria-hidden>✕</span>
+                </Link>
+            )}
+        </div>
+    );
+    const frame = cn(
+        'origin-top animate-[rz-rolldown_.34s_cubic-bezier(.34,1.12,.5,1)_both] rounded-2xl border-[1.5px] border-[#0c1830] bg-rz-surface shadow-[0_16px_38px_-18px_rgba(20,45,95,.3)] dark:border-rz-border',
+        wide ? 'mt-[11px] p-3.5' : 'mt-2.5 p-[15px]',
+    );
+
+    if (
+        terms === null ||
+        funding.methods.length === 0 ||
+        !allowed.includes(name)
+    ) {
+        return (
+            <section
+                aria-label={t('investor.wallet.panel.withdraw')}
+                className={frame}
+            >
+                {header}
+                <C3Notice command={command} className="mt-2" />
+                <p
+                    role="status"
+                    className="mt-2 flex items-start gap-2.5 text-xs leading-[1.55] text-rz-secondary"
+                >
+                    <Icon name="info" />
+                    <span>{t('investor.wallet.c3.withdraw_unavailable')}</span>
+                </p>
+            </section>
+        );
+    }
+
+    const setAmount = (raw: string) => {
+        const digits = raw.replace(/[^0-9]/gu, '');
+
+        setAmountState(digits);
+        window.clearTimeout(timer.current);
+        timer.current = window.setTimeout(() => {
+            router.reload({
+                only: ['funding'],
+                data: { kind: 'withdraw', amount: digits },
+                onStart: () => setPricing(true),
+                onFinish: () => setPricing(false),
+            });
+        }, FUNDING_DEBOUNCE_MS);
+    };
+
+    const refusal = quote?.refusal ?? null;
+    const ready =
+        quote !== null &&
+        refusal === null &&
+        amount !== '' &&
+        method !== '' &&
+        !pricing &&
+        !command.busy &&
+        !command.unresolved;
+
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        command.send(name, {
+            ...payload,
+            identity_context_revision: identityRevision,
+            amount: { currency: 'RWF', amount },
+            method_id: method,
+        });
+    };
+
+    return (
+        <form
+            onSubmit={submit}
+            aria-label={t('investor.wallet.panel.withdraw')}
+            className={frame}
+        >
+            {header}
+            <C3Notice command={command} className="mt-2" />
+            <label
+                htmlFor="amount-withdraw"
+                className={cn(
+                    'block text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase',
+                    wide ? 'mt-0.5' : 'mt-3',
+                )}
+            >
+                {t('investor.wallet.amount')}
+            </label>
+            <div className="mt-1.5 flex items-center rounded-xl border border-[#0c1830] bg-[#f8fafc] px-[13px] py-[11px] dark:border-rz-border dark:bg-rz-surface-sunken">
+                <span className="text-[13px] font-semibold text-rz-secondary">
+                    {t('investor.money.rwf')}
+                </span>
+                <input
+                    id="amount-withdraw"
+                    value={
+                        amount === ''
+                            ? ''
+                            : Number(amount).toLocaleString('en-US')
+                    }
+                    onChange={(event) => setAmount(event.target.value)}
+                    inputMode="numeric"
+                    placeholder="0"
+                    className="min-w-0 flex-1 border-0 bg-transparent text-right text-xl font-semibold text-rz-ink outline-none placeholder:text-rz-ink"
+                />
+            </div>
+            <p className="mt-1.5 text-[11px] text-rz-secondary">
+                {t('investor.wallet.c3.withdraw_available', {
+                    amount: formatRwf(available),
+                })}
+            </p>
+            <MethodChoices
+                methods={funding.methods}
+                method={method}
+                choose={setMethod}
+                sending
+            />
+            <dl
+                aria-busy={pricing || undefined}
+                className={cn(
+                    'mt-3 rounded-xl border border-[#eef2f9] bg-[#f8fafc] px-[13px] transition-opacity dark:border-rz-divider dark:bg-rz-surface-sunken',
+                    pricing && 'opacity-60',
+                )}
+            >
+                <div className="flex justify-between gap-2.5 border-b border-[#eef2f9] py-[9px] dark:border-rz-divider">
+                    <dt className="text-xs text-rz-secondary">
+                        {t('investor.wallet.c3.provider_charge')}
+                    </dt>
+                    <dd className="text-xs font-semibold text-rz-ink">
+                        {formatRwf(quote?.charge ?? terms.charge)}
+                    </dd>
+                </div>
+                <div className="flex justify-between gap-2.5 py-[9px]">
+                    <dt className="text-xs text-rz-secondary">
+                        {t('investor.wallet.result.withdraw')}
+                    </dt>
+                    <dd className="text-xs font-bold text-rz-ink">
+                        {quote === null ? '—' : formatRwf(quote.received)}
+                    </dd>
+                </div>
+            </dl>
+            <p className="mt-2 text-[10.5px] leading-[1.45] text-rz-secondary">
+                {t('investor.wallet.c3.withdraw_terms', {
+                    minimum: formatRwf(terms.minimum),
+                    maximum: formatRwf(terms.maximum),
+                    version: terms.version,
+                })}
+            </p>
+            {refusal !== null && (
+                <div
+                    role="alert"
+                    className="mt-[11px] flex items-center gap-2 rounded-[10px] border border-[#fdeaea] bg-[rgba(229,72,77,.08)] px-3 py-2.5 text-xs font-semibold text-rz-danger-text dark:border-[rgba(255,107,111,.25)]"
+                >
+                    <Icon name="warning" tone="red" />
+                    {t(`settlement.refusal.${refusal}`)}
+                </div>
+            )}
+            {command.errors.amount !== undefined && (
+                <p
+                    role="alert"
+                    className="mt-2 text-xs font-semibold text-rz-danger-text"
+                >
+                    {command.errors.amount}
+                </p>
+            )}
+            <button
+                type="submit"
+                disabled={!ready}
+                aria-busy={command.busy || undefined}
+                className="mt-[13px] h-[50px] w-full shrink-0 rounded-xl bg-[#0c1830] text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-rz-surface-muted"
+            >
+                {command.busy
+                    ? t('investor.wallet.processing')
+                    : t('investor.wallet.confirm.withdraw')}
+            </button>
+            <p className="mt-2 text-center text-[10.5px] leading-[1.4] text-rz-secondary">
+                {t('investor.wallet.c3.withdraw_only_on_success')}
             </p>
         </form>
     );

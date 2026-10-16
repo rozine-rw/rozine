@@ -62,7 +62,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
     $accountAttributes = $user->refresh()->getAttributes();
-    unset($accountAttributes['party_id'], $accountAttributes['active_membership_id'], $accountAttributes['active_membership_revision'], $accountAttributes['context_revision']);
+    unset($accountAttributes['party_id'], $accountAttributes['active_membership_id'], $accountAttributes['active_membership_revision'], $accountAttributes['context_revision'], $accountAttributes['login_alerts']);
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
@@ -125,6 +125,14 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $successfulIssuance = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
     $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
     $walletTesterChanges = require database_path('migrations/2026_10_11_081137_create_synthetic_wallet_tester_changes_table.php');
+    $loginAlerts = require database_path('migrations/2026_10_14_161909_add_login_alerts_to_users_table.php');
+    $accountDevices = require database_path('migrations/2026_10_14_160115_create_account_devices_table.php');
+    $partyNotices = require database_path('migrations/2026_10_13_154243_create_party_notices_table.php');
+    $riskAcknowledgements = require database_path('migrations/2026_10_13_141829_create_investor_risk_acknowledgements_table.php');
+    $loginAlerts->down();
+    $accountDevices->down();
+    $partyNotices->down();
+    $riskAcknowledgements->down();
     $successfulIssuance->down();
     $terminalFailures->down();
     $walletTesterChanges->down();
@@ -134,6 +142,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('investor_verification_versions'))->toBeFalse()
         ->and(Schema::hasTable('investor_verification_documents'))->toBeFalse();
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    $businessWithdrawals->down();
+    $walletWithdrawals = require database_path('migrations/2026_10_14_074539_create_wallet_withdrawals.php');
+    $walletWithdrawals->down();
     $businessRepayments->down();
     expect(Schema::hasTable('business_repayments'))->toBeFalse();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
@@ -352,10 +364,16 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasColumn('wallet_deposit_intents', 'owner'))->toBeTrue();
     $businessDeposits->up();
     $businessRepayments->up();
+    $walletWithdrawals->up();
+    $businessWithdrawals->up();
     $investorVerifications->up();
     $walletTesterChanges->up();
     $terminalFailures->up();
     $successfulIssuance->up();
+    $riskAcknowledgements->up();
+    $partyNotices->up();
+    $accountDevices->up();
+    $loginAlerts->up();
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);

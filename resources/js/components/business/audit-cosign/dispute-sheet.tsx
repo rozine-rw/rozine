@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { FieldError } from '@/components/rozine/form';
 import { formatFileSize } from '@/components/rozine/proof-file-list';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
 /** The most a dispute's supporting text may hold. */
@@ -76,6 +77,7 @@ export function DisputeSheet({
     onClose: () => void;
 }) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(busy ? undefined : onClose);
     const [supporting, setSupporting] = useState('');
     const [files, setFiles] = useState<File[]>([]);
     const [problems, setProblems] = useState<string[]>([]);
@@ -137,6 +139,8 @@ export function DisputeSheet({
                 className="absolute inset-0 animate-[rz-scrim_.22s_ease] bg-[rgba(8,14,28,.5)] backdrop-blur-[3px]"
             />
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
@@ -194,7 +198,7 @@ export function DisputeSheet({
                                 errors.supporting_text !== undefined ||
                                 undefined
                             }
-                            aria-describedby="dispute-supporting-help dispute-supporting-count dispute-proof-rule"
+                            aria-describedby="dispute-supporting-help dispute-supporting-count dispute-proof-rule dispute-supporting-error"
                             className="w-full resize-none rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[11px] text-sm text-rz-ink outline-none focus:border-rz-focus-border"
                         />
                         <p
@@ -264,6 +268,7 @@ export function DisputeSheet({
                             tabIndex={-1}
                         />
                         <button
+                            aria-describedby="dispute-files-error"
                             type="button"
                             onClick={() => picker.current?.click()}
                             disabled={files.length >= PROOF_FILE_LIMIT}

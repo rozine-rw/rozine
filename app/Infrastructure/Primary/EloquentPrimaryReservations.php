@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
@@ -19,6 +20,7 @@ use App\Application\Wallet\Contracts\PrimaryCommittedCash;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\PrimaryReservation;
@@ -46,7 +48,7 @@ use Throwable;
  */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims, private PartyNotices $notices) {}
 
     public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array
     {
@@ -288,6 +290,11 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             $returned = $this->returnedCash->requireReturned($wallet, $amount, $source);
             if ($returned->returnKind !== 'primary_refund' || $returned->returnEntryId !== $posting->entryId || $returned->commitEntryId === null) {
                 throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
+            }
+
+            if (! $posting->replayed) {
+                $this->notices->record($partyId, PartyNoticeKind::RaiseRefunded, ['amount' => $root->principal, 'currency' => 'RWF',
+                    'business' => $this->campaigns->presentation($campaignId)['business']], 'primary-refund:'.$root->id);
             }
 
             return new ReservationRefund($root->id, $previous->revision, $commitment->id, $returned, $posting->replayed);

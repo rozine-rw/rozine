@@ -6,10 +6,12 @@ namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\VerifyInvestorIdentity;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\InvestorVerification;
@@ -34,6 +36,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         private InvestorVerificationCase $cases,
         private AuthorizeStaffPermission $staff,
         private VerifyInvestorIdentity $verify,
+        private PartyNotices $notices,
     ) {}
 
     /** @return Queue */
@@ -253,6 +256,8 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         (new InvestorVerificationVersion)->forceFill(['investor_verification_id' => $record->id, 'revision' => $record->revision,
             'status' => $outcome, 'snapshot' => $state, 'actor_user_id' => $actorId, 'command' => 'verification.'.($outcome === 'approved' ? 'approve' : 'reject'),
             'reason' => $reason, 'policy_version' => self::POLICY_VERSION])->save();
+        $this->notices->record($record->party_id, $outcome === 'approved' ? PartyNoticeKind::VerificationApproved : PartyNoticeKind::VerificationRejected,
+            $outcome === 'approved' ? [] : ['reason' => $reason], 'investor-verification:'.$record->id.'@'.$record->revision);
 
         return [...$facts, 'revision' => $record->revision];
     }

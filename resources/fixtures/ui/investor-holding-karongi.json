@@ -45,11 +45,11 @@
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "664800"
+                "amount": "661200"
             },
             "received": {
                 "currency": "RWF",
-                "amount": "498600"
+                "amount": "495900"
             },
             "next_payment": {
                 "amount": {
@@ -281,7 +281,7 @@
                     },
                     "earnings_fee": {
                         "tier": "standard",
-                        "rate_bps": 1000,
+                        "rate_bps": 1500,
                         "basis": "return_only",
                         "policy_version": "synthetic-plus-policy-0"
                     },
@@ -390,7 +390,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {

@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +54,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -64,7 +64,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +74,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -84,7 +84,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::show
-* @see app/Http/Controllers/BusinessWalletController.php:24
+* @see app/Http/Controllers/BusinessWalletController.php:26
 * @route '/api/v1/business/{business}/wallet'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -101,7 +101,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::deposit
-* @see app/Http/Controllers/BusinessWalletController.php:34
+* @see app/Http/Controllers/BusinessWalletController.php:36
 * @route '/api/v1/business/{business}/wallet/deposits'
 */
 export const deposit = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ deposit.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::deposit
-* @see app/Http/Controllers/BusinessWalletController.php:34
+* @see app/Http/Controllers/BusinessWalletController.php:36
 * @route '/api/v1/business/{business}/wallet/deposits'
 */
 deposit.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -143,7 +143,7 @@ deposit.url = (args: { business: string | number } | [business: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::deposit
-* @see app/Http/Controllers/BusinessWalletController.php:34
+* @see app/Http/Controllers/BusinessWalletController.php:36
 * @route '/api/v1/business/{business}/wallet/deposits'
 */
 deposit.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ deposit.post = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::deposit
-* @see app/Http/Controllers/BusinessWalletController.php:34
+* @see app/Http/Controllers/BusinessWalletController.php:36
 * @route '/api/v1/business/{business}/wallet/deposits'
 */
 const depositForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -163,7 +163,7 @@ const depositForm = (args: { business: string | number } | [business: string | n
 
 /**
 * @see \App\Http\Controllers\BusinessWalletController::deposit
-* @see app/Http/Controllers/BusinessWalletController.php:34
+* @see app/Http/Controllers/BusinessWalletController.php:36
 * @route '/api/v1/business/{business}/wallet/deposits'
 */
 depositForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -173,9 +173,84 @@ depositForm.post = (args: { business: string | number } | [business: string | nu
 
 deposit.form = depositForm
 
+/**
+* @see \App\Http\Controllers\BusinessWalletController::withdraw
+* @see app/Http/Controllers/BusinessWalletController.php:46
+* @route '/api/v1/business/{business}/wallet/withdrawals'
+*/
+export const withdraw = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw.url(args, options),
+    method: 'post',
+})
+
+withdraw.definition = {
+    methods: ["post"],
+    url: '/api/v1/business/{business}/wallet/withdrawals',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\BusinessWalletController::withdraw
+* @see app/Http/Controllers/BusinessWalletController.php:46
+* @route '/api/v1/business/{business}/wallet/withdrawals'
+*/
+withdraw.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return withdraw.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessWalletController::withdraw
+* @see app/Http/Controllers/BusinessWalletController.php:46
+* @route '/api/v1/business/{business}/wallet/withdrawals'
+*/
+withdraw.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessWalletController::withdraw
+* @see app/Http/Controllers/BusinessWalletController.php:46
+* @route '/api/v1/business/{business}/wallet/withdrawals'
+*/
+const withdrawForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessWalletController::withdraw
+* @see app/Http/Controllers/BusinessWalletController.php:46
+* @route '/api/v1/business/{business}/wallet/withdrawals'
+*/
+withdrawForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw.url(args, options),
+    method: 'post',
+})
+
+withdraw.form = withdrawForm
+
 const wallet = {
     show: Object.assign(show, show),
     deposit: Object.assign(deposit, deposit),
+    withdraw: Object.assign(withdraw, withdraw),
     operations: Object.assign(operations, operations),
 }
 

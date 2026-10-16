@@ -1,15 +1,17 @@
 import { Link } from '@inertiajs/react';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
+import { LoginAlerts } from '@/components/rozine/login-alerts';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { BusinessProfileProps } from '@/types/business';
 
 /**
- * Security center (design L1742–1772): whether two-factor sign-in is on, and the way to change the
- * password, both managed on the account's security settings. The design's other toggles and its
- * account deletion have no command for a Business, so they are left out.
+ * Security center (design L1742–1772): whether two-factor sign-in is on, the sign-in alerts switch,
+ * and the way to change the password. Two-factor and the password are managed on the account's
+ * security settings. The design's biometric toggle and its account deletion have no command for a
+ * Business, so they are left out.
  */
 export function SecurityCenter({
     security,
@@ -61,6 +63,14 @@ export function SecurityCenter({
                         />
                     </span>
                 </Link>
+                <LoginAlerts
+                    enabled={security.login_alerts}
+                    action={security.update_login_alerts}
+                    title={t('business.profile.security.login_alerts')}
+                    hint={t('business.profile.security.login_alerts_hint')}
+                    onClass="bg-rz-accent-fill"
+                    glyph={glyph}
+                />
             </div>
             <div className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
                 <Link
@@ -149,24 +159,20 @@ export function TeamPermissions({
     );
 }
 
-const PENDING_ICON: Record<
-    'linked' | 'support' | 'terms' | 'privacy',
-    IconName
-> = {
+const PENDING_ICON: Record<'linked' | 'terms' | 'privacy', IconName> = {
     linked: 'card',
-    support: 'question',
     terms: 'document',
     privacy: 'lock-key',
 };
 
 /**
- * A section with nothing to show yet: no linked payout account read, and no approved support
- * answers or legal text. The design draws each with content, so this is its empty state.
+ * A section with nothing to show yet: no linked payout account read, and no approved legal
+ * text. The design draws each with content, so this is its empty state.
  */
 export function PendingSection({
     kind,
 }: {
-    kind: 'linked' | 'support' | 'terms' | 'privacy';
+    kind: 'linked' | 'terms' | 'privacy';
 }) {
     const { t } = useTranslation();
 

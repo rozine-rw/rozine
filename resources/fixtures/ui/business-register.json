@@ -3,7 +3,10 @@
     "props": {
         "lookup": null,
         "links": {
-            "login": { "url": "/preview/business-login", "method": "get" }
+            "login": {
+                "url": "/preview/business-login",
+                "method": "get"
+            }
         },
         "actions": {
             "lookup": {

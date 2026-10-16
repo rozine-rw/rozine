@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessProfile;
+use App\Models\PartyNotice;
+use App\Notifications\Business\ApplicationDecided;
+use App\Notifications\Business\ApplicationOutcome;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -85,4 +90,29 @@ it('rejects mismatched route and body application identifiers before commands ru
         'application_id' => (string) Str::ulid(), 'request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Reviewed.',
     ])->assertUnprocessable()->assertJsonValidationErrors('application_id');
     expect(app(BusinessCampaignStore::class)->staffPage($fixture['audit']['staff']->id, $fixture['application']->id)['release'])->toBeNull();
+});
+
+it('tells the Business its application is approved, in-app and by e-mail to each holder who may view it, once', function (): void {
+    Notification::fake();
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $business = $fixture['audit']['business'];
+    $parameters = ['business' => $business, 'application' => $fixture['application']->id];
+    $release = ['application_id' => $fixture['application']->id, 'request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Current review completed.'];
+    $this->actingAs($fixture['audit']['staff'])->postJson(route('staff.applications.release', $parameters), $release)->assertOk();
+    $this->postJson(route('staff.applications.release', $parameters), $release)->assertOk();
+
+    $notice = PartyNotice::query()->where('kind', 'business.application_approved')->sole();
+    expect($notice->party_id)->toBe(BusinessProfile::query()->whereKey($business)->value('entity_party_id'))
+        ->and($notice->facts)->toMatchArray(['amount' => '10800000', 'currency' => 'RWF', 'business_id' => $business,
+            'application_id' => $fixture['application']->id, 'title' => $fixture['application']->draft['title']]);
+    $holder = $fixture['audit']['authority']['users'][0];
+    Notification::assertSentToTimes($holder, ApplicationDecided::class, 1);
+    Notification::assertSentTo($holder, ApplicationDecided::class, fn (ApplicationDecided $mail): bool => $mail->outcome === ApplicationOutcome::Approved
+        && $mail->amount === '10800000' && $mail->url === route('business.applications.publish.show', $parameters));
+
+    $this->actingAs($holder)->getJson(route('business.notices.index', $business))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'business.application_approved')
+        ->assertJsonPath('data.notices.0.link.url', route('business.applications.publish.show', $parameters, false));
 });

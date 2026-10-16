@@ -127,6 +127,7 @@ export function ConflictSheet({
                     onChange={(event) => setNote(event.target.value)}
                     placeholder={t('auditor.conflict.note_placeholder')}
                     aria-invalid={lane.errors.reason ? true : undefined}
+                    aria-describedby="auditor-conflict-note-error"
                     className={cn(NOTE_FIELD, 'min-h-[72px]')}
                 />
                 <FieldError id="auditor-conflict-note-error">

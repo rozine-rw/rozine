@@ -16,7 +16,7 @@ class ShowBusinessWalletRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['identity_context_revision' => ['sometimes', 'integer', 'min:0'], 'kind' => ['sometimes', 'nullable', 'string', 'in:deposit'],
+        return ['identity_context_revision' => ['sometimes', 'integer', 'min:0'], 'kind' => ['sometimes', 'nullable', 'string', 'in:deposit,withdraw'],
             'amount' => ['sometimes', 'nullable', 'string', 'regex:/^[0-9]{0,15}$/D'], 'movement' => ['sometimes', 'string', 'in:external,internal'],
             'before' => ['sometimes', 'ulid'], 'receipt' => ['sometimes', 'ulid']];
     }

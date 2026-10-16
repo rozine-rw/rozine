@@ -19,30 +19,42 @@
             "address": null
         },
         "security": {
-            "two_factor": false
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/investor-profile-security",
+                "method": "put"
+            }
         },
         "linked": {
             "accounts": [],
             "banks": [
                 {
-                    "code": "BK",
+                    "code": "bk",
                     "name": "Bank of Kigali"
                 },
                 {
-                    "code": "EQUITY",
+                    "code": "equity",
                     "name": "Equity Bank Rwanda"
                 },
                 {
-                    "code": "IM",
+                    "code": "im",
                     "name": "I&M Bank Rwanda"
                 },
                 {
-                    "code": "BPR",
+                    "code": "bpr",
                     "name": "BPR Bank Rwanda"
                 }
             ]
         },
         "statements": null,
+        "support": {
+            "open": {
+                "url": "/preview/investor-profile-help",
+                "method": "post"
+            },
+            "complaints": []
+        },
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -69,7 +81,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {

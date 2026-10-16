@@ -57,6 +57,7 @@ class AuditorProfileController extends Controller
             'engagement' => $this->engagements->handle($userId, $revision),
             'jobs' => $jobs->handle($userId, $revision),
             'filed' => $reports->handle($userId, $revision, limit: 0)['counts']['all'],
+            'on_time_pct' => $reports->trackRecord($userId, $revision)['on_time_pct'],
         ]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile', $resource->resolve($request));

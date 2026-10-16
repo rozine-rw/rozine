@@ -161,7 +161,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/auditor-home",
+                "url": "/preview/auditor-notices",
                 "method": "get"
             },
             "operation": {

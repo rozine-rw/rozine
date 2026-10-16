@@ -123,19 +123,32 @@ export function usePage() {
 
 export function useForm<T extends Record<string, unknown>>(initial: T) {
     const [data, setData] = useState(initial);
+    const transform = useRef<(value: T) => Record<string, unknown>>(
+        (value) => value,
+    );
 
     return {
         data,
-        setData: (next: (current: T) => T) => setData(next),
+        /** Either Inertia form: a whole-state updater, or one field and its value. */
+        setData: (next: ((current: T) => T) | keyof T, value?: unknown) =>
+            setData((current) =>
+                typeof next === 'function'
+                    ? next(current)
+                    : { ...current, [next]: value },
+            ),
         errors: inertia.errors,
         processing: inertia.processing,
+        transform: (fn: (value: T) => Record<string, unknown>) => {
+            transform.current = fn;
+        },
         post: (url: string, options?: { onSuccess?: () => void }) => {
-            inertia.posts.push({ url, data });
+            inertia.posts.push({ url, data: transform.current(data) });
 
             if (inertia.succeed) {
                 options?.onSuccess?.();
             }
         },
+        reset: () => setData(initial),
     };
 }
 

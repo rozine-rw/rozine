@@ -56,9 +56,19 @@ export default function AdminInvestorVerifications(
                 )
             }
         >
-            <p className={cn('mb-4 max-w-[720px] text-[13px]', EXPLAIN)}>
-                {t('admin.kyc.intro')}
-            </p>
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                <p className={cn('max-w-[720px] text-[13px]', EXPLAIN)}>
+                    {t('admin.kyc.intro')}
+                </p>
+                {props.nav.complaints && (
+                    <Link
+                        href={props.nav.complaints}
+                        className="shrink-0 rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-[9px] text-[12.5px] font-semibold text-rz-slate"
+                    >
+                        {t('admin.kyc.complaints_link')}
+                    </Link>
+                )}
+            </div>
             <PillTabs
                 label={t('admin.kyc.tabs')}
                 tabs={props.tabs.map((tab) => ({

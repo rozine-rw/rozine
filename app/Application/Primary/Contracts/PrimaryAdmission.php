@@ -15,8 +15,8 @@ use Closure;
  * no external effects. It is handed what the Investor attested on screen, so a campaign or quote
  * that moved since is refused rather than re-priced silently.
  *
- * No source is bound yet: `UnavailablePrimaryAdmission` refuses `POLICY_INPUT_REQUIRED`, so the
- * purchase transport can be routed without any path fabricating a pass.
+ * `CurrentPrimaryAdmission` is the bound source: the KYC-R05 risk acknowledgement and the INV-R04
+ * earnings-fee band from the Investor's active capital.
  */
 interface PrimaryAdmission
 {
