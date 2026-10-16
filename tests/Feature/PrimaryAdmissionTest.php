@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessConnections;
 use App\Domain\Primary\PrimaryDisclosure;
 use App\Domain\Primary\RiskStatements;
 use App\Models\InvestorRiskAcknowledgement;
+use App\Models\LedgerEntry;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -146,4 +148,47 @@ it('serves the statements and the acknowledgement over API v1 with investor toke
     $this->postJson(route('api.v1.investor.risks.acknowledge'), ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1,
         'version' => RiskStatements::VERSION, 'statements_sha256' => RiskStatements::sha256(), 'acknowledged' => true])
         ->assertOk()->assertJsonPath('code', 'RISKS_ACKNOWLEDGED');
+});
+
+/** Reports the real declared set as incomplete, as a narrower future connection source might. */
+function incompleteBusinessConnections(): void
+{
+    $real = app(BusinessConnections::class);
+    app()->instance(BusinessConnections::class, new class($real) implements BusinessConnections
+    {
+        public function __construct(private BusinessConnections $real) {}
+
+        public function lockDeclared(string $businessId): array
+        {
+            return [...$this->real->lockDeclared($businessId), 'complete' => false];
+        }
+    });
+}
+
+it('admits an unconnected Investor because the declared mandate is the complete connection check', function (): void {
+    ($this->acknowledge)()->assertOk();
+
+    ($this->reserve)('2')->assertOk()->assertJsonPath('code', 'RESERVATION_HELD');
+});
+
+it('refuses a reserve with nothing held while the connection assessment is incomplete', function (): void {
+    ($this->acknowledge)()->assertOk();
+    $entries = LedgerEntry::query()->count();
+    incompleteBusinessConnections();
+
+    ($this->reserve)('2')->assertStatus(409)->assertJsonPath('code', 'CONNECTION_ASSESSMENT_INCOMPLETE');
+    expect(PrimaryReservationRecord::query()->count())->toBe(0)
+        ->and(PrimaryCommitment::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->count())->toBe($entries);
+});
+
+it('refuses a confirm with no commitment while the connection assessment is incomplete', function (): void {
+    ($this->acknowledge)()->assertOk();
+    $reservation = ($this->reserve)('2')->json('data.receipt.reservation_id');
+    $entries = LedgerEntry::query()->count();
+    incompleteBusinessConnections();
+
+    ($this->confirm)($reservation)->assertStatus(409)->assertJsonPath('code', 'CONNECTION_ASSESSMENT_INCOMPLETE');
+    expect(PrimaryCommitment::query()->count())->toBe(0)
+        ->and(LedgerEntry::query()->count())->toBe($entries);
 });
