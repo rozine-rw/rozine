@@ -98,10 +98,7 @@ final class EloquentDisbursementStore implements DisbursementStore
 
     public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId): array
     {
-        $permission = self::PERMISSIONS[$command] ?? throw new DisbursementViolation('DISBURSEMENT_COMMAND_INVALID');
-        if ($command === 'requery') {
-            throw new DisbursementViolation('DISBURSEMENT_COMMAND_INVALID');
-        }
+        $permission = isset(self::STAFF_EVENTS[$command]) ? self::PERMISSIONS[$command] : throw new DisbursementViolation('DISBURSEMENT_COMMAND_INVALID');
         $this->staff->check($userId, $permission);
         $disbursement = $this->disbursement($disbursementId);
         $input = $this->input($expectedRevision, $reason);

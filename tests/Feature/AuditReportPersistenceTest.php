@@ -243,6 +243,11 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    // The platform fee and automatic disbursement migrations reference these tables and rebind the closing authority, so they come off first and go back last.
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    $automaticDisbursement->down();
+    $platformFee->down();
     $businessWithdrawals->down();
     $businessRepayments->down();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
@@ -345,6 +350,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $businessDeposits->up();
     $businessRepayments->up();
     $businessWithdrawals->up();
+    $platformFee->up();
+    $automaticDisbursement->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
