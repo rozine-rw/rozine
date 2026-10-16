@@ -1476,7 +1476,6 @@ const fr: Catalog = {
     'admin.ledger.kind.investment': 'Investissement',
     'admin.ledger.kind.disbursement': 'Décaissement',
     'admin.ledger.kind.repayment': 'Remboursement',
-    'admin.ledger.kind.service_fee': 'Frais de service',
     'admin.ledger.kind.platform_fee': 'Frais de plateforme',
     'admin.ledger.kind.repayment_fee': 'Frais de remboursement',
     'admin.ledger.kind.auditor_share': "Part du partenaire d'audit",
@@ -2598,7 +2597,7 @@ const fr: Catalog = {
     'auditor.profile.legal.unavailable': 'Lecture impossible pour le moment',
     'auditor.profile.pending.earnings_title': 'Aucun revenu pour le moment',
     'auditor.profile.pending.earnings_body':
-        'Votre part des frais de service et vos rendements apparaîtront ici dès leur accumulation.',
+        "Votre part de 40 % des frais de plateforme sur les levées que vous avez auditées apparaîtra ici dès qu'elle sera acquise.",
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
@@ -2781,7 +2780,6 @@ const fr: Catalog = {
         'Restreint depuis le {date}. Vous pouvez toujours rembourser.',
     'business.servicing.repay.part.principal': 'Capital',
     'business.servicing.repay.part.return': 'Rendement',
-    'business.servicing.repay.part.service_fee': 'Frais de service',
     'business.servicing.repay.part.late_fees': 'Frais de retard',
     'business.servicing.repay.part.total': 'Total',
     'business.servicing.repay.pay_title': 'Payer depuis votre portefeuille',
@@ -3912,19 +3910,6 @@ const fr: Catalog = {
     'business.apply.review.reduced':
         'Vous avez choisi {principal} sur les {offered} proposés.',
     'business.apply.review.use_full': "Reprendre l'offre complète",
-    'business.apply.raise.instalment_fee': '+ {fee} de frais de service',
-    'business.apply.review.service_fee':
-        'Frais de service ({rate} % de chaque remboursement)',
-    'business.apply.review.projected': 'Prévisionnel',
-    'business.apply.review.total_payable': 'Total à payer (prévisionnel)',
-    'business.apply.review.fee_projection_note':
-        'Frais de service prévisionnels : {rate} % de chaque remboursement, prélevés sur les montants effectivement remboursés (capital et intérêts, hors frais et pénalités). Ces montants supposent que chaque échéance est payée en totalité à la date prévue.',
-    'business.apply.review.fee_note_service_fee':
-        'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
-    'business.apply.review.fee_unavailable':
-        'Conditions de frais indisponibles — vous ne pouvez pas encore signer',
-    'business.apply.review.fee_unavailable_body':
-        "Rozine n'a pas encore publié les conditions des frais de service pour cette offre : elle ne peut donc pas encore être acceptée. Votre brouillon et votre offre restent enregistrés.",
 
     'business.apply.recalculating': 'Recalcul…',
     'auditor.capture.unavailable':
@@ -4485,10 +4470,6 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
-    'business.publish.fee_unavailable':
-        'Conditions de frais indisponibles — vous ne pouvez pas encore publier',
-    'business.publish.fee_unavailable_body':
-        "Rozine n'a pas encore publié les conditions des frais de service pour cette levée : elle ne peut donc pas encore être mise en ligne. Rien n'a été publié.",
     'business.campaign.state.live': 'En ligne',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
@@ -5280,7 +5261,6 @@ const fr: Catalog = {
     'business.campaign.servicing.next_due': 'Échéance {index} · due le {date}',
     'business.campaign.servicing.principal': 'Capital',
     'business.campaign.servicing.return': 'Rendement',
-    'business.campaign.servicing.service_fee': 'Frais de service',
     'business.campaign.servicing.next_total': 'Total dû',
     'business.campaign.servicing.open': 'Ouvrir les remboursements',
     'business.campaign.servicing.repaid':
@@ -5472,7 +5452,6 @@ const fr: Catalog = {
     'admin.repayments.component.principal': 'Capital',
     'admin.repayments.component.return': 'Rendement',
     'admin.repayments.component.late_fees': 'Pénalités de retard',
-    'admin.repayments.component.service_fee': 'Frais de service',
     'admin.repayments.component.total': 'Restant dû',
     'admin.repayments.allocation.title': 'Répartition',
     'admin.repayments.allocation.pending':
@@ -5488,8 +5467,6 @@ const fr: Catalog = {
     'admin.repayments.allocation.kind.principal': 'Capital',
     'admin.repayments.allocation.kind.return': 'Rendement',
     'admin.repayments.allocation.kind.late_fee': 'Pénalité de retard',
-    'admin.repayments.allocation.kind.service_fee': 'Frais de service',
-    'admin.repayments.allocation.kind.steward_share': 'Part du gestionnaire',
     'admin.repayments.allocation.kind.investor_gross': 'Investisseurs, brut',
     'admin.repayments.allocation.kind.investor_fee': 'Frais investisseur',
     'admin.repayments.allocation.kind.investor_net': 'Investisseurs, net',

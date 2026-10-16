@@ -66,7 +66,7 @@ describe('Repayments queue', () => {
         expect(
             screen.getByRole('link', { name: 'Open RPY-2026-0301' }),
         ).toHaveTextContent('Open');
-        expect(rowOf('RPY-2026-0301')).toHaveTextContent('RWF 3.5M');
+        expect(rowOf('RPY-2026-0301')).toHaveTextContent('RWF 3.4M');
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: /requery|ask/i }),
@@ -119,7 +119,7 @@ describe('A repayment', () => {
         const reconciliation = section('Reconciliation');
 
         expect(reconciliation).toHaveTextContent('Matched · reconciled');
-        expect(reconciliation).toHaveTextContent('ExpectedRWF 3,465,000');
+        expect(reconciliation).toHaveTextContent('ExpectedRWF 3,405,000');
         expect(reconciliation).toHaveTextContent('DifferenceRWF 0');
         expect(reconciliation).toHaveTextContent('ToleranceRWF 0');
         expect(
@@ -131,12 +131,13 @@ describe('A repayment', () => {
         expect(servicing).toHaveTextContent('Before this receipt');
         expect(servicing).toHaveTextContent('StateDue today');
         expect(servicing).toHaveTextContent('StateCurrent');
-        expect(servicing).toHaveTextContent('OutstandingRWF 10,395,000');
+        expect(servicing).toHaveTextContent('OutstandingRWF 10,215,000');
+        expect(servicing).not.toHaveTextContent('Service fee');
 
         const allocation = section('Allocation');
 
         expect(allocation).toHaveTextContent('Balanced');
-        expect(allocation).toHaveTextContent('Receipt RWF 3,465,000');
+        expect(allocation).toHaveTextContent('Receipt RWF 3,405,000');
         expect(
             within(allocation).getByRole('table', {
                 name: 'What the receipt paid',
@@ -149,6 +150,7 @@ describe('A repayment', () => {
         ).toHaveTextContent(
             'Investors, gross· instalment 4· 318 holdings2200-INV-ENTRWF 3,405,000',
         );
+        expect(allocation).not.toHaveTextContent('Service fee');
         expect(allocation).toHaveTextContent(
             'Distributed to 318 holdings by largest remainder, record date 23 Jan 2027.',
         );

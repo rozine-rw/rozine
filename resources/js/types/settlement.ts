@@ -224,7 +224,6 @@ export type ComponentAmounts = {
     principal: Money;
     return: Money;
     late_fees: Money;
-    service_fee: Money;
     total: Money;
 };
 
@@ -259,8 +258,6 @@ export type AllocationKind =
     | 'principal'
     | 'return'
     | 'late_fee'
-    | 'service_fee'
-    | 'steward_share'
     | 'investor_gross'
     | 'investor_fee'
     | 'investor_net'

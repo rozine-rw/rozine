@@ -20,15 +20,15 @@
             "progress": {
                 "repaid": {
                     "currency": "RWF",
-                    "amount": "6930000"
+                    "amount": "6810000"
                 },
                 "total": {
                     "currency": "RWF",
-                    "amount": "20790000"
+                    "amount": "20430000"
                 },
                 "remaining": {
                     "currency": "RWF",
-                    "amount": "13860000"
+                    "amount": "13620000"
                 },
                 "repaid_pct": "33.3",
                 "payments_made": 2,
@@ -46,15 +46,11 @@
                 },
                 "late_fees": {
                     "currency": "RWF",
-                    "amount": "346500"
-                },
-                "service_fee": {
-                    "currency": "RWF",
-                    "amount": "60000"
+                    "amount": "340500"
                 },
                 "total": {
                     "currency": "RWF",
-                    "amount": "3811500"
+                    "amount": "3745500"
                 }
             },
             "next": {
@@ -73,13 +69,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 }
             },
@@ -88,7 +80,7 @@
                 "applies_on": "2027-01-22",
                 "projected": {
                     "currency": "RWF",
-                    "amount": "173250"
+                    "amount": "170250"
                 }
             },
             "restriction": {
@@ -117,13 +109,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -139,13 +127,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "outstanding": {
@@ -158,10 +142,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -191,13 +171,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -213,13 +189,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "outstanding": {
@@ -232,10 +204,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -265,13 +233,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -284,10 +248,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -307,15 +267,11 @@
                     },
                     "late_fees": {
                         "currency": "RWF",
-                        "amount": "346500"
-                    },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
+                        "amount": "340500"
                     },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3811500"
+                        "amount": "3745500"
                     }
                 },
                 "status": "overdue",
@@ -329,11 +285,11 @@
                         "rate_bps": 500,
                         "basis": {
                             "currency": "RWF",
-                            "amount": "3465000"
+                            "amount": "3405000"
                         },
                         "assessed": {
                             "currency": "RWF",
-                            "amount": "173250"
+                            "amount": "170250"
                         },
                         "collected": {
                             "currency": "RWF",
@@ -341,7 +297,7 @@
                         },
                         "outstanding": {
                             "currency": "RWF",
-                            "amount": "173250"
+                            "amount": "170250"
                         },
                         "status": "assessed"
                     },
@@ -352,11 +308,11 @@
                         "rate_bps": 500,
                         "basis": {
                             "currency": "RWF",
-                            "amount": "3465000"
+                            "amount": "3405000"
                         },
                         "assessed": {
                             "currency": "RWF",
-                            "amount": "173250"
+                            "amount": "170250"
                         },
                         "collected": {
                             "currency": "RWF",
@@ -364,7 +320,7 @@
                         },
                         "outstanding": {
                             "currency": "RWF",
-                            "amount": "173250"
+                            "amount": "170250"
                         },
                         "status": "assessed"
                     }
@@ -386,13 +342,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -405,10 +357,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -430,13 +378,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "status": "upcoming",
@@ -460,13 +404,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -479,10 +419,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -504,13 +440,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "status": "upcoming",
@@ -534,13 +466,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "paid": {
@@ -553,10 +481,6 @@
                         "amount": "0"
                     },
                     "late_fees": {
-                        "currency": "RWF",
-                        "amount": "0"
-                    },
-                    "service_fee": {
                         "currency": "RWF",
                         "amount": "0"
                     },
@@ -578,13 +502,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "status": "upcoming",
@@ -628,15 +548,11 @@
                         },
                         "late_fees": {
                             "currency": "RWF",
-                            "amount": "346500"
-                        },
-                        "service_fee": {
-                            "currency": "RWF",
-                            "amount": "60000"
+                            "amount": "340500"
                         },
                         "total": {
                             "currency": "RWF",
-                            "amount": "3811500"
+                            "amount": "3745500"
                         }
                     },
                     "instalment_indexes": [3]
@@ -662,7 +578,7 @@
                 "note_title": "Fleet Expansion",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "applied": {
                     "principal": {
@@ -677,13 +593,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "unapplied": {
@@ -700,7 +612,7 @@
                     "recorded_at": "2026-11-23T23:59:00+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "units": null,
                     "reference": "RZ-RPY-1123",
@@ -723,7 +635,7 @@
                 "note_title": "Fleet Expansion",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "applied": {
                     "principal": {
@@ -738,13 +650,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "60000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "unapplied": {
@@ -761,7 +669,7 @@
                     "recorded_at": "2026-10-23T23:59:00+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "units": null,
                     "reference": "RZ-RPY-1023",

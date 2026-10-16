@@ -210,22 +210,6 @@
                 }
             },
             {
-                "id": "LED-1927",
-                "at": "2026-09-23T15:54:16+02:00",
-                "kind": "service_fee",
-                "from": "GreenLeaf Agro",
-                "to": "Rozine Platform",
-                "reference": "RNP-2025-0091",
-                "amount": {
-                    "currency": "RWF",
-                    "amount": "96000"
-                },
-                "link": {
-                    "url": "/preview/admin-ledger-entry",
-                    "method": "get"
-                }
-            },
-            {
                 "id": "LED-1926",
                 "at": "2026-09-23T15:34:42+02:00",
                 "kind": "repayment",

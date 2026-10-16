@@ -1397,7 +1397,6 @@ const en = {
     'admin.ledger.kind.investment': 'Investment',
     'admin.ledger.kind.disbursement': 'Disbursement',
     'admin.ledger.kind.repayment': 'Repayment',
-    'admin.ledger.kind.service_fee': 'Service fee',
     'admin.ledger.kind.platform_fee': 'Platform fee',
     'admin.ledger.kind.repayment_fee': 'Repayment fee',
     'admin.ledger.kind.auditor_share': 'Audit Partner share',
@@ -2499,7 +2498,7 @@ const en = {
     'auditor.profile.legal.unavailable': "Can't be read right now",
     'auditor.profile.pending.earnings_title': 'No earnings yet',
     'auditor.profile.pending.earnings_body':
-        'Your share of service fees and yield payouts will show here once they accrue.',
+        'Your 40% share of the platform fee on raises you audited will show here once it accrues.',
     'auditor.profile.pending.payout_title': 'No payout account yet',
     'auditor.profile.pending.payout_body':
         'The bank account your earnings are paid to will show here.',
@@ -2671,7 +2670,6 @@ const en = {
         'Restricted since {date}. You can still repay.',
     'business.servicing.repay.part.principal': 'Principal',
     'business.servicing.repay.part.return': 'Return',
-    'business.servicing.repay.part.service_fee': 'Service fee',
     'business.servicing.repay.part.late_fees': 'Late fees',
     'business.servicing.repay.part.total': 'Total',
     'business.servicing.repay.pay_title': 'Pay from your wallet',
@@ -3769,19 +3767,6 @@ const en = {
     'business.apply.review.reduced':
         'You chose {principal} of the {offered} offered.',
     'business.apply.review.use_full': 'Use the full offer',
-    'business.apply.raise.instalment_fee': '+ {fee} service fee',
-    'business.apply.review.service_fee':
-        'Service fee ({rate}% of each repayment)',
-    'business.apply.review.projected': 'Projected',
-    'business.apply.review.total_payable': 'Total payable (projected)',
-    'business.apply.review.fee_projection_note':
-        'Projected service fee: {rate}% of each repayment, charged on amounts actually repaid (principal and interest, excluding fees and penalties). These figures assume every instalment is paid in full on schedule.',
-    'business.apply.review.fee_note_service_fee':
-        'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised. The service fee on each repayment is shown with your offer above.',
-    'business.apply.review.fee_unavailable':
-        "Fee terms unavailable — you can't sign yet",
-    'business.apply.review.fee_unavailable_body':
-        "Rozine hasn't published the service-fee terms for this offer, so it can't be accepted yet. Your draft and your offer stay saved.",
     'business.apply.recalculating': 'Recalculating…',
     'auditor.capture.unavailable':
         "The capture app isn't available for this assignment yet, so photos and the check-in can't be taken. There's no way to capture them on the web.",
@@ -4268,10 +4253,6 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
-    'business.publish.fee_unavailable':
-        "Fee terms unavailable — you can't publish yet",
-    'business.publish.fee_unavailable_body':
-        "Rozine hasn't published the service-fee terms for this raise, so it can't go live yet. Nothing has been published.",
     'business.campaign.state.live': 'Live',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
@@ -5083,7 +5064,6 @@ const en = {
     'business.campaign.servicing.next_due': 'Instalment {index} · due {date}',
     'business.campaign.servicing.principal': 'Principal',
     'business.campaign.servicing.return': 'Return',
-    'business.campaign.servicing.service_fee': 'Service fee',
     'business.campaign.servicing.next_total': 'Total due',
     'business.campaign.servicing.open': 'Open repayments',
     'business.campaign.servicing.repaid':
@@ -5269,7 +5249,6 @@ const en = {
     'admin.repayments.component.principal': 'Principal',
     'admin.repayments.component.return': 'Return',
     'admin.repayments.component.late_fees': 'Late fees',
-    'admin.repayments.component.service_fee': 'Service fee',
     'admin.repayments.component.total': 'Outstanding',
     'admin.repayments.allocation.title': 'Allocation',
     'admin.repayments.allocation.pending':
@@ -5285,8 +5264,6 @@ const en = {
     'admin.repayments.allocation.kind.principal': 'Principal',
     'admin.repayments.allocation.kind.return': 'Return',
     'admin.repayments.allocation.kind.late_fee': 'Late fee',
-    'admin.repayments.allocation.kind.service_fee': 'Service fee',
-    'admin.repayments.allocation.kind.steward_share': 'Steward share',
     'admin.repayments.allocation.kind.investor_gross': 'Investors, gross',
     'admin.repayments.allocation.kind.investor_fee': 'Investor fee',
     'admin.repayments.allocation.kind.investor_net': 'Investors, net',

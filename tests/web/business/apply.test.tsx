@@ -2394,6 +2394,21 @@ describe('Apply — step 3, review & sign', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('Tick every disclosure')).toBeInTheDocument();
     });
+
+    it('discloses only the 3% platform fee, with no fee on each repayment', () => {
+        render(<BusinessApply {...props(reviewStep)} />);
+
+        expect(
+            screen.getByText(
+                'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/nothing on top of your quoted rate/iu),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/service fee/iu)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Total payable/u)).not.toBeInTheDocument();
+    });
 });
 
 describe('Apply — submitted', () => {

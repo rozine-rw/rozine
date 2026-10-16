@@ -146,7 +146,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -164,7 +164,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "state": "received",
                 "dpd_at_receipt": 0,
@@ -218,7 +218,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,

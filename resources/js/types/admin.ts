@@ -240,7 +240,6 @@ export type LedgerKind =
     | 'investment'
     | 'disbursement'
     | 'repayment'
-    | 'service_fee'
     | 'platform_fee'
     | 'repayment_fee'
     | 'auditor_share'
@@ -1030,9 +1029,9 @@ export type AllocationLine = {
  */
 export type Allocation = {
     receipt_amount: Money;
-    /** Principal, then return, then late fees (§11.4), the service fee, and anything unapplied. */
+    /** Principal, then return, then late fees (§11.4), and anything unapplied. */
     paid: AllocationLine[];
-    /** Service fee, steward share, Investor lines and the PSP fee. */
+    /** Steward share, Investor lines and the PSP fee. */
     distributed: AllocationLine[];
     balanced: boolean;
     entitlements: {

@@ -1468,7 +1468,6 @@ const rw: Catalog = {
     'admin.ledger.kind.investment': 'Ishoramari',
     'admin.ledger.kind.disbursement': 'Kwishyura ikigo',
     'admin.ledger.kind.repayment': 'Kwishyura inguzanyo',
-    'admin.ledger.kind.service_fee': 'Amafaranga ya serivisi',
     'admin.ledger.kind.platform_fee': 'Amafaranga ya platifomu',
     'admin.ledger.kind.repayment_fee': 'Amafaranga yo kwishyura',
     'admin.ledger.kind.auditor_share': "Umugabane w'umugenzuzi",
@@ -2589,7 +2588,7 @@ const rw: Catalog = {
     'auditor.profile.legal.unavailable': 'Ntibishoboka gusomwa ubu',
     'auditor.profile.pending.earnings_title': 'Nta byo winjije biraboneka',
     'auditor.profile.pending.earnings_body':
-        "Umugabane wawe w'amafaranga ya serivisi n'inyungu bizagaragara hano nibimara kuboneka.",
+        "Umugabane wawe wa 40% w'amafaranga ya platform ku nkunga wagenzuye uzagaragara hano numara kuboneka.",
     'auditor.profile.pending.payout_title':
         'Nta konti yo kwishyurirwaho iracyahari',
     'auditor.profile.pending.payout_body':
@@ -2768,7 +2767,6 @@ const rw: Catalog = {
         'Byabujijwe kuva ku wa {date}. Uracyashobora kwishyura.',
     'business.servicing.repay.part.principal': 'Igishoro',
     'business.servicing.repay.part.return': 'Inyungu',
-    'business.servicing.repay.part.service_fee': 'Amafaranga ya serivisi',
     'business.servicing.repay.part.late_fees': "Amafaranga y'ubukererwe",
     'business.servicing.repay.part.total': 'Igiteranyo',
     'business.servicing.repay.pay_title': 'Ishyura uvuye mu gikapu',
@@ -3893,20 +3891,6 @@ const rw: Catalog = {
     'business.apply.review.reduced':
         'Wahisemo {principal} kuri {offered} wahawe.',
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
-    'business.apply.raise.instalment_fee': "+ {fee} y'amafaranga ya serivisi",
-    'business.apply.review.service_fee':
-        'Amafaranga ya serivisi ({rate}% bya buri bwishyu)',
-    'business.apply.review.projected': 'Biteganyijwe',
-    'business.apply.review.total_payable':
-        'Igiteranyo cyo kwishyura (biteganyijwe)',
-    'business.apply.review.fee_projection_note':
-        "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
-    'business.apply.review.fee_note_service_fee':
-        "Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
-    'business.apply.review.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
-    'business.apply.review.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iki cyifuzo, bityo ntikiremerwa. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
 
     'business.apply.recalculating': 'Turimo kubara…',
     'auditor.capture.unavailable':
@@ -4465,10 +4449,6 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
-    'business.publish.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gutangaza ubu",
-    'business.publish.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iyi nkunga, bityo ntirashobora gutangazwa. Nta kintu cyatangajwe.",
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
@@ -5249,7 +5229,6 @@ const rw: Catalog = {
         'Igice {index} · kigomba kwishyurwa ku wa {date}',
     'business.campaign.servicing.principal': 'Igishoro',
     'business.campaign.servicing.return': 'Inyungu',
-    'business.campaign.servicing.service_fee': 'Amafaranga ya serivisi',
     'business.campaign.servicing.next_total': 'Igiteranyo kigomba kwishyurwa',
     'business.campaign.servicing.open': 'Fungura ibyo kwishyura',
     'business.campaign.servicing.repaid':
@@ -5441,7 +5420,6 @@ const rw: Catalog = {
     'admin.repayments.component.principal': 'Igishoro',
     'admin.repayments.component.return': 'Inyungu',
     'admin.repayments.component.late_fees': "Amande z'ubukererwe",
-    'admin.repayments.component.service_fee': 'Amafaranga ya serivisi',
     'admin.repayments.component.total': 'Ibisigaye',
     'admin.repayments.allocation.title': 'Igabanya',
     'admin.repayments.allocation.pending':
@@ -5457,8 +5435,6 @@ const rw: Catalog = {
     'admin.repayments.allocation.kind.principal': 'Igishoro',
     'admin.repayments.allocation.kind.return': 'Inyungu',
     'admin.repayments.allocation.kind.late_fee': "Amande y'ubukererwe",
-    'admin.repayments.allocation.kind.service_fee': 'Amafaranga ya serivisi',
-    'admin.repayments.allocation.kind.steward_share': "Umugabane w'umugenzuzi",
     'admin.repayments.allocation.kind.investor_gross': 'Abashoramari, mbumbe',
     'admin.repayments.allocation.kind.investor_fee':
         "Amafaranga y'abashoramari",
