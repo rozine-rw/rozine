@@ -46,6 +46,9 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
             throw new LogicException('PRIMARY_TRANSACTION_REQUIRED');
         }
         $declared = $this->connections->lockDeclared($businessId);
+        if (! $declared['complete']) {
+            throw new CommandRejection('CONNECTION_ASSESSMENT_INCOMPLETE', 409);
+        }
         if (array_intersect(array_map(strtolower(...), $partyIds), $declared['party_ids']) !== []) {
             throw new CommandRejection('CONNECTED_BUSINESS_INVESTMENT_PROHIBITED', 403);
         }
