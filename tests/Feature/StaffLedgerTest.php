@@ -31,7 +31,6 @@ function ledgerStaff(array $roles): User
 
 beforeEach(function (): void {
     $this->freezeSecond();
-    config(['app.staff_ledger_view_signed_off' => true]);
     InvestorWalletFixture::policy(fee: '500', minimum: '1500');
     $this->investor = InvestorWalletFixture::ready();
     $this->investor['user']->forceFill(['name' => 'Aline Uwase'])->save();
@@ -177,14 +176,13 @@ it('is for Treasury, Compliance and superadmin only, and over API v1 with its ow
     $this->getJson(route('api.v1.staff.ledger.index'))->assertForbidden();
 });
 
-it('holds the proposed ledger-view allocation until its signoff is recorded', function (): void {
-    config(['app.staff_ledger_view_signed_off' => false]);
+it('grants the ledger view only to Treasury, Compliance and superadmin, per the #99 P2 signoff', function (): void {
     ($this->deposit)('20000');
 
     foreach (['treasury', 'compliance', 'superadmin'] as $role) {
-        $staff = ledgerStaff([$role]);
-        $this->actingAs($staff)->get(route('staff.ledger.index'))->assertForbidden();
-        $this->actingAs($staff)->get(route('staff.dashboard'))->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->where('activity', null)->where('nav.ledger', null));
+        $this->actingAs(ledgerStaff([$role]))->get(route('staff.ledger.index'))->assertOk();
+    }
+    foreach (['analyst', 'approver'] as $role) {
+        $this->actingAs(ledgerStaff([$role]))->get(route('staff.ledger.index'))->assertForbidden();
     }
 });

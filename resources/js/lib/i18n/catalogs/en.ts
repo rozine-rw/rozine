@@ -3623,7 +3623,7 @@ const en = {
     'investor.help.risk.late.q':
         'What happens if a business pays late or defaults?',
     'investor.help.risk.late.a':
-        "On the due date, whatever is in the business's wallet is collected and paid out, and anything that arrives later is collected straight away. Late charges of 5% of the unpaid amount at the due date, day 7 and day 30 all go to holders. Rozine takes none of it.\n\nIf the arrears are not cleared by day 31, the note is in default. Recovery is pursued but may not return the full amount.",
+        "On the due date, whatever is in the business's wallet is collected and paid out, and anything that arrives later is collected straight away. Late charges of 5% of the unpaid amount at the due date, day 7 and day 30 all go to holders. Rozine takes none of it.\n\nLate charges and penalty fees are accrued daily upon default and are payable to note holders only as and when collected from the borrower. Rozine does not guarantee or advance late fee recoveries.\n\nIf the arrears are not cleared by day 31, the note is in default. Recovery is pursued but may not return the full amount.",
     'investor.help.portfolio.diversify.q': 'How should I diversify?',
     'investor.help.portfolio.diversify.a':
         'Spread your money across several businesses, industries and terms rather than one note. If one business pays late, the others soften the effect.\n\nMany investors set a limit for any single note and add variety over time.',
@@ -5202,7 +5202,7 @@ const en = {
     'investor.servicing.late_fees.total.collected': 'Collected',
     'investor.servicing.late_fees.total.outstanding': 'Not yet collected',
     'investor.servicing.late_fees.disclosure':
-        'Late fees are paid to you only if and when the business pays them. Rozine does not guarantee them. Disclosure {version}.',
+        'Late charges and penalty fees are accrued daily upon default and are payable to note holders only as and when collected from the borrower. Rozine does not guarantee or advance late fee recoveries. Disclosure {version}.',
     'investor.servicing.payouts.title': 'Payouts',
     'investor.servicing.payouts.empty': 'No payouts yet.',
     'investor.servicing.payouts.row': 'Instalment {index} · credited {date}',
