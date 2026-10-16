@@ -104,11 +104,11 @@ it('builds Holding figures from the authenticated issue and fails closed when a 
 it('fails closed on an Investor Holding read when the issued membership is partial', function (): void {
     ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
     PrimaryHoldingFixture::flushDeferredChecks();
-    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER ALL');
+    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER primary_holdings_protected');
     try {
         DB::table('primary_holdings')->where('business_campaign_id', $holding->business_campaign_id)->where('party_id', '!=', $holding->party_id)->delete();
     } finally {
-        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER ALL');
+        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER primary_holdings_protected');
     }
 
     $this->withoutExceptionHandling()->actingAs($user);
