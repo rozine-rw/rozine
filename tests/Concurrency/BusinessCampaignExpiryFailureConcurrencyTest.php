@@ -52,6 +52,7 @@ it('isolates a failure at the outer PostgreSQL commit and retains later campaign
         $failedEvent = 'business-raise-expired:'.$first->id;
         $notice = (clone $expiryNotices)->where('event_key', 'business-raise-expired:'.$second->id)->sole();
         expect(json_decode($notice->facts, true)['campaign_id'])->toBe($second->id)
+            ->and((clone $expiryNotices)->count())->toBe(1)
             ->and((clone $expiryNotices)->where('event_key', $failedEvent)->exists())->toBeFalse()
             ->and(DB::table('party_notice_deliveries')->whereIn('party_notice_id',
                 (clone $expiryNotices)->where('event_key', $failedEvent)->select('id'))->count())->toBe(0)

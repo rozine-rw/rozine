@@ -162,11 +162,11 @@ it('refuses changed authenticated Holding evidence on every read without caching
 it('refuses a partial authentic issued membership instead of returning a partial snapshot', function (): void {
     ['campaign' => $campaign] = PrimaryIssuanceFixture::close();
     PrimaryHoldingFixture::flushDeferredChecks();
-    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER ALL');
+    DB::statement('ALTER TABLE primary_holdings DISABLE TRIGGER primary_holdings_protected');
     try {
         DB::table('primary_holdings')->where('id', PrimaryHolding::query()->firstOrFail()->id)->delete();
     } finally {
-        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER ALL');
+        DB::statement('ALTER TABLE primary_holdings ENABLE TRIGGER primary_holdings_protected');
     }
     expect(fn () => DB::transaction(fn () => app(GetRetainedNoteSchedule::class)->find($campaign->campaignId)))
         ->toThrow(RuntimeException::class, 'PRIMARY_ISSUANCE_INTEGRITY_FAILED');
