@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\ApplyWithdrawalOutcome;
@@ -23,6 +24,7 @@ use App\Models\LedgerEntry;
 use App\Models\User;
 use App\Models\WalletWithdrawal;
 use App\Models\WalletWithdrawalEvent;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\BusinessAuthorityFixture;
@@ -35,21 +37,26 @@ use Tests\Support\PrimaryReservationFixture;
  * matches its record, and a payout-account change once the Investor has a wallet.
  */
 
-/** Fires every deferred check as a commit would, then defers them again for the rest of the test. */
-function walletStoreCoverageCommits(): void
+/**
+ * Runs one read while every withdrawal of the model it retrieves carries a broken seal in memory
+ * only, as a damaged row would read. The stored row, its triggers and its constraints are never
+ * touched, and the substitution ends with the read.
+ *
+ * @param  class-string<Model>  $model
+ */
+function walletStoreCoverageReadWithBrokenSeal(string $model, Closure $read): void
 {
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
-    DB::statement('SET CONSTRAINTS ALL DEFERRED');
-}
-
-/** Overwrites a sealed row's hash past its protecting triggers, as a damaged row would read. */
-function walletStoreCoverageBreakSeal(string $table): void
-{
-    walletStoreCoverageCommits();
-    DB::statement('ALTER TABLE '.$table.' DISABLE TRIGGER USER');
-    DB::table($table)->update(['sha256' => str_repeat('0', 64)]);
-    walletStoreCoverageCommits();
-    DB::statement('ALTER TABLE '.$table.' ENABLE TRIGGER USER');
+    $seal = new ArrayObject(['broken' => true]);
+    $model::retrieved(function (Model $withdrawal) use ($seal): void {
+        if ($seal['broken'] === true) {
+            $withdrawal->setRawAttributes([...$withdrawal->getAttributes(), 'sha256' => str_repeat('0', 64)], true);
+        }
+    });
+    try {
+        $read();
+    } finally {
+        $seal['broken'] = false;
+    }
 }
 
 /**
@@ -89,11 +96,16 @@ it('refuses to read a Business withdrawal whose sealed facts no longer match its
         ['currency' => 'RWF', 'amount' => '100000'], $fixture['method']->id);
     $walletId = BusinessWithdrawal::query()->sole()->wallet_id;
     expect(app(BusinessWithdrawals::class)->view($walletId, true, false, null, null)['withdrawals'])->toHaveCount(1);
+    $stored = DB::table('business_withdrawals')->get();
+    $entries = LedgerEntry::query()->count();
 
-    walletStoreCoverageBreakSeal('business_withdrawals');
+    walletStoreCoverageReadWithBrokenSeal(BusinessWithdrawal::class, function () use ($walletId): void {
+        expect(fn () => app(BusinessWithdrawals::class)->view($walletId, true, false, null, null))
+            ->toThrow(RuntimeException::class, 'WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+    });
 
-    expect(fn () => app(BusinessWithdrawals::class)->view($walletId, true, false, null, null))
-        ->toThrow(RuntimeException::class, 'WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+    expect(DB::table('business_withdrawals')->get())->toEqual($stored)->and(LedgerEntry::query()->count())->toBe($entries)
+        ->and(app(BusinessWithdrawals::class)->view($walletId, true, false, null, null)['withdrawals'])->toHaveCount(1);
 });
 
 it('quotes no Investor withdrawal for an absent amount and refuses an unreadable one at zero', function (): void {
@@ -122,10 +134,16 @@ it('refuses to read an Investor withdrawal whose sealed facts no longer match it
     InvestorWalletFixture::withdraw($fixture, '100000');
     expect(app(GetInvestorWallet::class)->handle($fixture['user']->id, 1)['withdrawals'])->toHaveCount(1)
         ->and(WalletWithdrawal::query()->count())->toBe(1);
+    $stored = DB::table('wallet_withdrawals')->get();
+    $entries = LedgerEntry::query()->count();
 
-    walletStoreCoverageBreakSeal('wallet_withdrawals');
+    walletStoreCoverageReadWithBrokenSeal(WalletWithdrawal::class, function () use ($fixture): void {
+        expect(fn () => app(GetInvestorWallet::class)->handle($fixture['user']->id, 1))
+            ->toThrow(RuntimeException::class, 'WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+    });
 
-    expect(fn () => app(GetInvestorWallet::class)->handle($fixture['user']->id, 1))->toThrow(RuntimeException::class, 'WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+    expect(DB::table('wallet_withdrawals')->get())->toEqual($stored)->and(LedgerEntry::query()->count())->toBe($entries)
+        ->and(app(GetInvestorWallet::class)->handle($fixture['user']->id, 1)['withdrawals'])->toHaveCount(1);
 });
 
 it('refuses to open an internal posting receipt whose originating reservation is not on record', function (): void {
@@ -138,14 +156,41 @@ it('refuses to open an internal posting receipt whose originating reservation is
     $hold = LedgerEntry::query()->where('kind', 'primary_hold')->where('source_id', $reservation)->sole();
     expect(app(GetInvestorWallet::class)->handle($investor['user']->id, 1, ['receipt' => $hold->id])['receipt'])->not->toBeNull();
 
-    walletStoreCoverageCommits();
-    DB::statement('ALTER TABLE ledger_entries DISABLE TRIGGER USER');
-    DB::table('ledger_entries')->where('id', $hold->id)->update(['origin_operation_id' => strtolower((string) Str::ulid())]);
-    walletStoreCoverageCommits();
-    DB::statement('ALTER TABLE ledger_entries ENABLE TRIGGER USER');
+    $stored = DB::table('ledger_entries')->get();
 
-    expect(fn () => app(GetInvestorWallet::class)->handle($investor['user']->id, 1, ['receipt' => $hold->id]))
-        ->toThrow(RuntimeException::class, 'WALLET_ENTRY_INTEGRITY_FAILED');
+    $records = app(OperationRecords::class);
+    app()->instance(OperationRecords::class, new
+    /** @phpstan-import-type OperationRecord from OperationRecords */
+    class($records, (string) $hold->origin_operation_id) implements OperationRecords
+    {
+        public function __construct(private OperationRecords $records, private string $omitted) {}
+
+        /** @return list<OperationRecord> */
+        public function forTarget(string $actorKey, string $command, string $targetType, string $targetId): array
+        {
+            return array_values(array_filter($this->records->forTarget($actorKey, $command, $targetType, $targetId),
+                fn (array $operation): bool => $operation['operation_id'] !== $this->omitted));
+        }
+
+        public function requestOf(string $operationId): ?string
+        {
+            return $this->records->requestOf($operationId);
+        }
+
+        public function attribution(string $operationId): ?array
+        {
+            return $this->records->attribution($operationId);
+        }
+    });
+    try {
+        expect(fn () => app(GetInvestorWallet::class)->handle($investor['user']->id, 1, ['receipt' => $hold->id]))
+            ->toThrow(RuntimeException::class, 'WALLET_ENTRY_INTEGRITY_FAILED');
+    } finally {
+        app()->forgetInstance(OperationRecords::class);
+    }
+
+    expect(DB::table('ledger_entries')->get())->toEqual($stored)
+        ->and(app(GetInvestorWallet::class)->handle($investor['user']->id, 1, ['receipt' => $hold->id])['receipt'])->not->toBeNull();
 });
 
 it('tells an open wallet page when the Investor links or unlinks a payout account', function (): void {
