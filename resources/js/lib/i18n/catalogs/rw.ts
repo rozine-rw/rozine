@@ -2018,6 +2018,8 @@ const rw: Catalog = {
     'admin.ledger.col.credit': 'Ibyinjira',
     'admin.ledger.open_named': 'Fungura icyanditswe {id}',
     'admin.ledger.see_all': 'Reba ibyanditswe byose {count}',
+    'admin.ledger.older': 'Ibyanditswe bya kera',
+    'admin.ledger.newest': 'Subira ku bishya',
     'admin.ledger.empty': 'Nta cyanditswe muri iki gihe.',
     'admin.ledger.drawer_label': 'Icyanditswe {id}',
     'admin.ledger.fact.from': 'Kuva',
@@ -2025,6 +2027,10 @@ const rw: Catalog = {
     'admin.ledger.fact.reference': 'Indango',
     'admin.ledger.fact.operation': 'Igikorwa',
     'admin.ledger.posted_by': 'Byanditswe na {actor} · {at}',
+    'admin.ledger.origin':
+        'Byatangijwe na {actor} · {at}. Ibikurikiyeho muri uru rugendo bigumana iyi nkomoko.',
+    'admin.ledger.origin_none':
+        'Nta gikorwa cyatangije iki cyanditswe kibitswe.',
     'admin.ledger.postings': 'Ibyanditswe',
     'admin.ledger.total': 'Igiteranyo',
     'admin.ledger.balanced': 'Biringaniye',

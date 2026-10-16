@@ -13,7 +13,7 @@ use Inertia\Response;
 
 /**
  * The designed Ledger (`ledger.view`): every wallet ledger posting, newest first, searched on the
- * server, each opening its lines in the entry drawer. Nothing here can be posted or edited.
+ * server and paged back, each opening its lines in the entry drawer. Nothing here can be posted or edited.
  */
 class StaffLedgerController extends Controller
 {
@@ -26,10 +26,12 @@ class StaffLedgerController extends Controller
         $search = trim((string) $request->validated('q', ''));
         $limit = (int) $request->validated('limit', self::LIMIT);
         $entry = $request->validated('entry');
-        $page = $ledger->handle($actorId, $search === '' ? null : $search, $limit, $entry === null ? null : (string) $entry);
+        $before = $request->validated('before');
+        $before = $before === null ? null : (string) $before;
+        $page = $ledger->handle($actorId, $search === '' ? null : $search, $limit, $entry === null ? null : (string) $entry, $before);
         $staff = $access->handle($actorId);
 
-        $resource = new StaffLedgerResource([...$page, 'search' => $search, 'limit' => $limit, 'roles' => $staff['roles'],
+        $resource = new StaffLedgerResource([...$page, 'search' => $search, 'limit' => $limit, 'before' => $before, 'roles' => $staff['roles'],
             'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/ledger', $resource->resolve($request));

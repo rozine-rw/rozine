@@ -57,7 +57,7 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_profiles ON business_profiles.id = business_wallets.business_id WHERE business_wallets.id = %1$s))
         SQL;
 
-    public function entries(?string $search, int $limit): array
+    public function entries(?string $search, int $limit, ?string $before = null): array
     {
         $matching = DB::table('ledger_entries')->when($search !== null, function (Builder $query) use ($search): void {
             $like = '%'.addcslashes(mb_strtolower((string) $search), '%_\\').'%';
@@ -67,9 +67,12 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 ->orWhereRaw('('.sprintf(self::SEALED, 'provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
                 ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like]));
         });
-        $rows = $this->select(clone $matching)->orderByDesc('ledger_entries.id')->limit(max(1, $limit))->get();
+        $limit = max(1, $limit);
+        $rows = $this->select(clone $matching)->when($before !== null, fn (Builder $query) => $query->where('ledger_entries.id', '<', $before))
+            ->orderByDesc('ledger_entries.id')->limit($limit + 1)->get()->all();
+        $nextBefore = count($rows) > $limit ? (string) $rows[$limit - 1]->id : null;
 
-        return ['entries' => $this->shape($rows->all()), 'total' => $matching->count()];
+        return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore];
     }
 
     public function entry(string $id): ?array

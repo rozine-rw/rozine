@@ -13,13 +13,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * them, where the money came from (the largest debit line's account) and went to (the largest
  * credit line's), the reference it moved under and its amount (the entry's debits). The opened
  * entry lists every line as a posting with its account and code, the totals and whether they
- * balance. No posting has ever been corrected, so no entry links a contra.
+ * balance, and who started its money flow (`origin`), which is not who posted it. No posting has
+ * ever been corrected, so no entry links a contra. `older` pages back from the last row shown and
+ * `newest` returns to the first page.
  *
  * @phpstan-import-type Entry from \App\Application\Operations\Contracts\LedgerJournal
  * @phpstan-import-type Line from \App\Application\Operations\Contracts\LedgerJournal
+ * @phpstan-import-type OpenedEntry from \App\Application\Operations\BrowseLedger
  *
  * @phpstan-type Page array{
- *     entries: list<Entry>, total: int, entry: Entry|null, search: string, limit: int, roles: list<string>, permissions: list<string>
+ *     entries: list<Entry>, total: int, next_before: string|null, entry: OpenedEntry|null,
+ *     search: string, limit: int, before: string|null, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffLedgerResource extends JsonResource
@@ -55,10 +59,12 @@ class StaffLedgerResource extends JsonResource
         /** @var Page $page */
         $page = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
-        $query = array_filter(['q' => $page['search'], 'limit' => $page['limit'] === 50 ? null : $page['limit']], fn (string|int|null $value): bool => $value !== null && $value !== '');
+        $query = array_filter(['q' => $page['search'], 'limit' => $page['limit'] === 50 ? null : $page['limit'], 'before' => $page['before']],
+            fn (string|int|null $value): bool => $value !== null && $value !== '');
+        $first = array_diff_key($query, ['before' => true]);
         $link = fn (array $parameters): array => ['url' => route($prefix.'staff.ledger.index', $parameters, false), 'method' => 'get'];
         $more = $page['total'] > count($page['entries']) && $page['limit'] < self::MAX
-            ? $link([...array_diff_key($query, ['limit' => true]), 'limit' => self::MAX]) : null;
+            ? $link([...array_diff_key($first, ['limit' => true]), 'limit' => self::MAX]) : null;
         $entry = $page['entry'];
 
         return ['contract_version' => 'staff-ledger-v1', 'server_time' => now()->toIso8601String(),
@@ -66,10 +72,13 @@ class StaffLedgerResource extends JsonResource
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'entries' => array_map(fn (array $row): array => self::row($row, $link([...$query, 'entry' => $row['id']])), $page['entries']),
-            'total' => $page['total'], 'more' => $more,
+            'total' => $page['total'], 'more' => $page['before'] === null ? $more : null,
+            'older' => $page['next_before'] === null ? null : $link([...$first, 'before' => $page['next_before']]),
+            'newest' => $page['before'] === null ? null : $link($first),
             'entry' => $entry === null ? null : [...self::row($entry, $link([...$query, 'entry' => $entry['id']])),
                 'operation_id' => $entry['operation_id'] ?? $entry['id'],
                 'posted_by' => ['actor' => 'System · '.str_replace('_', ' ', $entry['kind']), 'at' => $entry['at'], 'reason' => null],
+                'origin' => $entry['origin'],
                 'postings' => array_map(fn (array $line): array => ['account' => self::account($line), 'account_code' => self::code($line),
                     'debit' => $line['direction'] === 'debit' ? self::money($line['amount']) : null,
                     'credit' => $line['direction'] === 'credit' ? self::money($line['amount']) : null], $entry['lines']),

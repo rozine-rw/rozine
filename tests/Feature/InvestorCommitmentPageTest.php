@@ -146,6 +146,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
         {
             return $this->real->requestOf($operationId);
         }
+
+        public function attribution(string $operationId): ?array
+        {
+            return $this->real->attribution($operationId);
+        }
     }],
     'two refunds' => [fn (OperationRecords $real): OperationRecords => new class($real) implements OperationRecords
     {
@@ -161,6 +166,11 @@ it('refuses to present a commitment whose recorded evidence does not bind to it'
         public function requestOf(string $operationId): ?string
         {
             return $this->real->requestOf($operationId);
+        }
+
+        public function attribution(string $operationId): ?array
+        {
+            return $this->real->attribution($operationId);
         }
     }],
 ]);

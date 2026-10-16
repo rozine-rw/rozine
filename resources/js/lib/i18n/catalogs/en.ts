@@ -1937,6 +1937,8 @@ const en = {
     'admin.ledger.col.credit': 'Credit',
     'admin.ledger.open_named': 'Open entry {id}',
     'admin.ledger.see_all': 'See all {count} entries',
+    'admin.ledger.older': 'Older entries',
+    'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',
     'admin.ledger.fact.from': 'From',
@@ -1944,6 +1946,10 @@ const en = {
     'admin.ledger.fact.reference': 'Reference',
     'admin.ledger.fact.operation': 'Operation',
     'admin.ledger.posted_by': 'Posted by {actor} · {at}',
+    'admin.ledger.origin':
+        'Flow started by {actor} · {at}. Later movements in the same flow keep this origin.',
+    'admin.ledger.origin_none':
+        'No starting operation is recorded for this entry.',
     'admin.ledger.postings': 'Postings',
     'admin.ledger.total': 'Total',
     'admin.ledger.balanced': 'Balanced',

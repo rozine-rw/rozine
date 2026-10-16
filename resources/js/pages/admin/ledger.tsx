@@ -20,8 +20,8 @@ const GRID =
 
 /**
  * The ledger (design Finance → Ledger & payouts, T1650–1688): every money movement, newest first,
- * searchable by type, party or reference. Each row opens its postings. A search starts again
- * from the newest page with no entry open. Read-only.
+ * searchable by type, party or reference, paged back fifty at a time. Each row opens its postings.
+ * A search starts again from the newest page with no entry open. Read-only.
  */
 export default function AdminLedger(props: AdminLedgerProps) {
     const { t } = useTranslation();
@@ -33,6 +33,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
                 q: new FormData(event.currentTarget).get('q'),
                 entry: undefined,
                 limit: undefined,
+                before: undefined,
             },
         });
     };
@@ -52,12 +53,26 @@ export default function AdminLedger(props: AdminLedgerProps) {
                 minWidth="min-w-[820px]"
                 className="shadow-[0_1px_2px_rgba(16,32,58,.04),0_14px_30px_-24px_rgba(16,32,58,.28)]"
                 footer={
-                    props.more && (
-                        <ShowMoreLink link={props.more}>
-                            {t('admin.ledger.see_all', {
-                                count: formatCount(props.total),
-                            })}
-                        </ShowMoreLink>
+                    (props.more || props.older || props.newest) && (
+                        <>
+                            {props.more && (
+                                <ShowMoreLink link={props.more}>
+                                    {t('admin.ledger.see_all', {
+                                        count: formatCount(props.total),
+                                    })}
+                                </ShowMoreLink>
+                            )}
+                            {props.older && (
+                                <ShowMoreLink link={props.older}>
+                                    {t('admin.ledger.older')}
+                                </ShowMoreLink>
+                            )}
+                            {props.newest && (
+                                <ShowMoreLink link={props.newest}>
+                                    {t('admin.ledger.newest')}
+                                </ShowMoreLink>
+                            )}
+                        </>
                     )
                 }
             >
