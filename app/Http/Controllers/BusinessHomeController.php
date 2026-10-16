@@ -5,21 +5,26 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Business\GetBusinessHome;
+use App\Application\Business\GetBusinessMarket;
 use App\Application\Business\GetBusinessProfile;
 use App\Application\Business\GetBusinessReports;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\ListBusinessComplaints;
 use App\Http\Requests\Business\ShowBusinessHomeRequest;
+use App\Http\Resources\BusinessAuditPrepResource;
 use App\Http\Resources\BusinessHomeResource;
+use App\Http\Resources\BusinessMarketResource;
 use App\Http\Resources\BusinessProfileResource;
 use App\Http\Resources\BusinessRatingResource;
 use App\Http\Resources\BusinessReportsResource;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * The Business app's own pages for one business: Home, its Reports and Profile tabs, and the
- * Rating sheet drawn over Home. Reports, Profile and Rating are web pages only: the bearer
- * transport has no such read yet.
+ * The Business app's own pages for one business: Home, its Reports, Market and Profile tabs, and
+ * the Rating and audit-prep sheets drawn over Home. Reports, Market, Profile, Rating and audit prep
+ * are web pages only: the bearer transport has no such read yet.
  */
 class BusinessHomeController extends Controller
 {
@@ -39,6 +44,18 @@ class BusinessHomeController extends Controller
         return Inertia::render('business/rating', $resource->resolve($request));
     }
 
+    /** With no monthly audit open there is nothing to get ready for, so a stale link lands on Home. */
+    public function auditPrep(ShowBusinessHomeRequest $request, GetBusinessHome $home): Response|RedirectResponse
+    {
+        $business = (string) $request->route('business');
+        $data = $home->handle($this->userId($request), $this->revision($request), $business);
+        if ($data['audit_window'] === null) {
+            return to_route('business.show', ['business' => $business]);
+        }
+
+        return Inertia::render('business/audit-prep', (new BusinessAuditPrepResource($data))->resolve($request));
+    }
+
     public function reports(ShowBusinessHomeRequest $request, GetBusinessReports $reports): Response
     {
         $resource = new BusinessReportsResource($reports->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
@@ -46,11 +63,26 @@ class BusinessHomeController extends Controller
         return Inertia::render('business/reports', $resource->resolve($request));
     }
 
-    /** The bare Profile URL lands on the menu; `profile/company` opens the section on a phone too. */
-    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile): Response
+    public function market(ShowBusinessHomeRequest $request, GetBusinessMarket $market): Response
     {
-        $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), (string) $request->route('business')),
-            'section' => 'company', 'landing' => $request->route('section') === null]);
+        $resource = new BusinessMarketResource($market->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
+
+        return Inertia::render('business/market', $resource->resolve($request));
+    }
+
+    /**
+     * The bare Profile URL lands on the menu (a wide screen opens Company information beside it);
+     * `profile/{section}` opens that section on a phone too.
+     */
+    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile, ListBusinessComplaints $complaints): Response
+    {
+        $section = $request->route('section');
+        $business = (string) $request->route('business');
+        $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), $business),
+            'complaints' => $complaints->handle($this->userId($request), $this->revision($request), $business),
+            'section' => is_string($section) ? $section : 'company', 'landing' => $section === null,
+            'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
+            'login_alerts' => $request->user()?->getAttribute('login_alerts') !== false]);
 
         return Inertia::render('business/profile', $resource->resolve($request));
     }

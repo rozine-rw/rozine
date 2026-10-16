@@ -46,6 +46,9 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
             throw new LogicException('PRIMARY_TRANSACTION_REQUIRED');
         }
         $declared = $this->connections->lockDeclared($businessId);
+        if (! $declared['complete']) {
+            throw new CommandRejection('CONNECTION_ASSESSMENT_INCOMPLETE', 409);
+        }
         if (array_intersect(array_map(strtolower(...), $partyIds), $declared['party_ids']) !== []) {
             throw new CommandRejection('CONNECTED_BUSINESS_INVESTMENT_PROHIBITED', 403);
         }
@@ -69,10 +72,16 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
 
     public function presentation(string $campaignId): array
     {
-        $title = $this->publications->find($campaignId)['title'] ?? null;
+        $publication = $this->publications->find($campaignId);
+        $title = $publication['title'] ?? null;
+        $business = $publication['public_evidence']['business']['name'] ?? null;
+        $closure = $this->closures->find($campaignId);
+        /** @var 'cancelled'|'expired'|'failed_closing'|null $phase */
+        $phase = $closure === null ? null : $closure['phase'];
 
         return ['title' => is_string($title) ? $title : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
-            'closed' => $this->closures->find($campaignId) !== null];
+            'business' => is_string($business) ? $business : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
+            'closed' => $closure !== null, 'closure' => $phase];
     }
 
     /** @return CampaignInput */

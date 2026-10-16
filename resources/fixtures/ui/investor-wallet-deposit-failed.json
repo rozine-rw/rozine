@@ -5,7 +5,7 @@
         "contract_version": "investor-primary-v1",
         "identity_context_revision": 5,
         "server_time": "2026-10-02T09:00:00+02:00",
-        "allowed_actions": ["wallet.deposit"],
+        "allowed_actions": ["wallet.deposit", "wallet.withdraw"],
         "wallet": {
             "revision": 41,
             "status": "active",
@@ -29,6 +29,10 @@
                 }
             },
             "pending_deposits": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "pending_withdrawals": {
                 "currency": "RWF",
                 "amount": "0"
             }
@@ -108,7 +112,23 @@
                     "amount": "1000000"
                 }
             ],
-            "quote": null
+            "quote": null,
+            "withdrawal": {
+                "version": "LED-R04/2026-10",
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "2000000"
+                },
+                "charge": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "quote": null
+            }
         },
         "deposits": [
             {
@@ -153,6 +173,7 @@
                 }
             }
         ],
+        "withdrawals": [],
         "history": {
             "movement": "external",
             "filters": [
@@ -263,6 +284,14 @@
                 "url": "/preview/investor-portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/preview/investor-profile",
                 "method": "get"
@@ -272,7 +301,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {
@@ -287,6 +316,10 @@
                 "url": "/preview/investor-wallet-deposit",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
             "link_account": {
                 "url": "/preview/investor-profile-linked",
                 "method": "get"
@@ -295,11 +328,19 @@
                 "url": "/preview/investor-wallet-operation-{request_id}",
                 "method": "get"
             },
+            "withdraw_operation": {
+                "url": "/preview/investor-wallet-withdraw-operation-{request_id}",
+                "method": "get"
+            },
             "changes": null
         },
         "actions": {
             "deposit": {
                 "url": "/preview/investor-wallet-deposit-pending",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw-pending",
                 "method": "post"
             }
         }

@@ -15,12 +15,17 @@ use App\Models\InvestorVerification;
 use App\Models\InvestorVerificationDocument;
 use App\Models\InvestorVerificationVersion;
 use App\Models\Party;
+use App\Models\PartyNotice;
+use App\Models\PartyNoticeDelivery;
 use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\VerifiedPersonIdentity;
+use App\Notifications\Investor\VerificationDecided;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Mockery\CompositeExpectation;
 
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 10, 6)->startOfDay());
@@ -426,4 +431,46 @@ test('a document whose content no longer matches its pinned hash is not served',
         'size_bytes' => 4, 'sha256' => str_repeat('0', 64), 'content' => 'fake', 'actor_user_id' => $this->person->id])->save();
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.document', [$case->id, $tampered->id]))->assertStatus(409);
+});
+
+test('a decision leaves the person one notice and e-mails it once, with a receipt for each delivery (NTF-R01)', function (string $outcome, string $kind, array $facts): void {
+    Notification::fake();
+    $case = reviewSubmitted($this->person);
+    $command = reviewDecision($case, 'The photo of your ID is blurred.');
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.'.$outcome, $case), $command)->assertSessionHasNoErrors();
+    $this->post(route('staff.investor-verifications.'.$outcome, $case), $command)->assertSessionHasNoErrors();
+
+    $notice = PartyNotice::query()->sole();
+    expect([$notice->party_id, $notice->kind, $notice->facts, $notice->read_at])->toBe([$this->person->party_id, $kind, $facts, null])
+        ->and(PartyNoticeDelivery::query()->orderBy('channel')->get(['channel', 'status', 'user_id'])->toArray())->toBe([
+            ['channel' => 'in_app', 'status' => 'delivered', 'user_id' => null],
+            ['channel' => 'mail', 'status' => 'sent', 'user_id' => $this->person->id],
+        ]);
+    Notification::assertSentToTimes($this->person, VerificationDecided::class, 1);
+    Notification::assertSentTo($this->person, VerificationDecided::class,
+        fn (VerificationDecided $mail): bool => $mail->rejectionReason === ($facts['reason'] ?? null));
+
+    $this->actingAs($this->person)->getJson(route('investor.notices'))->assertOk()->assertJsonPath('data.unread', 1)
+        ->assertJsonPath('data.notices.0.kind', $kind)
+        ->assertJsonPath('data.notices.0.link.url', $outcome === 'approve' ? '/investor/deals' : '/investor/verification');
+})->with([
+    'approved' => ['approve', 'verification.approved', []],
+    'rejected' => ['reject', 'verification.rejected', ['reason' => 'The photo of your ID is blurred.']],
+]);
+
+test('a failed e-mail still leaves the notice, with a failed receipt', function (): void {
+    $sending = Notification::partialMock()->shouldReceive('sendNow');
+    if (! $sending instanceof CompositeExpectation) {
+        throw new LogicException('Expected a sending expectation.');
+    }
+    $sending->__call('andThrow', [new RuntimeException('Mail transport down.')]);
+    $case = reviewSubmitted($this->person);
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.reject', $case), reviewDecision($case, 'The photo of your ID is blurred.'))
+        ->assertSessionHasNoErrors();
+
+    expect(PartyNotice::query()->count())->toBe(1)
+        ->and(PartyNoticeDelivery::query()->where('channel', 'mail')->sole()->only(['status', 'detail']))
+        ->toBe(['status' => 'failed', 'detail' => RuntimeException::class]);
 });

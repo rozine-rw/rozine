@@ -96,7 +96,7 @@ export function ReasonStage({
                 required
                 placeholder={placeholder}
                 aria-invalid={form.errors.reason !== undefined || undefined}
-                aria-describedby={`${fieldId}-who`}
+                aria-describedby={`${fieldId}-who ${fieldId}-error`}
                 className="mt-3 min-h-[82px] w-full resize-y rounded-[11px] border border-rz-hairline bg-[#f7f9fd] px-[13px] py-[11px] text-[13px] leading-[1.5] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)] dark:bg-rz-field"
             />
             <FieldError id={`${fieldId}-error`}>

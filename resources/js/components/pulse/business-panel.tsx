@@ -127,6 +127,7 @@ export function BusinessPanel({
                                     })
                                 }
                                 placeholder="e.g. GreenLeaf Agro"
+                                aria-label="Name of business"
                                 className="rz-ipt rz-focus h-[42px] w-full rounded-[10px] border border-[var(--rz-input-border)] bg-[var(--rz-input-bg)] px-[13px] text-[14px] text-[var(--rz-fg)] outline-none"
                             />
                         </div>

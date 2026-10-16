@@ -43,17 +43,17 @@
             },
             "payout_fee": {
                 "currency": "RWF",
-                "amount": "68"
+                "amount": "101"
             },
             "earnings_fee": {
                 "tier": "standard",
-                "rate_bps": 1000,
+                "rate_bps": 1500,
                 "basis": "return_only",
                 "policy_version": "synthetic-plus-policy-0"
             },
             "maturity_value": {
                 "currency": "RWF",
-                "amount": "5607"
+                "amount": "5574"
             },
             "maturity_date": null,
             "rights": null,
@@ -216,11 +216,11 @@
                 "term_months": 6,
                 "payout_fee": {
                     "currency": "RWF",
-                    "amount": "405"
+                    "amount": "606"
                 },
                 "earnings_fee": {
                     "tier": "standard",
-                    "rate_bps": 1000,
+                    "rate_bps": 1500,
                     "basis": "return_only",
                     "policy_version": "synthetic-plus-policy-0"
                 },
@@ -1171,17 +1171,17 @@
                 },
                 "payout_fee": {
                     "currency": "RWF",
-                    "amount": "68"
+                    "amount": "101"
                 },
                 "earnings_fee": {
                     "tier": "standard",
-                    "rate_bps": 1000,
+                    "rate_bps": 1500,
                     "basis": "return_only",
                     "policy_version": "synthetic-plus-policy-0"
                 },
                 "maturity_value": {
                     "currency": "RWF",
-                    "amount": "5607"
+                    "amount": "5574"
                 },
                 "maturity_date": null,
                 "rights": null,
@@ -1206,6 +1206,14 @@
                     "url": "/preview/investor-portfolio",
                     "method": "get"
                 },
+                "market": {
+                    "url": "/preview/investor-market",
+                    "method": "get"
+                },
+                "cart": {
+                    "url": "/preview/investor-cart",
+                    "method": "get"
+                },
                 "profile": {
                     "url": "/preview/investor-profile",
                     "method": "get"
@@ -1215,7 +1223,7 @@
                     "method": "get"
                 },
                 "notifications": {
-                    "url": "/preview/investor-deals",
+                    "url": "/preview/investor-notices",
                     "method": "get"
                 },
                 "launcher": {
@@ -1241,6 +1249,14 @@
                 "url": "/preview/investor-portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/preview/investor-profile",
                 "method": "get"
@@ -1250,7 +1266,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {

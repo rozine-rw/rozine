@@ -104,11 +104,11 @@
                 "term_months": 6,
                 "payout_fee": {
                     "currency": "RWF",
-                    "amount": "405"
+                    "amount": "606"
                 },
                 "earnings_fee": {
                     "tier": "standard",
-                    "rate_bps": 1000,
+                    "rate_bps": 1500,
                     "basis": "return_only",
                     "policy_version": "synthetic-plus-policy-0"
                 },
@@ -156,6 +156,14 @@
                 "url": "/investor/portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/investor/market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/investor/cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/investor/profile",
                 "method": "get"
@@ -165,7 +173,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/investor/notifications",
+                "url": "/investor/notices",
                 "method": "get"
             },
             "launcher": {
@@ -178,6 +186,10 @@
             },
             "operation": {
                 "url": "/preview/investor/primary-operations/{request_id}",
+                "method": "get"
+            },
+            "changes": {
+                "url": "/changes?topics=purchase&after=1.10.0.100.1",
                 "method": "get"
             }
         }

@@ -29,7 +29,7 @@ import type {
  * - A note's total return is its principal times `rate_pct` (the quote's RWF 5,000 → RWF 675 at
  *   13.5%), split over the schedule with any extra shilling on the earliest instalments.
  * - "Expected profit" is that total return, gross; "Total at maturity" is principal plus return
- *   less the fee on earnings over the return (the quote's `maturity_value`).
+ *   less the fee on earnings taken from each instalment's return (the quote's `maturity_value`).
  * - `value` is a cumulative performance figure (HoldingSummary): what was invested plus the gross
  *   return received so far, not the outstanding asset value or a spendable balance. Principal
  *   repaid is not earnings and is not counted as a gain. So `gain` is `value − invested`, the
@@ -89,6 +89,11 @@ const roundRatio = (numerator: number, denominator: number): number =>
     Math.floor((numerator * 2 + denominator) / (denominator * 2));
 const feeOn = (amount: number, rateBps: number): number =>
     roundRatio(amount * rateBps, 10_000);
+/** The fee on earnings is taken from each instalment's return, rounded per payout, as the server sums it. */
+const feeOnInstalments = (
+    instalments: { return: Money }[],
+    rateBps: number,
+): number => sum(instalments.map((row) => feeOn(n(row.return), rateBps)));
 const tenths = (rate: string): number => Math.round(Number(rate) * 10);
 /** A signed one-decimal percentage, as the engine formats `gain_pct` and `funded_pct`. */
 const percent = (numerator: number, denominator: number): string => {
@@ -294,7 +299,7 @@ function checkFigures(
         n(holding.maturity_value),
         principal +
             totalReturn -
-            feeOn(totalReturn, terms.earnings_fee.rate_bps),
+            feeOnInstalments(schedule, terms.earnings_fee.rate_bps),
     );
     expectEqual(
         problems,
@@ -1377,7 +1382,13 @@ describe('Investor deal, checkout and commitment fixtures', () => {
                     amount * tenths(quote.rate_pct),
                     1000,
                 );
-                const fee = feeOn(expectedReturn, quote.earnings_fee.rate_bps);
+                const fee =
+                    quote.rights === null
+                        ? feeOn(expectedReturn, quote.earnings_fee.rate_bps)
+                        : feeOnInstalments(
+                              quote.rights.instalments,
+                              quote.earnings_fee.rate_bps,
+                          );
 
                 expectEqual(
                     problems,
@@ -1489,8 +1500,8 @@ describe('Investor deal, checkout and commitment fixtures', () => {
                         problems,
                         `${where}.terms.payout_fee`,
                         n(item.terms.payout_fee),
-                        feeOn(
-                            n(item.rights.total_return),
+                        feeOnInstalments(
+                            item.rights.instalments,
                             item.terms.earnings_fee.rate_bps,
                         ),
                     );

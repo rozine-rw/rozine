@@ -1,0 +1,192 @@
+{
+    "unread": 1,
+    "notices": [
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9d",
+            "kind": "business.raise_expired",
+            "facts": {
+                "business": "GreenLeaf Agro",
+                "title": "Solar Dryer Expansion",
+                "target": "12000000",
+                "committed": "7450000",
+                "currency": "RWF",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "campaign_id": "01K7NQ0C2Y6W8E4T1V3X5Z7B01"
+            },
+            "created_at": "2026-10-13T09:15:00+02:00",
+            "read": false,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": {
+                "url": "/preview/business-notices/read",
+                "method": "post"
+            }
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c8a",
+            "kind": "business.disbursement_sent",
+            "facts": {
+                "title": "Cold Room Upgrade",
+                "amount": "6000000",
+                "currency": "RWF",
+                "account": "Bank of Kigali Account ····2231",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00"
+            },
+            "created_at": "2026-10-12T16:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c8b",
+            "kind": "business.raise_funded",
+            "facts": {
+                "title": "Cold Room Upgrade",
+                "principal": "6000000",
+                "investors": "14",
+                "currency": "RWF",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00"
+            },
+            "created_at": "2026-10-12T15:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9c",
+            "kind": "business.deposit_received",
+            "facts": {
+                "amount": "2500000",
+                "currency": "RWF",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00"
+            },
+            "created_at": "2026-10-12T14:20:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9b",
+            "kind": "business.withdrawal_sent",
+            "facts": {
+                "amount": "800000",
+                "currency": "RWF",
+                "received": "800000",
+                "account": "Bank of Kigali Account ····2231"
+            },
+            "created_at": "2026-10-11T10:05:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c9a",
+            "kind": "business.withdrawal_returned",
+            "facts": {
+                "amount": "300000",
+                "currency": "RWF",
+                "received": "300000",
+                "account": "MTN MoMo +250 788 ···· 456"
+            },
+            "created_at": "2026-10-10T16:40:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-wallet",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c99",
+            "kind": "business.application_approved",
+            "facts": {
+                "business": "GreenLeaf Agro",
+                "title": "Solar Dryer Expansion",
+                "amount": "12000000",
+                "currency": "RWF",
+                "term_months": "12",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "application_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-09T11:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c8a",
+            "kind": "business.report_review_closing",
+            "facts": {
+                "due_at": "2026-10-09T10:00:00Z",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-09T10:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c89",
+            "kind": "business.report_sealed",
+            "facts": {
+                "auditor": "Aline Uwase",
+                "period": "2026-09",
+                "due_at": "2026-10-09T10:00:00Z",
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b02"
+            },
+            "created_at": "2026-10-08T12:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        },
+        {
+            "id": "01k7nq0c2y6w8e4t1v3x5z7c88",
+            "kind": "business.report_sealed",
+            "facts": {
+                "auditor": "Aline Uwase",
+                "period": null,
+                "due_at": null,
+                "business_id": "01k7nq0c2y6w8e4t1v3x5z7b00",
+                "report_id": "01k7nq0c2y6w8e4t1v3x5z7b03"
+            },
+            "created_at": "2026-09-20T12:00:00+02:00",
+            "read": true,
+            "link": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "read_action": null
+        }
+    ],
+    "actions": {
+        "read_all": {
+            "url": "/preview/business-notices/read",
+            "method": "post"
+        }
+    }
+}

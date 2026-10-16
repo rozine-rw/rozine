@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Primary\EarningsFeeBand;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Route;
@@ -175,8 +176,8 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
 });
 
 test('every investor quote and term carries the locked Plus fee on earnings, on the return only', function () {
-    /** Robert's #99 bands in basis points, keyed by tier (provisional wire shape, #96). */
-    $bands = ['standard' => 1000, 'bronze' => 800, 'silver' => 650, 'gold' => 550, 'platinum' => 500, 'diamond' => 400];
+    /** The BRS v2.0 INV-R04 bands in basis points, keyed by tier, exactly as the live checkout locks them. */
+    $bands = EarningsFeeBand::RATES;
     $seen = 0;
 
     foreach (c3PreviewFixtures() as $name => $fixture) {
@@ -202,7 +203,7 @@ test('every investor quote and term carries the locked Plus fee on earnings, on 
     $silver = c3PreviewFixtures()['investor-checkout-plus-silver']['props']['quote'];
 
     expect($silver['earnings_fee']['tier'])->toBe('silver')
-        ->and($silver['earnings_fee']['rate_bps'])->toBe(650);
+        ->and($silver['earnings_fee']['rate_bps'])->toBe(1000);
 });
 
 test('C4 fixtures cover every surface in the scaffold, each with a live-minimal shape', function () {
@@ -338,8 +339,9 @@ test('preview routes are registered for local and testing', function (string $en
     $routes = Route::getRoutes()->getRoutes();
 
     expect(array_map(fn ($route): string => $route->uri(), $routes))
-        ->toBe(['preview/mail', 'preview/mail/{template}', 'preview/{fixture}'])
-        ->and(array_map(fn ($route): ?string => $route->getName(), $routes))->toBe([null, null, null]);
+        ->toBe(['preview/mail', 'preview/mail/{template}', 'preview/investor-notices', 'preview/investor-notices/read',
+            'preview/business-notices', 'preview/business-notices/read', 'preview/auditor-notices', 'preview/auditor-notices/read', 'preview/{fixture}'])
+        ->and(array_map(fn ($route): ?string => $route->getName(), $routes))->toBe([null, null, null, null, null, null, null, null, null]);
 })->with(['local', 'testing']);
 
 test('preview routes do not exist in production, staging or demo', function (string $environment) {
@@ -350,3 +352,24 @@ test('preview routes do not exist in production, staging or demo', function (str
 
     expect(Route::getRoutes()->getRoutes())->toBeEmpty();
 })->with(['production', 'staging', 'uat', 'demo']);
+
+test('the Investor bell previews its notices and a read that changes nothing', function () {
+    $this->get('/preview/investor-notices')->assertOk()
+        ->assertJsonPath('data.unread', 2)->assertJsonCount(8, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'wallet.deposit_received');
+    $this->post('/preview/investor-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
+});
+
+test('the Business bell previews its notices and a read that changes nothing', function () {
+    $this->get('/preview/business-notices')->assertOk()
+        ->assertJsonPath('data.unread', 1)->assertJsonCount(10, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.4.kind', 'business.withdrawal_sent');
+    $this->post('/preview/business-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
+});
+
+test('the Auditor bell previews its notices and a read that changes nothing', function () {
+    $this->get('/preview/auditor-notices')->assertOk()
+        ->assertJsonPath('data.unread', 2)->assertJsonCount(4, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'auditor.job_offered')->assertJsonPath('data.notices.2.kind', 'auditor.accreditation_approved');
+    $this->post('/preview/auditor-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
+});

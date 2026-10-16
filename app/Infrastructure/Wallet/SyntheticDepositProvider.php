@@ -7,6 +7,7 @@ namespace App\Infrastructure\Wallet;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\SyntheticSettlement;
 use App\Application\Wallet\DepositInstruction;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
@@ -17,15 +18,17 @@ use LogicException;
 use Throwable;
 
 /**
- * An offline provider for local and testing only. Messages are HMAC-signed over their canonical
+ * An offline provider for local, testing and UAT only. Messages are HMAC-signed over their canonical
  * JSON with a secret derived from the application key, so a message cannot be forged or altered
- * without the key. It never contacts anything, and it holds no real account or PSP arrangement.
+ * without the key. It never contacts anything, and it holds no real account or PSP arrangement; on
+ * UAT an accepted deposit settles by itself a few seconds later (SyntheticSettlement).
  */
 final class SyntheticDepositProvider implements DepositProvider, SyntheticEventSigner
 {
     public const array FIELDS = ['amount', 'currency', 'environment', 'event_id', 'observed_at', 'provider', 'reference', 'state'];
 
-    public function __construct(private SyntheticWalletGuard $guard, private CanonicalJson $json, private Repository $config) {}
+    public function __construct(private SyntheticWalletGuard $guard, private CanonicalJson $json, private Repository $config,
+        private SyntheticSettlement $settlement) {}
 
     public function name(): string
     {
@@ -43,6 +46,7 @@ final class SyntheticDepositProvider implements DepositProvider, SyntheticEventS
         if (app('db.transactions')->callbackApplicableTransactions()->isNotEmpty()) {
             throw new LogicException('WALLET_DISPATCH_TRANSACTION_OPEN: a provider is called only after the outermost commit.');
         }
+        $this->settlement->scheduleAfterResponse();
 
         return true;
     }

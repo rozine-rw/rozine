@@ -7,16 +7,26 @@ namespace App\Infrastructure\Operations;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
  * @phpstan-import-type Figures from OperationsDashboardStore
  * @phpstan-import-type Bar from OperationsDashboardStore
+ * @phpstan-import-type Movements from OperationsDashboardStore
+ * @phpstan-import-type Payout from OperationsDashboardStore
  */
 final class EloquentOperationsDashboardStore implements OperationsDashboardStore
 {
     /** How each bucket is labelled under the bar. */
     private const LABELS = ['year' => 'YYYY', 'month' => 'YYYY-MM', 'day' => 'MM-DD', 'hour' => 'DD HH24:00'];
+
+    /** The postings that credit a deposit, Investor and Business. */
+    private const DEPOSITS = ['deposit_credit', 'business_deposit_credit'];
+
+    /** The postings that pay a withdrawal out, Investor and Business. */
+    private const PAYOUTS = ['withdrawal_payout', 'business_withdrawal_payout'];
 
     /** @return Figures */
     public function figures(): array
@@ -49,11 +59,88 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
     /** @return list<Bar> */
     public function capitalRaised(string $grain, ?string $from, ?string $to): array
     {
-        $buckets = DB::table('primary_holdings')
+        return $this->bars($grain, DB::table('primary_holdings')
             ->selectRaw("date_trunc(?, issued_at AT TIME ZONE 'Africa/Kigali') AS bucket, sum(principal) AS amount", [$grain])
             ->when($from !== null, fn ($query) => $query->where('issued_at', '>=', $from))
             ->when($to !== null, fn ($query) => $query->where('issued_at', '<', $to))
-            ->groupBy('bucket');
+            ->groupBy('bucket'));
+    }
+
+    /** @return list<Bar> */
+    public function committed(string $grain, ?string $from, ?string $to): array
+    {
+        return $this->bars($grain, DB::table('ledger_entries AS e')->join('ledger_lines AS l', 'l.entry_id', '=', 'e.id')
+            ->selectRaw("date_trunc(?, e.created_at AT TIME ZONE 'Africa/Kigali') AS bucket, sum(l.amount) AS amount", [$grain])
+            ->where('e.kind', 'primary_commit')->where('l.direction', 'credit')
+            ->when($from !== null, fn ($query) => $query->where('e.created_at', '>=', $from))
+            ->when($to !== null, fn ($query) => $query->where('e.created_at', '<', $to))
+            ->groupBy('bucket'));
+    }
+
+    /** @return Movements */
+    public function movements(string $from): array
+    {
+        $movement = fn (?object $row): array => ['amount' => (string) ($row->amount ?? '0'), 'count' => (int) ($row->total ?? 0)];
+        $entries = fn (array $kinds): array => $movement(DB::table('ledger_entries AS e')->join('ledger_lines AS l', 'l.entry_id', '=', 'e.id')
+            ->whereIn('e.kind', $kinds)->where('l.direction', 'debit')->where('e.created_at', '>=', $from)
+            ->selectRaw('COALESCE(sum(l.amount), 0)::text AS amount, count(DISTINCT e.id) AS total')->first());
+        $disbursed = DB::table('disbursements AS d')->join('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
+            ->where('closing.kind', 'issued')->where('closing.created_at', '>=', $from)
+            ->selectRaw('COALESCE(sum(d.amount), 0)::text AS amount, count(*) AS total')->first();
+
+        return ['deposits' => $entries(self::DEPOSITS), 'withdrawals' => $entries(self::PAYOUTS), 'disbursed' => $movement($disbursed)];
+    }
+
+    /** @return list<Bar> */
+    public function moved(string $grain, ?string $from, ?string $to): array
+    {
+        return $this->bars($grain, DB::table('ledger_entries AS e')->join('ledger_lines AS l', 'l.entry_id', '=', 'e.id')
+            ->selectRaw("date_trunc(?, e.created_at AT TIME ZONE 'Africa/Kigali') AS bucket, sum(l.amount) AS amount", [$grain])
+            ->whereIn('e.kind', [...self::DEPOSITS, ...self::PAYOUTS])->where('l.direction', 'debit')
+            ->when($from !== null, fn ($query) => $query->where('e.created_at', '>=', $from))
+            ->when($to !== null, fn ($query) => $query->where('e.created_at', '<', $to))
+            ->groupBy('bucket'));
+    }
+
+    /** @return list<Payout> */
+    public function payoutsInFlight(): array
+    {
+        $investor = $this->inFlight('wallet_withdrawals', 'wallet_withdrawal_events', 'investor_funding_methods', 'wallet_withdrawal',
+            'SELECT users.name FROM users WHERE users.party_id = w.party_id ORDER BY users.id LIMIT 1', 'investor');
+        $business = $this->inFlight('business_withdrawals', 'business_withdrawal_events', 'business_funding_methods', 'business_withdrawal',
+            "SELECT business_profiles.profile->>'name' FROM business_profiles WHERE business_profiles.id = w.business_id", 'business');
+
+        return array_values(array_map(fn (object $row): array => ['id' => (string) $row->id, 'owner' => $row->owner === 'business' ? 'business' : 'investor',
+            'name' => $row->name === null ? null : (string) $row->name, 'amount' => (string) $row->amount, 'received' => (string) $row->received,
+            'account' => (string) $row->account, 'state' => $row->state === 'unknown' ? 'unknown' : 'pending',
+            'requested_at' => CarbonImmutable::parse((string) $row->created_at)->utc()->toIso8601String()],
+            DB::query()->fromSub($investor->unionAll($business), 'payouts')->orderBy('created_at')->orderBy('id')->get()->all()));
+    }
+
+    /**
+     * Withdrawals of one owner kind with no payout or return entry yet, with the state of their latest applied event.
+     *
+     * @param  literal-string  $events
+     * @param  literal-string  $name
+     */
+    private function inFlight(string $table, string $events, string $methods, string $source, string $name, string $owner): Builder
+    {
+        return DB::table($table.' AS w')
+            ->join($methods.' AS m', 'm.id', '=', 'w.method_id')
+            ->whereNotExists(fn ($query) => $query->from('ledger_entries AS e')->whereColumn('e.source_id', 'w.id')
+                ->where('e.source_type', $source)->whereIn('e.kind', $owner === 'investor' ? ['withdrawal_payout', 'withdrawal_return'] : ['business_withdrawal_payout', 'business_withdrawal_return']))
+            ->selectRaw("w.id, ? AS owner, ({$name}) AS name, w.amount::text AS amount, w.received::text AS received, m.label || ' ' || m.masked AS account,
+                COALESCE((SELECT ev.state FROM {$events} ev WHERE ev.withdrawal_id = w.id AND ev.disposition = 'applied' ORDER BY ev.created_at DESC, ev.id DESC LIMIT 1), 'pending') AS state,
+                w.created_at", [$owner]);
+    }
+
+    /**
+     * Labels each bucket and sizes its bar as a share of the tallest.
+     *
+     * @return list<Bar>
+     */
+    private function bars(string $grain, Builder $buckets): array
+    {
         $rows = DB::query()->fromSub($buckets, 'buckets')
             ->selectRaw('to_char(bucket, ?) AS label, amount::text AS amount', [self::LABELS[$grain]])->orderBy('bucket')->get()->all();
         $tallest = array_reduce($rows, fn (BigDecimal $max, object $row): BigDecimal => BigDecimal::max($max, BigDecimal::of((string) $row->amount)), BigDecimal::zero());

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Identity\SelectActiveRole;
+use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\AuditAssignment;
 use App\Models\Party;
@@ -85,7 +87,7 @@ it('renders an empty Portfolio in the live contract shape with its empty states 
             'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(), 'allowed_actions' => [],
             'reports' => [], 'filter' => 'all', 'filters' => auditorPortfolioFilters(0, 0, 0),
             'conflicts' => ['files' => [], 'record' => [], 'declare' => ['url' => '/auditor/jobs/{assignment}/conflict', 'method' => 'post']],
-            'outcome' => null, 'open_jobs' => 0,
+            'owed' => [], 'owed_complete' => true, 'reports_complete' => true, 'outcome' => null, 'open_jobs' => 0,
             'links' => ['home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
                 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
                 'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
@@ -100,21 +102,25 @@ it('lists sealed reports as awaiting co-sign until published, with exact filter 
     $draft = auditorPortfolioProps($fixture['user']);
     expect($draft['reports'])->toBe([])->and($draft['filters'])->toBe(auditorPortfolioFilters(0, 0, 0))
         ->and($draft['conflicts']['files'])->toBe([['id' => $assignment->id, 'revision' => $assignment->revision,
-            'business' => 'Synthetic business', 'note_id' => null, 'allowed_actions' => ['conflict.declare']]]);
+            'business' => 'Synthetic business', 'note_id' => null, 'allowed_actions' => ['conflict.declare']]])
+        ->and($draft['owed'])->toBe([['id' => $assignment->id, 'business' => 'Synthetic business', 'district' => 'Gasabo', 'kind' => 'flash',
+            'due_at' => $assignment->state['complete_by'], 'link' => ['url' => '/auditor/jobs/'.$assignment->id, 'method' => 'get']]]);
     $sealed = AuditSealingFixture::seal($fixture)['data']['sealed'];
     $report = ['id' => $fixture['report']->id, 'business' => 'Synthetic business', 'kind' => 'flash', 'month' => null, 'district' => 'Gasabo',
         'filed_on' => $sealed['sealed_at'], 'due_on' => $assignment->state['complete_by'], 'status' => 'awaiting_cosign', 'late_days' => null,
         'rejection' => null, 'link' => ['url' => '/auditor/reports/'.$fixture['report']->id, 'method' => 'get']];
     expect($report['due_on'])->toBeString();
     $props = auditorPortfolioProps($fixture['user']);
-    expect($props['reports'])->toBe([$report])->and($props['filters'])->toBe(auditorPortfolioFilters(1, 1, 0));
-    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [], 'filters' => auditorPortfolioFilters(1, 1, 0)]);
+    expect($props['reports'])->toBe([$report])->and($props['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))
+        ->and($props['owed'])->toBe([])->and($props['reports_complete'])->toBeTrue();
+    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [],
+        'filters' => auditorPortfolioFilters(1, 1, 0), 'reports_complete' => false]);
     $this->get($report['link']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/audit'));
     expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $published = [...$report, 'status' => 'published'];
-    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published'])['reports'])->toBe([$published])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => []])
-        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1)])
+    expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['reports' => [$published], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => [], 'reports_complete' => false])
+        ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'late']))->toMatchArray(['filter' => 'all', 'reports' => [$published], 'filters' => auditorPortfolioFilters(1, 0, 1), 'reports_complete' => true])
         ->and(auditorPortfolioProps($fixture['user'], ['filter' => ['published']])['filter'])->toBe('all')
         ->and(auditorPortfolioProps(AuditorFixture::make()['user'])['reports'])->toBe([]);
 });
@@ -129,19 +135,66 @@ it('names a monthly report by its period and dates it by the monthly report wind
         'due_on' => app(AuditReportWindow::class)->dueAt($period), 'status' => 'awaiting_cosign']);
 });
 
+it('never calls the filed reports complete once the read stops at its page size', function (): void {
+    $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    expect(auditorPortfolioProps($fixture['user'])['reports_complete'])->toBeTrue();
+    $store = new class(app(AuditorFiledReportStore::class)) implements AuditorFiledReportStore
+    {
+        /** @var list<int> */
+        public array $limits = [];
+
+        public function __construct(private AuditorFiledReportStore $store) {}
+
+        public function filed(int $userId, int $contextRevision, ?bool $published, int $limit): array
+        {
+            $this->limits[] = $limit;
+
+            return $this->store->filed($userId, $contextRevision, $published, 0);
+        }
+
+        public function trackRecord(int $userId, int $contextRevision): array
+        {
+            return $this->store->trackRecord($userId, $contextRevision);
+        }
+    };
+    app()->instance(AuditorFiledReportStore::class, $store);
+    $cut = auditorPortfolioProps($fixture['user']);
+    expect($store->limits)->toBe([AuditReadPolicy::MAX_PAGE_SIZE])->and(AuditReadPolicy::MAX_PAGE_SIZE)->toBe(50)
+        ->and($cut['reports'])->toBe([])->and($cut['filters'])->toBe(auditorPortfolioFilters(1, 1, 0))->and($cut['reports_complete'])->toBeFalse();
+});
+
+it('never reports an all-clear while an owed verification may lie beyond the first page of assignments', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $outstanding = AuditAssignmentFixture::request($fixture);
+    AuditAssignmentFixture::respond($partner['user'], $outstanding);
+    $whole = auditorPortfolioProps($partner['user']);
+    expect(array_column($whole['owed'], 'id'))->toBe([$outstanding->id])->and($whole['owed_complete'])->toBeTrue();
+    $this->travel(1)->minutes();
+    foreach (range(1, 25) as $newer) {
+        AuditAssignmentFixture::engagement($partner['party']->id);
+    }
+    $cut = auditorPortfolioProps($partner['user']);
+    expect(array_column($cut['owed'], 'id'))->not->toContain($outstanding->id)->and($cut['owed_complete'])->toBeFalse()->and($cut['reports_complete'])->toBeTrue()
+        ->and($cut['links']['jobs'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
+});
+
 it('declares an interest through the assigned file\'s own command and keeps only a private record of it', function (): void {
     $fixture = AuditAssignmentFixture::make(1);
     $assignment = AuditAssignmentFixture::request($fixture);
     $partner = $fixture['partners'][0];
     AuditAssignmentFixture::respond($partner['user'], $assignment);
     $props = auditorPortfolioProps($partner['user']);
-    expect($props['conflicts']['files'])->toHaveCount(1)->and($props['conflicts']['files'][0]['id'])->toBe($assignment->id);
+    expect($props['conflicts']['files'])->toHaveCount(1)->and($props['conflicts']['files'][0]['id'])->toBe($assignment->id)
+        ->and(array_column($props['owed'], 'id'))->toBe([$assignment->id]);
     $url = str_replace('{assignment}', $assignment->id, $props['conflicts']['declare']['url']);
     $receipt = $this->postJson($url, ['identity_context_revision' => 1, 'expected_revision' => $assignment->refresh()->revision,
         'request_id' => (string) Str::uuid(), 'assignment_id' => $assignment->id, 'kind' => 'family_or_business', 'reason' => 'A private relationship.'])
         ->assertOk()->assertJsonPath('code', 'CONFLICT_RECORDED')->json('data.conflict');
     $props = auditorPortfolioProps($partner['user']);
-    expect($props['conflicts']['files'])->toBe([])->and($props['conflicts']['record'])->toBe([[
+    expect($props['conflicts']['files'])->toBe([])->and($props['owed'])->toBe([])->and($props['conflicts']['record'])->toBe([[
         'conflict_id' => $receipt['conflict_id'], 'assignment_id' => $assignment->id, 'business' => null, 'note_id' => null,
         'kind' => 'family_or_business', 'declared_on' => $receipt['declared_at'],
     ]]);

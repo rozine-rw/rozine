@@ -5,27 +5,28 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigDecimal;
 
 /**
  * The Deals deck for the authenticated Investor. Current Investor authority comes first, through
  * the wallet read; the deck then reads only the allowlisted publication projection. Nothing here
- * quotes, reserves or chooses terms: until admission exists there is no quote and no checkout.
+ * quotes, reserves or chooses terms; the live checkout (`GetInvestorCheckout`) does the quoting.
  *
  * A person whose identity is not yet verified may browse the same deck while it is checked, with
  * no wallet and the stage of their verification instead: verification comes before any investment
  * (BRS FR-100, CR-1), not before reading the deals. Every command still requires the Investor role.
  *
  * @phpstan-type DealsPage array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null,
- *     verification: 'required'|'pending'|null, sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>,
+ *     verification: 'required'|'pending'|null, unread_notifications: int, sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>,
  *     deals: list<array<string, mixed>>, focus: array<string, mixed>|null}
  */
 final class GetInvestorDeals
 {
     public const array SORTS = ['all', 'top_interest', 'top_rated'];
 
-    public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -69,7 +70,7 @@ final class GetInvestorDeals
      * A verified Investor's wallet facts or, for a person whose identity is still unverified, no
      * wallet and whether their submission is with Compliance (`GetInvestorViewer`).
      *
-     * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null}
+     * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null, unread_notifications: int}
      */
     private function viewer(int $userId, ?int $contextRevision): array
     {
@@ -77,7 +78,8 @@ final class GetInvestorDeals
         $wallet = $viewer['wallet'];
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'restricted' => $wallet !== null && $wallet['wallet']['status'] === 'restricted',
-            'available' => $wallet === null ? null : $wallet['wallet']['breakdown']['available'], 'verification' => $viewer['verification']];
+            'available' => $wallet === null ? null : $wallet['wallet']['breakdown']['available'], 'verification' => $viewer['verification'],
+            'unread_notifications' => $this->notices->unread($userId)];
     }
 
     /**

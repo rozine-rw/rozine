@@ -89,3 +89,12 @@ it('posts a Business repayment as one available debit and one repayment clearing
         ->and(journalLines($entry))->toBe([['business_available', 'debit', '112500'], ['repayment_clearing', 'credit', '112500']])
         ->and(fn () => JournalEntry::businessRepaymentDebit(WalletMoney::zero()))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
 });
+
+it('has no Rozine account that could pay for or receive a note (BRS GEN-R01)', function (): void {
+    $rozineAccounts = array_values(array_filter(JournalLine::ACCOUNTS,
+        fn (string $account): bool => ! str_starts_with($account, 'investor_') && ! str_starts_with($account, 'business_')));
+
+    expect($rozineAccounts)->toBe(['deposit_clearing', 'deposit_fee_revenue', 'disbursement_settlement', 'repayment_clearing', 'withdrawal_clearing'])
+        ->and(JournalLine::ACCOUNTS)->each->not->toMatch('/rozine|operating|inventory|principal|market|reserve/')
+        ->and(fn () => new JournalLine('rozine_inventory', 'debit', WalletMoney::of('5000')))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
+});

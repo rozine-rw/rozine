@@ -9,13 +9,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * `BusinessHomeProps` for both transports. It shapes already authorized facts and adds real routes
- * only: a destination with no live route yet (withdraw, notifications) is null, as are Rating,
- * Reports and Profile on the bearer transport, which has no such read; headroom, on-time share and
- * unread notifications are not invented.
+ * only: a destination with no live route yet (withdraw) is null, as are Rating, Reports and
+ * Profile on the bearer transport, which has no such read; headroom and on-time share are not
+ * invented. The bell opens the Business's own notices with their real unread count.
  *
  * Today leads with the business's latest sealed audit report while it waits for co-signatures,
  * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
- * way in from the web app. The bearer transport keeps reaching it from its business list.
+ * way in from the web app. The bearer transport keeps reaching it from its business list. While a
+ * monthly audit is open, Today also carries its window, linked to "Get ready for your audit" on the
+ * web.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -40,19 +42,22 @@ class BusinessHomeResource extends JsonResource
         $report = $entry['audit_report'] ?? null;
         $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'],
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
+        $audit = $data['audit_window'] ?? null;
+        $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
+            'days_left' => $audit['days_left'], 'sealed_by' => $audit['seal_by'], 'link' => self::link($request, 'business.audit-prep', ['business' => $business])]];
 
         return ['business' => ['name' => $profile['name'], 'company_code' => $profile['company_code'], 'industry' => $profile['industry'], 'district' => $profile['district']],
-            'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => 0,
+            'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => $data['unread_notices'],
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => [...$cosign, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+            'today' => [...$cosign, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
             'notes' => $notes, 'headroom' => null,
             'links' => ['home' => self::link($request, 'business.show', ['business' => $business]),
                 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
                 ...self::tabs($request, $business), 'wallet' => $wallet(), 'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => null,
-                'notifications' => null, 'rating' => $request->routeIs('api.*') ? null : self::link($request, 'business.rating', ['business' => $business]),
+                'notifications' => self::link($request, 'business.notices.index', ['business' => $business]), 'rating' => $request->routeIs('api.*') ? null : self::link($request, 'business.rating', ['business' => $business]),
                 'apply' => $draft === null ? null : self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])],
             'create_application' => $draft !== null || ! in_array('application.create', $allowed, true) ? null : [
                 'action' => ['url' => route(self::prefix($request).'business.applications.create', ['business' => $business], false), 'method' => 'post'],
@@ -68,8 +73,9 @@ class BusinessHomeResource extends JsonResource
      */
     public static function tabs(Request $request, string $business): array
     {
-        return $request->routeIs('api.*') ? ['reports' => null, 'profile' => null]
-            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'profile' => self::link($request, 'business.profile', ['business' => $business])];
+        return $request->routeIs('api.*') ? ['reports' => null, 'market' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'market' => self::link($request, 'business.market', ['business' => $business]),
+                'profile' => self::link($request, 'business.profile', ['business' => $business])];
     }
 
     /**

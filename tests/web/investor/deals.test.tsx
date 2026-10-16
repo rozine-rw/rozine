@@ -59,8 +59,8 @@ describe('Deals on a phone', () => {
             screen.getByRole('link', { name: 'Wallet balance' }),
         ).toHaveTextContent('RWF 1,253,485+RWF 912K · 3 Oct');
         expect(
-            screen.getByRole('link', { name: 'Notifications, 2 unread' }),
-        ).toHaveAttribute('href', '/preview/investor-deals');
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        ).toHaveAttribute('aria-haspopup', 'dialog');
 
         const sorts = screen.getByRole('navigation', { name: 'Sort deals' });
 
@@ -103,7 +103,7 @@ describe('Deals on a phone', () => {
         expect(bar).toHaveTextContent('of 1,840 left');
         expect(bar).toHaveTextContent('RWF5,000');
         expect(bar).toHaveTextContent('13.5%');
-        expect(bar).toHaveTextContent('RWF5,607');
+        expect(bar).toHaveTextContent('RWF5,574');
         expect(
             within(bar).getByRole('link', { name: 'Invest' }),
         ).toHaveAttribute(
@@ -308,7 +308,7 @@ describe('Deals on a phone', () => {
             screen.queryByRole('link', { name: 'Wallet balance' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications' }),
+            screen.getByRole('button', { name: 'Notifications' }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Invest in GreenLeaf Agro' }),
@@ -512,9 +512,9 @@ describe('Deal detail on a phone', () => {
         expect(card).toHaveTextContent('RWF 5,000 × 1 note');
         expect(card).toHaveTextContent('+RWF 675');
         expect(card).toHaveTextContent(
-            'Fee on earnings · 10.0% (Standard)RWF 68',
+            'Fee on earnings · 15.0% (Standard)RWF 101',
         );
-        expect(card).toHaveTextContent('RWF 5,607');
+        expect(card).toHaveTextContent('RWF 5,574');
         expect(card).not.toHaveTextContent('1%');
         expect(
             within(card).getByRole('button', { name: 'One note fewer' }),
@@ -677,6 +677,7 @@ describe('Deal detail on a phone', () => {
             repaid: { currency: 'RWF', amount: '0' },
         };
         other.deal.updates[0].auditor_note = '';
+        other.deal.updates[0].business_note = '';
         other.deal.updates[0].photos = [];
         other.gate = { status: 'restricted' };
         render(<InvestorDeal {...other} />);
@@ -687,6 +688,9 @@ describe('Deal detail on a phone', () => {
 
         expect(
             within(sheet).queryByText("AUDITOR'S NOTE"),
+        ).not.toBeInTheDocument();
+        expect(
+            within(sheet).queryByText('FROM THE BUSINESS'),
         ).not.toBeInTheDocument();
         expect(
             within(sheet).queryByText('PUBLISHED PHOTOS'),
@@ -950,7 +954,7 @@ describe('Deals in C3 states', () => {
         const { unmount: leavePhone } = render(<InvestorDeals {...home} />);
 
         expect(
-            screen.queryByRole('link', { name: /^Notifications/u }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
         leavePhone();
 
@@ -967,7 +971,7 @@ describe('Deals in C3 states', () => {
         expect(await screen.findByTestId('head')).toBeInTheDocument();
         expect(screen.queryByText(rationale)).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /^Notifications/u }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
     });
 

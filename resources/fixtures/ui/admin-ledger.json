@@ -65,6 +65,10 @@
                 "url": "/preview/admin-section",
                 "method": "get"
             },
+            "reports": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
             "risk": {
                 "url": "/preview/admin-section",
                 "method": "get"
@@ -259,6 +263,8 @@
             "url": "/preview/admin-ledger",
             "method": "get"
         },
+        "older": null,
+        "newest": null,
         "entry": null
     }
 }

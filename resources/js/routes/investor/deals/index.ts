@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 export const show = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 show.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { campaign: string | number } | [campaign: string | number ] |
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 show.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { campaign: string | number } | [campaign: string | number ] |
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 show.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { campaign: string | number } | [campaign: string | number ] 
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 const showForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { campaign: string | number } | [campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showForm.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { campaign: string | number } | [campaign: string | number
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::show
-* @see app/Http/Controllers/InvestorDealsController.php:25
+* @see app/Http/Controllers/InvestorDealsController.php:27
 * @route '/investor/deals/{campaign}'
 */
 showForm.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

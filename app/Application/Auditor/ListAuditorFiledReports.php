@@ -7,7 +7,10 @@ namespace App\Application\Auditor;
 use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Domain\Auditor\AuditReadPolicy;
 
-/** @phpstan-import-type FiledReports from AuditorFiledReportStore */
+/**
+ * @phpstan-import-type FiledReports from AuditorFiledReportStore
+ * @phpstan-import-type TrackRecord from AuditorFiledReportStore
+ */
 final class ListAuditorFiledReports
 {
     public function __construct(private AuditorFiledReportStore $reports) {}
@@ -20,5 +23,15 @@ final class ListAuditorFiledReports
     public function handle(int $userId, int $contextRevision, ?bool $published = null, int $limit = AuditReadPolicy::MAX_PAGE_SIZE): array
     {
         return $this->reports->filed($userId, $contextRevision, $published, $limit);
+    }
+
+    /**
+     * The partner's on-time share and expired offers, for the standing Home and Profile show.
+     *
+     * @return TrackRecord
+     */
+    public function trackRecord(int $userId, int $contextRevision): array
+    {
+        return $this->reports->trackRecord($userId, $contextRevision);
     }
 }

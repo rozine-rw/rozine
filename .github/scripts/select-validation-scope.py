@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 FULL_JOBS = [
@@ -322,7 +322,7 @@ def pending_participants(repository, runs, tree):
     return participants
 
 
-def canonical_context(env, tree):
+def current_coordination_identity(env, tree):
     repository = env["GITHUB_REPOSITORY"]
     workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
     current = api(f"repos/{repository}/actions/runs/{env['GITHUB_RUN_ID']}")
@@ -331,14 +331,20 @@ def canonical_context(env, tree):
     identity = coordination_identity(repository, current)
     if identity["tree_sha"] != tree or identity["tested_sha"] != env["GITHUB_SHA"]:
         raise CoordinationRefusal("current_checkout_identity_mismatch")
-    runs = [run for run in workflow_history(repository) if trusted_run(run, repository, workflow_id) and run["id"] != current["id"]]
+    return current, identity
+
+
+def canonical_context(env, tree):
+    repository = env["GITHUB_REPOSITORY"]
+    current, identity = current_coordination_identity(env, tree)
+    runs = [run for run in workflow_history(repository) if trusted_run(run, repository, current["workflow_id"]) and run["id"] != current["id"]]
     return current, identity, runs
 
 
 def pending_follower_ids(env, runs, tree):
     if env.get("COORDINATION_ACTIVE") != "true":
         return set()
-    current, identity, _ = canonical_context(env, tree)
+    current, identity = current_coordination_identity(env, tree)
     own = (str(current["id"]), str(current["run_attempt"]))
     try:
         decision = coordination_decision(env["GITHUB_REPOSITORY"], current, identity)
@@ -536,6 +542,21 @@ def immutable_merge_identity(repository, run):
     return proof
 
 
+def preflight_merge_identity(repository, run):
+    if (run.get("event") != "pull_request" or run.get("path") != ".github/workflows/tests.yml"
+            or run.get("head_repository", {}).get("full_name") != repository):
+        raise ValueError("preflight identity requires the trusted same-repository PR workflow")
+    proof = coordination_identity(repository, run)
+    age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
+    if age.total_seconds() < 0 or age > datetime.timedelta(days=30):
+        raise ValueError("PR preflight identity is stale")
+    later_names = {f"{prefix}-{run['id']}-{run['run_attempt']}" for prefix in ("validation-tree", "pr-merge-identity")}
+    if any(item["name"] in later_names for item in artifact_inventory(repository, run)):
+        raise ValueError("validation or merge evidence appeared during preflight classification")
+    same_attempt(repository, run)
+    return proof
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -553,7 +574,10 @@ def newer_run_blocks(repository, run, source, tree):
         try:
             proof = download_evidence(repository, run)
         except MissingEvidence:
-            return immutable_merge_identity(repository, run)["tree_sha"] == tree
+            try:
+                return immutable_merge_identity(repository, run)["tree_sha"] == tree
+            except MissingEvidence:
+                return preflight_merge_identity(repository, run)["tree_sha"] == tree
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")
@@ -567,16 +591,57 @@ def newer_run_blocks(repository, run, source, tree):
 
 def workflow_history(repository):
     endpoint = f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100"
-    first = api(endpoint)
-    total = first["total_count"]
-    if not isinstance(total, int) or not 0 <= total <= 5000:
-        raise ValueError("workflow history exceeds the verified lookup bound")
-    responses = [first] if len(first["workflow_runs"]) == total else pages(endpoint)
-    runs = [run for response in responses for run in response["workflow_runs"]]
-    if (any(response["total_count"] != total for response in responses)
-            or len(runs) != total or len({run["id"] for run in runs}) != total):
-        raise ValueError("workflow history is incomplete or changed during pagination")
-    return runs
+    deadline = time.monotonic() + 45
+
+    def remaining():
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise CoordinationRefusal("workflow_history_incomplete_or_changed")
+        return seconds
+
+    def read_page(number):
+        return api(f"{endpoint}&page={number}", timeout=remaining())
+
+    for attempt in range(3):
+        first = api(endpoint, timeout=remaining())
+        total = first["total_count"]
+        if type(total) is not int or not 0 <= total <= 5000:
+            raise ValueError("workflow history exceeds the verified lookup bound")
+        count = max(1, (total + 99) // 100)
+        responses = [first] + [None] * (count - 1)
+        if count > 1:
+            readers = ThreadPoolExecutor(max_workers=4)
+            try:
+                futures = {readers.submit(read_page, number): number for number in range(2, count + 1)}
+                for future in as_completed(futures, timeout=remaining()):
+                    responses[futures[future] - 1] = future.result()
+            except TimeoutError:
+                raise CoordinationRefusal("workflow_history_incomplete_or_changed") from None
+            finally:
+                # Every running read uses this deadline; queued reads must not
+                # continue after a hard error or an expired collection wait.
+                readers.shutdown(wait=True, cancel_futures=True)
+        runs = [run for response in responses for run in response["workflow_runs"]]
+        if any(not isinstance(run, dict) or type(run.get("id")) is not int or run["id"] <= 0 for run in runs):
+            raise CoordinationRefusal("workflow_history_invalid_run_identity")
+        complete = (all(response["total_count"] == total for response in responses)
+                    and len(runs) == total and len({run["id"] for run in runs}) == total
+                    and all(len(response["workflow_runs"]) == min(100, max(0, total - page * 100))
+                            for page, response in enumerate(responses)))
+        if complete and count > 1:
+            anchor = api(endpoint, timeout=remaining())
+            # A rerun can change attempt/status/provenance without moving its ID.
+            # Compare every field so an evolving run cannot retain stale success.
+            complete = (anchor["total_count"] == total
+                        and anchor["workflow_runs"] == first["workflow_runs"])
+        if not complete:
+            if attempt == 2:
+                raise CoordinationRefusal("workflow_history_incomplete_or_changed")
+            diagnostic("retrying_unstable_workflow_history")
+            time.sleep(min(1, remaining()))
+            continue
+        remaining()
+        return runs
 
 
 def coordination_artifact_index(repository):

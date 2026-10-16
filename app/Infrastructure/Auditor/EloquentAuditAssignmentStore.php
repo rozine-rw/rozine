@@ -11,6 +11,7 @@ use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditEngagementState;
@@ -21,6 +22,7 @@ use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditAssignment;
@@ -67,6 +69,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private AuthorizeStaffPermission $staff,
         private AuditReportLifecycle $reports,
         private AuditEngagementStore $engagements,
+        private PartyNotices $notices,
     ) {}
 
     /** @return array<string, mixed> */
@@ -711,10 +714,17 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      */
     private function persist(AuditAssignment $record, array $state, ?int $actorId, string $command, ?string $reason, array $candidates, array $context): void
     {
+        $offered = $state['status'] === 'offered' && $state['party_id'] !== null && $state['accept_by'] !== null
+            && ($record->status !== 'offered' || $record->party_id !== $state['party_id'] || $record->state['offered_at'] !== $state['offered_at']);
         $record->forceFill(['revision' => $record->revision + 1, 'state' => $state, 'status' => $state['status'], 'party_id' => $state['party_id'], 'accept_by' => $state['accept_by']])->save();
         (new AuditAssignmentVersion)->forceFill(['assignment_id' => $record->id, 'revision' => $record->revision, 'party_id' => $state['party_id'], 'status' => $state['status'],
             'snapshot' => $this->snapshot($record), 'selection_basis' => ['business_revision' => $context['business']['revision'], 'mandate_version' => $context['business']['mandate_version'], 'candidates' => $candidates], 'actor_user_id' => $actorId, 'command' => $command,
             'reason' => $reason, 'policy_version' => 'engineering-2026-09-23.4'])->save();
+        if ($offered) {
+            $this->notices->record((string) $state['party_id'], PartyNoticeKind::AuditorJobOffered, ['type' => $state['kind'],
+                'business' => (string) $context['business']['profile']['name'], 'location' => (string) $context['business']['profile']['district'],
+                'accept_by' => (string) $state['accept_by'], 'assignment_id' => $record->id], 'audit-job-offered:'.$record->id.':'.$record->revision);
+        }
     }
 
     /** @return Assignment */

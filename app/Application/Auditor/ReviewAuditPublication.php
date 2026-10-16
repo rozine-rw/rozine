@@ -58,4 +58,9 @@ final class ReviewAuditPublication
     {
         return $this->store->advanceDue($limit, $after);
     }
+
+    public function remindClosing(int $limit): int
+    {
+        return $this->store->remindClosing($limit);
+    }
 }

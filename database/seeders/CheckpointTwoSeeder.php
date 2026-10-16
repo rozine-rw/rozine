@@ -21,7 +21,8 @@ use Tests\Support\ConsentFixture;
 
 /**
  * Opt-in development data. Reuses the acceptance scenarios and their real
- * application actions; requires Composer's development autoloader.
+ * application actions; requires Composer's development autoloader. Also runs on
+ * staging's own database once its owner-approved seed switch is on.
  *
  * @phpstan-type Account array{id: int, label: string, email: string, mfa: bool}
  * @phpstan-type Scenario array{business: string, application: string, assignment: string, report: string|null, business_path: string, auditor_path: string, operations_path: string, report_path: string|null}
@@ -45,10 +46,11 @@ class CheckpointTwoSeeder extends Seeder
         $isolation = app(EnvironmentIsolation::class);
         $isolation->assertSeedingAllowed();
         $config = config()->array('database.connections.'.config()->string('database.default'));
-        if (! in_array($isolation->profile(), ['local', 'testing'], true)
+        $databases = $isolation->profile() === 'uat' ? ['rozine_uat'] : ['rozine', 'rozine_test', 'rozine_manual'];
+        if (! in_array($isolation->profile(), ['local', 'testing', 'uat'], true)
             || ($config['driver'] ?? null) !== 'pgsql'
             || ! in_array($config['host'] ?? null, ['127.0.0.1', 'localhost', '::1'], true)
-            || ! in_array($config['database'] ?? null, ['rozine', 'rozine_test', 'rozine_manual'], true)
+            || ! in_array($config['database'] ?? null, $databases, true)
             || ($isolation->profile() === 'testing' && $config['database'] !== 'rozine_test')
             || ! empty($config['url']) || isset($config['read']) || isset($config['write'])
             || config('filesystems.disks.local.driver') !== 'local') {

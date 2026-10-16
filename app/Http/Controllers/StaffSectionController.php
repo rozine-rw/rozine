@@ -19,10 +19,10 @@ class StaffSectionController extends Controller
 {
     /** URL slug to the frame's section key. */
     public const SECTIONS = [
-        'notes' => 'notes', 'primary-market' => 'primary_market', 'secondary-market' => 'secondary_market', 'risk' => 'risk',
-        'compliance' => 'compliance', 'payments' => 'payments', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
+        'notes' => 'notes', 'secondary-market' => 'secondary_market', 'reports' => 'reports', 'risk' => 'risk',
+        'compliance' => 'compliance', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
         'finance' => 'finance', 'messaging' => 'messaging', 'academies' => 'academies', 'app-control' => 'app_control', 'engines' => 'engines',
-        'policies' => 'policies', 'system-health' => 'system_health',
+        'policies' => 'policies',
     ];
 
     /** The role the frame names, most privileged first. */

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Notifications\Account\NewDeviceSignIn;
 use App\Notifications\Account\OneTimeCode;
 use App\Notifications\Account\OneTimeCodePurpose;
 use App\Notifications\Auditor\AccreditationDecided;
@@ -317,6 +318,17 @@ test('an accreditation decision activates the Audit Partner or gives the reason'
         ->and($approvedText)->toContain('ICPAR licence verified · Active')
         ->and($rejected->subject)->toBe('Your accreditation needs another look')
         ->and($rejectedText)->toContain('We could not verify your accreditation: the practising certificate has expired');
+});
+
+test('a login alert names the new device and when it signed in, in Kigali time', function () {
+    [$mail, $html, $text] = rozineMail(new NewDeviceSignIn('Firefox on Android', CarbonImmutable::parse('2026-10-14T13:05:00Z'), 'https://rozine.test/settings/security'));
+
+    expect($mail->subject)->toBe('New sign-in to your Rozine account')
+        ->and($html)->toContain('notice-warning')
+        ->and($text)->toContain('Firefox on Android signed in to your account on 14 Oct 2026, 15:05 CAT.')
+        ->and($text)->toContain('change your password now and contact Rozine support')
+        ->and($text)->toContain('Review your security: https://rozine.test/settings/security')
+        ->and($text)->toContain('You can turn them off in your security settings.');
 });
 
 test('amounts are whole francs with grouped digits', function (string $amount, string $shown) {

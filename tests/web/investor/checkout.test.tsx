@@ -100,12 +100,24 @@ describe('Checkout: the indicative step', () => {
         const sheet = screen.getByRole('dialog', { name: 'Checkout' });
 
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 6.5% (Silver)RWF 44',
+            'Fee on earnings · 10.0% (Silver)RWF 68',
         );
-        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,631');
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
         expect(sheet).toHaveTextContent(
             'Charged on your return only, never on your principal. This rate is fixed for this note.',
         );
+    });
+
+    it('takes focus when it opens and goes back to the deals on Escape', () => {
+        render(<InvestorCheckout {...props()} />);
+
+        expect(screen.getByRole('dialog', { name: 'Checkout' })).toHaveFocus();
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+
+        expect(inertia.visit).toHaveBeenCalledWith('/preview/investor-deals', {
+            preserveScroll: true,
+        });
     });
 
     it('shows the server’s indicative quote with no maturity date before issue, then offers Reserve', () => {
@@ -128,9 +140,9 @@ describe('Checkout: the indicative step', () => {
         );
         expect(within(sheet).getByText('+RWF 675')).toBeInTheDocument();
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 10.0% (Standard)RWF 68',
+            'Fee on earnings · 15.0% (Standard)RWF 101',
         );
-        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
+        expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,574');
         expect(
             within(sheet).getByText(
                 'Charged on your return only, never on your principal. This rate is fixed for this note.',
@@ -1165,5 +1177,101 @@ describe('Checkout: the server clock and lost answers', () => {
                 method: 'get',
             }),
         );
+    });
+});
+
+describe('Checkout: the risk statements (BRS KYC-R05)', () => {
+    const withRisks = (acknowledged = false) => {
+        const page = props();
+        page.risks = {
+            version: 'brs-2.0-kyc-r05',
+            statements_sha256: 'a'.repeat(64),
+            statements: [
+                { key: 'total_loss', text: 'You can lose all of your money.' },
+                {
+                    key: 'no_guarantee',
+                    text: 'Rozine does not guarantee repayment.',
+                },
+            ],
+            acknowledged,
+            action: acknowledged
+                ? null
+                : {
+                      url: '/investor/risk-statements/acknowledgements',
+                      method: 'post',
+                  },
+        };
+
+        return page;
+    };
+
+    it('shows nothing once the statements are acknowledged', () => {
+        render(<InvestorCheckout {...withRisks(true)} />);
+
+        expect(
+            screen.queryByText('You can lose all of your money.'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('accepts only once every statement is ticked, binding the version and digest', async () => {
+        const user = userEvent.setup();
+        render(<InvestorCheckout {...withRisks()} />);
+        const accept = screen.getByRole('button', {
+            name: 'I understand these risks',
+        });
+        const boxes = screen.getAllByRole('checkbox', {
+            name: /money|guarantee/,
+        });
+
+        expect(accept).toBeDisabled();
+        await user.click(boxes[0]);
+        await user.click(boxes[1]);
+        await user.click(boxes[1]);
+        expect(accept).toBeDisabled();
+        await user.click(boxes[1]);
+        expect(accept).toBeEnabled();
+
+        inertia.queue.push(answers({ status: 'completed' }));
+        await user.click(accept);
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/investor/risk-statements/acknowledgements',
+            method: 'post',
+            body: {
+                version: 'brs-2.0-kyc-r05',
+                statements_sha256: 'a'.repeat(64),
+                acknowledged: true,
+            },
+        });
+        await vi.waitFor(() => expect(inertia.reload).toHaveBeenCalledTimes(1));
+    });
+
+    it('clears the ticks when the wording changed, and says so when acceptance fails', async () => {
+        const user = userEvent.setup();
+        render(<InvestorCheckout {...withRisks()} />);
+        const boxes = screen.getAllByRole('checkbox', {
+            name: /money|guarantee/,
+        });
+        const accept = screen.getByRole('button', {
+            name: 'I understand these risks',
+        });
+
+        await user.click(boxes[0]);
+        await user.click(boxes[1]);
+        inertia.queue.push(fails(409, { code: 'RISK_STATEMENTS_STALE' }));
+        await user.click(accept);
+
+        expect(await screen.findByRole('alert')).toBeInTheDocument();
+        expect(boxes[0]).not.toBeChecked();
+        expect(inertia.reload).not.toHaveBeenCalled();
+
+        await user.click(boxes[0]);
+        await user.click(boxes[1]);
+        inertia.queue.push(fails(500));
+        await user.click(accept);
+
+        await vi.waitFor(() => expect(boxes[0]).toBeChecked());
+        expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 });

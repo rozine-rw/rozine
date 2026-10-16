@@ -69,7 +69,7 @@ it('seals with a current authenticator and publishes after the Business co-signa
         $run('auditor', ['run-code', 'async (page) => {
             await page.locator("input[name=code]").fill('.json_encode($totp->getCurrentOtp('JBSWY3DPEHPK3PXP')).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL("**/auditor");
             await page.setViewportSize({width:390, height:844});
             await page.goto('.json_encode($base.'/auditor').');
             await page.getByRole("link", {name:"Jobs", exact:true}).click();
@@ -102,7 +102,7 @@ it('seals with a current authenticator and publishes after the Business co-signa
             await page.getByRole("textbox", {name:"Email address"}).fill("seal-owner@example.test");
             await page.getByLabel("Password", {exact:true}).fill('.json_encode($password).');
             await page.getByRole("button", {name:"Log in", exact:true}).click();
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL('.json_encode('**/business/'.$fixture['audit']['business']).');
             await page.setViewportSize({width:390, height:844});
             await page.goto('.json_encode($base.'/business/'.$fixture['audit']['business'].'/audit-reports/'.$fixture['report']->id).');
             await page.getByRole("button", {name:"Co-sign report", exact:true}).waitFor();

@@ -14,6 +14,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\DisbursementFixture;
+use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
 
 /** @param  list<string>  $roles */
@@ -91,6 +92,28 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('treasury', ['invested' => ['currency' => 'RWF', 'amount' => '0'], 'disbursed' => ['currency' => 'RWF', 'amount' => '0'],
                 'platform_net' => null, 'paid_to_investors' => null])
             ->where('nav.applications', null)->where('nav.events', null)->where('nav.staff.url', '/admin/staff'));
+});
+
+test('the open reconciliation breaks show, oldest first and unowned, to whoever may view reconciliation', function (): void {
+    $this->freezeSecond();
+    $this->actingAs(boardStaff(['treasury']))->get(route('staff.dashboard'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('breaks', []));
+
+    InvestorWalletFixture::policy(maximum: null);
+    $investor = InvestorWalletFixture::ready();
+    InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '20000')['data']['intent_id'], eventId: 'evt-mismatch', amount: '25000');
+    $this->travel(3)->days();
+
+    $breaks = [];
+    $this->actingAs(boardStaff(['compliance']))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(function (Assert $page) use (&$breaks): void {
+            $breaks = $page->toArray()['props']['breaks'];
+        });
+    expect($breaks)->toHaveCount(1)->and($breaks[0])->toMatchArray(['reference' => 'evt-mismatch',
+        'description' => 'Investor deposit reported successful for another amount, currency or environment, so the ledger never posted it',
+        'gap' => ['currency' => 'RWF', 'amount' => '25000'], 'age_days' => 3, 'owner' => null, 'actions' => []])
+        ->and($breaks[0]['opened_at'])->toBeString();
+
+    $this->actingAs(boardStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('breaks', null));
 });
 
 test('issued notes fill capital raised, outstanding notes, verified Investors and the treasury, bucketed by issue time', function (): void {

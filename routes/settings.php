@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:6,1')
         ->name('user-password.update');
 
+    Route::put('settings/login-alerts', [SecurityController::class, 'updateLoginAlerts'])
+        ->middleware('throttle:changes')
+        ->name('login-alerts.update');
+
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 });
 

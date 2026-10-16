@@ -8,6 +8,8 @@ use App\Models\StagingMailTester;
 use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\EnvironmentSafetyServiceProvider;
+use Carbon\CarbonImmutable;
+use Database\Seeders\CheckpointTwoSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -215,7 +217,9 @@ test('unsafe flag combinations cannot activate a demo or money path', function (
 ]);
 
 test('demo reset needs both operator switches', function (bool $enabled, bool $reset, bool $canSeed, bool $canReset) {
+    $this->travelTo('2026-09-14T12:00:00+00:00');
     $isolation = isolatedConfiguration();
+    $this->travelTo(CarbonImmutable::parse((string) config('isolation.demo_flags.expires_at'), 'UTC')->subDay());
     config(['isolation.demo_enabled' => $enabled, 'isolation.demo_reset_enabled' => $reset]);
 
     expect($isolation->canSeed())->toBe($canSeed)
@@ -224,6 +228,47 @@ test('demo reset needs both operator switches', function (bool $enabled, bool $r
     [false, false, false, false],
     [true, false, true, false],
     [true, true, true, true],
+]);
+
+test('the staging seed switch allows additive seeding on uat but never a reset', function (string $environment) {
+    $isolation = isolatedConfiguration($environment);
+    expect($isolation->canSeed())->toBeFalse();
+
+    config(['isolation.uat_seed_enabled' => true]);
+    $isolation->configure();
+
+    expect($isolation->canSeed())->toBeTrue()
+        ->and($isolation->canReset())->toBeFalse()
+        ->and(fn () => $isolation->guardCommand('db:seed'))->not->toThrow(LogicException::class)
+        ->and(fn () => $isolation->guardCommand('migrate:fresh'))->toThrow(LogicException::class, 'ISOLATION_RESET_DENIED')
+        ->and(fn () => $isolation->guardCommand('db:wipe'))->toThrow(LogicException::class, 'ISOLATION_RESET_DENIED')
+        ->and(Artisan::call('isolation:check', ['--expect' => 'uat']))->toBe(0);
+})->with(['staging', 'uat']);
+
+test('the checkpoint two pack runs on staging only with the switch on and its own database', function () {
+    $isolation = isolatedConfiguration('uat');
+    $isolation->configure();
+    $seeder = app(CheckpointTwoSeeder::class);
+
+    expect(fn () => $seeder->assertLocal())->toThrow(LogicException::class, 'ISOLATION_SEED_DENIED');
+
+    config(['isolation.uat_seed_enabled' => true]);
+    expect(fn () => $seeder->assertLocal())->not->toThrow(LogicException::class);
+
+    config(['database.connections.pgsql.host' => 'db.example.test']);
+    expect(fn () => $seeder->assertLocal())->toThrow(LogicException::class, 'C2_LOCAL_DATABASE_REQUIRED');
+});
+
+test('only uat can turn on the staging seed switch', function (string $environment, mixed $value, string $error) {
+    $isolation = isolatedConfiguration($environment);
+    config(['isolation.uat_seed_enabled' => $value]);
+
+    expect(fn () => $isolation->assertSafeConfiguration())->toThrow(LogicException::class, $error);
+})->with([
+    ['uat', 'true', 'ISOLATION_FLAGS_MUST_BE_BOOLEAN'],
+    ['demo', true, 'ISOLATION_UAT_SEED_DENIED'],
+    ['production', true, 'ISOLATION_UAT_SEED_DENIED'],
+    ['local', true, 'ISOLATION_UAT_SEED_DENIED'],
 ]);
 
 test('a non-live database cannot use a production name user url or read write override', function (string $key, mixed $value, string $error) {
@@ -639,7 +684,17 @@ test('forced seed and reset commands stop before database access', function (str
     expect($original->table('users')->where('id', $user->id)->value('email'))->toBe($user->email);
 })->with(['production', 'uat', 'demo'])->with(['db:seed', 'db:wipe', 'migrate:fresh', 'migrate:refresh', 'migrate:reset', 'migrate:rollback']);
 
-test('the synthetic wallet seed, event hook and worker stop outside local and testing', function (string $environment, string $command) {
+test('the synthetic wallet seed and event hook stop outside local and testing', function (string $environment) {
+    isolatedConfiguration($environment);
+    if ($environment === 'production') {
+        config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
+    }
+
+    expect(fn () => Event::dispatch(new CommandStarting('local:wallet', new ArrayInput(['command' => 'local:wallet']), new BufferedOutput)))
+        ->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+})->with(['production', 'uat', 'demo']);
+
+test('the staging tester setup and the deposit worker stop on production and demo', function (string $environment, string $command) {
     isolatedConfiguration($environment);
     if ($environment === 'production') {
         config(['database.connections.pgsql.database' => 'rozine', 'database.connections.pgsql.username' => 'rozine']);
@@ -647,7 +702,16 @@ test('the synthetic wallet seed, event hook and worker stop outside local and te
 
     expect(fn () => Event::dispatch(new CommandStarting($command, new ArrayInput(['command' => $command]), new BufferedOutput)))
         ->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
-})->with(['production', 'uat', 'demo'])->with(['local:wallet', 'wallet:dispatch-deposits']);
+})->with(['production', 'demo'])->with(['staging:wallet', 'wallet:dispatch-deposits']);
+
+test('the staging tester setup and the deposit worker start on UAT with live money off, and stop once it is on', function (string $command) {
+    isolatedConfiguration('uat');
+    $start = fn () => Event::dispatch(new CommandStarting($command, new ArrayInput(['command' => $command]), new BufferedOutput));
+
+    expect($start)->not->toThrow(LogicException::class);
+    config(['isolation.live_money_enabled' => true]);
+    expect($start)->toThrow(LogicException::class, 'ISOLATION_SYNTHETIC_WALLET_DENIED');
+})->with(['staging:wallet', 'wallet:dispatch-deposits']);
 
 test('the synthetic wallet commands also stop on testing once live money is switched on', function () {
     config(['isolation.live_money_enabled' => true]);

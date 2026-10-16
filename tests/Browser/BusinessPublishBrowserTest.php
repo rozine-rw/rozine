@@ -57,7 +57,7 @@ it('publishes a staff-released application once against its exposure reservation
     expect(BusinessApplicationRelease::query()->count())->toBe(1);
 
     (new BrowserJourney('publish', BP_PORT))->within(function (BrowserJourney $journey) use ($signatory, $path, $business): void {
-        $journey->login('bp1', $signatory->email, BP_PASSWORD);
+        $journey->login('bp1', $signatory->email, BP_PASSWORD, landing: '**/business/'.$business);
         $answer = $journey->code('bp1', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.$path).');
@@ -124,7 +124,7 @@ it('shows the missing reservation refusal and no Publish for a historical submis
     DB::statement('ALTER TABLE business_exposure_reservations ENABLE TRIGGER business_exposure_reservations_protected');
 
     (new BrowserJourney('historical', BP_PORT))->within(function (BrowserJourney $journey) use ($signatory, $path): void {
-        $journey->login('bp2', $signatory->email, BP_PASSWORD);
+        $journey->login('bp2', $signatory->email, BP_PASSWORD, landing: '**/business/*');
         $journey->code('bp2', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.$path).');

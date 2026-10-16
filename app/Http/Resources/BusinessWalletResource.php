@@ -30,6 +30,7 @@ class BusinessWalletResource extends JsonResource
             'allowed_actions' => $request->routeIs('api.*') && ! $request->user()?->tokenCan('business:command') ? [] : $data['allowed_actions'],
             'business' => $data['business'], 'wallet' => $data['wallet'], 'funding' => $data['funding'],
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $business, $context, $deposit), $data['deposits']),
+            'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $business, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,
                 'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key])], ['external', 'internal']),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
@@ -37,9 +38,11 @@ class BusinessWalletResource extends JsonResource
             'receipt' => self::receipt($request, $business, $context, $data['receipt']), 'bases' => (object) [],
             'shell_links' => ['home' => $home, 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
                 ...BusinessHomeResource::tabs($request, $business)],
-            'links' => ['close' => $home, 'deposit' => $wallet(['kind' => 'deposit']), 'operation' => self::lookup($request, $business, $context),
+            'links' => ['close' => $home, 'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => $wallet(['kind' => 'withdraw']),
+                'operation' => self::lookup($request, $business, $context), 'withdrawal_operation' => self::lookup($request, $business, $context, null, 'business.wallet.withdraw'),
                 'repayments' => $request->routeIs('api.*') ? null : self::link($request, 'business.repayments.show', ['business' => $business])],
-            'actions' => ['deposit' => ['url' => route(self::prefix($request).'business.wallet.deposit', ['business' => $business], false), 'method' => 'post']]];
+            'actions' => ['deposit' => ['url' => route(self::prefix($request).'business.wallet.deposit', ['business' => $business], false), 'method' => 'post'],
+                'withdraw' => ['url' => route(self::prefix($request).'business.wallet.withdraw', ['business' => $business], false), 'method' => 'post']]];
     }
 
     /**
@@ -58,15 +61,31 @@ class BusinessWalletResource extends JsonResource
     }
 
     /**
+     * A recorded withdrawal with its links: the request receipt resolves through the operation lookup
+     * by its own request; the withdrawal and its ending receipt open on the wallet.
+     *
+     * @param  array<string, mixed>  $withdrawal
+     * @return array<string, mixed>
+     */
+    public static function withdrawal(Request $request, string $business, int $context, array $withdrawal): array
+    {
+        $link = self::link($request, 'business.wallet.show', ['business' => $business, 'receipt' => $withdrawal['id']]);
+
+        return [...$withdrawal,
+            'request_receipt' => [...$withdrawal['request_receipt'], 'link' => self::lookup($request, $business, $context, $withdrawal['request_id'], 'business.wallet.withdraw')],
+            'settled_receipt' => $withdrawal['settled_receipt'] === null ? null : [...$withdrawal['settled_receipt'], 'link' => $link], 'link' => $link];
+    }
+
+    /**
      * The operation lookup. Without a request id its url keeps the literal `{request_id}` token.
      *
      * @return array{url: string, method: 'get'}
      */
-    public static function lookup(Request $request, string $business, int $context, ?string $requestId = null): array
+    public static function lookup(Request $request, string $business, int $context, ?string $requestId = null, string $command = 'business.wallet.deposit'): array
     {
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $url = route(self::prefix($request).'business.wallet.operations.show',
-            ['business' => $business, 'request_id' => $requestId ?? $placeholder, 'command' => 'business.wallet.deposit', 'identity_context_revision' => $context], false);
+            ['business' => $business, 'request_id' => $requestId ?? $placeholder, 'command' => $command, 'identity_context_revision' => $context], false);
 
         return ['url' => $requestId === null ? str_replace($placeholder, '{request_id}', $url) : $url, 'method' => 'get'];
     }
@@ -79,6 +98,9 @@ class BusinessWalletResource extends JsonResource
     {
         if ($receipt === null) {
             return null;
+        }
+        if ($receipt['type'] === 'withdrawal') {
+            return self::withdrawal($request, $business, $context, $receipt['withdrawal']);
         }
         $link = self::link($request, 'business.wallet.show', ['business' => $business, 'receipt' => $receipt['type'] === 'deposit' ? $receipt['deposit']['id'] : $receipt['entry']['id']]);
 

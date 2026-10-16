@@ -32,6 +32,7 @@ describe('A designed section that is not wired yet', () => {
             'notes',
             'primary_market',
             'secondary_market',
+            'reports',
             'risk',
             'compliance',
             'payments',
@@ -155,17 +156,18 @@ describe('A designed section that is not wired yet', () => {
         ).toHaveAttribute('aria-selected', 'true');
         expect(screen.getByText('No revenue to show yet.')).toBeVisible();
 
-        fireEvent.click(within(tabs).getByRole('tab', { name: 'RAMP' }));
-
-        expect(within(tabs).getByRole('tab', { name: 'RAMP' })).toHaveAttribute(
-            'aria-selected',
-            'true',
+        fireEvent.click(
+            within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
         );
+
+        expect(
+            within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
+        ).toHaveAttribute('aria-selected', 'true');
         expect(
             within(tabs).getByRole('tab', { name: 'Revenue streams' }),
         ).toHaveAttribute('aria-selected', 'false');
         expect(
-            screen.getByText('No RAMP positions to show yet.'),
+            screen.getByText('No ledger entries to show yet.'),
         ).toBeVisible();
         expect(
             screen.queryByText('No revenue to show yet.'),
@@ -203,6 +205,25 @@ describe('A designed section that is not wired yet', () => {
             within(nav).getByRole('link', { name: 'Engines' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(screen.getByTestId('head')).toHaveTextContent('Engines');
+    });
+});
+
+describe('The title ⓘ', () => {
+    it('takes no layout while closed and opens on hover or keyboard focus', () => {
+        render(<AdminPendingSection {...props({ section: 'reports' })} />);
+
+        const tip = screen.getByRole('tooltip', { hidden: true });
+
+        expect(tip).toHaveTextContent(
+            'Business performance reports published to investors',
+        );
+        // Closed it is display:none, not just invisible, so it never widens a phone screen.
+        expect(tip).toHaveClass(
+            'hidden',
+            'group-hover:block',
+            'group-focus:block',
+        );
+        expect(tip).not.toHaveClass('invisible');
     });
 });
 

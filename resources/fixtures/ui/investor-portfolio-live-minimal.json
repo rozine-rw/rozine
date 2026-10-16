@@ -23,6 +23,22 @@
                     "url": "/investor/portfolio?tab=matured",
                     "method": "get"
                 }
+            },
+            {
+                "key": "secondary",
+                "active": false,
+                "link": {
+                    "url": "/investor/portfolio?tab=secondary",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "saved",
+                "active": false,
+                "link": {
+                    "url": "/investor/portfolio?tab=saved",
+                    "method": "get"
+                }
             }
         ],
         "totals": {
@@ -71,6 +87,14 @@
                 "url": "/investor/portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/investor/market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/investor/cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/investor/profile",
                 "method": "get"
@@ -80,11 +104,15 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/investor/notifications",
+                "url": "/investor/notices",
                 "method": "get"
             },
             "launcher": {
                 "url": "/launcher",
+                "method": "get"
+            },
+            "changes": {
+                "url": "/changes?topics=purchase%2Cwallet&after=1.10.0.100.1",
                 "method": "get"
             }
         },

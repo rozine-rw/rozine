@@ -1,5 +1,6 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import type { RouteLink } from '@/types';
 
 type DetailSheetProps = {
@@ -26,6 +27,12 @@ export function DetailSheet({
     footer,
     children,
 }: DetailSheetProps) {
+    const dialog = useModalDialog<HTMLElement>(
+        dismissible
+            ? () => router.visit(close.url, { preserveScroll: true })
+            : undefined,
+    );
+
     return (
         <>
             {dismissible ? (
@@ -38,6 +45,8 @@ export function DetailSheet({
                 <div className="absolute inset-0 z-[55] hidden bg-[rgba(8,14,28,.42)] backdrop-blur-[3px] lg:block" />
             )}
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}

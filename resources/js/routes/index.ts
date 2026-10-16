@@ -459,3 +459,84 @@ dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 dashboard.form = dashboardForm
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+export const enter = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: enter.url(options),
+    method: 'get',
+})
+
+enter.definition = {
+    methods: ["get","head"],
+    url: '/enter',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+enter.url = (options?: RouteQueryOptions) => {
+    return enter.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+enter.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: enter.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+enter.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: enter.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+const enterForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: enter.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+enterForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: enter.url(options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\EnterAppController::__invoke
+* @see app/Http/Controllers/EnterAppController.php:17
+* @route '/enter'
+*/
+enterForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: enter.url({
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+enter.form = enterForm

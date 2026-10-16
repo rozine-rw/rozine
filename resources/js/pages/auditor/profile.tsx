@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { AuditorShell } from '@/components/auditor/auditor-shell';
 import {
     AuditorCommandNotice,
@@ -6,6 +7,13 @@ import {
     useAuditorCommandCenter,
 } from '@/components/auditor/commands';
 import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
+import {
+    ContactSection,
+    LegalSection,
+    PendingSection,
+    SecuritySection,
+    TelemetrySection,
+} from '@/components/auditor/profile/account-sections';
 import { AccreditationSection } from '@/components/auditor/profile/accreditation-section';
 import { AvailabilitySection } from '@/components/auditor/profile/availability-section';
 import { IdentityCard } from '@/components/auditor/profile/identity-card';
@@ -17,16 +25,23 @@ import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { AuditorProfileProps, ProfileSection } from '@/types/auditor';
 
+/** The design's nine Profile rows (Auditor.dc.html L3528–3536), in its order. */
 const SECTIONS: { key: ProfileSection; icon: IconName }[] = [
+    { key: 'earnings', icon: 'trend-up' },
+    { key: 'contact', icon: 'person' },
     { key: 'accreditation', icon: 'graduation' },
+    { key: 'payout', icon: 'bank' },
     { key: 'availability', icon: 'pin' },
+    { key: 'telemetry', icon: 'bar-chart' },
+    { key: 'security', icon: 'lock' },
+    { key: 'learn', icon: 'books' },
+    { key: 'legal', icon: 'document' },
 ];
 
 /**
- * Profile (design L593–1013), scoped to accreditation status and dispatch availability. A phone
- * stacks both sections; a wide screen shows the design's menu on the left and the chosen section
- * on the right. The design's earnings, contact, payout, telemetry, academy, security and legal
- * sections are outside the MVP and are left out of the menu.
+ * Profile (design L593–1013) with the design's nine sections. The menu sits under the identity
+ * card, beside the chosen section on a wide screen and above it on a phone. A section with nothing
+ * to read yet shows its empty state.
  */
 export default function AuditorProfile(props: AuditorProfileProps) {
     const { t } = useTranslation();
@@ -48,12 +63,32 @@ export default function AuditorProfile(props: AuditorProfileProps) {
             }}
         />
     );
-    const availability = (
-        <AvailabilitySection
-            availability={props.availability}
-            standing={props.standing}
-        />
-    );
+    const sections: Record<ProfileSection, ReactNode> = {
+        earnings: <PendingSection kind="earnings" />,
+        contact: <ContactSection contact={props.contact} />,
+        accreditation,
+        payout: <PendingSection kind="payout" />,
+        availability: (
+            <AvailabilitySection
+                availability={props.availability}
+                standing={props.standing}
+            />
+        ),
+        telemetry: (
+            <TelemetrySection
+                onTimePct={props.on_time_pct}
+                jobsDone={props.jobs_done}
+            />
+        ),
+        security: (
+            <SecuritySection
+                security={props.security}
+                settings={props.links.security_settings}
+            />
+        ),
+        learn: <PendingSection kind="learn" />,
+        legal: <LegalSection engagement={props.engagement} />,
+    };
 
     return (
         <AuditorCommandProvider center={center}>
@@ -82,7 +117,7 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                         </div>
                         <nav
                             aria-label={t('auditor.profile.menu')}
-                            className="hidden lg:block lg:min-h-0 lg:flex-auto lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface lg:px-[18px] lg:pt-[18px] lg:pb-4"
+                            className="mt-3.5 lg:mt-0 lg:min-h-0 lg:flex-auto lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface lg:px-[18px] lg:pt-[18px] lg:pb-4"
                         >
                             <div className="overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
                                 {SECTIONS.map(({ key, icon }) => {
@@ -138,19 +173,9 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                                 shown={['licence', 'expires_on', 'certificate']}
                                 className="mt-4 lg:mt-0 lg:mb-4"
                             />
-                            {SECTIONS.map(({ key }) => (
-                                <div
-                                    key={key}
-                                    className={cn(
-                                        'mt-4 lg:mt-0',
-                                        key !== props.section && 'lg:hidden',
-                                    )}
-                                >
-                                    {key === 'accreditation'
-                                        ? accreditation
-                                        : availability}
-                                </div>
-                            ))}
+                            <div className="mt-4 lg:mt-0">
+                                {sections[props.section]}
+                            </div>
                             <div className="h-4" />
                         </div>
                     </div>

@@ -3,9 +3,14 @@ import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import BusinessHome from '@/pages/business/home';
 import type { BusinessHomeProps, BusinessTodo } from '@/types/business';
+import inbox from '../../../resources/fixtures/business-notices.json';
 import noDealFixture from '../../../resources/fixtures/ui/business-home-no-deal.json';
 import homeFixture from '../../../resources/fixtures/ui/business-home.json';
 import { renderWithUser } from '../helpers/render-with-user';
+
+const http = vi.hoisted(() => ({
+    submit: (): Promise<unknown> => new Promise(() => undefined),
+}));
 
 vi.mock('@inertiajs/react', () => ({
     Head: ({ title }: { title: string }) => (
@@ -25,7 +30,7 @@ vi.mock('@inertiajs/react', () => ({
         errors: {},
         clearErrors: () => undefined,
         transform: () => undefined,
-        submit: () => new Promise(() => undefined),
+        submit: () => http.submit(),
     }),
 }));
 
@@ -37,13 +42,66 @@ const money = (amount: number) => ({
 });
 
 describe('Business Home', () => {
+    it('opens the Business notices behind the bell, worded by kind (BRS NTF-R01)', async () => {
+        const submit = http.submit;
+        http.submit = () => Promise.resolve({ data: inbox });
+        const { user } = renderWithUser(<BusinessHome {...fixture} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const items = await within(panel).findAllByRole('button', {
+            name: /RWF|audit report/u,
+        });
+
+        expect(items).toHaveLength(10);
+        expect(items[0]).toHaveTextContent(
+            'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Funds sentRWF 6,000,000 for Cold Room Upgrade was sent to Bank of Kigali Account ····2231.',
+        );
+        expect(items[2]).toHaveTextContent(
+            'Raise fully fundedCold Room Upgrade reached its target of RWF 6,000,000. Rozine now prepares the payout to your account.',
+        );
+        expect(items[3]).toHaveTextContent(
+            'Deposit receivedRWF 2,500,000 is now in your Business wallet.',
+        );
+        expect(items[4]).toHaveTextContent(
+            'Withdrawal sentRWF 800,000 was sent to Bank of Kigali Account ····2231.',
+        );
+        expect(items[5]).toHaveTextContent(
+            "Withdrawal returnedThe payout of RWF 300,000 to MTN MoMo +250 788 ···· 456 didn't go through. It's back in your Business wallet.",
+        );
+        expect(items[6]).toHaveTextContent(
+            'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
+        );
+        expect(items[7]).toHaveTextContent(
+            'Review window closingYour window to co-sign or dispute the audit report closes at',
+        );
+        expect(items[8]).toHaveTextContent(
+            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+        );
+        expect(items[9]).toHaveTextContent(
+            'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
+        );
+
+        await user.click(
+            within(panel).getByRole('button', { name: 'Close notifications' }),
+        );
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        http.submit = submit;
+    });
+
     it('lays out the design sections from server facts', () => {
         render(<BusinessHome {...fixture} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent('Home');
         expect(screen.getByText('RWF 12,383,800')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications, 2 unread' }),
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
         ).toBeInTheDocument();
         expect(screen.getByText('GreenLeaf Agro')).toBeInTheDocument();
         expect(screen.getByText('RDB 103847291')).toBeInTheDocument();
@@ -85,7 +143,7 @@ describe('Business Home', () => {
         expect(screen.queryByText(/^RDB/u)).not.toBeInTheDocument();
     });
 
-    it('marks the Home tab current in both the sidebar and the tab bar, without Market', () => {
+    it("marks the Home tab current in both the sidebar and the tab bar, with the design's four tabs", () => {
         render(<BusinessHome {...fixture} />);
 
         const navs = screen.getAllByRole('navigation', {
@@ -102,8 +160,13 @@ describe('Business Home', () => {
                 within(nav).getByRole('link', { name: 'Reports' }),
             ).not.toHaveAttribute('aria-current');
             expect(
-                within(nav).queryByRole('link', { name: 'Market' }),
-            ).not.toBeInTheDocument();
+                within(nav)
+                    .getAllByRole('link')
+                    .map((link) => link.textContent),
+            ).toEqual(['Home', 'Reports', 'Market', 'Profile']);
+            expect(
+                within(nav).getByRole('link', { name: 'Market' }),
+            ).toHaveAttribute('href', '/preview/business-market');
         }
     });
 
@@ -118,7 +181,7 @@ describe('Business Home', () => {
             screen.queryByText('Headroom available'),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Notifications' }),
+            screen.getByRole('button', { name: 'Notifications' }),
         ).toBeInTheDocument();
         expect(screen.getByText('—', { selector: 'div' })).toBeInTheDocument();
     });
@@ -143,7 +206,7 @@ describe('Business Home', () => {
             screen.queryByRole('link', { name: 'Withdraw' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /^Notifications/u }),
+            screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();
         expect(screen.getByText('Strong · 4.8')).toBeInTheDocument();
         expect(

@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import BusinessProfile from '@/pages/business/profile';
 import type {
@@ -13,7 +13,10 @@ import companyFixture from '../../../resources/fixtures/ui/business-profile-comp
 import linkedFixture from '../../../resources/fixtures/ui/business-profile-linked.json';
 import recordCompanyFixture from '../../../resources/fixtures/ui/business-profile-on-record-company.json';
 import recordFixture from '../../../resources/fixtures/ui/business-profile-on-record.json';
+import permissionsFixture from '../../../resources/fixtures/ui/business-profile-permissions.json';
 import privacyFixture from '../../../resources/fixtures/ui/business-profile-privacy.json';
+import securityFixture from '../../../resources/fixtures/ui/business-profile-security.json';
+import supportFixture from '../../../resources/fixtures/ui/business-profile-support.json';
 import termsFixture from '../../../resources/fixtures/ui/business-profile-terms.json';
 import landingFixture from '../../../resources/fixtures/ui/business-profile.json';
 
@@ -48,8 +51,41 @@ vi.mock('@inertiajs/react', async () => {
                 {children}
             </a>
         ),
+        Form: ({
+            action,
+            method,
+            children,
+            className,
+            transform = (data) => data,
+        }: {
+            action: string;
+            method: string;
+            children: ReactNode;
+            className?: string;
+            transform?: (
+                data: Record<string, unknown>,
+            ) => Record<string, unknown>;
+        }) => (
+            <form
+                className={className}
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    inertia.puts.push({
+                        url: `${method} ${action}`,
+                        data: transform(
+                            Object.fromEntries(
+                                new FormData(event.currentTarget),
+                            ),
+                        ),
+                    });
+                }}
+            >
+                {children}
+            </form>
+        ),
         useForm: <T extends Record<string, unknown>>(initial: T) => {
             const [data, setState] = useState(initial);
+            let transform = (current: T): Record<string, unknown> => current;
 
             return {
                 data,
@@ -64,14 +100,38 @@ vi.mock('@inertiajs/react', async () => {
                     ),
                 errors: inertia.errors,
                 processing: inertia.processing,
+                transform: (
+                    callback: (current: T) => Record<string, unknown>,
+                ) => {
+                    transform = callback;
+                },
                 put: (url: string, options: { onSuccess?: () => void }) => {
-                    inertia.puts.push({ url, data });
+                    inertia.puts.push({ url, data: transform(data) });
                     options.onSuccess?.();
                 },
+                post: (url: string, options: { onSuccess?: () => void }) => {
+                    inertia.puts.push({
+                        url: `post ${url}`,
+                        data: transform(data),
+                    });
+                    options.onSuccess?.();
+                },
+                reset: () => setState(initial),
             };
         },
     };
 });
+
+/** The design's seven Profile rows (Business.dc.html L5022–5028), in its order. */
+const MENU = [
+    'Company information›',
+    'Security center›',
+    'Permissions & roles›',
+    'Linked accounts›',
+    'Support center›',
+    'Terms & Conditions›',
+    'Privacy Note›',
+];
 
 const props = (fixture: { props: unknown }) =>
     structuredClone(fixture.props) as BusinessProfileProps;
@@ -83,7 +143,7 @@ beforeEach(() => {
 });
 
 describe('Business Profile menu', () => {
-    it('shows the business and the MVP sections', () => {
+    it("shows the business and the design's seven sections", () => {
         render(<BusinessProfile {...props(landingFixture)} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent(
@@ -102,12 +162,7 @@ describe('Business Profile menu', () => {
 
         expect(
             menu.getAllByRole('link').map((link) => link.textContent),
-        ).toEqual([
-            'Company information›',
-            'Linked accounts›',
-            'Terms & Conditions›',
-            'Privacy Note›',
-        ]);
+        ).toEqual(MENU);
         expect(
             menu.getByRole('link', { name: /Company information/ }),
         ).toHaveAttribute('aria-current', 'page');
@@ -195,6 +250,9 @@ describe('Company information', () => {
                     sector: 'Remera',
                     cell: 'Rukiri',
                     street: 'KG 11 Ave',
+                    request_id: expect.stringMatching(
+                        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u,
+                    ),
                 },
             },
         ]);
@@ -275,7 +333,9 @@ describe('Company information', () => {
 });
 
 describe('Linked accounts', () => {
-    it('lets only removable accounts be unlinked', () => {
+    it('lets only removable accounts be unlinked', async () => {
+        const user = userEvent.setup();
+
         render(<BusinessProfile {...props(linkedFixture)} />);
 
         expect(
@@ -285,28 +345,82 @@ describe('Linked accounts', () => {
             screen.getByText('Business account ····2231'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: 'Unlink Bank of Kigali' }),
+            screen.queryByRole('button', { name: 'Unlink Bank of Kigali' }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Unlink MTN Mobile Money' }),
+        );
+        expect(inertia.puts).toEqual([
+            {
+                url: 'post /preview/business-profile-linked',
+                data: {
+                    request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                },
+            },
+        ]);
+        expect(
+            screen.queryByRole('button', { name: '+ Link a payout account' }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Unlink MTN Mobile Money' }),
-        ).toHaveAttribute('data-method', 'delete');
-        expect(
-            screen.queryByRole('link', { name: '+ Link a payout account' }),
+            screen.queryByRole('form', { name: 'Link a new account' }),
         ).not.toBeInTheDocument();
     });
 
-    it('offers to link a payout account when there is none', () => {
+    it("links an account in the business's name from the form", async () => {
+        const user = userEvent.setup();
         const page = props(linkedFixture);
 
         page.linked = {
             accounts: [],
-            add: { url: '/business/bank', method: 'get' },
+            add: { url: '/business/linked', method: 'post' },
+            banks: [{ code: 'bk', name: 'Bank of Kigali' }],
         };
         render(<BusinessProfile {...page} />);
 
         expect(
-            screen.getByRole('link', { name: '+ Link a payout account' }),
-        ).toHaveAttribute('href', '/business/bank');
+            screen.getByText(
+                'No account linked yet. Link one to deposit and withdraw.',
+            ),
+        ).toBeInTheDocument();
+        const form = screen.getByRole('form', { name: 'Link a new account' });
+
+        expect(
+            within(form).getByText(
+                "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(form).getByLabelText('MOBILE NUMBER'),
+            '0781234567',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Link account' }),
+        );
+
+        expect(inertia.puts).toEqual([
+            {
+                url: 'post /business/linked',
+                data: {
+                    type: 'mobile',
+                    network: 'mtn',
+                    bank: 'bk',
+                    number: '0781234567',
+                    request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
+                },
+            },
+        ]);
+        expect(
+            screen.getByRole('button', { name: '+ Link a payout account' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says so when no account is linked and none can be', () => {
+        const page = props(linkedFixture);
+
+        page.linked = { accounts: [], add: null, banks: [] };
+        render(<BusinessProfile {...page} />);
+
+        expect(screen.getByText('No account linked yet.')).toBeInTheDocument();
     });
 
     it('shows nothing until the accounts arrive', () => {
@@ -359,7 +473,7 @@ describe('Legal documents', () => {
 });
 
 describe('Company information on record', () => {
-    it('shows the verified registration and mandate read-only, with only the sections the server opens', () => {
+    it('shows the verified registration and mandate read-only, beside every design section', () => {
         render(<BusinessProfile {...props(recordFixture)} />);
 
         expect(screen.queryByText(/^Score/u)).not.toBeInTheDocument();
@@ -368,7 +482,7 @@ describe('Company information on record', () => {
             within(screen.getByRole('navigation', { name: 'Profile menu' }))
                 .getAllByRole('link')
                 .map((link) => link.textContent),
-        ).toEqual(['Company information›']);
+        ).toEqual(MENU);
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Save changes' }),
@@ -428,6 +542,25 @@ describe('Company information on record', () => {
         ).toBeInTheDocument();
     });
 
+    it('edits the contact details beside the registration record while no RDB certificate is held', () => {
+        const page = props(companyFixture);
+
+        page.company = {
+            ...(page.company as CompanyProfile),
+            certificate: null,
+            signatories: [],
+        };
+        page.registration = props(recordFixture).registration;
+        render(<BusinessProfile {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Save changes' }),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('RDB certificate')).not.toBeInTheDocument();
+        expect(screen.getByText('On record')).toBeInTheDocument();
+        expect(screen.getByText('People on the mandate')).toBeInTheDocument();
+    });
+
     it('shows contact details read-only when the server offers no save', () => {
         const page = props(companyFixture);
 
@@ -440,5 +573,181 @@ describe('Company information on record', () => {
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
         expect(screen.getByText('RDB/2019/004512')).toBeInTheDocument();
         expect(screen.queryByText('On record')).not.toBeInTheDocument();
+    });
+});
+
+describe('Business account sections', () => {
+    it('reports two-factor sign-in and opens the security settings for it and the password', () => {
+        const { unmount } = render(
+            <BusinessProfile {...props(securityFixture)} />,
+        );
+
+        expect(
+            screen.getByRole('heading', { name: 'Security center' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toHaveTextContent('On · authenticator app code at sign-in');
+        expect(
+            screen.getByRole('link', { name: /Change password/u }),
+        ).toHaveAttribute('href', '/preview/business-profile-security');
+        expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
+        unmount();
+
+        const off = props(securityFixture);
+
+        off.security.two_factor = false;
+        render(<BusinessProfile {...off} />);
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toHaveTextContent('Off · add an authenticator app code at sign-in');
+    });
+
+    it('switches the sign-in alert e-mail off', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(securityFixture)} />);
+
+        expect(screen.getByText('Email on new device')).toBeInTheDocument();
+        const toggle = screen.getByRole('switch', { name: 'Sign-in alerts' });
+
+        expect(toggle).toBeChecked();
+        await user.click(toggle);
+        expect(inertia.puts).toEqual([
+            {
+                url: 'put /preview/business-profile-security',
+                data: { enabled: '0' },
+            },
+        ]);
+    });
+
+    it('lists the people on the mandate with their roles and permissions, read-only', () => {
+        render(<BusinessProfile {...props(permissionsFixture)} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Permissions & roles' }),
+        ).toBeInTheDocument();
+        const people = screen.getAllByRole('listitem');
+
+        expect(people).toHaveLength(3);
+        expect(people[0]).toHaveTextContent('Robert Mugisha');
+        expect(people[0]).toHaveTextContent('ControllerOwnerSignatory');
+        expect(people[1]).toHaveTextContent(
+            'Sign applications · View the business · Co-sign reports',
+        );
+        expect(people[2]).toHaveTextContent('View the business');
+        expect(
+            screen.queryByRole('button', { name: /Invite|Remove|Transfer/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('leaves out a section the server sends no link for', () => {
+        const page = props(landingFixture);
+
+        page.links.sections.support = null;
+        render(<BusinessProfile {...page} />);
+        expect(
+            within(screen.getByRole('navigation', { name: 'Profile menu' }))
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(MENU.filter((row) => row !== 'Support center›'));
+    });
+
+    it('says when a person on the mandate holds no permission', () => {
+        const page = props(permissionsFixture);
+
+        page.team = [{ ...page.team[2], permissions: [] }];
+        render(<BusinessProfile {...page} />);
+        expect(
+            screen.getByText('No permissions on this business'),
+        ).toBeInTheDocument();
+    });
+
+    it.each([
+        [linkedFixture, 'Linked accounts', 'No payout account yet', 'linked'],
+        [termsFixture, 'Terms & Conditions', 'Coming to the app soon', 'legal'],
+        [privacyFixture, 'Privacy Note', 'Coming to the app soon', 'legal'],
+    ] as const)(
+        'shows %#: the design section, empty until there is something to read',
+        (fixture, heading, title, empty) => {
+            const page = props(fixture);
+
+            if (empty === 'linked') {
+                page.linked = null;
+            }
+
+            if (empty === 'legal') {
+                page.legal = null;
+            }
+
+            render(<BusinessProfile {...page} />);
+            expect(
+                screen.getByRole('heading', { name: heading }),
+            ).toBeInTheDocument();
+            expect(screen.getByText(title)).toBeInTheDocument();
+        },
+    );
+
+    it('opens a support center answer in full, and messages support from it', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(supportFixture)} />);
+        await user.click(
+            screen.getByRole('button', { name: /Can I repay early\?/u }),
+        );
+        const sheet = screen.getByRole('dialog', {
+            name: 'Can I repay early?',
+        });
+
+        expect(within(sheet).getByText('Repayments')).toBeInTheDocument();
+        expect(sheet).toHaveTextContent(
+            'investors receive exactly the scheduled amounts still owed',
+        );
+        await user.click(
+            within(sheet).getByRole('button', { name: 'Message support' }),
+        );
+
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Rozine Support' }),
+            ).getByText('Our disbursement has not reached the bank account.'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the support center answers, with the support chat over the Business complaints', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessProfile {...props(supportFixture)} />);
+        expect(
+            screen.getByRole('heading', { name: 'Support center' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Capacity & pricing' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /CMP-00000003/u }),
+        ).toHaveTextContent('Awaiting reply');
+
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText(
+                'Our disbursement has not reached the bank account.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'The bank reference is FT123.',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.puts.at(-1)?.url).toBe(
+            'post /preview/business-profile-support',
+        );
+        expect(inertia.puts.at(-1)?.data).toMatchObject({
+            body: 'The bank reference is FT123.',
+        });
     });
 });

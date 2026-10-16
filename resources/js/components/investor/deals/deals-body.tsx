@@ -114,7 +114,9 @@ function DealPanelLoading() {
  * canvas, with the focused deal's detail panel beside the deck.
  */
 export function DealsBody({ overlay, ...props }: DealsBodyProps) {
+    const { t } = useTranslation();
     const wide = useWide();
+    const title = <h1 className="sr-only">{t('investor.deals.head_title')}</h1>;
     const { frame, scale, width } = useFitScale(CANVAS_HEIGHT);
     const start = Math.max(
         0,
@@ -182,6 +184,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     if (!wide) {
         return (
             <div className="flex min-h-svh flex-col pb-[calc(63px+env(safe-area-inset-bottom)+10px)]">
+                {title}
                 <PhoneTopBar
                     wallet={props.wallet}
                     unread={props.unread_notifications}
@@ -218,6 +221,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
 
     return (
         <div className="h-full px-[30px] pt-3 pb-3.5">
+            {title}
             <div ref={frame} className="h-full overflow-hidden">
                 <div
                     className="flex h-[720px] shrink-0 origin-top-left flex-col"

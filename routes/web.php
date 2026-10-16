@@ -2,29 +2,41 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\GetBusinessProfile;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
 use App\Http\Controllers\AuditorHomeController;
 use App\Http\Controllers\AuditorJobsController;
+use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditorPortfolioController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
+use App\Http\Controllers\BusinessComplaintController;
+use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessNoticesController;
+use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationCodeController;
+use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
+use App\Http\Controllers\InvestorComplaintController;
 use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorHoldingController;
+use App\Http\Controllers\InvestorMarketController;
+use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPortfolioController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorProfileController;
+use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
@@ -35,14 +47,23 @@ use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
+use App\Http\Controllers\StaffComplaintController;
+use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffExceptionsController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffLedgerController;
+use App\Http\Controllers\StaffMessagingController;
+use App\Http\Controllers\StaffPaymentsController;
+use App\Http\Controllers\StaffPrimaryMarketController;
+use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
+use App\Http\Controllers\StaffSystemHealthController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -81,6 +102,7 @@ Route::middleware('throttle:10,1')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::get('enter', EnterAppController::class)->name('enter');
     Route::get('investor', RoleHomeController::class)->name('investor.home');
     Route::get('business', RoleHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('business.home');
     Route::get('auditor', AuditorHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('auditor.home');
@@ -96,11 +118,26 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
     Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');
+    Route::get('holdings/{holding}', [InvestorHoldingController::class, 'show'])->whereUlid('holding')->name('holdings.show');
     Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
+    Route::post('profile/linked-accounts', [InvestorProfileController::class, 'link'])->name('profile.link');
+    Route::post('profile/linked-accounts/{method}/unlink', [InvestorProfileController::class, 'unlink'])->whereUlid('method')->name('profile.unlink');
+    Route::post('complaints', [InvestorComplaintController::class, 'store'])->name('complaints.store');
+    Route::post('complaints/{complaint}/messages', [InvestorComplaintController::class, 'reply'])->whereUlid('complaint')->name('complaints.reply');
+    Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
+    Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
+    Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
+    Route::get('wallet/statement.{format}', [InvestorWalletController::class, 'statement'])->whereIn('format', ['csv', 'pdf'])->name('wallet.statement');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::post('wallet/withdrawals', [InvestorWalletController::class, 'withdraw'])->name('wallet.withdraw');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
+    Route::get('risk-statements', [InvestorRiskAcknowledgementController::class, 'show'])->name('risks.show');
+    Route::post('risk-statements/acknowledgements', [InvestorRiskAcknowledgementController::class, 'store'])->name('risks.acknowledge');
+    Route::get('notices', [InvestorNoticesController::class, 'index'])->name('notices');
+    Route::post('notices/read-all', [InvestorNoticesController::class, 'readAll'])->name('notices.read_all');
+    Route::post('notices/{notice}/read', [InvestorNoticesController::class, 'read'])->whereUlid('notice')->name('notices.read');
     Route::post('deals/{campaign}/reservations', [InvestorPrimaryController::class, 'reserve'])->whereUlid('campaign')->name('primary.reserve');
     Route::post('reservations/{reservation}/confirm', [InvestorPrimaryController::class, 'confirm'])->whereUlid('reservation')->name('primary.confirm');
     Route::post('reservations/{reservation}/release', [InvestorPrimaryController::class, 'release'])->whereUlid('reservation')->name('primary.release');
@@ -111,6 +148,9 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
+    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware('cache.headers:private;no_store')->name('notices');
+    Route::post('notices/read-all', [AuditorNoticesController::class, 'readAll'])->middleware('cache.headers:private;no_store')->name('notices.read_all');
+    Route::post('notices/{notice}/read', [AuditorNoticesController::class, 'read'])->whereUlid('notice')->middleware('cache.headers:private;no_store')->name('notices.read');
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
     Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
     Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');
@@ -156,13 +196,30 @@ Route::get('business/{business}', [BusinessHomeController::class, 'show'])->midd
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.')->group(function (): void {
     Route::get('{business}/reports', [BusinessHomeController::class, 'reports'])->whereUlid('business')->name('reports');
-    Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')->whereIn('section', ['company'])->name('profile');
+    Route::get('{business}/market', [BusinessHomeController::class, 'market'])->whereUlid('business')->name('market');
+    Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
+        ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
+    Route::put('{business}/profile/company', [BusinessContactController::class, 'update'])->whereUlid('business')->name('profile.company');
+    Route::post('{business}/profile/linked-accounts', [BusinessPayoutAccountController::class, 'link'])->whereUlid('business')->name('profile.link');
+    Route::post('{business}/profile/linked-accounts/{method}/unlink', [BusinessPayoutAccountController::class, 'unlink'])->whereUlid(['business', 'method'])
+        ->name('profile.unlink');
+    Route::post('{business}/complaints', [BusinessComplaintController::class, 'store'])->whereUlid('business')->name('complaints.store');
+    Route::post('{business}/complaints/{complaint}/messages', [BusinessComplaintController::class, 'reply'])->whereUlid(['business', 'complaint'])
+        ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
+    Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.notices.')->group(function (): void {
+    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->name('index');
+    Route::post('{business}/notices/read-all', [BusinessNoticesController::class, 'readAll'])->whereUlid('business')->name('read_all');
+    Route::post('{business}/notices/{notice}/read', [BusinessNoticesController::class, 'read'])->whereUlid(['business', 'notice'])->name('read');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');
     Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
+    Route::post('{business}/wallet/withdrawals', [BusinessWalletController::class, 'withdraw'])->whereUlid('business')->name('withdraw');
     Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
 
@@ -253,6 +310,16 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/dashboard', StaffDashboardController::class)->name('staff.dashboard');
     Route::get('admin/staff', [StaffDirectoryController::class, 'index'])->name('staff.staff.index');
     Route::get('admin/activity', [StaffActivityController::class, 'index'])->name('staff.events.index');
+    Route::get('admin/reconciliation', StaffReconciliationController::class)->name('staff.reconciliation.index');
+    Route::get('admin/messaging/history', StaffMessagingController::class)->name('staff.messaging.index');
+    Route::get('admin/ledger', StaffLedgerController::class)->name('staff.ledger.index');
+    Route::get('admin/exceptions', StaffExceptionsController::class)->name('staff.exceptions.index');
+    Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
+    Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
+    Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
+    Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
+    Route::get('admin/system-health', StaffSystemHealthController::class)->name('staff.system-health.index');
+    Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {

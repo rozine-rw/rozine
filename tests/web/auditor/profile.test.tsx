@@ -9,11 +9,18 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AuditorProfile from '@/pages/auditor/profile';
 import type { Accreditation, AuditorProfileProps } from '@/types/auditor';
 import availabilityFixture from '../../../resources/fixtures/ui/auditor-profile-availability.json';
+import contactFixture from '../../../resources/fixtures/ui/auditor-profile-contact.json';
+import earningsFixture from '../../../resources/fixtures/ui/auditor-profile-earnings.json';
 import expiredFixture from '../../../resources/fixtures/ui/auditor-profile-expired.json';
 import firstTimePendingFixture from '../../../resources/fixtures/ui/auditor-profile-first-time-pending.json';
 import firstTimeFixture from '../../../resources/fixtures/ui/auditor-profile-first-time.json';
+import learnFixture from '../../../resources/fixtures/ui/auditor-profile-learn.json';
+import legalFixture from '../../../resources/fixtures/ui/auditor-profile-legal.json';
 import pausedFixture from '../../../resources/fixtures/ui/auditor-profile-paused.json';
+import payoutFixture from '../../../resources/fixtures/ui/auditor-profile-payout.json';
 import pendingFixture from '../../../resources/fixtures/ui/auditor-profile-pending.json';
+import securityFixture from '../../../resources/fixtures/ui/auditor-profile-security.json';
+import telemetryFixture from '../../../resources/fixtures/ui/auditor-profile-telemetry.json';
 import profileFixture from '../../../resources/fixtures/ui/auditor-profile.json';
 import { renderWithUser } from '../helpers/render-with-user';
 import { answers, inertia, invalid, operation } from './inertia';
@@ -44,6 +51,21 @@ describe('Auditor Profile', () => {
             name: 'Profile sections',
         });
 
+        expect(
+            within(menu)
+                .getAllByRole('link')
+                .map((link) => link.textContent?.replace('›', '')),
+        ).toEqual([
+            'Earnings',
+            'Personal & contact',
+            'Accreditation',
+            'Payout bank account',
+            'Availability & coverage',
+            'Audit-the-Auditor telemetry',
+            'Security & devices',
+            'Auditor Academy',
+            'Terms & legal',
+        ]);
         expect(
             within(menu).getByRole('link', { name: /Accreditation/ }),
         ).toHaveAttribute('aria-current', 'page');
@@ -523,4 +545,104 @@ describe('Auditor Profile', () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it("shows the partner's own email and leaves what is not held as not provided", () => {
+        render(<AuditorProfile {...props(contactFixture)} />);
+
+        expect(
+            screen.getAllByRole('term').map((term) => term.textContent),
+        ).toEqual(['Phone', 'Email', 'Address', 'District of operation']);
+        expect(
+            screen.getAllByRole('definition').map((value) => value.textContent),
+        ).toEqual([
+            'Not provided',
+            'diane.uwase@uwaseco.rw',
+            'Not provided',
+            'Not provided',
+        ]);
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('measures on-time closing and the jobs done, and dashes what is not measured', () => {
+        const { unmount } = render(
+            <AuditorProfile {...props(telemetryFixture)} />,
+        );
+        const rows = screen.getAllByRole('listitem');
+
+        expect(rows).toHaveLength(6);
+        expect(rows[2]).toHaveTextContent('On-time closing');
+        expect(rows[2]).toHaveTextContent('9 jobs completed');
+        expect(rows[2]).toHaveTextContent('96%');
+        expect(rows[0]).toHaveTextContent('Clock expiries');
+        expect(rows[0]).toHaveTextContent('—');
+        expect(
+            screen.queryByRole('button', { name: /Dispute/u }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        const fresh = props(telemetryFixture);
+
+        fresh.on_time_pct = null;
+        fresh.jobs_done = 1;
+        render(<AuditorProfile {...fresh} />);
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            '1 job completed—',
+        );
+    });
+
+    it('reports two-factor sign-in and opens the security settings', () => {
+        const { unmount } = render(
+            <AuditorProfile {...props(securityFixture)} />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toHaveTextContent('On · authenticator app code at sign-in');
+        expect(
+            screen.getByRole('link', { name: /Change password/u }),
+        ).toHaveAttribute('href', '/preview/auditor-profile-security');
+        unmount();
+
+        const off = props(securityFixture);
+
+        off.security.two_factor = false;
+        render(<AuditorProfile {...off} />);
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toHaveTextContent('Off · add an authenticator app code at sign-in');
+    });
+
+    it.each(['current', 'required', 'unavailable'] as const)(
+        'opens the engagement terms from Terms & legal while they are %s',
+        (status) => {
+            const page = props(legalFixture);
+
+            page.engagement = {
+                status,
+                link: { url: '/preview/auditor-engagement', method: 'get' },
+            };
+            render(<AuditorProfile {...page} />);
+            expect(
+                screen.getByRole('link', { name: /Engagement terms/u }),
+            ).toHaveAttribute('href', '/preview/auditor-engagement');
+        },
+    );
+
+    it.each([
+        [earningsFixture, 'No earnings yet'],
+        [payoutFixture, 'No payout account yet'],
+        [learnFixture, 'Coming to the app soon'],
+        [
+            { props: { ...legalFixture.props, engagement: null } },
+            'Coming to the app soon',
+        ],
+    ])(
+        'shows %#: the design section, empty until there is something to read',
+        (fixture, title) => {
+            render(<AuditorProfile {...props(fixture)} />);
+
+            expect(screen.getByText(title)).toBeInTheDocument();
+            expect(screen.queryByText(/RWF/u)).not.toBeInTheDocument();
+        },
+    );
 });

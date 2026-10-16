@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Tick } from '@/components/auditor/ui';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatMonthYearLong } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,10 @@ export function OutcomeModal({
 }) {
     const { t, locale } = useTranslation();
     const [dismissed, setDismissed] = useState<AuditorOutcome | null>(null);
+    const dialog = useModalDialog<HTMLDivElement>(
+        undefined,
+        outcome !== null && dismissed !== outcome,
+    );
 
     if (outcome === null || dismissed === outcome) {
         return null;
@@ -91,6 +96,8 @@ export function OutcomeModal({
     return (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(8,18,38,.46)] p-5 lg:absolute lg:rounded-r-[20px]">
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="alertdialog"
                 aria-modal="true"
                 aria-labelledby="auditor-outcome-title"

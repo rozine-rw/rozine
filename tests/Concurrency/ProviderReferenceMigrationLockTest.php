@@ -20,13 +20,16 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     $installed = $shape();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
-    $restore = function () use ($migration, $businessDeposits, $businessRepayments): void {
+    $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
+    $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
         $businessDeposits->up();
         $businessRepayments->up();
+        $businessWithdrawals->up();
     };
+    $businessWithdrawals->down();
     $businessRepayments->down();
     $businessDeposits->down();
     $migration->down();

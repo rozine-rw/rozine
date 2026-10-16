@@ -21,6 +21,7 @@ import type {
     UnitRights,
     Units,
 } from './settlement';
+import type { SupportCenter } from './support';
 
 /**
  * Investor app page contracts (Phase 1B, MVP-INVESTOR-SCR-01..05, 08, 10, 11 and the Investor
@@ -71,6 +72,8 @@ export type EvidencePhoto = {
 export type InvestorAppLinks = {
     deals: RouteLink;
     portfolio: RouteLink;
+    market: RouteLink;
+    cart: RouteLink;
     profile: RouteLink;
     wallet: RouteLink;
     notifications: RouteLink;
@@ -446,7 +449,8 @@ export type Concentration =
     | { status: 'concentrated'; business: string; share_pct: number }
     | { status: 'balanced' };
 
-export type PortfolioTab = 'active' | 'matured';
+/** The design's Portfolio tabs; Secondary and Saved have no read yet and open empty. */
+export type PortfolioTab = 'active' | 'matured' | 'secondary' | 'saved';
 
 export type InvestorPortfolioProps = {
     tab: PortfolioTab;
@@ -651,13 +655,21 @@ export type InvestorType = 'individual' | 'institution';
 export type KycState = 'verified' | 'pending' | 'unverified' | 'expired';
 
 /**
- * `automation` (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP
- * (D-61, C-29), so it carries no mandate, tier or outcome data.
+ * The design's profile sub-pages (Investor.dc.html L9933–9941). `plan`, `help`, `terms` and
+ * `privacy` have no approved content yet and show an empty state. `automation`
+ * (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP (D-61, C-29),
+ * so it carries no mandate, tier or outcome data.
  */
 export type ProfileSection =
     | 'overview'
+    | 'personal'
+    | 'plan'
+    | 'security'
     | 'linked'
     | 'statements'
+    | 'help'
+    | 'terms'
+    | 'privacy'
     | 'automation';
 
 export type LinkedAccount = FundingMethod & {
@@ -684,6 +696,24 @@ export type InvestorProfileProps = {
         kyc: KycState;
         member_since: string;
     };
+    /** Read-only. Phone, country and street address are not collected, so they are null. */
+    personal: {
+        name: string;
+        email: string;
+        phone: string | null;
+        id_type: IdDocument | null;
+        /** The approved document's number with all but its last four characters hidden. */
+        id_number: string | null;
+        /** Not collected yet; the page shows it as unknown. */
+        country: string | null;
+        address: null;
+    };
+    security: {
+        two_factor: boolean;
+        /** Whether a new device's sign-in is also e-mailed (the design's Login alerts). */
+        login_alerts: boolean;
+        update_login_alerts: { url: string; method: 'put' };
+    };
     linked: {
         accounts: LinkedAccount[];
         banks: { code: string; name: string }[];
@@ -692,17 +722,28 @@ export type InvestorProfileProps = {
         annual: StatementFile | null;
         monthly: StatementFile[];
     } | null;
+    /**
+     * The Help center's support chat (BRS v2.0 CMP-R03): the Investor's complaints, newest first,
+     * and where a first message opens a new one.
+     */
+    support: SupportCenter;
     /** A destination with no live route yet is null and its row hidden (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
         deals: RouteLink;
         overview: RouteLink;
+        personal: RouteLink;
+        plan: RouteLink;
+        security: RouteLink;
         linked: RouteLink;
         statements: RouteLink;
+        help: RouteLink;
+        terms: RouteLink;
+        privacy: RouteLink;
         /** Present only when the server offers the gated Auto-Deploy explainer. */
         automation?: RouteLink;
         verification: RouteLink | null;
-        terms: RouteLink | null;
-        privacy: RouteLink | null;
+        /** The account's security settings, where the password and two-factor sign-in are managed. */
+        security_settings: RouteLink;
     };
     /** `link_account` is null until linking has a live command; no form is offered then. */
     actions: { link_account: RouteAction | null; logout: RouteAction };
@@ -908,6 +949,8 @@ export type WalletBalances = {
     total: Money;
     breakdown: { available: Money; held: Money; committed: Money };
     pending_deposits: Money;
+    /** Cash held for withdrawals the provider has not yet paid or returned; outside `total`. */
+    pending_withdrawals: Money;
 };
 
 /** Explicitly synthetic and versioned in fixtures; never frozen as live policy (H6). */
@@ -923,6 +966,15 @@ export type DepositRefusal =
     | 'VALIDATION_FAILED'
     | 'DEPOSIT_METHOD_UNVERIFIED'
     | 'POLICY_INPUT_REQUIRED';
+
+/** What a deposit panel offers: the policy, the verified methods and the server's quote. */
+export type DepositFunding = {
+    kind: 'deposit' | null;
+    policy: DepositPolicy | null;
+    methods: FundingMethod[];
+    picks: Money[];
+    quote: DepositQuote | null;
+};
 
 export type DepositQuote = {
     amount: Money;
@@ -949,6 +1001,49 @@ export type DepositIntent = {
     link: RouteLink;
 };
 
+/** The withdrawal rule (BRS LED-R04): RWF 1,000 to 2,000,000, no Rozine fee, the provider's charge shown first. */
+export type WithdrawalTerms = {
+    version: string;
+    minimum: Money;
+    maximum: Money;
+    charge: Money;
+    /** The server's reading of an entered amount; null until one is entered. */
+    quote: WithdrawalQuote | null;
+};
+
+export type WithdrawalRefusal =
+    | 'VALIDATION_FAILED'
+    | 'INSUFFICIENT_AVAILABLE_FUNDS'
+    | 'WITHDRAWAL_METHOD_UNVERIFIED';
+
+export type WithdrawalQuote = {
+    amount: Money;
+    charge: Money;
+    /** What reaches the account: the amount less the provider's charge. */
+    received: Money;
+    refusal: WithdrawalRefusal | null;
+};
+
+/**
+ * A recorded withdrawal. Its amount left the available balance when it was recorded; a verified
+ * success pays it out and a verified failure returns it, adding `settled_receipt` either way.
+ */
+export type WalletWithdrawal = {
+    id: string;
+    request_id: string;
+    amount: Money;
+    charge: Money;
+    received: Money;
+    method: FundingMethod;
+    created_at: string;
+    state: ProviderOutcomeState;
+    /** WITHDRAWAL_RECORDED, immutable. */
+    request_receipt: Receipt;
+    /** WITHDRAWAL_PAID or WITHDRAWAL_RETURNED, once a verified outcome ended it. */
+    settled_receipt: Receipt | null;
+    link: RouteLink;
+};
+
 /** A live checkout reservation holding wallet cash. */
 export type CheckoutHold = {
     reservation_id: string;
@@ -964,7 +1059,7 @@ export type WalletEntry =
     | {
           id: string;
           movement: 'external';
-          kind: 'deposit';
+          kind: 'deposit' | 'withdrawal';
           direction: 'in' | 'out';
           amount: Money;
           counterparty: string;
@@ -993,6 +1088,9 @@ export type WalletMovement = WalletEntry['movement'];
 export type C3InvestorShellLinks = {
     deals: RouteLink | null;
     portfolio: RouteLink | null;
+    /** Web only: the Market and Cart pages have no bearer-transport read. */
+    market: RouteLink | null;
+    cart: RouteLink | null;
     profile: RouteLink | null;
     /** Null before the identity is verified: there is no wallet yet. */
     wallet: RouteLink | null;
@@ -1000,45 +1098,58 @@ export type C3InvestorShellLinks = {
     launcher: RouteLink;
 };
 
+/** A web Investor page with no facts of its own yet (Market, Cart): the app frame's links only. */
+export type InvestorShellPageProps = {
+    identity_context_revision: number;
+    links: C3InvestorShellLinks;
+};
+
 export type C3InvestorWalletProps = InvestorPageContract & {
     wallet: WalletBalances;
     holds: CheckoutHold[];
     /**
-     * Deposit only: withdrawal stays hidden until it has its own contract (H6). A null `policy`
-     * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+     * A null `policy` means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+     * A null `withdrawal` means no payout provider is available here, so withdrawal is not offered.
      */
-    funding: {
-        kind: 'deposit' | null;
-        policy: DepositPolicy | null;
-        methods: FundingMethod[];
-        picks: Money[];
-        quote: DepositQuote | null;
+    funding: Omit<DepositFunding, 'kind'> & {
+        kind: 'deposit' | 'withdraw' | null;
+        withdrawal: WithdrawalTerms | null;
     };
     /** Pending and unknown first. */
     deposits: DepositIntent[];
+    /** Unsettled first. */
+    withdrawals: WalletWithdrawal[];
     history: {
         movement: WalletMovement;
         filters: { key: WalletMovement; active: boolean; link: RouteLink }[];
         items: WalletEntry[];
         pagination: Pagination;
     };
-    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
-    receipt: (WalletEntry & { receipt: Receipt }) | DepositIntent | null;
+    /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
+    receipt:
+        | (WalletEntry & { receipt: Receipt })
+        | DepositIntent
+        | WalletWithdrawal
+        | null;
     /** C4 and Phase 2. */
     earnings: null;
-    exports: null;
+    /** The statement downloads; null where no statement is served (previews). */
+    exports: { csv: RouteLink; pdf: RouteLink } | null;
     links: C3InvestorShellLinks & {
         close: RouteLink;
         deposit: RouteLink;
+        withdraw: RouteLink;
         /** Null until linking an account has a live route; the prompt then names no destination. */
         link_account: RouteLink | null;
         /** The operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
+        /** The withdrawal operation lookup, with the same token. */
+        withdraw_operation: RouteLink;
         /** The change beacon (S4-E), with its render-time cursor; null in previews. */
         changes?: RouteLink | null;
     };
-    actions: { deposit: RouteAction };
-    preview_outcome?: C3PreviewOutcome<'wallet.deposit'>;
+    actions: { deposit: RouteAction; withdraw: RouteAction };
+    preview_outcome?: C3PreviewOutcome<'wallet.deposit' | 'wallet.withdraw'>;
 };
 
 /* Deals and deal detail (v2 §2b) ---------------------------------------------------------- */
@@ -1277,6 +1388,145 @@ export type Commitment = {
     link: RouteLink;
 };
 
+/**
+ * The five risk statements an Investor ticks before a first investment (BRS v2.0 KYC-R05). The
+ * server's exact wording is shown, because the acknowledgement binds its version and digest.
+ * `action` is null once they are acknowledged.
+ */
+export type InvestorRiskStatements = {
+    version: string;
+    statements_sha256: string;
+    statements: { key: string; text: string }[];
+    acknowledged: boolean;
+    action: RouteAction | null;
+};
+
+/**
+ * One in-app notice (BRS v2.0 NTF-R01), recorded from one event. The client words it from its
+ * catalogs by `kind`; `link` opens the screen that already holds the record, and `read_action`
+ * marks it read (null once read).
+ */
+export type InvestorNotice = {
+    id: string;
+    created_at: string;
+    read: boolean;
+    /** Null where this transport has no screen for the kind. */
+    link: RouteLink | null;
+    read_action: RouteAction | null;
+} & (
+    | { kind: 'wallet.deposit_received'; facts: Money }
+    | {
+          kind: 'wallet.withdrawal_sent';
+          facts: Money & { account: string; received: string };
+      }
+    | { kind: 'wallet.withdrawal_returned'; facts: Money & { account: string } }
+    | { kind: 'primary.refunded'; facts: Money & { business: string } }
+    | {
+          kind: 'primary.raise_funded';
+          facts: Money & { business: string; title: string; units: string };
+      }
+    | {
+          kind: 'primary.holding_issued';
+          facts: Money & {
+              business: string;
+              units: string;
+              expected_return: string;
+              maturity_value: string;
+              maturity_date: string;
+          };
+      }
+    | {
+          kind: 'primary.report_published';
+          facts: { business: string; period: string; partner: string };
+      }
+    | { kind: 'verification.approved'; facts: never[] }
+    | { kind: 'security.password_changed'; facts: never[] }
+    | { kind: 'security.new_device'; facts: { device: string } }
+    | {
+          kind:
+              | 'security.payout_account_linked'
+              | 'security.payout_account_unlinked';
+          facts: { account: string };
+      }
+    | { kind: 'verification.rejected'; facts: { reason: string } }
+    | { kind: 'business.deposit_received'; facts: Money }
+    | {
+          kind: 'business.application_approved';
+          facts: Money & { title: string; term_months: string };
+      }
+    | {
+          kind: 'business.withdrawal_sent';
+          facts: Money & { account: string; received: string };
+      }
+    | {
+          kind: 'business.withdrawal_returned';
+          facts: Money & { account: string };
+      }
+    | {
+          kind: 'auditor.accreditation_approved';
+          facts: { licence: string; expires_on: string };
+      }
+    | { kind: 'auditor.accreditation_rejected'; facts: { reason: string } }
+    | {
+          kind: 'auditor.accreditation_renewal_due';
+          facts: { licence: string; expires_on: string };
+      }
+    | {
+          kind: 'support.complaint_answered' | 'support.complaint_resolved';
+          facts: { reference: string };
+      }
+    | {
+          kind: 'auditor.job_offered';
+          facts: {
+              type: 'flash' | 'routine';
+              business: string;
+              location: string;
+              accept_by: string;
+          };
+      }
+    | {
+          kind: 'business.report_sealed';
+          facts: {
+              auditor: string;
+              period: string | null;
+              due_at: string | null;
+          };
+      }
+    | {
+          kind: 'business.report_review_closing';
+          facts: { due_at: string };
+      }
+    | {
+          kind: 'business.raise_funded';
+          facts: {
+              currency: 'RWF';
+              title: string;
+              principal: string;
+              investors: string;
+          };
+      }
+    | {
+          kind: 'business.disbursement_sent';
+          facts: Money & { title: string; account: string };
+      }
+    | {
+          kind: 'business.raise_expired';
+          facts: {
+              currency: 'RWF';
+              title: string;
+              target: string;
+              committed: string;
+          };
+      }
+);
+
+/** The account's newest notices behind the bell, with the unread count. */
+export type InvestorNotices = {
+    unread: number;
+    notices: InvestorNotice[];
+    actions: { read_all: RouteAction | null };
+};
+
 export type C3InvestorCheckoutProps = InvestorPageContract & {
     deal: Pick<
         C3DealCard,
@@ -1299,6 +1549,8 @@ export type C3InvestorCheckoutProps = InvestorPageContract & {
     reservation: Reservation | null;
     commitment: Commitment | null;
     refusal: { code: string; status: number } | null;
+    /** Null before identity verification; absent from the preview fixtures. */
+    risks?: InvestorRiskStatements | null;
     home: C3InvestorDealsProps | null;
     /**
      * The app links travel with the page, not only with `home`, so the shell keeps its navigation
@@ -1331,6 +1583,8 @@ export type C3InvestorCommitmentProps = InvestorPageContract & {
     links: C3InvestorShellLinks & {
         close: RouteLink;
         operation: RouteLink | null;
+        /** The change beacon for the Investor's purchases, with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
     };
     preview_outcome?: C3PreviewOutcome<'primary.cancel'>;
 };
@@ -1386,7 +1640,11 @@ export type CommitmentSummary = Pick<
 export type C3InvestorPortfolioProps = Omit<InvestorPortfolioProps, 'links'> &
     InvestorPageContract & {
         commitments: CommitmentSummary[];
-        links: C3InvestorShellLinks & { deals: RouteLink };
+        links: C3InvestorShellLinks & {
+            deals: RouteLink;
+            /** The change beacon for purchases and the wallet, with its render-time cursor; null in previews. */
+            changes?: RouteLink | null;
+        };
     };
 
 /** Servicing fields keep their C3 empty states; they are C4 facts. */
@@ -1397,7 +1655,11 @@ export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
 
 export type C3InvestorHoldingProps = InvestorPageContract & {
     holding: C3HoldingDetail;
-    links: InvestorAppLinks & { back: RouteLink };
+    links: InvestorAppLinks & {
+        back: RouteLink;
+        /** The change beacon for the Investor's purchases, with its render-time cursor; null in previews. */
+        changes?: RouteLink | null;
+    };
 };
 
 /* ------------------------------------------------------------------------------------------ */

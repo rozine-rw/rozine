@@ -21,16 +21,37 @@
             "pending_deposits": {
                 "currency": "RWF",
                 "amount": "0"
+            },
+            "pending_withdrawals": {
+                "currency": "RWF",
+                "amount": "0"
             }
         },
         "funding": {
             "kind": null,
             "policy": null,
+            "withdrawal": {
+                "version": "LED-R04/2026-10",
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "2000000"
+                },
+                "charge": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "quote": null
+            },
             "methods": [],
             "picks": [],
             "quote": null
         },
         "deposits": [],
+        "withdrawals": [],
         "history": {
             "movement": "external",
             "filters": [],
@@ -51,6 +72,7 @@
                 "method": "get"
             },
             "reports": null,
+            "market": null,
             "profile": null
         },
         "links": {
@@ -62,8 +84,16 @@
                 "url": "/preview/business-wallet-live-minimal",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/preview/business-wallet-withdraw",
+                "method": "get"
+            },
             "operation": {
                 "url": "/preview/business-wallet-operation-{request_id}",
+                "method": "get"
+            },
+            "withdrawal_operation": {
+                "url": "/preview/business-wallet-withdraw-operation-{request_id}",
                 "method": "get"
             },
             "repayments": null
@@ -71,6 +101,10 @@
         "actions": {
             "deposit": {
                 "url": "/preview/business-wallet-live-minimal",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/business-wallet-withdraw-pending",
                 "method": "post"
             }
         }

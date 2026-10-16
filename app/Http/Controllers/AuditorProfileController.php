@@ -51,10 +51,13 @@ class AuditorProfileController extends Controller
             // The certificate on record is linked only when both reads saw the same revision.
             'certificate_id' => $record['revision'] === $facts['accreditation']['revision'] ? $record['state']['certificate_id'] : null,
             'name' => (string) $request->user()?->getAttribute('name'),
+            'email' => (string) $request->user()?->getAttribute('email'),
+            'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'section' => is_string($section) ? $section : '',
             'engagement' => $this->engagements->handle($userId, $revision),
             'jobs' => $jobs->handle($userId, $revision),
             'filed' => $reports->handle($userId, $revision, limit: 0)['counts']['all'],
+            'on_time_pct' => $reports->trackRecord($userId, $revision)['on_time_pct'],
         ]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile', $resource->resolve($request));

@@ -63,7 +63,7 @@ it('takes the seeded draft through application submission, auditor sealing and B
         $run('business', ['open', $base.'/login']);
         $run('business', ['run-code', 'async (page) => {
             '.$login('business-draft').'
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL("**/business/*");
             await page.goto('.json_encode($base.$case['business_path']).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
             await page.getByRole("heading", {name:"Review & sign", exact:true}).waitFor();
@@ -85,7 +85,7 @@ it('takes the seeded draft through application submission, auditor sealing and B
         $run('auditor', ['run-code', 'async (page) => {
             await page.locator("input[name=code]").fill('.json_encode($loginCode).');
             await page.getByRole("button", {name:"Continue", exact:true}).click();
-            await page.waitForURL("**/dashboard");
+            await page.waitForURL("**/auditor");
             await page.setViewportSize({width:390, height:844});
             await page.goto('.json_encode($base.$case['auditor_path']).');
             await page.getByRole("button", {name:"Start the audit", exact:true}).click();

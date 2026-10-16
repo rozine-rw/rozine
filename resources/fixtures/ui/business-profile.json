@@ -41,6 +41,47 @@
             "signatories_required": 2
         },
         "registration": null,
+        "team": [
+            {
+                "name": "Robert Mugisha",
+                "roles": ["controller", "owner", "signatory"],
+                "permissions": [
+                    "application.create",
+                    "application.evaluate",
+                    "application.save",
+                    "application.sign",
+                    "business.view",
+                    "business.wallet.deposit",
+                    "report.cosign",
+                    "repayment.pay"
+                ],
+                "signatory": true
+            },
+            {
+                "name": "Aline Uwase",
+                "roles": ["director", "signatory"],
+                "permissions": [
+                    "application.sign",
+                    "business.view",
+                    "report.cosign"
+                ],
+                "signatory": true
+            },
+            {
+                "name": "Eric Habimana",
+                "roles": ["representative"],
+                "permissions": ["business.view"],
+                "signatory": false
+            }
+        ],
+        "security": {
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/business-profile-security",
+                "method": "put"
+            }
+        },
         "provinces": [
             {
                 "value": "kigali",
@@ -131,6 +172,13 @@
         ],
         "linked": null,
         "legal": null,
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",
@@ -138,6 +186,10 @@
             },
             "reports": {
                 "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
                 "method": "get"
             },
             "profile": {
@@ -157,8 +209,20 @@
                     "url": "/preview/business-profile-company",
                     "method": "get"
                 },
+                "security": {
+                    "url": "/preview/business-profile-security",
+                    "method": "get"
+                },
+                "permissions": {
+                    "url": "/preview/business-profile-permissions",
+                    "method": "get"
+                },
                 "linked": {
                     "url": "/preview/business-profile-linked",
+                    "method": "get"
+                },
+                "support": {
+                    "url": "/preview/business-profile-support",
                     "method": "get"
                 },
                 "terms": {
@@ -169,6 +233,10 @@
                     "url": "/preview/business-profile-privacy",
                     "method": "get"
                 }
+            },
+            "security_settings": {
+                "url": "/preview/business-profile-security",
+                "method": "get"
             },
             "sign_out": {
                 "url": "/logout",

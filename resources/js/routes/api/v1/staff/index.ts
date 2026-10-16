@@ -7,10 +7,19 @@ import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
 import events from './events'
+import reconciliation from './reconciliation'
+import messaging from './messaging'
+import ledger from './ledger'
+import exceptions from './exceptions'
+import primaryMarket from './primary-market'
+import payments from './payments'
+import coverage from './coverage'
+import complaints from './complaints'
+import systemHealth from './system-health'
 import investorVerifications from './investor-verifications'
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 export const dashboard = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,7 +34,7 @@ dashboard.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.url = (options?: RouteQueryOptions) => {
@@ -34,7 +43,7 @@ dashboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -44,7 +53,7 @@ dashboard.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -54,7 +63,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,7 +73,7 @@ const dashboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> 
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +83,7 @@ dashboardForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\StaffDashboardController::__invoke
-* @see app/Http/Controllers/StaffDashboardController.php:21
+* @see app/Http/Controllers/StaffDashboardController.php:24
 * @route '/api/v1/staff/dashboard'
 */
 dashboardForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,6 +108,15 @@ const staffNamespace = {
     dashboard: Object.assign(dashboard, dashboard),
     staff: Object.assign(staff, staff),
     events: Object.assign(events, events),
+    reconciliation: Object.assign(reconciliation, reconciliation),
+    messaging: Object.assign(messaging, messaging),
+    ledger: Object.assign(ledger, ledger),
+    exceptions: Object.assign(exceptions, exceptions),
+    primaryMarket: Object.assign(primaryMarket, primaryMarket),
+    payments: Object.assign(payments, payments),
+    coverage: Object.assign(coverage, coverage),
+    complaints: Object.assign(complaints, complaints),
+    systemHealth: Object.assign(systemHealth, systemHealth),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
 }
 

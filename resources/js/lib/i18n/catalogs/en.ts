@@ -30,6 +30,10 @@ const en = {
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.verification_required.title':
+        'Identity verification required',
+    'identity.denied.verification_required.body':
+        'Your identity needs to be verified before you can open this page. Choose an app to continue.',
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
@@ -166,7 +170,27 @@ const en = {
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
     'business.nav.reports': 'Reports',
+    'business.nav.market': 'Market',
     'business.nav.profile': 'Profile',
+    'business.market.title': 'Market Overview',
+    'business.market.subtitle':
+        'How your notes are performing on the secondary market.',
+    'business.market.tile.demand': 'DEMAND',
+    'business.market.tile.price': 'AVG SECONDARY PRICE',
+    'business.market.tile.volume': 'VOLUME (7D)',
+    'business.market.tile.liquidity': 'LIQUIDITY SCORE',
+    'business.market.chart': 'Secondary price',
+    'business.market.range': 'Price range',
+    'business.market.range_7d': '7D',
+    'business.market.range_14d': '14D',
+    'business.market.range_30d': '30D',
+    'business.market.chart_empty': 'No secondary trades yet.',
+    'business.market.high': 'PERIOD HIGH',
+    'business.market.low': 'PERIOD LOW',
+    'business.market.notes': 'Your notes on the market',
+    'business.market.notes_empty_title': 'None of your notes trade yet',
+    'business.market.notes_empty_body':
+        'Notes investors resell before maturity will show here with their price.',
     'business.home.head_title': 'Home',
     'business.home.wallet_balance': 'Wallet balance',
     'business.home.deposit': 'Deposit',
@@ -396,6 +420,7 @@ const en = {
     'business.apply.submitted.stage.approved': 'Approved',
     'business.apply.submitted.stage.published': 'Published',
     'business.apply.submitted.back_home': 'Back to Home',
+    'app.skip_to_content': 'Skip to content',
     'app.sheet.close': 'Close',
     'business.publish.title': 'Publish to the Investor feed',
     'business.publish.body_fee':
@@ -627,6 +652,116 @@ const en = {
     'business.profile.section.linked': 'Linked accounts',
     'business.profile.section.terms': 'Terms & Conditions',
     'business.profile.section.privacy': 'Privacy Note',
+    'business.profile.section.security': 'Security center',
+    'business.profile.section.permissions': 'Permissions & roles',
+    'business.profile.section.support': 'Support center',
+    'business.profile.security.two_factor': 'Two-factor authentication',
+    'business.profile.security.two_factor_on':
+        'On · authenticator app code at sign-in',
+    'business.profile.security.login_alerts': 'Sign-in alerts',
+    'business.profile.security.login_alerts_hint': 'Email on new device',
+    'business.profile.security.two_factor_off':
+        'Off · add an authenticator app code at sign-in',
+    'business.profile.security.password': 'Change password',
+    'business.profile.permissions.none': 'No permissions on this business',
+    'business.profile.permissions.business.view': 'View the business',
+    'business.profile.permissions.application.create': 'Start raises',
+    'business.profile.permissions.application.save': 'Edit applications',
+    'business.profile.permissions.application.evaluate': 'Check eligibility',
+    'business.profile.permissions.application.sign': 'Sign applications',
+    'business.profile.permissions.report.cosign': 'Co-sign reports',
+    'business.profile.permissions.business.wallet.deposit': 'Top up the wallet',
+    'business.profile.permissions.business.wallet.withdraw':
+        'Withdraw from the wallet',
+    'business.profile.permissions.repayment.pay': 'Pay repayments',
+    'business.profile.permissions.business.profile.update':
+        'Edit company information',
+    'business.profile.pending.linked_title': 'No payout account yet',
+    'business.profile.pending.linked_body':
+        'Payout accounts linked to this business will show here.',
+    'business.help.intro':
+        'Answers to the questions businesses ask most. Tap any card to read the full answer.',
+    'business.help.group.start': 'Getting started',
+    'business.help.group.capacity': 'Capacity & pricing',
+    'business.help.group.raise': 'Raising a note',
+    'business.help.group.repay': 'Repayments',
+    'business.help.group.reports': 'Reporting & your rating',
+    'business.help.group.fees': 'Fees & funds',
+    'business.help.group.investors': 'Investors & secondary market',
+    'business.help.group.account': 'Account & support',
+    'business.help.start.what.q':
+        'What is Rozine and how does it help my business?',
+    'business.help.start.what.a':
+        'Rozine lets verified Rwandan businesses borrow from many investors through a note. You raise RWF 3,000,000 to 100,000,000 for 3 to 6 months and repay it in equal monthly instalments of principal and a fixed return.\n\nYou give up no ownership in your company. Each investor is owed in proportion to the units they hold.',
+    'business.help.start.eligible.q': 'Which businesses can raise?',
+    'business.help.start.eligible.a':
+        'A Rwandan-registered business with verified annual revenue of at least RWF 30,000,000 and 36 months of bank and mobile money statements. A repeat issuer that repaid its last Rozine note on time needs 12 months.\n\nYour rating must be at least 2.0, and an Audit Partner must visit your premises and seal a baseline report before your raise can list.',
+    'business.help.start.documents.q': 'What do I need to apply?',
+    'business.help.start.documents.a':
+        'Your registration details and your bank and mobile money statements, uploaded in the app. The app tells you if anything else is needed.\n\nThere is no application fee during the sandbox.',
+    'business.help.capacity.how.q': 'How is the size of my note decided?',
+    'business.help.capacity.how.a':
+        'Rozine works out the cash your business has left each month after operating costs, owner drawings and other debt payments, and sizes the note so that this cash covers the monthly instalment 1.5 times. A business that would cover it less than 1.25 times is not offered a note.\n\nA note is never more than 35% of your verified annual revenue, and is between RWF 3,000,000 and 100,000,000.',
+    'business.help.capacity.rate.q': 'What return will I pay?',
+    'business.help.capacity.rate.a':
+        'A total return of 10.0% to 15.0% of principal for the whole term, set by your rating, with a small premium for longer terms. It is fixed when the raise opens.\n\nA later change in your rating never changes the terms of a note already issued.',
+    'business.help.capacity.more.q': 'Can I raise more than I am offered?',
+    'business.help.capacity.more.a':
+        'No. A raise cannot be larger than the size Rozine calculates from your verified figures.\n\nRepaying on time and keeping your monthly verification on track are what improve your next offer.',
+    'business.help.raise.time.q': 'How long does a raise stay open?',
+    'business.help.raise.time.a':
+        'A raise is open to investors for 30 days, or until it is fully funded. Investors buy units of RWF 5,000, and no investor can hold more than half of your raise.\n\nYou can follow how much is committed in the app at any time.',
+    'business.help.raise.unfunded.q':
+        'What happens if my raise is not fully funded?',
+    'business.help.raise.unfunded.a':
+        'If the raise does not reach 100% within 30 days, it expires and every investor is refunded in full. Nothing is paid out and nothing is owed.\n\nYou can apply again later.',
+    'business.help.raise.schedule.q': 'When do I know my repayment schedule?',
+    'business.help.raise.schedule.a':
+        'Before anyone commits. The instalment is the principal plus the total return, divided by the number of months. The first instalment is due one month after the money is paid out, and each later one on the same day of the following month.\n\nFor example, RWF 12,000,000 at 11.1% for 6 months means 13,332,000 in total, or 2,222,000 a month.',
+    'business.help.repay.how.q': 'How do I make a repayment?',
+    'business.help.repay.how.a':
+        "Keep the instalment in your Rozine business wallet. At 23:59 on the due date it is collected and shared among the note's holders automatically.\n\nAdd money to the wallet from a bank or mobile money account in your business's name.",
+    'business.help.repay.early.q': 'Can I repay early?',
+    'business.help.repay.early.a':
+        'Yes. You can repay the whole remaining balance at any time, and the note then ends.\n\nThe return you agreed is not reduced: investors receive exactly the scheduled amounts still owed.',
+    'business.help.repay.late.q': 'What happens if I pay late?',
+    'business.help.repay.late.a':
+        'Whatever is in your wallet at the due date is collected, and anything that arrives later is collected straight away. A late charge of 5% of the unpaid amount is added at the due date, day 7 and day 30, capped at 15% of the instalment; all of it goes to your investors.\n\nIf the arrears are not cleared by day 31, the note is in default and recovery begins. Talk to us early if you expect a problem.',
+    'business.help.reports.monthly.q':
+        'How does the monthly verification work?',
+    'business.help.reports.monthly.a':
+        "Every month while your note is outstanding, you provide the month's statements and records, your Audit Partner checks them in person at your premises, and seals a report that is published to your investors before payment day.\n\nYou are told when a sealed report is waiting for you.",
+    'business.help.reports.rating.q': 'How is my Rozine rating set?',
+    'business.help.reports.rating.a':
+        'Your rating is one score out of 5.0, shown as Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0). It is recomputed with every sealed monthly report and published to your holders.\n\nPaying on time and keeping your records ready for each visit help it most.',
+    'business.help.reports.dispute.q': 'What if I disagree with a report?',
+    'business.help.reports.dispute.a':
+        'You have 24 hours from delivery to dispute a sealed report, with supporting text or up to five proof files. While a dispute is open, your note pauses on the market.\n\nIf you do not dispute it in time, the report is published.',
+    'business.help.fees.fees.q': 'What fees does Rozine charge?',
+    'business.help.fees.fees.a':
+        "Every fee is shown in RWF before you confirm, with the amount you will receive and the amount you will repay.\n\nThe return you pay is calculated on the full principal. Withdrawals carry no Rozine fee; the provider's own charge is shown first.",
+    'business.help.fees.funds.q': 'When do I receive the money raised?',
+    'business.help.fees.funds.a':
+        "Once your raise reaches 100%, the money is paid out to your business and your repayment schedule starts.\n\nYou are notified when the money is sent, and can withdraw it to a verified account in your business's name.",
+    'business.help.investors.who.q': 'Who funds my raise?',
+    'business.help.investors.who.a':
+        'Verified investors on Rozine, each holding units of RWF 5,000 in your note.\n\nYou do not deal with them one by one: Rozine shares each payment among them and publishes your sealed reports to them.',
+    'business.help.investors.secondary.q':
+        'Does the secondary market affect me?',
+    'business.help.investors.secondary.a':
+        'When the secondary market opens, investors will be able to sell units of your note to each other. That never changes what you owe or when.\n\nWhile your note is late, in default or disputed, its units cannot be traded.',
+    'business.help.account.team.q': 'Who can act for my business?',
+    'business.help.account.team.a':
+        'Profile > Permissions & roles shows each person on your account and what they may do.\n\nAdd an authenticator app under Security center so every sign-in needs a code.',
+    'business.help.account.complain.q': 'How do I make a complaint?',
+    'business.help.account.complain.a':
+        'Message us from this support center. Your complaint gets a reference number; we acknowledge it within 4 hours and aim to resolve it within 48 hours.\n\nYou can take a complaint to the Capital Market Authority at any stage.',
+    'business.profile.pending.terms_title': 'Coming to the app soon',
+    'business.profile.pending.terms_body':
+        'The Terms & Conditions will be readable here once they are published.',
+    'business.profile.pending.privacy_title': 'Coming to the app soon',
+    'business.profile.pending.privacy_body':
+        'The Privacy Note will be readable here once it is published.',
     'business.profile.sign_out': 'Sign out',
     'business.profile.back': 'Back to Profile',
     'business.profile.company.name': 'Company name',
@@ -672,6 +807,11 @@ const en = {
     'business.profile.linked.unlink': 'Unlink',
     'business.profile.linked.unlink_named': 'Unlink {name}',
     'business.profile.linked.add': '+ Link a payout account',
+    'business.profile.linked.none':
+        'No account linked yet. Link one to deposit and withdraw.',
+    'business.profile.linked.empty': 'No account linked yet.',
+    'business.profile.linked.footnote':
+        "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
     'business.profile.legal.terms_intro':
         'Please read these Terms carefully. By registering your business, starting a raise or otherwise using Rozine, you agree to be bound by these Terms in full. If you do not agree, you must not use the platform.',
@@ -744,8 +884,7 @@ const en = {
     'admin.section.plus.search': 'Search members by name…',
     'admin.nav.finance': 'Finance',
     'admin.section.finance.title': 'Finance Dashboard',
-    'admin.section.finance.subtitle':
-        'Every revenue stream, the RAMP book and the ledger',
+    'admin.section.finance.subtitle': 'Every revenue stream and the ledger',
     'admin.section.finance.search': 'Search finance entries…',
     'admin.nav.messaging': 'Messaging',
     'admin.section.messaging.title': 'Messaging & Automations',
@@ -770,7 +909,7 @@ const en = {
     'admin.section.system_health.title': 'System Health',
     'admin.section.system_health.subtitle':
         'Signal monitoring across the ecosystem, with recommendations',
-    'admin.section.system_health.search': 'Search services…',
+    'admin.section.system_health.search': 'Search signals by name or status…',
     'admin.nav.engines': 'Engines',
     'admin.section.engines.title': 'Engines',
     'admin.section.engines.subtitle':
@@ -850,6 +989,11 @@ const en = {
     'admin.design.col.points': 'Points',
     'admin.design.col.app': 'App',
     'admin.design.col.status': 'Status',
+    'admin.design.col.assigned_cpa': 'Assigned CPA',
+    'admin.design.col.variance': 'V_total / D',
+    'admin.design.col.signed': 'Auditature',
+    'admin.design.col.period': 'Period',
+    'admin.design.col.audit_partner': 'Audit partner',
     'admin.design.col.features': 'Features',
     'admin.design.col.entity': 'Item',
     'admin.design.col.input': 'Input',
@@ -901,6 +1045,19 @@ const en = {
     'admin.design.risk.distressed.title':
         'Distressed notes · early warning engine',
     'admin.design.risk.distressed.empty': 'No distressed notes to show yet.',
+    'admin.design.reports.kpi.published': 'Audited & published',
+    'admin.design.reports.kpi.awaiting': 'Awaiting audit',
+    'admin.design.reports.kpi.breached': 'SLA breached',
+    'admin.design.reports.kpi.on_time': 'On-time audit rate',
+    'admin.design.reports.field.title': 'Field Flash Audit operations',
+    'admin.design.reports.field.sub':
+        'Every field visit with its CPA, variance, sign-off time and signed findings.',
+    'admin.design.reports.field.empty':
+        'No ISRS 4400 engagements recorded yet.',
+    'admin.design.reports.monthly.title': 'Monthly audit compliance tracker',
+    'admin.design.reports.monthly.sub':
+        'Statements monthly, verified on site by the 7th.',
+    'admin.design.reports.monthly.empty': 'Nothing in this view.',
     'admin.design.compliance.kpi.kyc_completion': 'KYC Completion',
     'admin.design.compliance.kpi.aml_alerts': 'AML Alerts',
     'admin.design.compliance.kpi.sanctions': 'Sanctions Hits',
@@ -952,12 +1109,9 @@ const en = {
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
     'admin.design.finance.tab.streams': 'Revenue streams',
-    'admin.design.finance.tab.ramp': 'RAMP',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
     'admin.design.finance.streams.title': 'Revenue streams',
     'admin.design.finance.streams.empty': 'No revenue to show yet.',
-    'admin.design.finance.ramp.title': 'RAMP',
-    'admin.design.finance.ramp.empty': 'No RAMP positions to show yet.',
     'admin.design.finance.ledger.title': 'Ledger & payouts',
     'admin.design.finance.ledger.empty': 'No ledger entries to show yet.',
     'admin.design.messaging.tab.automations': 'Automations',
@@ -972,6 +1126,32 @@ const en = {
     'admin.design.messaging.campaigns.empty': 'No campaigns to show yet.',
     'admin.design.messaging.history.title': 'History',
     'admin.design.messaging.history.empty': 'No messages to show yet.',
+    'admin.messaging.col.recipient': 'Recipient',
+    'admin.messaging.col.message': 'Message',
+    'admin.messaging.col.category': 'Category',
+    'admin.messaging.col.why': 'Why it went out',
+    'admin.messaging.col.via': 'Via',
+    'admin.messaging.col.when': 'When',
+    'admin.messaging.source.automation': 'Automation',
+    'admin.messaging.status.delivered': 'In the app inbox',
+    'admin.messaging.status.sent': 'Email sent',
+    'admin.messaging.status.failed': 'Email failed',
+    'admin.messaging.channel.in_app': 'In-app',
+    'admin.messaging.channel.mail': 'Email',
+    'admin.messaging.category.onboarding': 'Onboarding',
+    'admin.messaging.category.wallet': 'Wallet',
+    'admin.messaging.category.fundraising': 'Fundraising',
+    'admin.messaging.category.portfolio': 'Portfolio',
+    'admin.messaging.category.reporting': 'Reporting',
+    'admin.messaging.category.security': 'Security',
+    'admin.messaging.category.underwriting': 'Underwriting',
+    'admin.messaging.category.payments': 'Payments',
+    'admin.messaging.category.audits': 'Audits',
+    'admin.messaging.category.support': 'Support',
+    'admin.messaging.category.general': 'General',
+    'admin.messaging.no_match': 'No messages match your search.',
+    'admin.messaging.older': 'Older messages',
+    'admin.messaging.newest': 'Newest messages',
     'admin.design.academies.kpi.completed': 'Lessons completed',
     'admin.design.academies.kpi.live': 'Lessons live',
     'admin.design.academies.kpi.quiz': 'Avg quiz score',
@@ -1229,8 +1409,8 @@ const en = {
     'admin.ledger.kind.contra': 'Contra entry',
     'admin.today.commands': 'Quick commands',
     'admin.today.command.review_queue': 'Review queue',
-    'admin.today.command.release_queue': 'Release queue',
-    'admin.today.command.audit_trail': 'Audit trail',
+    'admin.today.command.audit_desk': 'Audit desk',
+    'admin.today.command.policies': 'Policies',
     'admin.today.kpi.capital_raised': 'Total Capital Raised',
     'admin.today.kpi.capital_raised_trend': 'Across all notes',
     'admin.today.kpi.active_businesses': 'Active Businesses',
@@ -1541,6 +1721,7 @@ const en = {
         'e.g. MTN confirmed reference MM-88213 reversed in full; destination re-verified.',
     'admin.parties.policy_title': 'Business eligibility rules',
     'admin.parties.filter': 'Filter by status',
+    'admin.parties.coverage_link': 'Partner coverage',
     'admin.parties.chip.all': 'All',
     'admin.parties.chip.healthy': 'Healthy',
     'admin.parties.chip.watch': 'Watch',
@@ -1756,6 +1937,8 @@ const en = {
     'admin.ledger.col.credit': 'Credit',
     'admin.ledger.open_named': 'Open entry {id}',
     'admin.ledger.see_all': 'See all {count} entries',
+    'admin.ledger.older': 'Older entries',
+    'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',
     'admin.ledger.fact.from': 'From',
@@ -1763,6 +1946,10 @@ const en = {
     'admin.ledger.fact.reference': 'Reference',
     'admin.ledger.fact.operation': 'Operation',
     'admin.ledger.posted_by': 'Posted by {actor} · {at}',
+    'admin.ledger.origin':
+        'Flow started by {actor} · {at}. Later movements in the same flow keep this origin.',
+    'admin.ledger.origin_none':
+        'No starting operation is recorded for this entry.',
     'admin.ledger.postings': 'Postings',
     'admin.ledger.total': 'Total',
     'admin.ledger.balanced': 'Balanced',
@@ -1815,6 +2002,7 @@ const en = {
     'business.wallet.available': 'Available balance',
     'business.wallet.brand': 'Rozine Wallet',
     'business.wallet.deposit.button': 'Deposit',
+    'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
     'business.wallet.history': 'Transaction history',
     'business.wallet.detail.when': 'Date & time',
@@ -2207,7 +2395,64 @@ const en = {
     'auditor.portfolio.head_title': 'Portfolio',
     'auditor.portfolio.title': 'Portfolio',
     'auditor.portfolio.lead':
-        'Every report you have filed, and the interests you have declared on the files you verify.',
+        'You earn two ways: verification and monitoring on the files you grade, and origination commission on the deals you bring in.',
+    'auditor.portfolio.cpa_card': 'Your CPA card',
+    'auditor.portfolio.cpa_card_sub': 'Proof you are ours',
+    'auditor.portfolio.sourced.title': 'Deals you sourced',
+    'auditor.portfolio.sourced.tag': 'Origination',
+    'auditor.portfolio.sourced.empty':
+        'Deals you bring in earn origination commission from repayments. A different CPA verifies them, so your commission never depends on the grade you would have given.',
+    'auditor.portfolio.earnings.title': 'Verification earned · this month',
+    'auditor.portfolio.earnings.managed': 'Managed deals',
+    'auditor.portfolio.earnings.next_payout': 'Next payout',
+    'auditor.portfolio.yield.title': 'Yield-share',
+    'auditor.portfolio.yield.empty':
+        'Yield-share payouts appear here once they are paid.',
+    'auditor.portfolio.managed.title': 'Managed deals',
+    'auditor.portfolio.managed.empty':
+        "No managed deals yet. Pass a Flash Audit to become a business's account manager.",
+    'auditor.calendar.title': 'Audit calendar',
+    'auditor.calendar.lead': 'Every monthly verification you owe, and when.',
+    'auditor.calendar.previous': 'Previous month',
+    'auditor.calendar.next': 'Next month',
+    'auditor.calendar.legend.soon': 'Due within 5 days',
+    'auditor.calendar.legend.scheduled': 'Scheduled',
+    'auditor.calendar.legend.passed': 'Passed',
+    'auditor.calendar.day_due_one': '1 verification due',
+    'auditor.calendar.day_due_other': '{count} verifications due',
+    'auditor.calendar.close': 'Close',
+    'auditor.calendar.soon_one': '1 verification due within 5 days',
+    'auditor.calendar.soon_other': '{count} verifications due within 5 days',
+    'auditor.calendar.soon_body_one':
+        'File by the due date: {business}, due {date}.',
+    'auditor.calendar.soon_body_other':
+        'File each by its due date. The first is {business}, due {date}.',
+    'auditor.calendar.clear': 'Nothing due in the next five days',
+    'auditor.calendar.clear_next':
+        'You are clear. The next filing is {business} on {date}.',
+    'auditor.calendar.clear_none':
+        'You are clear. The next filing is not scheduled yet.',
+    'auditor.calendar.due_in': 'Due in {month}',
+    'auditor.calendar.count_one': '1 deal',
+    'auditor.calendar.count_other': '{count} deals',
+    'auditor.calendar.empty': 'Nothing due in this month.',
+    'auditor.calendar.partial': 'Some assigned work is not shown here',
+    'auditor.calendar.partial_body':
+        'This calendar shows your latest assignments only. Open Jobs to check every verification you owe.',
+    'auditor.calendar.partial_empty':
+        'Nothing due this month among your latest assignments.',
+    'auditor.calendar.reports_partial':
+        'Only your latest filed reports are shown here, so a month may be missing some.',
+    'auditor.calendar.open_jobs': 'Open Jobs',
+    'auditor.calendar.share': 'Your share',
+    'auditor.calendar.on_time_by': 'On-time by',
+    'auditor.calendar.due_today': 'Due today',
+    'auditor.calendar.in_days_one': 'In 1 day',
+    'auditor.calendar.in_days_other': 'In {count} days',
+    'auditor.calendar.overdue_one': 'Overdue 1 day',
+    'auditor.calendar.overdue_other': 'Overdue {count} days',
+    'auditor.calendar.monthly': 'Monthly verification',
+    'auditor.calendar.filed_on': '{title} · filed {date}',
     'auditor.conflict.title': 'Declare an interest',
     'auditor.conflict.none_assigned':
         'You have no files assigned to verify right now.',
@@ -2224,14 +2469,6 @@ const en = {
     'auditor.conflicts.empty': 'You have not declared any conflicts.',
     'auditor.conflicts.page_empty':
         'Nothing to show on this page. Earlier declarations may follow.',
-    'auditor.reports.title': 'Reports filed',
-    'auditor.reports.count': '{count} total',
-    'auditor.reports.filters': 'Filter reports',
-    'auditor.reports.filter.all': 'All',
-    'auditor.reports.filter.awaiting_cosign': 'Awaiting co-sign',
-    'auditor.reports.filter.published': 'Published',
-    'auditor.reports.filter.late': 'Late',
-    'auditor.reports.filter.rejected': 'Rejected',
     'auditor.reports.status.awaiting_cosign': 'Awaiting co-sign',
     'auditor.reports.status.published': 'Published',
     'auditor.reports.status.late': 'Late',
@@ -2240,18 +2477,70 @@ const en = {
     'auditor.reports.monthly': '{month} report',
     'auditor.reports.late_by': '{title} · filed {days} days late',
     'auditor.reports.district': 'District',
-    'auditor.reports.filed': 'Filed',
-    'auditor.reports.due': 'Due by',
     'auditor.reports.amend': 'Start a linked amendment →',
-    'auditor.reports.empty':
-        'Nothing filed yet. Reports you seal appear here with their co-signature status.',
-    'auditor.reports.empty_filter': 'No reports match this filter.',
-    'auditor.reports.show_all': 'Show all reports',
     'auditor.profile.head_title': 'Profile',
     'auditor.profile.title': 'Profile',
     'auditor.profile.menu': 'Profile sections',
     'auditor.profile.section.accreditation': 'Accreditation',
     'auditor.profile.section.availability': 'Availability & coverage',
+    'auditor.profile.section.earnings': 'Earnings',
+    'auditor.profile.section.contact': 'Personal & contact',
+    'auditor.profile.section.payout': 'Payout bank account',
+    'auditor.profile.section.telemetry': 'Audit-the-Auditor telemetry',
+    'auditor.profile.section.security': 'Security & devices',
+    'auditor.profile.section.learn': 'Auditor Academy',
+    'auditor.profile.section.legal': 'Terms & legal',
+    'auditor.profile.contact.title': 'Personal & contact',
+    'auditor.profile.contact.phone': 'Phone',
+    'auditor.profile.contact.email': 'Email',
+    'auditor.profile.contact.address': 'Address',
+    'auditor.profile.contact.district': 'District of operation',
+    'auditor.profile.contact.not_provided': 'Not provided',
+    'auditor.profile.telemetry.title': 'Audit-the-Auditor telemetry',
+    'auditor.profile.telemetry.clock_expiries': 'Clock expiries',
+    'auditor.profile.telemetry.clock_expiries_sub':
+        'Accepted audits that hit 0:00',
+    'auditor.profile.telemetry.variance': 'Variance accuracy',
+    'auditor.profile.telemetry.variance_sub':
+        'Average gap against the backend analysis',
+    'auditor.profile.telemetry.on_time': 'On-time closing',
+    'auditor.profile.telemetry.jobs_done': {
+        one: '{count} job completed',
+        other: '{count} jobs completed',
+    },
+    'auditor.profile.telemetry.strikes': 'Quality strikes',
+    'auditor.profile.telemetry.strikes_sub': 'Disputes upheld against you',
+    'auditor.profile.telemetry.defended': 'Disputes defended',
+    'auditor.profile.telemetry.defended_sub': 'Desk review confirmed your work',
+    'auditor.profile.telemetry.first_note': 'First-note defaults',
+    'auditor.profile.telemetry.first_note_sub': 'Deals defaulting on note 1',
+    'auditor.profile.telemetry.note':
+        'Rozine monitors partner performance to protect investor capital. A metric shows a dash until it is measured.',
+    'auditor.profile.security.title': 'Security & devices',
+    'auditor.profile.security.two_factor': 'Two-factor authentication',
+    'auditor.profile.security.two_factor_on':
+        'On · authenticator app code at sign-in',
+    'auditor.profile.security.two_factor_off':
+        'Off · add an authenticator app code at sign-in',
+    'auditor.profile.security.password': 'Change password',
+    'auditor.profile.legal.title': 'Terms & legal',
+    'auditor.profile.legal.engagement': 'Engagement terms',
+    'auditor.profile.legal.current':
+        'Accepted · the platform MSA and agreed procedures',
+    'auditor.profile.legal.required': 'Needs your acceptance',
+    'auditor.profile.legal.unavailable': "Can't be read right now",
+    'auditor.profile.pending.earnings_title': 'No earnings yet',
+    'auditor.profile.pending.earnings_body':
+        'Your share of service fees and yield payouts will show here once they accrue.',
+    'auditor.profile.pending.payout_title': 'No payout account yet',
+    'auditor.profile.pending.payout_body':
+        'The bank account your earnings are paid to will show here.',
+    'auditor.profile.pending.learn_title': 'Coming to the app soon',
+    'auditor.profile.pending.learn_body':
+        'Auditor Academy lessons will appear here once they are published.',
+    'auditor.profile.pending.legal_title': 'Coming to the app soon',
+    'auditor.profile.pending.legal_body':
+        'Your engagement terms will be readable here.',
     'auditor.profile.on_time': 'On-time',
     'auditor.profile.jobs': 'Jobs',
     'auditor.profile.since': 'Since',
@@ -2373,6 +2662,14 @@ const en = {
     'business.repayments.total': 'Total',
     'business.repayments.schedule': 'Repayment schedule',
     'business.repayments.late.title': 'If a payment is late',
+    'business.repayments.issued.lede': '{title} · as issued',
+    'business.repayments.issued.principal': 'Principal',
+    'business.repayments.issued.return': 'Return',
+    'business.repayments.issued.total': 'Total to repay',
+    'business.repayments.issued.split':
+        'Principal {principal} · return {return}',
+    'business.repayments.issued.note':
+        'Each instalment is principal plus return, due on the date shown. Payments, late charges and receipts will show here once repayments open.',
     'business.repayments.none.title': 'Nothing to repay yet',
     'business.repayments.none.body':
         'Repayments start once a raise is funded and paid out to you. Its schedule, what is due and every payment will show here.',
@@ -2502,6 +2799,52 @@ const en = {
     'investor.nav.deals': 'Deals',
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
+    'investor.market.order_detail.title': 'Order detail',
+    'investor.market.order_detail.empty_title': 'No order selected',
+    'investor.market.order_detail.empty_body':
+        "Pick an order on the left to see why it has or hasn't filled.",
+    'investor.nav.market': 'Market',
+    'investor.nav.cart': 'Cart',
+    'investor.market.title': 'Market',
+    'investor.market.subtitle': 'Trade active Rozine Notes before maturity.',
+    'investor.market.view.browse': 'Browse',
+    'investor.market.view.orders': 'Orders',
+    'investor.market.view.saved': 'Saved',
+    'investor.market.filter.performance': 'Performance',
+    'investor.market.filter.status': 'Status',
+    'investor.market.filter.industry': 'Industry',
+    'investor.market.performance.all': 'All',
+    'investor.market.performance.most_active': 'Most Active',
+    'investor.market.performance.highest_yield': 'Highest Yield',
+    'investor.market.performance.lowest_risk': 'Lowest Risk',
+    'investor.market.performance.most_liquid': 'Most Liquid',
+    'investor.market.status.all': 'All',
+    'investor.market.status.active': 'Active',
+    'investor.market.status.sold': 'Sold',
+    'investor.market.status.complete': 'Complete',
+    'investor.market.industry.all': 'All',
+    'investor.market.industry.agriculture': 'Agriculture',
+    'investor.market.industry.manufacturing': 'Manufacturing',
+    'investor.market.industry.energy': 'Energy',
+    'investor.market.industry.technology': 'Technology',
+    'investor.market.industry.logistics': 'Logistics',
+    'investor.market.industry.finance': 'Finance',
+    'investor.market.orders.label': 'Orders',
+    'investor.market.orders.buy': 'Buy Orders',
+    'investor.market.orders.sell': 'Sell Orders',
+    'investor.market.orders.completed': 'Completed',
+    'investor.market.orders.cancelled': 'Cancelled',
+    'investor.market.orders.empty': 'No orders in this tab.',
+    'investor.market.browse.empty_title': 'No notes match these filters',
+    'investor.market.browse.empty_body': 'Try adjusting the filters above.',
+    'investor.market.saved.empty_title': 'No saved notes yet',
+    'investor.market.saved.empty_body':
+        'Swipe a note up to save it here for later.',
+    'investor.cart.title': 'Cart',
+    'investor.cart.empty_title': 'Your cart is empty',
+    'investor.cart.empty_body':
+        'Add notes from Deals, set how much you want in each, and check them all out at once.',
+    'investor.cart.browse_deals': 'Browse deals',
     'investor.common.back': 'Back',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Strong',
@@ -2772,7 +3115,7 @@ const en = {
     'investor.auth.brand_point_2':
         'A flat {min}–{max}% per term, repaid monthly',
     'investor.auth.brand_point_3':
-        'Sell back to Rozine, or on the market, any time',
+        'Sell your units to other investors on the market',
     'investor.auth.type.individual': 'Individual',
     'investor.auth.type.institution': 'Institution',
     'investor.auth.role.individual': 'I am an individual',
@@ -2993,6 +3336,8 @@ const en = {
     'investor.portfolio.tabs': 'Holdings',
     'investor.portfolio.tab.active': 'Active',
     'investor.portfolio.tab.matured': 'Matured',
+    'investor.portfolio.tab.secondary': 'Secondary',
+    'investor.portfolio.tab.saved': 'Saved',
     'investor.portfolio.invested_line': 'Invested RWF {amount}',
     'investor.portfolio.matures_line':
         'Matures {date} · {made}/{total} payments',
@@ -3004,6 +3349,10 @@ const en = {
     'investor.portfolio.empty.matured.title': 'Nothing here yet',
     'investor.portfolio.empty.matured.body':
         'Holdings in this category will appear here.',
+    'investor.portfolio.empty.secondary.title': 'Nothing here yet',
+    'investor.portfolio.empty.secondary.body':
+        'Holdings in this category will appear here.',
+    'investor.portfolio.empty.saved.title': 'No saved deals yet',
     'investor.portfolio.browse_deals': 'Browse opportunities',
     'investor.portfolio.total_value': 'TOTAL VALUE',
     'investor.portfolio.businesses': '{count} businesses',
@@ -3190,11 +3539,136 @@ const en = {
     'investor.profile.type.institution': 'Institution',
     'investor.profile.member_since': 'Member since {date}',
     'investor.profile.item.linked': 'Linked accounts',
-    'investor.profile.item.statements': 'Statements',
+    'investor.profile.item.statements': 'Statements & tax',
     'investor.profile.item.automation': 'Auto-Deploy',
     'investor.profile.item.verification': 'Identity verification',
     'investor.profile.item.terms': 'Terms & Conditions',
     'investor.profile.item.privacy': 'Privacy Note',
+    'investor.profile.item.personal': 'Personal information',
+    'investor.profile.item.plan': 'Rozine Plus · how to unlock',
+    'investor.profile.item.security': 'Security center',
+    'investor.profile.item.help': 'Help center',
+    'investor.profile.plan_title': 'Rozine Plus',
+    'investor.profile.personal.name': 'FULL NAME',
+    'investor.profile.personal.email': 'EMAIL',
+    'investor.profile.personal.phone': 'PHONE',
+    'investor.profile.personal.id_type': 'ID TYPE',
+    'investor.profile.personal.id_number': 'ID NUMBER',
+    'investor.profile.personal.passport_number': 'PASSPORT NUMBER',
+    'investor.profile.personal.address': 'ADDRESS',
+    'investor.profile.personal.country': 'COUNTRY',
+    'investor.profile.personal.country_unknown': 'Unknown',
+    'investor.profile.personal.province': 'PROVINCE',
+    'investor.profile.personal.district': 'DISTRICT',
+    'investor.profile.personal.sector': 'SECTOR',
+    'investor.profile.personal.cell': 'CELL',
+    'investor.profile.personal.not_provided': 'Not provided',
+    'investor.profile.security.two_factor': 'Two-factor authentication',
+    'investor.profile.security.two_factor_on':
+        'On · authenticator app code at sign-in',
+    'investor.profile.security.login_alerts': 'Login alerts',
+    'investor.profile.security.login_alerts_hint':
+        'Email me on new device sign-in',
+    'investor.profile.security.two_factor_off':
+        'Off · add an authenticator app code at sign-in',
+    'investor.profile.security.password': 'Change password',
+    'investor.profile.pending.plan_title': 'Rozine Plus is not open yet',
+    'investor.profile.pending.plan_body':
+        'Its bands and charges are still being set. Until then, you invest deal by deal on the terms each deal shows.',
+    'investor.help.intro':
+        'Answers to the questions investors ask most. Tap any card to read the full answer.',
+    'support.help.updated': 'Updated {date}',
+    'support.help.updated_long': 'Last updated {date}',
+    'support.help.count': { one: '{count} answer', other: '{count} answers' },
+    'support.help.still_title': 'Still need help?',
+    'support.help.still_body':
+        'Message us. We acknowledge every message within 4 hours.',
+    'support.help.still_action': 'Message support',
+    'investor.help.group.start': 'Getting started',
+    'investor.help.group.returns': 'Returns & payouts',
+    'investor.help.group.risk': 'Risk & how businesses are vetted',
+    'investor.help.group.portfolio': 'Building your portfolio',
+    'investor.help.group.secondary': 'Secondary market',
+    'investor.help.group.wallet': 'Wallet, deposits & fees',
+    'investor.help.group.safety': "Your money's safety",
+    'investor.help.group.account': 'Account & support',
+    'investor.help.start.what.q': 'What is Rozine and how does investing work?',
+    'investor.help.start.what.a':
+        "Rozine lets you lend to verified Rwandan businesses through notes. You buy units in a business's raise; once the raise is fully funded, the business repays in equal monthly instalments, and your share of principal and return is credited to your Rozine wallet.\n\nRozine runs inside the Capital Market Authority's regulatory sandbox, so some limits apply while the sandbox lasts.",
+    'investor.help.start.first.q': 'How do I make my first investment?',
+    'investor.help.start.first.a':
+        "Verify your identity, then add money to your wallet from a mobile money or bank account in your own name. Open a deal on Market to see its rating, return, term, schedule and the business's verified figures, choose how many units you want, and confirm.\n\nBefore you confirm, you see the amount, every fee in RWF and exactly what you get back.",
+    'investor.help.start.minimum.q': 'Is there a minimum investment?',
+    'investor.help.start.minimum.a':
+        'Notes are sold in units of RWF 5,000, so you can start with a single unit.\n\nYou can hold at most half of any one raise, and an investment can never be larger than what is left to fill.',
+    'investor.help.returns.when.q': 'How and when are my returns paid?',
+    'investor.help.returns.when.a':
+        "The first instalment is due one month after the money is disbursed, and each later one on the same day of the following month. On each due date, the business's payment is shared among holders in proportion to the units they hold, and credited to their wallets.\n\nThe full schedule is shown before you commit, and it never changes after the note is issued.",
+    'investor.help.returns.yield.q': 'What return can I expect?',
+    'investor.help.returns.yield.a':
+        "Each note has a fixed total return of 10% to 15% of principal for the whole term of 3 to 6 months, set when the raise opens.\n\nRozine's earnings fee is taken from the return part of each payout, never from your principal. Its rate depends on your active capital and is locked for each investment.",
+    'investor.help.returns.guaranteed.q': 'Are my returns guaranteed?',
+    'investor.help.returns.guaranteed.a':
+        'No. The return shown is what the business has agreed to pay, not a guarantee. You can lose some or all of the money you invest if a business does not repay.\n\nDiversifying across several notes limits the effect of any one business.',
+    'investor.help.risk.protected.q': 'Is my capital protected?',
+    'investor.help.risk.protected.a':
+        'No. Your capital is at risk. Every business is checked from its statements and visited by an independent licensed accountant before it can raise, and every month while its note is outstanding. That lowers the risk, but it does not remove it.\n\nNotes cannot be cashed in before they end, so only invest money you will not need during the term.',
+    'investor.help.risk.vetting.q':
+        'How are businesses vetted before they raise?',
+    'investor.help.risk.vetting.a':
+        'A business needs verified annual revenue of at least RWF 30,000,000 and 36 months of bank and mobile money statements (12 for a repeat issuer that paid on time). Rozine sizes each note so that the business earns at least 1.5 times its monthly instalment.\n\nNo note lists until an Audit Partner has visited the premises and sealed a baseline report.',
+    'investor.help.risk.rating.q': 'What is the Rozine rating?',
+    'investor.help.risk.rating.a':
+        'Each business gets one score out of 5.0, to one decimal, shown with a word: Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0). A business must score at least 2.0 to raise.\n\nThe score is recomputed with every sealed monthly report. A new score never changes the terms of a note already issued.',
+    'investor.help.risk.late.q':
+        'What happens if a business pays late or defaults?',
+    'investor.help.risk.late.a':
+        "On the due date, whatever is in the business's wallet is collected and paid out, and anything that arrives later is collected straight away. Late charges of 5% of the unpaid amount at the due date, day 7 and day 30 all go to holders. Rozine takes none of it.\n\nIf the arrears are not cleared by day 31, the note is in default. Recovery is pursued but may not return the full amount.",
+    'investor.help.portfolio.diversify.q': 'How should I diversify?',
+    'investor.help.portfolio.diversify.a':
+        'Spread your money across several businesses, industries and terms rather than one note. If one business pays late, the others soften the effect.\n\nMany investors set a limit for any single note and add variety over time.',
+    'investor.help.portfolio.track.q': 'How do I track my investments?',
+    'investor.help.portfolio.track.a':
+        "Portfolio shows every holding with its principal, what has been paid and what is still due. Each business's sealed monthly report appears on the holding.\n\nEvery payout is listed in your wallet history, and Profile > Statements & tax holds your statements.",
+    'investor.help.portfolio.reinvest.q': 'Can I reinvest my payouts?',
+    'investor.help.portfolio.reinvest.a':
+        'Yes. Payouts land in your wallet, and you can put that balance into another open raise whenever you choose.\n\nNothing is reinvested automatically.',
+    'investor.help.secondary.exit.q': 'Can I exit an investment early?',
+    'investor.help.secondary.exit.a':
+        'The secondary market is not open yet, so for now you hold each note until its last instalment.\n\nWhen it opens, you will be able to list units of a current note for another investor to buy. Late, defaulted or disputed notes cannot be traded.',
+    'investor.help.secondary.price.q': 'How will a resale price be decided?',
+    'investor.help.secondary.price.a':
+        'You will choose the number of units and a whole-franc price per unit. The price can never be higher than the payouts the units still have to come, but it can be lower for a quicker sale.\n\nA listing lasts 7 days and can be relisted at no cost. The seller pays a 2% fee on the sale price; the buyer pays nothing.',
+    'investor.help.secondary.guaranteed.q': 'Will a sale be guaranteed?',
+    'investor.help.secondary.guaranteed.a':
+        'No. A sale needs another investor to buy at your price, so a listing may sell only in part, or not at all.\n\nUnits that do not sell stay yours and keep receiving payouts.',
+    'investor.help.wallet.move.q': 'How do I add or withdraw money?',
+    'investor.help.wallet.move.a':
+        'Deposits come by mobile money or bank from a verified account in your own name. Withdrawals go only to your own verified account, between RWF 1,000 and RWF 2,000,000 each.\n\nManage your accounts under Profile > Linked accounts.',
+    'investor.help.wallet.fees.q': 'What fees does Rozine charge investors?',
+    'investor.help.wallet.fees.a':
+        "Rozine's earnings fee is taken from the return part of each payout: 15% under RWF 1M of active capital, 12% from 1M to 5M, 10% from 5M to 25M, 9% from 25M to 100M and 8% above. It is never charged on principal.\n\nWithdrawals carry no Rozine fee; the provider's own charge is shown before you confirm.",
+    'investor.help.wallet.speed.q': 'How quickly are withdrawals processed?',
+    'investor.help.wallet.speed.a':
+        'Once you confirm, the withdrawal is sent to your account through the payment provider. An unusual request may be held for review for up to 24 hours.\n\nYou can follow each withdrawal in your wallet history. Money committed to an open raise cannot be withdrawn.',
+    'investor.help.safety.held.q': 'Where is my money held?',
+    'investor.help.safety.held.a':
+        "All customer money is held in a segregated client account at a licensed Rwandan bank, separate from Rozine's own money. The total of all wallets is matched to that account every day.\n\nOnly fees that were earned and disclosed can move to Rozine's own account.",
+    'investor.help.safety.stop.q': 'What happens if Rozine has to stop?',
+    'investor.help.safety.stop.a':
+        'New business stops the same day, every commitment in an unfunded raise is refunded in full, and every issued note keeps being serviced to maturity from a dedicated wind-down reserve.\n\nWithdrawals of wallet balances are free during a wind-down.',
+    'investor.help.account.secure.q': 'How is my account kept secure?',
+    'investor.help.account.secure.a':
+        'Add an authenticator app under Profile > Security center for a code at every sign-in, and turn on login alerts to hear about any new device.\n\nRozine never asks for your password or codes by phone, SMS or e-mail.',
+    'investor.help.account.complain.q': 'How do I make a complaint?',
+    'investor.help.account.complain.a':
+        'Message us from this help center. Your complaint gets a reference number; we acknowledge it within 4 hours and aim to resolve it within 48 hours.\n\nYou can take a complaint to the Capital Market Authority at any stage.',
+    'investor.profile.pending.terms_title': 'Coming to the app soon',
+    'investor.profile.pending.terms_body':
+        'The Terms & Conditions will be readable here once they are published.',
+    'investor.profile.pending.privacy_title': 'Coming to the app soon',
+    'investor.profile.pending.privacy_body':
+        'The Privacy Note will be readable here once it is published.',
     'investor.profile.sign_out': 'Sign out',
     'investor.profile.linked.unlink': 'Unlink',
     'investor.profile.linked.unverified': 'Verifying',
@@ -3639,6 +4113,8 @@ const en = {
         "This isn't available yet: a required policy hasn't been set.",
     'settlement.refusal.DEPOSIT_METHOD_UNVERIFIED':
         "That account isn't verified for deposits yet.",
+    'settlement.refusal.WITHDRAWAL_METHOD_UNVERIFIED':
+        'Choose a verified account to withdraw to.',
     'settlement.refusal.EXPOSURE_RESERVATION_REQUIRED':
         "No borrowing reservation is on record for this application, so it can't be listed.",
     'settlement.refusal.SIGNATURES_REQUIRED':
@@ -3743,6 +4219,29 @@ const en = {
     'investor.wallet.c3.not_credited_failed':
         'The payment was confirmed as not completed. Nothing was credited.',
     'investor.wallet.c3.credit_receipt': 'Credit receipt',
+    'investor.wallet.c3.funding': 'Move money',
+    'investor.wallet.c3.withdraw_unavailable':
+        "Withdrawals aren't available on your account right now.",
+    'investor.wallet.c3.withdraw_available': 'Available to withdraw: {amount}',
+    'investor.wallet.c3.provider_charge': 'Provider charge',
+    'investor.wallet.c3.withdraw_terms':
+        'Withdraw between {minimum} and {maximum} at a time. Terms {version}.',
+    'investor.wallet.c3.withdraw_only_on_success':
+        'The amount leaves your available balance now and is paid out once the provider confirms. If the payout fails, it comes back to your wallet.',
+    'investor.wallet.c3.withdrawals': 'Withdrawals',
+    'investor.wallet.c3.withdrawal_to': 'Withdrawal to {method}',
+    'investor.wallet.c3.withdrawal.pending': 'Sending',
+    'investor.wallet.c3.withdrawal.unknown':
+        "Sending — we're checking with the provider",
+    'investor.wallet.c3.withdrawal.succeeded': 'Paid out',
+    'investor.wallet.c3.withdrawal.failed':
+        "Didn't go through — returned to your wallet",
+    'investor.wallet.c3.withdrawal_waiting':
+        'Held for this withdrawal until the provider confirms. It stays out of your available balance meanwhile.',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID': 'Payout receipt',
+    'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED': 'Return receipt',
+    'investor.wallet.c3.entry.withdrawal_in': 'Returned from {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal to {counterparty}',
     'business.publish.intro':
         "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
     'business.publish.release.awaiting':
@@ -4122,6 +4621,143 @@ const en = {
     'investor.checkout.c3.indicative':
         'Indicative until you reserve: the exact rights of your notes are fixed when they are reserved.',
     'investor.checkout.c3.reserve': 'Reserve · {amount}',
+    'investor.notices.title': 'Notifications',
+    'investor.notices.unread_count': '{count} unread',
+    'investor.notices.unread': 'Unread',
+    'investor.notices.mark_all': 'Mark all read',
+    'investor.notices.close': 'Close notifications',
+    'investor.notices.loading': 'Loading notifications',
+    'investor.notices.failed': 'Your notifications could not be loaded.',
+    'investor.notices.retry': 'Try again',
+    'investor.notices.empty': 'No notifications yet.',
+    'investor.notices.business.deposit_received.title': 'Deposit received',
+    'investor.notices.business.deposit_received.body':
+        '{amount} is now in your Business wallet.',
+    'investor.notices.business.application_approved.title':
+        'Application approved',
+    'investor.notices.business.application_approved.body':
+        '{title} is approved for {amount} over {months} months. Review and sign to publish the raise.',
+    'investor.notices.business.withdrawal_sent.title': 'Withdrawal sent',
+    'investor.notices.business.withdrawal_sent.body':
+        '{amount} was sent to {account}.',
+    'investor.notices.business.withdrawal_returned.title':
+        'Withdrawal returned',
+    'investor.notices.business.withdrawal_returned.body':
+        "The payout of {amount} to {account} didn't go through. It's back in your Business wallet.",
+    'investor.notices.auditor.accreditation_approved.title':
+        'Accreditation active',
+    'investor.notices.auditor.accreditation_approved.body':
+        'Licence {licence} is verified until {date}. You can now take audit jobs.',
+    'investor.notices.auditor.accreditation_rejected.title':
+        'Accreditation needs another look',
+    'investor.notices.auditor.accreditation_rejected.body':
+        '{reason} Upload a corrected certificate from your profile.',
+    'investor.notices.auditor.accreditation_renewal_due.title':
+        'Accreditation renewal due',
+    'investor.notices.auditor.accreditation_renewal_due.body':
+        'Licence {licence} expires on {date}. Upload the renewal from your profile to keep taking audit jobs.',
+    'investor.notices.support.complaint_answered.title':
+        'Rozine answered your complaint',
+    'investor.notices.support.complaint_answered.body':
+        'There is a new answer on complaint {reference}.',
+    'investor.notices.support.complaint_resolved.title': 'Complaint resolved',
+    'investor.notices.support.complaint_resolved.body':
+        'Complaint {reference} is resolved. Open it to read the resolution.',
+    'support.chat.title': 'Rozine Support',
+    'support.chat.open': 'Contact Rozine Support',
+    'support.chat.clocks':
+        'We acknowledge within 4 hours and resolve within 48',
+    'support.chat.reference': 'Reference {reference}',
+    'support.chat.greeting':
+        'Tell us what went wrong. Your message opens a complaint with a reference number. We acknowledge it within 4 hours and resolve it within 48 hours, or tell you why and when.',
+    'support.chat.cma':
+        'You can take a complaint to the Capital Market Authority at any stage.',
+    'support.chat.closed': 'This complaint is resolved.',
+    'support.chat.new': 'New message',
+    'support.chat.message': 'Your message',
+    'support.chat.placeholder': 'Type your message…',
+    'support.chat.send': 'Send',
+    'support.chat.list': 'Your complaints',
+    'support.chat.opened': 'Opened {at}',
+    'support.chat.resolution': 'Resolution · {at}',
+    'support.chat.status.awaiting': 'Awaiting reply',
+    'support.chat.status.answered': 'Answered',
+    'support.chat.status.resolved': 'Resolved',
+    'investor.notices.auditor.job_offered.title': 'New audit job',
+    'investor.notices.auditor.job_offered.body_flash':
+        'Flash audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.body_routine':
+        'Routine audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.business.report_sealed.title':
+        'Audit report ready for your approval',
+    'investor.notices.business.report_sealed.body':
+        '{auditor} sealed your audit report. Review it, then co-sign or dispute it.',
+    'investor.notices.business.report_sealed.body_due':
+        '{auditor} sealed your audit report. Co-sign or dispute it by {time}.',
+    'investor.notices.business.report_review_closing.title':
+        'Review window closing',
+    'investor.notices.business.report_review_closing.body':
+        'Your window to co-sign or dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
+    'investor.notices.business.raise_expired.title':
+        'Raise closed without full funding',
+    'investor.notices.business.raise_expired.body':
+        '{title} closed at its deadline with {committed} of {target} committed. Investors were refunded and no fee was charged.',
+    'investor.notices.wallet.deposit_received.title': 'Deposit received',
+    'investor.notices.wallet.deposit_received.body':
+        '{amount} is now in your wallet.',
+    'investor.notices.wallet.withdrawal_sent.title': 'Withdrawal sent',
+    'investor.notices.wallet.withdrawal_sent.body':
+        '{amount} was sent to {account}.',
+    'investor.notices.wallet.withdrawal_returned.title': 'Withdrawal returned',
+    'investor.notices.wallet.withdrawal_returned.body':
+        "The payout of {amount} to {account} didn't go through. It's back in your wallet.",
+    'investor.notices.primary.refunded.title': 'Raise refunded',
+    'investor.notices.primary.refunded.body':
+        'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
+    'investor.notices.primary.raise_funded.title': 'Raise funded',
+    'investor.notices.primary.raise_funded.body':
+        'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.holding_issued.title': 'Investment confirmed',
+    'investor.notices.primary.holding_issued.body':
+        'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    'investor.notices.business.raise_funded.title': 'Raise fully funded',
+    'investor.notices.business.raise_funded.body':
+        '{title} reached its target of {principal}. Rozine now prepares the payout to your account.',
+    'investor.notices.business.disbursement_sent.title': 'Funds sent',
+    'investor.notices.business.disbursement_sent.body':
+        '{amount} for {title} was sent to {account}.',
+    'investor.notices.primary.report_published.title':
+        'Monthly report published',
+    'investor.notices.primary.report_published.body':
+        '{business} published its {month} report, verified by {partner}.',
+    'investor.notices.security.password_changed.title':
+        'Your password was changed',
+    'investor.notices.security.password_changed.body':
+        'If this was not you, reset your password now and contact Rozine support.',
+    'investor.notices.security.new_device.title': 'A new device signed in',
+    'investor.notices.security.new_device.body':
+        '{device} signed in to your account. If this was not you, reset your password now and contact Rozine support.',
+    'investor.notices.security.payout_account_linked.title':
+        'Payout account linked',
+    'investor.notices.security.payout_account_linked.body':
+        '{account} is now linked for deposits and withdrawals. If this was not you, contact Rozine support now.',
+    'investor.notices.security.payout_account_unlinked.title':
+        'Payout account unlinked',
+    'investor.notices.security.payout_account_unlinked.body':
+        '{account} is no longer linked. If this was not you, contact Rozine support now.',
+    'investor.notices.verification.approved.title': 'You are verified',
+    'investor.notices.verification.approved.body':
+        'Your identity is verified and your wallet is ready to invest.',
+    'investor.notices.verification.rejected.title':
+        'Your identity details need another look',
+    'investor.notices.verification.rejected.body':
+        'Compliance could not verify your details: {reason}',
+    'investor.checkout.risks.title': 'Before your first investment',
+    'investor.checkout.risks.lead':
+        'Tick each statement to confirm you understand it.',
+    'investor.checkout.risks.accept': 'I understand these risks',
+    'investor.checkout.risks.failed':
+        "We couldn't record your answer. Try again.",
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':
@@ -4772,6 +5408,8 @@ const en = {
     'admin.exceptions.kind.arrears': 'Arrears',
     'admin.exceptions.kind.halt': 'Halt',
     'admin.exceptions.kind.variance': 'Variance',
+    'admin.exceptions.kind.audit': 'Overdue audit',
+    'admin.exceptions.kind.complaint': 'Complaint',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
     'admin.exceptions.col.subject': 'Exception',
@@ -4790,6 +5428,65 @@ const en = {
         'Arrears, halts and variances appear here when the core opens one.',
     'admin.exceptions.filtered_title': 'No exceptions of this kind',
     'admin.exceptions.filtered_body': 'Choose All to see every open exception.',
+    'admin.primary.title': 'Live raises',
+    'admin.primary.caption':
+        'Every raise still filling, newest first. Raises fill or fail on their own clock, so there is no moderation here.',
+    'admin.primary.col.raise': 'Raise',
+    'admin.primary.col.funded': 'Funded',
+    'admin.primary.col.progress': 'Progress',
+    'admin.primary.col.closes': 'Closes',
+    'admin.primary.yield': '{rate}% yield',
+    'admin.primary.term': {
+        one: '{count} month',
+        other: '{count} months',
+    },
+    'admin.primary.funded': '{pct}%',
+    'admin.primary.raised_of': '{raised} of {target}',
+    'admin.payments.title': 'Payouts in flight',
+    'admin.payments.caption':
+        'Withdrawals whose cash is held while the provider confirms the payout. Each one pays out, or returns to the wallet, on the verified outcome.',
+    'admin.payments.movement.caption':
+        'Credited deposits plus paid-out withdrawals per Kigali day, last 14 days',
+    'admin.payments.kpi.count': {
+        one: '{count} txn · last 14 days',
+        other: '{count} txns · last 14 days',
+    },
+    'admin.payments.kpi.in_flight': 'Payouts in flight',
+    'admin.payments.kpi.in_flight.sub': 'Awaiting the provider',
+    'admin.payments.col.reference': 'Ref',
+    'admin.payments.col.who': 'User',
+    'admin.payments.col.type': 'Type',
+    'admin.payments.col.amount': 'Amount',
+    'admin.payments.col.account': 'To account',
+    'admin.payments.col.state': 'Status',
+    'admin.payments.owner.investor': 'Investor withdrawal',
+    'admin.payments.owner.business': 'Business withdrawal',
+    'admin.payments.state.pending': 'Awaiting provider',
+    'admin.payments.state.unknown': 'Unconfirmed, re-querying',
+    'admin.payments.unnamed': 'Unnamed account',
+    'admin.payments.empty_title': 'No payouts in flight',
+    'admin.payments.empty_body':
+        'Every withdrawal has been paid out or returned.',
+    'admin.payments.more': 'Show all payouts',
+    'admin.primary.investors': {
+        one: '{count} investor',
+        other: '{count} investors',
+    },
+    'admin.primary.days_left': {
+        one: '{count} day left',
+        other: '{count} days left',
+    },
+    'admin.primary.closes_today': 'Closing',
+    'admin.primary.lifecycle.fully_reserved': 'Fully reserved',
+    'admin.primary.lifecycle.inventory_unavailable': 'Unavailable',
+    'admin.primary.lifecycle.sold_out_pending_settlement': 'Sold out',
+    'admin.primary.lifecycle.closing_pending_settlement': 'Closing',
+    'admin.primary.trend.caption':
+        'Cash committed to raises each day, last 14 days.',
+    'admin.primary.more': 'More live raises',
+    'admin.primary.empty_title': 'No live raises',
+    'admin.primary.empty_body':
+        'A raise appears here once its publication is rated and live.',
     'admin.nav.reconciliation': 'Reconciliation',
     'admin.nav.coverage': 'Partner coverage',
     'admin.nav.reports': 'Reports',
@@ -4801,10 +5498,10 @@ const en = {
     'admin.section.coverage.subtitle':
         'Audit Partners and open audits in every district, and whether the district is covered. Read-only.',
     'admin.section.coverage.search': 'Search by district or province…',
-    'admin.section.reports.title': 'Reports',
+    'admin.section.reports.title': 'Monthly Reports',
     'admin.section.reports.subtitle':
-        'Regulator and board packs and exports, each for its period and as final as its figures are. Read-only.',
-    'admin.section.reports.search': 'Search by pack or period…',
+        'Business performance reports published to investors',
+    'admin.section.reports.search': 'Search…',
     'admin.reconciliation.day_close.label': 'Day close',
     'admin.reconciliation.day_close.title': 'Day close · {date}',
     'admin.reconciliation.day_close.state.reconciled': 'Reconciled',
@@ -4890,6 +5587,117 @@ const en = {
     'admin.coverage.empty_title': 'No districts reported',
     'admin.coverage.empty_body':
         'Districts appear here once the core tracks Audit Partner coverage.',
+    'admin.nav.complaints': 'Complaints',
+    'admin.section.complaints.title': 'Complaints',
+    'admin.section.complaints.subtitle':
+        'Every complaint with its reference, its 4-hour acknowledgement and 48-hour resolution clocks, and its conversation.',
+    'admin.section.complaints.search': 'Search by reference or customer…',
+    'admin.kyc.complaints_link': 'Complaints',
+    'admin.health.status.critical': 'Critical',
+    'admin.health.status.watch': 'Watch',
+    'admin.health.status.healthy': 'Healthy',
+    'admin.health.status.untracked': 'Not tracked',
+    'admin.health.overall.critical': 'Attention required',
+    'admin.health.overall.watch': 'Operating with warnings',
+    'admin.health.overall.healthy': 'All systems healthy',
+    'admin.health.overall.critical.sub':
+        '{critical} critical, {watch} watch signals',
+    'admin.health.overall.watch.sub': {
+        one: '{count} signal needs a look',
+        other: '{count} signals need a look',
+    },
+    'admin.health.overall.healthy.sub':
+        'Every tracked signal is within tolerance',
+    'admin.health.not_tracked': 'Not tracked yet',
+    'admin.health.ledger.label': 'Ledger integrity',
+    'admin.health.ledger.value.healthy': 'Balanced',
+    'admin.health.ledger.value.critical': 'Out of balance',
+    'admin.health.ledger.value.watch': {
+        one: '{count} open break',
+        other: '{count} open breaks',
+    },
+    'admin.health.ledger.detail': {
+        one: '{count} provider account reconciled',
+        other: '{count} provider accounts reconciled',
+    },
+    'admin.health.ledger.rec.healthy':
+        'All movements reconcile. No manual correction needed.',
+    'admin.health.ledger.rec.watch':
+        'A provider outcome the ledger could not follow is open. Review it in Reconciliation.',
+    'admin.health.ledger.rec.critical':
+        'A clearing account no longer matches the provider. Review it in Reconciliation.',
+    'admin.health.ledger.action': 'Open Reconciliation',
+    'admin.health.capital.label': 'Capital in flight',
+    'admin.health.capital.detail': {
+        one: '{count} raise filling or awaiting disbursement',
+        other: '{count} raises filling or awaiting disbursement',
+    },
+    'admin.health.capital.rec':
+        'Liquidity is flowing. Keep the disbursement queue clear.',
+    'admin.health.queue.label': 'Underwriting queue',
+    'admin.health.queue.detail': 'applications awaiting review',
+    'admin.health.queue.rec.watch':
+        'A backlog is building. Assign an underwriter.',
+    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.action': 'Open the queue',
+    'admin.health.events.label': 'Event throughput',
+    'admin.health.events.value': '{count}/h',
+    'admin.health.events.detail': {
+        one: '{count} action recorded in total',
+        other: '{count} actions recorded in total',
+    },
+    'admin.health.events.rec.healthy':
+        'Actions are being recorded and propagated.',
+    'admin.health.events.rec.watch':
+        'No actions were recorded in the last hour.',
+    'admin.health.default_rate.label': 'Default rate',
+    'admin.health.default_rate.detail': 'Starts when repayments are serviced',
+    'admin.health.arrears.label': 'Arrears ratio',
+    'admin.health.arrears.detail': 'Starts when repayments are serviced',
+    'admin.health.outstanding.label': 'Outstanding repayments',
+    'admin.health.outstanding.detail': 'Starts when repayments are serviced',
+    'admin.health.treasury.label': 'Treasury position',
+    'admin.health.treasury.detail': 'No treasury balance is recorded yet',
+    'admin.health.frozen.label': 'Frozen accounts',
+    'admin.health.frozen.detail': 'Account freezes are not available yet',
+    'admin.complaints.title': 'Complaints',
+    'admin.complaints.caption':
+        'Acknowledge within 4 hours and resolve within 48, or tell the customer why and when (BRS CMP-R03).',
+    'admin.complaints.table': 'Complaints',
+    'admin.complaints.stats.unresolved': 'Unresolved',
+    'admin.complaints.stats.awaiting': 'Awaiting acknowledgement',
+    'admin.complaints.stats.late': 'Past a clock',
+    'admin.complaints.col.reference': 'Reference',
+    'admin.complaints.col.status': 'Status',
+    'admin.complaints.col.clock': 'Next clock',
+    'admin.complaints.col.open': 'Conversation',
+    'admin.complaints.status.awaiting': 'Awaiting',
+    'admin.complaints.status.answered': 'Answered',
+    'admin.complaints.status.resolved': 'Resolved',
+    'admin.complaints.late.acknowledge': 'Not acknowledged within 4 hours',
+    'admin.complaints.late.resolve': 'Not resolved within 48 hours',
+    'admin.complaints.role.investor': 'Investor',
+    'admin.complaints.role.business': 'Business',
+    'admin.complaints.acknowledge_by': 'Acknowledge by {time}',
+    'admin.complaints.resolve_by': 'Resolve by {time}',
+    'admin.complaints.done': 'Closed',
+    'admin.complaints.open': 'Open',
+    'admin.complaints.open_named': 'Open complaint {reference}',
+    'admin.complaints.empty_title': 'No complaints',
+    'admin.complaints.empty_body':
+        'A complaint appears here as soon as a customer sends one in the app.',
+    'admin.complaints.drawer': 'Complaint {reference}',
+    'admin.complaints.from.customer': 'Customer · {time}',
+    'admin.complaints.from.staff': 'Rozine · {time}',
+    'admin.complaints.from.resolution': 'Resolution · {time}',
+    'admin.complaints.answer.label': 'Your answer',
+    'admin.complaints.answer.placeholder': 'Write to the customer…',
+    'admin.complaints.answer.resolves': 'This answer resolves the complaint',
+    'admin.complaints.answer.send': 'Send answer',
+    'admin.complaints.answer.hint':
+        'The customer reads this in the app and gets a notice. A resolution closes the complaint.',
+    'admin.complaints.closed':
+        'This complaint is resolved. Nothing more can be added.',
 } as const;
 
 export default en;

@@ -43,9 +43,9 @@ export function Submitted({
                     </svg>
                 </div>
             </div>
-            <h2 className="mt-[22px] text-[23px] font-semibold text-rz-ink">
+            <h1 className="mt-[22px] text-[23px] font-semibold text-rz-ink">
                 {t('business.apply.submitted.title')}
-            </h2>
+            </h1>
             <p className="mt-2.5 text-sm leading-[1.6] text-rz-secondary">
                 {t('business.apply.submitted.body')}
             </p>

@@ -185,6 +185,10 @@
                 "url": "/preview/business-reports",
                 "method": "get"
             },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
             "profile": {
                 "url": "/preview/business-profile",
                 "method": "get"
@@ -206,7 +210,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/business-home",
+                "url": "/preview/business-notices",
                 "method": "get"
             },
             "rating": {

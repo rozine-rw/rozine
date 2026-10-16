@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Wallet\PayoutAccount;
 use App\Models\InvestorFundingMethod;
 use App\Models\InvestorVerification;
 use App\Models\Party;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -33,7 +35,14 @@ function profilePagePerson(?string $status): User
     return $person;
 }
 
-it('shows the account, its verified state and its verified funding methods, offering no command that does not exist', function (): void {
+/** The approved submission staff decided on, holding the identity document it was decided on. */
+function profilePageApproved(Party $party, string $type, string $number, string $status = 'approved'): void
+{
+    (new InvestorVerification)->forceFill(['party_id' => $party->id, 'revision' => 3, 'status' => $status, 'submitted_at' => $status === 'draft' ? null : now(),
+        'state' => [...app(InvestorVerificationCase::class)->empty(), 'step' => 'liveness', 'date_of_birth' => '1990-08-01', 'id_type' => $type, 'id_number' => $number]])->save();
+}
+
+it('shows the account, its verified state and its verified funding methods, with linking and unlinking open', function (): void {
     $fixture = InvestorWalletFixture::ready();
     InvestorFundingMethod::factory()->unverified()->create(['party_id' => $fixture['party']->id]);
     $user = $fixture['user'];
@@ -47,20 +56,63 @@ it('shows the account, its verified state and its verified funding methods, offe
         ->and($props['section'])->toBe('overview')
         ->and($props['identity'])->toBe(['name' => $user->name, 'email' => $user->email, 'investor_type' => 'individual', 'kyc' => 'verified',
             'member_since' => $user->created_at->toIso8601String()])
+        ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'country' => null, 'address' => null])
+        ->and($props['security'])->toBe(['two_factor' => false, 'login_alerts' => true, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']])
         ->and($props['linked'])->toBe(['accounts' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456',
-            'verified' => true, 'unlink' => null]], 'banks' => []])
+            'verified' => true, 'unlink' => ['url' => '/investor/profile/linked-accounts/'.$fixture['method']->id.'/unlink', 'method' => 'post']]],
+            'banks' => array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS)])
         ->and($props['statements'])->toBe(['annual' => null, 'monthly' => []])
         ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
-            'profile' => $profile(), 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'notifications' => null,
-            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'overview' => $profile(), 'linked' => $profile('?section=linked'),
-            'statements' => $profile('?section=statements'), 'automation' => $profile('?section=automation'),
-            'verification' => ['url' => '/investor/verified', 'method' => 'get'], 'terms' => null, 'privacy' => null])
-        ->and($props['actions'])->toBe(['link_account' => null, 'logout' => ['url' => '/logout', 'method' => 'post']])
+            'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'], 'profile' => $profile(), 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'notifications' => null,
+            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'overview' => $profile(), 'personal' => $profile('?section=personal'),
+            'plan' => $profile('?section=plan'), 'security' => $profile('?section=security'), 'linked' => $profile('?section=linked'),
+            'statements' => $profile('?section=statements'), 'help' => $profile('?section=help'), 'terms' => $profile('?section=terms'),
+            'privacy' => $profile('?section=privacy'), 'automation' => $profile('?section=automation'),
+            'verification' => ['url' => '/investor/verified', 'method' => 'get'], 'security_settings' => ['url' => '/settings/security', 'method' => 'get']])
+        ->and($props['actions'])->toBe(['link_account' => ['url' => '/investor/profile/linked-accounts', 'method' => 'post'], 'logout' => ['url' => '/logout', 'method' => 'post']])
         ->and(array_keys($props['links']))->toEqualCanonicalizing(array_keys(profilePageFixture('investor-profile-automation')['links']));
 
-    $this->get(route('investor.profile', ['section' => 'statements', 'identity_context_revision' => 1]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('section', 'statements'));
-    $this->get(route('investor.profile', ['section' => 'security']))->assertSessionHasErrors('section');
+    foreach (['personal', 'plan', 'security', 'statements', 'help', 'terms', 'privacy'] as $section) {
+        $this->get(route('investor.profile', ['section' => $section, 'identity_context_revision' => 1]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('section', $section));
+    }
+    $this->get(route('investor.profile', ['section' => 'refer']))->assertSessionHasErrors('section');
+});
+
+it('shows the identity document staff approved with all but its last four characters hidden', function (string $type, string $number, string $masked): void {
+    $fixture = InvestorWalletFixture::investor();
+    profilePageApproved($fixture['party'], $type, $number);
+
+    $response = $this->actingAs($fixture['user'])->get(route('investor.profile', ['section' => 'personal']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('personal.id_type', $type)->where('personal.id_number', $masked));
+
+    expect(json_encode($response->viewData('page'), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE))->not->toContain($number)
+        ->not->toContain(substr($number, 0, 8));
+})->with([
+    'national ID' => ['national_id', '1199080012345678', '•••• •••• •••• 5678'],
+    'driving licence' => ['drivers_license', '1199070098765432', '•••• •••• •••• 5432'],
+    'passport' => ['passport', 'PC1234567', '•••••4567'],
+]);
+
+it('shows no identity document until staff approve one', function (string $status): void {
+    $person = profilePagePerson(null);
+    profilePageApproved($person->party, 'national_id', '1199080012345678', $status);
+
+    $this->actingAs($person)->get(route('investor.profile', ['section' => 'personal']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('personal.id_type', null)->where('personal.id_number', null));
+})->with(['draft', 'submitted', 'rejected']);
+
+it('reports whether two-factor sign-in is on', function (): void {
+    $fixture = InvestorWalletFixture::investor();
+    $fixture['user']->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save();
+
+    $this->actingAs($fixture['user']->refresh())->get(route('investor.profile', ['section' => 'security']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('security.two_factor', true)
+            ->where('links.security_settings', ['url' => '/settings/security', 'method' => 'get']));
+
+    $fixture['user']->forceFill(['two_factor_confirmed_at' => null, 'login_alerts' => false])->save();
+    $this->get(route('investor.profile', ['section' => 'security']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('security', ['two_factor' => false, 'login_alerts' => false, 'update_login_alerts' => ['url' => '/settings/login-alerts', 'method' => 'put']]));
 });
 
 it('shows a person still being verified where their verification stands, with no wallet', function (?string $status, string $kyc): void {
@@ -68,7 +120,8 @@ it('shows a person still being verified where their verification stands, with no
 
     $this->actingAs($person)->get(route('investor.profile', ['section' => 'linked']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('investor/profile')->where('section', 'linked')->where('identity.kyc', $kyc)
-            ->where('identity.name', $person->name)->where('linked', ['accounts' => [], 'banks' => []])->where('links.wallet', null)
+            ->where('identity.name', $person->name)->where('personal.country', null)->where('personal.address', null)
+            ->where('linked', ['accounts' => [], 'banks' => []])->where('links.wallet', null)
             ->where('links.verification', ['url' => '/investor/verification', 'method' => 'get']));
 })->with([
     'not started' => [null, 'unverified'],
@@ -107,4 +160,22 @@ it('sends a person still being verified back to their verification, and a guest 
 
     auth()->logout();
     $this->get(route('investor.verified'))->assertRedirect(route('login'));
+});
+
+it('lists a monthly wallet statement for each month with wallet activity, marking the current month open', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-20 10:00:00', 'UTC'));
+    InvestorWalletFixture::policy(maximum: null);
+    $investor = PrimaryReservationFixture::investor('50000');
+    $this->travelTo(CarbonImmutable::parse('2026-10-05 10:00:00', 'UTC'));
+    InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '20000')['data']['intent_id']);
+
+    $statements = $this->actingAs($investor['user'])->get(route('investor.profile', ['section' => 'statements']))->assertOk()->viewData('page')['props']['statements'];
+
+    expect($statements)->toBe(['annual' => null, 'monthly' => [
+        ['period' => '2026-10-01', 'kind' => 'monthly', 'complete' => false,
+            'link' => ['url' => '/investor/wallet/statement.pdf?from=2026-10-01&to=2026-10-31', 'method' => 'get']],
+        ['period' => '2026-09-01', 'kind' => 'monthly', 'complete' => true,
+            'link' => ['url' => '/investor/wallet/statement.pdf?from=2026-09-01&to=2026-09-30', 'method' => 'get']],
+    ]]);
+    expect(substr_count((string) $this->get($statements['monthly'][1]['link']['url'])->assertOk()->getContent(), 'Deposit from'))->toBe(1);
 });

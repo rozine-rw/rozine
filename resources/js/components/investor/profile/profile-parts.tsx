@@ -6,7 +6,9 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { MethodMark } from '@/components/investor/wallet/funding';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
+import { LoginAlerts } from '@/components/rozine/login-alerts';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatMonthYearLong, formatMonthYear } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -75,25 +77,26 @@ export function IdentityCard({
     );
 }
 
-type MenuItem = {
-    key:
-        | 'linked'
-        | 'statements'
-        | 'automation'
-        | 'verification'
-        | 'terms'
-        | 'privacy';
-    icon: IconName;
-    href: RouteLink | null;
-    active: boolean;
-};
+type MenuKey = Exclude<
+    InvestorProfileProps['section'],
+    'overview' | 'automation'
+>;
+
+const MENU: { key: MenuKey; icon: IconName }[] = [
+    { key: 'personal', icon: 'person' },
+    { key: 'plan', icon: 'flash' },
+    { key: 'security', icon: 'lock' },
+    { key: 'linked', icon: 'card' },
+    { key: 'statements', icon: 'receipt' },
+    { key: 'help', icon: 'question' },
+    { key: 'terms', icon: 'document' },
+    { key: 'privacy', icon: 'lock-key' },
+];
 
 /**
- * The profile menu (design L2800–2809). Built rows only: linked payout accounts (wallet readiness),
- * statements, identity verification and the legal documents. Personal-information editing, the
- * security centre, help centre, Rozine Plus, refer-and-earn and Investor Academy are not part of
- * this slice, so their rows are left out rather than shipped as dead ends; so is a row whose page
- * the server does not link yet.
+ * The profile menu (design L2800–2809, rows L9933–9941): the design's eight rows in its order. A
+ * person not yet verified also gets a row back to their verification, which the design (drawn for
+ * a verified investor) has no place for.
  */
 export function ProfileMenu({
     section,
@@ -105,79 +108,314 @@ export function ProfileMenu({
     links: InvestorProfileProps['links'];
 }) {
     const { t } = useTranslation();
-    const items: MenuItem[] = [
-        {
-            key: 'linked',
-            icon: 'card',
-            href: links.linked,
-            active: section === 'linked',
-        },
-        {
-            key: 'statements',
-            icon: 'receipt',
-            href: links.statements,
-            active: section === 'statements',
-        },
-        ...(links.automation === undefined
-            ? []
-            : [
-                  {
-                      key: 'automation' as const,
-                      icon: 'repeat' as const,
-                      href: links.automation,
-                      active: section === 'automation',
-                  },
-              ]),
-        {
-            key: 'verification',
-            icon: 'shield',
-            href: links.verification,
-            active: false,
-        },
-        { key: 'terms', icon: 'document', href: links.terms, active: false },
-        { key: 'privacy', icon: 'lock', href: links.privacy, active: false },
-    ];
-    const shown = items.flatMap(({ href, ...item }) =>
-        href === null ? [] : [{ ...item, href }],
-    );
+    const verification =
+        kyc === 'verified' || links.verification === null
+            ? null
+            : links.verification;
 
     return (
         <nav
             aria-label={t('investor.profile.menu')}
             className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
         >
-            {shown.map((item) => (
-                <Link
+            {verification !== null && (
+                <MenuRow
+                    href={verification}
+                    icon="shield"
+                    label={t('investor.profile.item.verification')}
+                    active={false}
+                    alert
+                />
+            )}
+            {MENU.map((item) => (
+                <MenuRow
                     key={item.key}
-                    href={item.href}
-                    aria-current={item.active ? 'page' : undefined}
-                    className={cn(
-                        'flex w-full items-center gap-[13px] border-b border-[#eef2f9] p-[15px] text-left last:border-0 dark:border-rz-divider',
-                        item.active && 'bg-rz-accent-soft',
+                    href={links[item.key]}
+                    icon={item.icon}
+                    label={t(`investor.profile.item.${item.key}`)}
+                    active={section === item.key}
+                />
+            ))}
+        </nav>
+    );
+}
+
+function MenuRow({
+    href,
+    icon,
+    label,
+    active,
+    alert = false,
+}: {
+    href: RouteLink;
+    icon: IconName;
+    label: string;
+    active: boolean;
+    alert?: boolean;
+}) {
+    return (
+        <Link
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+                'flex w-full items-center gap-[13px] border-b border-[#eef2f9] p-[15px] text-left last:border-0 dark:border-rz-divider',
+                active && 'bg-rz-accent-soft',
+            )}
+        >
+            <span
+                className={cn(
+                    'flex size-[34px] items-center justify-center rounded-[10px] text-base',
+                    active ? 'bg-rz-accent-soft' : 'bg-rz-page',
+                )}
+            >
+                <Icon name={icon} />
+            </span>
+            <span
+                className={cn(
+                    'flex-1 text-[14.5px] font-semibold',
+                    active ? 'text-rz-accent-app-text' : 'text-rz-ink',
+                )}
+            >
+                {label}
+            </span>
+            {alert && <span className="size-2 rounded-full bg-rz-danger" />}
+            <span aria-hidden className="text-rz-secondary">
+                ›
+            </span>
+        </Link>
+    );
+}
+
+/**
+ * Personal information (design L3893–3916), read-only: there is no command to change these
+ * details, so the design's inputs are shown as fields and its "Save changes" is left out. The ID
+ * number arrives already masked; phone and address are not collected yet.
+ */
+export function PersonalInformation({
+    personal,
+}: {
+    personal: InvestorProfileProps['personal'];
+}) {
+    const { t } = useTranslation();
+    const idType = personal.id_type ?? 'national_id';
+
+    return (
+        <dl className="mt-5 flex flex-col gap-3.5">
+            <Field
+                label={t('investor.profile.personal.name')}
+                value={personal.name}
+            />
+            <Field
+                label={t('investor.profile.personal.email')}
+                value={personal.email}
+            />
+            <Field
+                label={t('investor.profile.personal.phone')}
+                value={personal.phone}
+            />
+            <div className="flex gap-3">
+                <Field
+                    label={t('investor.profile.personal.id_type')}
+                    value={
+                        personal.id_type === null
+                            ? null
+                            : t(`investor.signup.id.${personal.id_type}`)
+                    }
+                    className="flex-[0_0_40%]"
+                />
+                <Field
+                    label={t(
+                        idType === 'passport'
+                            ? 'investor.profile.personal.passport_number'
+                            : 'investor.profile.personal.id_number',
                     )}
-                >
-                    <span className="flex size-[34px] items-center justify-center rounded-[10px] bg-rz-page text-base">
-                        <Icon name={item.icon} />
+                    value={personal.id_number}
+                    className="min-w-0 flex-1"
+                />
+            </div>
+            <p className="mt-1.5 text-xs font-semibold tracking-[.05em] text-rz-secondary">
+                {t('investor.profile.personal.address')}
+            </p>
+            <Field
+                label={t('investor.profile.personal.country')}
+                value={personal.country}
+                empty={t('investor.profile.personal.country_unknown')}
+            />
+            <div className="flex gap-3">
+                <Field
+                    label={t('investor.profile.personal.province')}
+                    value={personal.address}
+                    className="flex-1"
+                />
+                <Field
+                    label={t('investor.profile.personal.district')}
+                    value={personal.address}
+                    className="flex-1"
+                />
+            </div>
+            <div className="flex gap-3">
+                <Field
+                    label={t('investor.profile.personal.sector')}
+                    value={personal.address}
+                    className="flex-1"
+                />
+                <Field
+                    label={t('investor.profile.personal.cell')}
+                    value={personal.address}
+                    className="flex-1"
+                />
+            </div>
+        </dl>
+    );
+}
+
+function Field({
+    label,
+    value,
+    empty,
+    className,
+}: {
+    label: string;
+    value: string | null;
+    /** What a missing value reads as; "Not provided" unless the field says otherwise. */
+    empty?: string;
+    className?: string;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className={className}>
+            <dt className="mb-1.5 text-xs font-semibold text-rz-secondary">
+                {label}
+            </dt>
+            <dd
+                className={cn(
+                    'truncate rounded-xl border border-rz-border bg-rz-surface px-3.5 py-[13px] text-sm',
+                    value === null ? 'text-rz-muted' : 'text-rz-ink',
+                )}
+            >
+                {value ?? empty ?? t('investor.profile.personal.not_provided')}
+            </dd>
+        </div>
+    );
+}
+
+/**
+ * Security center (design L3934–3975): whether two-factor sign-in is on, the login alerts switch,
+ * and the way to change the password. Two-factor and the password are managed on the account's
+ * security settings, so those rows open them. The design's account deletion has no command for an
+ * Investor, so it is left out.
+ */
+export function SecurityCenter({
+    security,
+    settings,
+}: {
+    security: InvestorProfileProps['security'];
+    settings: RouteLink;
+}) {
+    const { t } = useTranslation();
+    const row = 'flex w-full items-center gap-3 p-4 text-left';
+    const glyph =
+        'flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-rz-page text-base';
+
+    return (
+        <>
+            <div className="mt-5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                <Link href={settings} className={row}>
+                    <span className={glyph}>
+                        <Icon name="lock" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-rz-ink">
+                            {t('investor.profile.security.two_factor')}
+                        </span>
+                        <span className="block text-xs text-rz-secondary">
+                            {t(
+                                security.two_factor
+                                    ? 'investor.profile.security.two_factor_on'
+                                    : 'investor.profile.security.two_factor_off',
+                            )}
+                        </span>
                     </span>
                     <span
+                        aria-hidden
                         className={cn(
-                            'flex-1 text-[14.5px] font-semibold',
-                            item.active
-                                ? 'text-rz-accent-app-text'
-                                : 'text-rz-ink',
+                            'relative h-6 w-11 shrink-0 rounded-xl',
+                            security.two_factor
+                                ? 'bg-[#17795a]'
+                                : 'bg-[#5b6578]',
                         )}
                     >
-                        {t(`investor.profile.item.${item.key}`)}
+                        <span
+                            className={cn(
+                                'absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,.25)]',
+                                security.two_factor && 'translate-x-5',
+                            )}
+                        />
                     </span>
-                    {item.key === 'verification' && kyc !== 'verified' && (
-                        <span className="size-2 rounded-full bg-rz-danger" />
-                    )}
+                </Link>
+                <LoginAlerts
+                    enabled={security.login_alerts}
+                    action={security.update_login_alerts}
+                    title={t('investor.profile.security.login_alerts')}
+                    hint={t('investor.profile.security.login_alerts_hint')}
+                    onClass="bg-[#17795a]"
+                    glyph={glyph}
+                />
+            </div>
+            <div className="mt-3.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                <Link
+                    href={settings}
+                    className={cn(row, 'gap-[13px] p-[15px]')}
+                >
+                    <span className={glyph}>
+                        <Icon name="key" />
+                    </span>
+                    <span className="flex-1 text-sm font-semibold text-rz-ink">
+                        {t('investor.profile.security.password')}
+                    </span>
                     <span aria-hidden className="text-rz-secondary">
                         ›
                     </span>
                 </Link>
-            ))}
-        </nav>
+            </div>
+        </>
+    );
+}
+
+const PENDING_ICON: Record<'plan' | 'terms' | 'privacy', IconName> = {
+    plan: 'flash',
+    terms: 'document',
+    privacy: 'lock-key',
+};
+
+/**
+ * Rozine Plus, the terms and the privacy note: the design's pages hold copy and
+ * figures (Plus bands and charges, legal text) that are not approved yet, so each shows an
+ * empty state until that content is published.
+ */
+export function PendingContent({
+    kind,
+}: {
+    kind: 'plan' | 'terms' | 'privacy';
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div className="flex flex-col items-center px-[22px] py-16 text-center">
+            <span
+                aria-hidden
+                className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]"
+            >
+                <Icon name={PENDING_ICON[kind]} />
+            </span>
+            <p className="mt-4 text-[17px] font-semibold text-rz-ink">
+                {t(`investor.profile.pending.${kind}_title`)}
+            </p>
+            <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
+                {t(`investor.profile.pending.${kind}_body`)}
+            </p>
+        </div>
     );
 }
 
@@ -240,6 +478,8 @@ export function SubHeading({
     back: RouteLink | null;
 }) {
     const { t } = useTranslation();
+    /* Beside the menu (wide) the menu's "Profile" is the page title; alone (phone) this is. */
+    const Heading = back === null ? 'h2' : 'h1';
 
     return (
         <div className="flex items-center gap-3">
@@ -252,7 +492,9 @@ export function SubHeading({
                     <span aria-hidden>←</span>
                 </Link>
             )}
-            <h2 className="text-xl font-semibold text-rz-ink">{title}</h2>
+            <Heading className="text-xl font-semibold text-rz-ink">
+                {title}
+            </Heading>
         </div>
     );
 }
@@ -264,10 +506,10 @@ type LinkedProps = {
 
 /**
  * Linked payout accounts (design L3856–3923) — wallet readiness. Accounts arrive masked; linking
- * sends the details to the server, which verifies ownership (a one-off verification debit, and
- * payouts only to an account in the investor's own name) and answers with field errors. Cards are
- * not a payout rail in the MVP, so the design's debit-card option is left out. Until the server
- * links a link or unlink command, the accounts are listed without it and nothing invites linking.
+ * sends the details, with a fresh `request_id`, to the server, which verifies the account is in the
+ * investor's own name and answers with field errors. Cards are not a payout rail in the MVP, so the
+ * design's debit-card option is left out. Where the server offers no link or unlink command, the
+ * accounts are listed without it and nothing invites linking.
  */
 export function LinkedAccounts({ linked, action }: LinkedProps) {
     const { t } = useTranslation();
@@ -301,6 +543,11 @@ export function LinkedAccounts({ linked, action }: LinkedProps) {
                             <Form
                                 action={account.unlink.url}
                                 method={account.unlink.method}
+                                transform={(data) => ({
+                                    ...data,
+                                    request_id: crypto.randomUUID(),
+                                })}
+                                options={{ preserveScroll: true }}
                             >
                                 <button
                                     type="submit"
@@ -337,10 +584,22 @@ type LinkAccountFormProps = {
     banks: LinkedProps['linked']['banks'];
     action: NonNullable<LinkedProps['action']>;
     hasAccounts: boolean;
+    /** The collapsed form's button, and whose name the footnote says an account must be in. */
+    addLabel?: MessageCode;
+    footnote?: MessageCode;
 };
 
-/** The link-a-new-account form, open from the start while nothing is linked yet. */
-function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
+/**
+ * The link-a-new-account form, open from the start while nothing is linked yet. A Business's Linked
+ * accounts reuses it with its own wording.
+ */
+export function LinkAccountForm({
+    banks,
+    action,
+    hasAccounts,
+    addLabel = 'investor.profile.linked.add',
+    footnote = 'investor.profile.linked.footnote',
+}: LinkAccountFormProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(!hasAccounts);
     const form = useForm<{
@@ -368,6 +627,10 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform((data) => ({
+            ...data,
+            request_id: crypto.randomUUID(),
+        }));
         form.post(action.url, {
             preserveScroll: true,
             onSuccess: () => {
@@ -507,7 +770,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
                 {t('investor.profile.linked.submit')}
             </button>
             <p className="mt-[9px] text-[10.5px] leading-[1.45] text-rz-secondary">
-                {t('investor.profile.linked.footnote')}
+                {t(footnote)}
             </p>
         </form>
     ) : (
@@ -516,7 +779,7 @@ function LinkAccountForm({ banks, action, hasAccounts }: LinkAccountFormProps) {
             onClick={() => setOpen(true)}
             className="mt-3.5 h-[50px] w-full rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
         >
-            {t('investor.profile.linked.add')}
+            {t(addLabel)}
         </button>
     );
 }

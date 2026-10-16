@@ -53,6 +53,15 @@ export default function InvestorCommitment({
             tab="portfolio"
             links={links}
             showTabBar={false}
+            beacon={{
+                link: links.changes,
+                reloads: {
+                    purchase: {
+                        only: ['server_time', 'commitment', 'allowed_actions'],
+                    },
+                },
+                settled: !command.busy && !command.unresolved,
+            }}
         >
             <div className="mx-auto max-w-[560px] px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-6">
                 <div className="flex items-center gap-[11px]">

@@ -33,7 +33,7 @@ it('seeds a synthetic Investor with a verified method under an explicit syntheti
     expect($status)->toBe(0)->and($output)->toContain('wallet-a@s3b.rozine.invalid')->toContain('synthetic-deposit-policy-0')
         ->toContain(SyntheticWalletSeeder::PASSWORD)->toContain('/investor/wallet')
         ->and(Hash::check(SyntheticWalletSeeder::PASSWORD, $user->password))->toBeTrue()
-        ->and(app(GetInvestorWallet::class)->handle($user->id, 1)['allowed_actions'])->toBe(['wallet.deposit'])
+        ->and(app(GetInvestorWallet::class)->handle($user->id, 1)['allowed_actions'])->toBe(['wallet.deposit', 'wallet.withdraw'])
         ->and(DepositPolicy::query()->sole()->only(['version', 'synthetic', 'status', 'fee', 'minimum', 'maximum']))
         ->toBe(['version' => 'synthetic-deposit-policy-0', 'synthetic' => true, 'status' => 'active', 'fee' => '0', 'minimum' => '1000', 'maximum' => '5000000']);
 

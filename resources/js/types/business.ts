@@ -3,6 +3,8 @@ import type {
     DepositPolicy,
     DepositQuote,
     FundingMethod,
+    WalletWithdrawal,
+    WithdrawalTerms,
 } from './investor';
 import type { Money } from './money';
 import type {
@@ -29,6 +31,7 @@ import type {
     ServicingState,
     Units,
 } from './settlement';
+import type { SupportCenter } from './support';
 
 /**
  * Business app page contracts (Phase 1B). Every figure is a server fact; the client only formats
@@ -245,6 +248,7 @@ export type BusinessApplications = {
 export type BusinessAppLinks = {
     home: RouteLink;
     reports: RouteLink;
+    market: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
 };
@@ -257,7 +261,16 @@ export type BusinessShellLinks = {
     home: RouteLink;
     launcher: RouteLink;
     reports: RouteLink | null;
+    market: RouteLink | null;
     profile: RouteLink | null;
+};
+
+/**
+ * Market (design L1263–1308): how the business's notes trade on the secondary market. There is no
+ * secondary-market read yet, so the page carries its links only and measures nothing.
+ */
+export type BusinessMarketProps = {
+    links: BusinessAppLinks;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -892,7 +905,28 @@ export type BusinessReportsProps = {
 /* Profile (MVP-BUSINESS-SCR-09 company, signatories, documents; design L1460–1479, L1718–1891) */
 /* ------------------------------------------------------------------------------------------ */
 
-export type ProfileSection = 'company' | 'linked' | 'terms' | 'privacy';
+/** The design's Profile menu (Business.dc.html L5022–5028), in its order. */
+export type ProfileSection =
+    | 'company'
+    | 'security'
+    | 'permissions'
+    | 'linked'
+    | 'support'
+    | 'terms'
+    | 'privacy';
+
+/** A mandate permission (`MandateAuthority::PERMISSIONS`). */
+export type MandatePermission =
+    | 'business.view'
+    | 'application.create'
+    | 'application.save'
+    | 'application.evaluate'
+    | 'application.sign'
+    | 'report.cosign'
+    | 'business.wallet.deposit'
+    | 'business.wallet.withdraw'
+    | 'repayment.pay'
+    | 'business.profile.update';
 
 export type CompanyProfile = {
     /** The RDB-registered name: shown, never edited here. */
@@ -907,11 +941,12 @@ export type CompanyProfile = {
         cell: string;
         street: string;
     };
+    /** Null while no RDB certificate is held; the registration record shows instead. */
     certificate: {
         number: string;
         status: 'verified' | 'expired';
         expires_on: string | null;
-    };
+    } | null;
     signatories: { name: string; role: string }[];
     /** From the verified mandate (D-64); never assumed to be two. */
     signatories_required: number;
@@ -979,12 +1014,38 @@ export type BusinessProfileProps = {
         label: string;
         districts: { value: string; label: string }[];
     }[];
-    linked: { accounts: LinkedAccount[]; add: RouteLink | null } | null;
+    /** The mandate's people, for Permissions & roles; nothing to invite, remove or transfer. */
+    team: {
+        name: string;
+        roles: MandateRole[];
+        permissions: MandatePermission[];
+        signatory: boolean;
+    }[];
+    security: {
+        two_factor: boolean;
+        /** Whether a new device's sign-in is also e-mailed (the design's Login alerts). */
+        login_alerts: boolean;
+        update_login_alerts: { url: string; method: 'put' };
+    };
+    /**
+     * Null while there is no Business read. `add` (with its `banks`) and each account's `unlink` are
+     * offered only to a holder of `business.wallet.withdraw` where an account can be verified.
+     */
+    linked: {
+        accounts: LinkedAccount[];
+        add: RouteAction | null;
+        banks: { code: string; name: string }[];
+    } | null;
+    /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
+    /** The support center's chat over the Business's complaints (BRS v2.0 CMP-R03). */
+    support: SupportCenter;
     links: BusinessAppLinks & {
         back: RouteLink;
         /** A section with no read open to the business is null and left out of the menu. */
         sections: Record<ProfileSection, RouteLink | null>;
+        /** The account's security settings, where the password and two-factor sign-in are managed. */
+        security_settings: RouteLink;
         sign_out: RouteAction;
     };
     /** Null while there is no profile command: nothing is editable. */
@@ -1005,6 +1066,7 @@ export type BusinessProfileProps = {
 
 export type BusinessServicingAllowedAction =
     | 'business.wallet.deposit'
+    | 'business.wallet.withdraw'
     | 'repayment.pay';
 
 export type BusinessServicingPageContract = {
@@ -1014,7 +1076,7 @@ export type BusinessServicingPageContract = {
     allowed_actions: BusinessServicingAllowedAction[];
 };
 
-/** Withdrawal stays hidden (Phase 2); a restriction never withholds deposits (§11.4). */
+/** A restriction never withholds deposits (§11.4). */
 export type BusinessWalletBalances = {
     revision: number;
     status: 'active' | 'restricted';
@@ -1023,6 +1085,8 @@ export type BusinessWalletBalances = {
     available: Money;
     /** Recorded but not credited, outside `available`. */
     pending_deposits: Money;
+    /** Withdrawn from `available` and on its way to the Business's account. */
+    pending_withdrawals: Money;
 };
 
 /** External cash apart from internal transfers (H5), as on the Investor wallet. */
@@ -1056,21 +1120,25 @@ export type BusinessWalletMovement = BusinessWalletEntry['movement'];
 
 /**
  * `business.wallet.show`. Mirrors the C3 Investor wallet (v2 §2a): deposit through a verified
- * registered rail under a versioned policy, recorded intents, and the history. A null `policy`
- * means deposit is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
+ * registered rail under a versioned policy, withdrawal to the Business's own verified account
+ * (APP-B01, LED-R04), recorded intents and withdrawals, and the history. A null `policy` or
+ * `withdrawal` means that movement is not offered; a post would be refused `POLICY_INPUT_REQUIRED`.
  */
 export type BusinessWalletProps = BusinessServicingPageContract & {
     business: { id: string; name: string };
     wallet: BusinessWalletBalances;
     funding: {
-        kind: 'deposit' | null;
+        kind: 'deposit' | 'withdraw' | null;
         policy: DepositPolicy | null;
+        withdrawal: WithdrawalTerms | null;
         methods: FundingMethod[];
         picks: Money[];
         quote: DepositQuote | null;
     };
     /** Pending and unknown first. */
     deposits: DepositIntent[];
+    /** Unsettled first. */
+    withdrawals: WalletWithdrawal[];
     history: {
         movement: BusinessWalletMovement;
         filters: {
@@ -1081,10 +1149,11 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         items: BusinessWalletEntry[];
         pagination: Pagination;
     };
-    /** The opened receipt: a history entry with its receipt, or a deposit intent. */
+    /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
     receipt:
         | (BusinessWalletEntry & { receipt: Receipt })
         | DepositIntent
+        | WalletWithdrawal
         | null;
     /** A headline figure without a basis renders without a drill-down. */
     bases: Partial<Record<'available', RouteLink>>;
@@ -1094,13 +1163,19 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         close: RouteLink;
         /** Opens the deposit panel. */
         deposit: RouteLink;
-        /** The operation lookup; its url holds the literal `{request_id}` token. */
+        /** Opens the withdrawal panel. */
+        withdraw: RouteLink;
+        /** The deposit operation lookup; its url holds the literal `{request_id}` token. */
         operation: RouteLink;
+        /** The withdrawal operation lookup, with the same token. */
+        withdrawal_operation: RouteLink;
         /** The note being repaid, when one is servicing. */
         repayments: RouteLink | null;
     };
-    actions: { deposit: RouteAction };
-    preview_outcome?: C3PreviewOutcome<'business.wallet.deposit'>;
+    actions: { deposit: RouteAction; withdraw: RouteAction };
+    preview_outcome?: C3PreviewOutcome<
+        'business.wallet.deposit' | 'business.wallet.withdraw'
+    >;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1294,13 +1369,40 @@ export type BusinessRepaymentsProps = BusinessServicingPageContract & {
 };
 
 /**
+ * An issued Note's schedule as it was issued: each instalment's principal and return, the equal
+ * monthly amount the Business pays (BRS glossary). No paid amount, late fee or current claim.
+ */
+export type BusinessIssuedSchedule = {
+    note_id: string;
+    title: string;
+    /** The disbursement's Kigali effective date, which anchors the due dates. */
+    effective_date: KigaliDate | null;
+    principal: Money;
+    return: Money;
+    total: Money;
+    instalments: {
+        index: number;
+        due_on: KigaliDate;
+        principal: Money;
+        return: Money;
+        total: Money;
+    }[];
+};
+
+/**
  * `business.repayments.show` while no note of the business is servicing: no note, servicing or
- * pay panel, and no Pay. The sheet shows its empty state over Home.
+ * pay panel, and no Pay. The sheet shows its empty state over Home, or each issued Note's
+ * schedule as it was issued.
  */
 export type BusinessRepaymentsEmptyProps = Omit<
     BusinessRepaymentsProps,
     'note' | 'servicing' | 'pay'
-> & { note: null; servicing: null; pay: null };
+> & {
+    note: null;
+    servicing: null;
+    pay: null;
+    issued: BusinessIssuedSchedule[];
+};
 
 /** What the Repayments page receives: a servicing note's sheet, or its empty state. */
 export type BusinessRepaymentsPageProps =

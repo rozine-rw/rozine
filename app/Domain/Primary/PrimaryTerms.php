@@ -8,12 +8,9 @@ use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
 use Mmccook\JsonCanonicalizator\JsonCanonicalizatorFactory;
 
-/** Server-sourced disclosed terms. Tier eligibility and fee policy are separate inputs. */
+/** Server-sourced disclosed terms. Only the approved INV-R04 band rates are accepted; `EarningsFeeBand` selects one. */
 final readonly class PrimaryTerms
 {
-    /** Approved rates only; selecting a tier from active capital is a separate policy input. */
-    private const array FEE_BPS = ['standard' => 1000, 'bronze' => 800, 'silver' => 650, 'gold' => 550, 'platinum' => 500, 'diamond' => 400];
-
     public string $disclosureSha256;
 
     /** @param array{tier: string, rate_bps: int, basis: string, policy_version: string} $earningsFee */
@@ -38,7 +35,7 @@ final readonly class PrimaryTerms
         }
         if (! is_string($feeVersion) || ! is_string($earningsFee['tier'] ?? null) || ! is_int($earningsFee['rate_bps'] ?? null)
             || ($earningsFee['basis'] ?? null) !== 'return_only'
-            || ! isset(self::FEE_BPS[$earningsFee['tier']]) || self::FEE_BPS[$earningsFee['tier']] !== $earningsFee['rate_bps']
+            || ! isset(EarningsFeeBand::RATES[$earningsFee['tier']]) || EarningsFeeBand::RATES[$earningsFee['tier']] !== $earningsFee['rate_bps']
             || ! preg_match('/^(1[0-4]\.[0-9]|15\.0)$/D', $ratePercent) || ! in_array($termMonths, [3, 4, 5, 6], true)
             || trim($disclosureVersion) === '' || ! preg_match('/^(0|[1-9][0-9]{0,63})$/D', $payoutFee)) {
             throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
@@ -51,6 +48,17 @@ final readonly class PrimaryTerms
 
         return new self($ratePercent, $termMonths, $policyVersion, $disclosureVersion,
             ['tier' => $earningsFee['tier'], 'rate_bps' => $earningsFee['rate_bps'], 'basis' => $earningsFee['basis'], 'policy_version' => $feeVersion], $payoutFee, $rights);
+    }
+
+    /** The scheduled payout fee a rate would disclose for these rights, before any terms exist. */
+    public static function payoutFeeFor(UnitRights $rights, int $rateBps): string
+    {
+        $fee = BigInteger::zero();
+        foreach ($rights->instalments as $instalment) {
+            $fee = $fee->plus(BigInteger::of($instalment['return'])->multipliedBy($rateBps)->dividedBy(10000, RoundingMode::HalfUp));
+        }
+
+        return (string) $fee;
     }
 
     public function requireRights(UnitRights $rights): void

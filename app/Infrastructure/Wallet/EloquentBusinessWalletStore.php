@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Wallet;
 
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\NoteServicing;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
+use App\Application\Wallet\Contracts\BusinessWithdrawals;
 use App\Application\Wallet\Contracts\DepositProvider;
 use App\Application\Wallet\DepositInstruction;
+use App\Application\Wallet\SyntheticDepositAdmission;
 use App\Application\Wallet\SyntheticWalletGuard;
 use App\Application\Wallet\VerifiedDepositEvent;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Wallet\DepositOutcome;
@@ -31,6 +36,7 @@ use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -49,7 +55,8 @@ use RuntimeException;
 final class EloquentBusinessWalletStore implements BusinessWalletStore
 {
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
-        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing) {}
+        private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing, private SyntheticDepositAdmission $admission,
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessWithdrawals $withdrawals) {}
 
     /**
      * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
@@ -62,19 +69,29 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 $wallet = BusinessWallet::query()->where('business_id', $business['id'])->first();
                 $policy = $this->applicablePolicy();
                 $methods = $this->verifiedMethods($business['id']);
-                $canDeposit = $policy !== null && $methods->isNotEmpty() && $this->permits($business, (string) ($identity['party']['id'] ?? ''));
+                $partyId = (string) ($identity['party']['id'] ?? '');
+                $admitted = $methods->isNotEmpty() && $this->admission->admitsBusiness();
+                $allowed = array_values(array_filter([
+                    $policy !== null && $admitted && $this->permits($business, $partyId, 'business.wallet.deposit') ? 'business.wallet.deposit' : null,
+                    $admitted && $this->withdrawals->offered() && $this->permits($business, $partyId, 'business.wallet.withdraw') ? 'business.wallet.withdraw' : null,
+                ]));
+                $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
                 $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
                 $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
+                $withdrawals = $this->withdrawals->view($wallet?->id, $methods->isNotEmpty(), $kind === 'withdraw', $query['amount'] ?? null, $query['receipt'] ?? null);
 
-                return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $canDeposit ? ['business.wallet.deposit'] : [],
-                    'business' => ['id' => $business['id'], 'name' => $business['profile']['name']], 'wallet' => $this->balances($wallet),
-                    'funding' => ['kind' => ($query['kind'] ?? null) === 'deposit' ? 'deposit' : null, 'policy' => $policy === null ? null : [
+                return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $allowed,
+                    'business' => ['id' => $business['id'], 'name' => $business['profile']['name']],
+                    'wallet' => [...$this->balances($wallet), 'pending_withdrawals' => $withdrawals['pending']],
+                    'funding' => ['kind' => $kind, 'policy' => $policy === null ? null : [
                         'version' => $policy['terms']->version, 'synthetic' => $policy['terms']->synthetic, 'fee' => $policy['terms']->fee->money(),
                         'minimum' => $policy['terms']->minimum?->money(), 'maximum' => $policy['terms']->maximum?->money()],
+                        'withdrawal' => $withdrawals['withdrawal'],
                         'methods' => $methods->map(fn (BusinessFundingMethod $method): array => $this->method($method))->values()->all(), 'picks' => [],
-                        'quote' => $this->quote($policy, $methods->isNotEmpty(), $query['kind'] ?? null, $query['amount'] ?? null)],
-                    'deposits' => $wallet === null ? [] : $this->deposits($wallet), 'history' => ['movement' => $movement, ...$history],
-                    'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
+                        'quote' => $this->quote($policy, $methods->isNotEmpty(), $kind, $query['amount'] ?? null)],
+                    'deposits' => $wallet === null ? [] : $this->deposits($wallet), 'withdrawals' => $withdrawals['withdrawals'],
+                    'history' => ['movement' => $movement, ...$history],
+                    'receipt' => $wallet === null ? null : ($this->openedReceipt($wallet, $query['receipt'] ?? null) ?? $withdrawals['receipt'])];
             });
     }
 
@@ -86,6 +103,12 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
 
             return ['available' => $this->balances($wallet)['available'], 'repaid' => WalletMoney::of($repaid)->money()];
         });
+    }
+
+    public function methods(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            fn (array $business): array => array_values($this->verifiedMethods($business['id'])->map(fn (BusinessFundingMethod $method): array => $this->method($method))->all()));
     }
 
     /**
@@ -107,6 +130,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                     function (string $operationId) use ($wallet, $business, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
                         $data = ['wallet_id' => $wallet->id];
                         $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
+                        if (! $this->admission->admitsBusiness()) {
+                            throw new CommandRejection('SYNTHETIC_BUSINESS_FUNDING_OFF', 403, data: $data);
+                        }
                         $method = $this->verifiedMethods($business['id'])->firstWhere('id', $methodId)
                             ?? throw new CommandRejection('DEPOSIT_METHOD_UNVERIFIED', data: $data);
                         $money = $amount['currency'] === 'RWF' ? WalletMoney::fromInput($amount['amount']) : null;
@@ -202,14 +228,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     public function claimDispatches(?string $intentId, int $limit, bool $resendInterrupted, string $environment): array
     {
         return DB::transaction(function () use ($intentId, $limit, $resendInterrupted, $environment): array {
-            $claimed = BusinessDepositDispatch::query()->where('phase', 'claimed')->select('intent_id');
-            $outcomes = BusinessDepositDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('intent_id');
-            $queued = BusinessDepositDispatch::query()->where('phase', 'queued')->whereNotIn('intent_id', $claimed)
-                ->when($intentId !== null, fn ($query) => $query->where('intent_id', $intentId))
-                ->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all();
-            $interrupted = $resendInterrupted ? BusinessDepositDispatch::query()->where('phase', 'claimed')->whereNotIn('intent_id', $outcomes)
-                ->where('created_at', '<', now()->subMinutes(5))->when($intentId !== null, fn ($query) => $query->where('intent_id', $intentId))
-                ->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all() : [];
+            $queued = $this->queuedDispatches($intentId)->orderBy('id')->limit($limit)->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all();
+            $interrupted = $resendInterrupted && count($queued) < $limit ? $this->interruptedDispatches($intentId)
+                ->orderBy('id')->limit($limit - count($queued))->lock('FOR UPDATE SKIP LOCKED')->pluck('intent_id')->all() : [];
             foreach ($queued as $queuedIntent) {
                 (new BusinessDepositDispatch)->forceFill(['intent_id' => $queuedIntent, 'phase' => 'claimed', 'created_at' => now('UTC')])->save();
             }
@@ -218,6 +239,35 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 ->map(fn (BusinessDepositIntent $intent): DepositInstruction => new DepositInstruction($intent->id, $intent->operation_id,
                     $intent->provider_reference, $this->intentPayload($intent)['amount'], $intent->currency, $environment))->all());
         }, 3);
+    }
+
+    public function claimableDispatches(bool $resendInterrupted): int
+    {
+        return $this->queuedDispatches(null)->count() + ($resendInterrupted ? $this->interruptedDispatches(null)->count() : 0);
+    }
+
+    /**
+     * Queued dispatches no claim has taken yet.
+     *
+     * @return Builder<BusinessDepositDispatch>
+     */
+    private function queuedDispatches(?string $intentId): Builder
+    {
+        return BusinessDepositDispatch::query()->where('phase', 'queued')
+            ->whereNotIn('intent_id', BusinessDepositDispatch::query()->where('phase', 'claimed')->select('intent_id'))
+            ->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
+    }
+
+    /**
+     * Claims still without a send outcome five minutes on: their send was interrupted.
+     *
+     * @return Builder<BusinessDepositDispatch>
+     */
+    private function interruptedDispatches(?string $intentId): Builder
+    {
+        return BusinessDepositDispatch::query()->where('phase', 'claimed')
+            ->whereNotIn('intent_id', BusinessDepositDispatch::query()->whereIn('phase', ['acknowledged', 'unacknowledged'])->select('intent_id'))
+            ->where('created_at', '<', now()->subMinutes(5))->when($intentId !== null, fn (Builder $query) => $query->where('intent_id', $intentId));
     }
 
     public function recordDispatch(string $intentId, bool $acknowledged): void
@@ -245,7 +295,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 return ['disposition' => $replay->disposition, 'state' => $this->currentState($intent->id), 'credited' => false, 'replayed' => true];
             }
             // Provider event keys are one namespace across owners: a key the other owner already consumed is a conflict here.
-            $consumedElsewhere = DB::table('wallet_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
+            $consumedElsewhere = DB::table('wallet_provider_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('wallet_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists()
+                || DB::table('business_withdrawal_events')->where('provider', $event->provider)->where('provider_event_id', $event->eventId)->exists();
             $current = $this->currentState($intent->id);
             $outcome = DepositOutcome::transition($current, $event->state);
             $disposition = match (true) {
@@ -278,15 +330,15 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     }
 
     /**
-     * Whether the actor's current mandate grants the deposit permission. The page never throws on a
+     * Whether the actor's current mandate grants a wallet permission. The page never throws on a
      * missing permission: it only withholds the action.
      *
      * @param  Business  $business
      */
-    private function permits(array $business, string $partyId): bool
+    private function permits(array $business, string $partyId, string $permission): bool
     {
         foreach ($business['mandate']['people'] as $person) {
-            if ($person['party_id'] === $partyId && in_array('business.wallet.deposit', $person['permissions'], true)) {
+            if ($person['party_id'] === $partyId && in_array($permission, $person['permissions'], true)) {
                 return true;
             }
         }
@@ -510,6 +562,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         $credit->forceFill(['intent_id' => $intent->id, 'wallet_id' => $intent->wallet_id, 'ledger_entry_id' => $entry->id, 'provider_event_id' => $event->id,
             'operation_id' => $intent->operation_id, 'request_id' => $intent->request_id, 'amount' => $intent->credited, 'payload' => $creditPayload,
             'sha256' => hash('sha256', $this->json->encode($creditPayload)), 'created_at' => $recordedAt])->save();
+        $businessId = (string) BusinessWallet::query()->whereKey($intent->wallet_id)->value('business_id');
+        $this->notices->record($this->audience->entityParty($businessId), PartyNoticeKind::BusinessDepositReceived,
+            ['amount' => (string) $intent->credited, 'currency' => 'RWF', 'business_id' => $businessId], 'business-deposit:'.$credit->id);
         // Surface an unbalanced or unbound entry here rather than at commit; the balance check seals the entry.
         DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_deposit_credit_bound, ledger_lines_entry_business_deposit_credit_bound IMMEDIATE');
         DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_business_deposit_credit_bound, ledger_lines_entry_business_deposit_credit_bound DEFERRED');

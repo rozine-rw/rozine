@@ -49,6 +49,7 @@ export function ChoiceChips<Code extends string>({
             <div
                 role="radiogroup"
                 aria-label={legend}
+                aria-describedby={errorId}
                 className="mt-[7px] flex flex-wrap gap-[7px]"
             >
                 {choices.map((choice) => {

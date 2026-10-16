@@ -10,7 +10,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `C3InvestorCommitmentProps` (investor-primary-v1) for both transports. It shapes already
  * authorized facts and adds real routes only. No cancel action is offered yet: the server cannot
- * yet tell a raising campaign from a funded one here, so the cancel command alone decides.
+ * yet tell a raising campaign from a funded one here, so the cancel command alone decides. The
+ * Investor's own refund links to its cancel request; a closure's refund opens its wallet receipt.
+ * `links.changes` is the change beacon for the Investor's purchases, from the cursor taken before
+ * the facts were read.
  * A destination with no live route yet is null; Portfolio and Profile are web pages only, so the
  * API carries their links as null.
  */
@@ -19,7 +22,7 @@ class InvestorCommitmentResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{identity_context_revision: int, commitment: array<string, mixed>|null, refusal: array{code: string, status: int}|null} $data */
+        /** @var array{identity_context_revision: int, commitment: array<string, mixed>|null, refusal: array{code: string, status: int}|null, changes_cursor?: string} $data */
         $data = $this->resource;
         $context = $data['identity_context_revision'];
         $commitment = $data['commitment'];
@@ -29,10 +32,11 @@ class InvestorCommitmentResource extends JsonResource
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'commitment' => $commitment === null ? null : self::commitment($request, $context, $commitment),
             'refusal' => $data['refusal'],
-            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'profile' => $page('investor.profile'),
+            'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $wallet, 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet,
-                'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment)]];
+                'operation' => $commitment === null ? null : self::lookup($request, $context, $commitment),
+                'changes' => isset($data['changes_cursor']) ? self::link($request, 'changes.index', ['topics' => 'purchase', 'after' => $data['changes_cursor']]) : null]];
     }
 
     /**
@@ -46,11 +50,16 @@ class InvestorCommitmentResource extends JsonResource
         $confirmation = $commitment['confirmation'];
         /** @var array<string, mixed>|null $refund */
         $refund = $commitment['refund'];
+        /** @var array{id: string}|null $holding */
+        $holding = $commitment['holding'];
         $shown = $commitment;
         unset($shown['reservation_id']);
 
         return [...$shown, 'confirmation' => [...$confirmation, 'link' => $link],
-            'refund' => $refund === null ? null : [...$refund, 'link' => self::lookup($request, $context, $commitment, (string) $refund['request_id'])],
+            'refund' => $refund === null ? null : [...$refund, 'link' => $commitment['cancelled_by'] === 'investor'
+                ? self::lookup($request, $context, $commitment, (string) $refund['request_id'])
+                : self::link($request, 'investor.wallet', ['receipt' => (string) $refund['receipt_id']])],
+            'holding' => $holding === null ? null : ['id' => $holding['id'], 'link' => self::link($request, 'investor.holdings.show', ['holding' => $holding['id']])],
             'actions' => ['cancel' => null], 'link' => $link];
     }
 

@@ -94,6 +94,16 @@ class EnvironmentIsolation
             throw new LogicException('ISOLATION_DEMO_FLAGS_DENIED');
         }
 
+        $uatSeedEnabled = $this->config->get('isolation.uat_seed_enabled');
+
+        if (! is_bool($uatSeedEnabled)) {
+            throw new LogicException('ISOLATION_FLAGS_MUST_BE_BOOLEAN');
+        }
+
+        if ($uatSeedEnabled && $profile !== 'uat') {
+            throw new LogicException('ISOLATION_UAT_SEED_DENIED');
+        }
+
         if ($this->config->get('isolation.live_money_enabled') !== false) {
             throw new LogicException('ISOLATION_LIVE_MONEY_NOT_ACTIVATED');
         }
@@ -194,9 +204,7 @@ class EnvironmentIsolation
             ],
             'filesystems.links' => [$this->app->publicPath('storage') => $root.'/public'],
             'mail.default' => $this->sendsStagingMail() ? 'smtp' : 'array',
-            'mail.mailers' => ['array' => ['transport' => 'array']] + ($this->sendsStagingMail()
-                ? ['smtp' => Arr::except($this->config->array('mail.mailers.smtp'), ['url'])]
-                : []),
+            'mail.mailers' => $this->isolatedMailers(),
             'services' => [],
             'logging.default' => 'isolated',
             'logging.channels' => ['isolated' => [
@@ -210,18 +218,41 @@ class EnvironmentIsolation
         ]);
     }
 
+    /**
+     * The mailers an isolated environment keeps: always the in-memory array mailer, plus the SMTP
+     * relay (without any URL form of it) only where staging sends real mail.
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function isolatedMailers(): array
+    {
+        $mailers = ['array' => ['transport' => 'array']];
+        if ($this->sendsStagingMail()) {
+            $mailers['smtp'] = Arr::except($this->config->array('mail.mailers.smtp'), ['url']);
+        }
+
+        return $mailers;
+    }
+
     public function canSeed(): bool
     {
         $this->assertSafeConfiguration();
 
         return in_array($this->profile(), ['local', 'testing'], true)
-            || ($this->profile() === 'demo' && $this->config->get('isolation.demo_enabled') === true);
+            || ($this->profile() === 'demo' && $this->config->get('isolation.demo_enabled') === true)
+            || ($this->profile() === 'uat' && $this->config->get('isolation.uat_seed_enabled') === true);
     }
 
+    /**
+     * Staging seeding is additive only: its switch never allows a wipe, refresh or rollback.
+     */
     public function canReset(): bool
     {
-        return $this->canSeed() && ($this->profile() !== 'demo'
-            || $this->config->get('isolation.demo_reset_enabled') === true);
+        return $this->canSeed() && match ($this->profile()) {
+            'demo' => $this->config->get('isolation.demo_reset_enabled') === true,
+            'uat' => false,
+            default => true,
+        };
     }
 
     public function assertSeedingAllowed(): void
@@ -242,9 +273,12 @@ class EnvironmentIsolation
             throw new LogicException('ISOLATION_RESET_DENIED');
         }
 
-        // The synthetic wallet seed, event hook and outbox worker exist for local and testing only.
-        if (in_array($command, ['local:wallet', 'wallet:dispatch-deposits'], true)
-            && (! in_array($this->profile(), ['local', 'testing'], true) || $this->config->get('isolation.live_money_enabled') !== false)) {
+        // The synthetic wallet seed and event hook exist for local and testing only. The staging tester
+        // setup and the deposit worker (outbox sends and synthetic settlement recovery) also run on UAT.
+        // Every one of them stops once live money is on.
+        $synthetic = ['local:wallet' => ['local', 'testing'], 'staging:wallet' => ['local', 'testing', 'uat'], 'wallet:dispatch-deposits' => ['local', 'testing', 'uat']];
+        if (isset($synthetic[$command])
+            && (! in_array($this->profile(), $synthetic[$command], true) || $this->config->get('isolation.live_money_enabled') !== false)) {
             throw new LogicException('ISOLATION_SYNTHETIC_WALLET_DENIED');
         }
     }

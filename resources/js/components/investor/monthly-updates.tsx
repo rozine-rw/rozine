@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import {
     formatSigned,
@@ -236,7 +237,7 @@ type UpdateSheetProps = {
 
 /**
  * One verified monthly report (phone L4543–4602, desk L468–527): who audited it and when, the
- * statement-verified inflow and outflow, the net, the business's note, the auditor's note and any
+ * statement-verified inflow and outflow, the net, the business's note when it left one, the auditor's note and any
  * captioned images the business published, each of which opens full size. No location text or
  * Audit Partner originals are shown (C3 v2, H9).
  */
@@ -357,10 +358,14 @@ export function UpdateSheet({ update, onClose }: UpdateSheetProps) {
                     </span>
                 </div>
 
-                <Micro>{t('investor.updates.from_business')}</Micro>
-                <p className="mt-2 text-[12.5px] leading-[1.6] text-rz-slate">
-                    {update.business_note}
-                </p>
+                {update.business_note !== '' && (
+                    <>
+                        <Micro>{t('investor.updates.from_business')}</Micro>
+                        <p className="mt-2 text-[12.5px] leading-[1.6] text-rz-slate">
+                            {update.business_note}
+                        </p>
+                    </>
+                )}
 
                 {update.auditor_note !== '' && (
                     <>
@@ -448,11 +453,14 @@ type ProofLightboxProps = {
 /** A published image full size (design L4507–4541): its caption and counter, and nothing else. */
 function ProofLightbox({ photos, index, onMove, onClose }: ProofLightboxProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(onClose);
     const photo = photos[index];
     const many = photos.length > 1;
 
     return (
         <div
+            ref={dialog}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={photo.caption}

@@ -100,7 +100,7 @@ it('refuses an expired or already used step-up proof without sealing, then seals
         }, {times: 1});';
 
     (new BrowserJourney('stepup', UD_PORT))->within(function (BrowserJourney $journey) use ($auditor, $report, $expired, $used, $substitute): void {
-        $journey->login('ud1a', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud1a', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
 
         /* Phone: the seal carries a proof that expired before it arrived. */
         $answers = $journey->code('ud1a', '
@@ -160,7 +160,7 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
     $report = $fixture['report'];
 
     (new BrowserJourney('source', UD_PORT))->within(function (BrowserJourney $journey) use ($fixture, $auditor, $report): void {
-        $journey->login('ud2a', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud2a', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
         $first = $journey->code('ud2a', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.'/auditor/reports/'.$report->id).');
@@ -237,7 +237,7 @@ it('refuses a lost seal retried after another session moved the report on, and s
     $report = $fixture['report'];
 
     (new BrowserJourney('stale', UD_PORT))->within(function (BrowserJourney $journey) use ($fixture, $auditor, $report): void {
-        $journey->login('ud2b', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud2b', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
 
         /* Desktop: the seal is lost before it reaches Rozine, so nothing is recorded for its request ID. */
         $held = $journey->code('ud2b', '
@@ -323,7 +323,7 @@ it('offers no co-sign control to a non-signer or a view-only Business member and
         if (await page.getByRole("checkbox").count() !== 0) throw new Error("An acceptance box is offered");';
 
     (new BrowserJourney('signer', UD_PORT))->within(function (BrowserJourney $journey) use ($reader, $path, $forge, $noControl, $authority): void {
-        $journey->login('ud3b', $reader->email, UD_PASSWORD);
+        $journey->login('ud3b', $reader->email, UD_PASSWORD, landing: '**/business/*');
 
         /* A current reader the mandate does not require: the report, but no signature. */
         $forged = $journey->code('ud3b', '
@@ -365,7 +365,7 @@ it('denies a replaced Auditor the report and its seal, with no stale action left
     $url = json_encode('/auditor/reports/'.$report->id);
 
     (new BrowserJourney('replaced', UD_PORT))->within(function (BrowserJourney $journey) use ($fixture, $auditor, $report, $url): void {
-        $journey->login('ud4a', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud4a', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
         $journey->code('ud4a', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base).' + '.$url.');
@@ -441,7 +441,7 @@ it('cold-reloads the sealed and co-signed states and verifies the seal publicly 
         if (await page.getByRole("link").count() !== 0 || await page.getByRole("navigation").count() !== 0) throw new Error("Public seal page draws a shell");';
 
     (new BrowserJourney('cold', UD_PORT))->within(function (BrowserJourney $journey) use ($fixture, $auditor, $owner, $report, $reportUrl, $verify, $fiveFacts): void {
-        $journey->login('ud5a', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud5a', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
         $journey->code('ud5a', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base).' + '.$reportUrl.');
@@ -453,7 +453,7 @@ it('cold-reloads the sealed and co-signed states and verifies the seal publicly 
 
         expect(AuditSealingFixture::cosign($fixture, overrides: ['reportRevision' => $report->revision])['code'])->toBe('REPORT_PUBLISHED');
 
-        $journey->login('ud5b', $owner->email, UD_PASSWORD);
+        $journey->login('ud5b', $owner->email, UD_PASSWORD, landing: '**/business/'.$fixture['audit']['business']);
         $href = $journey->code('ud5b', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/business/'.$fixture['audit']['business'].'/audit-reports/'.$report->id).');
@@ -513,7 +513,7 @@ it('recovers a lost note save and seal answer through the same request ID with e
     $note = 'Observed difference retained for review after a recount.';
 
     (new BrowserJourney('retry', UD_PORT))->within(function (BrowserJourney $journey) use ($auditor, $report, $note): void {
-        $journey->login('ud6a', $auditor->email, UD_PASSWORD, UD_SECRET);
+        $journey->login('ud6a', $auditor->email, UD_PASSWORD, landing: '**/auditor', secret: UD_SECRET);
         $saved = $journey->code('ud6a', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/auditor/reports/'.$report->id).');
@@ -565,7 +565,7 @@ it('recovers a lost co-sign answer through the same request ID with exactly one 
     $report = $fixture['report']->refresh();
 
     (new BrowserJourney('cosign', UD_PORT))->within(function (BrowserJourney $journey) use ($fixture, $owner, $report): void {
-        $journey->login('ud7b', $owner->email, UD_PASSWORD);
+        $journey->login('ud7b', $owner->email, UD_PASSWORD, landing: '**/business/'.$fixture['audit']['business']);
         $cosigned = $journey->code('ud7b', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.'/business/'.$fixture['audit']['business'].'/audit-reports/'.$report->id).');

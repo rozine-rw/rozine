@@ -11,6 +11,7 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 /**
  * @phpstan-import-type Directory from BusinessDirectoryStore
@@ -70,9 +71,15 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             (string) ($actors[$campaign->actor_user_id] ?? ''), 'campaign.publish', $title($campaign), null));
         $closed = $campaigns->filter(fn (BusinessCampaign $campaign): bool => $closures->has($campaign->id))->map(function (BusinessCampaign $campaign) use ($closures, $title): array {
             $closure = (array) $closures->get($campaign->id);
+            $command = match ($closure['phase']) {
+                'cancelled' => 'campaign.cancel',
+                'expired' => 'campaign.expire',
+                'failed_closing' => 'campaign.failed_closing',
+                default => throw new RuntimeException('CAMPAIGN_CLOSURE_INTEGRITY_FAILED'),
+            };
 
             return self::entry((string) $closure['id'], $closure['closed_at'], (string) ($closure['name'] ?? 'System'),
-                $closure['phase'] === 'cancelled' ? 'campaign.cancel' : 'campaign.expire', $title($campaign), null);
+                $command, $title($campaign), null);
         });
         $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all()];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
@@ -139,7 +146,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     /**
      * One history entry, its stored instant as UTC ISO 8601 so entries sort as text.
      *
-     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'  $command
+     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'  $command
      * @return HistoryEntry
      */
     private static function entry(string $id, mixed $at, string $actor, string $command, ?string $subject, ?string $reason): array

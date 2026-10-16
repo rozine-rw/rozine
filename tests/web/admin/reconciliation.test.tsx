@@ -132,6 +132,17 @@ describe('Reconciliation', () => {
         expect(brk).not.toHaveTextContent('Bank settlement account');
     });
 
+    it('offers no link for a break whose record the viewer may not open', () => {
+        const page = props(reconciliationFixture);
+
+        page.breaks[0] = { ...page.breaks[0], link: null };
+        render(<AdminReconciliation {...page} />);
+
+        expect(
+            within(rowOf('STM-2027-0122')).queryByRole('link'),
+        ).not.toBeInTheDocument();
+    });
+
     it('tells a search that matched no account apart from none reported', () => {
         const page = props(feedFixture);
 

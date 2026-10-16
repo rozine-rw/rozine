@@ -31,6 +31,10 @@
             "pending_deposits": {
                 "currency": "RWF",
                 "amount": "0"
+            },
+            "pending_withdrawals": {
+                "currency": "RWF",
+                "amount": "0"
             }
         },
         "holds": [],
@@ -39,9 +43,26 @@
             "policy": null,
             "methods": [],
             "picks": [],
-            "quote": null
+            "quote": null,
+            "withdrawal": {
+                "version": "LED-R04/2026-10",
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "2000000"
+                },
+                "charge": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "quote": null
+            }
         },
         "deposits": [],
+        "withdrawals": [],
         "history": {
             "movement": "external",
             "filters": [
@@ -79,6 +100,14 @@
                 "url": "/investor/portfolio",
                 "method": "get"
             },
+            "market": {
+                "url": "/investor/market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/investor/cart",
+                "method": "get"
+            },
             "profile": {
                 "url": "/investor/profile",
                 "method": "get"
@@ -88,7 +117,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/investor/notifications",
+                "url": "/investor/notices",
                 "method": "get"
             },
             "launcher": {
@@ -103,6 +132,10 @@
                 "url": "/investor/wallet?kind=deposit",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/investor/wallet?kind=withdraw",
+                "method": "get"
+            },
             "link_account": {
                 "url": "/investor/profile?section=linked",
                 "method": "get"
@@ -111,11 +144,19 @@
                 "url": "/preview/investor/wallet-operations/{request_id}",
                 "method": "get"
             },
+            "withdraw_operation": {
+                "url": "/preview/investor/wallet-operations/{request_id}?command=wallet.withdraw",
+                "method": "get"
+            },
             "changes": null
         },
         "actions": {
             "deposit": {
                 "url": "/preview/investor/wallet/deposits",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/investor/wallet/withdrawals",
                 "method": "post"
             }
         }

@@ -9,17 +9,22 @@ use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
+use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\BusinessHolders;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditDisputeProof;
@@ -38,14 +43,19 @@ use Illuminate\Support\Str;
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  * @phpstan-import-type AuditBinding from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Verification from \App\Application\Evidence\Contracts\StatementStore
+ * @phpstan-import-type PublishedMonthlyReport from PublishedMonthlyReports
  */
-final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore, PublishedApplicationReport
+final class EloquentAuditReportPublicationStore implements AuditReportPublicationStore, PublishedApplicationReport, PublishedMonthlyReports
 {
     public function __construct(private WithBusinessStatementVerification $evidence, private WithBusinessAuthority $authority,
         private IdentityRepository $identities, private AuditAssignmentStore $assignments, private AuditReportCryptography $cryptography,
         private OperationJournal $journal, private CanonicalJson $json, private AuditReportWindow $window, private AuditSourceFactsStore $sourceFacts,
         private MonthlyReportReview $reviewPolicy, private StatementStore $statements,
-        private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff) {}
+        private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff,
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders) {}
+
+    /** How long before a monthly review window closes the Business is reminded (BRS NTF-R01). */
+    private const int CLOSING_REMINDER_HOURS = 2;
 
     /** @param array<string, mixed> $payload */
     public function open(string $reportId, string $digest, array $payload): void
@@ -62,6 +72,50 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             $this->event($publication, 'report.delivered', 'system', null, null,
                 ['delivered_at' => $payload['sealed_at'], 'due_at' => $publication->due_at?->toIso8601String()], 1);
         }
+        $period = $payload['report']['period'] ?? null;
+        $this->notices->record($this->audience->entityParty($publication->business_id), PartyNoticeKind::BusinessReportSealed, [
+            'auditor' => (string) ($payload['auditor_name'] ?? ''), 'period' => is_string($period) ? $period : null,
+            'due_at' => $monthly ? $publication->due_at?->utc()->format('Y-m-d\TH:i:s\Z') : $this->window->dueAt(is_string($period) ? $period : null),
+            'business_id' => $publication->business_id, 'report_id' => $reportId,
+        ], 'business-report-sealed:'.$publication->id);
+    }
+
+    /**
+     * Tells every holder of the Business's notes, in-app and by e-mail, that a monthly report was
+     * published (FR-103, FR-110), once per report. A Flash audit, or a report still in review, tells nobody.
+     */
+    private function noticeHolders(AuditReportPublication $publication): void
+    {
+        $seal = AuditReportSeal::query()->where('audit_report_id', $publication->audit_report_id)->firstOrFail();
+        $period = $seal->payload['report']['period'] ?? null;
+        $parties = $publication->status === 'published' && is_string($period) ? $this->holders->parties($publication->business_id) : [];
+        foreach ($parties as $partyId) {
+            $this->notices->record($partyId, PartyNoticeKind::ReportPublished, ['business' => (string) $seal->payload['business']['profile']['name'],
+                'period' => substr($period, 0, 7), 'partner' => (string) $seal->payload['auditor_name'], 'business_id' => $publication->business_id,
+                'report_id' => $publication->audit_report_id], 'report-published:'.$publication->audit_report_id.':'.$partyId);
+        }
+    }
+
+    /**
+     * Reminds each Business whose monthly review window closes within the next two hours that
+     * the window to co-sign or dispute is closing, once per publication.
+     *
+     * @return int the reminders recorded
+     */
+    public function remindClosing(int $limit = 100): int
+    {
+        $now = now('UTC');
+        $due = AuditReportPublication::query()->where('policy_version', MonthlyReportReview::POLICY)->where('status', 'pending')
+            ->where('due_at', '>', $now)->where('due_at', '<=', $now->copy()->addHours(self::CLOSING_REMINDER_HOURS))
+            ->orderBy('due_at')->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id', 'due_at']);
+        foreach ($due as $publication) {
+            $this->notices->record($this->audience->entityParty($publication->business_id), PartyNoticeKind::BusinessReportReviewClosing, [
+                'due_at' => $publication->due_at->utc()->format('Y-m-d\TH:i:s\Z'),
+                'business_id' => $publication->business_id, 'report_id' => $publication->audit_report_id,
+            ], 'business-report-review-closing:'.$publication->id);
+        }
+
+        return $due->count();
     }
 
     /**
@@ -183,6 +237,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                         }
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $complete ? 'published' : 'pending',
                             'published_at' => $complete ? $at : null])->save();
+                        $this->noticeHolders($publication);
 
                         return $this->receipt($publication, $signature);
                     });
@@ -245,6 +300,42 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
         return ['partner' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
             'verified_on' => substr((string) $seal->payload['sealed_at'], 0, 10), 'digest' => $seal->digest];
+    }
+
+    public function forBusiness(string $businessId): array
+    {
+        $publications = AuditReportPublication::query()->join('audit_reports as reports', 'reports.id', '=', 'audit_report_publications.audit_report_id')
+            ->where('audit_report_publications.business_id', $businessId)->where('audit_report_publications.status', 'published')
+            ->where('reports.kind', 'monthly')->orderByDesc('reports.id')->get(['audit_report_publications.*']);
+        $reports = array_values(array_filter($publications->map(fn (AuditReportPublication $publication): ?array => $this->monthlyReport($publication))->all()));
+        usort($reports, fn (array $left, array $right): int => strcmp($right['period'], $left['period']));
+
+        return $reports;
+    }
+
+    /**
+     * A published monthly report as Investors may see it; null when its seal no longer verifies or
+     * its statements never reconciled to monthly figures.
+     *
+     * @return PublishedMonthlyReport|null
+     */
+    private function monthlyReport(AuditReportPublication $publication): ?array
+    {
+        $seal = rescue(fn (): AuditReportSeal => $this->seal($publication), null, false);
+        $monthly = $seal?->payload['sources']['monthly'] ?? null;
+        /** @var list<array{code: string, observed?: mixed}> $findings */
+        $findings = $seal?->payload['report']['findings'] ?? [];
+        $operational = array_find($findings, fn (array $finding): bool => $finding['code'] === 'OPERATIONAL_STATUS_OBSERVED');
+        $note = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get()
+            ->map(fn (AuditReportSignature $signature): string => (string) ($signature->payload['note'] ?? ''))->first(fn (string $text): bool => $text !== '');
+
+        return $seal === null || ! is_array($monthly) ? null : ['report_id' => $publication->audit_report_id, 'period' => (string) $monthly['period'],
+            'inflow' => (string) $monthly['inflow'], 'outflow' => (string) $monthly['outflow'], 'net' => (string) $monthly['net'],
+            'operational_status' => (string) ($operational['observed'] ?? 'active'),
+            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')),
+            'auditor' => ['name' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
+                'sealed_on' => substr((string) $seal->payload['sealed_at'], 0, 10)],
+            'auditor_note' => (string) $seal->payload['report']['draft']['note'], 'business_note' => $note ?? ''];
     }
 
     /** @return array<string, mixed> */
@@ -616,6 +707,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     $this->event($publication, $command, 'staff', $userId, null, ['review' => $review, 'decision' => $decision], at: $at);
                     $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $publish ? 'published' : 'escalated',
                         'review' => $review, 'published_at' => $publish ? $at : null, 'published_reason' => $publish ? 'staff_resolved' : null])->save();
+                    $this->noticeHolders($publication);
 
                     return $this->reviewReceipt($publication, $publish ? 'REPORT_PUBLISHED' : ($escalate ? 'REPORT_DISPUTE_ESCALATED' : 'REPORT_DISPUTE_AMENDMENT_REQUIRED'));
                 });
@@ -649,6 +741,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                                 $this->event($publication, 'report.auto_approve', 'system', null, null, ['published_reason' => 'auto_approved'], at: $at);
                                 $publication->forceFill(['revision' => $publication->revision + 1, 'status' => 'published',
                                     'published_at' => $at, 'published_reason' => 'auto_approved'])->save();
+                                $this->noticeHolders($publication);
 
                                 return 1;
                             });
