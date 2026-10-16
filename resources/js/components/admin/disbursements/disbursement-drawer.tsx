@@ -251,6 +251,22 @@ export function DisbursementDrawer({
                         <dd className="mt-[3px] text-[15px] font-bold text-rz-ink">
                             {formatRwf(disbursement.amount)}
                         </dd>
+                        {disbursement.platform_fee && (
+                            <dd className={cn('mt-[3px] text-[11px]', EXPLAIN)}>
+                                {t('admin.disbursements.platform_fee', {
+                                    fee: formatRwf(
+                                        disbursement.platform_fee.fee,
+                                    ),
+                                    share: formatRwf(
+                                        disbursement.platform_fee
+                                            .audit_partner_share,
+                                    ),
+                                    payout: formatRwf(
+                                        disbursement.platform_fee.payout,
+                                    ),
+                                })}
+                            </dd>
+                        )}
                     </div>
                     <div className={TILE}>
                         <dt

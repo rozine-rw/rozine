@@ -90,11 +90,21 @@ it('posts a Business repayment as one available debit and one repayment clearing
         ->and(fn () => JournalEntry::businessRepaymentDebit(WalletMoney::zero()))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
 });
 
+it('splits a platform fee between Rozine revenue and the Audit Partner payable, and refuses a split that is not a share', function (): void {
+    $entry = JournalEntry::platformFee(WalletMoney::of('360000'), WalletMoney::of('144000'));
+    expect($entry->kind)->toBe('disbursement_platform_fee')
+        ->and(journalLines($entry))->toBe([['disbursement_settlement', 'debit', '360000'], ['audit_partner_fee_payable', 'credit', '144000'],
+            ['platform_fee_revenue', 'credit', '216000']])
+        ->and(fn () => JournalEntry::platformFee(WalletMoney::of('360000'), WalletMoney::zero()))->toThrow(WalletViolation::class, 'PLATFORM_FEE_SPLIT_INVALID')
+        ->and(fn () => JournalEntry::platformFee(WalletMoney::of('360000'), WalletMoney::of('360000')))->toThrow(WalletViolation::class, 'PLATFORM_FEE_SPLIT_INVALID');
+});
+
 it('has no Rozine account that could pay for or receive a note (BRS GEN-R01)', function (): void {
     $rozineAccounts = array_values(array_filter(JournalLine::ACCOUNTS,
         fn (string $account): bool => ! str_starts_with($account, 'investor_') && ! str_starts_with($account, 'business_')));
 
-    expect($rozineAccounts)->toBe(['deposit_clearing', 'deposit_fee_revenue', 'disbursement_settlement', 'repayment_clearing', 'withdrawal_clearing'])
+    expect($rozineAccounts)->toBe(['deposit_clearing', 'deposit_fee_revenue', 'disbursement_settlement', 'repayment_clearing', 'withdrawal_clearing',
+        'platform_fee_revenue', 'audit_partner_fee_payable'])
         ->and(JournalLine::ACCOUNTS)->each->not->toMatch('/rozine|operating|inventory|principal|market|reserve/')
         ->and(fn () => new JournalLine('rozine_inventory', 'debit', WalletMoney::of('5000')))->toThrow(WalletViolation::class, 'JOURNAL_LINE_INVALID');
 });

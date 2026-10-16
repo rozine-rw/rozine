@@ -241,6 +241,7 @@ export type LedgerKind =
     | 'disbursement'
     | 'repayment'
     | 'service_fee'
+    | 'platform_fee'
     | 'repayment_fee'
     | 'auditor_share'
     | 'distribution'
@@ -850,6 +851,18 @@ export type C3DisbursementRow = {
     /** Masked by the server. */
     destination: string;
     amount: Money;
+    /**
+     * The BRS v2.0 platform fee taken from the raise (SVC-R01): 3% of the amount, 40% of it the
+     * Audit Partner's. The payout is what the Business receives. Null for a disbursement opened
+     * before the fee rule.
+     */
+    platform_fee: {
+        fee: Money;
+        audit_partner_share: Money;
+        rozine_share: Money;
+        payout: Money;
+        version: string;
+    } | null;
     state: C3DisbursementState;
     provider_state: ProviderOutcomeState | null;
     link: RouteLink;

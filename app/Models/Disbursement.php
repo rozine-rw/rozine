@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $exposure_reservation_id
  * @property string $amount
  * @property string $currency
+ * @property string $platform_fee
+ * @property string $audit_partner_fee
+ * @property string|null $fee_version
  * @property string $commitments_digest
  * @property int $commitment_count
  * @property int $term_months
@@ -42,6 +45,6 @@ class Disbursement extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['amount' => 'string', 'funded_at' => 'immutable_datetime', 'payload' => 'encrypted:array'];
+        return ['amount' => 'string', 'platform_fee' => 'string', 'audit_partner_fee' => 'string', 'funded_at' => 'immutable_datetime', 'payload' => 'encrypted:array'];
     }
 }

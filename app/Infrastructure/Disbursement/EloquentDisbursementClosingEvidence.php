@@ -10,12 +10,14 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Disbursement\DisbursementViolation;
 use App\Domain\Disbursement\IntentDigest;
 use App\Domain\Disbursement\IssueSchedule;
+use App\Domain\Disbursement\PlatformFee;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderEvent;
 use App\Models\DisbursementReconciliation;
 use App\Models\DisbursementStepUpProof;
+use Brick\Math\BigInteger;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -122,7 +124,7 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
             || ($payload['principal'] ?? null) !== $disbursement->amount || $disbursement->currency !== 'RWF'
             || ($payload['commitments_digest'] ?? null) !== $disbursement->commitments_digest
             || ! is_array($commitments) || count($commitments) !== $disbursement->commitment_count
-            || ($payload['term_months'] ?? null) !== $disbursement->term_months) {
+            || ($payload['term_months'] ?? null) !== $disbursement->term_months || ! $this->feeMatches($disbursement, $payload)) {
             throw new DisbursementViolation(self::INTEGRITY_FAILED);
         }
     }
@@ -173,6 +175,23 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
         }
     }
 
+    /**
+     * The platform fee a disbursement was opened under: none before the fee rule, otherwise exactly the
+     * columns and the authenticated payload the rule computes from the principal.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function feeMatches(Disbursement $disbursement, array $payload): bool
+    {
+        if ($disbursement->fee_version === null) {
+            return $disbursement->platform_fee === '0' && $disbursement->audit_partner_fee === '0' && ! array_key_exists('platform_fee', $payload);
+        }
+        $fee = PlatformFee::of($disbursement->amount);
+
+        return $disbursement->fee_version === PlatformFee::VERSION && ($payload['platform_fee'] ?? null) === $fee->toArray()
+            && $disbursement->platform_fee === (string) $fee->fee && $disbursement->audit_partner_fee === (string) $fee->auditPartnerShare;
+    }
+
     /** The closing's intent: this disbursement's, authenticated, with its amount, commitments and recomputed intent digest. */
     private function intent(string $intentId, Disbursement $disbursement): DisbursementIntent
     {
@@ -185,7 +204,7 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
         if ($intent->disbursement_id !== $disbursement->id || ($payload['intent_id'] ?? null) !== $intent->id
             || ($payload['disbursement_id'] ?? null) !== $disbursement->id || ($payload['operation_id'] ?? null) !== $intent->operation_id
             || ($payload['revision'] ?? null) !== $intent->revision || ($payload['amount'] ?? null) !== $intent->amount
-            || $intent->amount !== $disbursement->amount || $intent->currency !== $disbursement->currency
+            || $intent->amount !== (string) BigInteger::of($disbursement->amount)->minus($disbursement->platform_fee) || $intent->currency !== $disbursement->currency
             || $intent->commitments_digest !== $disbursement->commitments_digest || ($payload['intent_digest'] ?? null) !== $intent->intent_digest
             || ! hash_equals($digest, $intent->intent_digest)
             || ($payload['provider'] ?? null) !== $intent->provider || ($payload['environment'] ?? null) !== $intent->environment

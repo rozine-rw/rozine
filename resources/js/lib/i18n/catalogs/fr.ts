@@ -345,7 +345,7 @@ const fr: Catalog = {
     'business.apply.raise.rate_info': 'Comment ce taux est fixé',
     'business.apply.raise.rate_how': 'Comment votre taux est fixé',
     'business.apply.raise.rate_one_charge':
-        'Un seul coût forfaitaire sur ce que vous empruntez. Il couvre tout — aucuns frais de dossier, de gestion ni prélèvement en plus.',
+        'Un seul coût forfaitaire sur ce que vous empruntez. La seule déduction est la commission de plateforme de 3 %, prélevée sur votre levée lors du versement — aucuns frais de dossier ni prélèvement en plus.',
     'business.apply.raise.rate_yours': 'Votre notation',
     'business.apply.raise.rate_rated': 'Notée {band}',
     'business.apply.raise.rate_best': 'Meilleure notation, 3 mois',
@@ -416,7 +416,7 @@ const fr: Catalog = {
     'business.apply.review.application_fee_when':
         "Unique, facturés à l'approbation.",
     'business.apply.review.fee_note':
-        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne.',
+        'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
@@ -1477,6 +1477,7 @@ const fr: Catalog = {
     'admin.ledger.kind.disbursement': 'Décaissement',
     'admin.ledger.kind.repayment': 'Remboursement',
     'admin.ledger.kind.service_fee': 'Frais de service',
+    'admin.ledger.kind.platform_fee': 'Frais de plateforme',
     'admin.ledger.kind.repayment_fee': 'Frais de remboursement',
     'admin.ledger.kind.auditor_share': "Part du partenaire d'audit",
     'admin.ledger.kind.distribution': 'Versement aux investisseurs',
@@ -1752,6 +1753,8 @@ const fr: Catalog = {
     'admin.disbursements.drawer_label': 'Décaissement {reference}',
     'admin.disbursements.independence.title': 'Déclaration d’indépendance',
     'admin.disbursements.amount': 'Montant',
+    'admin.disbursements.platform_fee':
+        'Commission de plateforme de 3 % : {fee}, dont {share} pour le partenaire d’audit. L’entreprise reçoit {payout}.',
     'admin.disbursements.destination': 'Destination',
     'admin.disbursements.due': 'Échéance',
     'admin.disbursements.rule_dual':
@@ -3954,7 +3957,7 @@ const fr: Catalog = {
     'business.apply.review.fee_projection_note':
         'Frais de service prévisionnels : {rate} % de chaque remboursement, prélevés sur les montants effectivement remboursés (capital et intérêts, hors frais et pénalités). Ces montants supposent que chaque échéance est payée en totalité à la date prévue.',
     'business.apply.review.fee_note_service_fee':
-        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
+        'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
     'business.apply.review.fee_unavailable':
         'Conditions de frais indisponibles — vous ne pouvez pas encore signer',
     'business.apply.review.fee_unavailable_body':
@@ -4957,6 +4960,8 @@ const fr: Catalog = {
     'investor.notices.business.disbursement_sent.title': 'Fonds envoyés',
     'investor.notices.business.disbursement_sent.body':
         '{amount} pour {title} ont été envoyés vers {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} pour {title} ont été envoyés vers {account} : les {principal} levés moins les frais de plateforme de 3 % ({fee}).',
     'investor.notices.primary.report_published.title': 'Rapport mensuel publié',
     'investor.notices.primary.report_published.body':
         '{business} a publié son rapport de {month}, vérifié par {partner}.',

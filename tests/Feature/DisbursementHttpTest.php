@@ -66,7 +66,11 @@ it('renders the queue and the opened disbursement with only this viewer\'s actio
     $this->actingAs($checker)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('disbursement.step_up.purpose', 'disbursement.approve')
             ->where('disbursement.step_up.route.url', route('staff.disbursements.step-up', ['disbursement' => $disbursement->id], false))
-            ->where('disbursement.approval_binding.revision', 1)->where('disbursement.approval_binding.amount.amount', $disbursement->amount)
+            ->where('disbursement.approval_binding.revision', 1)->where('disbursement.approval_binding.amount.amount', '2910000')
+            ->where('disbursement.amount.amount', $disbursement->amount)
+            ->where('disbursement.platform_fee', ['fee' => ['currency' => 'RWF', 'amount' => '90000'],
+                'audit_partner_share' => ['currency' => 'RWF', 'amount' => '36000'], 'rozine_share' => ['currency' => 'RWF', 'amount' => '54000'],
+                'payout' => ['currency' => 'RWF', 'amount' => '2910000'], 'version' => 'brs-2.0-fee-r01'])
             ->where('disbursement.allowed_actions', ['disbursement.approve', 'disbursement.reject', 'disbursement.hold'])
             ->where('nav.applications.url', route('staff.applications.index', [], false)));
 });

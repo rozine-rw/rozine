@@ -343,7 +343,7 @@ const rw: Catalog = {
     'business.apply.raise.rate_info': 'Uko iki gipimo gishyirwaho',
     'business.apply.raise.rate_how': 'Uko igipimo cyawe gishyirwaho',
     'business.apply.raise.rate_one_charge':
-        "Ikiguzi kimwe ku byo uguza. Kirimo byose — nta yandi mafaranga y'inyongera.",
+        "Ikiguzi kimwe ku byo uguza. Igikurwamo cyonyine ni amafaranga ya platifomu ya 3%, akurwa ku mafaranga wakusanyije igihe akoherejwe — nta yandi mafaranga y'inyongera.",
     'business.apply.raise.rate_yours': 'Amanota yawe',
     'business.apply.raise.rate_rated': 'Ku rwego rwa {band}',
     'business.apply.raise.rate_best': 'Amanota yo hejuru, amezi 3',
@@ -413,7 +413,7 @@ const rw: Catalog = {
     'business.apply.review.application_fee_when':
         'Rimwe gusa, yishyurwa nibyemezwa.',
     'business.apply.review.fee_note':
-        'Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.',
+        'Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',
@@ -1469,6 +1469,7 @@ const rw: Catalog = {
     'admin.ledger.kind.disbursement': 'Kwishyura ikigo',
     'admin.ledger.kind.repayment': 'Kwishyura inguzanyo',
     'admin.ledger.kind.service_fee': 'Amafaranga ya serivisi',
+    'admin.ledger.kind.platform_fee': 'Amafaranga ya platifomu',
     'admin.ledger.kind.repayment_fee': 'Amafaranga yo kwishyura',
     'admin.ledger.kind.auditor_share': "Umugabane w'umugenzuzi",
     'admin.ledger.kind.distribution': 'Kwishyura abashoramari',
@@ -1745,6 +1746,8 @@ const rw: Catalog = {
     'admin.disbursements.drawer_label': 'Kwishyura {reference}',
     'admin.disbursements.independence.title': 'Itangazo ry’ubwigenge',
     'admin.disbursements.amount': 'Amafaranga',
+    'admin.disbursements.platform_fee':
+        'Amafaranga ya platifomu ya 3%: {fee}, muri yo {share} ajya ku mugenzuzi. Ikigo cyakira {payout}.',
     'admin.disbursements.destination': 'Aho yoherezwa',
     'admin.disbursements.due': 'Igihe',
     'admin.disbursements.rule_dual':
@@ -3934,7 +3937,7 @@ const rw: Catalog = {
     'business.apply.review.fee_projection_note':
         "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
     'business.apply.review.fee_note_service_fee':
-        "Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
+        "Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
     'business.apply.review.fee_unavailable':
         "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
     'business.apply.review.fee_unavailable_body':
@@ -4928,6 +4931,8 @@ const rw: Catalog = {
     'investor.notices.business.disbursement_sent.title': 'Amafaranga yoherejwe',
     'investor.notices.business.disbursement_sent.body':
         '{amount} ya {title} yoherejwe kuri {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} ya {title} yoherejwe kuri {account}: ni {principal} zakusanyijwe havuyemo amafaranga ya serivisi ya 3% angana na {fee}.',
     'investor.notices.primary.report_published.title':
         'Raporo y’ukwezi yasohotse',
     'investor.notices.primary.report_published.body':

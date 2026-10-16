@@ -238,6 +238,24 @@ describe('Disbursements queue', () => {
 });
 
 describe('Disbursement drawer', () => {
+    it('shows the platform fee taken from the amount and what the Business receives', () => {
+        const page = props(readyFixture);
+        opened(page).platform_fee = {
+            fee: { currency: 'RWF', amount: '540000' },
+            audit_partner_share: { currency: 'RWF', amount: '216000' },
+            rozine_share: { currency: 'RWF', amount: '324000' },
+            payout: { currency: 'RWF', amount: '17460000' },
+            version: 'brs-2.0-fee-r01',
+        };
+        render(<AdminDisbursements {...page} />);
+
+        expect(
+            within(drawer()).getByText(
+                '3% platform fee RWF 540,000, of which RWF 216,000 to the Audit Partner. The Business receives RWF 17,460,000.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('shows a ready disbursement with no deadline and only its allowed actions', () => {
         render(<AdminDisbursements {...props(readyFixture)} />);
         const panel = drawer();

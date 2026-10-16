@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Disbursement;
 
+use App\Application\Auditor\Contracts\NoteAuditPartner;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
+use App\Application\Disbursement\Contracts\PlatformFeeLedger;
 use App\Application\Disbursement\Contracts\StaffConnections;
 use App\Application\Disbursement\DispatchDisbursements;
 use App\Application\Disbursement\FailedClosing;
@@ -31,6 +33,7 @@ use App\Domain\Disbursement\DisbursementViolation;
 use App\Domain\Disbursement\IntentDigest;
 use App\Domain\Disbursement\IssueSchedule;
 use App\Domain\Disbursement\PayoutOutcome;
+use App\Domain\Disbursement\PlatformFee;
 use App\Domain\Disbursement\Reconciliation;
 use App\Domain\Disbursement\StaffIndependence;
 use App\Domain\Identity\PartyNoticeKind;
@@ -47,6 +50,7 @@ use App\Models\DisbursementProviderEvent;
 use App\Models\DisbursementReconciliation;
 use App\Models\DisbursementStepUpMarker;
 use App\Models\DisbursementStepUpProof;
+use Brick\Math\BigInteger;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Config\Repository;
@@ -84,7 +88,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
         private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation,
         private IdentityAccessStore $identities, private FundedPurchaseChanges $purchases, private PartyNotices $notices,
-        private BusinessNoticeAudience $audience) {}
+        private BusinessNoticeAudience $audience, private PlatformFeeLedger $fees, private NoteAuditPartner $auditPartners) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -248,12 +252,14 @@ final class EloquentDisbursementStore implements DisbursementStore
                 if (Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->exists()) {
                     return 0;
                 }
+                $fee = PlatformFee::of($campaign->principal);
                 $payload = ['campaign_id' => $campaign->campaignId, 'business_id' => $campaign->businessId, 'business_name' => $campaign->businessName,
                     'title' => $campaign->title, 'exposure_reservation_id' => $campaign->exposureReservationId, 'principal' => $campaign->principal,
                     'funded_at' => $campaign->fundedAt, 'term_months' => $campaign->termMonths, 'commitments_digest' => $campaign->commitmentsDigest(),
-                    'commitment_ids' => array_map(fn ($commitment): string => $commitment->id, $campaign->commitments)];
+                    'commitment_ids' => array_map(fn ($commitment): string => $commitment->id, $campaign->commitments), 'platform_fee' => $fee->toArray()];
                 (new Disbursement)->forceFill(['business_campaign_id' => $campaign->campaignId, 'business_id' => $campaign->businessId,
                     'exposure_reservation_id' => $campaign->exposureReservationId, 'amount' => $campaign->principal, 'currency' => 'RWF',
+                    'platform_fee' => (string) $fee->fee, 'audit_partner_fee' => (string) $fee->auditPartnerShare, 'fee_version' => PlatformFee::VERSION,
                     'commitments_digest' => $campaign->commitmentsDigest(), 'commitment_count' => count($campaign->commitments),
                     'term_months' => $campaign->termMonths, 'funded_at' => $campaign->fundedAt, 'environment' => $this->environment(),
                     'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => now('UTC')])->save();
@@ -414,12 +420,17 @@ final class EloquentDisbursementStore implements DisbursementStore
                 effectiveAt: $final->effective_at, effectiveDate: $schedule->effectiveDate, dueDates: $schedule->dueDates);
             $this->funding->issue($campaign, new IssueInstruction($closingId, $disbursement->id, $intent->operation_id, $effectiveAt,
                 $schedule->effectiveDate, $schedule->dueDates, $recordedAt->toIso8601String()));
+            // The platform fee is earned once the note is issued (BRS v2.0 SVC-R01); a disbursement
+            // opened before the fee rule carries none.
+            $disbursement->fee_version === null || $this->fees->post($disbursement->id, $disbursement->business_id, $closingId, $intent->operation_id,
+                PlatformFee::of($disbursement->amount), $this->auditPartners->forCampaign($disbursement->business_campaign_id));
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
             // The Business is told the funds reached its verified account (BRS v2.0 NTF-R01); a
             // synthetic payout's business has no profile and tells nobody.
             $party = $this->audience->findEntityParty($disbursement->business_id);
             $party === null || $this->notices->record($party, PartyNoticeKind::BusinessDisbursementSent, [
-                'title' => (string) $disbursement->payload['title'], 'amount' => $disbursement->amount, 'currency' => 'RWF',
+                'title' => (string) $disbursement->payload['title'], 'amount' => $this->payout($disbursement), 'principal' => $disbursement->amount,
+                'platform_fee' => $disbursement->platform_fee, 'currency' => 'RWF',
                 'account' => $this->maskedDestination($disbursement), 'reference' => $closingId, 'business_id' => $disbursement->business_id,
                 'campaign_id' => $disbursement->business_campaign_id], 'business-disbursement-sent:'.$disbursement->id);
 
@@ -523,11 +534,11 @@ final class EloquentDisbursementStore implements DisbursementStore
         $intent->id = strtolower((string) Str::ulid());
         $reference = 'rzd_'.$intent->id;
         $payload = ['intent_id' => $intent->id, 'disbursement_id' => $disbursement->id, 'operation_id' => $operationId, 'request_id' => $requestId,
-            'revision' => $state->revision, 'amount' => $disbursement->amount, 'destination' => $authorized->payload['destination'],
+            'revision' => $state->revision, 'amount' => $this->payout($disbursement), 'destination' => $authorized->payload['destination'],
             'intent_digest' => $digest, 'provider' => $this->provider->name(), 'environment' => $disbursement->environment,
             'maker_user_id' => $state->makerUserId, 'checker_user_id' => $userId, 'recorded_at' => $recordedAt];
         $intent->forceFill(['disbursement_id' => $disbursement->id, 'operation_id' => $operationId, 'request_id' => $requestId, 'revision' => $state->revision,
-            'amount' => $disbursement->amount, 'currency' => 'RWF', 'destination_id' => $destination->id, 'destination_revision' => $destination->revision,
+            'amount' => $this->payout($disbursement), 'currency' => 'RWF', 'destination_id' => $destination->id, 'destination_revision' => $destination->revision,
             'destination_sha256' => $authorized->destination_sha256, 'commitments_digest' => $disbursement->commitments_digest,
             'binding_sha256' => $authorized->binding_sha256, 'intent_digest' => $digest, 'provider' => $this->provider->name(),
             'provider_reference' => $reference, 'provider_reference_sha256' => hash('sha256', $reference), 'environment' => $disbursement->environment,
@@ -917,6 +928,25 @@ final class EloquentDisbursementStore implements DisbursementStore
             'revision' => $revision, 'policy_version' => self::POLICY_VERSION, 'disclosure_version' => null];
     }
 
+    /** What reaches the Business: the principal less the platform fee it was opened under. */
+    private function payout(Disbursement $disbursement): string
+    {
+        return (string) BigInteger::of($disbursement->amount)->minus($disbursement->platform_fee);
+    }
+
+    /** @return array{fee: array{currency: string, amount: string}, audit_partner_share: array{currency: string, amount: string}, rozine_share: array{currency: string, amount: string}, payout: array{currency: string, amount: string}, version: string}|null */
+    private function feeFacts(Disbursement $disbursement): ?array
+    {
+        if ($disbursement->fee_version === null) {
+            return null;
+        }
+        $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+        $rozine = (string) BigInteger::of($disbursement->platform_fee)->minus($disbursement->audit_partner_fee);
+
+        return ['fee' => $money($disbursement->platform_fee), 'audit_partner_share' => $money($disbursement->audit_partner_fee), 'rozine_share' => $money($rozine),
+            'payout' => $money($this->payout($disbursement)), 'version' => $disbursement->fee_version];
+    }
+
     /** @return array<string, mixed> */
     private function row(Disbursement $disbursement): array
     {
@@ -925,7 +955,7 @@ final class EloquentDisbursementStore implements DisbursementStore
 
         return ['id' => $disbursement->id, 'reference' => $this->reference($disbursement), 'business' => (string) $disbursement->payload['business_name'],
             'note_title' => (string) $disbursement->payload['title'], 'destination' => $this->maskedDestination($disbursement),
-            'amount' => ['currency' => 'RWF', 'amount' => $disbursement->amount], 'state' => $state->state,
+            'amount' => ['currency' => 'RWF', 'amount' => $disbursement->amount], 'platform_fee' => $this->feeFacts($disbursement), 'state' => $state->state,
             'provider_state' => $intent !== null && $this->dispatched($intent) ? $this->providerState($intent) : null];
     }
 
@@ -956,7 +986,7 @@ final class EloquentDisbursementStore implements DisbursementStore
             }
         }
         $binding = $state->state === 'awaiting_second_approver' && $authorized !== null ? ['revision' => $state->revision,
-            'amount' => ['currency' => 'RWF', 'amount' => $disbursement->amount], 'destination' => (string) $authorized->payload['destination']['masked'],
+            'amount' => ['currency' => 'RWF', 'amount' => $this->payout($disbursement)], 'destination' => (string) $authorized->payload['destination']['masked'],
             'intent_digest' => $this->intentDigest($disbursement, $state->revision, (string) $authorized->destination_sha256)] : null;
         $recorded = $last('intent_recorded');
         $held = $state->state === 'on_hold' ? $last('held') : null;

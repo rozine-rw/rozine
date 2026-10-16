@@ -9,6 +9,7 @@ export const KIND_META: Record<LedgerKind, { glyph: string; color: string }> = {
     disbursement: { glyph: '→', color: 'text-[#1d9e75] dark:text-[#3fcda0]' },
     repayment: { glyph: '↺', color: 'text-[#1d9e75] dark:text-[#3fcda0]' },
     service_fee: { glyph: '₣', color: 'text-[#1d9e75] dark:text-[#3fcda0]' },
+    platform_fee: { glyph: '₣', color: 'text-[#1d9e75] dark:text-[#3fcda0]' },
     repayment_fee: { glyph: '₣', color: 'text-[#1d9e75] dark:text-[#3fcda0]' },
     auditor_share: { glyph: '₣', color: 'text-[#c2661f] dark:text-[#f0a060]' },
     distribution: { glyph: '↓', color: 'text-rz-accent-app-text' },

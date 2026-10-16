@@ -70,7 +70,9 @@ it('tells each Investor its issued Holding, by notice and e-mail, and the Busine
         && $mail->maturityDate->format('Y-m-d') === $maturity && str_ends_with($mail->url, '/investor/holdings/'.$large->id));
 
     [$sent] = lifecycleNotices('business.disbursement_sent');
-    expect($sent->facts)->toMatchArray(['amount' => (string) $campaign->principal, 'currency' => 'RWF', 'business_id' => $campaign->businessId,
+    // The Business receives its raise less the 3% platform fee (BRS v2.0 SVC-R01).
+    expect($sent->facts)->toMatchArray(['amount' => '10476000', 'principal' => (string) $campaign->principal, 'platform_fee' => '324000',
+        'currency' => 'RWF', 'business_id' => $campaign->businessId,
         'campaign_id' => $campaign->campaignId])
         ->and($sent->facts['account'])->toContain('••••')
         ->and($sent->facts['reference'])->toBe($holdings[0]->disbursement_closing_id);

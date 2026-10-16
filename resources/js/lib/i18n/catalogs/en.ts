@@ -335,7 +335,7 @@ const en = {
     'business.apply.raise.rate_info': 'How this rate is set',
     'business.apply.raise.rate_how': 'How your rate is set',
     'business.apply.raise.rate_one_charge':
-        'One flat charge on what you borrow. It covers everything — there is no origination fee, servicing fee or levy on top.',
+        'One flat charge on what you borrow. The only deduction is the 3% platform fee, taken from your raise when it is paid out — there is no origination fee or levy on top.',
     'business.apply.raise.rate_yours': 'Your rating',
     'business.apply.raise.rate_rated': 'Rated {band}',
     'business.apply.raise.rate_best': 'Strongest rating, 3 months',
@@ -404,7 +404,7 @@ const en = {
     'business.apply.review.application_fee_when':
         'One-time, charged when approved.',
     'business.apply.review.fee_note':
-        'No fee on the amount you raise. Charged once your note is approved, before it goes live.',
+        'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
     'business.apply.submitted.title': 'Your application has been submitted',
@@ -1398,6 +1398,7 @@ const en = {
     'admin.ledger.kind.disbursement': 'Disbursement',
     'admin.ledger.kind.repayment': 'Repayment',
     'admin.ledger.kind.service_fee': 'Service fee',
+    'admin.ledger.kind.platform_fee': 'Platform fee',
     'admin.ledger.kind.repayment_fee': 'Repayment fee',
     'admin.ledger.kind.auditor_share': 'Audit Partner share',
     'admin.ledger.kind.distribution': 'Investor payout',
@@ -1668,6 +1669,8 @@ const en = {
     'admin.disbursements.drawer_label': 'Disbursement {reference}',
     'admin.disbursements.independence.title': 'Independence declaration',
     'admin.disbursements.amount': 'Amount',
+    'admin.disbursements.platform_fee':
+        '3% platform fee {fee}, of which {share} to the Audit Partner. The Business receives {payout}.',
     'admin.disbursements.destination': 'Destination',
     'admin.disbursements.due': 'Due',
     'admin.disbursements.rule_dual':
@@ -3809,7 +3812,7 @@ const en = {
     'business.apply.review.fee_projection_note':
         'Projected service fee: {rate}% of each repayment, charged on amounts actually repaid (principal and interest, excluding fees and penalties). These figures assume every instalment is paid in full on schedule.',
     'business.apply.review.fee_note_service_fee':
-        'No fee on the amount you raise. Charged once your note is approved, before it goes live. The service fee on each repayment is shown with your offer above.',
+        'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised. The service fee on each repayment is shown with your offer above.',
     'business.apply.review.fee_unavailable':
         "Fee terms unavailable — you can't sign yet",
     'business.apply.review.fee_unavailable_body':
@@ -4726,6 +4729,8 @@ const en = {
     'investor.notices.business.disbursement_sent.title': 'Funds sent',
     'investor.notices.business.disbursement_sent.body':
         '{amount} for {title} was sent to {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} for {title} was sent to {account}: the {principal} raised less the 3% platform fee of {fee}.',
     'investor.notices.primary.report_published.title':
         'Monthly report published',
     'investor.notices.primary.report_published.body':
