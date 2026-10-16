@@ -5,6 +5,68 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
+/** @return array<string, array<int, stdClass>> */
+function repaymentMigrationSchemaFingerprint(): array
+{
+    return [
+        'columns' => DB::select("SELECT c.relname, a.attname, format_type(a.atttypid, a.atttypmod) AS type, a.attnotnull,
+            a.attidentity, a.attgenerated, pg_get_expr(d.adbin, d.adrelid) AS default_value FROM pg_class c
+            JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped
+            LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = a.attnum
+            WHERE c.relnamespace = current_schema()::regnamespace AND c.relkind IN ('r', 'p') ORDER BY c.relname, a.attnum"),
+        'constraints' => DB::select('SELECT conrelid::regclass::text AS table_name, conname, pg_get_constraintdef(oid) AS definition,
+            convalidated FROM pg_constraint WHERE connamespace = current_schema()::regnamespace ORDER BY table_name, conname'),
+        'indexes' => DB::select('SELECT c.relname, pg_get_indexdef(i.indexrelid) AS definition, i.indisvalid, i.indisready FROM pg_index i
+            JOIN pg_class c ON c.oid = i.indexrelid WHERE c.relnamespace = current_schema()::regnamespace ORDER BY c.relname'),
+        'functions' => DB::select("SELECT pg_get_function_identity_arguments(oid) AS arguments, proname, pg_get_functiondef(oid) AS definition
+            FROM pg_proc WHERE pronamespace = current_schema()::regnamespace AND prokind = 'f' ORDER BY proname, arguments"),
+        'triggers' => DB::select('SELECT c.relname, t.tgname, t.tgenabled, pg_get_triggerdef(t.oid) AS definition FROM pg_trigger t
+            JOIN pg_class c ON c.oid = t.tgrelid WHERE c.relnamespace = current_schema()::regnamespace AND NOT t.tgisinternal
+            ORDER BY c.relname, t.tgname'),
+        'constraint_triggers' => DB::select('SELECT r.relname, c.conname, t.tgfoid::regprocedure::text AS function_name,
+            t.tgtype, t.tgenabled, t.tgdeferrable, t.tginitdeferred FROM pg_trigger t
+            JOIN pg_constraint c ON c.oid = t.tgconstraint JOIN pg_class r ON r.oid = t.tgrelid
+            WHERE r.relnamespace = current_schema()::regnamespace AND t.tgisinternal
+            ORDER BY r.relname, c.conname, function_name, t.tgtype'),
+    ];
+}
+
+beforeEach(function (): void {
+    $this->repaymentDependenciesRemoved = false;
+    $this->repaymentCurrentSchema = repaymentMigrationSchemaFingerprint();
+    $this->repaymentDependants = [
+        require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php'),
+        require database_path('migrations/2026_10_14_074539_create_wallet_withdrawals.php'),
+    ];
+    DB::transaction(function (): void {
+        foreach ($this->repaymentDependants as $migration) {
+            $migration->down();
+        }
+    });
+    $this->repaymentDependenciesRemoved = true;
+    $this->repaymentHistoricalSchema = repaymentMigrationSchemaFingerprint();
+});
+
+afterEach(function (): void {
+    if (! $this->repaymentDependenciesRemoved) {
+        return;
+    }
+    $repayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    try {
+        if (! Schema::hasTable('business_repayments')) {
+            $repayments->up();
+        }
+        expect(repaymentMigrationSchemaFingerprint())->toEqual($this->repaymentHistoricalSchema);
+    } finally {
+        DB::transaction(function (): void {
+            foreach (array_reverse($this->repaymentDependants) as $migration) {
+                $migration->up();
+            }
+        });
+        expect(repaymentMigrationSchemaFingerprint())->toEqual($this->repaymentCurrentSchema);
+    }
+});
+
 /**
  * Table modes reproduce each prefix of an in-flight Investor posting after its wallet lock: entry, account, line.
  * The installer must wait behind it while holding nothing the posting still writes.
@@ -57,6 +119,8 @@ it('installs Business repayment records behind an in-flight Investor posting wit
         }
     }
     fclose($channels[1]);
+    $installedByChild = false;
+    $childShape = null;
     try {
         $installer = (int) trim((string) fgets($channels[0]));
         DB::beginTransaction();
@@ -84,9 +148,14 @@ it('installs Business repayment records behind an in-flight Investor posting wit
         fclose($channels[0]);
         pcntl_waitpid($pid, $status);
         DB::purge();
+        $installedByChild = Schema::hasTable('business_repayments');
+        if ($installedByChild) {
+            $childShape = $shape();
+        }
         $restore();
     }
     expect(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
+        ->and($installedByChild)->toBeTrue()->and($childShape)->toEqual($installed)
         ->and(Schema::hasTable('business_repayments'))->toBeTrue()
         ->and($shape())->toEqual($installed);
 })->with([

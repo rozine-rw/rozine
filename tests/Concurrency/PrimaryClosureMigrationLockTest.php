@@ -15,6 +15,68 @@ use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
+/** @return array<string, array<int, stdClass>> */
+function closureMigrationSchemaFingerprint(): array
+{
+    return [
+        'columns' => DB::select("SELECT c.relname, a.attname, format_type(a.atttypid, a.atttypmod) AS type, a.attnotnull,
+            a.attidentity, a.attgenerated, pg_get_expr(d.adbin, d.adrelid) AS default_value FROM pg_class c
+            JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped
+            LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = a.attnum
+            WHERE c.relnamespace = current_schema()::regnamespace AND c.relkind IN ('r', 'p') ORDER BY c.relname, a.attnum"),
+        'constraints' => DB::select('SELECT conrelid::regclass::text AS table_name, conname, pg_get_constraintdef(oid) AS definition,
+            convalidated FROM pg_constraint WHERE connamespace = current_schema()::regnamespace ORDER BY table_name, conname'),
+        'indexes' => DB::select('SELECT c.relname, pg_get_indexdef(i.indexrelid) AS definition, i.indisvalid, i.indisready FROM pg_index i
+            JOIN pg_class c ON c.oid = i.indexrelid WHERE c.relnamespace = current_schema()::regnamespace ORDER BY c.relname'),
+        'functions' => DB::select("SELECT pg_get_function_identity_arguments(oid) AS arguments, proname, pg_get_functiondef(oid) AS definition
+            FROM pg_proc WHERE pronamespace = current_schema()::regnamespace AND prokind = 'f' ORDER BY proname, arguments"),
+        'triggers' => DB::select('SELECT c.relname, t.tgname, t.tgenabled, pg_get_triggerdef(t.oid) AS definition FROM pg_trigger t
+            JOIN pg_class c ON c.oid = t.tgrelid WHERE c.relnamespace = current_schema()::regnamespace AND NOT t.tgisinternal
+            ORDER BY c.relname, t.tgname'),
+        'constraint_triggers' => DB::select('SELECT r.relname, c.conname, t.tgfoid::regprocedure::text AS function_name,
+            t.tgtype, t.tgenabled, t.tgdeferrable, t.tginitdeferred FROM pg_trigger t
+            JOIN pg_constraint c ON c.oid = t.tgconstraint JOIN pg_class r ON r.oid = t.tgrelid
+            WHERE r.relnamespace = current_schema()::regnamespace AND t.tgisinternal
+            ORDER BY r.relname, c.conname, function_name, t.tgtype'),
+    ];
+}
+
+beforeEach(function (): void {
+    $this->closureDependenciesRemoved = false;
+    $this->closureCurrentSchema = closureMigrationSchemaFingerprint();
+    $this->closureDependants = [
+        require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php'),
+        require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php'),
+    ];
+    DB::transaction(function (): void {
+        foreach ($this->closureDependants as $migration) {
+            $migration->down();
+        }
+    });
+    $this->closureDependenciesRemoved = true;
+    $this->closureHistoricalSchema = closureMigrationSchemaFingerprint();
+});
+
+afterEach(function (): void {
+    if (! $this->closureDependenciesRemoved) {
+        return;
+    }
+    $closures = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
+    try {
+        if (! Schema::hasTable('primary_campaign_closure_returns')) {
+            $closures->up();
+        }
+        expect(closureMigrationSchemaFingerprint())->toEqual($this->closureHistoricalSchema);
+    } finally {
+        DB::transaction(function (): void {
+            foreach (array_reverse($this->closureDependants) as $migration) {
+                $migration->up();
+            }
+        });
+        expect(closureMigrationSchemaFingerprint())->toEqual($this->closureCurrentSchema);
+    }
+});
+
 it('changes closure guards without trapping earlier reads or later writes of an actual refund', function (bool $install, bool $firstRead): void {
     $this->freezeSecond();
     $migration = require database_path('migrations/2026_09_30_094556_bind_campaign_closures_to_complete_primary_returns.php');
