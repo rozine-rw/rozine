@@ -151,7 +151,7 @@ export default function AdminStagingMailTesters(
                             aria-describedby={
                                 errors.email ? 'tester-email-error' : undefined
                             }
-                            className="h-[42px] w-full rounded-[11px] border border-rz-hairline bg-[#f7f9fd] px-[13px] text-[13px] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)] dark:bg-rz-field"
+                            className="h-[42px] w-full rounded-[11px] border border-rz-hairline bg-[#f7f9fd] px-[13px] text-[13px] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)] dark:bg-rz-field"
                         />
                         {errors.email && (
                             <p

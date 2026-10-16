@@ -53,6 +53,7 @@
     --rz-secondary: #5b6578;
     --rz-muted: #647087;
     --rz-faint: #9aa3b5;
+    --rz-placeholder: #687286;
     --rz-group: #aab4c6;
 
     /* Lines */
@@ -140,6 +141,7 @@
     --rz-secondary: #a3afc6;
     --rz-muted: #7c89a5;
     --rz-faint: #7785a1;
+    --rz-placeholder: #7785a1;
     --rz-group: #5d6b87;
 
     --rz-hairline: rgba(255, 255, 255, 0.08);
@@ -219,6 +221,7 @@
     --color-rz-secondary: var(--rz-secondary);
     --color-rz-muted: var(--rz-muted);
     --color-rz-faint: var(--rz-faint);
+    --color-rz-placeholder: var(--rz-placeholder);
     --color-rz-group: var(--rz-group);
     --color-rz-hairline: var(--rz-hairline);
     --color-rz-divider: var(--rz-divider);

@@ -7,7 +7,7 @@ import type { RouteAction } from '@/types';
 import type { BusinessProfileProps, CompanyProfile } from '@/types/business';
 
 const INPUT =
-    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border disabled:text-rz-secondary';
+    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border disabled:text-rz-secondary';
 
 function Field({
     id,

@@ -34,7 +34,7 @@ function CertificateLink({ link, label }: { link: RouteLink; label: string }) {
 }
 
 const INPUT =
-    'h-[42px] w-full rounded-xl border border-rz-divider bg-[#f8fafc] px-[13px] text-[13.5px] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:bg-rz-surface-sunken';
+    'h-[42px] w-full rounded-xl border border-rz-divider bg-[#f8fafc] px-[13px] text-[13.5px] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border dark:bg-rz-surface-sunken';
 
 function Field({
     id,

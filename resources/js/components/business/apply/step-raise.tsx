@@ -217,7 +217,7 @@ export function StepRaise({
                         )}
                         aria-invalid={errors.title !== undefined || undefined}
                         aria-describedby="title-help title-error"
-                        className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-[15px] font-semibold text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                        className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-[15px] font-semibold text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
                     />
                     <p
                         id="title-help"
@@ -557,7 +557,7 @@ export function StepRaise({
                 value={fields.story}
                 onChange={(event) => onChange('story', event.target.value)}
                 placeholder={t('business.apply.raise.story_placeholder')}
-                className="mt-[11px] h-[170px] w-full resize-none rounded-2xl border border-rz-border bg-rz-field p-[15px] text-sm leading-[1.6] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                className="mt-[11px] h-[170px] w-full resize-none rounded-2xl border border-rz-border bg-rz-field p-[15px] text-sm leading-[1.6] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
             />
             <p
                 className={cn(
