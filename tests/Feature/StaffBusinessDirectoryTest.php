@@ -213,7 +213,7 @@ test('staff web and API history distinguish an authentic funded failure from unf
         ->and(DB::table('ledger_lines')->orderBy('id')->get()->toJson())->toBe($lines)
         ->and(DB::table('primary_campaign_closure_returns')->orderBy('primary_reservation_id')->get()->toJson())->toBe($returns)
         ->and(BusinessCampaignClosure::query()->sole()->payload)->toBe($closure->payload);
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure']);
 
 test('a funded Business counts its funded principal, its distinct Investors and its authority history', function (): void {
     // One Investor makes two purchases and another takes the rest of the raise, which funds the note.

@@ -16,11 +16,12 @@ namespace App\Application\Operations\Contracts;
  *   and no closure), `funded` once its funding lock is recorded and before its disbursement closes,
  *   `repaying` once its disbursement closed with issued notes, and `failed` when it closed unfunded
  *   (cancelled or expired) or its disbursement failed to close.
- * - `awaiting_second_approver`: disbursements whose folded state waits for the checker.
+ * - `disbursements_waiting`: funded disbursements that automatic payment has not queued yet: held,
+ *   or waiting for a verified payout destination or recheck inputs.
  * - `disbursed`: the amount of every disbursement that closed with issued notes.
  *
  * @phpstan-type Figures array{
- *     capital_raised: string, active_businesses: int, awaiting_second_approver: int, disbursed: string,
+ *     capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *     notes: array{live: int, funded: int, repaying: int, failed: int}
  * }
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}

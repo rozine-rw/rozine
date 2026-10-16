@@ -28,12 +28,29 @@ function disbursementLog(array $events): array
         'actor_user_id' => is_array($event) && is_int($event['actor_user_id']) ? $event['actor_user_id'] : null], $events));
 }
 
-it('folds the event log into state, revision, maker, checker and hold placer', function (): void {
+it('folds an automatic payment from ready straight to queued with no maker or checker', function (): void {
     $initial = DisbursementState::initial();
-    expect([$initial->state, $initial->revision, $initial->makerUserId])->toBe(['ready', 0, null]);
+    expect([$initial->state, $initial->revision, $initial->makerUserId, $initial->awaitsPayment()])->toBe(['ready', 0, null, true]);
 
+    $queued = DisbursementState::fold(disbursementEvents('auto_intent_recorded'));
+    expect([$queued->state, $queued->revision, $queued->makerUserId, $queued->checkerUserId, $queued->inFlight(), $queued->awaitsPayment()])
+        ->toBe(['queued', 1, null, null, true, false]);
+
+    $succeeded = DisbursementState::fold(disbursementEvents('auto_intent_recorded', 'dispatched', 'succeeded'));
+    expect([$succeeded->state, $succeeded->revision, $succeeded->makerUserId, $succeeded->checkerUserId])->toBe(['succeeded', 3, null, null]);
+
+    $released = DisbursementState::fold(disbursementEvents('held:9', 'hold_released:9', 'auto_intent_recorded'));
+    expect([$released->state, $released->revision])->toBe(['queued', 3]);
+
+    expect(DisbursementState::fold(disbursementEvents('auto_intent_recorded', 'failed_closing'))->state)->toBe('failed_closing')
+        ->and(DisbursementState::fold(disbursementEvents('auto_intent_recorded', 'dispatched', 'failed_closing'))->state)->toBe('failed_closing')
+        ->and(DisbursementState::fold(disbursementEvents('failed_closing'))->state)->toBe('failed_closing')
+        ->and(DisbursementState::fold(disbursementEvents('held:9', 'hold_released:8', 'failed_closing'))->state)->toBe('failed_closing');
+});
+
+it('keeps folding legacy maker/checker history into state, revision, maker, checker and hold placer', function (): void {
     $awaiting = DisbursementState::fold(disbursementEvents('authorized:7'));
-    expect([$awaiting->state, $awaiting->revision, $awaiting->makerUserId])->toBe(['awaiting_second_approver', 1, 7]);
+    expect([$awaiting->state, $awaiting->revision, $awaiting->makerUserId, $awaiting->awaitsPayment()])->toBe(['awaiting_second_approver', 1, 7, true]);
 
     $held = DisbursementState::fold(disbursementEvents('authorized:7', 'held:9'));
     expect([$held->state, $held->heldFrom, $held->holdPlacerUserId, $held->makerUserId])->toBe(['on_hold', 'awaiting_second_approver', 9, 7]);
@@ -50,6 +67,9 @@ it('folds the event log into state, revision, maker, checker and hold placer', f
     $succeeded = DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched', 'succeeded'));
     expect([$succeeded->state, $succeeded->revision, $succeeded->checkerUserId])->toBe(['succeeded', 4, 8]);
 
+    $automatic = DisbursementState::fold(disbursementEvents('authorized:7', 'auto_intent_recorded'));
+    expect([$automatic->state, $automatic->makerUserId, $automatic->checkerUserId])->toBe(['queued', null, null]);
+
     expect(DisbursementState::fold(disbursementEvents('authorized:7', 'failed_closing'))->state)->toBe('failed_closing')
         ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'failed_closing'))->state)->toBe('failed_closing')
         ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched', 'failed_closing'))->state)->toBe('failed_closing')
@@ -61,73 +81,76 @@ it('folds the event log into state, revision, maker, checker and hold placer', f
 it('rejects an event the state cannot accept, and a staff event without its actor', function (array $events, string $reason): void {
     expect(fn () => DisbursementState::fold(disbursementLog($events)))->toThrow(DisbursementViolation::class, $reason);
 })->with([
-    'approve before authorize' => [disbursementEvents('intent_recorded:8'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'dispatch before approval' => [disbursementEvents('authorized:7', 'dispatched'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'success before dispatch' => [disbursementEvents('authorized:7', 'intent_recorded:8', 'succeeded'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'failed closing from ready' => [disbursementEvents('failed_closing'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'hold after queued' => [disbursementEvents('authorized:7', 'intent_recorded:8', 'held:9'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'legacy approve before authorize' => [disbursementEvents('intent_recorded:8'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'dispatch before any intent' => [disbursementEvents('dispatched'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'legacy dispatch before approval' => [disbursementEvents('authorized:7', 'dispatched'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'success before dispatch' => [disbursementEvents('auto_intent_recorded', 'succeeded'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'automatic intent with an actor' => [disbursementEvents('auto_intent_recorded:7'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'automatic intent while held' => [disbursementEvents('held:9', 'auto_intent_recorded'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'automatic intent twice' => [disbursementEvents('auto_intent_recorded', 'auto_intent_recorded'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'staff failed closing from ready' => [disbursementEvents('failed_closing:7'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'failed closing while held' => [disbursementEvents('held:9', 'failed_closing'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'hold after queued' => [disbursementEvents('auto_intent_recorded', 'held:9'), 'DISBURSEMENT_TRANSITION_INVALID'],
     'release without hold' => [disbursementEvents('hold_released:9'), 'DISBURSEMENT_TRANSITION_INVALID'],
     'reject from ready' => [disbursementEvents('rejected:9'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'anything after success' => [disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched', 'succeeded', 'failed_closing'), 'DISBURSEMENT_TRANSITION_INVALID'],
+    'anything after success' => [disbursementEvents('auto_intent_recorded', 'dispatched', 'succeeded', 'failed_closing'), 'DISBURSEMENT_TRANSITION_INVALID'],
     'unknown kind' => [disbursementEvents('paid:1'), 'DISBURSEMENT_TRANSITION_INVALID'],
-    'staff event without actor' => [disbursementEvents('authorized'), 'DISBURSEMENT_EVENT_ACTOR_REQUIRED'],
+    'staff event without actor' => [disbursementEvents('held'), 'DISBURSEMENT_EVENT_ACTOR_REQUIRED'],
+    'legacy staff event without actor' => [disbursementEvents('authorized'), 'DISBURSEMENT_EVENT_ACTOR_REQUIRED'],
     'staff event with a zero actor' => [disbursementEvents('held:0'), 'DISBURSEMENT_EVENT_ACTOR_REQUIRED'],
 ]);
 
-it('guards segregation of duties before state', function (): void {
-    $awaiting = DisbursementState::fold(disbursementEvents('authorized:7'));
-    expect($awaiting->refusal('approve', 7))->toBe(['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403])
-        ->and($awaiting->refusal('reject', 7))->toBe(['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403])
-        ->and($awaiting->refusal('approve', 8))->toBeNull()
-        ->and($awaiting->refusal('reject', 8))->toBeNull()
-        ->and($awaiting->refusal('hold', 7))->toBeNull();
+it('lets one authorised staff member hold and release, including the one who placed the hold', function (): void {
+    $ready = DisbursementState::initial();
+    expect($ready->refusal('hold', 9))->toBeNull()
+        ->and($ready->refusal('release_hold', 9))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409]);
 
     $held = DisbursementState::fold(disbursementEvents('held:9'));
-    expect($held->refusal('release_hold', 9))->toBe(['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403])
+    expect($held->refusal('release_hold', 9))->toBeNull()
         ->and($held->refusal('release_hold', 8))->toBeNull()
-        ->and($held->refusal('hold', 8))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
-        ->and($held->refusal('authorize', 8))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409]);
+        ->and($held->refusal('hold', 8))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409]);
+
+    $legacy = DisbursementState::fold(disbursementEvents('authorized:7'));
+    expect($legacy->refusal('hold', 7))->toBeNull()
+        ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'held:7'))->refusal('release_hold', 7))->toBeNull();
 });
 
-it('voids a lapsed maker authorization for approval and lets a fresh maker replace it', function (): void {
-    $awaiting = DisbursementState::fold(disbursementEvents('authorized:7'));
-    expect($awaiting->refusal('approve', 8, false))->toBe(['code' => 'MAKER_AUTHORIZATION_VOID', 'status' => 409])
-        ->and($awaiting->refusal('authorize', 8, false))->toBeNull()
-        ->and($awaiting->refusal('authorize', 8))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
-        ->and($awaiting->refusal('reject', 8, false))->toBeNull()
-        ->and($awaiting->refusal('approve', 7, false))->toBe(['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403]);
-});
+it('accepts only the remaining staff commands', function (string $command): void {
+    expect(fn () => DisbursementState::initial()->refusal($command, 8))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_COMMAND_INVALID');
+})->with(['authorize', 'approve', 'reject', 'pay']);
 
-it('refuses hold, reject, release and re-authorization once the money is in flight', function (string $state, array $events): void {
+it('refuses hold and release once the money is in flight', function (string $state, array $events): void {
     $folded = DisbursementState::fold(disbursementLog($events));
     expect($folded->state)->toBe($state);
-    foreach (['authorize', 'approve', 'reject', 'hold', 'release_hold'] as $command) {
+    foreach (['hold', 'release_hold'] as $command) {
         expect($folded->refusal($command, 99))->toBe(['code' => 'DISBURSEMENT_IN_FLIGHT', 'status' => 409]);
     }
 })->with([
-    'queued' => ['queued', disbursementEvents('authorized:7', 'intent_recorded:8')],
-    'dispatched' => ['dispatched', disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched')],
-    'succeeded' => ['succeeded', disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched', 'succeeded')],
-    'failed closing' => ['failed_closing', disbursementEvents('authorized:7', 'failed_closing')],
+    'queued' => ['queued', disbursementEvents('auto_intent_recorded')],
+    'dispatched' => ['dispatched', disbursementEvents('auto_intent_recorded', 'dispatched')],
+    'succeeded' => ['succeeded', disbursementEvents('auto_intent_recorded', 'dispatched', 'succeeded')],
+    'failed closing' => ['failed_closing', disbursementEvents('failed_closing')],
+    'legacy queued' => ['queued', disbursementEvents('authorized:7', 'intent_recorded:8')],
+    'legacy failed closing' => ['failed_closing', disbursementEvents('authorized:7', 'failed_closing')],
 ]);
 
 it('offers requery only on a dispatched payout', function (): void {
-    expect(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched'))->allows('requery', 7))->toBeTrue()
-        ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8'))->refusal('requery', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
-        ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched', 'succeeded'))->refusal('requery', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
+    expect(DisbursementState::fold(disbursementEvents('auto_intent_recorded', 'dispatched'))->allows('requery', 7))->toBeTrue()
+        ->and(DisbursementState::fold(disbursementEvents('authorized:7', 'intent_recorded:8', 'dispatched'))->allows('requery', 7))->toBeTrue()
+        ->and(DisbursementState::fold(disbursementEvents('auto_intent_recorded'))->refusal('requery', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
+        ->and(DisbursementState::fold(disbursementEvents('auto_intent_recorded', 'dispatched', 'succeeded'))->refusal('requery', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
         ->and(DisbursementState::initial()->refusal('requery', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
-        ->and(DisbursementState::initial()->refusal('approve', 7))->toBe(['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409])
-        ->and(DisbursementState::initial()->allows('authorize', 7))->toBeTrue();
+        ->and(DisbursementState::initial()->allows('hold', 7))->toBeTrue();
 });
 
 it('throws a command refusal that carries the current revision', function (): void {
-    $awaiting = DisbursementState::fold(disbursementEvents('authorized:7'));
+    $queued = DisbursementState::fold(disbursementEvents('held:9', 'hold_released:9', 'auto_intent_recorded'));
     try {
-        $awaiting->assertAllows('approve', 7);
-        $this->fail('Self-approval was allowed.');
+        $queued->assertAllows('hold', 9);
+        $this->fail('A hold on money in flight was allowed.');
     } catch (CommandRejection $rejection) {
-        expect([$rejection->reason, $rejection->status, $rejection->revision])->toBe(['SELF_APPROVAL_FORBIDDEN', 403, 1]);
+        expect([$rejection->reason, $rejection->status, $rejection->revision])->toBe(['DISBURSEMENT_IN_FLIGHT', 409, 3]);
     }
-    $awaiting->assertAllows('approve', 8);
-    expect(fn () => $awaiting->refusal('pay', 8))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_COMMAND_INVALID');
+    DisbursementState::fold(disbursementEvents('held:9'))->assertAllows('release_hold', 9);
+    expect(fn () => $queued->refusal('pay', 8))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_COMMAND_INVALID');
 });

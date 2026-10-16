@@ -780,7 +780,7 @@ export type AdminEventsProps = AdminFrameShellProps & {
 };
 
 /* ------------------------------------------------------------------------------------------ */
-/* Checkpoint 3: staff-disbursement-v1 and the minimal staff release (C3 proposal v2 §2e)      */
+/* Checkpoint 3: staff-disbursement-v2 and automatic disbursement (BRS v2.0 SVC-R01, ADM-R02)  */
 /* ------------------------------------------------------------------------------------------ */
 
 /*
@@ -793,41 +793,33 @@ export type AdminEventsProps = AdminFrameShellProps & {
 /** New `StaffPermission` entries, to be added and tested in the C3 server slice (H11). */
 export type DisbursementPermission =
     | 'disbursements.view'
-    | 'disbursements.authorize'
-    | 'disbursements.approve'
     | 'disbursements.hold'
     | 'disbursements.requery';
 
 /**
- * From current permissions and segregation: `approve` needs a checker other than the maker and a
- * fresh bound step-up; `reject` voids the maker's authorization only; `release_hold` needs someone
- * other than the staff member who placed the hold; `requery` asks about the same operation and
- * never resends. There is no `retry` or `reauthorize` (H12).
+ * From current permissions only. A funded disbursement pays automatically, so there is nothing to
+ * approve: one authorised staff member may `hold` it while it waits and `release_hold` it, the
+ * hold's placer included (ADM-R02); `requery` asks about the same operation and never resends.
+ * There is no `retry` or `reauthorize` (H12).
  */
 export type DisbursementAllowedAction =
-    | 'disbursement.authorize'
-    | 'disbursement.approve'
-    | 'disbursement.reject'
     | 'disbursement.hold'
     | 'disbursement.release_hold'
     | 'disbursement.requery';
 
-export type DisbursementCommandKey =
-    | 'authorize'
-    | 'approve'
-    | 'reject'
-    | 'hold'
-    | 'release_hold'
-    | 'requery';
+export type DisbursementCommandKey = 'hold' | 'release_hold' | 'requery';
 
 export type StaffDisbursementPageContract = {
-    contract_version: 'staff-disbursement-v1';
+    contract_version: 'staff-disbursement-v2';
     staff_access_version: 'staff-access-v1';
     server_time: string;
     allowed_actions: DisbursementAllowedAction[];
 };
 
 /**
+ * `ready`: funded, waiting for automatic payment because something blocks it (no verified payout
+ * destination yet, or the next run has not reached it). `awaiting_second_approver` only appears
+ * on a disbursement recorded under the retired two-person release; automatic payment pays it too.
  * `queued`: the intent is recorded (DISBURSEMENT_INTENT_RECORDED) and the worker has not sent it.
  * `dispatched`: the worker sent it after its own recheck; the outcome is in `provider`, and a
  * verified failure stays here until it is reconciled. `succeeded` is verified and reconciled, with
@@ -868,40 +860,6 @@ export type C3DisbursementRow = {
     link: RouteLink;
 };
 
-/**
- * The staff step-up an approval needs (#96 answer 5). It has its own staff route and purpose, not
- * the Auditor seal's. The server lists `route` only while this viewer may approve this
- * disbursement now (never for its maker); while it is null, approval is withheld. With a route, the drawer exchanges an authenticator code for a
- * `DisbursementStepUpProof` and sends it as `step_up_proof` on approve.
- */
-export type DisbursementStepUp = {
-    purpose: 'disbursement.approve';
-    route: RouteAction | null;
-};
-
-/**
- * The body the drawer sends to `step_up.route` (S3-D, #96 5871859618 answer 11): the route-bound
- * disbursement is the record, so no disbursement id is sent, and no `request_id` either: the
- * exchange is never journaled, and a lost answer asks for a fresh step-up. The server binds the
- * proof to the staff principal, revision, exact amount, verified destination and intent digest,
- * and one accepted code mints one proof.
- */
-export type DisbursementStepUpRequest = {
-    expected_revision: number;
-    intent_digest: string;
-    code: string;
-};
-
-/**
- * What the staff step-up exchange answers, in the seal exchange's shape: an opaque, single-use
- * proof and when it expires. It lives only in the drawer's transient state, never in the operation
- * journal, the lookup or storage.
- */
-export type DisbursementStepUpProof = {
-    proof: string;
-    expires_at: string;
-};
-
 export type C3DisbursementDetail = C3DisbursementRow & {
     campaign_id: string;
     revision: number;
@@ -913,23 +871,15 @@ export type C3DisbursementDetail = C3DisbursementRow & {
         policy_version: string | null;
         causes: string[];
     };
-    maker: Attribution | null;
-    checker: Attribution | null;
-    viewer_is_maker: boolean;
-    /** What the approval's step-up proof binds (H11). */
-    approval_binding: {
-        revision: number;
-        amount: Money;
-        /** Masked. */
-        destination: string;
-        intent_digest: string;
-    } | null;
-    step_up: DisbursementStepUp;
     /**
-     * The independence statement a maker or checker signs with authorize or approve, exactly as
-     * the server records it; without the signature the staff check stays unavailable.
+     * Automatic payment (SVC-R01): the rule it runs under, what the Business receives, and what a
+     * `ready` disbursement waits for. `waiting_for` is null once it is held or in flight.
      */
-    independence: { version: string; statement: string };
+    automation: {
+        rule_version: string;
+        payout: Money;
+        waiting_for: 'verified_payout_destination' | 'next_run' | null;
+    };
     intent: {
         operation_id: string;
         recorded_at: string;
@@ -945,9 +895,8 @@ export type C3DisbursementDetail = C3DisbursementRow & {
     } | null;
     /** Staff audience: references and error codes are allowed here. */
     provider: ProviderOutcome | null;
-    /** Releasing needs a staff member other than the one who placed it. */
+    /** Any authorised staff member may release it, including the one who placed it. */
     hold: { placed_by: Attribution; reason: string } | null;
-    viewer_placed_hold: boolean;
     issue: {
         holdings: number;
         issued_at: string;
@@ -972,7 +921,8 @@ export type C3AdminDisbursementsProps = AdminFrameShellProps &
     StaffDisbursementPageContract & {
         disbursements: C3DisbursementRow[];
         pagination: Pagination;
-        awaiting_second_approver: number;
+        /** Waiting for payment or on hold: the ones staff may need to look at. */
+        needs_attention: number;
         disbursement: C3DisbursementDetail | null;
         /**
          * Null with a scoped refusal when the viewer may no longer read the opened disbursement:

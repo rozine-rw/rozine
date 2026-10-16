@@ -129,7 +129,7 @@
         },
         "search": "",
         "server_time": "2026-10-03T17:00:00Z",
-        "contract_version": "staff-disbursement-v1",
+        "contract_version": "staff-disbursement-v2",
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
         "disbursements": [
@@ -154,7 +154,7 @@
         "pagination": {
             "next": null
         },
-        "awaiting_second_approver": 0,
+        "needs_attention": 1,
         "disbursement": {
             "id": "01k5zd7f3g9h2j6k0m4n8p1q5r",
             "reference": "PAY-2026-0700",
@@ -180,40 +180,23 @@
                 "policy_version": null,
                 "causes": []
             },
-            "maker": null,
-            "checker": null,
-            "viewer_is_maker": false,
-            "approval_binding": null,
-            "step_up": {
-                "purpose": "disbursement.approve",
-                "route": null
-            },
-            "independence": {
-                "version": "staff-independence-v1",
-                "statement": "I confirm that I have no personal, family, financial or employment relationship with this Business, its signatories or beneficial owners, or any Investor in this campaign."
+            "automation": {
+                "rule_version": "brs-2.0-svc-r01",
+                "payout": {
+                    "currency": "RWF",
+                    "amount": "5000000"
+                },
+                "waiting_for": "verified_payout_destination"
             },
             "intent": null,
             "dispatch": null,
             "provider": null,
             "hold": null,
-            "viewer_placed_hold": false,
             "issue": null,
             "refund": null,
             "trail": [],
             "allowed_actions": [],
             "actions": {
-                "authorize": {
-                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize",
-                    "method": "post"
-                },
-                "approve": {
-                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/approve",
-                    "method": "post"
-                },
-                "reject": {
-                    "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/reject",
-                    "method": "post"
-                },
                 "hold": {
                     "url": "/preview/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/hold",
                     "method": "post"

@@ -18,16 +18,12 @@ interface DisbursementStore
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array;
 
     /**
-     * authorize, approve, reject, hold or release_hold through the operation journal. On authorize and
-     * approve, `$independenceDeclared` records the actor's signed independence declaration with the
-     * command (#96 5956161592); it is retained only if the command is recorded as accepted.
+     * hold or release_hold through the operation journal, by one authorised staff member with a
+     * reason (BRS v2.0 ADM-R02).
      *
      * @return array<string, mixed>
      */
-    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof, bool $independenceDeclared = false): array;
-
-    /** @return array{proof: string, expires_at: string} */
-    public function stepUp(int $userId, string $disbursementId, int $expectedRevision, string $intentDigest, string $code): array;
+    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId): array;
 
     /**
      * An already recorded requery under this key, or null when it has not been recorded.
@@ -47,7 +43,12 @@ interface DisbursementStore
 
     public function transactionOpen(): bool;
 
-    /** @return array{opened: int, known: int} */
+    /**
+     * Opens each funded campaign's disbursement and pays it automatically (BRS v2.0 SVC-R01): the
+     * counts say how many were opened or already known, and how many were queued or failed-closed.
+     *
+     * @return array{opened: int, known: int, queued: int, failed: int}
+     */
     public function openFunded(int $limit): array;
 
     /**

@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 use App\Models\CommandOperation;
 use App\Models\Disbursement;
+use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\DisbursementFixture;
 
 /*
- * The staff disbursement console over both transports (C3 v2 §2e, #96 5871738394): the published
- * routes, token abilities, the step-up exchange's DTO and throttle, and the Resource binding.
+ * The staff disbursement console over both transports (C3 v2 §2e, #96 5871738394; BRS v2.0 SVC-R01,
+ * ADM-R02): the published routes, token abilities, the automatic payout's facts and the Resource
+ * binding. The retired maker/checker routes are gone.
  */
 
 beforeEach(fn () => $this->withoutVite());
@@ -33,46 +36,53 @@ function console_output(): string
     return Artisan::output();
 }
 
-/** @return array{disbursement: Disbursement, maker: User, checker: User} */
-function authorizedDisbursement(): array
-{
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-
-    return ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker];
-}
-
 it('renders the queue and the opened disbursement with only this viewer\'s actions', function (): void {
-    ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker] = authorizedDisbursement();
-    $this->actingAs($maker)->get(route('staff.disbursements.index'))->assertOk()->assertHeader('Cache-Control', 'no-store, private')
+    ['disbursement' => $disbursement] = DisbursementFixture::funded();
+    $treasury = DisbursementFixture::staff(['treasury']);
+    $approver = DisbursementFixture::staff(['approver']);
+    $this->actingAs($treasury)->get(route('staff.disbursements.index'))->assertOk()->assertHeader('Cache-Control', 'no-store, private')
         ->assertInertia(fn (Assert $page) => $page->component('admin/disbursements')
-            ->where('contract_version', 'staff-disbursement-v1')->where('staff_access_version', 'staff-access-v1')
-            ->where('disbursement', null)->where('refusal', null)->where('awaiting_second_approver', 1)->where('badges.disbursements', 1)
+            ->where('contract_version', 'staff-disbursement-v2')->where('staff_access_version', 'staff-access-v1')
+            ->where('disbursement', null)->where('refusal', null)->where('needs_attention', 1)->where('badges.disbursements', 1)
+            ->missing('awaiting_second_approver')
             ->where('nav.disbursements.url', route('staff.disbursements.index', [], false))->where('nav.applications', null)
-            ->where('disbursements.0.id', $disbursement->id)->where('disbursements.0.state', 'awaiting_second_approver')
+            ->where('disbursements.0.id', $disbursement->id)->where('disbursements.0.state', 'ready')->where('disbursements.0.destination', 'Unverified')
             ->where('disbursements.0.link.url', route('staff.disbursements.show', ['disbursement' => $disbursement->id], false))
             ->where('pagination.next', null));
 
-    $this->actingAs($maker)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('disbursement.viewer_is_maker', true)->where('disbursement.step_up.route', null)
-            ->where('disbursement.allowed_actions', ['disbursement.hold'])
+    $this->actingAs($treasury)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('disbursement.allowed_actions', ['disbursement.hold'])
             ->where('disbursement.actions.hold.url', route('staff.disbursements.hold', ['disbursement' => $disbursement->id], false))
-            ->missing('disbursement.step_up_allowed')
-            ->where('disbursement.links.operation.url', str_replace('00000000-0000-0000-0000-000000000000', '{request_id}',
-                route('staff.disbursements.operations.show', ['request_id' => '00000000-0000-0000-0000-000000000000'], false))));
-
-    $this->actingAs($checker)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('disbursement.step_up.purpose', 'disbursement.approve')
-            ->where('disbursement.step_up.route.url', route('staff.disbursements.step-up', ['disbursement' => $disbursement->id], false))
-            ->where('disbursement.approval_binding.revision', 1)->where('disbursement.approval_binding.amount.amount', '2910000')
+            ->where('disbursement.automation', ['rule_version' => 'brs-2.0-svc-r01', 'payout' => ['currency' => 'RWF', 'amount' => '2910000'],
+                'waiting_for' => 'verified_payout_destination'])
             ->where('disbursement.amount.amount', $disbursement->amount)
             ->where('disbursement.platform_fee', ['fee' => ['currency' => 'RWF', 'amount' => '90000'],
                 'audit_partner_share' => ['currency' => 'RWF', 'amount' => '36000'], 'rozine_share' => ['currency' => 'RWF', 'amount' => '54000'],
                 'payout' => ['currency' => 'RWF', 'amount' => '2910000'], 'version' => 'brs-2.0-fee-r01'])
-            ->where('disbursement.allowed_actions', ['disbursement.approve', 'disbursement.reject', 'disbursement.hold'])
+            ->where('disbursement.intent', null)->where('disbursement.hold', null)
+            ->missing('disbursement.maker')->missing('disbursement.checker')->missing('disbursement.approval_binding')->missing('disbursement.step_up')
+            ->missing('disbursement.step_up_allowed')->missing('disbursement.independence')->missing('disbursement.viewer_is_maker')
+            ->missing('disbursement.viewer_placed_hold')
+            ->where('disbursement.links.operation.url', str_replace('00000000-0000-0000-0000-000000000000', '{request_id}',
+                route('staff.disbursements.operations.show', ['request_id' => '00000000-0000-0000-0000-000000000000'], false))));
+
+    $this->actingAs($approver)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('disbursement.allowed_actions', ['disbursement.hold'])
             ->where('nav.applications.url', route('staff.applications.index', [], false)));
+});
+
+it('shows an automatic payout as the system\'s, with no lookup on its receipt', function (): void {
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
+    $this->actingAs(DisbursementFixture::staff(['treasury']))->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('needs_attention', 0)->where('badges.disbursements', 0)
+            ->where('disbursement.state', 'dispatched')->where('disbursement.automation.waiting_for', null)
+            ->where('disbursement.precheck.state', 'passed')
+            ->where('disbursement.intent.operation_id', $intent->operation_id)
+            ->where('disbursement.intent.receipt.code', 'DISBURSEMENT_INTENT_RECORDED')->where('disbursement.intent.receipt.request_id', $intent->request_id)
+            ->where('disbursement.intent.receipt.link', null)
+            ->where('disbursement.trail.1.action.code', 'auto_intent_recorded')->where('disbursement.trail.1.actor', 'System')
+            ->where('disbursement.allowed_actions', ['disbursement.requery'])
+            ->where('disbursement.actions.requery.url', route('staff.disbursements.requery', ['disbursement' => $disbursement->id], false)));
 });
 
 it('shows a scoped refusal for an unknown disbursement and the access page for a non-staff account', function (): void {
@@ -87,103 +97,84 @@ it('shows a scoped refusal for an unknown disbursement and the access page for a
 
 it('runs a command over both transports and returns the receipt beside fresh facts', function (bool $api): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
+    $placer = DisbursementFixture::staff(['treasury']);
     $prefix = $api ? 'api.v1.' : '';
     if ($api) {
-        Sanctum::actingAs($maker, ['staff:disbursements:read', 'staff:disbursements:manage']);
+        Sanctum::actingAs($placer, ['staff:disbursements:read', 'staff:disbursements:manage']);
     } else {
-        $this->actingAs($maker);
+        $this->actingAs($placer);
     }
     $key = (string) Str::uuid();
-    $body = ['request_id' => $key, 'expected_revision' => 0, 'reason' => 'Funded in full.'];
-    $response = $this->postJson(route($prefix.'staff.disbursements.authorize', ['disbursement' => $disbursement->id]), $body)->assertOk()
-        ->assertJsonPath('code', 'DISBURSEMENT_AUTHORIZED')->assertJsonPath('data.receipt.request_id', $key)
-        ->assertJsonPath('data.current.state', 'awaiting_second_approver')->assertJsonPath('data.next', null)
-        ->assertJsonPath('allowed_actions', ['disbursement.hold']);
-    expect($response->json('data.receipt.link.url'))->toBe(route($prefix.'staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.authorize'], false));
-    $this->getJson(route($prefix.'staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.authorize']))->assertOk()
+    $body = ['request_id' => $key, 'expected_revision' => 0, 'reason' => 'Business asked us to wait.'];
+    $response = $this->postJson(route($prefix.'staff.disbursements.hold', ['disbursement' => $disbursement->id]), $body)->assertOk()
+        ->assertJsonPath('code', 'DISBURSEMENT_HELD')->assertJsonPath('data.receipt.request_id', $key)
+        ->assertJsonPath('data.current.state', 'on_hold')->assertJsonPath('data.current.hold.reason', 'Business asked us to wait.')
+        ->assertJsonPath('data.next', null)->assertJsonPath('allowed_actions', ['disbursement.release_hold']);
+    expect($response->json('data.receipt.link.url'))->toBe(route($prefix.'staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.hold'], false));
+    $this->getJson(route($prefix.'staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.hold']))->assertOk()
         ->assertJsonPath('operation_id', $response->json('operation_id'))->assertJsonPath('data.current.revision', 1);
-    $this->postJson(route($prefix.'staff.disbursements.hold', ['disbursement' => $disbursement->id]), [...$body, 'request_id' => (string) Str::uuid(), 'expected_revision' => 1, 'reason' => ''])
+    $this->postJson(route($prefix.'staff.disbursements.release-hold', ['disbursement' => $disbursement->id]), [...$body, 'request_id' => (string) Str::uuid(), 'expected_revision' => 1, 'reason' => ''])
         ->assertUnprocessable()->assertJsonPath('code', 'VALIDATION_FAILED')->assertJsonValidationErrors('reason');
-    $this->postJson(route($prefix.'staff.disbursements.hold', ['disbursement' => $disbursement->id]), [...$body, 'request_id' => (string) Str::uuid(), 'expected_revision' => 0])
+    $this->postJson(route($prefix.'staff.disbursements.release-hold', ['disbursement' => $disbursement->id]), [...$body, 'request_id' => (string) Str::uuid(), 'expected_revision' => 0])
         ->assertConflict()->assertJsonPath('code', 'VERSION_CONFLICT')->assertJsonPath('data.receipt', null)->assertJsonPath('data.current', null);
+    $this->postJson(route($prefix.'staff.disbursements.release-hold', ['disbursement' => $disbursement->id]), [...$body, 'request_id' => (string) Str::uuid(), 'expected_revision' => 1])
+        ->assertOk()->assertJsonPath('code', 'DISBURSEMENT_HOLD_RELEASED')->assertJsonPath('data.current.state', 'ready')
+        ->assertJsonPath('data.current.revision', 2)->assertJsonPath('allowed_actions', ['disbursement.hold']);
 })->with(['web' => false, 'api' => true]);
 
 it('limits an API token to its abilities and never lets a body choose another disbursement', function (): void {
-    ['disbursement' => $disbursement, 'maker' => $maker] = authorizedDisbursement();
-    Sanctum::actingAs($maker, ['staff:disbursements:read']);
+    ['disbursement' => $disbursement] = DisbursementFixture::funded();
+    $staff = DisbursementFixture::staff(['treasury']);
+    Sanctum::actingAs($staff, ['staff:disbursements:read']);
     $this->getJson(route('api.v1.staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
-        ->assertJsonPath('data.disbursement.allowed_actions', [])->assertJsonPath('data.disbursement.step_up.route', null);
+        ->assertJsonPath('data.disbursement.allowed_actions', [])->assertJsonPath('data.disbursement.actions', []);
     $this->postJson(route('api.v1.staff.disbursements.hold', ['disbursement' => $disbursement->id]),
-        ['request_id' => (string) Str::uuid(), 'expected_revision' => 1, 'reason' => 'Hold.'])->assertForbidden();
-    Sanctum::actingAs($maker, []);
+        ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Hold.'])->assertForbidden();
+    Sanctum::actingAs($staff, []);
     $this->getJson(route('api.v1.staff.disbursements.index'))->assertForbidden();
     $this->getJson(route('api.v1.staff.disbursements.operations.show', ['request_id' => (string) Str::uuid(), 'command' => 'disbursement.hold']))->assertForbidden();
 
-    $this->actingAs($maker);
-    $this->postJson(route('staff.disbursements.hold', ['disbursement' => $disbursement->id]), ['request_id' => (string) Str::uuid(), 'expected_revision' => 1,
+    $this->actingAs($staff);
+    $this->postJson(route('staff.disbursements.hold', ['disbursement' => $disbursement->id]), ['request_id' => (string) Str::uuid(), 'expected_revision' => 0,
         'reason' => 'Hold.', 'disbursement_id' => strtolower((string) Str::ulid())])->assertUnprocessable()->assertJsonValidationErrors('disbursement_id');
-    $this->postJson(route('staff.disbursements.hold', ['disbursement' => $disbursement->id]), ['request_id' => (string) Str::uuid(), 'expected_revision' => 1,
-        'reason' => 'Hold.', 'step_up_proof' => 'x'])->assertUnprocessable()->assertJsonValidationErrors('step_up_proof');
-    $this->getJson(route('staff.disbursements.operations.show', ['request_id' => (string) Str::uuid(), 'command' => 'application.release']))
-        ->assertUnprocessable()->assertJsonValidationErrors('command');
+    foreach (['application.release', 'disbursement.authorize', 'disbursement.approve', 'disbursement.reject'] as $command) {
+        $this->getJson(route('staff.disbursements.operations.show', ['request_id' => (string) Str::uuid(), 'command' => $command]))
+            ->assertUnprocessable()->assertJsonValidationErrors('command');
+    }
     $this->getJson(route('staff.disbursements.operations.show', ['request_id' => (string) Str::uuid(), 'command' => 'disbursement.hold']))
         ->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
 });
 
-it('exchanges a code for a private, uncached, unjournaled proof and approves with it', function (bool $api): void {
-    ['disbursement' => $disbursement, 'checker' => $checker] = authorizedDisbursement();
-    $prefix = $api ? 'api.v1.' : '';
+it('no longer publishes the maker/checker routes', function (string $path, bool $api): void {
+    ['disbursement' => $disbursement] = DisbursementFixture::funded();
+    $staff = DisbursementFixture::staff(['treasury', 'approver']);
     if ($api) {
-        Sanctum::actingAs($checker, ['staff:disbursements:read', 'staff:disbursements:manage']);
+        Sanctum::actingAs($staff, ['staff:disbursements:read', 'staff:disbursements:manage']);
     } else {
-        $this->actingAs($checker);
+        $this->actingAs($staff);
     }
-    $binding = DisbursementFixture::detail($checker, $disbursement)['approval_binding'];
-    $operations = CommandOperation::query()->count();
-    $proof = $this->postJson(route($prefix.'staff.disbursements.step-up', ['disbursement' => $disbursement->id]),
-        ['expected_revision' => 1, 'intent_digest' => $binding['intent_digest'], 'code' => DisbursementFixture::code($checker)])
-        ->assertOk()->assertHeader('Cache-Control', 'no-store, private')->assertJsonStructure(['proof', 'expires_at'])->json('proof');
-    expect(CommandOperation::query()->count())->toBe($operations);
-    $this->postJson(route($prefix.'staff.disbursements.approve', ['disbursement' => $disbursement->id]),
-        ['request_id' => (string) Str::uuid(), 'expected_revision' => 1, 'reason' => 'Second approval.', 'step_up_proof' => $proof])
-        ->assertOk()->assertJsonPath('code', 'DISBURSEMENT_INTENT_RECORDED')->assertJsonPath('data.current.state', 'dispatched')
-        ->assertJsonPath('data.current.intent.receipt.code', 'DISBURSEMENT_INTENT_RECORDED')
-        ->assertJsonMissingPath('data.current.step_up_allowed');
-    $record = CommandOperation::query()->where('command', 'disbursement.approve')->sole();
-    expect(json_encode($record->result))->not->toContain($proof);
-})->with(['web' => false, 'api' => true]);
+    $this->postJson(($api ? '/api/v1/staff' : '/admin').'/disbursements/'.$disbursement->id.'/'.$path,
+        ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Approve.', 'intent_digest' => str_repeat('0', 64), 'code' => '000000'])
+        ->assertNotFound();
+    expect(Route::has('staff.disbursements.'.$path))->toBeFalse()
+        ->and(Route::has('api.v1.staff.disbursements.'.$path))->toBeFalse()
+        ->and(CommandOperation::query()->count())->toBe(0)
+        ->and(DisbursementFixture::detail($staff, $disbursement)['revision'])->toBe(0);
+})->with(['authorize', 'approve', 'reject', 'step-up'])->with(['web' => false, 'api' => true]);
 
-it('refuses the exchange with the published codes and throttles it', function (): void {
-    ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker] = authorizedDisbursement();
-    $digest = DisbursementFixture::detail($checker, $disbursement)['approval_binding']['intent_digest'];
-    $url = route('staff.disbursements.step-up', ['disbursement' => $disbursement->id]);
-    $this->actingAs($maker)->postJson($url, ['expected_revision' => 1, 'intent_digest' => $digest, 'code' => '000000'])->assertForbidden();
-    $this->actingAs($checker)->postJson($url, ['expected_revision' => 1, 'intent_digest' => $digest, 'code' => '000000', 'request_id' => (string) Str::uuid()])
-        ->assertUnprocessable()->assertJsonValidationErrors('request_id');
-    $this->postJson($url, ['expected_revision' => 2, 'intent_digest' => $digest, 'code' => '000000'])->assertConflict()->assertJsonPath('code', 'VERSION_CONFLICT');
-    $this->postJson($url, ['expected_revision' => 1, 'intent_digest' => str_repeat('0', 64), 'code' => '000000'])->assertConflict()->assertJsonPath('code', 'DIGEST_STALE');
-    $this->postJson($url, ['expected_revision' => 1, 'intent_digest' => $digest, 'code' => DisbursementFixture::code($checker) === '000000' ? '111111' : '000000'])
-        ->assertUnprocessable()->assertJsonPath('code', 'STEP_UP_CODE_INVALID')->assertJsonValidationErrors('code');
-    $this->postJson($url, ['expected_revision' => 1, 'intent_digest' => $digest, 'code' => '123'])->assertUnprocessable();
-    $this->postJson($url, ['expected_revision' => 1, 'intent_digest' => $digest, 'code' => '123'])->assertTooManyRequests()->assertHeader('Retry-After');
-});
-
-it('prepares synthetic scenarios and runs the worker and reconciler from the console', function (): void {
+it('prepares synthetic scenarios, pays them automatically and runs the worker and reconciler from the console', function (): void {
     expect(console('local:disbursement', ['--seed' => true]))->toMatchArray([0 => 0])->and(console_output())->toContain('Queue: /admin/disbursements');
     $disbursement = Disbursement::query()->sole();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
+    $intent = DisbursementIntent::query()->sole();
+    expect([$intent->disbursement_id, $intent->maker_user_id, $intent->rule_version])->toBe([$disbursement->id, null, 'brs-2.0-svc-r01']);
     expect(console('local:disbursement', ['--script-send' => 'nack']))->toMatchArray([0 => 0])->and(console_output())->toContain('Sends now answer nack');
     expect(console('local:disbursement', ['--script-send' => 'ack', '--idempotent' => true]))->toMatchArray([0 => 0])->and(console_output())->toContain('(idempotent)');
     expect(console('local:disbursement', ['--script-send' => 'maybe']))->toMatchArray([0 => 2]);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    DisbursementFixture::command($checker, $disbursement, 'approve', 1, DisbursementFixture::stepUp($checker, $disbursement)['proof']);
-    $intent = DisbursementIntent::query()->sole();
     expect(console('disbursements:dispatch'))->toMatchArray([0 => 0])->and(console_output())->toContain('Claimed 0 payout dispatches');
     expect(console('disbursements:dispatch', ['--limit' => 0]))->toMatchArray([0 => 2]);
     expect(console('local:disbursement', ['--script-query' => $intent->id]))->toMatchArray([0 => 0])->and(console_output())->toContain('answer nothing');
-    expect(console('disbursements:reconcile'))->toMatchArray([0 => 0])->and(console_output())->toContain('Decisions: open 1');
+    expect(console('disbursements:reconcile'))->toMatchArray([0 => 0])->and(console_output())
+        ->toContain('Opened 0 funded disbursements')->toContain('queued 0 automatic payouts, failed-closed 0')->toContain('Decisions: open 1');
     expect(console('disbursements:reconcile', ['--limit' => 'x']))->toMatchArray([0 => 2]);
     expect(console('local:disbursement', ['--event' => $intent->id, '--state' => 'x']))->toMatchArray([0 => 2]);
     expect(console('local:disbursement', ['--event' => $intent->id, '--state' => 'succeeded', '--effective-at' => '2027-01-31T08:00:00+00:00']))
@@ -196,13 +187,23 @@ it('prepares synthetic scenarios and runs the worker and reconciler from the con
     expect(console('local:disbursement', ['--seed' => true]))->toMatchArray([0 => 1]);
 });
 
-it('links a failed closing\'s refund receipt to the approval that closed it', function (): void {
-    ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker] = authorizedDisbursement();
-    DisbursementFixture::sources()->scriptRecheck($disbursement->business_campaign_id, 'failed', ['mandate']);
-    $key = (string) Str::uuid();
-    DisbursementFixture::command($checker, $disbursement, 'approve', 1, DisbursementFixture::stepUp($checker, $disbursement)['proof'], $key);
-    $this->actingAs($maker)->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('disbursement.state', 'failed_closing')
-            ->where('disbursement.refund.receipt.code', 'COMMITMENTS_REFUNDED')->where('disbursement.refund.receipt.request_id', $key)
-            ->where('disbursement.refund.receipt.link.url', route('staff.disbursements.operations.show', ['request_id' => $key, 'command' => 'disbursement.approve'], false)));
+it('opens and fails closed a funded campaign from the reconciler when its recheck fails', function (): void {
+    $campaign = DisbursementFixture::sources()->fund();
+    DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['mandate']);
+    expect(console('disbursements:reconcile'))->toMatchArray([0 => 0])->and(console_output())
+        ->toContain('Opened 1 funded disbursements (0 already open); queued 0 automatic payouts, failed-closed 1.')
+        ->and(DisbursementIntent::query()->count())->toBe(0);
+});
+
+it('shows a failed closing\'s refund receipt without a lookup, since no staff command closed it', function (): void {
+    ['disbursement' => $disbursement, 'campaign' => $campaign] = DisbursementFixture::funded();
+    DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['mandate']);
+    DisbursementFixture::release($campaign);
+    $closing = DisbursementClosing::query()->sole();
+    $this->actingAs(DisbursementFixture::staff(['treasury']))->get(route('staff.disbursements.show', ['disbursement' => $disbursement->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('disbursement.state', 'failed_closing')->where('disbursement.intent', null)
+            ->where('disbursement.precheck.causes', ['mandate'])
+            ->where('disbursement.refund.total', ['currency' => 'RWF', 'amount' => $disbursement->amount])
+            ->where('disbursement.refund.receipt.code', 'COMMITMENTS_REFUNDED')->where('disbursement.refund.receipt.receipt_id', $closing->id)
+            ->where('disbursement.refund.receipt.link', null)->where('disbursement.allowed_actions', []));
 });

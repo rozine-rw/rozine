@@ -32,4 +32,11 @@ use App\Application\Disbursement\ClosingEvidence;
 interface DisbursementClosingEvidence
 {
     public function find(string $closingId): ClosingEvidence;
+
+    /**
+     * The request id the closing's intent was recorded under, or null when the closing has no
+     * intent. An automatic intent (BRS v2.0 SVC-R01) is no staff command, so the operation journal
+     * has no request for its operation; its own retained request id answers instead.
+     */
+    public function intentRequest(string $closingId): ?string;
 }

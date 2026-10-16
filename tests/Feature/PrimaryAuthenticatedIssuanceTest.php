@@ -240,6 +240,11 @@ it('rejects a malformed issued closing projection at the source boundary', funct
         {
             return $this->evidence;
         }
+
+        public function intentRequest(string $closingId): ?string
+        {
+            return null;
+        }
     });
     expect(fn () => DB::transaction(fn (): ?array => app(IssuedHoldingEvidence::class)->find($campaign->campaignId)))->toThrow(RuntimeException::class, 'PRIMARY_ISSUANCE_INTEGRITY_FAILED');
 });

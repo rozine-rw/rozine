@@ -1709,22 +1709,9 @@ const fr: Catalog = {
     'admin.review.stage.take.cta': 'Prendre en examen',
     'admin.review.stage.take.placeholder':
         'ex. Je le prends pour la séance de crédit du jour.',
-    'admin.maker_checker.label': 'Approbations',
-    'admin.maker_checker.step': 'Étape {n}',
-    'admin.maker_checker.maker_title': 'Autorisé',
-    'admin.maker_checker.checker_title': 'Seconde approbation',
-    'admin.maker_checker.maker_empty':
-        "Personne n'a encore autorisé ce versement.",
-    'admin.maker_checker.checker_empty':
-        'Un autre approbateur vérifie le versement après son autorisation.',
-    'admin.maker_checker.awaiting': 'En attente du second approbateur',
-    'admin.maker_checker.self_blocked':
-        "Vous avez autorisé ce versement, vous ne pouvez donc pas aussi l'approuver. Un autre approbateur doit le vérifier.",
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Règles de versement en vigueur',
     'admin.disbursements.title': 'Décaissements en attente',
-    'admin.disbursements.awaiting_count':
-        '{count} en attente du second approbateur',
     'admin.disbursements.table': 'Décaissements en attente',
     'admin.disbursements.col.reference': 'Réf. versement',
     'admin.disbursements.col.note': 'Titre',
@@ -1732,7 +1719,7 @@ const fr: Catalog = {
     'admin.disbursements.col.amount': 'Montant',
     'admin.disbursements.col.due': 'Échéance',
     'admin.disbursements.col.actions': 'État · Actions',
-    'admin.disbursements.state.ready': 'Prêt à autoriser',
+    'admin.disbursements.state.ready': 'En attente du paiement automatique',
     'admin.disbursements.state.awaiting_second_approver':
         'En attente du second approbateur',
     'admin.disbursements.state.on_hold': 'En suspens',
@@ -1751,7 +1738,6 @@ const fr: Catalog = {
     'admin.disbursements.empty_title': 'Tous les décaissements sont versés',
     'admin.disbursements.empty_body': "Aucun versement dû pour l'instant.",
     'admin.disbursements.drawer_label': 'Décaissement {reference}',
-    'admin.disbursements.independence.title': 'Déclaration d’indépendance',
     'admin.disbursements.amount': 'Montant',
     'admin.disbursements.platform_fee':
         'Commission de plateforme de 3 % : {fee}, dont {share} pour le partenaire d’audit. L’entreprise reçoit {payout}.',
@@ -1768,33 +1754,10 @@ const fr: Catalog = {
     'admin.disbursements.failure_attempts': 'Tentatives',
     'admin.disbursements.failure_inspect':
         "Inspectez avant de réessayer : confirmez auprès du prestataire qu'aucun argent n'est sorti, pour ne jamais envoyer deux fois le même versement.",
-    'admin.disbursements.approvals': 'Approbations',
     'admin.disbursements.trail': 'Historique du versement',
     'admin.disbursements.trail_empty': "Rien d'enregistré pour l'instant.",
-    'admin.disbursements.command.authorize': 'Autoriser le versement',
-    'admin.disbursements.command.approve': 'Approuver le décaissement',
-    'admin.disbursements.command.reject': 'Refuser',
     'admin.disbursements.command.hold': 'Suspendre',
     'admin.disbursements.command.retry': 'Réessayer le versement',
-    'admin.disbursements.stage.authorize.title': 'Autoriser ce versement',
-    'admin.disbursements.stage.authorize.body':
-        "Vous autorisez le paiement de {amount} à {business}. Le contrôle préalable est exécuté ; un autre membre du personnel doit ensuite l'approuver.",
-    'admin.disbursements.stage.authorize.cta': 'Autoriser',
-    'admin.disbursements.stage.authorize.placeholder':
-        'ex. Levée entièrement financée ; destination vérifiée selon le mandat RDB.',
-    'admin.disbursements.stage.approve.title': 'Approuver ce versement',
-    'admin.disbursements.stage.approve.body':
-        "En tant que second membre du personnel, vous approuvez le paiement de {amount} à {business}. Cela enregistre l'intention de paiement ; ce n'est pas un paiement. Le service ne l'envoie qu'après sa propre revérification.",
-    'admin.disbursements.stage.approve.cta':
-        "Approuver et enregistrer l'intention",
-    'admin.disbursements.stage.approve.placeholder':
-        "ex. Total financé et destination conformes à l'offre.",
-    'admin.disbursements.stage.reject.title': 'Refuser ce versement',
-    'admin.disbursements.stage.reject.body':
-        "Cela annule uniquement l'autorisation et enregistre votre motif. La levée n'est pas annulée ; le décaissement revient à l'autorisation.",
-    'admin.disbursements.stage.reject.cta': 'Refuser le versement',
-    'admin.disbursements.stage.reject.placeholder':
-        "ex. Le nom du compte de destination ne correspond pas à l'entreprise.",
     'admin.disbursements.stage.hold.title': 'Suspendre ce versement',
     'admin.disbursements.stage.hold.body':
         "Rien n'est versé pendant la suspension. Dites pourquoi, pour que la personne suivante sache quoi lever.",
@@ -4632,12 +4595,9 @@ const fr: Catalog = {
     'admin.disbursements.provider.unknown': 'Inconnu · pas encore confirmé',
     'admin.disbursements.provider.succeeded': 'Réussi · vérifié',
     'admin.disbursements.provider.failed': 'Échoué · vérifié',
-    'admin.disbursements.action.authorize': 'Autoriser',
     'admin.disbursements.older': 'Décaissements plus anciens',
     'admin.disbursements.deadline': 'Échéance',
     'admin.disbursements.deadline_unavailable': 'Aucune échéance établie',
-    'admin.disbursements.rule_two_staff':
-        "Deux membres du personnel différents sont nécessaires : l'un autorise, l'autre approuve. Il n'y a ni seuil de montant ni dérogation. Les rôles ne sont que des libellés : ce que vous pouvez faire dépend de vos permissions.",
     'admin.disbursements.causes': 'Causes',
     'admin.disbursements.receipt.code': 'Reçu',
     'admin.disbursements.receipt.reference': 'Référence',
@@ -4650,28 +4610,6 @@ const fr: Catalog = {
     'admin.disbursements.precheck.title': 'Contrôle préalable',
     'admin.disbursements.checked_at': 'Contrôlé le',
     'admin.disbursements.policy_version': 'Version de la politique',
-    'admin.disbursements.binding.title': "Ce que l'approbation engage",
-    'admin.disbursements.binding.none':
-        'Défini lorsque le décaissement est autorisé.',
-    'admin.disbursements.binding.revision': 'Révision',
-    'admin.disbursements.binding.amount': 'Montant exact',
-    'admin.disbursements.binding.digest': "Empreinte de l'intention",
-    'admin.disbursements.step_up.unavailable':
-        "L'approbation exige une nouvelle confirmation renforcée liée à ces détails. Cette confirmation n'est pas encore disponible : l'approbation ne peut donc pas être donnée ici.",
-    'admin.disbursements.step_up.title': "Confirmez que c'est bien vous",
-    'admin.disbursements.step_up.lead':
-        "Saisissez le code à six chiffres de votre application d'authentification. La confirmation est liée à cette révision, au montant exact, à la destination et à l'empreinte de l'intention, et ne sert qu'une fois.",
-    'admin.disbursements.step_up.code_label':
-        "Code d'authentification à six chiffres",
-    'admin.disbursements.step_up.verify': 'Confirmer le code',
-    'admin.disbursements.step_up.ready':
-        "Confirmé jusqu'à {time}. La confirmation ne sert qu'une fois, pour cette approbation, et exige encore votre motif.",
-    'admin.disbursements.step_up.wrong_code':
-        'Ce code ne correspond pas. Saisissez le code actuel de votre authentificateur.',
-    'admin.disbursements.step_up.lost':
-        "Impossible de joindre Rozine pour vérifier votre code. Rien n'a été approuvé — saisissez un nouveau code pour une nouvelle confirmation.",
-    'admin.disbursements.step_up.changed':
-        'Les détails liés à cette approbation ont changé : votre confirmation a donc été effacée. Vérifiez-les, puis saisissez un nouveau code.',
     'admin.disbursements.intent.title': 'Intention de paiement',
     'admin.disbursements.intent.not_payment':
         "Intention enregistrée — ce n'est pas un paiement. Le service de paiement ne l'envoie qu'après sa propre revérification.",
@@ -4708,9 +4646,7 @@ const fr: Catalog = {
         'Exception · bloqué, non rapproché',
     'admin.disbursements.hold.title': 'Suspension',
     'admin.disbursements.hold.release_note':
-        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il faut un membre du personnel autre que celui qui l'a posée.",
-    'admin.disbursements.hold.self':
-        'Vous avez posé cette suspension : un autre membre du personnel doit la lever.',
+        "Lever la suspension permet au paiement automatique de reprendre. Tout membre du personnel autorisé peut la lever, y compris celui qui l'a posée.",
     'admin.disbursements.issue.title': 'Émission',
     'admin.disbursements.issue.holdings': 'Titres émis',
     'admin.disbursements.issue.issued_at': 'Émis le',
@@ -4719,12 +4655,20 @@ const fr: Catalog = {
     'admin.disbursements.refund.commitments': 'Engagements remboursés',
     'admin.disbursements.refund.total': 'Total remboursé',
     'admin.disbursements.ledger': 'Ouvrir dans le grand livre',
+    'admin.disbursements.attention_count': '{count} à examiner',
+    'admin.disbursements.automation.title': 'Paiement automatique',
+    'admin.disbursements.automation.payout': "L'entreprise reçoit",
+    'admin.disbursements.automation.rule': 'Règle',
+    'admin.disbursements.automation.waiting.verified_payout_destination':
+        "En attente d'une destination de paiement vérifiée. Le paiement démarre automatiquement dès que la destination de l'entreprise est vérifiée.",
+    'admin.disbursements.automation.waiting.next_run':
+        'Le paiement démarre automatiquement au prochain passage.',
     'admin.disbursements.command.release_hold': 'Lever la suspension',
     'admin.disbursements.command.requery':
         'Interroger à nouveau le prestataire',
     'admin.disbursements.stage.release_hold.title': 'Lever cette suspension',
     'admin.disbursements.stage.release_hold.body':
-        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il revient là où il en était avant la suspension.",
+        'Le paiement automatique reprend une fois la suspension levée. Il revient là où il en était avant la suspension.',
     'admin.disbursements.stage.release_hold.cta': 'Lever la suspension',
     'admin.disbursements.stage.release_hold.placeholder':
         "ex. L'entreprise a confirmé son nouveau numéro MoMo.",

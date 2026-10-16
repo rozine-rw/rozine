@@ -70,11 +70,6 @@ final class PrimaryIssuanceFixture
         DisbursementFixture::sources()->setDestination($publication->business_id, 'verified');
         app(DisbursementStore::class)->openFunded(1);
         $disbursement = Disbursement::query()->where('business_campaign_id', $publication->id)->sole();
-        $maker = DisbursementFixture::staff(['treasury']);
-        $checker = DisbursementFixture::staff(['approver']);
-        DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-        $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
         $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
         $campaign = DB::transaction(function () use ($publication): FundedCampaign {
             $retained = app(EloquentFundedCampaigns::class);

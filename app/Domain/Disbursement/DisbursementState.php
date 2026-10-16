@@ -8,18 +8,26 @@ use App\Domain\Operations\CommandRejection;
 
 /**
  * A disbursement's state, folded from its append-only event log (C3 v2 §2e). The revision is the
- * number of recorded events. `on_hold` keeps the state it interrupted, so a release returns there
- * and neither approves nor pays. From `queued` onwards the money is in flight: nothing may hold,
- * reject or re-authorize it, and only a reconciled provider outcome or a failed worker recheck
- * ends it.
+ * number of recorded events. Since BRS v2.0 SVC-R01 a funded disbursement is paid automatically:
+ * the system records `auto_intent_recorded` and the money is queued, with no approval screen. A
+ * disbursement stays `ready` only while something blocks automatic payment, and one authorised
+ * staff member may hold it there and release it, with a reason (ADM-R02). `on_hold` keeps the state
+ * it interrupted, so a release returns there. From `queued` onwards the money is in flight: nothing
+ * may hold it, and only a reconciled provider outcome or a failed recheck ends it.
+ *
+ * `authorized`, `rejected`, `intent_recorded` and `awaiting_second_approver` belong to the retired
+ * maker/checker release; they still fold so disbursements recorded under it keep their history.
  */
 final readonly class DisbursementState
 {
     public const array STATES = ['ready', 'awaiting_second_approver', 'on_hold', 'queued', 'dispatched', 'succeeded', 'failed_closing'];
 
-    public const array EVENTS = ['authorized', 'rejected', 'held', 'hold_released', 'intent_recorded', 'dispatched', 'succeeded', 'failed_closing'];
+    public const array EVENTS = ['authorized', 'rejected', 'held', 'hold_released', 'intent_recorded', 'auto_intent_recorded', 'dispatched', 'succeeded', 'failed_closing'];
 
-    public const array COMMANDS = ['authorize', 'approve', 'reject', 'hold', 'release_hold', 'requery'];
+    public const array COMMANDS = ['hold', 'release_hold', 'requery'];
+
+    /** The rule an automatic intent is recorded under (BRS v2.0 SVC-R01). */
+    public const string AUTO_RULE_VERSION = 'brs-2.0-svc-r01';
 
     private const array IN_FLIGHT = ['queued', 'dispatched', 'succeeded', 'failed_closing'];
 
@@ -63,11 +71,18 @@ final readonly class DisbursementState
             $kind === 'held' && in_array($this->state, ['ready', 'awaiting_second_approver'], true) => new self('on_hold', $next, $this->makerUserId, null, $actorUserId, $this->state),
             $kind === 'hold_released' && $this->state === 'on_hold' => new self((string) $this->heldFrom, $next, $this->makerUserId, null, null, null),
             $kind === 'intent_recorded' && $this->state === 'awaiting_second_approver' => new self('queued', $next, $this->makerUserId, $actorUserId, null, null),
+            $kind === 'auto_intent_recorded' && $this->awaitsPayment() && $actorUserId === null => new self('queued', $next, null, null, null, null),
             $kind === 'dispatched' && $this->state === 'queued' => new self('dispatched', $next, $this->makerUserId, $this->checkerUserId, null, null),
             $kind === 'succeeded' && $this->state === 'dispatched' => new self('succeeded', $next, $this->makerUserId, $this->checkerUserId, null, null),
-            $kind === 'failed_closing' && in_array($this->state, ['awaiting_second_approver', 'queued', 'dispatched'], true) => new self('failed_closing', $next, $this->makerUserId, $this->checkerUserId, null, null),
+            $kind === 'failed_closing' && (in_array($this->state, ['awaiting_second_approver', 'queued', 'dispatched'], true) || ($this->state === 'ready' && $actorUserId === null)) => new self('failed_closing', $next, $this->makerUserId, $this->checkerUserId, null, null),
             default => throw new DisbursementViolation('DISBURSEMENT_TRANSITION_INVALID'),
         };
+    }
+
+    /** Whether automatic payment may still record its intent: not held and not yet in flight. */
+    public function awaitsPayment(): bool
+    {
+        return in_array($this->state, ['ready', 'awaiting_second_approver'], true);
     }
 
     /** Whether the intent is recorded: from here nothing may hold, reject or re-authorize it. */
@@ -77,35 +92,21 @@ final readonly class DisbursementState
     }
 
     /**
-     * Why this staff member may not run this command now, or null. Segregation is checked before
-     * state, so a maker learns they may not approve their own work rather than a state detail.
-     * `$makerCurrent` is whether the recorded maker still holds current authorize authority: a
-     * lapsed maker's authorization can no longer be approved, and a fresh one may replace it.
+     * Why this staff member may not run this command now, or null. One authorised staff member
+     * holds and releases (ADM-R02): whoever placed a hold may release it.
      *
      * @return array{code: string, status: int}|null
      */
-    public function refusal(string $command, int $actorUserId, bool $makerCurrent = true): ?array
+    public function refusal(string $command, int $actorUserId): ?array
     {
         if (! in_array($command, self::COMMANDS, true)) {
             throw new DisbursementViolation('DISBURSEMENT_COMMAND_INVALID');
         }
-        $awaiting = $this->state === 'awaiting_second_approver';
-        if (in_array($command, ['approve', 'reject'], true) && $awaiting && $actorUserId === $this->makerUserId) {
-            return ['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403];
-        }
-        if ($command === 'release_hold' && $this->state === 'on_hold' && $actorUserId === $this->holdPlacerUserId) {
-            return ['code' => 'SELF_APPROVAL_FORBIDDEN', 'status' => 403];
-        }
         $allowed = match ($command) {
-            'authorize' => $this->state === 'ready' || ($awaiting && ! $makerCurrent),
-            'approve', 'reject' => $awaiting,
-            'hold' => in_array($this->state, ['ready', 'awaiting_second_approver'], true),
+            'hold' => $this->awaitsPayment(),
             'release_hold' => $this->state === 'on_hold',
             'requery' => $this->state === 'dispatched',
         };
-        if ($allowed && $command === 'approve' && ! $makerCurrent) {
-            return ['code' => 'MAKER_AUTHORIZATION_VOID', 'status' => 409];
-        }
         if ($allowed) {
             return null;
         }
@@ -116,17 +117,17 @@ final readonly class DisbursementState
         return ['code' => 'DISBURSEMENT_STATE_INVALID', 'status' => 409];
     }
 
-    /** Refuses a command this state or segregation does not allow, carrying the current revision. */
-    public function assertAllows(string $command, int $actorUserId, bool $makerCurrent = true): void
+    /** Refuses a command this state does not allow, carrying the current revision. */
+    public function assertAllows(string $command, int $actorUserId): void
     {
-        $refusal = $this->refusal($command, $actorUserId, $makerCurrent);
+        $refusal = $this->refusal($command, $actorUserId);
         if ($refusal !== null) {
             throw new CommandRejection($refusal['code'], $refusal['status'], $this->revision);
         }
     }
 
-    public function allows(string $command, int $actorUserId, bool $makerCurrent = true): bool
+    public function allows(string $command, int $actorUserId): bool
     {
-        return $this->refusal($command, $actorUserId, $makerCurrent) === null;
+        return $this->refusal($command, $actorUserId) === null;
     }
 }

@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * `C3AdminDisbursementsProps` (staff-disbursement-v1). Every action comes from the server's
+ * `C3AdminDisbursementsProps` (staff-disbursement-v2). Funded campaigns pay automatically (BRS v2.0
+ * SVC-R01), so the only actions are hold, release and requery. Every action comes from the server's
  * per-viewer `allowed_actions`, never a role label, and an API token acts only with its manage
- * ability. The step-up route is listed only while this viewer may approve this disbursement.
+ * ability. An automatic intent or closing was never a staff command, so its receipt has no lookup.
  */
 class StaffDisbursementsResource extends JsonResource
 {
-    private const array ROUTES = ['authorize' => 'authorize', 'approve' => 'approve', 'reject' => 'reject', 'hold' => 'hold',
-        'release_hold' => 'release-hold', 'requery' => 'requery'];
+    private const array ROUTES = ['hold' => 'hold', 'release_hold' => 'release-hold', 'requery' => 'requery'];
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
@@ -29,15 +29,15 @@ class StaffDisbursementsResource extends JsonResource
         $name = (string) $request->user()?->name;
         $detail = $page['disbursement'] === null ? null : $this->detail($request, $page['disbursement'], $manage, $prefix, $link('index'));
 
-        return ['contract_version' => 'staff-disbursement-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
+        return ['contract_version' => 'staff-disbursement-v2', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => 'approver'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => $page['awaiting_second_approver']], 'search' => '',
+            'badges' => ['applications' => null, 'disbursements' => $page['needs_attention']], 'search' => '',
             'allowed_actions' => $detail['allowed_actions'] ?? [],
             'disbursements' => array_map(fn (array $row): array => [...$row, 'link' => $link('show', ['disbursement' => $row['id']])], $page['rows']),
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link('index', ['before' => $page['next_cursor']])],
-            'awaiting_second_approver' => $page['awaiting_second_approver'], 'disbursement' => $detail, 'refusal' => $page['refusal']];
+            'needs_attention' => $page['needs_attention'], 'disbursement' => $detail, 'refusal' => $page['refusal']];
     }
 
     /**
@@ -68,21 +68,16 @@ class StaffDisbursementsResource extends JsonResource
                 $actions[$key] = ['url' => route($prefix.'staff.disbursements.'.$route, ['disbursement' => $detail['id']], false), 'method' => 'post'];
             }
         }
-        $stepUp = $manage && $detail['step_up_allowed'] ? ['url' => route($prefix.'staff.disbursements.step-up', ['disbursement' => $detail['id']], false), 'method' => 'post'] : null;
         $intent = $detail['intent'];
         if ($intent !== null) {
-            $intent['receipt']['link'] = self::lookup($request, $intent['receipt']['request_id'], 'disbursement.approve');
+            $intent['receipt']['link'] = null;
         }
         $refund = $detail['refund'];
         if ($refund !== null) {
-            $refund['receipt']['link'] = self::lookup($request, $refund['receipt']['request_id'], 'disbursement.approve');
+            $refund['receipt']['link'] = null;
         }
-        $independence = $detail['independence'];
-        unset($detail['step_up_allowed'], $detail['independence']);
 
         return [...$detail, 'intent' => $intent, 'refund' => $refund, 'allowed_actions' => $allowed, 'actions' => (object) $actions,
-            'step_up' => ['purpose' => 'disbursement.approve', 'route' => $stepUp],
-            'independence' => $independence,
             'links' => ['close' => $close, 'ledger' => null, 'operation' => self::lookup($request)]];
     }
 }

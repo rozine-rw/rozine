@@ -12,8 +12,9 @@ use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 /*
- * The database enforces the disbursement rules on its own: raw SQL cannot skip a state, approve
- * its own authorization, rewrite a record, send twice, reconcile over a conflict or close twice.
+ * The database enforces the disbursement rules on its own: raw SQL cannot skip a state, pass a
+ * staff command off as an automatic payment (BRS v2.0 SVC-R01), let a legacy checker approve their
+ * own authorization, rewrite a record, send twice, reconcile over a conflict or close twice.
  */
 
 function schemaId(): string
@@ -26,16 +27,17 @@ function schemaEvent(string $disbursementId, int $revision, string $kind, ?int $
 {
     $id = schemaId();
     $staff = in_array($kind, ['authorized', 'rejected', 'held', 'hold_released', 'intent_recorded'], true);
+    $binds = in_array($kind, ['authorized', 'auto_intent_recorded'], true);
     DB::table('disbursement_events')->insert([...['id' => $id, 'disbursement_id' => $disbursementId, 'revision' => $revision, 'kind' => $kind,
         'actor_user_id' => $actor, 'operation_id' => $staff ? schemaId() : null, 'request_id' => $staff ? (string) Str::uuid() : null,
-        'binding_sha256' => $kind === 'authorized' ? str_repeat('b', 64) : null, 'destination_sha256' => $kind === 'authorized' ? str_repeat('d', 64) : null,
+        'binding_sha256' => $binds ? str_repeat('b', 64) : null, 'destination_sha256' => $binds ? str_repeat('d', 64) : null,
         'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$overrides]);
 
     return $id;
 }
 
 /** @param array<string, mixed> $overrides */
-function schemaIntent(Disbursement $disbursement, int $maker, int $checker, array $overrides = []): string
+function schemaIntent(Disbursement $disbursement, ?int $maker, ?int $checker, array $overrides = []): string
 {
     $id = schemaId();
     DB::table('disbursement_intents')->insert([...['id' => $id, 'disbursement_id' => $disbursement->id, 'operation_id' => schemaId(),
@@ -46,6 +48,17 @@ function schemaIntent(Disbursement $disbursement, int $maker, int $checker, arra
         'checker_user_id' => $checker, 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()], ...$overrides]);
 
     return $id;
+}
+
+/**
+ * A system intent as automatic payment records it: no maker or checker, the rule it was recorded
+ * under, and an operation id that is never a staff command.
+ *
+ * @param  array<string, mixed>  $overrides
+ */
+function schemaSystemIntent(Disbursement $disbursement, int $revision = 0, array $overrides = []): string
+{
+    return schemaIntent($disbursement, null, null, ['revision' => $revision, 'rule_version' => 'brs-2.0-svc-r01', ...$overrides]);
 }
 
 function schemaPhase(string $intentId, string $phase): void
@@ -159,8 +172,7 @@ it('folds the event log itself: next revision only, legal transitions only', fun
     schemaEvent($disbursement->id, 1, 'held', $maker);
     refusedBySchema(fn () => schemaEvent($disbursement->id, 2, 'authorized', $maker));
     refusedBySchema(fn () => schemaEvent($disbursement->id, 2, 'held', $maker));
-    refusedBySchema(fn () => schemaEvent($disbursement->id, 2, 'hold_released', $maker));
-    schemaEvent($disbursement->id, 2, 'hold_released', User::factory()->create()->id);
+    schemaEvent($disbursement->id, 2, 'hold_released', $maker);
     schemaEvent($disbursement->id, 3, 'authorized', $maker);
     refusedBySchema(fn () => schemaEvent($disbursement->id, 4, 'rejected', $maker));
     refusedBySchema(fn () => schemaEvent($disbursement->id, 4, 'dispatched', null));
@@ -172,8 +184,23 @@ it('folds the event log itself: next revision only, legal transitions only', fun
         ->toMatchArray(['f_state' => 'ready', 'f_revision' => 4, 'f_maker' => null]);
 });
 
+it('lets the staff member who placed a hold release it', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    $placer = User::factory()->create()->id;
+    schemaEvent($disbursement->id, 1, 'held', $placer);
+    schemaEvent($disbursement->id, 2, 'hold_released', $placer);
+
+    expect(DB::selectOne('SELECT * FROM disbursement_fold(?)', [$disbursement->id]))
+        ->toMatchArray(['f_state' => 'ready', 'f_revision' => 2, 'f_placer' => null]);
+});
+
 it('requires attribution on staff events and none on system events', function (): void {
     $disbursement = Disbursement::factory()->create();
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', User::factory()->create()->id));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null, ['operation_id' => schemaId(), 'request_id' => (string) Str::uuid()]));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null, ['binding_sha256' => null]));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null, ['destination_sha256' => null]));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'dispatched', null, ['binding_sha256' => str_repeat('b', 64)]));
     refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'authorized', null));
     refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'authorized', User::factory()->create()->id, ['binding_sha256' => null]));
     refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'held', User::factory()->create()->id, ['operation_id' => null]));
@@ -232,25 +259,6 @@ it('orders dispatch phases and allows one send unless the provider accepts idemp
     refusedBySchema(fn () => schemaPhase($intent, 'sent'));
 });
 
-it('consumes a step-up proof exactly once, before it expires, and never otherwise changes it', function (): void {
-    $disbursement = Disbursement::factory()->create();
-    $actor = User::factory()->create()->id;
-    $proof = fn (array $overrides = []): string => tap(schemaId(), fn (string $id) => DB::table('disbursement_step_up_proofs')->insert([...[
-        'id' => $id, 'purpose' => 'disbursement.approve', 'actor_user_id' => $actor, 'disbursement_id' => $disbursement->id, 'revision' => 1,
-        'amount' => '3000000', 'destination_sha256' => str_repeat('d', 64), 'intent_digest' => str_repeat('i', 64),
-        'credential_binding' => str_repeat('c', 64), 'proof_sha256' => hash('sha256', $id), 'expires_at' => now()->addMinutes(5),
-        'created_at' => now()], ...$overrides]));
-    refusedBySchema(fn () => $proof(['consumed_at' => now(), 'consumed_operation_id' => schemaId()]));
-    refusedBySchema(fn () => $proof(['purpose' => 'audit.seal']));
-    $id = $proof();
-    refusedBySchema(fn () => DB::table('disbursement_step_up_proofs')->where('id', $id)->update(['consumed_at' => now()]));
-    refusedBySchema(fn () => DB::table('disbursement_step_up_proofs')->where('id', $id)->update(['consumed_at' => now()->addMinutes(6), 'consumed_operation_id' => schemaId()]));
-    refusedBySchema(fn () => DB::table('disbursement_step_up_proofs')->where('id', $id)->update(['consumed_at' => now(), 'consumed_operation_id' => schemaId(), 'revision' => 2]));
-    DB::table('disbursement_step_up_proofs')->where('id', $id)->update(['consumed_at' => now(), 'consumed_operation_id' => schemaId()]);
-    refusedBySchema(fn () => DB::table('disbursement_step_up_proofs')->where('id', $id)->update(['consumed_at' => now()->addSecond(), 'consumed_operation_id' => schemaId()]));
-    refusedBySchema(fn () => DB::table('disbursement_step_up_proofs')->where('id', $id)->delete());
-});
-
 it('keeps a changed body under a known event identity only as a key conflict, and one applied final outcome', function (): void {
     $chain = schemaDispatched();
     schemaObservation($chain['intent'], 'succeeded', 'applied', ['provider_event_id' => 'evt-1', 'content_sha256' => str_repeat('1', 64)]);
@@ -303,7 +311,7 @@ it('closes a disbursement once: no double issue and no refund after issue', func
     refusedBySchema(fn () => schemaEvent($id, 5, 'failed_closing', null));
 });
 
-it('allows a failed closing only from an approve-time or pre-send worker recheck, or a reconciled failure', function (): void {
+it('allows a failed closing only from a legacy approve-time or pre-send worker recheck, or a reconciled failure', function (): void {
     $disbursement = Disbursement::factory()->create();
     [$maker, $checker] = [User::factory()->create()->id, User::factory()->create()->id];
     refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck'));
@@ -420,4 +428,94 @@ it('rolls the closing authority binding back only while no closing retains an au
     schemaEvent($disbursement->id, 1, 'authorized', User::factory()->create()->id);
     schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck');
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded closing authority requires a forward migration');
+});
+
+it('records a system intent only with its rule version and with neither maker nor checker', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    $staff = User::factory()->create()->id;
+    refusedBySchema(fn () => schemaIntent($disbursement, null, null, ['revision' => 0]));
+    refusedBySchema(fn () => schemaSystemIntent($disbursement, 0, ['rule_version' => 'brs-1.0']));
+    refusedBySchema(fn () => schemaIntent($disbursement, $staff, null, ['revision' => 0]));
+    refusedBySchema(fn () => schemaIntent($disbursement, null, $staff, ['revision' => 0]));
+    refusedBySchema(fn () => schemaSystemIntent($disbursement, 0, ['maker_user_id' => $staff]));
+    refusedBySchema(fn () => schemaSystemIntent($disbursement, 0, ['checker_user_id' => $staff]));
+    refusedBySchema(fn () => schemaSystemIntent($disbursement, 0, ['amount' => '3000001']));
+    refusedBySchema(fn () => schemaSystemIntent($disbursement, 1));
+    schemaSystemIntent($disbursement);
+
+    $held = Disbursement::factory()->create();
+    schemaEvent($held->id, 1, 'held', $staff);
+    refusedBySchema(fn () => schemaSystemIntent($held, 1));
+
+    $legacy = Disbursement::factory()->create();
+    schemaEvent($legacy->id, 1, 'authorized', $staff);
+    refusedBySchema(fn () => schemaIntent($legacy, $staff, User::factory()->create()->id, ['rule_version' => 'brs-2.0-svc-r01']));
+    schemaSystemIntent($legacy, 1);
+});
+
+it('records an automatic intent event only over its queued system intent and the digests it binds', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null));
+    $intent = schemaSystemIntent($disbursement);
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null));
+    schemaPhase($intent, 'queued');
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null, ['binding_sha256' => str_repeat('c', 64)]));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null, ['destination_sha256' => str_repeat('e', 64)]));
+    schemaEvent($disbursement->id, 1, 'auto_intent_recorded', null);
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 2, 'auto_intent_recorded', null));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 2, 'held', User::factory()->create()->id));
+
+    expect(DB::selectOne('SELECT * FROM disbursement_fold(?)', [$disbursement->id]))
+        ->toMatchArray(['f_state' => 'queued', 'f_revision' => 1, 'f_maker' => null, 'f_checker' => null]);
+
+    $legacy = Disbursement::factory()->create();
+    [$maker, $checker] = [User::factory()->create()->id, User::factory()->create()->id];
+    schemaEvent($legacy->id, 1, 'authorized', $maker);
+    $staffIntent = schemaIntent($legacy, $maker, $checker);
+    schemaPhase($staffIntent, 'queued');
+    refusedBySchema(fn () => schemaEvent($legacy->id, 2, 'auto_intent_recorded', null));
+});
+
+it('closes a funded disbursement automatically from ready only without an intent, an operation or an actor', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    $auto = ['causes' => '["restriction"]'];
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'auto_recheck', ['causes' => '[]']));
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'auto_recheck', [...$auto, 'operation_id' => schemaId()]));
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'approve_recheck'));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'failed_closing', null));
+    schemaClosing($disbursement->id, 'failed_closing', 'auto_recheck', $auto);
+    refusedBySchema(fn () => schemaClosing($disbursement->id, 'failed_closing', 'auto_recheck', $auto));
+    refusedBySchema(fn () => schemaEvent($disbursement->id, 1, 'failed_closing', User::factory()->create()->id, ['operation_id' => schemaId(), 'request_id' => (string) Str::uuid()]));
+    schemaEvent($disbursement->id, 1, 'failed_closing', null);
+
+    $paid = Disbursement::factory()->create();
+    $intent = schemaSystemIntent($paid);
+    refusedBySchema(fn () => schemaClosing($paid->id, 'failed_closing', 'auto_recheck', [...$auto, 'intent_id' => $intent]));
+    refusedBySchema(fn () => schemaClosing($paid->id, 'failed_closing', 'auto_recheck', $auto));
+
+    $held = Disbursement::factory()->create();
+    schemaEvent($held->id, 1, 'held', User::factory()->create()->id);
+    refusedBySchema(fn () => schemaClosing($held->id, 'failed_closing', 'auto_recheck', $auto));
+
+    $legacy = Disbursement::factory()->create();
+    schemaEvent($legacy->id, 1, 'authorized', User::factory()->create()->id);
+    schemaClosing($legacy->id, 'failed_closing', 'auto_recheck', $auto);
+    schemaEvent($legacy->id, 2, 'failed_closing', null);
+});
+
+it('commits a system intent only when its operation is no staff command', function (): void {
+    $disbursement = Disbursement::factory()->create();
+    schemaSystemIntent($disbursement);
+    DB::statement('SET CONSTRAINTS disbursement_intents_operation IMMEDIATE');
+    DB::statement('SET CONSTRAINTS disbursement_intents_operation DEFERRED');
+
+    $staff = User::factory()->create()->id;
+    $operation = schemaId();
+    DB::table('command_operations')->insert(['id' => $operation, 'actor_key' => 'user:'.$staff, 'actor_user_id' => $staff, 'command' => 'disbursement.hold',
+        'request_id' => (string) Str::uuid(), 'request_hash' => str_repeat('h', 64), 'target_type' => 'disbursement', 'target_id' => $disbursement->id,
+        'result' => '{}', 'retain_until' => now()->addYear(), 'created_at' => now()]);
+    schemaSystemIntent(Disbursement::factory()->create(), 0, ['operation_id' => $operation]);
+
+    expect(fn () => DB::statement('SET CONSTRAINTS disbursement_intents_operation IMMEDIATE'))
+        ->toThrow(QueryException::class, 'An automatic disbursement intent is never a staff command');
 });

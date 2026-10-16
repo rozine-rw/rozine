@@ -91,7 +91,7 @@ it('replays a posted fee without a second entry and refuses one under another op
 });
 
 it('takes the fee from a synthetic payout but posts nothing for a Business with no profile', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     DisbursementFixture::provider()->scriptQuery($intent->id, 'succeeded');
     app(ReconcileDisbursements::class)->handle();
 

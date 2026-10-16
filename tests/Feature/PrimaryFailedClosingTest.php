@@ -46,7 +46,7 @@ it('atomically refunds all original funded principal and releases exposure once 
     expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($before)
         ->and(BusinessCampaignClosure::query()->count())->toBe(1)
         ->and(DB::table('primary_failed_closings')->count())->toBe(1);
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure']);
 
 it('rolls back every financial effect when any refund binding fails', function (): void {
     ['campaign' => $campaign, 'instruction' => $instruction] = PrimaryFailedClosingFixture::close(settle: false);
@@ -187,10 +187,16 @@ it('refunds separate commitments to their original Party and counts distinct inv
 });
 
 it('reverses an empty forward migration and reinstalls it without weakening the earlier gates', function (): void {
-    $migration = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
-    $migration->down();
+    // The platform fee and automatic disbursement migrations rebind this closing authority, so they come off first and go back last.
+    $migrations = ['2026_10_12_054843_retain_primary_terminal_failed_closings', '2026_10_16_161905_add_platform_fee_to_disbursements',
+        '2026_10_16_180415_disburse_funded_campaigns_automatically'];
+    foreach (array_reverse($migrations) as $migration) {
+        (require database_path('migrations/'.$migration.'.php'))->down();
+    }
     expect(Schema::hasTable('primary_failed_closings'))->toBeFalse();
-    $migration->up();
+    foreach ($migrations as $migration) {
+        (require database_path('migrations/'.$migration.'.php'))->up();
+    }
     expect(Schema::hasTable('primary_failed_closings'))->toBeTrue();
     ['campaign' => $campaign] = PrimaryFailedClosingFixture::close();
     PrimaryHoldingFixture::flushDeferredChecks();

@@ -98,22 +98,17 @@ it('keeps authenticated funded failure authority distinct from permission to ref
     $seen = fundedFailureAuthorityCalls();
     app()->instance(FundedCampaigns::class, observedFundedFailureAuthority($seen));
     DisbursementFixture::sources()->setDestination($facts->businessId, 'verified');
-    expect(app(DisbursementStore::class)->openFunded(1))->toBe(['opened' => 1, 'known' => 0]);
-    $disbursement = Disbursement::query()->where('business_campaign_id', $facts->campaignId)->sole();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    if ($cause === 'approve_recheck') {
+    if ($cause === 'auto_recheck') {
         DisbursementFixture::sources()->scriptRecheck($facts->campaignId, 'failed', ['restriction']);
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+        expect(app(DisbursementStore::class)->openFunded(1))->toBe(['opened' => 1, 'known' => 0, 'queued' => 0, 'failed' => 1]);
     } elseif ($cause === 'worker_recheck') {
-        DB::transaction(function () use ($checker, $disbursement, $proof, $facts): void {
-            DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+        DB::transaction(function () use ($facts): void {
+            expect(app(DisbursementStore::class)->openFunded(1))->toBe(['opened' => 1, 'known' => 0, 'queued' => 1, 'failed' => 0]);
             DisbursementFixture::sources()->scriptRecheck($facts->campaignId, 'failed', ['exposure']);
         });
     } else {
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+        expect(app(DisbursementStore::class)->openFunded(1))->toBe(['opened' => 1, 'known' => 0, 'queued' => 1, 'failed' => 0]);
+        $disbursement = Disbursement::query()->where('business_campaign_id', $facts->campaignId)->sole();
         $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
         app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'failed'));
     }
@@ -153,4 +148,4 @@ it('keeps authenticated funded failure authority distinct from permission to ref
         app(BusinessExposureStore::class)->current($facts->businessId)])->toBe($before)
         ->and(app(CampaignFundingEvidence::class)->find($facts->campaignId))->toBe($funding)
         ->and(app(RetainedFundedCampaignFacts::class)->find($facts->campaignId))->toEqual($facts);
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure']);

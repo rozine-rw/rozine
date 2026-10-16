@@ -6,12 +6,11 @@ use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
-use App\Application\Disbursement\Contracts\StaffConnections;
 use App\Application\Disbursement\DispatchDisbursements;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\PayoutInstruction;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Operations\CommandRejection;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Models\Disbursement;
@@ -21,7 +20,6 @@ use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderCall;
 use App\Models\DisbursementProviderEvent;
 use App\Models\DisbursementReconciliation;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
@@ -33,24 +31,22 @@ use Tests\Support\DisbursementFixture;
  */
 
 /**
- * Approved inside an outer transaction, with $then running before the commit that dispatches.
+ * Funded and paid automatically inside an outer transaction, with $then running before the commit
+ * that dispatches.
  *
- * @return array{disbursement: Disbursement, maker: User, checker: User, intent: DisbursementIntent, campaign_id: string, business_id: string}
+ * @return array{disbursement: Disbursement, intent: DisbursementIntent, campaign_id: string, business_id: string}
  */
-function approvedThen(Closure $then): array
+function paidThen(Closure $then): array
 {
-    ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    DB::transaction(function () use ($checker, $disbursement, $proof, $then, $maker, $campaign): void {
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
-        $then($maker, $checker, $campaign);
+    $campaign = DisbursementFixture::sources()->fund();
+    DB::transaction(function () use ($campaign, $then): void {
+        expect(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 1, 'known' => 0, 'queued' => 1, 'failed' => 0]);
+        $then($campaign);
     });
+    $disbursement = Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->sole();
 
-    return ['disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker, 'campaign_id' => $campaign->campaignId,
-        'business_id' => $campaign->businessId, 'intent' => DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole()];
+    return ['disbursement' => $disbursement, 'campaign_id' => $campaign->campaignId, 'business_id' => $campaign->businessId,
+        'intent' => DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole()];
 }
 
 function sends(DisbursementIntent $intent): int
@@ -79,63 +75,64 @@ function callbackFor(DisbursementIntent $intent, string $state, array $overrides
 }
 
 it('refuses to run the worker, the reconciler or a requery query inside an open transaction', function (): void {
-    ['disbursement' => $disbursement, 'maker' => $maker] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     expect(fn () => DB::transaction(fn () => app(DispatchDisbursements::class)->handle()))->toThrow(LogicException::class, 'DISBURSEMENT_DISPATCH_TRANSACTION_OPEN')
         ->and(fn () => DB::transaction(fn () => app(ReconcileDisbursements::class)->handle()))->toThrow(LogicException::class, 'DISBURSEMENT_RECONCILE_TRANSACTION_OPEN')
-        ->and(fn () => DB::transaction(fn () => DisbursementFixture::command($treasury, $disbursement, 'requery', 3)))->toThrow(LogicException::class, 'DISBURSEMENT_QUERY_TRANSACTION_OPEN');
+        ->and(fn () => DB::transaction(fn () => DisbursementFixture::command($treasury, $disbursement, 'requery', 2)))->toThrow(LogicException::class, 'DISBURSEMENT_QUERY_TRANSACTION_OPEN');
+});
+
+it('sends an automatic intent once, after the commit that records it', function (): void {
+    $sendsBeforeCommit = null;
+    ['intent' => $intent] = paidThen(function () use (&$sendsBeforeCommit): void {
+        $sendsBeforeCommit = DisbursementProviderCall::query()->where('kind', 'send')->count();
+    });
+    expect($sendsBeforeCommit)->toBe(0)->and(phases($intent))->toBe(['queued', 'claimed', 'sent'])->and(sends($intent))->toBe(1)
+        ->and(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 0, 'sent' => 0])->and(sends($intent))->toBe(1);
 });
 
 it('closes deterministically when the worker recheck fails before any send', function (): void {
-    ['intent' => $intent, 'disbursement' => $disbursement, 'campaign_id' => $campaignId, 'checker' => $checker] = approvedThen(
-        fn (User $maker, User $checker, $campaign) => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['exposure']));
+    ['intent' => $intent, 'disbursement' => $disbursement, 'campaign_id' => $campaignId] = paidThen(
+        fn ($campaign) => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['exposure']));
     $closing = DisbursementClosing::query()->sole();
     expect(phases($intent))->toBe(['queued', 'recheck_failed'])->and(sends($intent))->toBe(0)
         ->and([$closing->kind, $closing->cause, $closing->causes, $closing->intent_id])->toBe(['failed_closing', 'worker_recheck', ['exposure'], $intent->id])
+        ->and([$closing->operation_id, $closing->actor_user_id, $closing->request_id])->toBe([null, null, null])
         ->and(DisbursementFixture::sources()->effects($campaignId)[0]['cause'])->toBe('worker_recheck')
-        ->and(DisbursementFixture::detail($checker, $disbursement)['state'])->toBe('failed_closing');
+        ->and(DisbursementFixture::detail(DisbursementFixture::staff(['approver']), $disbursement)['state'])->toBe('failed_closing');
 });
 
 it('leaves an intent queued and unsent while any pre-send input is lapsed or unavailable, then sends once it is current', function (string $case): void {
-    ['intent' => $intent, 'maker' => $maker, 'checker' => $checker, 'business_id' => $businessId, 'campaign_id' => $campaignId] = approvedThen(
-        function (User $maker, User $checker, $campaign) use ($case): void {
-            match ($case) {
-                'maker revoked' => app(ConfigureStaffAccess::class)->handle($maker->id, true, 'Moved.', (string) Str::uuid(), ['compliance']),
-                'checker revoked' => app(ConfigureStaffAccess::class)->handle($checker->id, true, 'Moved.', (string) Str::uuid(), ['analyst']),
-                'connection unavailable' => DisbursementFixture::sources()->setConnection(null, 'unavailable'),
-                'destination rotated' => DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated'),
-                default => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'unavailable', ['conditions_precedent']),
-            };
-        });
+    ['intent' => $intent, 'campaign_id' => $campaignId] = paidThen(function ($campaign) use ($case): void {
+        match ($case) {
+            'destination rotated' => DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated'),
+            'destination revoked' => DisbursementFixture::sources()->setDestination($campaign->businessId, 'revoked'),
+            default => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'unavailable', ['conditions_precedent']),
+        };
+    });
     expect(phases($intent))->toBe(['queued'])->and(sends($intent))->toBe(0)->and(DisbursementClosing::query()->count())->toBe(0)
         ->and(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 0, 'sent' => 0]);
-    if ($case === 'destination rotated') {
-        return;
-    }
-    if (in_array($case, ['maker revoked', 'checker revoked'], true)) {
-        // A restored role does not revive an act made before the gap (#96 answer 4): still unsent.
-        app(ConfigureStaffAccess::class)->handle(($case === 'maker revoked' ? $maker : $checker)->id, true, 'Back.', (string) Str::uuid(),
-            [$case === 'maker revoked' ? 'treasury' : 'approver']);
+    if ($case !== 'recheck unavailable') {
+        // The intent is bound to the destination it was recorded with; a rotated or re-verified one never sends it.
         expect(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 0, 'sent' => 0])->and(sends($intent))->toBe(0);
 
         return;
     }
-    $case === 'connection unavailable' ? DisbursementFixture::sources()->setConnection(null, 'available')
-        : DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed');
+    DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed');
     expect(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 1, 'sent' => 1])->and(phases($intent))->toBe(['queued', 'claimed', 'sent']);
-})->with(['maker revoked', 'checker revoked', 'connection unavailable', 'destination rotated', 'recheck unavailable']);
+})->with(['destination rotated', 'destination revoked', 'recheck unavailable']);
 
 it('records an unacknowledged or failed send as unsent, unknown and never resent', function (string $answer): void {
-    ['intent' => $intent, 'checker' => $checker, 'disbursement' => $disbursement] = approvedThen(fn () => DisbursementFixture::provider()->scriptSend($answer === 'nack' ? 'nack' : 'throw'));
+    ['intent' => $intent, 'disbursement' => $disbursement] = paidThen(fn () => DisbursementFixture::provider()->scriptSend($answer === 'nack' ? 'nack' : 'throw'));
     expect(phases($intent))->toBe(['queued', 'claimed', 'unsent'])->and(sends($intent))->toBe(1)
-        ->and(DisbursementFixture::detail($checker, $disbursement)['provider']['state'])->toBe('unknown')
+        ->and(DisbursementFixture::detail(DisbursementFixture::staff(['treasury']), $disbursement)['provider']['state'])->toBe('unknown')
         ->and(app(DispatchDisbursements::class)->handle())->toBe(['claimed' => 0, 'sent' => 0])->and(sends($intent))->toBe(1);
 })->with(['nack', 'throw']);
 
 it('marks an interrupted claim unknown for a provider without idempotent sends, and resends it only when idempotent and unobserved', function (string $case): void {
     DisbursementFixture::provider()->scriptSend('ack', $case !== 'not idempotent');
-    ['intent' => $intent] = approvedThen(fn () => DisbursementFixture::sources()->setConnection(null, 'unavailable'));
-    DisbursementFixture::sources()->setConnection(null, 'available');
+    ['intent' => $intent, 'campaign_id' => $campaignId] = paidThen(fn ($campaign) => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'unavailable', ['mandate']));
+    DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed');
     expect($intent->idempotent_sends)->toBe($case !== 'not idempotent');
     expect(app(DisbursementStore::class)->claim($intent->id, 5, false))->toHaveCount(1);
     if ($case === 'observed') {
@@ -151,8 +148,8 @@ it('marks an interrupted claim unknown for a provider without idempotent sends, 
 
 it('does not resend an idempotent interrupted claim whose fresh pre-send recheck fails', function (): void {
     DisbursementFixture::provider()->scriptSend('ack', true);
-    ['intent' => $intent, 'campaign_id' => $campaignId] = approvedThen(fn () => DisbursementFixture::sources()->setConnection(null, 'unavailable'));
-    DisbursementFixture::sources()->setConnection(null, 'available');
+    ['intent' => $intent, 'campaign_id' => $campaignId] = paidThen(fn ($campaign) => DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'unavailable', ['mandate']));
+    DisbursementFixture::sources()->scriptRecheck($campaignId, 'passed');
     app(DisbursementStore::class)->claim($intent->id, 5, true);
     DisbursementFixture::sources()->scriptRecheck($campaignId, 'failed', ['mandate']);
     $this->travel(6)->minutes();
@@ -161,31 +158,31 @@ it('does not resend an idempotent interrupted claim whose fresh pre-send recheck
 });
 
 it('requeries the same operation without ever sending again, once per recorded request', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     $key = (string) Str::uuid();
-    $first = DisbursementFixture::command($treasury, $disbursement, 'requery', 3, null, $key);
+    $first = DisbursementFixture::command($treasury, $disbursement, 'requery', 2, $key);
     expect([$first['code'], $first['data']['observation']])->toBe(['PROVIDER_QUERY_RECORDED', null])
         ->and([sends($intent), queries($intent)])->toBe([1, 1])
-        ->and(DisbursementFixture::command($treasury, $disbursement, 'requery', 3, null, $key)['operation_id'])->toBe($first['operation_id'])
+        ->and(DisbursementFixture::command($treasury, $disbursement, 'requery', 2, $key)['operation_id'])->toBe($first['operation_id'])
         ->and([sends($intent), queries($intent)])->toBe([1, 1]);
     DisbursementFixture::provider()->scriptQuery($intent->id, 'failed');
-    $failed = DisbursementFixture::command($treasury, $disbursement, 'requery', 3);
+    $failed = DisbursementFixture::command($treasury, $disbursement, 'requery', 2);
     expect($failed['data']['observation'])->toBe(['state' => 'failed', 'disposition' => 'applied'])->and([sends($intent), queries($intent)])->toBe([1, 2])
         ->and(DisbursementClosing::query()->sole()->cause)->toBe('reconciled_failure')
-        ->and(fn () => DisbursementFixture::command($treasury, $disbursement, 'requery', 4))->toThrow(CommandRejection::class, 'DISBURSEMENT_STATE_INVALID');
+        ->and(fn () => DisbursementFixture::command($treasury, $disbursement, 'requery', 3))->toThrow(CommandRejection::class, 'DISBURSEMENT_STATE_INVALID');
 });
 
 it('refuses a requery before dispatch and a requery with a stale revision', function (): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
     $treasury = DisbursementFixture::staff(['treasury']);
     expect(fn () => DisbursementFixture::command($treasury, $disbursement, 'requery', 0))->toThrow(CommandRejection::class, 'DISBURSEMENT_STATE_INVALID');
-    ['disbursement' => $dispatched] = DisbursementFixture::approved();
+    ['disbursement' => $dispatched] = DisbursementFixture::paid();
     expect(DisbursementFixture::command($treasury, $dispatched, 'requery', 1)['code'])->toBe('VERSION_CONFLICT');
 });
 
 it('issues once from an authenticated effective instant on the Kigali date, and duplicates add nothing', function (string $effectiveAt, string $date, array $due): void {
-    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign, 'checker' => $checker] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($intent->id, 'succeeded', ['effective_at' => $effectiveAt, 'event_id' => 'evt-success']);
     expect(app(RecordPayoutEvent::class)->handle($message))->toBe(['disposition' => 'applied', 'decision' => 'matched_success'])
         ->and(app(RecordPayoutEvent::class)->handle($message))->toBe(['disposition' => 'duplicate', 'decision' => 'closed'])
@@ -196,7 +193,7 @@ it('issues once from an authenticated effective instant on the Kigali date, and 
         ->and($effects)->toHaveCount(1)->and($effects[0]['holdings'][0]['ordinals'])->toBe($campaign->commitments[0]->ordinals)
         ->and($effects[0]['exposure_reservation_id'])->toBe($campaign->exposureReservationId)
         ->and(DisbursementReconciliation::query()->where('decision', 'matched_success')->count())->toBe(1);
-    $detail = DisbursementFixture::detail($checker, $disbursement);
+    $detail = DisbursementFixture::detail(DisbursementFixture::staff(['treasury']), $disbursement);
     expect([$detail['state'], $detail['provider']['reconciliation'], $detail['issue']['effective_date'], $detail['allowed_actions']])
         ->toBe(['succeeded', 'matched', $date, []]);
 })->with([
@@ -205,7 +202,7 @@ it('issues once from an authenticated effective instant on the Kigali date, and 
 ]);
 
 it('refunds once on a reconciled final failure, and keeps a later success as a blocked conflict with no effect', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign, 'checker' => $checker] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     expect(callbackFor($intent, 'failed'))->toBe(['disposition' => 'applied', 'decision' => 'matched_failure'])
         ->and(callbackFor($intent, 'succeeded'))->toBe(['disposition' => 'conflict', 'decision' => 'closed']);
     $effects = DisbursementFixture::sources()->effects($campaign->campaignId);
@@ -214,12 +211,12 @@ it('refunds once on a reconciled final failure, and keeps a later success as a b
         ->and(DisbursementClosing::query()->sole()->cause)->toBe('reconciled_failure')
         ->and(DisbursementReconciliation::query()->where('decision', 'exception')->sole()->causes)->toBe(['conflict'])
         ->and(sends($intent))->toBe(1);
-    $detail = DisbursementFixture::detail($checker, $disbursement);
+    $detail = DisbursementFixture::detail(DisbursementFixture::staff(['treasury']), $disbursement);
     expect([$detail['state'], $detail['provider']['reconciliation'], $detail['refund']['commitments']])->toBe(['failed_closing', 'exception', 2]);
 });
 
 it('retains key collisions, unverifiable and after-final observations as blocking exceptions', function (string $case): void {
-    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     if ($case === 'key collision') {
         callbackFor($intent, 'pending', ['event_id' => 'evt-shared']);
         expect(callbackFor($intent, 'succeeded', ['event_id' => 'evt-shared']))->toBe(['disposition' => 'key_conflict', 'decision' => 'exception']);
@@ -239,7 +236,7 @@ it('retains key collisions, unverifiable and after-final observations as blockin
 })->with(['key collision', 'amount mismatch', 'environment mismatch', 'no effective instant']);
 
 it('never reverses a reconciled success on a later failure', function (): void {
-    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     callbackFor($intent, 'succeeded');
     expect(callbackFor($intent, 'failed'))->toBe(['disposition' => 'after_final', 'decision' => 'closed'])
         ->and(DisbursementFixture::sources()->effects($campaign->campaignId))->toHaveCount(1)
@@ -247,7 +244,7 @@ it('never reverses a reconciled success on a later failure', function (): void {
 });
 
 it('reconciles from a scheduled query, records each query, and waits on an open or unanswered one', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     expect(app(ReconcileDisbursements::class)->handle())->toBe(['queried' => 1, 'observed' => 0, 'decisions' => ['open' => 1]]);
     DisbursementFixture::provider()->scriptQuery($intent->id, 'pending');
     expect(app(ReconcileDisbursements::class)->handle())->toBe(['queried' => 1, 'observed' => 1, 'decisions' => ['open' => 1]])
@@ -258,14 +255,14 @@ it('reconciles from a scheduled query, records each query, and waits on an open 
 });
 
 it('keeps an observation and reports the funding source unavailable instead of closing', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     app()->instance(FundedCampaigns::class, new UnavailableFundedCampaigns);
     expect(callbackFor($intent, 'succeeded'))->toBe(['disposition' => 'applied', 'decision' => 'funding_unavailable'])
         ->and(DisbursementClosing::query()->count())->toBe(0)->and(DisbursementProviderEvent::query()->count())->toBe(1);
 });
 
 it('refuses an unauthenticated or unmatched callback', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($intent->id, 'succeeded');
     expect(fn () => app(RecordPayoutEvent::class)->handle([...$message, 'amount' => '1']))->toThrow(CommandRejection::class, 'PROVIDER_EVENT_UNVERIFIED')
         ->and(fn () => app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'succeeded', ['reference' => 'rzd_unknown'])))
@@ -279,7 +276,6 @@ it('binds only unavailable adapters where synthetic disbursements are not allowe
     config(['isolation.live_money_enabled' => true]);
     expect(get_class(app(FundedCampaigns::class)))->toBe(UnavailableFundedCampaigns::class)
         ->and(app(PayoutDestinations::class)->verified('b', 'testing'))->toBeNull()
-        ->and(app(StaffConnections::class)->connection(1, 'd', 'o', 'b', []))->toBe('unavailable')
         ->and(app(PayoutProvider::class)->name())->toBe('unavailable')
         ->and(app(PayoutProvider::class)->idempotentSends())->toBeFalse()
         ->and(fn () => app(FundedCampaigns::class)->funded(null, 5))->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE')

@@ -15,8 +15,8 @@ use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 it('settles the matching intent even when another intent observed its exact event first', function (bool $wrongQueryFirst): void {
-    ['intent' => $matching] = DisbursementFixture::approved();
-    ['intent' => $other] = DisbursementFixture::approved();
+    ['intent' => $matching] = DisbursementFixture::paid();
+    ['intent' => $other] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($matching->id, 'succeeded', ['event_id' => 'independent-cross-intent-event']);
     $store = app(DisbursementStore::class);
     if ($wrongQueryFirst) {
@@ -48,8 +48,8 @@ it('settles the matching intent even when another intent observed its exact even
 beforeEach(fn () => config(['cache.default' => 'database']));
 
 it('keeps the wrong-intent observation refused when the matching callback arrives first', function (): void {
-    ['intent' => $matching] = DisbursementFixture::approved();
-    ['intent' => $other] = DisbursementFixture::approved();
+    ['intent' => $matching] = DisbursementFixture::paid();
+    ['intent' => $other] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($matching->id, 'succeeded', ['event_id' => 'matching-first-event']);
     $store = app(DisbursementStore::class);
 
@@ -63,7 +63,7 @@ it('keeps the wrong-intent observation refused when the matching callback arrive
 });
 
 it('keeps an exact same-intent replay idempotent, a recorded conflict included', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     $pending = DisbursementFixture::provider()->callback($intent->id, 'unknown', ['event_id' => 'replayed-same-intent']);
     $conflicting = DisbursementFixture::provider()->callback($intent->id, 'succeeded', ['event_id' => 'replayed-same-intent']);
     $wrong = DisbursementFixture::provider()->callback($intent->id, 'succeeded', ['event_id' => 'replayed-unverifiable', 'amount' => '1']);
@@ -131,8 +131,8 @@ function lockedIdentityContenders(string $provider, string $eventId, array $cont
 }
 
 it('settles only the matching intent when its callback and another intent\'s query or requery race for one event', function (string $path, bool $matchingHoldsLock): void {
-    ['intent' => $matching] = DisbursementFixture::approved();
-    ['disbursement' => $otherDisbursement, 'intent' => $other] = DisbursementFixture::approved();
+    ['intent' => $matching] = DisbursementFixture::paid();
+    ['disbursement' => $otherDisbursement, 'intent' => $other] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     $eventId = 'raced-cross-intent-'.$path.'-'.($matchingHoldsLock ? 'matching' : 'other');
     $message = DisbursementFixture::provider()->callback($matching->id, 'succeeded', ['event_id' => $eventId]);
@@ -147,7 +147,7 @@ it('settles only the matching intent when its callback and another intent\'s que
             // The provider answers the other intent's requery with the matching intent's exact event.
             $fields = collect($message)->except('signature')->all();
             DisbursementFixture::provider()->scriptQuery($other->id, 'succeeded', $fields);
-            app(ManageDisbursements::class)->command($treasury->id, $otherDisbursement->id, 'requery', 3,
+            app(ManageDisbursements::class)->command($treasury->id, $otherDisbursement->id, 'requery', 2,
                 'Asked the provider again.', (string) Str::uuid());
         },
     };

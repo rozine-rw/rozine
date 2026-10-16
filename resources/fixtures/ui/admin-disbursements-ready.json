@@ -129,9 +129,9 @@
         },
         "search": "",
         "server_time": "2026-09-25T10:00:00+02:00",
-        "contract_version": "staff-disbursement-v1",
+        "contract_version": "staff-disbursement-v2",
         "staff_access_version": "staff-access-v1",
-        "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+        "allowed_actions": ["disbursement.hold"],
         "disbursements": [
             {
                 "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
@@ -180,7 +180,7 @@
                 "state": "awaiting_second_approver",
                 "provider_state": null,
                 "link": {
-                    "url": "/preview/admin-disbursements-self",
+                    "url": "/preview/admin-disbursements-awaiting-second",
                     "method": "get"
                 }
             },
@@ -324,7 +324,7 @@
         "pagination": {
             "next": null
         },
-        "awaiting_second_approver": 2,
+        "needs_attention": 4,
         "disbursement": {
             "id": "01k5za1m7q3r8t2v6w9x4y0b1c",
             "reference": "PAY-2026-0612",
@@ -350,23 +350,18 @@
                 "policy_version": null,
                 "causes": []
             },
-            "maker": null,
-            "checker": null,
-            "viewer_is_maker": false,
-            "approval_binding": null,
-            "step_up": {
-                "purpose": "disbursement.approve",
-                "route": null
-            },
-            "independence": {
-                "version": "staff-independence-v1",
-                "statement": "I confirm that I have no personal, family, financial or employment relationship with this Business, its signatories or beneficial owners, or any Investor in this campaign."
+            "automation": {
+                "rule_version": "brs-2.0-svc-r01",
+                "payout": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "waiting_for": "verified_payout_destination"
             },
             "intent": null,
             "dispatch": null,
             "provider": null,
             "hold": null,
-            "viewer_placed_hold": false,
             "issue": null,
             "refund": null,
             "trail": [
@@ -382,12 +377,8 @@
                     "reason": null
                 }
             ],
-            "allowed_actions": ["disbursement.authorize", "disbursement.hold"],
+            "allowed_actions": ["disbursement.hold"],
             "actions": {
-                "authorize": {
-                    "url": "/preview/admin-disbursements-awaiting-second",
-                    "method": "post"
-                },
                 "hold": {
                     "url": "/preview/admin-disbursements-on-hold",
                     "method": "post"

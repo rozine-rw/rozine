@@ -25,28 +25,19 @@ import dispatchedPendingFixture from '../../../resources/fixtures/ui/admin-disbu
 import dispatchedUnknownFixture from '../../../resources/fixtures/ui/admin-disbursements-dispatched-unknown.json';
 import exceptionFixture from '../../../resources/fixtures/ui/admin-disbursements-exception.json';
 import failedClosingFixture from '../../../resources/fixtures/ui/admin-disbursements-failed-closing.json';
-import holdSelfFixture from '../../../resources/fixtures/ui/admin-disbursements-hold-self.json';
 import liveFixture from '../../../resources/fixtures/ui/admin-disbursements-live-minimal.json';
 import notRecordedFixture from '../../../resources/fixtures/ui/admin-disbursements-not-recorded.json';
 import onHoldFixture from '../../../resources/fixtures/ui/admin-disbursements-on-hold.json';
 import queuedFixture from '../../../resources/fixtures/ui/admin-disbursements-queued.json';
 import readyFixture from '../../../resources/fixtures/ui/admin-disbursements-ready.json';
 import refusedFixture from '../../../resources/fixtures/ui/admin-disbursements-refused.json';
-import selfFixture from '../../../resources/fixtures/ui/admin-disbursements-self.json';
 import succeededFixture from '../../../resources/fixtures/ui/admin-disbursements-succeeded.json';
 import unconfirmedFixture from '../../../resources/fixtures/ui/admin-disbursements-unconfirmed.json';
 import failureFixture from '../../../resources/fixtures/ui/admin-disbursements-verified-failure-unreconciled.json';
 import lostFixture from '../../../resources/fixtures/ui/admin-disbursements-visibility-lost.json';
 import queueFixture from '../../../resources/fixtures/ui/admin-disbursements.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import {
-    answers,
-    fails,
-    inertia,
-    invalid,
-    offline,
-    resetInertia,
-} from './inertia-mock';
+import { answers, fails, inertia, invalid, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -64,6 +55,13 @@ const opened = (fixture: C3AdminDisbursementsProps): C3DisbursementDetail => {
 
 const drawer = () => screen.getByRole('dialog', { name: /^Disbursement / });
 
+/** The drawer's labelled buttons, in order. */
+const drawerButtons = () =>
+    within(drawer())
+        .getAllByRole('button')
+        .map((button) => button.textContent)
+        .filter((label) => label !== '');
+
 const completed = (code: string, data: unknown) => ({
     operation_id: '01k5zo0000000000000000000a',
     status: 'completed',
@@ -78,34 +76,23 @@ const completed = (code: string, data: unknown) => ({
 });
 
 const next = {
-    url: '/preview/admin-disbursements-awaiting-second',
+    url: '/preview/admin-disbursements-on-hold',
     method: 'get',
 };
 
-/** A staff step-up route, as S3-D will list it in `step_up.route`; synthetic here. */
-const STEP_UP_ROUTE = {
-    url: '/preview/admin-disbursements-step-up',
-    method: 'post',
-} as const;
+const RELOAD = [
+    'disbursement',
+    'disbursements',
+    'needs_attention',
+    'allowed_actions',
+    'badges',
+    'server_time',
+];
 
-const DIGEST =
-    'sha256:4f1c9a0e7b2d58c36e91f0a4d7b3c2e815a96f0d2b4c7e1a3f58d09c6b2e7a41';
+const WAITING_FOR_DESTINATION =
+    "Waiting for a verified payout destination. Payment starts automatically once the business's destination is verified.";
 
-/** The awaiting disbursement with a step-up route listed, so approval can be given. */
-const approvable = (): C3AdminDisbursementsProps => {
-    const fixture = props(awaitingFixture);
-
-    opened(fixture).step_up = {
-        purpose: 'disbursement.approve',
-        route: STEP_UP_ROUTE,
-    };
-
-    return fixture;
-};
-
-/** The step-up exchange's answer, in the seal exchange's `{proof, expires_at}` shape. */
-const proofOf = (proof: string, expiresAt = '2026-09-25T10:05:00+02:00') =>
-    answers({ proof, expires_at: expiresAt });
+const WAITING_FOR_RUN = 'Payment starts automatically on the next run.';
 
 beforeEach(resetInertia);
 
@@ -113,26 +100,11 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-/** Ticks the actor's independence declaration that authorize and approve require. */
-const declareIndependence = async (
-    user: ReturnType<typeof renderWithUser>['user'],
-) => {
-    const statement = screen.getByRole<HTMLInputElement>('checkbox', {
-        name: /Independence declaration/,
-    });
-
-    if (!statement.checked) {
-        await user.click(statement);
-    }
-};
-
 describe('Disbursements queue', () => {
     it('lists each disbursement with its state and provider outcome, with no deadline', () => {
         render(<AdminDisbursements {...props(queueFixture)} />);
 
-        expect(
-            screen.getByText('2 awaiting second approver'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('4 need attention')).toBeInTheDocument();
         expect(
             screen.getByRole('columnheader', { name: 'Provider' }),
         ).toBeInTheDocument();
@@ -144,13 +116,10 @@ describe('Disbursements queue', () => {
         expect(screen.getByText('MoMo ••• 4521')).toBeInTheDocument();
         expect(screen.getByText('RWF 18M')).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: 'Open PAY-2026-0612' }),
-        ).toHaveTextContent('Authorize');
-        expect(
-            screen.getByRole('link', { name: 'Open PAY-2026-0611' }),
-        ).toHaveTextContent('Check');
-        expect(
             screen.getByRole('link', { name: 'Open PAY-2026-0605' }),
+        ).toHaveTextContent('Open');
+        expect(
+            screen.getByRole('link', { name: 'Open PAY-2026-0607' }),
         ).toHaveTextContent('Open');
         expect(
             screen.getByRole('link', { name: 'Open PAY-2026-0601' }),
@@ -171,11 +140,32 @@ describe('Disbursements queue', () => {
         expect(
             screen.getByText('Intent recorded · queued'),
         ).toBeInTheDocument();
+        expect(
+            screen.getByText('Waiting for automatic payment'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('On hold')).toBeInTheDocument();
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Release all' }),
         ).not.toBeInTheDocument();
+        expect(screen.queryByText(/Authorize/)).not.toBeInTheDocument();
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('labels a disbursement waiting for automatic payment, and a legacy awaiting one, as to check', () => {
+        render(<AdminDisbursements {...props(queueFixture)} />);
+
+        expect(
+            screen.getByRole('link', { name: 'Open PAY-2026-0612' }),
+        ).toHaveTextContent('Check');
+        expect(
+            screen.getByRole('link', { name: 'Open PAY-2026-0611' }),
+        ).toHaveTextContent('Check');
+        expect(
+            screen
+                .getAllByRole('link', { name: /^Open PAY-/ })
+                .filter((link) => link.textContent === 'Check'),
+        ).toHaveLength(3);
     });
 
     it('never shows an unconfirmed provider outcome as paid or failed', () => {
@@ -193,10 +183,10 @@ describe('Disbursements queue', () => {
         }
     });
 
-    it('shows the empty and search states, and a further page', () => {
+    it('shows the empty and search states, and a further page, with no attention badge', () => {
         const fixture = props(queueFixture);
 
-        fixture.awaiting_second_approver = 0;
+        fixture.needs_attention = 0;
         fixture.pagination = {
             next: { url: '/preview/admin-disbursements', method: 'get' },
         };
@@ -208,9 +198,7 @@ describe('Disbursements queue', () => {
             />,
         );
 
-        expect(
-            screen.queryByText(/awaiting second approver/),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/need attention/)).not.toBeInTheDocument();
         expect(
             screen.getByText('All disbursements released'),
         ).toBeInTheDocument();
@@ -224,6 +212,15 @@ describe('Disbursements queue', () => {
         expect(
             screen.getByRole('link', { name: 'Older disbursements' }),
         ).toHaveAttribute('href', '/preview/admin-disbursements');
+    });
+
+    it('counts the disbursements that need attention', () => {
+        const fixture = props(queueFixture);
+
+        fixture.needs_attention = 1;
+        render(<AdminDisbursements {...fixture} />);
+
+        expect(screen.getByText('1 need attention')).toBeInTheDocument();
     });
 
     it('says when the viewer can no longer view the record they opened', () => {
@@ -256,12 +253,17 @@ describe('Disbursement drawer', () => {
         ).toBeInTheDocument();
     });
 
-    it('shows a ready disbursement with no deadline and only its allowed actions', () => {
+    it('shows a disbursement waiting for automatic payment with no deadline and only its allowed actions', () => {
         render(<AdminDisbursements {...props(readyFixture)} />);
         const panel = drawer();
 
         expect(panel).toHaveAccessibleName('Disbursement PAY-2026-0612');
-        expect(within(panel).getByText('RWF 18,000,000')).toBeInTheDocument();
+        expect(
+            within(panel).getByText('Waiting for automatic payment'),
+        ).toBeInTheDocument();
+        expect(
+            within(panel).getAllByText('RWF 18,000,000').length,
+        ).toBeGreaterThan(0);
         expect(
             within(panel).getByText('No deadline sourced'),
         ).toBeInTheDocument();
@@ -270,26 +272,64 @@ describe('Disbursement drawer', () => {
                 'Not run yet',
             ),
         ).toBeInTheDocument();
+        expect(drawerButtons()).toEqual(['Hold']);
         expect(
-            within(
-                screen.getByRole('region', { name: 'What approval binds' }),
-            ).getByText('Set when the release is authorized.'),
-        ).toBeInTheDocument();
+            screen.queryByRole('region', { name: 'Hold' }),
+        ).not.toBeInTheDocument();
         expect(
-            within(panel).getByText(/There's no amount threshold/),
-        ).toBeInTheDocument();
-        expect(
-            within(panel).getByText('Nobody has authorized this release yet.'),
-        ).toBeInTheDocument();
-        expect(
-            within(panel)
-                .getAllByRole('button')
-                .map((button) => button.textContent)
-                .filter((label) => label !== ''),
-        ).toEqual(['Authorize release', 'Hold']);
-        expect(within(panel).queryByText(/step-up/)).not.toBeInTheDocument();
+            within(panel).queryByText(/step-up|Approv|Authoriz|Independence/),
+        ).not.toBeInTheDocument();
         expect(
             within(panel).queryByRole('link', { name: 'Open in the ledger' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows the automatic payment rule, the payout and what it waits for', () => {
+        render(<AdminDisbursements {...props(readyFixture)} />);
+        const automation = screen.getByRole('region', {
+            name: 'Automatic payment',
+        });
+
+        expect(automation).toHaveTextContent('Business receivesRWF 18,000,000');
+        expect(automation).toHaveTextContent('Rulebrs-2.0-svc-r01');
+        expect(automation).toHaveTextContent(WAITING_FOR_DESTINATION);
+        expect(automation).not.toHaveTextContent(WAITING_FOR_RUN);
+    });
+
+    it('says a disbursement with a verified destination pays on the next run', () => {
+        const page = props(readyFixture);
+
+        opened(page).automation.waiting_for = 'next_run';
+        render(<AdminDisbursements {...page} />);
+        const automation = screen.getByRole('region', {
+            name: 'Automatic payment',
+        });
+
+        expect(automation).toHaveTextContent(WAITING_FOR_RUN);
+        expect(automation).not.toHaveTextContent(WAITING_FOR_DESTINATION);
+    });
+
+    it('shows a legacy awaiting disbursement as paid automatically, with no approval to give and nothing awaited', () => {
+        render(<AdminDisbursements {...props(awaitingFixture)} />);
+        const automation = screen.getByRole('region', {
+            name: 'Automatic payment',
+        });
+
+        expect(
+            within(drawer()).getByText('Awaiting second approver'),
+        ).toBeInTheDocument();
+        expect(automation).toHaveTextContent('Business receivesRWF 24,100,000');
+        expect(automation).not.toHaveTextContent(WAITING_FOR_DESTINATION);
+        expect(automation).not.toHaveTextContent(WAITING_FOR_RUN);
+        expect(automation).not.toHaveTextContent(/Waiting for|Payment starts/);
+        expect(
+            within(screen.getByRole('region', { name: 'Precheck' })).getByText(
+                'Passed',
+            ),
+        ).toBeInTheDocument();
+        expect(drawerButtons()).toEqual(['Hold']);
+        expect(
+            screen.queryByRole('checkbox', { name: /Independence/ }),
         ).not.toBeInTheDocument();
     });
 
@@ -302,15 +342,15 @@ describe('Disbursement drawer', () => {
 
         expect(
             within(drawer()).queryByRole('button', {
-                name: /Authorize|Hold|Ask the provider/,
+                name: /Hold|Release|Ask the provider/,
             }),
         ).not.toBeInTheDocument();
     });
 
-    it('authorizes with a reason through the operation command and follows the next page', async () => {
+    it('holds with a reason through the operation command and follows the next page', async () => {
         inertia.queue.push(
             answers(
-                completed('DISBURSEMENT_AUTHORIZED', {
+                completed('DISBURSEMENT_HELD', {
                     receipt: {},
                     current: null,
                     next,
@@ -321,57 +361,37 @@ describe('Disbursement drawer', () => {
             <AdminDisbursements {...props(readyFixture)} />,
         );
 
-        await user.click(
-            screen.getByRole('button', { name: 'Authorize release' }),
-        );
+        await user.click(screen.getByRole('button', { name: 'Hold' }));
         const stage = screen.getByRole('form', {
-            name: 'Authorize this release',
+            name: 'Put this release on hold',
         });
 
         expect(stage).toHaveTextContent(
-            'You authorize paying RWF 18,000,000 to GreenLeaf Agro. This runs the precheck',
+            'Nothing is paid while it is held. Say why, so the next person knows what to clear.',
         );
         expect(stage).toHaveTextContent(
             'Logged to the audit trail as A. Diane · Approver',
         );
         expect(
-            within(stage).getByRole('button', { name: 'Authorize' }),
+            within(stage).getByRole('button', { name: 'Hold release' }),
         ).toBeDisabled();
-        await user.type(within(stage).getByRole('textbox'), 'Funded.');
-        expect(
-            within(stage).getByRole('button', { name: 'Authorize' }),
-        ).toBeDisabled();
-        const declaration = screen.getByRole('checkbox', {
-            name: /Independence declaration/,
-        });
-        expect(declaration).toHaveAccessibleName(
-            expect.stringContaining(
-                opened(props(readyFixture)).independence.statement,
-            ),
-        );
-        await user.click(declaration);
+        await user.type(within(stage).getByRole('textbox'), 'Check number.');
         await user.click(
-            within(stage).getByRole('button', { name: 'Authorize' }),
+            within(stage).getByRole('button', { name: 'Hold release' }),
         );
 
         await waitFor(() => expect(inertia.visits).toEqual([next]));
         expect(
-            within(drawer()).getByText('Ready to authorize'),
-        ).toBeInTheDocument();
-        expect(
-            within(drawer()).getByText(
-                'Nobody has authorized this release yet.',
-            ),
+            within(drawer()).getByText('Waiting for automatic payment'),
         ).toBeInTheDocument();
         expect(inertia.calls).toEqual([
             {
-                url: '/preview/admin-disbursements-awaiting-second',
+                url: '/preview/admin-disbursements-on-hold',
                 method: 'post',
                 body: {
                     request_id: expect.any(String),
                     expected_revision: 3,
-                    reason: 'Funded.',
-                    independence_declared: true,
+                    reason: 'Check number.',
                 },
             },
         ]);
@@ -405,89 +425,7 @@ describe('Disbursement drawer', () => {
         expect(inertia.visits).toEqual([]);
     });
 
-    it('asks a different staff member to approve, and withholds approval while step-up has no route', async () => {
-        const { user } = renderWithUser(
-            <AdminDisbursements {...props(awaitingFixture)} />,
-        );
-        const panel = drawer();
-        const approvals = within(panel).getByRole('list', {
-            name: 'Approvals',
-        });
-
-        expect(
-            within(approvals).getByText('Awaiting second approver'),
-        ).toBeInTheDocument();
-        expect(
-            within(approvals).getByText('Eric Ndoli · 2026-09-24 09:12:00'),
-        ).toBeInTheDocument();
-        const binding = screen.getByRole('region', {
-            name: 'What approval binds',
-        });
-
-        expect(binding).toHaveTextContent('RWF 24,100,000');
-        expect(binding).toHaveTextContent('Equity ••• 0934');
-        expect(binding).toHaveTextContent('sha256:4f1c9a0e');
-        expect(
-            within(screen.getByRole('region', { name: 'Precheck' })).getByText(
-                'Passed',
-            ),
-        ).toBeInTheDocument();
-        const approve = within(panel).getByRole('button', {
-            name: 'Approve release',
-        });
-
-        expect(approve).toBeDisabled();
-        expect(approve).toHaveAccessibleDescription(
-            /That confirmation isn't available yet, so approval can't be given here./,
-        );
-
-        await user.click(within(panel).getByRole('button', { name: 'Reject' }));
-        expect(
-            screen.getByRole('form', { name: 'Reject this release' }),
-        ).toHaveTextContent(
-            "This voids the authorization only and records your reason. The raise isn't cancelled",
-        );
-    });
-
-    it('withholds approval while nothing binds yet, even with a step-up route listed', () => {
-        const fixture = props(awaitingFixture);
-
-        opened(fixture).step_up = {
-            purpose: 'disbursement.approve',
-            route: STEP_UP_ROUTE,
-        };
-        opened(fixture).approval_binding = null;
-        render(<AdminDisbursements {...fixture} />);
-        const approve = screen.getByRole('button', {
-            name: 'Approve release',
-        });
-
-        expect(approve).toBeDisabled();
-        expect(approve).toHaveAttribute(
-            'aria-describedby',
-            'disbursement-step-up',
-        );
-        fireEvent.click(approve);
-        expect(
-            screen.queryByRole('form', { name: 'Approve this release' }),
-        ).not.toBeInTheDocument();
-        expect(inertia.calls).toEqual([]);
-    });
-
-    it('never lets the maker approve their own authorization', () => {
-        render(<AdminDisbursements {...props(selfFixture)} />);
-        const approve = screen.getByRole('button', {
-            name: 'Approve release',
-        });
-
-        expect(approve).toBeDisabled();
-        expect(approve).toHaveAccessibleDescription(
-            "You authorized this release, so you can't approve it too. A different approver must check it.",
-        );
-        expect(screen.getByRole('button', { name: 'Hold' })).toBeEnabled();
-    });
-
-    it('lets another staff member release a hold, which neither approves nor pays', async () => {
+    it('shows who held a disbursement and why, and lets staff release it so automatic payment runs again', async () => {
         const { user } = renderWithUser(
             <AdminDisbursements {...props(onHoldFixture)} />,
         );
@@ -498,26 +436,60 @@ describe('Disbursement drawer', () => {
             'Reason: Waiting for the business to confirm its new MoMo number.',
         );
         expect(hold).toHaveTextContent(
-            "Releasing the hold doesn't approve this disbursement or send any payment.",
+            'Releasing the hold lets automatic payment run again. Any authorised staff member may release it, including the one who placed it.',
         );
-        expect(hold).not.toHaveTextContent('You placed this hold');
+        expect(
+            screen.getByRole('region', { name: 'Automatic payment' }),
+        ).not.toHaveTextContent(/Payment starts automatically/);
+        expect(drawerButtons()).toEqual(['Release hold']);
 
         await user.click(screen.getByRole('button', { name: 'Release hold' }));
         expect(
             screen.getByRole('form', { name: 'Release this hold' }),
         ).toHaveTextContent(
-            "Releasing the hold doesn't approve this disbursement or send any payment.",
+            'Automatic payment runs again once the hold is released. It goes back to where it was before the hold.',
         );
     });
 
-    it('withholds hold release from the staff member who placed the hold', () => {
-        render(<AdminDisbursements {...props(holdSelfFixture)} />);
+    it('lets the staff member who placed a hold release it', async () => {
+        const page = props(onHoldFixture);
+        const disbursement = opened(page);
+
+        if (disbursement.hold === null) {
+            throw new Error('the fixture holds the disbursement');
+        }
+
+        disbursement.hold.placed_by.actor = page.viewer.name;
+        const { user } = renderWithUser(<AdminDisbursements {...page} />);
+
+        expect(screen.getByRole('region', { name: 'Hold' })).toHaveTextContent(
+            'A. Diane · 2026-09-24 10:05:00',
+        );
         const release = screen.getByRole('button', { name: 'Release hold' });
 
-        expect(release).toBeDisabled();
-        expect(release).toHaveAccessibleDescription(
-            'You placed this hold, so a different staff member must release it.',
+        expect(release).toBeEnabled();
+        expect(release).not.toHaveAttribute('aria-describedby');
+        expect(drawer()).not.toHaveTextContent(/You placed this hold/);
+
+        await user.click(release);
+        await user.type(screen.getByRole('textbox'), 'Number confirmed.');
+        await user.click(
+            within(
+                screen.getByRole('form', { name: 'Release this hold' }),
+            ).getByRole('button', { name: 'Release hold' }),
         );
+
+        expect(inertia.calls).toEqual([
+            {
+                url: disbursement.actions.release_hold?.url,
+                method: 'post',
+                body: {
+                    request_id: expect.any(String),
+                    expected_revision: 5,
+                    reason: 'Number confirmed.',
+                },
+            },
+        ]);
     });
 
     it('shows a queued intent as recorded, not paid, and keeps its receipt while the current state moves on', () => {
@@ -573,6 +545,17 @@ describe('Disbursement drawer', () => {
         ).toHaveTextContent('Worker recheckPassed');
     });
 
+    it('says an intent is not sent only while it is queued', () => {
+        const fixture = props(queuedFixture);
+
+        opened(fixture).state = 'on_hold';
+        render(<AdminDisbursements {...fixture} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Payment intent' }),
+        ).not.toHaveTextContent('Not sent yet');
+    });
+
     it('explains a pending and an unknown provider outcome as neither paid nor failed, with requery only', async () => {
         const { user, unmount } = renderWithUser(
             <AdminDisbursements {...props(dispatchedPendingFixture)} />,
@@ -586,12 +569,7 @@ describe('Disbursement drawer', () => {
         );
         expect(outcome).toHaveTextContent('Not reconciled yet');
         expect(outcome).toHaveTextContent('It never sends the payment again.');
-        expect(
-            within(drawer())
-                .getAllByRole('button')
-                .map((button) => button.textContent)
-                .filter((label) => label !== ''),
-        ).toEqual(['Ask the provider again']);
+        expect(drawerButtons()).toEqual(['Ask the provider again']);
 
         await user.click(
             screen.getByRole('button', { name: 'Ask the provider again' }),
@@ -660,9 +638,7 @@ describe('Disbursement drawer', () => {
         expect(
             screen.getByRole('link', { name: 'Open in the ledger' }),
         ).toHaveAttribute('href', '/preview/admin-ledger');
-        expect(
-            screen.queryByText(/step-up confirmation/),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/step-up/)).not.toBeInTheDocument();
     });
 
     it('shows a success as verified, reconciled and issued', () => {
@@ -684,9 +660,7 @@ describe('Disbursement drawer', () => {
     });
 
     it.each([
-        ['authorize', readyFixture, 'Authorize release', 'Authorize', 3],
         ['hold', readyFixture, 'Hold', 'Hold release', 3],
-        ['reject', awaitingFixture, 'Reject', 'Reject release', 4],
         ['release_hold', onHoldFixture, 'Release hold', 'Release hold', 5],
         [
             'requery',
@@ -713,12 +687,6 @@ describe('Disbursement drawer', () => {
             await user.type(screen.getByRole('textbox'), '   ');
             expect(submit).toBeDisabled();
             await user.type(screen.getByRole('textbox'), 'Checked.');
-
-            if (key === 'authorize') {
-                expect(submit).toBeDisabled();
-                await declareIndependence(user);
-            }
-
             await user.click(submit);
 
             expect(inertia.calls).toEqual([
@@ -731,9 +699,6 @@ describe('Disbursement drawer', () => {
                         request_id: expect.any(String),
                         expected_revision: revision,
                         reason: '   Checked.',
-                        ...(key === 'authorize'
-                            ? { independence_declared: true }
-                            : {}),
                     },
                 },
             ]);
@@ -762,8 +727,8 @@ describe('Disbursement drawer', () => {
         ) as C3AdminDisbursementsProps;
         const disbursement = opened(live);
 
-        disbursement.allowed_actions = ['disbursement.authorize'];
-        live.allowed_actions = ['disbursement.authorize'];
+        disbursement.allowed_actions = ['disbursement.hold'];
+        live.allowed_actions = ['disbursement.hold'];
         inertia.queue.push(
             fails(503),
             fails(404, { code: 'OPERATION_NOT_FOUND' }),
@@ -777,26 +742,23 @@ describe('Disbursement drawer', () => {
             expect(link.getAttribute('href')).not.toMatch(/^\/preview\//);
         }
 
-        await user.click(
-            screen.getByRole('button', { name: 'Authorize release' }),
-        );
-        await user.type(screen.getByRole('textbox'), 'Funded.');
-        await declareIndependence(user);
-        await user.click(screen.getByRole('button', { name: 'Authorize' }));
+        await user.click(screen.getByRole('button', { name: 'Hold' }));
+        await user.type(screen.getByRole('textbox'), 'Check number.');
+        await user.click(screen.getByRole('button', { name: 'Hold release' }));
 
         await screen.findByText('Nothing was recorded');
         const sent = inertia.calls[0].body as { request_id: string };
 
         expect(inertia.calls).toEqual([
             {
-                url: '/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/authorize',
+                url: '/admin/disbursements/01k5zd7f3g9h2j6k0m4n8p1q5r/hold',
                 method: 'post',
-                body: expect.objectContaining({ reason: 'Funded.' }),
+                body: expect.objectContaining({ reason: 'Check number.' }),
             },
             {
                 url: `/admin/disbursements/operations/${sent.request_id}`,
                 method: 'get',
-                body: { command: 'disbursement.authorize' },
+                body: { command: 'disbursement.hold' },
             },
         ]);
     });
@@ -812,6 +774,9 @@ describe('Disbursement drawer', () => {
 
         expect(within(drawer()).queryAllByRole('button')).toEqual([]);
         expect(screen.getByText('Nothing recorded yet.')).toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Automatic payment' }),
+        ).toHaveTextContent(WAITING_FOR_DESTINATION);
     });
 });
 
@@ -825,28 +790,25 @@ describe('Disbursement commands', () => {
             <AdminDisbursements {...props(readyFixture)} />,
         );
 
-        await user.click(
-            screen.getByRole('button', { name: 'Authorize release' }),
-        );
-        await user.type(screen.getByRole('textbox'), 'Funded.');
-        await declareIndependence(user);
-        await user.click(screen.getByRole('button', { name: 'Authorize' }));
+        await user.click(screen.getByRole('button', { name: 'Hold' }));
+        await user.type(screen.getByRole('textbox'), 'Check number.');
+        await user.click(screen.getByRole('button', { name: 'Hold release' }));
 
         await screen.findByText('Nothing was recorded');
         expect(inertia.calls).toHaveLength(2);
         expect(inertia.calls[1]).toEqual({
             url: `/preview/admin-disbursements-operation-${String((inertia.calls[0].body as { request_id: string }).request_id)}`,
             method: 'get',
-            body: { command: 'disbursement.authorize' },
+            body: { command: 'disbursement.hold' },
         });
         expect(inertia.reload).toHaveLength(1);
         expect(
-            screen.getByRole('button', { name: 'Authorize' }),
+            screen.getByRole('button', { name: 'Hold release' }),
         ).toBeDisabled();
 
         inertia.queue.push(
             answers(
-                completed('DISBURSEMENT_AUTHORIZED', {
+                completed('DISBURSEMENT_HELD', {
                     receipt: {},
                     current: null,
                     next,
@@ -938,8 +900,8 @@ describe('Disbursement commands', () => {
     it.each([
         [
             403,
-            'SELF_APPROVAL_FORBIDDEN',
-            "A different staff member must do this: you can't check your own action.",
+            'STAFF_PERMISSION_REQUIRED',
+            "Your staff permissions don't include this action.",
             0,
         ],
         [
@@ -956,12 +918,11 @@ describe('Disbursement commands', () => {
                 <AdminDisbursements {...props(readyFixture)} />,
             );
 
+            await user.click(screen.getByRole('button', { name: 'Hold' }));
+            await user.type(screen.getByRole('textbox'), 'Check number.');
             await user.click(
-                screen.getByRole('button', { name: 'Authorize release' }),
+                screen.getByRole('button', { name: 'Hold release' }),
             );
-            await user.type(screen.getByRole('textbox'), 'Funded.');
-            await declareIndependence(user);
-            await user.click(screen.getByRole('button', { name: 'Authorize' }));
 
             await screen.findByText(new RegExp(text.slice(0, 30)));
             expect(inertia.reload).toHaveLength(reloads);
@@ -975,12 +936,9 @@ describe('Disbursement commands', () => {
             <AdminDisbursements {...props(readyFixture)} />,
         );
 
-        await user.click(
-            screen.getByRole('button', { name: 'Authorize release' }),
-        );
+        await user.click(screen.getByRole('button', { name: 'Hold' }));
         await user.type(screen.getByRole('textbox'), ' x');
-        await declareIndependence(user);
-        await user.click(screen.getByRole('button', { name: 'Authorize' }));
+        await user.click(screen.getByRole('button', { name: 'Hold release' }));
 
         expect(await screen.findByText('Give a reason.')).toBeInTheDocument();
         expect(screen.getByRole('textbox')).toHaveAttribute(
@@ -1014,20 +972,26 @@ describe('Disbursement commands', () => {
         expect(
             screen.getByRole('button', { name: 'Check again' }),
         ).toBeEnabled();
-        expect(
-            screen.getByRole('button', { name: 'Authorize release' }),
-        ).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Hold' })).toBeDisabled();
     });
 
     it('offers the same-key retry only while the action is still allowed', async () => {
+        const held = props(notRecordedFixture);
+
+        if (held.preview_outcome?.kind !== 'not_recorded') {
+            throw new Error(
+                'the fixture seeds a command that was not recorded',
+            );
+        }
+
+        held.preview_outcome.command.name = 'disbursement.hold';
         const { user, unmount } = renderWithUser(
-            <AdminDisbursements {...props(notRecordedFixture)} />,
+            <AdminDisbursements {...held} />,
         );
 
         inertia.queue.push(
             answers(
-                completed('DISBURSEMENT_AUTHORIZED', {
+                completed('DISBURSEMENT_HELD', {
                     receipt: {},
                     current: null,
                     next,
@@ -1038,14 +1002,16 @@ describe('Disbursement commands', () => {
             screen.getByRole('button', { name: 'Send the same request again' }),
         );
         await waitFor(() => expect(inertia.visits).toEqual([next]));
-        expect(inertia.calls[0].body).toEqual(
-            notRecordedFixture.props.preview_outcome.command.payload,
-        );
+        expect(inertia.calls[0]).toEqual({
+            url: opened(held).actions.hold?.url,
+            method: 'post',
+            body: notRecordedFixture.props.preview_outcome.command.payload,
+        });
         unmount();
 
-        const fixture = props(notRecordedFixture);
+        const fixture = structuredClone(held);
 
-        opened(fixture).allowed_actions = ['disbursement.hold'];
+        opened(fixture).allowed_actions = [];
         render(<AdminDisbursements {...fixture} />);
 
         expect(
@@ -1071,474 +1037,6 @@ describe('Disbursement commands', () => {
     });
 });
 
-describe('Disbursement approval step-up', () => {
-    const openApproval = async (
-        user: ReturnType<typeof renderWithUser>['user'],
-    ) => {
-        await user.click(
-            within(drawer()).getByRole('button', { name: 'Approve release' }),
-        );
-    };
-
-    const stepUp = async (
-        user: ReturnType<typeof renderWithUser>['user'],
-        code = '123456',
-    ) => {
-        await user.type(
-            screen.getByRole('textbox', {
-                name: 'Six-digit authenticator code',
-            }),
-            code,
-        );
-        await user.click(screen.getByRole('button', { name: 'Confirm code' }));
-    };
-
-    const approveWith = async (
-        user: ReturnType<typeof renderWithUser>['user'],
-        reason = 'Totals and destination match.',
-    ) => {
-        const stage = screen.getByRole('form', {
-            name: 'Approve this release',
-        });
-
-        const field = within(stage).getByRole<HTMLTextAreaElement>('textbox');
-
-        if (field.value === '') {
-            await user.type(field, reason);
-        }
-
-        await declareIndependence(user);
-
-        await user.click(
-            within(stage).getByRole('button', {
-                name: 'Approve and record intent',
-            }),
-        );
-    };
-
-    it('exchanges a code for a bound proof and sends it once, as step_up_proof, on approve', async () => {
-        const fixture = approvable();
-        const disbursement = opened(fixture);
-
-        inertia.queue.push(
-            proofOf('opaque-proof-1'),
-            answers(
-                completed('DISBURSEMENT_INTENT_RECORDED', {
-                    receipt: {},
-                    current: null,
-                    next,
-                }),
-            ),
-        );
-        const { user } = renderWithUser(<AdminDisbursements {...fixture} />);
-
-        expect(
-            screen.queryByText(/That confirmation isn't available yet/),
-        ).not.toBeInTheDocument();
-        await openApproval(user);
-
-        const stage = screen.getByRole('form', {
-            name: 'Approve this release',
-        });
-        const submit = within(stage).getByRole('button', {
-            name: 'Approve and record intent',
-        });
-
-        await user.type(within(stage).getByRole('textbox'), 'Checked.');
-        await declareIndependence(user);
-        expect(submit).toBeDisabled();
-        expect(
-            screen.getByRole('button', { name: 'Confirm code' }),
-        ).toBeDisabled();
-
-        await stepUp(user);
-        expect(
-            await screen.findByText(
-                /Confirmed until .*It's used once, for this approval/,
-            ),
-        ).toBeInTheDocument();
-        expect(inertia.calls).toEqual([
-            {
-                url: STEP_UP_ROUTE.url,
-                method: 'post',
-                body: {
-                    expected_revision: 4,
-                    intent_digest: DIGEST,
-                    code: '123456',
-                },
-            },
-        ]);
-        expect(submit).toBeEnabled();
-
-        await user.click(submit);
-        await waitFor(() => expect(inertia.visits).toEqual([next]));
-
-        expect(inertia.calls[1]).toEqual({
-            url: disbursement.actions.approve?.url,
-            method: 'post',
-            body: {
-                request_id: expect.any(String),
-                expected_revision: 4,
-                reason: 'Checked.',
-                step_up_proof: 'opaque-proof-1',
-                independence_declared: true,
-            },
-        });
-        expect(inertia.calls).toHaveLength(2);
-        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
-    });
-
-    it.each([
-        [
-            'a new revision',
-            (detail: C3DisbursementDetail) => {
-                detail.revision = 5;
-            },
-        ],
-        [
-            'a new amount',
-            (detail: C3DisbursementDetail) => {
-                detail.approval_binding = {
-                    ...(detail.approval_binding as NonNullable<
-                        C3DisbursementDetail['approval_binding']
-                    >),
-                    amount: { currency: 'RWF', amount: '24000000' },
-                };
-            },
-        ],
-        [
-            'a new destination',
-            (detail: C3DisbursementDetail) => {
-                detail.approval_binding = {
-                    ...(detail.approval_binding as NonNullable<
-                        C3DisbursementDetail['approval_binding']
-                    >),
-                    destination: 'MTN MoMo ••• 4410',
-                };
-            },
-        ],
-    ])(
-        'clears a held proof when a reload brings %s',
-        async (_label, reshape) => {
-            inertia.queue.push(proofOf('opaque-proof-1'));
-            const { user, rerender } = renderWithUser(
-                <AdminDisbursements {...approvable()} />,
-            );
-
-            await openApproval(user);
-            await stepUp(user);
-            await screen.findByText(/Confirmed until/);
-
-            const fresh = approvable();
-
-            reshape(opened(fresh));
-            rerender(<AdminDisbursements {...fresh} />);
-
-            expect(
-                await screen.findByText(
-                    'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
-                ),
-            ).toBeInTheDocument();
-            expect(
-                screen.queryByText(/Confirmed until/),
-            ).not.toBeInTheDocument();
-            await user.type(
-                within(
-                    screen.getByRole('form', { name: 'Approve this release' }),
-                ).getByRole('textbox'),
-                'Checked.',
-            );
-            expect(
-                screen.getByRole('button', {
-                    name: 'Approve and record intent',
-                }),
-            ).toBeDisabled();
-            expect(inertia.calls).toHaveLength(1);
-        },
-    );
-
-    it('clears a held proof when it expires against server_time, whatever the browser clock says', async () => {
-        /* The browser clock is hours ahead of the server's; only server_time decides. */
-        vi.useFakeTimers({ now: new Date('2026-09-25T20:00:00Z') });
-        inertia.queue.push(proofOf('opaque-proof-1'));
-        render(<AdminDisbursements {...approvable()} />);
-
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Approve release' }),
-        );
-        fireEvent.change(
-            screen.getByRole('textbox', {
-                name: 'Six-digit authenticator code',
-            }),
-            { target: { value: '123456' } },
-        );
-        fireEvent.click(screen.getByRole('button', { name: 'Confirm code' }));
-        await act(async () => {
-            await Promise.resolve();
-            await Promise.resolve();
-        });
-
-        expect(screen.getByText(/Confirmed until/)).toBeInTheDocument();
-        act(() => vi.advanceTimersByTime(299_000));
-        expect(screen.getByText(/Confirmed until/)).toBeInTheDocument();
-
-        act(() => vi.advanceTimersByTime(1_000));
-        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
-        expect(screen.getByRole('alert')).toHaveTextContent(
-            'That confirmation expired. Enter a new code from your authenticator.',
-        );
-        fireEvent.change(
-            within(
-                screen.getByRole('form', { name: 'Approve this release' }),
-            ).getByRole('textbox'),
-            { target: { value: 'Checked.' } },
-        );
-        expect(
-            screen.getByRole('button', { name: 'Approve and record intent' }),
-        ).toBeDisabled();
-    });
-
-    it('asks for a fresh step-up after STEP_UP_EXPIRED, then approves with a new request and a new proof', async () => {
-        const fixture = approvable();
-
-        inertia.queue.push(
-            proofOf('opaque-proof-1'),
-            fails(409, { code: 'STEP_UP_EXPIRED' }),
-            proofOf('opaque-proof-2'),
-            answers(
-                completed('DISBURSEMENT_INTENT_RECORDED', {
-                    receipt: {},
-                    current: null,
-                    next,
-                }),
-            ),
-        );
-        const { user } = renderWithUser(<AdminDisbursements {...fixture} />);
-
-        await openApproval(user);
-        await stepUp(user, '111111');
-        await screen.findByText(/Confirmed until/);
-        await approveWith(user);
-
-        expect(
-            await screen.findByText(
-                'That confirmation expired. Enter a new code from your authenticator.',
-            ),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: 'Approve and record intent' }),
-        ).toBeDisabled();
-
-        await stepUp(user, '222222');
-        await screen.findByText(/Confirmed until/);
-        await approveWith(user);
-        await waitFor(() => expect(inertia.visits).toEqual([next]));
-
-        const [firstStepUp, firstApprove, secondStepUp, secondApprove] =
-            inertia.calls.map((call) => call.body as Record<string, unknown>);
-
-        expect(inertia.calls.map(({ url }) => url)).toEqual([
-            STEP_UP_ROUTE.url,
-            opened(fixture).actions.approve?.url,
-            STEP_UP_ROUTE.url,
-            opened(fixture).actions.approve?.url,
-        ]);
-        expect(firstApprove.step_up_proof).toBe('opaque-proof-1');
-        expect(secondApprove.step_up_proof).toBe('opaque-proof-2');
-        expect(secondApprove.request_id).not.toBe(firstApprove.request_id);
-        /* The exchange is never journaled: no request_id, just a fresh code for a fresh proof. */
-        expect(Object.keys(firstStepUp).sort()).toEqual([
-            'code',
-            'expected_revision',
-            'intent_digest',
-        ]);
-        expect(Object.keys(secondStepUp).sort()).toEqual([
-            'code',
-            'expected_revision',
-            'intent_digest',
-        ]);
-        expect(secondStepUp.code).not.toBe(firstStepUp.code);
-        expect(secondStepUp.code).toBe('222222');
-    });
-
-    it('looks a lost approve up by its own request, and the lookup never carries the proof', async () => {
-        inertia.queue.push(
-            proofOf('opaque-proof-1'),
-            fails(503, { code: 'RETRYABLE_CONTENTION' }),
-            fails(502),
-            answers(
-                completed('DISBURSEMENT_INTENT_RECORDED', {
-                    receipt: {},
-                    current: null,
-                    next,
-                }),
-            ),
-        );
-        const { user } = renderWithUser(
-            <AdminDisbursements {...approvable()} />,
-        );
-
-        await openApproval(user);
-        await stepUp(user);
-        await screen.findByText(/Confirmed until/);
-        await approveWith(user);
-
-        await screen.findByText('Not yet confirmed');
-        expect(
-            screen.getByRole('button', { name: 'Approve and record intent' }),
-        ).toBeDisabled();
-        await user.type(
-            screen.getByRole('textbox', {
-                name: 'Six-digit authenticator code',
-            }),
-            '654321',
-        );
-        expect(
-            screen.getByRole('button', { name: 'Confirm code' }),
-        ).toBeDisabled();
-
-        await user.click(screen.getByRole('button', { name: 'Check again' }));
-        await waitFor(() => expect(inertia.visits).toEqual([next]));
-
-        const sent = inertia.calls[1].body as { request_id: string };
-
-        expect(inertia.calls.map(({ method }) => method)).toEqual([
-            'post',
-            'post',
-            'get',
-            'get',
-        ]);
-
-        for (const lookup of inertia.calls.slice(2)) {
-            expect(lookup).toEqual({
-                url: `/preview/admin-disbursements-operation-${sent.request_id}`,
-                method: 'get',
-                body: { command: 'disbursement.approve' },
-            });
-            expect(JSON.stringify(lookup)).not.toContain('opaque-proof-1');
-        }
-
-        expect(
-            inertia.calls.filter((call) =>
-                JSON.stringify(call.body).includes('opaque-proof-1'),
-            ),
-        ).toHaveLength(1);
-    });
-
-    it.each([
-        [
-            'a lost answer',
-            offline(),
-            "Rozine couldn't be reached to check your code.",
-        ],
-        [
-            'an uncertain status',
-            fails(503),
-            "Rozine couldn't be reached to check your code.",
-        ],
-        [
-            'STEP_UP_INVALID',
-            fails(403, { code: 'STEP_UP_INVALID' }),
-            "That confirmation didn't go through. Enter a new code from your authenticator.",
-        ],
-        [
-            'a throttled attempt with no code',
-            fails(429),
-            'This request was refused. Refresh and try again.',
-        ],
-        [
-            'a wrong code with the server’s words',
-            invalid({ code: 'That code has already been used.' }),
-            'That code has already been used.',
-        ],
-        [
-            'a wrong code without them',
-            invalid({}),
-            "That code didn't match. Enter the current code from your authenticator.",
-        ],
-    ])(
-        'asks for a fresh step-up after %s, never resending the code',
-        async (_label, respond, text) => {
-            inertia.queue.push(respond);
-            const { user } = renderWithUser(
-                <AdminDisbursements {...approvable()} />,
-            );
-
-            await openApproval(user);
-            await stepUp(user, '123456');
-
-            expect(await screen.findByRole('alert')).toHaveTextContent(text);
-            expect(inertia.calls).toHaveLength(1);
-            expect(
-                screen.getByRole('textbox', {
-                    name: 'Six-digit authenticator code',
-                }),
-            ).toHaveValue('');
-            expect(
-                screen.getByRole('button', {
-                    name: 'Approve and record intent',
-                }),
-            ).toBeDisabled();
-
-            inertia.queue.push(proofOf('opaque-proof-2'));
-            await stepUp(user, '777777');
-            await screen.findByText(/Confirmed until/);
-
-            const [first, second] = inertia.calls.map(
-                (call) => call.body as Record<string, unknown>,
-            );
-
-            expect(inertia.calls).toHaveLength(2);
-            expect(first.code).toBe('123456');
-            expect(second.code).toBe('777777');
-            expect(Object.keys(second).sort()).toEqual([
-                'code',
-                'expected_revision',
-                'intent_digest',
-            ]);
-        },
-    );
-
-    it('drops a proof that arrives after the binding changed, and shows the check in progress', async () => {
-        let answer: (value: unknown) => void = () => undefined;
-
-        inertia.queue.push(
-            () =>
-                new Promise((resolve) => {
-                    answer = resolve;
-                }),
-        );
-        const { user, rerender } = renderWithUser(
-            <AdminDisbursements {...approvable()} />,
-        );
-
-        await openApproval(user);
-        await stepUp(user);
-        expect(
-            screen.getByRole('button', { name: 'Confirm code' }),
-        ).toHaveAttribute('aria-busy', 'true');
-
-        const fresh = approvable();
-
-        opened(fresh).revision = 5;
-        rerender(<AdminDisbursements {...fresh} />);
-        await act(async () => {
-            answer({
-                proof: 'late-proof',
-                expires_at: '2026-09-25T10:05:00+02:00',
-            });
-            await Promise.resolve();
-        });
-
-        expect(
-            await screen.findByText(
-                'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
-            ),
-        ).toBeInTheDocument();
-        expect(screen.queryByText(/Confirmed until/)).not.toBeInTheDocument();
-    });
-});
-
 describe('Disbursement requery', () => {
     it.each([
         ['a verified failure not yet reconciled', failureFixture, 7],
@@ -1560,12 +1058,7 @@ describe('Disbursement requery', () => {
             );
             const { user } = renderWithUser(<AdminDisbursements {...page} />);
 
-            expect(
-                within(drawer())
-                    .getAllByRole('button')
-                    .map((button) => button.textContent)
-                    .filter((label) => label !== ''),
-            ).toEqual(['Ask the provider again']);
+            expect(drawerButtons()).toEqual(['Ask the provider again']);
             await user.click(
                 screen.getByRole('button', { name: 'Ask the provider again' }),
             );
@@ -1661,16 +1154,7 @@ describe('Bounded polling', () => {
             }
 
             expect(inertia.reload).toHaveLength(POLL_LIMIT);
-            expect(inertia.reload[0]).toEqual({
-                only: [
-                    'disbursement',
-                    'disbursements',
-                    'awaiting_second_approver',
-                    'allowed_actions',
-                    'badges',
-                    'server_time',
-                ],
-            });
+            expect(inertia.reload[0]).toEqual({ only: RELOAD });
             act(() => {
                 vi.advanceTimersByTime(POLL_INTERVAL_MS * 3);
             });
@@ -1701,7 +1185,8 @@ describe('Bounded polling', () => {
     });
 
     it.each([
-        ['ready', readyFixture],
+        ['waiting for automatic payment', readyFixture],
+        ['on hold', onHoldFixture],
         ['a verified failure', failureFixture],
         ['succeeded', succeededFixture],
     ])('does not poll %s', (_label, fixture) => {

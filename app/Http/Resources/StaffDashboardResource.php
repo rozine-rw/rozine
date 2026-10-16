@@ -21,8 +21,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *   applications queue.
  * - Applications pending and the pending list: the staff applications queue's pending tab, read only
  *   for `applications.review`; anyone else sees a dash and no rows.
- * - Disbursed: disbursements that closed with issued notes. The Payments badge counts those
- *   awaiting a second approver, for whoever may view disbursements.
+ * - Disbursed: disbursements that closed with issued notes. The Payments badge counts those that
+ *   automatic payment has not queued yet (held or blocked), for whoever may view disbursements.
  *
  * - Reconciliation breaks: every break open now, oldest first, for whoever may view reconciliation;
  *   anyone else sees them as not tracked. Nothing can be assigned or escalated yet, so no break has
@@ -40,7 +40,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Dashboard array{
- *     figures: array{capital_raised: string, active_businesses: int, awaiting_second_approver: int, disbursed: string,
+ *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
  *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
@@ -70,7 +70,7 @@ class StaffDashboardResource extends JsonResource
         return ['contract_version' => 'staff-dashboard-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($page['roles']))->resolve($request), 'nav' => $nav,
             'badges' => ['applications' => $reviews ? $board['applications_pending'] : null,
-                'disbursements' => in_array('disbursements.view', $permissions, true) ? $figures['awaiting_second_approver'] : null],
+                'disbursements' => in_array('disbursements.view', $permissions, true) ? $figures['disbursements_waiting'] : null],
             'search' => '',
             'kpis' => [['key' => 'capital_raised', 'value' => ['kind' => 'money', 'value' => $money($figures['capital_raised'])]],
                 ['key' => 'active_businesses', 'value' => $count($figures['active_businesses'])],

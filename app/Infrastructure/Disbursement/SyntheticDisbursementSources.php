@@ -6,7 +6,6 @@ namespace App\Infrastructure\Disbursement;
 
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
-use App\Application\Disbursement\Contracts\StaffConnections;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
@@ -25,13 +24,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Explicit synthetic stand-ins for the S3-C funding source, the Business destination source and
- * the staff connection source, for local and testing only (#96 5871504691). They hold synthetic
+ * Explicit synthetic stand-ins for the S3-C funding source and the Business destination source,
+ * for local and testing only (#96 5871504691). They hold synthetic
  * facts in the application cache, never write Primary or Business records, and serialize like the
  * real sources do: an advisory lock for the Business, then one for the campaign, inside the
  * caller's transaction. Recorded funding effects commit with that transaction or not at all.
  */
-final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDestinations, StaffConnections, SyntheticDisbursementFixtures
+final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDestinations, SyntheticDisbursementFixtures
 {
     private const string PREFIX = 'synthetic-disbursement:';
 
@@ -111,16 +110,6 @@ final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDesti
             $destination['masked']);
     }
 
-    public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string
-    {
-        $this->guard->assertAllowed();
-        if ($this->store()->get(self::PREFIX.'connections') === 'unavailable') {
-            return 'unavailable';
-        }
-
-        return $this->store()->get(self::PREFIX.'connection:'.$staffUserId, 'unconnected');
-    }
-
     public function fund(array $commitmentUnits = [300, 300], int $termMonths = 12): FundedCampaign
     {
         $this->guard->assertAllowed();
@@ -162,17 +151,6 @@ final class SyntheticDisbursementSources implements FundedCampaigns, PayoutDesti
             'verified_at' => now('UTC')->subDay()->startOfSecond()->toIso8601String(),
             'expires_at' => ($state === 'expired' ? now('UTC')->subSecond() : now('UTC')->addYear())->startOfSecond()->toIso8601String(),
             'masked' => 'Synthetic Bank •••• '.str_pad((string) (1000 + $revision), 4, '0', STR_PAD_LEFT)]);
-    }
-
-    public function setConnection(?int $userId, string $state): void
-    {
-        $this->guard->assertAllowed();
-        if ($userId === null) {
-            $this->store()->forever(self::PREFIX.'connections', $state === 'unavailable' ? 'unavailable' : 'available');
-
-            return;
-        }
-        $this->store()->forever(self::PREFIX.'connection:'.$userId, $state);
     }
 
     public function effects(string $campaignId): array

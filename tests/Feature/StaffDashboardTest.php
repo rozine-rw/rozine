@@ -163,14 +163,13 @@ test('the lifecycle places each published campaign where it sits now', function 
                 ['stage' => 'matured', 'count' => null, 'width_pct' => 0], ['stage' => 'failed', 'count' => 1, 'width_pct' => 100]]));
 });
 
-test('the queues count applications waiting, submissions awaiting review and disbursements awaiting a checker', function (): void {
+test('the queues count applications waiting, submissions awaiting review and disbursements automatic payment has not queued', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
     AuditSealingFixture::cosign($fixture);
     $application = $fixture['application'];
     boardSubmission(User::factory()->create(['name' => 'Aline Uwase', 'party_id' => Party::factory()]));
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    DisbursementFixture::command(DisbursementFixture::staff(['treasury']), $disbursement, 'authorize', 0);
+    DisbursementFixture::funded();
 
     $this->actingAs(boardStaff(['approver']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('badges', ['applications' => 1, 'disbursements' => 1])
@@ -192,6 +191,18 @@ test('the queues count applications waiting, submissions awaiting review and dis
     $this->actingAs(boardStaff(['compliance']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('badges.disbursements', 1)->where('attention.1.link.url', '/admin/investors?chip=pending')
             ->where('nav.events.url', '/admin/activity'));
+});
+
+test('the Payments badge counts ready, held and legacy awaiting disbursements, never one already queued', function (): void {
+    ['campaign' => $legacy] = PrimaryHoldingFixture::committed();
+    PrimaryHoldingFixture::awaitingApproval($legacy);
+    DisbursementFixture::funded();
+    ['disbursement' => $held] = DisbursementFixture::funded();
+    DisbursementFixture::command(DisbursementFixture::staff(['compliance']), $held, 'hold', 0);
+    DisbursementFixture::paid();
+    $badge = fn (string $role) => $this->actingAs(boardStaff([$role]))->get(route('staff.dashboard'))->assertOk()->inertiaPage()['props']['badges']['disbursements'];
+
+    expect($badge('treasury'))->toBe(3)->and($badge('analyst'))->toBeNull();
 });
 
 test('the API mirror withholds pending application details from staff without applications.review', function (): void {

@@ -5,24 +5,23 @@ declare(strict_types=1);
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\DispatchDisbursements;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\PayoutInstruction;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Disbursement\VerifiedPayoutEvent;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingCause;
 use App\Application\Wallet\PostingSource;
-use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Models\DisbursementClosing;
+use App\Models\DisbursementDispatch;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderCall;
 use App\Models\DisbursementProviderEvent;
 use App\Models\LedgerEntry;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
@@ -31,58 +30,32 @@ use Tests\Support\PrimaryReservationFixture;
 use Tests\Support\PrimarySourceFixture;
 
 /*
- * Regressions from the adversarial pre-review of #176 at ef065d99 (F1–F5, V1). Each asserts the
- * contract the finding showed was broken.
+ * Regressions from the adversarial pre-review of #176 at ef065d99 (F1–F5). Each asserts the
+ * contract the finding showed was broken, ported to automatic disbursement (BRS v2.0 SVC-R01).
  */
 
-/** @param list<string> $roles */
-function reviewRoles(User $user, array $roles): void
-{
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Role change.', (string) Str::uuid(), $roles);
-}
-
-// F1 (5871859618 answer 4): a revoked maker's authorization is void; restoring the role must not revive it.
-it('F1a: does not revive a revoked maker authorization when the role is restored before approve', function (): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    reviewRoles($maker, ['compliance']);   // revoked: approve would now be MAKER_AUTHORIZATION_VOID
-    reviewRoles($maker, ['treasury']);     // restored, with no fresh authorization recorded
-
-    $approve = DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
-
-    expect($approve['code'])->toBe('MAKER_AUTHORIZATION_VOID')
-        ->and(DisbursementIntent::query()->count())->toBe(0)
-        ->and(DisbursementFixture::detail($checker, $disbursement)['allowed_actions'])->not->toContain('disbursement.approve')
-        ->and(fn () => DisbursementFixture::stepUp($checker, $disbursement))->toThrow(CommandRejection::class, 'MAKER_AUTHORIZATION_VOID');
-    // A fresh authorization by the restored maker is usable again.
-    expect(DisbursementFixture::command($maker, $disbursement, 'authorize', 1)['code'])->toBe('DISBURSEMENT_AUTHORIZED');
-});
-
-it('F1b: does not dispatch on a maker authorization revoked after approval and restored before the worker', function (): void {
-    ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    DB::transaction(function () use ($checker, $disbursement, $proof, $maker): void {
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
-        reviewRoles($maker, ['compliance']);  // revoked before the after-commit worker runs: stays queued
+// F1b, ported to automatic disbursement (BRS v2.0 SVC-R01): the worker re-verifies what the intent
+// bound. A destination rotated after the system recorded its intent and before the after-commit
+// worker ran must not be paid, then or later.
+it('F1b: does not dispatch an automatic intent whose destination rotated before the worker ran', function (): void {
+    $campaign = DisbursementFixture::sources()->fund();
+    DB::transaction(function () use ($campaign): void {
+        expect(app(OpenFundedDisbursements::class)->handle()['queued'])->toBe(1);
+        DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');  // before the after-commit worker runs
     });
     $intent = DisbursementIntent::query()->sole();
     expect(DisbursementProviderCall::query()->where('intent_id', $intent->id)->where('kind', 'send')->count())->toBe(0);
 
-    reviewRoles($maker, ['treasury']);
     app(DispatchDisbursements::class)->handle();
 
-    expect(DisbursementProviderCall::query()->where('intent_id', $intent->id)->where('kind', 'send')->count())->toBe(0);
+    expect(DisbursementProviderCall::query()->where('intent_id', $intent->id)->where('kind', 'send')->count())->toBe(0)
+        ->and(DisbursementDispatch::query()->where('intent_id', $intent->id)->pluck('phase')->all())->toBe(['queued'])
+        ->and(DisbursementClosing::query()->count())->toBe(0);
 });
 
 // F2 (5868306136 "event-key collision"): a replay of an already-recorded conflicting event must be harmless.
 it('F2: treats an exact replay of a key-conflict callback as a duplicate instead of a database error', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'pending', ['event_id' => 'evt-shared']));
     $conflicting = DisbursementFixture::provider()->callback($intent->id, 'succeeded', ['event_id' => 'evt-shared']);
     expect(app(RecordPayoutEvent::class)->handle($conflicting)['disposition'])->toBe('key_conflict');
@@ -95,7 +68,7 @@ it('F2: treats an exact replay of a key-conflict callback as a duplicate instead
 
 // F3: a non-final observation (a lagging query or out-of-order webhook) after an applied success.
 it('F3: still settles a verified success when a later query answers pending/unknown before reconciliation ran', function (): void {
-    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     app()->instance(FundedCampaigns::class, new UnavailableFundedCampaigns);
     expect(app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'succeeded'))['decision'])
         ->toBe('funding_unavailable');
@@ -177,23 +150,9 @@ it('F5: records a success callback that races the send without a database error,
     };
     app()->instance(PayoutProvider::class, $racing);
 
-    DisbursementFixture::approved();
+    DisbursementFixture::paid();
     app(ReconcileDisbursements::class)->handle();
 
     expect($racing->callbackError)->toBeNull()
         ->and(DisbursementClosing::query()->value('kind'))->toBe('issued');
-});
-
-// V1 (verification, expected to pass): a proof minted for one disbursement never approves another.
-it('V1: refuses a proof minted for another disbursement at the same revision', function (): void {
-    ['disbursement' => $first] = DisbursementFixture::funded();
-    ['disbursement' => $second] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $first, 'authorize', 0);
-    DisbursementFixture::command($maker, $second, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $first)['proof'];
-
-    expect(DisbursementFixture::command($checker, $second, 'approve', 1, $proof)['code'])->toBe('STEP_UP_INVALID')
-        ->and(DisbursementIntent::query()->count())->toBe(0);
 });

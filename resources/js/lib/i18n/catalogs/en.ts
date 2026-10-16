@@ -1626,21 +1626,9 @@ const en = {
     'admin.review.stage.take.cta': 'Take for review',
     'admin.review.stage.take.placeholder':
         "e.g. Picking this up for today's credit session.",
-    'admin.maker_checker.label': 'Approvals',
-    'admin.maker_checker.step': 'Step {n}',
-    'admin.maker_checker.maker_title': 'Authorized',
-    'admin.maker_checker.checker_title': 'Second approval',
-    'admin.maker_checker.maker_empty':
-        'Nobody has authorized this release yet.',
-    'admin.maker_checker.checker_empty':
-        'A different approver checks the release after it is authorized.',
-    'admin.maker_checker.awaiting': 'Awaiting second approver',
-    'admin.maker_checker.self_blocked':
-        "You authorized this release, so you can't approve it too. A different approver must check it.",
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Release rules in effect',
     'admin.disbursements.title': 'Pending disbursements',
-    'admin.disbursements.awaiting_count': '{count} awaiting second approver',
     'admin.disbursements.table': 'Pending disbursements',
     'admin.disbursements.col.reference': 'Payout ref',
     'admin.disbursements.col.note': 'Note',
@@ -1648,7 +1636,7 @@ const en = {
     'admin.disbursements.col.amount': 'Amount',
     'admin.disbursements.col.due': 'Due',
     'admin.disbursements.col.actions': 'State · Actions',
-    'admin.disbursements.state.ready': 'Ready to authorize',
+    'admin.disbursements.state.ready': 'Waiting for automatic payment',
     'admin.disbursements.state.awaiting_second_approver':
         'Awaiting second approver',
     'admin.disbursements.state.on_hold': 'On hold',
@@ -1667,7 +1655,6 @@ const en = {
     'admin.disbursements.empty_title': 'All disbursements released',
     'admin.disbursements.empty_body': 'No payouts owed right now.',
     'admin.disbursements.drawer_label': 'Disbursement {reference}',
-    'admin.disbursements.independence.title': 'Independence declaration',
     'admin.disbursements.amount': 'Amount',
     'admin.disbursements.platform_fee':
         '3% platform fee {fee}, of which {share} to the Audit Partner. The Business receives {payout}.',
@@ -1684,32 +1671,10 @@ const en = {
     'admin.disbursements.failure_attempts': 'Attempts',
     'admin.disbursements.failure_inspect':
         'Inspect before retrying: confirm with the provider that no money left, so the same payout is never sent twice.',
-    'admin.disbursements.approvals': 'Approvals',
     'admin.disbursements.trail': 'Release trail',
     'admin.disbursements.trail_empty': 'Nothing recorded yet.',
-    'admin.disbursements.command.authorize': 'Authorize release',
-    'admin.disbursements.command.approve': 'Approve release',
-    'admin.disbursements.command.reject': 'Reject',
     'admin.disbursements.command.hold': 'Hold',
     'admin.disbursements.command.retry': 'Retry payout',
-    'admin.disbursements.stage.authorize.title': 'Authorize this release',
-    'admin.disbursements.stage.authorize.body':
-        'You authorize paying {amount} to {business}. This runs the precheck; a different staff member must then approve it.',
-    'admin.disbursements.stage.authorize.cta': 'Authorize',
-    'admin.disbursements.stage.authorize.placeholder':
-        'e.g. Raise fully funded; destination verified against the RDB mandate.',
-    'admin.disbursements.stage.approve.title': 'Approve this release',
-    'admin.disbursements.stage.approve.body':
-        "As the second staff member you approve paying {amount} to {business}. This records the payment intent; it isn't a payment. The worker sends it only after its own recheck.",
-    'admin.disbursements.stage.approve.cta': 'Approve and record intent',
-    'admin.disbursements.stage.approve.placeholder':
-        'e.g. Checked the funded total and the destination match the offer.',
-    'admin.disbursements.stage.reject.title': 'Reject this release',
-    'admin.disbursements.stage.reject.body':
-        "This voids the authorization only and records your reason. The raise isn't cancelled; the disbursement goes back to be authorized.",
-    'admin.disbursements.stage.reject.cta': 'Reject release',
-    'admin.disbursements.stage.reject.placeholder':
-        'e.g. Destination account name does not match the business.',
     'admin.disbursements.stage.hold.title': 'Put this release on hold',
     'admin.disbursements.stage.hold.body':
         'Nothing is paid while it is held. Say why, so the next person knows what to clear.',
@@ -4410,12 +4375,9 @@ const en = {
     'admin.disbursements.provider.unknown': 'Unknown · not yet confirmed',
     'admin.disbursements.provider.succeeded': 'Succeeded · verified',
     'admin.disbursements.provider.failed': 'Failed · verified',
-    'admin.disbursements.action.authorize': 'Authorize',
     'admin.disbursements.older': 'Older disbursements',
     'admin.disbursements.deadline': 'Deadline',
     'admin.disbursements.deadline_unavailable': 'No deadline sourced',
-    'admin.disbursements.rule_two_staff':
-        "Two different staff members are needed: one authorizes, another approves. There's no amount threshold and no override. Roles are labels only: what you can do comes from your permissions.",
     'admin.disbursements.causes': 'Causes',
     'admin.disbursements.receipt.code': 'Receipt',
     'admin.disbursements.receipt.reference': 'Reference',
@@ -4428,26 +4390,6 @@ const en = {
     'admin.disbursements.precheck.title': 'Precheck',
     'admin.disbursements.checked_at': 'Checked at',
     'admin.disbursements.policy_version': 'Policy version',
-    'admin.disbursements.binding.title': 'What approval binds',
-    'admin.disbursements.binding.none': 'Set when the release is authorized.',
-    'admin.disbursements.binding.revision': 'Revision',
-    'admin.disbursements.binding.amount': 'Exact amount',
-    'admin.disbursements.binding.digest': 'Intent digest',
-    'admin.disbursements.step_up.unavailable':
-        "Approval needs a fresh step-up confirmation bound to these details. That confirmation isn't available yet, so approval can't be given here.",
-    'admin.disbursements.step_up.title': "Confirm it's you",
-    'admin.disbursements.step_up.lead':
-        "Enter the six-digit code from your authenticator app. The confirmation is bound to this revision, exact amount, destination and intent digest, and it's used once.",
-    'admin.disbursements.step_up.code_label': 'Six-digit authenticator code',
-    'admin.disbursements.step_up.verify': 'Confirm code',
-    'admin.disbursements.step_up.ready':
-        "Confirmed until {time}. It's used once, for this approval, and still needs your reason.",
-    'admin.disbursements.step_up.wrong_code':
-        "That code didn't match. Enter the current code from your authenticator.",
-    'admin.disbursements.step_up.lost':
-        "Rozine couldn't be reached to check your code. Nothing was approved — enter a new code for a fresh confirmation.",
-    'admin.disbursements.step_up.changed':
-        'The details this approval binds changed, so your confirmation was cleared. Check them, then enter a new code.',
     'admin.disbursements.intent.title': 'Payment intent',
     'admin.disbursements.intent.not_payment':
         'Intent recorded — not a payment. The payment worker sends it only after its own recheck.',
@@ -4484,9 +4426,7 @@ const en = {
         'Exception · blocked, not reconciled',
     'admin.disbursements.hold.title': 'Hold',
     'admin.disbursements.hold.release_note':
-        "Releasing the hold doesn't approve this disbursement or send any payment. It needs a staff member other than the one who placed it.",
-    'admin.disbursements.hold.self':
-        'You placed this hold, so a different staff member must release it.',
+        'Releasing the hold lets automatic payment run again. Any authorised staff member may release it, including the one who placed it.',
     'admin.disbursements.issue.title': 'Issue',
     'admin.disbursements.issue.holdings': 'Holdings issued',
     'admin.disbursements.issue.issued_at': 'Issued at',
@@ -4495,11 +4435,19 @@ const en = {
     'admin.disbursements.refund.commitments': 'Commitments refunded',
     'admin.disbursements.refund.total': 'Total refunded',
     'admin.disbursements.ledger': 'Open in the ledger',
+    'admin.disbursements.attention_count': '{count} need attention',
+    'admin.disbursements.automation.title': 'Automatic payment',
+    'admin.disbursements.automation.payout': 'Business receives',
+    'admin.disbursements.automation.rule': 'Rule',
+    'admin.disbursements.automation.waiting.verified_payout_destination':
+        "Waiting for a verified payout destination. Payment starts automatically once the business's destination is verified.",
+    'admin.disbursements.automation.waiting.next_run':
+        'Payment starts automatically on the next run.',
     'admin.disbursements.command.release_hold': 'Release hold',
     'admin.disbursements.command.requery': 'Ask the provider again',
     'admin.disbursements.stage.release_hold.title': 'Release this hold',
     'admin.disbursements.stage.release_hold.body':
-        "Releasing the hold doesn't approve this disbursement or send any payment. It goes back to where it was before the hold.",
+        'Automatic payment runs again once the hold is released. It goes back to where it was before the hold.',
     'admin.disbursements.stage.release_hold.cta': 'Release hold',
     'admin.disbursements.stage.release_hold.placeholder':
         'e.g. The business confirmed its new MoMo number.',
