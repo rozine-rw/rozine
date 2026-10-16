@@ -72,8 +72,8 @@ it('lists each posting with where the money came from and went to, and opens it 
         ->orderByDesc('amount')->value('account_id'), -6));
     $operation = (string) LedgerEntry::query()->whereKey($entry)->value('origin_operation_id');
     $started = CommandOperation::query()->whereKey($operation)->sole();
-    expect($started->actor_key)->toBe('party:'.$this->investor['user']->party_id)
-        ->and($opened)->toMatchArray([...$row, 'operation_id' => $operation, 'contra_of' => null, 'contra_by' => null, 'balanced' => true,
+    expect($started->actor_key)->toBe('party:'.$this->investor['user']->party_id);
+    expect($opened)->toMatchArray([...$row, 'operation_id' => $operation, 'contra_of' => null, 'contra_by' => null, 'balanced' => true,
         'posted_by' => ['actor' => 'System · deposit credit', 'at' => $row['at'], 'reason' => null],
         'origin' => ['actor' => 'PARTY-'.Str::upper(Str::substr((string) $this->investor['user']->party_id, -8)), 'at' => $started->created_at?->toIso8601String()],
         'totals' => ['debit' => ['currency' => 'RWF', 'amount' => '50000'], 'credit' => ['currency' => 'RWF', 'amount' => '50000']],
