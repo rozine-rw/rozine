@@ -28,6 +28,9 @@ IDENTITY_STEPS = ["Record immutable POC coordination identity", "Publish immutab
 DECISION_STEPS = ["Reuse only original successful evidence for an identical dev/UAT tree", "Publish canonical validation decision"]
 VALIDATION_JOBS = [*POC_JOBS[1:], "Reuse POC validation evidence"]
 SHA = r"[0-9a-f]{40}"
+# A peer's selector can use its existing five-minute job cap before publication.
+# This consumer wait does not extend that producer cap or the combined 600s gate.
+FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 
 
 class MissingEvidence(ValueError):
@@ -353,7 +356,7 @@ def pending_follower_ids(env, runs, tree):
     if decision and decision["mode"] == "await":
         own = (decision["owner_run"], decision["owner_attempt"])
     followers = set()
-    deadline = time.monotonic() + 45
+    deadline = time.monotonic() + FOLLOWER_PUBLICATION_WAIT_SECONDS
     while True:
         try:
             participants = pending_participants(env["GITHUB_REPOSITORY"], runs, tree)

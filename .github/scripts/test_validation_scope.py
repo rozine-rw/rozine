@@ -1307,6 +1307,114 @@ class CanonicalCoordinationTests(unittest.TestCase):
         with self.server(), patch.object(policy.time, "sleep", side_effect=lambda _: self.publish(201, self.decision(201, "await", 200, 100))):
             self.assertEqual(policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc"), "100")
 
+    @contextlib.contextmanager
+    def publication_clock(self, advance):
+        clock = [0]
+        def sleep(seconds):
+            self.assertEqual(seconds, 3)
+            clock[0] += seconds
+            advance(clock[0])
+        with self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: copy.deepcopy(self.api(endpoint, **kwargs))), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy.time, "sleep", side_effect=sleep):
+            yield clock
+
+    def test_consumer_accepts_verified_follower_publication_after_45_seconds_within_producer_cap(self):
+        for delay in [48, 90, 297]:
+            self.setUp()
+            self.publish(200, self.decision(200, "reuse", 200, 100))
+            self.jobs[201][-1]["status"] = "in_progress"
+            def publish_after_delay(seconds):
+                if seconds >= delay:
+                    self.publish(201, self.decision(201, "await", 200, 100))
+            with self.subTest(publication_seconds=delay), self.publication_clock(publish_after_delay) as clock, patch.object(policy, "validate_source", wraps=policy.validate_source) as verify:
+                self.assertEqual(policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc"), "100")
+                self.assertEqual(clock[0], delay)
+                self.assertTrue(verify.called)
+                self.assertEqual(self.artifacts[201]["ci-coordination-decision"]["source_run"], "100")
+                self.assertNotIn("validation-tree", self.artifacts[200])
+                self.assertNotIn("validation-tree", self.artifacts[201])
+
+    def test_unpublished_follower_still_refuses_at_existing_producer_300_second_cap(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.jobs[201][-1]["status"] = "in_progress"
+        with self.publication_clock(lambda _: None) as clock, patch.object(policy, "validate_source", wraps=policy.validate_source) as verify:
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "follower_decision_publication_timeout"):
+                policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc")
+            self.assertEqual(clock[0], 300)
+            verify.assert_not_called()
+            self.assertNotIn("ci-coordination-decision", self.artifacts[201])
+            self.assertFalse(Path("ci-evidence/tested-tree.json").exists())
+
+    def test_publication_wait_preserves_native_failure_attempt_and_decision_refusals(self):
+        for transition in ["failure", "cancelled", "attempt", "malformed tree", "another owner", "another source"]:
+            self.setUp()
+            self.publish(200, self.decision(200, "reuse", 200, 100))
+            self.jobs[201][-1]["status"] = "in_progress"
+            def change_while_waiting(seconds):
+                if seconds != 6:
+                    return
+                if transition in ("failure", "cancelled"):
+                    self.runs[201].update(status="completed", conclusion=transition)
+                    self.jobs[201][-1].update(status="completed", conclusion=transition)
+                elif transition == "attempt":
+                    self.runs[201]["run_attempt"] = 2
+                else:
+                    decision = self.decision(201, "execute", 201, 201) if transition == "another owner" else self.decision(201, "await", 200, 100)
+                    if transition == "malformed tree": decision["tree_sha"] = "f" * 40
+                    if transition == "another source": decision["source_run"] = "999"
+                    self.publish(201, decision)
+            with self.subTest(transition=transition), self.publication_clock(change_while_waiting) as clock:
+                with self.assertRaises(policy.CoordinationRefusal):
+                    policy.reusable_run(self.env(SOURCE_RUN="100", SOURCE_ATTEMPT="1"), "poc")
+                self.assertEqual(clock[0], 6)
+                self.assertFalse(Path("ci-evidence/tested-tree.json").exists())
+
+    def test_consumer_timeout_cascades_into_peer_terminal_transition_without_takeover(self):
+        self.publish(200, self.decision(200, "reuse", 200, 100))
+        self.jobs[201][-1]["status"] = "in_progress"
+        self.current = 201
+        consumer = self.env(200, SOURCE_RUN="100", SOURCE_ATTEMPT="1")
+        selector = self.env(201)
+        native_decision = policy.coordination_decision
+        refusals = []
+        def consumer_finishes_before_peer_latest_read(repository, run, identity):
+            decision = native_decision(repository, run, identity)
+            if run["id"] == 200 and not refusals:
+                refusals.append("consumer started")
+                self.current = 200
+                try:
+                    policy.reusable_run(consumer, "poc")
+                except policy.CoordinationRefusal as error:
+                    refusals.append(str(error))
+                finally:
+                    self.current = 201
+                self.runs[200].update(status="completed", conclusion="failure")
+            return decision
+        with self.publication_clock(lambda _: None) as clock, patch.object(policy, "coordination_decision", side_effect=consumer_finishes_before_peer_latest_read):
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "participant_became_terminal_during_selection"):
+                policy.canonical_selection(selector)
+            self.assertEqual(refusals, ["consumer started", "follower_decision_publication_timeout"])
+            self.assertGreaterEqual(clock[0], 45)
+            self.assertNotIn("ci-coordination-decision", self.artifacts[201])
+            self.assertFalse(Path("ci-coordination-decision/coordination-decision.json").exists())
+
+    def test_publication_wait_matches_existing_selector_cap_without_changing_combined_budget(self):
+        lines = Path(__file__).resolve().parents[1].joinpath("workflows/tests.yml").read_text().splitlines()
+        start = lines.index("  plan:")
+        end = next((index for index in range(start + 1, len(lines)) if lines[index].startswith("  ") and not lines[index].startswith("   ") and lines[index].strip()), len(lines))
+        self.assertIn("    timeout-minutes: 5", lines[start:end])
+        start_at = datetime.datetime(2026, 10, 16, tzinfo=datetime.timezone.utc)
+        for seconds in [600, 601]:
+            jobs = []
+            for name in ["Select CI scope", *policy.POC_JOBS]:
+                duration = seconds - 20 if name == "POC PHP safety and static checks" else (20 if name == "Select CI scope" else 1)
+                jobs.append({"name": name, "status": "completed", "conclusion": "success", "started_at": start_at.isoformat(), "completed_at": (start_at + datetime.timedelta(seconds=duration)).isoformat()})
+            with self.subTest(combined_seconds=seconds):
+                if seconds == 600:
+                    policy.validate_completed_budget(jobs)
+                else:
+                    with self.assertRaisesRegex(ValueError, "ten minutes"):
+                        policy.validate_completed_budget(jobs)
+
     def test_failed_cancelled_skipped_owner_makes_consumer_fail_without_takeover(self):
         self.publish(200, self.decision(200, "execute", 200, 200))
         self.publish(201, self.decision(201, "await", 200, 200))
