@@ -20,10 +20,19 @@ if ($destination) {
     file_put_contents($destination, '');
     Facade::instance()->registerSubscriber(new class($destination) implements PassedSubscriber
     {
-        public function __construct(private readonly string $destination) {}
+        private readonly int $runnerPid;
+
+        public function __construct(private readonly string $destination)
+        {
+            $this->runnerPid = getmypid() ?: throw new RuntimeException('Cannot identify the controlling test process.');
+        }
 
         public function notify(Passed $event): void
         {
+            if (getmypid() !== $this->runnerPid) {
+                return;
+            }
+
             // Dataset labels may contain arbitrary bytes; preserve them without lossy UTF-8 conversion.
             $record = ['id' => base64_encode($event->test()->id()), 'status' => 'passed'];
             if (file_put_contents($this->destination, json_encode($record, JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX) === false) {
