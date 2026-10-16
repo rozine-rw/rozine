@@ -23,7 +23,7 @@ const STEPS: SignUpStep[] = [
 
 const LABEL = 'mb-1.5 block text-xs font-semibold text-rz-label uppercase';
 const FIELD =
-    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border';
+    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border';
 
 function Chip({
     on,

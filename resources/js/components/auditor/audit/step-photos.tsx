@@ -238,7 +238,7 @@ export function StepPhotos({
                                                 [slot.key]: event.target.value,
                                             })
                                         }
-                                        className="mt-[7px] w-full rounded-[10px] border border-rz-border bg-[#f6f9fd] px-3 py-[11px] text-[13px] text-rz-ink outline-none placeholder:text-rz-faint dark:bg-rz-surface-sunken"
+                                        className="mt-[7px] w-full rounded-[10px] border border-rz-border bg-[#f6f9fd] px-3 py-[11px] text-[13px] text-rz-ink outline-none placeholder:text-rz-placeholder dark:bg-rz-surface-sunken"
                                     />
                                 </div>
                             );

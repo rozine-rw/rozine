@@ -114,7 +114,7 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                             form.errors.number !== undefined || undefined
                         }
                         disabled={verified}
-                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe3f0] bg-rz-field px-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:border-rz-border"
+                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe3f0] bg-rz-field px-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border dark:border-rz-border"
                     />
                     <FieldError id="certificate-number-error">
                         {form.errors.number}

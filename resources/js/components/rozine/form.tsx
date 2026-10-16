@@ -46,7 +46,7 @@ export function TextField({
         <input
             aria-invalid={invalid || undefined}
             className={cn(
-                'w-full border text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)]',
+                'w-full border text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)]',
                 FIELD_VARIANTS[variant],
                 invalid && 'border-rz-danger',
             )}
