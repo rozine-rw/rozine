@@ -98,8 +98,8 @@ const LAYOUT = {
 
 const SURFACES: Record<PassCardSurface, SurfaceStyle> = {
     pulse: {
-        logo: '/images/rozine-wordmark-white.png',
-        watermark: '/images/rozine-wing-white.png',
+        logo: '/images/rozine-lockup-white.png',
+        watermark: '/images/rozine-star-white.png',
         amountSize: 99,
         tones: {
             investor: { stops: ['#3f83ff', '#0a44c4', '#061640'], middle: 0.4 },
@@ -198,7 +198,7 @@ export async function drawPassCard(
         'rgba(255,255,255,0.3)',
     );
 
-    paintWings(ctx, watermark);
+    paintWatermark(ctx, watermark);
     paintCorner(ctx);
     paintHeader(ctx, spec, wordmark);
     paintBody(ctx, spec);
@@ -232,7 +232,7 @@ function paintBackground(
     ctx.restore();
 }
 
-function paintWings(
+function paintWatermark(
     ctx: CanvasRenderingContext2D,
     mark: HTMLImageElement,
 ): void {
