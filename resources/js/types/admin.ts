@@ -722,6 +722,11 @@ export type Posting = {
 export type LedgerEntryDetail = LedgerRow & {
     operation_id: string;
     posted_by: Attribution;
+    /**
+     * Who started this entry's money flow and when, by reference. A later movement in the same
+     * flow keeps it, so it is not who posted the entry; null when no operation is recorded.
+     */
+    origin: { actor: string; at: string } | null;
     postings: Posting[];
     totals: { debit: Money; credit: Money };
     /** Debits equal credits, as the core verified on posting. */
@@ -736,6 +741,10 @@ export type AdminLedgerProps = AdminShellProps & {
     entries: LedgerRow[];
     total: number;
     more: RouteLink | null;
+    /** The next older page, after the last row shown; null on the last page. */
+    older: RouteLink | null;
+    /** Back to the newest page; null while on it. */
+    newest: RouteLink | null;
     entry: LedgerEntryDetail | null;
 };
 

@@ -12,7 +12,8 @@ namespace App\Application\Operations\Contracts;
  * account's owner (the Investor's account name or the Business's name), and the reference the
  * money moved under (the provider reference of a deposit or withdrawal, or the Business of a
  * purchase, issue or repayment). A search matches an owner, the reference, the kind or the entry
- * id; `limit` caps the page while `total` counts every match.
+ * id; `limit` caps the page while `total` counts every match. `before` pages back from an entry
+ * id, and `next_before` names the entry the next older page starts after (null on the last page).
  *
  * @phpstan-type Line array{
  *     direction: 'debit'|'credit', amount: string, account_id: string, account_kind: string,
@@ -24,8 +25,8 @@ namespace App\Application\Operations\Contracts;
  */
 interface LedgerJournal
 {
-    /** @return array{entries: list<Entry>, total: int} */
-    public function entries(?string $search, int $limit): array;
+    /** @return array{entries: list<Entry>, total: int, next_before: string|null} */
+    public function entries(?string $search, int $limit, ?string $before = null): array;
 
     /** @return Entry|null */
     public function entry(string $id): ?array;

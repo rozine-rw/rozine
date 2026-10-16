@@ -23,4 +23,12 @@ final class EloquentOperationRecords implements OperationRecords
 
         return $requestId === null ? null : (string) $requestId;
     }
+
+    public function attribution(string $operationId): ?array
+    {
+        $operation = CommandOperation::query()->whereKey($operationId)->first();
+
+        return $operation === null ? null : ['operation_id' => (string) $operation->id, 'actor_key' => (string) $operation->actor_key,
+            'command' => (string) $operation->command, 'recorded_at' => $operation->created_at?->toIso8601String() ?? ''];
+    }
 }

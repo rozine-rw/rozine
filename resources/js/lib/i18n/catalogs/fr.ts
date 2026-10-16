@@ -2026,6 +2026,8 @@ const fr: Catalog = {
     'admin.ledger.col.credit': 'Crédit',
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
     'admin.ledger.see_all': 'Voir les {count} écritures',
+    'admin.ledger.older': 'Écritures plus anciennes',
+    'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',
     'admin.ledger.fact.from': 'De',
@@ -2033,6 +2035,10 @@ const fr: Catalog = {
     'admin.ledger.fact.reference': 'Référence',
     'admin.ledger.fact.operation': 'Opération',
     'admin.ledger.posted_by': 'Passée par {actor} · {at}',
+    'admin.ledger.origin':
+        'Flux lancé par {actor} · {at}. Les mouvements suivants du même flux gardent cette origine.',
+    'admin.ledger.origin_none':
+        'Aucune opération de départ n’est enregistrée pour cette écriture.',
     'admin.ledger.postings': 'Écritures',
     'admin.ledger.total': 'Total',
     'admin.ledger.balanced': 'Équilibrée',

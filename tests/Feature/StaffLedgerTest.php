@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Resources\StaffLedgerResource;
+use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
 use App\Models\Party;
 use App\Models\User;
@@ -63,14 +64,18 @@ it('lists each posting with where the money came from and went to, and opens it 
 
     expect($props['contract_version'])->toBe('staff-ledger-v1')
         ->and($props['nav']['ledger'])->toBe(['url' => '/admin/ledger', 'method' => 'get'])
-        ->and($props['entries'])->toBe([$row])->and($props['total'])->toBe(1)->and($props['more'])->toBeNull()->and($props['entry'])->toBeNull();
+        ->and($props['entries'])->toBe([$row])->and($props['total'])->toBe(1)->and($props['more'])->toBeNull()->and($props['entry'])->toBeNull()
+        ->and($props['older'])->toBeNull()->and($props['newest'])->toBeNull();
 
     $opened = ($this->page)($staff, ['entry' => $entry])['entry'];
     $account = Str::upper(Str::substr((string) DB::table('ledger_lines')->where('entry_id', $entry)->where('direction', 'credit')
         ->orderByDesc('amount')->value('account_id'), -6));
     $operation = (string) LedgerEntry::query()->whereKey($entry)->value('origin_operation_id');
-    expect($opened)->toMatchArray([...$row, 'operation_id' => $operation, 'contra_of' => null, 'contra_by' => null, 'balanced' => true,
+    $started = CommandOperation::query()->whereKey($operation)->sole();
+    expect($started->actor_key)->toBe('party:'.$this->investor['user']->party_id)
+        ->and($opened)->toMatchArray([...$row, 'operation_id' => $operation, 'contra_of' => null, 'contra_by' => null, 'balanced' => true,
         'posted_by' => ['actor' => 'System · deposit credit', 'at' => $row['at'], 'reason' => null],
+        'origin' => ['actor' => 'PARTY-'.Str::upper(Str::substr((string) $this->investor['user']->party_id, -8)), 'at' => $started->created_at?->toIso8601String()],
         'totals' => ['debit' => ['currency' => 'RWF', 'amount' => '50000'], 'credit' => ['currency' => 'RWF', 'amount' => '50000']],
         'links' => ['close' => ['url' => '/admin/ledger', 'method' => 'get'], 'events' => ['url' => '/admin/activity?q='.$operation, 'method' => 'get']]])
         ->and($opened['postings'])->toEqualCanonicalizing([
@@ -101,18 +106,42 @@ it('searches by owner, reference, kind or entry, and opens every match on reques
         ->and(($this->page)($staff, ['limit' => 500])['more'])->toBeNull();
 });
 
+it('pages back from the last row shown, keeping the search, and returns to the newest page', function (): void {
+    ($this->deposit)('20000');
+    ($this->deposit)('30000');
+    ($this->deposit)('40000');
+    $staff = ledgerStaff(['treasury']);
+
+    $newest = ($this->page)($staff, ['q' => 'aline', 'limit' => 2]);
+    $last = $newest['entries'][1]['id'];
+    expect(array_column(array_column($newest['entries'], 'amount'), 'amount'))->toBe(['40000', '30000'])
+        ->and($newest['older'])->toBe(['url' => '/admin/ledger?q=aline&limit=2&before='.$last, 'method' => 'get'])
+        ->and($newest['newest'])->toBeNull();
+
+    $older = ($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $last]);
+    $oldest = $older['entries'][0]['id'];
+    expect(array_column(array_column($older['entries'], 'amount'), 'amount'))->toBe(['20000'])
+        ->and($older['total'])->toBe(3)->and($older['older'])->toBeNull()->and($older['more'])->toBeNull()
+        ->and($older['newest'])->toBe(['url' => '/admin/ledger?q=aline&limit=2', 'method' => 'get'])
+        ->and($older['entries'][0]['link']['url'])->toBe('/admin/ledger?q=aline&limit=2&before='.$last.'&entry='.$oldest)
+        ->and(($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $last, 'entry' => $oldest])['entry']['links']['close'])
+        ->toBe(['url' => '/admin/ledger?q=aline&limit=2&before='.$last, 'method' => 'get']);
+
+    $this->actingAs($staff)->get(route('staff.ledger.index', ['before' => 'nope']))->assertSessionHasErrors('before');
+});
+
 it('names an owner, account or kind it does not know plainly', function (): void {
     $request = request();
     $line = fn (string $direction, string $amount, string $kind, ?string $owner, ?string $name): array => ['direction' => $direction, 'amount' => $amount,
         'account_id' => '01k0000000000000000000abcd', 'account_kind' => $kind, 'owner' => $owner, 'owner_name' => $name];
     $entry = ['id' => '01k00000000000000000000001', 'kind' => 'future_kind', 'at' => '2027-01-22T08:00:00+00:00', 'reference' => null, 'operation_id' => null,
         'lines' => [$line('debit', '700', 'business_available', 'business', null), $line('debit', '300', 'future_account', null, null)]];
-    $props = (new StaffLedgerResource(['entries' => [$entry], 'total' => 1, 'entry' => $entry, 'search' => '', 'limit' => 50, 'roles' => ['treasury'],
-        'permissions' => ['ledger.view']]))->resolve($request);
+    $props = (new StaffLedgerResource(['entries' => [$entry], 'total' => 1, 'next_before' => null, 'entry' => [...$entry, 'origin' => null], 'search' => '',
+        'limit' => 50, 'before' => null, 'roles' => ['treasury'], 'permissions' => ['ledger.view']]))->resolve($request);
 
     expect($props['entries'][0])->toMatchArray(['kind' => 'investment', 'from' => 'Business · available', 'to' => '—', 'reference' => $entry['id'],
         'amount' => ['currency' => 'RWF', 'amount' => '1000']])
-        ->and($props['entry']['balanced'])->toBeFalse()
+        ->and($props['entry']['balanced'])->toBeFalse()->and($props['entry']['origin'])->toBeNull()
         ->and(array_column($props['entry']['postings'], 'account'))->toBe(['Business · available', 'Future account'])
         ->and(array_column($props['entry']['postings'], 'account_code'))->toBe(['BIZ-AVL-00ABCD', 'FUTURE_ACCOUNT']);
 });
