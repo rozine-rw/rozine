@@ -66,6 +66,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
+    $foreignKeyQuery = "SELECT source.relname, constraint_record.conname, pg_get_constraintdef(constraint_record.oid) AS definition
+        FROM pg_constraint constraint_record JOIN pg_class source ON source.oid = constraint_record.conrelid
+        WHERE constraint_record.contype = 'f' AND source.relnamespace = current_schema()::regnamespace ORDER BY source.relname, constraint_record.conname";
+    $originalForeignKeys = DB::select($foreignKeyQuery);
     $sourceFactsMigration->down();
     $sourcePinMigration->down();
     $engagementMigration->down();
@@ -129,6 +133,30 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $accountDevices = require database_path('migrations/2026_10_14_160115_create_account_devices_table.php');
     $partyNotices = require database_path('migrations/2026_10_13_154243_create_party_notices_table.php');
     $riskAcknowledgements = require database_path('migrations/2026_10_13_141829_create_investor_risk_acknowledgements_table.php');
+    $businessContacts = require database_path('migrations/2026_10_15_022904_create_business_contact_versions_table.php');
+    $complaints = require database_path('migrations/2026_10_15_053241_create_complaints_tables.php');
+    $dependentShape = fn (): array => [
+        DB::select("SELECT table_name, column_name, data_type, udt_name, is_nullable, column_default FROM information_schema.columns
+            WHERE table_schema = current_schema() AND table_name IN ('business_contact_versions', 'complaints', 'complaint_messages') ORDER BY table_name, ordinal_position"),
+        DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid IN
+            ('business_contact_versions'::regclass, 'complaints'::regclass, 'complaint_messages'::regclass) ORDER BY conname"),
+        DB::select("SELECT tgname, tgenabled, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE tgrelid IN
+            ('business_contact_versions'::regclass, 'complaints'::regclass, 'complaint_messages'::regclass) AND NOT tgisinternal ORDER BY tgname"),
+        DB::select("SELECT proname, pg_get_functiondef(oid) AS definition FROM pg_proc WHERE oid IN
+            ('reject_business_contact_version_mutation'::regproc, 'reject_complaint_mutation'::regproc) ORDER BY proname"),
+        DB::select("SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = current_schema()
+            AND tablename IN ('business_contact_versions', 'complaints', 'complaint_messages') ORDER BY tablename, indexname")];
+    $originalDependentShape = $dependentShape();
+    expect(array_column($originalDependentShape[1], 'conname'))->toContain('business_contact_versions_business_id_foreign', 'business_contact_versions_actor_party_id_foreign',
+        'complaints_party_id_foreign', 'complaints_opened_by_user_id_foreign', 'complaint_messages_complaint_id_foreign', 'complaint_messages_author_user_id_foreign')
+        ->and(array_column($originalDependentShape[2], 'tgname'))->toBe(['business_contact_versions_immutable', 'complaint_messages_immutable', 'complaints_immutable'])
+        ->and(array_column($originalDependentShape[2], 'tgenabled'))->toBe(['O', 'O', 'O']);
+    $complaints->down();
+    $businessContacts->down();
+    expect(Schema::hasTable('business_contact_versions'))->toBeFalse()
+        ->and(Schema::hasTable('complaints'))->toBeFalse()->and(Schema::hasTable('complaint_messages'))->toBeFalse()
+        ->and(DB::scalar("SELECT to_regprocedure('reject_business_contact_version_mutation()') IS NULL"))->toBeTrue()
+        ->and(DB::scalar("SELECT to_regprocedure('reject_complaint_mutation()') IS NULL"))->toBeTrue();
     $loginAlerts->down();
     $accountDevices->down();
     $partyNotices->down();
@@ -374,6 +402,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $partyNotices->up();
     $accountDevices->up();
     $loginAlerts->up();
+    $businessContacts->up();
+    $complaints->up();
+    expect(Schema::hasTable('business_contact_versions'))->toBeTrue()->and(Schema::hasTable('complaints'))->toBeTrue()
+        ->and(Schema::hasTable('complaint_messages'))->toBeTrue()->and($dependentShape())->toEqual($originalDependentShape)
+        ->and(DB::select($foreignKeyQuery))->toEqual($originalForeignKeys);
     expect(DB::select($changeFeedConstraintQuery))->toEqual($changeFeedConstraints);
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
