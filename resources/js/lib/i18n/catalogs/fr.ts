@@ -3759,7 +3759,7 @@ const fr: Catalog = {
     'investor.help.risk.late.q':
         'Que se passe-t-il si une entreprise paie en retard ou fait défaut ?',
     'investor.help.risk.late.a':
-        'À l’échéance, ce qui se trouve dans le portefeuille de l’entreprise est prélevé et versé, et tout ce qui arrive ensuite est prélevé immédiatement. Des pénalités de retard de 5 % du montant impayé à l’échéance, au jour 7 et au jour 30 reviennent toutes aux détenteurs. Rozine n’en garde rien.\n\nSi l’arriéré n’est pas réglé au jour 31, la note est en défaut. Un recouvrement est engagé mais peut ne pas restituer la totalité.',
+        'À l’échéance, ce qui se trouve dans le portefeuille de l’entreprise est prélevé et versé, et tout ce qui arrive ensuite est prélevé immédiatement. Des pénalités de retard de 5 % du montant impayé à l’échéance, au jour 7 et au jour 30 reviennent toutes aux détenteurs. Rozine n’en garde rien.\n\nLes frais de retard et pénalités courent chaque jour en cas de défaut et ne sont payables aux détenteurs de notes que lorsqu’ils sont effectivement recouvrés auprès de l’emprunteur. Rozine ne garantit ni n’avance le recouvrement des frais de retard.\n\nSi l’arriéré n’est pas réglé au jour 31, la note est en défaut. Un recouvrement est engagé mais peut ne pas restituer la totalité.',
     'investor.help.portfolio.diversify.q': 'Comment diversifier ?',
     'investor.help.portfolio.diversify.a':
         'Répartissez votre argent entre plusieurs entreprises, secteurs et durées plutôt qu’une seule note. Si une entreprise paie en retard, les autres en atténuent l’effet.\n\nBeaucoup d’investisseurs fixent une limite par note et ajoutent de la variété au fil du temps.',
@@ -5404,7 +5404,7 @@ const fr: Catalog = {
     'investor.servicing.late_fees.total.collected': 'Encaissé',
     'investor.servicing.late_fees.total.outstanding': 'Pas encore encaissé',
     'investor.servicing.late_fees.disclosure':
-        "Les pénalités de retard vous sont versées seulement si et quand l'entreprise les paie. Rozine ne les garantit pas. Mention {version}.",
+        'Les frais de retard et pénalités courent chaque jour en cas de défaut et ne sont payables aux détenteurs de notes que lorsqu’ils sont effectivement recouvrés auprès de l’emprunteur. Rozine ne garantit ni n’avance le recouvrement des frais de retard. Mention {version}.',
     'investor.servicing.payouts.title': 'Versements',
     'investor.servicing.payouts.empty': 'Aucun versement pour le moment.',
     'investor.servicing.payouts.row': 'Échéance {index} · crédité le {date}',

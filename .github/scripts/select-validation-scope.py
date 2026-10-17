@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -721,12 +722,19 @@ def coordination_artifact_index(repository):
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
     deadline = time.monotonic() + 45
+    parent_deadline = _follower_read_deadline.get()
 
     def remaining():
-        seconds = deadline - time.monotonic()
+        now = time.monotonic()
+        if parent_deadline is not None and now >= parent_deadline:
+            raise CoordinationRefusal("follower_decision_publication_timeout")
+        seconds = deadline - now
         if seconds <= 0:
             raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
-        return seconds
+        return min(seconds, parent_deadline - now) if parent_deadline is not None else seconds
+
+    def read_page(number):
+        return api(f"{endpoint}&page={number}", timeout=remaining())
 
     for attempt in range(3):
         # Concurrent uploads can move page boundaries. Discard every page of
@@ -735,13 +743,30 @@ def coordination_artifact_index(repository):
         total = first["total_count"]
         if not isinstance(total, int) or not 0 <= total <= 10000:
             raise CoordinationRefusal("coordination_artifact_inventory_exceeds_bound")
-        responses = [first] if len(first["artifacts"]) == total else pages(endpoint, timeout=remaining())
+        count = max(1, (total + 99) // 100)
+        responses = [first] + [None] * (count - 1)
+        if count > 1:
+            readers = ThreadPoolExecutor(max_workers=4)
+            try:
+                futures = {readers.submit(read_page, number): number for number in range(2, count + 1)}
+                for future in as_completed(futures, timeout=remaining()):
+                    responses[futures[future] - 1] = future.result()
+            except TimeoutError:
+                raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed") from None
+            finally:
+                readers.shutdown(wait=True, cancel_futures=True)
         artifacts = [artifact for response in responses for artifact in response["artifacts"]]
         for artifact in artifacts:
             if not isinstance(artifact["name"], str):
                 raise CoordinationRefusal("coordination_artifact_inventory_invalid_name")
-        if (any(response["total_count"] != total for response in responses)
-                or len(artifacts) != total or len({artifact["id"] for artifact in artifacts}) != total):
+        complete = (all(response["total_count"] == total for response in responses)
+                    and len(artifacts) == total and len({artifact["id"] for artifact in artifacts}) == total
+                    and all(len(response["artifacts"]) == min(100, max(0, total - page * 100))
+                            for page, response in enumerate(responses)))
+        if complete and count > 1:
+            anchor = api(endpoint, timeout=remaining())
+            complete = anchor["total_count"] == total and anchor["artifacts"] == first["artifacts"]
+        if not complete:
             if attempt == 2:
                 raise CoordinationRefusal("coordination_artifact_inventory_incomplete_or_changed")
             diagnostic("retrying_unstable_coordination_artifact_inventory")
@@ -756,6 +781,61 @@ def coordination_artifact_index(repository):
                     raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
                 index[name] = artifact["workflow_run"]["id"]
         return index
+
+
+def source_proof_hints(repository, candidates, deadline):
+    # Hints can only reject a positive source candidate. A matching hint still
+    # needs fresh serial validate_source and every newer-run check below.
+    parent_deadline = _follower_read_deadline.get()
+
+    def remaining():
+        now = time.monotonic()
+        if parent_deadline is not None and now >= parent_deadline:
+            raise CoordinationRefusal("follower_decision_publication_timeout")
+        return deadline - now
+
+    def read(source):
+        inherited = _follower_read_deadline.get()
+        token = _follower_read_deadline.set(min(deadline, inherited) if inherited is not None else deadline)
+        try:
+            return download_evidence(repository, source)
+        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
+            return None
+        finally:
+            _follower_read_deadline.reset(token)
+
+    readers = ThreadPoolExecutor(max_workers=4)
+    pending, unread = [], iter(candidates)
+
+    def submit():
+        source = next(unread, None)
+        if source is not None:
+            context = contextvars.copy_context()
+            pending.append((source, readers.submit(context.run, read, source)))
+
+    try:
+        for _ in range(4):
+            submit()
+        while pending:
+            source, future = pending.pop(0)
+            seconds = remaining()
+            if seconds <= 0:
+                break
+            try:
+                proof = future.result(timeout=seconds)
+            except TimeoutError:
+                remaining()  # A real parent deadline remains a hard refusal.
+                break
+            remaining()
+            yield source, proof
+            if remaining() <= 0:
+                break
+            submit()
+    finally:
+        for _, future in pending:
+            future.cancel()
+        readers.shutdown(wait=True, cancel_futures=True)
+        remaining()  # Joining speculative reads cannot outlive a real parent deadline.
 
 
 def reusable_run(env, scope, with_attempt=False):
@@ -773,33 +853,39 @@ def reusable_run(env, scope, with_attempt=False):
         candidates = [run for run in candidates if str(run["id"]) == env["SOURCE_RUN"]]
     else:
         candidates = candidates[:100]
+    candidates = [source for source in candidates if source["status"] == "completed" and source["conclusion"] == "success"
+                  and (not env.get("SOURCE_ATTEMPT") or str(source["run_attempt"]) == env["SOURCE_ATTEMPT"])]
     deadline = time.monotonic() + 45
-    for source in candidates:
-        if time.monotonic() > deadline:
-            break
-        if source["status"] != "completed" or source["conclusion"] != "success":
-            continue
-        if env.get("SOURCE_ATTEMPT") and str(source["run_attempt"]) != env["SOURCE_ATTEMPT"]:
-            continue
-        try:
-            validate_source(repository, source, tree, scope)
-        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
-            diagnostic("source_proof_not_usable", source)
-            continue
-        # Do not silently fall back to an older success on a newer genuine
-        # failure, cancellation, skipped run or unresolved matching attempt.
-        for run in runs:
-            if run["id"] in followers:
-                run = same_attempt(repository, run)
-                if run["status"] != "completed" and run["id"] in pending_follower_ids(env, [run], tree):
-                    diagnostic("verified_pending_follower", run)
-                    continue
-            if newer_run_blocks(repository, run, source, tree):
-                diagnostic("newer_matching_run_blocks_reuse", run)
-                if env.get("COORDINATION_ACTIVE") == "true":
-                    raise CoordinationRefusal("newer_matching_run_blocks_reuse")
-                return ("", "") if with_attempt else ""
-        return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
+    prefetch = scope == "poc" and not env.get("SOURCE_RUN")
+    hints = source_proof_hints(repository, candidates, deadline) if prefetch else ((source, None) for source in candidates)
+    try:
+        for source, hint in hints:
+            if time.monotonic() > deadline:
+                break
+            if prefetch and (not isinstance(hint, dict) or hint.get("tree_sha") != tree or hint.get("scope") != scope):
+                diagnostic("source_proof_not_usable", source)
+                continue
+            try:
+                validate_source(repository, source, tree, scope)
+            except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
+                diagnostic("source_proof_not_usable", source)
+                continue
+            # Do not silently fall back to an older success on a newer genuine
+            # failure, cancellation, skipped run or unresolved matching attempt.
+            for run in runs:
+                if run["id"] in followers:
+                    run = same_attempt(repository, run)
+                    if run["status"] != "completed" and run["id"] in pending_follower_ids(env, [run], tree):
+                        diagnostic("verified_pending_follower", run)
+                        continue
+                if newer_run_blocks(repository, run, source, tree):
+                    diagnostic("newer_matching_run_blocks_reuse", run)
+                    if env.get("COORDINATION_ACTIVE") == "true":
+                        raise CoordinationRefusal("newer_matching_run_blocks_reuse")
+                    return ("", "") if with_attempt else ""
+            return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
+    finally:
+        hints.close()
     return ("", "") if with_attempt else ""
 
 
@@ -879,6 +965,35 @@ def record(env, scope):
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
 
 
+def identity_mismatch_diagnostic(env, pull, tested, tree, parents):
+    def field(record, *keys):
+        for key in keys:
+            if not isinstance(record, Mapping):
+                return None
+            record = record.get(key)
+        return record[:256] if isinstance(record, str) else None
+
+    details = {
+        "event_name": field(env, "GITHUB_EVENT_NAME"),
+        "repository": field(env, "GITHUB_REPOSITORY"),
+        "github_sha": field(env, "GITHUB_SHA"),
+        "checkout_sha": field({"value": tested}, "value"),
+        "checkout_tree": field({"value": tree}, "value"),
+        "checkout_parent_count": len(parents),
+        "checkout_parents": [field({"value": parent}, "value") for parent in parents[:4]],
+        "event_base_sha": field(pull, "base", "sha"),
+        "event_head_sha": field(pull, "head", "sha"),
+        "event_base_ref": field(pull, "base", "ref"),
+        "event_head_ref": field(pull, "head", "ref"),
+        "event_base_repository": field(pull, "base", "repo", "full_name"),
+        "event_head_repository": field(pull, "head", "repo", "full_name"),
+    }
+    try:
+        print("CI identity mismatch: " + json.dumps(details, ensure_ascii=True, sort_keys=True), file=sys.stderr)
+    except (OSError, ValueError):
+        pass
+
+
 def record_coordination_identity(env):
     scope = requested_scope(env)
     tested = command("git", "rev-parse", "HEAD")
@@ -900,6 +1015,7 @@ def record_coordination_identity(env):
         if (pull["head"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"] or pull["base"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"]
                 or parents != [pull["base"]["sha"], pull["head"]["sha"]]
                 or not (pull["base"]["ref"] == "dev" or (pull["base"]["ref"] == "uat" and pull["head"]["ref"] == "dev"))):
+            identity_mismatch_diagnostic(env, pull, tested, tree, parents)
             raise CoordinationRefusal("preflight_original_pr_merge_mismatch")
         proof.update(head_sha=parents[1], base_sha=parents[0], base_ref=pull["base"]["ref"], pull_number=str(pull["number"]))
     Path("ci-coordination-identity").mkdir(exist_ok=True)

@@ -21,7 +21,6 @@ use Tests\Support\PrimaryReservationFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
-    config(['app.staff_ledger_view_signed_off' => true]);
     $this->staff = User::factory()->withTwoFactor()->create();
     app(ConfigureStaffAccess::class)->handle($this->staff->id, true, 'Ledger assignment.', (string) Str::uuid(), ['treasury']);
 

@@ -205,7 +205,7 @@ describe('drawPassCard', () => {
         imageFails = true;
 
         await expect(drawPassCard(investorCard())).rejects.toThrow(
-            'Could not load /images/rozine-wordmark-white.png.',
+            'Could not load /images/rozine-lockup-white.png.',
         );
     });
 
@@ -217,7 +217,7 @@ describe('drawPassCard', () => {
         );
     });
 
-    it('continues when the wing tile has no drawing context', async () => {
+    it('continues when the watermark tile has no drawing context', async () => {
         contextQueue = [makeContext(), makeContext(), null];
 
         await expect(drawPassCard(investorCard())).resolves.toBeInstanceOf(
@@ -225,7 +225,7 @@ describe('drawPassCard', () => {
         );
     });
 
-    it('continues when the wing tile cannot create a repeating pattern', async () => {
+    it('continues when the watermark tile cannot create a repeating pattern', async () => {
         const main = makeContext({ pattern: false });
 
         contextQueue = [main];

@@ -9,7 +9,7 @@ import {
 import { downloadPassCard } from '@/lib/pass-card-image';
 import type { PassCardSpec } from '@/lib/pass-card-image';
 
-const WING = '/images/rozine-wing-white.png';
+const STAR = '/images/rozine-star-white.png';
 
 const TONES = {
     investor: {
@@ -61,13 +61,13 @@ export function PassCard({
                  */}
                 <div
                     className="absolute -top-[30%] -left-[30%] h-[160%] w-[160%] rotate-[-30deg] bg-[size:calc(36*var(--rz-pass-u))_calc(20*var(--rz-pass-u))] bg-repeat opacity-[0.11]"
-                    style={{ backgroundImage: `url(${WING})` }}
+                    style={{ backgroundImage: `url(${STAR})` }}
                 />
                 <div className="absolute top-[calc(-140*var(--rz-pass-u))] right-[calc(-140*var(--rz-pass-u))] h-[calc(460*var(--rz-pass-u))] w-[calc(460*var(--rz-pass-u))] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.2),transparent)]" />
                 <div className="relative flex h-full flex-col px-[calc(56*var(--rz-pass-u))] py-[calc(52*var(--rz-pass-u))]">
                     <div className="flex items-start justify-between gap-[calc(18*var(--rz-pass-u))]">
                         <img
-                            src="/images/rozine-wordmark-white.png"
+                            src="/images/rozine-lockup-white.png"
                             alt="rozine"
                             className="block h-[calc(63*var(--rz-pass-u))] w-auto"
                         />

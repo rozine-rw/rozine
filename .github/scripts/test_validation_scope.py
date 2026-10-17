@@ -834,6 +834,59 @@ class MergeIdentityTests(unittest.TestCase):
             with self.subTest(matching=matching), patch.object(policy, "command", side_effect=command), patch.object(policy, "api", side_effect=api), patch.object(policy, "workflow_history", return_value=[self.run, self.source]), patch.object(policy, "validate_source"), patch.object(policy, "run_jobs", return_value=self.jobs):
                 self.assertEqual(policy.reusable_run(env, "poc", with_attempt=True), ("", "") if matching else ("99", "2"))
 
+    def test_preflight_mismatch_diagnostics_are_bounded_public_and_keep_the_refusal(self):
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            root = Path(directory)
+            pull = {"number": 326,
+                    "head": {"sha": "e" * 40, "ref": "feature\n::error::" + "x" * 2000,
+                             "repo": {"full_name": self.repository}},
+                    "base": {"sha": "c" * 40, "ref": "dev", "repo": {"full_name": self.repository}},
+                    "body": "PRIVATE_BODY_MUST_NOT_BE_LOGGED"}
+            event = root / "event.json"
+            event.write_text(json.dumps({"pull_request": pull, "token": "PRIVATE_EVENT_MUST_NOT_BE_LOGGED"}))
+            env = {"GITHUB_EVENT_NAME": "pull_request", "PR_BASE": "dev", "PR_HEAD_REPOSITORY": self.repository,
+                   "GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": "b" * 40,
+                   "GITHUB_RUN_ID": "LOCAL_MODELED_NOT_CI", "GITHUB_RUN_ATTEMPT": "0",
+                   "GITHUB_EVENT_PATH": str(event), "GITHUB_OUTPUT": str(root / "output"),
+                   "GH_TOKEN": "PRIVATE_TOKEN_MUST_NOT_BE_LOGGED"}
+
+            def command(*args):
+                if args == ("git", "rev-parse", "HEAD"): return "b" * 40
+                if args == ("git", "rev-parse", "HEAD^{tree}"): return "f" * 40
+                if args == ("git", "cat-file", "-p", "HEAD"):
+                    return "tree " + "f" * 40 + "\nparent " + "d" * 40 + "\nparent " + "e" * 40 + "\n\nmerge"
+                raise AssertionError(args)
+
+            output = io.StringIO()
+            with patch.object(policy, "command", side_effect=command), patch.dict(os.environ, env), contextlib.redirect_stderr(output):
+                with self.assertRaises(policy.CoordinationRefusal) as refusal:
+                    policy.record_coordination_identity(os.environ)
+            self.assertEqual(str(refusal.exception), "preflight_original_pr_merge_mismatch")
+            lines = output.getvalue().splitlines()
+            self.assertEqual(len(lines), 1)
+            self.assertLess(len(lines[0]), 8192)
+            details = json.loads(lines[0].removeprefix("CI identity mismatch: "))
+            self.assertEqual(details["checkout_parents"], ["d" * 40, "e" * 40])
+            self.assertEqual(details["event_base_sha"], "c" * 40)
+            self.assertEqual(details["event_head_sha"], "e" * 40)
+            self.assertEqual(details["repository"], self.repository)
+            self.assertEqual(len(details["event_head_ref"]), 256)
+            self.assertNotIn("PRIVATE_", lines[0])
+            self.assertFalse((root / "ci-coordination-identity").exists())
+
+            broken = io.StringIO()
+            broken.close()
+            with patch.object(policy, "command", side_effect=command), contextlib.redirect_stderr(broken):
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "^preflight_original_pr_merge_mismatch$"):
+                    policy.record_coordination_identity(env)
+
+            pull["base"]["sha"] = "d" * 40
+            event.write_text(json.dumps({"pull_request": pull}))
+            with patch.object(policy, "command", side_effect=command), patch.object(policy, "identity_mismatch_diagnostic") as diagnostic:
+                policy.record_coordination_identity(env)
+                diagnostic.assert_not_called()
+            self.assertTrue((root / "ci-coordination-identity/coordination-identity.json").exists())
+
     def test_writer_records_actual_shallow_merge_and_rejects_event_or_checkout_mismatch(self):
         script = str(Path(policy.__file__).resolve())
         with tempfile.TemporaryDirectory() as directory:
@@ -1137,10 +1190,11 @@ class CanonicalCoordinationTests(unittest.TestCase):
         if "/git/commits/" in endpoint: return self.commits[endpoint.rsplit("/", 1)[-1]]
         if "/pulls/" in endpoint:
             return {"base": {"ref": "dev" if endpoint.endswith("/10") else "uat"}, "head": {"sha": "a" * 40 if endpoint.endswith("/10") else "d" * 40, "ref": "feature" if endpoint.endswith("/10") else "dev", "repo": {"full_name": self.repository}}}
-        if endpoint == f"repos/{self.repository}/actions/artifacts?per_page=100":
+        if endpoint.startswith(f"repos/{self.repository}/actions/artifacts?per_page=100"):
             artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "workflow_run": {"id": number}}
                          for number in self.artifacts for index, prefix in enumerate(self.artifacts[number])]
-            return {"total_count": len(artifacts), "artifacts": artifacts}
+            page = int(endpoint.split("&page=", 1)[1]) if "&page=" in endpoint else 1
+            return {"total_count": len(artifacts), "artifacts": artifacts[(page - 1) * 100:page * 100]}
         if "/artifacts?" in endpoint:
             number = int(endpoint.split("/runs/")[1].split("/")[0])
             artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "expired": False} for index, prefix in enumerate(self.artifacts[number])]
@@ -1609,38 +1663,44 @@ class CanonicalCoordinationTests(unittest.TestCase):
             self.artifacts = copy.deepcopy(original)
 
     def test_artifact_index_requires_complete_stable_unique_run_bound_inventory(self):
-        artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
-        first = {"total_count": 2, "artifacts": [artifact]}
-        second = {"id": 2, "name": "unrelated", "workflow_run": {"id": 100}}
+        artifacts = [{"id": n, "name": "ci-coordination-identity-200-1" if n == 1 else f"unrelated-{n}", "workflow_run": {"id": 200}} for n in range(1, 102)]
         for scenario in ["complete", "missing page", "changed count", "duplicate id", "duplicate identity", "invalid name"]:
-            responses = [copy.deepcopy(first), {"total_count": 2, "artifacts": [copy.deepcopy(second)]}]
-            if scenario == "missing page": responses.pop()
-            if scenario == "changed count": responses[-1]["total_count"] = 3
-            if scenario == "duplicate id": responses[-1]["artifacts"][0]["id"] = 1
-            if scenario == "duplicate identity": responses[-1]["artifacts"][0]["name"] = artifact["name"]
-            if scenario == "invalid name": responses[-1]["artifacts"][0]["name"] = []
-            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=first), patch.object(policy, "pages", return_value=responses), patch.object(policy.time, "sleep"):
+            first = {"total_count": 101, "artifacts": copy.deepcopy(artifacts[:100])}
+            second = {"total_count": 101, "artifacts": copy.deepcopy(artifacts[100:])}
+            if scenario == "missing page": second["artifacts"] = []
+            if scenario == "changed count": second["total_count"] = 102
+            if scenario == "duplicate id": second["artifacts"][0]["id"] = 1
+            if scenario == "duplicate identity": second["artifacts"][0]["name"] = artifacts[0]["name"]
+            if scenario == "invalid name": second["artifacts"][0]["name"] = []
+            def api(endpoint, **kwargs):
+                return second if "&page=2" in endpoint else first
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"):
                 if scenario == "complete":
-                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifacts[0]["name"]: 200})
                 else:
                     with self.assertRaises(policy.CoordinationRefusal): policy.coordination_artifact_index(self.repository)
 
     def test_artifact_index_restarts_complete_read_after_concurrent_publication(self):
         old = [{"id": n, "name": f"ci-coordination-identity-{n}-1", "workflow_run": {"id": n}} for n in range(1, 3406)]
         new = [{"id": 3406, "name": "ci-coordination-identity-3406-1", "workflow_run": {"id": 3406}}, *old]
-        def responses(items):
-            return [{"total_count": len(items), "artifacts": items[n:n + 100]} for n in range(0, len(items), 100)]
         for scenario in ["upload after first read", "upload between pages", "overlapping page IDs"]:
-            unstable = responses(new)
-            if scenario != "upload after first read": unstable[0] = responses(old)[0]
-            if scenario == "overlapping page IDs":
-                unstable[-1]["artifacts"].pop()
-                for page in unstable: page["total_count"] = len(old)
-            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=[responses(old)[0], responses(new)[0]]) as api, patch.object(policy, "pages", side_effect=[unstable, responses(new)]) as pages, patch.object(policy.time, "sleep"):
-                result = policy.coordination_artifact_index(self.repository)
-                self.assertEqual(result, {artifact["name"]: artifact["workflow_run"]["id"] for artifact in new})
-                self.assertEqual(api.call_count, 2)
-                self.assertEqual(pages.call_count, 2)
+            base_reads = []
+            def api(endpoint, **kwargs):
+                if "&page=" not in endpoint:
+                    base_reads.append(endpoint)
+                    items = old if len(base_reads) == 1 else new
+                    return {"total_count": len(items), "artifacts": items[:100]}
+                page = int(endpoint.rsplit("=", 1)[-1])
+                items = new if len(base_reads) > 1 or scenario == "upload after first read" else old
+                response = {"total_count": len(items), "artifacts": copy.deepcopy(items[(page - 1) * 100:page * 100])}
+                if len(base_reads) == 1 and scenario == "upload between pages" and page == 2:
+                    response["total_count"] += 1
+                if len(base_reads) == 1 and scenario == "overlapping page IDs" and page == 2:
+                    response["artifacts"][0] = old[0]
+                return response
+            with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"):
+                self.assertEqual(policy.coordination_artifact_index(self.repository), {a["name"]: a["workflow_run"]["id"] for a in new})
+                self.assertEqual(len(base_reads), 3)  # unstable snapshot, retry, fresh anchor
 
     def test_stable_single_page_inventory_needs_no_retry_or_pagination(self):
         artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
@@ -1667,22 +1727,30 @@ class CanonicalCoordinationTests(unittest.TestCase):
     def test_artifact_index_persistent_instability_is_bounded_and_cannot_claim_ownership(self):
         first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
         inventory_reads = []
-        def pages(endpoint, **kwargs):
+        def api(endpoint, **kwargs):
             if endpoint.endswith("actions/artifacts?per_page=100"):
                 inventory_reads.append(endpoint)
-                return [first]
-            return self.pages(endpoint, **kwargs)
-        with self.server(), patch.object(policy, "api", side_effect=lambda endpoint, **kwargs: first if endpoint.endswith("actions/artifacts?per_page=100") else self.api(endpoint, **kwargs)), patch.object(policy, "pages", side_effect=pages), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
+                return first
+            return self.api(endpoint, **kwargs)
+        with self.server(), patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
             policy.canonical_selection(self.env())
         self.assertEqual(len(inventory_reads), 3)
         self.assertNotIn("ci-coordination-decision", self.artifacts[200])
 
     def test_artifact_index_uses_one_deadline_for_both_native_commands(self):
-        first = {"total_count": 2, "artifacts": [{"id": 1, "name": "unrelated"}]}
-        last = {"total_count": 2, "artifacts": [{"id": 2, "name": "unrelated"}]}
-        with patch.object(policy.time, "monotonic", side_effect=[0, 0, 20, 46]), patch.object(policy.subprocess, "check_output", side_effect=[json.dumps(first), json.dumps([first, last])]) as command, self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
+        artifacts = [{"id": n, "name": "unrelated"} for n in range(101)]
+        first = {"total_count": 101, "artifacts": artifacts[:100]}
+        last = {"total_count": 101, "artifacts": artifacts[100:]}
+        clock = [0]
+        def command(*args, **kwargs):
+            if "&page=2" in args[0][-1]:
+                clock[0] = 46
+                return json.dumps(last)
+            clock[0] = 20
+            return json.dumps(first)
+        with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy.subprocess, "check_output", side_effect=command) as calls, self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
             policy.coordination_artifact_index(self.repository)
-        self.assertEqual([call.kwargs["timeout"] for call in command.call_args_list], [45, 25])
+        self.assertEqual([call.kwargs["timeout"] for call in calls.call_args_list], [45, 25])
 
     def test_artifact_index_hard_failures_are_not_retried(self):
         artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
@@ -1914,6 +1982,187 @@ class CanonicalCoordinationTests(unittest.TestCase):
         self.assertEqual(budget.measure(jobs), (60, 20, 80))
         jobs[-1]["completed_at"] = "2026-10-07T09:09:40Z"
         with self.assertRaises(ValueError): policy.validate_completed_budget(jobs, reused=True)
+
+
+    def test_matching_prefetched_hint_still_needs_fresh_source_validation(self):
+        with self.server(), patch.object(policy, "validate_source", side_effect=ValueError("source changed after hint")) as fresh:
+            self.assertEqual(policy.canonical_selection(self.env())["mode"], "execute")
+        fresh.assert_called_once_with(self.repository, self.runs[100], self.tree, "poc")
+
+    def test_pinned_and_full_source_reads_do_not_prefetch(self):
+        for scope, extra in [("poc", {"SOURCE_RUN": "100", "SOURCE_ATTEMPT": "1"}), ("full", {})]:
+            with self.subTest(scope=scope), self.server(), patch.object(policy, "source_proof_hints") as hints:
+                self.assertEqual(policy.reusable_run(self.env(**extra), scope), "100" if scope == "poc" else "")
+                hints.assert_not_called()
+
+    def test_parallel_inventory_reanchors_all_metadata_even_when_count_and_ids_are_unchanged(self):
+        artifacts = [{"id": n, "name": f"ci-coordination-identity-{n}-1", "workflow_run": {"id": n}} for n in range(101)]
+        base_reads = []
+        def api(endpoint, **kwargs):
+            if "&page=" in endpoint:
+                return {"total_count": 101, "artifacts": copy.deepcopy(artifacts[100:])}
+            base_reads.append(endpoint)
+            first = copy.deepcopy(artifacts[:100])
+            if len(base_reads) % 2 == 0:
+                first[0]["workflow_run"]["id"] = 999
+            return {"total_count": 101, "artifacts": first}
+        with patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "inventory_incomplete_or_changed"):
+            policy.coordination_artifact_index(self.repository)
+        self.assertEqual(len(base_reads), 6)
+
+    def test_parallel_inventory_covers_49_pages_with_at_most_four_readers(self):
+        artifacts = [{"id": n, "name": f"ci-coordination-identity-{n}-1", "workflow_run": {"id": n}} for n in range(4828)]
+        barrier, lock = threading.Barrier(4), threading.Lock()
+        active, peak, pages = [0], [0], []
+        def api(endpoint, **kwargs):
+            if "&page=" not in endpoint:
+                return {"total_count": len(artifacts), "artifacts": artifacts[:100]}
+            page = int(endpoint.rsplit("=", 1)[-1])
+            with lock:
+                active[0] += 1
+                peak[0] = max(peak[0], active[0])
+                pages.append(page)
+            try:
+                if page <= 5: barrier.wait(timeout=3)
+                return {"total_count": len(artifacts), "artifacts": artifacts[(page - 1) * 100:page * 100]}
+            finally:
+                with lock: active[0] -= 1
+        with patch.object(policy, "api", side_effect=api) as calls:
+            result = policy.coordination_artifact_index(self.repository)
+        self.assertEqual(result, {a["name"]: a["workflow_run"]["id"] for a in artifacts})
+        self.assertEqual(sorted(pages), list(range(2, 50)))
+        self.assertEqual((peak[0], active[0], calls.call_count), (4, 0, 50))
+
+
+    def test_matching_hint_never_bypasses_the_newer_failed_run_guard(self):
+        self.runs[202] = dict(self.runs[100], id=202, conclusion="failure")
+        with self.server(), patch.object(policy, "validate_source") as fresh, patch.object(policy, "newer_run_blocks", side_effect=lambda repository, run, source, tree: run["id"] == 202) as newer, self.assertRaisesRegex(policy.CoordinationRefusal, "^newer_matching_run_blocks_reuse$"):
+            policy.reusable_run(self.env(), "poc")
+        fresh.assert_called_once_with(self.repository, self.runs[100], self.tree, "poc")
+        self.assertTrue(any(call.args[1]["id"] == 202 for call in newer.call_args_list))
+
+    def test_inventory_keeps_an_expired_real_parent_deadline_a_hard_refusal(self):
+        token = policy._follower_read_deadline.set(99)
+        try:
+            with patch.object(policy.time, "monotonic", return_value=100), patch.object(policy, "api") as api, self.assertRaisesRegex(policy.CoordinationRefusal, "^follower_decision_publication_timeout$"):
+                policy.coordination_artifact_index(self.repository)
+            api.assert_not_called()
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+
+class SourceProofHintTests(unittest.TestCase):
+    def test_positive_source_cannot_return_after_cleanup_expires_real_parent(self):
+        clock = [0]
+        class SlowCleanupExecutor(policy.ThreadPoolExecutor):
+            def shutdown(self, wait=True, *, cancel_futures=False):
+                super().shutdown(wait=wait, cancel_futures=cancel_futures)
+                clock[0] = 31
+        runs = [{"id": n, "status": "completed", "conclusion": "success", "run_attempt": 1,
+                 "created_at": "2026-10-17T00:00:00Z"} for n in range(4)]
+        env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "c" * 40, "GITHUB_RUN_ID": "999"}
+        token = policy._follower_read_deadline.set(30)
+        try:
+            with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy, "ThreadPoolExecutor", SlowCleanupExecutor), patch.object(policy, "command", side_effect=lambda *args: "d" * 40 if args[-1] == "HEAD^{tree}" else "c" * 40), patch.object(policy, "api", return_value={"id": 7}), patch.object(policy, "workflow_history", return_value=runs), patch.object(policy, "trusted_run", return_value=True), patch.object(policy, "pending_follower_ids", return_value=set()), patch.object(policy, "download_evidence", return_value={"tree_sha": "d" * 40, "scope": "poc"}), patch.object(policy, "newer_run_blocks", return_value=False), patch.object(policy, "validate_source") as fresh, self.assertRaisesRegex(policy.CoordinationRefusal, "^follower_decision_publication_timeout$"):
+                policy.reusable_run(env, "poc")
+            fresh.assert_called_once()
+            self.assertEqual(policy._follower_read_deadline.get(), 30)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+    def test_original_hundred_run_window_is_not_widened_when_failures_are_filtered(self):
+        repository = "rozine-rw/rozine"
+        runs = [{"id": n, "status": "completed", "conclusion": "failure" if n == 10 else "success", "run_attempt": 1,
+                 "workflow_id": 7, "path": ".github/workflows/tests.yml", "head_repository": {"full_name": repository},
+                 "event": "push", "created_at": "2026-10-17T00:00:00Z"} for n in range(105)]
+        seen = []
+        def hints(repository, candidates, deadline):
+            seen.extend(source["id"] for source in candidates)
+            return ((source, {"tree_sha": "e" * 40, "scope": "poc"}) for source in candidates)
+        env = {"GITHUB_REPOSITORY": repository, "GITHUB_SHA": "c" * 40, "GITHUB_RUN_ID": "999"}
+        with patch.object(policy, "command", side_effect=lambda *args: "d" * 40 if args[-1] == "HEAD^{tree}" else "c" * 40), patch.object(policy, "api", return_value={"id": 7}), patch.object(policy, "workflow_history", return_value=runs), patch.object(policy, "source_proof_hints", side_effect=hints), patch.object(policy, "validate_source") as fresh:
+            self.assertEqual(policy.reusable_run(env, "poc"), "")
+        self.assertEqual(seen, [n for n in range(104, 4, -1) if n != 10])
+        fresh.assert_not_called()
+
+    def test_four_bounded_readers_preserve_candidate_order_despite_completion_order(self):
+        barrier, lock = threading.Barrier(4), threading.Lock()
+        active, peak = [0], [0]
+        candidates = [{"id": n} for n in range(12)]
+        def download(repository, run):
+            with lock:
+                active[0] += 1
+                peak[0] = max(peak[0], active[0])
+            try:
+                if run["id"] < 4: barrier.wait(timeout=3)
+                return {"run_id": str(run["id"])}
+            finally:
+                with lock: active[0] -= 1
+        with patch.object(policy, "download_evidence", side_effect=download):
+            result = list(policy.source_proof_hints("repo", candidates, policy.time.monotonic() + 5))
+        self.assertEqual([source["id"] for source, _ in result], list(range(12)))
+        self.assertEqual([proof["run_id"] for _, proof in result], list(map(str, range(12))))
+        self.assertEqual((peak[0], active[0]), (4, 0))
+
+    def test_hint_errors_are_only_unusable_positives_and_do_not_leak_context(self):
+        errors = [OSError("offline"), subprocess.TimeoutExpired("gh", 1), ValueError("malformed"), KeyError("missing"), TypeError("bad"), AttributeError("bad")]
+        def download(repository, run):
+            if run["id"] < len(errors): raise errors[run["id"]]
+            return {"run_id": "valid hint"}
+        with patch.object(policy, "download_evidence", side_effect=download):
+            result = list(policy.source_proof_hints("repo", [{"id": n} for n in range(7)], policy.time.monotonic() + 5))
+        self.assertEqual([hint for _, hint in result], [None] * 6 + [{"run_id": "valid hint"}])
+        self.assertIsNone(policy._follower_read_deadline.get())
+
+    def test_shorter_parent_deadline_is_inherited_per_worker_and_reset_in_caller(self):
+        parent = policy.time.monotonic() + 4
+        caps, lock = [], threading.Lock()
+        def download(repository, run):
+            with lock: caps.append(policy._follower_read_deadline.get())
+            return {"run_id": str(run["id"])}
+        token = policy._follower_read_deadline.set(parent)
+        try:
+            with patch.object(policy, "download_evidence", side_effect=download):
+                self.assertEqual(len(list(policy.source_proof_hints("repo", [{"id": n} for n in range(8)], parent + 10))), 8)
+            self.assertEqual(caps, [parent] * 8)
+            self.assertEqual(policy._follower_read_deadline.get(), parent)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+    def test_expired_real_parent_deadline_cannot_become_execute_fallback(self):
+        token = policy._follower_read_deadline.set(99)
+        try:
+            with patch.object(policy.time, "monotonic", return_value=100), patch.object(policy, "download_evidence", return_value={}), self.assertRaisesRegex(policy.CoordinationRefusal, "^follower_decision_publication_timeout$"):
+                list(policy.source_proof_hints("repo", [{"id": 1}], 145))
+            self.assertEqual(policy._follower_read_deadline.get(), 99)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+    def test_shared_lookup_cap_bounds_native_command_and_rejects_late_success(self):
+        clock, timeouts = [0], []
+        def command(*args, **kwargs):
+            timeouts.append(kwargs["timeout"])
+            clock[0] = 46
+            return "{}"
+        def download(repository, run):
+            return json.loads(policy.command("gh", "api", "positive-proof"))
+        with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy.subprocess, "check_output", side_effect=command), patch.object(policy, "download_evidence", side_effect=download):
+            self.assertEqual(list(policy.source_proof_hints("repo", [{"id": 1}], 45)), [])
+        self.assertEqual(timeouts, [45])
+        self.assertIsNone(policy._follower_read_deadline.get())
+
+    def test_early_consumer_close_stops_prefetch_and_joins_all_started_readers(self):
+        calls, lock = [], threading.Lock()
+        def download(repository, run):
+            with lock: calls.append(run["id"])
+            return {"run_id": str(run["id"])}
+        with patch.object(policy, "download_evidence", side_effect=download):
+            hints = policy.source_proof_hints("repo", [{"id": n} for n in range(100)], policy.time.monotonic() + 5)
+            self.assertEqual(next(hints)[0]["id"], 0)
+            hints.close()
+            stopped = len(calls)
+        self.assertLessEqual(stopped, 4)
+        self.assertEqual(len(calls), stopped)
 
 
 class WorkflowQueueCompatibilityTests(unittest.TestCase):

@@ -186,7 +186,14 @@ describe('Pulse primitive components', () => {
         expect(screen.getByText('RWF')).toBeInTheDocument();
         expect(screen.getByText('6MO')).toBeInTheDocument();
         expect(screen.getByText('Saved')).toBeInTheDocument();
-        expect(screen.getAllByAltText('rozine')).toHaveLength(2);
+        expect(
+            screen
+                .getAllByAltText('rozine')
+                .map((image) => image.getAttribute('src')),
+        ).toEqual([
+            '/images/rozine-lockup-blue.png',
+            '/images/rozine-lockup-white.png',
+        ]);
     });
 });
 
