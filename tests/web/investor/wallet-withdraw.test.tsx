@@ -37,7 +37,7 @@ afterEach(() => {
 describe('Wallet withdrawals (LED-R04)', () => {
     it('quotes a withdrawal to a verified account and records it, paying nothing out yet', async () => {
         vi.useFakeTimers();
-        render(<InvestorWallet {...wallet()} />);
+        const { rerender } = render(<InvestorWallet {...wallet()} />);
 
         const panel = screen.getByRole('form', { name: 'Withdraw' });
 
@@ -57,7 +57,10 @@ describe('Wallet withdrawals (LED-R04)', () => {
         fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
             target: { value: '40,000' },
         });
-        act(() => vi.advanceTimersByTime(300));
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm withdrawal' }),
+        ).toBeDisabled();
+        void act(() => vi.advanceTimersByTime(300));
         expect(inertia.reload).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 only: ['funding'],
@@ -66,15 +69,19 @@ describe('Wallet withdrawals (LED-R04)', () => {
         );
 
         const reload = inertia.reload.mock.lastCall?.[0] as {
-            onStart: () => void;
+            onSuccess: (page: { props: C3InvestorWalletProps }) => void;
             onFinish: () => void;
         };
 
-        act(() => reload.onStart());
-        expect(
-            within(panel).getByRole('button', { name: 'Confirm withdrawal' }),
-        ).toBeDisabled();
-        act(() => reload.onFinish());
+        const quoted = wallet();
+
+        quoted.funding.withdrawal!.quote!.amount.amount = '40000';
+        quoted.funding.withdrawal!.quote!.received.amount = '40000';
+        rerender(<InvestorWallet {...quoted} />);
+        act(() => {
+            reload.onSuccess({ props: quoted });
+            reload.onFinish();
+        });
         fireEvent.click(within(panel).getByRole('radio', { name: /Airtel/u }));
 
         inertia.queue.push(
@@ -221,7 +228,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
             '/preview/investor-wallet-withdrawal-receipt',
         );
 
-        act(() => vi.advanceTimersByTime(POLL_INTERVAL_MS));
+        void act(() => vi.advanceTimersByTime(POLL_INTERVAL_MS));
         expect(inertia.reload).toHaveBeenLastCalledWith({
             only: ['wallet', 'deposits', 'withdrawals', 'history'],
         });

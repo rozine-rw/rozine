@@ -71,7 +71,7 @@ jobs:
         run: python3 .github/scripts/select-validation-scope.py record-coordination-identity
       - name: Publish immutable POC coordination identity
         if: ${{ steps.identity.outputs.coordinate == 'true' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ci-coordination-identity-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-coordination-identity
@@ -116,7 +116,7 @@ jobs:
         run: python3 .github/scripts/select-validation-scope.py
       - name: Publish canonical validation decision
         if: ${{ needs.identity.outputs.coordinate == 'true' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: ci-coordination-decision-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-coordination-decision
@@ -127,7 +127,7 @@ jobs:
         run: python3 .github/scripts/select-validation-scope.py record-merge-identity
       - name: Publish immutable PR merge identity
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: pr-merge-identity-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-merge-identity
@@ -178,7 +178,7 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.5'
           tools: composer:v2
@@ -186,7 +186,7 @@ jobs:
           coverage: xdebug
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.15.0'
           cache: npm
@@ -229,7 +229,7 @@ jobs:
 
       - name: Upload shard evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: php-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: coverage/php/shard-${{ matrix.shard }}
@@ -290,7 +290,7 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer:v2
@@ -298,7 +298,7 @@ jobs:
           coverage: none
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.15.0'
           cache: npm
@@ -368,7 +368,7 @@ jobs:
 
       - name: Upload PHP coverage evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: php-coverage-${{ matrix.php-version }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: coverage/php
@@ -390,7 +390,7 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Setup PHP for Wayfinder generation
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.5'
           tools: composer:v2
@@ -411,7 +411,7 @@ jobs:
           php artisan key:generate
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.15.0'
           cache: npm
@@ -466,7 +466,7 @@ jobs:
 
       - name: Upload client coverage evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: client-coverage-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -514,7 +514,7 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           # D-73 makes 8.5 the canonical runtime; the race evidence is recorded
           # on the version that is actually deployed.
@@ -526,7 +526,7 @@ jobs:
           coverage: none
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.15.0'
           cache: npm
@@ -579,7 +579,7 @@ jobs:
 
       - name: Upload PostgreSQL concurrency evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pgsql-concurrency-${{ github.run_id }}-${{ github.run_attempt }}
           path: coverage/pgsql
@@ -628,7 +628,7 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.5'
           tools: composer:v2
@@ -726,7 +726,7 @@ jobs:
               head_sha: $head_sha, tested_sha: $tested_sha, tree_sha: $tree_sha,
               run_id: $run_id, run_attempt: $run_attempt}' > ci-evidence/tested-tree.json
       - name: Save the successful PR tree for dev integration
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: tested-pr-tree-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-evidence/tested-tree.json
@@ -771,7 +771,7 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.5'
           tools: composer:v2
@@ -779,7 +779,7 @@ jobs:
           coverage: none
 
       - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24.15.0'
           cache: npm
@@ -858,14 +858,14 @@ jobs:
         PGDATABASE: postgres
       run: psql -X -v ON_ERROR_STOP=1 -f .github/scripts/prepare-test-databases.sql
     - name: Setup PHP
-      uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
       with:
         php-version: '8.5'
         tools: composer:v2
         extensions: pdo_pgsql, pgsql, pcntl, posix
         coverage: none
     - name: Setup Node
-      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
       with:
         node-version: 24.15.0
         cache: npm
@@ -907,7 +907,7 @@ jobs:
     - name: Prove scoped selection and evidence reuse fail closed
       run: python3 -B -m unittest discover -s .github/scripts -p 'test_validation_scope.py' -v
     - name: Upload explicitly partial POC test evidence
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: poc-php-${{ github.run_id }}-${{ github.run_attempt }}
         path: coverage/poc
@@ -918,7 +918,7 @@ jobs:
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
     - name: Publish POC validation tree
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
         path: ci-evidence/tested-tree.json
@@ -946,7 +946,7 @@ jobs:
         persist-credentials: false
         ref: ${{ github.sha }}
     - name: Setup PHP for Wayfinder generation
-      uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
       with:
         php-version: '8.5'
         tools: composer:v2
@@ -965,7 +965,7 @@ jobs:
 
         '
     - name: Setup Node
-      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
       with:
         node-version: 24.15.0
         cache: npm
@@ -984,7 +984,7 @@ jobs:
     - name: Run explicit POC client safety catalog without coverage claims
       run: python3 .github/scripts/run-poc-tests.py web
     - name: Upload explicitly partial POC test evidence
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: poc-web-${{ github.run_id }}-${{ github.run_attempt }}
         path: coverage/poc
@@ -1018,7 +1018,7 @@ jobs:
         SCOPE: ${{ needs.plan.outputs.scope }}
       run: python3 .github/scripts/select-validation-scope.py record "$SCOPE"
     - name: Upload scope-bound full release evidence
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: validation-tree-${{ github.run_id }}-${{ github.run_attempt }}
         path: ci-evidence/tested-tree.json
@@ -1079,7 +1079,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: python3 .github/scripts/select-validation-scope.py record-reuse
       - name: Publish POC reuse receipt
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: poc-reuse-${{ github.run_id }}-${{ github.run_attempt }}
           path: ci-evidence/tested-tree.json

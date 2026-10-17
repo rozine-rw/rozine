@@ -516,11 +516,16 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
 }: WithdrawPanelProps<Name>) {
     const { t } = useTranslation();
     const terms = funding.withdrawal;
-    const quote = terms?.quote ?? null;
-    const [amount, setAmountState] = useState(quote?.amount.amount ?? '');
+    const [acceptedQuote, setAcceptedQuote] = useState(terms?.quote ?? null);
+    const [amount, setAmountState] = useState(
+        terms?.quote?.amount.amount ?? '',
+    );
+    const quote = acceptedQuote === terms?.quote ? acceptedQuote : null;
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
     const timer = useRef<number | undefined>(undefined);
+    const quoteGeneration = useRef(0);
+    const cancelQuote = useRef<(() => void) | null>(null);
     const command = useC3Command<Name>({
         actions: { [name]: action } as Partial<Record<Name, RouteAction>>,
         lookup: operation,
@@ -536,7 +541,14 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
         ],
     });
 
-    useEffect(() => () => window.clearTimeout(timer.current), []);
+    useEffect(
+        () => () => {
+            quoteGeneration.current += 1;
+            window.clearTimeout(timer.current);
+            cancelQuote.current?.();
+        },
+        [],
+    );
 
     const header = !wide && (
         <div className="flex items-center justify-between">
@@ -584,16 +596,74 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     }
 
     const setAmount = (raw: string) => {
-        const digits = raw.replace(/[^0-9]/gu, '');
+        const digits = raw.replace(/[^0-9]/gu, '').replace(/^0+(?=\d)/u, '');
+        const generation = ++quoteGeneration.current;
 
         setAmountState(digits);
+        setAcceptedQuote(null);
+        setPricing(digits !== '');
         window.clearTimeout(timer.current);
+        cancelQuote.current?.();
+        cancelQuote.current = null;
+
+        if (digits === '') {
+            return;
+        }
+
         timer.current = window.setTimeout(() => {
+            let active = true;
+            const reject = () => {
+                active = false;
+
+                if (generation === quoteGeneration.current) {
+                    setAcceptedQuote(null);
+                }
+            };
+
             router.reload({
                 only: ['funding'],
                 data: { kind: 'withdraw', amount: digits },
-                onStart: () => setPricing(true),
-                onFinish: () => setPricing(false),
+                onCancelToken: (token) => {
+                    if (!active || generation !== quoteGeneration.current) {
+                        token.cancel();
+
+                        return;
+                    }
+
+                    cancelQuote.current = () => token.cancel();
+                },
+                onSuccess: (page) => {
+                    if (!active || generation !== quoteGeneration.current) {
+                        return;
+                    }
+
+                    const nextFunding = page.props.funding as
+                        | C3InvestorWalletProps['funding']
+                        | undefined;
+                    const nextQuote = nextFunding?.withdrawal?.quote;
+
+                    if (
+                        nextFunding?.kind === 'withdraw' &&
+                        nextQuote?.amount?.currency === 'RWF' &&
+                        nextQuote.amount.amount === digits &&
+                        nextQuote.charge?.currency === 'RWF' &&
+                        nextQuote.received?.currency === 'RWF'
+                    ) {
+                        setAcceptedQuote(nextQuote);
+                    }
+                },
+                onError: reject,
+                onCancel: reject,
+                onHttpException: reject,
+                onNetworkError: reject,
+                onFinish: () => {
+                    active = false;
+
+                    if (generation === quoteGeneration.current) {
+                        cancelQuote.current = null;
+                        setPricing(false);
+                    }
+                },
             });
         }, FUNDING_DEBOUNCE_MS);
     };
@@ -601,6 +671,8 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     const refusal = quote?.refusal ?? null;
     const ready =
         quote !== null &&
+        quote.amount.currency === 'RWF' &&
+        quote.amount.amount === amount &&
         refusal === null &&
         amount !== '' &&
         method !== '' &&
@@ -610,10 +682,15 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+
+        if (!ready || quote === null) {
+            return;
+        }
+
         command.send(name, {
             ...payload,
             identity_context_revision: identityRevision,
-            amount: { currency: 'RWF', amount },
+            amount: quote.amount,
             method_id: method,
         });
     };
@@ -675,7 +752,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                         {t('investor.wallet.c3.provider_charge')}
                     </dt>
                     <dd className="text-xs font-semibold text-rz-ink">
-                        {formatRwf(quote?.charge ?? terms.charge)}
+                        {quote === null ? '—' : formatRwf(quote.charge)}
                     </dd>
                 </div>
                 <div className="flex justify-between gap-2.5 py-[9px]">
