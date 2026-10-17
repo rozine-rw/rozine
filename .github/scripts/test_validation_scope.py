@@ -834,6 +834,59 @@ class MergeIdentityTests(unittest.TestCase):
             with self.subTest(matching=matching), patch.object(policy, "command", side_effect=command), patch.object(policy, "api", side_effect=api), patch.object(policy, "workflow_history", return_value=[self.run, self.source]), patch.object(policy, "validate_source"), patch.object(policy, "run_jobs", return_value=self.jobs):
                 self.assertEqual(policy.reusable_run(env, "poc", with_attempt=True), ("", "") if matching else ("99", "2"))
 
+    def test_preflight_mismatch_diagnostics_are_bounded_public_and_keep_the_refusal(self):
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            root = Path(directory)
+            pull = {"number": 326,
+                    "head": {"sha": "e" * 40, "ref": "feature\n::error::" + "x" * 2000,
+                             "repo": {"full_name": self.repository}},
+                    "base": {"sha": "c" * 40, "ref": "dev", "repo": {"full_name": self.repository}},
+                    "body": "PRIVATE_BODY_MUST_NOT_BE_LOGGED"}
+            event = root / "event.json"
+            event.write_text(json.dumps({"pull_request": pull, "token": "PRIVATE_EVENT_MUST_NOT_BE_LOGGED"}))
+            env = {"GITHUB_EVENT_NAME": "pull_request", "PR_BASE": "dev", "PR_HEAD_REPOSITORY": self.repository,
+                   "GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": "b" * 40,
+                   "GITHUB_RUN_ID": "LOCAL_MODELED_NOT_CI", "GITHUB_RUN_ATTEMPT": "0",
+                   "GITHUB_EVENT_PATH": str(event), "GITHUB_OUTPUT": str(root / "output"),
+                   "GH_TOKEN": "PRIVATE_TOKEN_MUST_NOT_BE_LOGGED"}
+
+            def command(*args):
+                if args == ("git", "rev-parse", "HEAD"): return "b" * 40
+                if args == ("git", "rev-parse", "HEAD^{tree}"): return "f" * 40
+                if args == ("git", "cat-file", "-p", "HEAD"):
+                    return "tree " + "f" * 40 + "\nparent " + "d" * 40 + "\nparent " + "e" * 40 + "\n\nmerge"
+                raise AssertionError(args)
+
+            output = io.StringIO()
+            with patch.object(policy, "command", side_effect=command), patch.dict(os.environ, env), contextlib.redirect_stderr(output):
+                with self.assertRaises(policy.CoordinationRefusal) as refusal:
+                    policy.record_coordination_identity(os.environ)
+            self.assertEqual(str(refusal.exception), "preflight_original_pr_merge_mismatch")
+            lines = output.getvalue().splitlines()
+            self.assertEqual(len(lines), 1)
+            self.assertLess(len(lines[0]), 8192)
+            details = json.loads(lines[0].removeprefix("CI identity mismatch: "))
+            self.assertEqual(details["checkout_parents"], ["d" * 40, "e" * 40])
+            self.assertEqual(details["event_base_sha"], "c" * 40)
+            self.assertEqual(details["event_head_sha"], "e" * 40)
+            self.assertEqual(details["repository"], self.repository)
+            self.assertEqual(len(details["event_head_ref"]), 256)
+            self.assertNotIn("PRIVATE_", lines[0])
+            self.assertFalse((root / "ci-coordination-identity").exists())
+
+            broken = io.StringIO()
+            broken.close()
+            with patch.object(policy, "command", side_effect=command), contextlib.redirect_stderr(broken):
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "^preflight_original_pr_merge_mismatch$"):
+                    policy.record_coordination_identity(env)
+
+            pull["base"]["sha"] = "d" * 40
+            event.write_text(json.dumps({"pull_request": pull}))
+            with patch.object(policy, "command", side_effect=command), patch.object(policy, "identity_mismatch_diagnostic") as diagnostic:
+                policy.record_coordination_identity(env)
+                diagnostic.assert_not_called()
+            self.assertTrue((root / "ci-coordination-identity/coordination-identity.json").exists())
+
     def test_writer_records_actual_shallow_merge_and_rejects_event_or_checkout_mismatch(self):
         script = str(Path(policy.__file__).resolve())
         with tempfile.TemporaryDirectory() as directory:

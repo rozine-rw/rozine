@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -807,6 +808,35 @@ def record(env, scope):
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
 
 
+def identity_mismatch_diagnostic(env, pull, tested, tree, parents):
+    def field(record, *keys):
+        for key in keys:
+            if not isinstance(record, Mapping):
+                return None
+            record = record.get(key)
+        return record[:256] if isinstance(record, str) else None
+
+    details = {
+        "event_name": field(env, "GITHUB_EVENT_NAME"),
+        "repository": field(env, "GITHUB_REPOSITORY"),
+        "github_sha": field(env, "GITHUB_SHA"),
+        "checkout_sha": field({"value": tested}, "value"),
+        "checkout_tree": field({"value": tree}, "value"),
+        "checkout_parent_count": len(parents),
+        "checkout_parents": [field({"value": parent}, "value") for parent in parents[:4]],
+        "event_base_sha": field(pull, "base", "sha"),
+        "event_head_sha": field(pull, "head", "sha"),
+        "event_base_ref": field(pull, "base", "ref"),
+        "event_head_ref": field(pull, "head", "ref"),
+        "event_base_repository": field(pull, "base", "repo", "full_name"),
+        "event_head_repository": field(pull, "head", "repo", "full_name"),
+    }
+    try:
+        print("CI identity mismatch: " + json.dumps(details, ensure_ascii=True, sort_keys=True), file=sys.stderr)
+    except (OSError, ValueError):
+        pass
+
+
 def record_coordination_identity(env):
     scope = requested_scope(env)
     tested = command("git", "rev-parse", "HEAD")
@@ -828,6 +858,7 @@ def record_coordination_identity(env):
         if (pull["head"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"] or pull["base"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"]
                 or parents != [pull["base"]["sha"], pull["head"]["sha"]]
                 or not (pull["base"]["ref"] == "dev" or (pull["base"]["ref"] == "uat" and pull["head"]["ref"] == "dev"))):
+            identity_mismatch_diagnostic(env, pull, tested, tree, parents)
             raise CoordinationRefusal("preflight_original_pr_merge_mismatch")
         proof.update(head_sha=parents[1], base_sha=parents[0], base_ref=pull["base"]["ref"], pull_number=str(pull["number"]))
     Path("ci-coordination-identity").mkdir(exist_ok=True)
