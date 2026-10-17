@@ -78,8 +78,7 @@
             "@test:php:coverage"
         ],
         "ci:check:php:static": [
-            "@lint:check",
-            "@types:check"
+            "python3 .github/scripts/run-php-static-checks.py"
         ],
         "ci:check:static": [
             "Composer\\Config::disableProcessTimeout",
