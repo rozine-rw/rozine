@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessDirectoryStore;
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\PrimaryFailedClosingFixture;
 use Tests\Support\PrimaryHoldingFixture;
 
 beforeEach(function (): void {
@@ -144,7 +147,8 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->where('party.restrictions', [])->where('party.actions', [])->where('party.links.close', ['url' => '/admin/businesses', 'method' => 'get']));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $expired->business_id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('party.history.0.action.label', 'Note closed unfunded at its deadline · Old raise')
+        ->assertInertia(fn (Assert $page) => $page->where('party.history.0.action.code', 'campaign.expire')
+            ->where('party.history.0.action.label', 'Note closed unfunded at its deadline · Old raise')
             ->where('party.history.0.action.tone', 'amber')->where('party.history.0.actor', 'System')
             ->where('party.list.rows.0.detail.value', 'failed'));
 
@@ -157,7 +161,59 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->where('party.history.1.actor', $this->analyst->name)->where('party.history.1.reason', 'Reviewed the RDB extract.'));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => strtolower((string) Str::ulid())]))->assertNotFound();
+
+    Sanctum::actingAs($this->analyst, ['staff:businesses:read']);
+    foreach ([[$cancelled, 'campaign.cancel', 'Note cancelled · Trucks', 'red'],
+        [$expired, 'campaign.expire', 'Note closed unfunded at its deadline · Old raise', 'amber']] as [$campaign, $code, $label, $tone]) {
+        $this->getJson('/api/v1/staff/businesses?business='.$campaign->business_id)->assertOk()
+            ->assertJsonPath('data.party.history.0.action.code', $code)
+            ->assertJsonPath('data.party.history.0.action.label', $label)
+            ->assertJsonPath('data.party.history.0.action.tone', $tone);
+    }
 });
+
+test('staff web and API history distinguish an authentic funded failure from unfunded expiry', function (string $cause): void {
+    $this->freezeSecond();
+    ['campaign' => $campaign] = PrimaryFailedClosingFixture::close($cause);
+    PrimaryHoldingFixture::flushDeferredChecks();
+    $closure = BusinessCampaignClosure::query()->sole();
+    $publication = BusinessCampaign::query()->whereKey($campaign->campaignId)->sole();
+    $entry = ['id' => $closure->id, 'at' => $closure->closed_at->utc()->toIso8601String(), 'actor' => 'System',
+        'action' => ['code' => 'campaign.failed_closing', 'label' => 'Funded note closed after failure · '.$publication->payload['title'], 'tone' => 'red'],
+        'reason' => null];
+    expect($closure->phase)->toBe('failed_closing')
+        ->and($closure->closed_at->lessThan($publication->expires_at))->toBeTrue()
+        ->and($closure->payload['closing']['cause'])->toBe($cause)
+        ->and($closure->payload['committed_refunded'])->toBe(['currency' => 'RWF', 'amount' => $campaign->principal])
+        ->and(DB::table('primary_holdings')->count())->toBe(0)
+        ->and(app(BusinessExposureStore::class)->current($campaign->businessId))->toBe([]);
+    $entries = DB::table('ledger_entries')->orderBy('id')->get()->toJson();
+    $lines = DB::table('ledger_lines')->orderBy('id')->get()->toJson();
+    $returns = DB::table('primary_campaign_closure_returns')->orderBy('primary_reservation_id')->get()->toJson();
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $campaign->businessId]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.id', $campaign->businessId)
+            ->where('party.history', function (Collection $history) use ($closure, $entry): bool {
+                expect($history->where('id', $closure->id)->values()->all())->toEqual([$entry]);
+
+                return true;
+            })
+            ->where('party.list.rows.0.detail.value', 'failed')->where('party.list.rows.0.tone', 'red'));
+    Sanctum::actingAs($this->analyst, ['staff:businesses:read']);
+    $this->getJson('/api/v1/staff/businesses?business='.$campaign->businessId)->assertOk()
+        ->assertJsonPath('data.party.id', $campaign->businessId)
+        ->assertJsonPath('data.party.history', function (array $history) use ($closure, $entry): bool {
+            expect(collect($history)->where('id', $closure->id)->values()->all())->toEqual([$entry]);
+
+            return true;
+        })
+        ->assertJsonPath('data.party.list.rows.0.detail.value', 'failed');
+
+    expect(DB::table('ledger_entries')->orderBy('id')->get()->toJson())->toBe($entries)
+        ->and(DB::table('ledger_lines')->orderBy('id')->get()->toJson())->toBe($lines)
+        ->and(DB::table('primary_campaign_closure_returns')->orderBy('primary_reservation_id')->get()->toJson())->toBe($returns)
+        ->and(BusinessCampaignClosure::query()->sole()->payload)->toBe($closure->payload);
+})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
 
 test('a funded Business counts its funded principal, its distinct Investors and its authority history', function (): void {
     // One Investor makes two purchases and another takes the rest of the raise, which funds the note.
@@ -195,4 +251,45 @@ test('a Business verified for a later moment still reads as pending its KYC', fu
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.kyc', 'pending'));
+});
+
+test('the Business directory refuses an unknown closure phase in its read projection', function (): void {
+    $this->freezeSecond();
+    $campaign = businessDirectoryNote('Rugali Freight', 'Retail', ['title' => 'Trucks'], ['live_at' => now()->subDay()]);
+    $closure = BusinessCampaignClosure::factory()->create(['business_campaign_id' => $campaign->id, 'closed_at' => now()->subHour()]);
+    $stored = DB::table('business_campaign_closures')->where('id', $closure->id)->sole();
+    $store = app(BusinessDirectoryStore::class);
+    expect(collect($store->business($campaign->business_id)['history'] ?? [])->firstWhere('id', $closure->id))
+        ->toMatchArray(['command' => 'campaign.cancel']);
+
+    $query = DB::table('business_campaign_closures')->afterQuery(
+        /**
+         * @param  Collection<int, stdClass>  $rows
+         * @return Collection<int, stdClass>
+         */
+        function (Collection $rows) use ($closure): Collection {
+            expect($rows)->toHaveCount(1)->and($rows->sole()->id)->toBe($closure->id)
+                ->and($rows->sole()->phase)->toBe('cancelled');
+            $corrupt = clone $rows->sole();
+            if (! $corrupt instanceof stdClass) {
+                throw new LogicException('Expected a standard database closure projection.');
+            }
+            $corrupt->phase = 'unexpected_phase';
+
+            return collect([$corrupt]);
+        });
+    $database = DB::getFacadeRoot();
+    $reader = Mockery::mock($database, function ($mock) use ($query): void {
+        $mock->shouldReceive('table')->once()->with('business_campaign_closures')->andReturn($query);
+    })->makePartial();
+    DB::swap($reader);
+    try {
+        expect(fn () => $store->business($campaign->business_id))->toThrow(new RuntimeException('CAMPAIGN_CLOSURE_INTEGRITY_FAILED'));
+    } finally {
+        DB::swap($database);
+    }
+
+    expect(DB::table('business_campaign_closures')->where('id', $closure->id)->sole())->toEqual($stored)
+        ->and(collect($store->business($campaign->business_id)['history'] ?? [])->firstWhere('id', $closure->id))
+        ->toMatchArray(['command' => 'campaign.cancel']);
 });

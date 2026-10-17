@@ -7,15 +7,21 @@ namespace App\Http\Controllers;
 use App\Application\Operations\ReadChanges;
 use App\Application\Wallet\FindWalletOperation;
 use App\Application\Wallet\GetInvestorWallet;
+use App\Application\Wallet\GetInvestorWalletStatement;
 use App\Application\Wallet\RecordDepositIntent;
+use App\Application\Wallet\RecordWithdrawal;
 use App\Http\Requests\Investor\DepositRequest;
 use App\Http\Requests\Investor\ShowWalletOperationRequest;
 use App\Http\Requests\Investor\ShowWalletRequest;
+use App\Http\Requests\Investor\ShowWalletStatementRequest;
+use App\Http\Requests\Investor\WithdrawRequest;
 use App\Http\Resources\InvestorWalletResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class InvestorWalletController extends Controller
 {
@@ -32,6 +38,24 @@ class InvestorWalletController extends Controller
         return $request->routeIs('api.*') ? $resource : Inertia::render('investor/wallet', $resource->resolve($request));
     }
 
+    /** The statement as a private, never-cached attachment: CSV for spreadsheets or a PDF. */
+    public function statement(ShowWalletStatementRequest $request, GetInvestorWalletStatement $action, string $format): HttpResponse
+    {
+        $context = $request->validated('identity_context_revision');
+        $from = $request->validated('from');
+        $to = $request->validated('to');
+        $document = $action->handle((int) $request->user()?->getAuthIdentifier(), $context === null ? null : (int) $context,
+            is_string($from) ? $from : null, is_string($to) ? $to : null);
+        $response = new HttpResponse($format === 'pdf' ? $document->pdf() : $document->csv(), 200, [
+            'Content-Type' => $format === 'pdf' ? 'application/pdf' : 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition('attachment', 'rozine-wallet-statement.'.$format));
+
+        return $response;
+    }
+
     public function deposit(DepositRequest $request, RecordDepositIntent $action): OperationResource
     {
         $result = $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
@@ -41,20 +65,31 @@ class InvestorWalletController extends Controller
         return $this->present($request, $result);
     }
 
+    public function withdraw(WithdrawRequest $request, RecordWithdrawal $action): OperationResource
+    {
+        $result = $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+            (string) $request->validated('request_id'), ['currency' => (string) $request->validated('amount.currency'), 'amount' => (string) $request->validated('amount.amount')],
+            (string) $request->validated('method_id'));
+
+        return $this->present($request, $result, 'wallet.withdraw');
+    }
+
     public function operation(ShowWalletOperationRequest $request, FindWalletOperation $action): OperationResource
     {
+        $command = (string) $request->validated('command');
+
         return $this->present($request, $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
-            (string) $request->validated('command'), (string) $request->route('request_id')));
+            $command, (string) $request->route('request_id')), $command);
     }
 
     /**
-     * The recorded result, unchanged, beside a freshly authorized projection of the intent it
-     * recorded: `current` may carry the separate credit receipt; `next` is null because the page
-     * reloads its own facts.
+     * The recorded result, unchanged, beside a freshly authorized projection of the deposit intent or
+     * withdrawal it recorded: `current` may carry the separate credit, payout or return receipt;
+     * `next` is null because the page reloads its own facts.
      *
      * @param  array<string, mixed>  $result
      */
-    private function present(Request $request, array $result): OperationResource
+    private function present(Request $request, array $result, string $command = 'wallet.deposit'): OperationResource
     {
         $receipt = $result['data']['receipt'] ?? null;
         $current = null;
@@ -62,10 +97,10 @@ class InvestorWalletController extends Controller
         if ($result['status'] === 'completed') {
             $context = $request->integer('identity_context_revision');
             $page = (new InvestorWalletResource($this->commandsFor($request, $this->wallet->handle((int) $request->user()?->getAuthIdentifier(), $context,
-                ['receipt' => (string) $result['data']['intent_id']]))))->resolve($request);
+                ['receipt' => (string) ($result['data']['intent_id'] ?? $result['data']['withdrawal_id'])]))))->resolve($request);
             $current = $page['receipt'];
             $allowed = $page['allowed_actions'];
-            $receipt = [...$receipt, 'link' => InvestorWalletResource::lookup($request, $context, $receipt['request_id'])];
+            $receipt = [...$receipt, 'link' => InvestorWalletResource::lookup($request, $context, $receipt['request_id'], $command)];
         }
 
         return new OperationResource([...$result, 'data' => ['receipt' => $receipt, 'current' => $current, 'next' => null], 'allowed_actions' => $allowed]);

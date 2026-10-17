@@ -108,7 +108,10 @@ describe('Profile', () => {
         expect(screen.getByText('· Verifying')).toBeInTheDocument();
 
         await user.click(screen.getAllByRole('button', { name: 'Unlink' })[0]);
-        expect(inertia.posts[0].url).toBe('/preview/investor-profile-linked');
+        expect(inertia.posts[0]).toEqual({
+            url: '/preview/investor-profile-linked',
+            data: { request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u) },
+        });
 
         await user.click(
             screen.getByRole('button', { name: '+ Link a new account' }),
@@ -132,7 +135,7 @@ describe('Profile', () => {
         await user.click(
             within(form).getByRole('radio', { name: 'Bank account' }),
         );
-        await user.selectOptions(within(form).getByLabelText('BANK'), 'EQUITY');
+        await user.selectOptions(within(form).getByLabelText('BANK'), 'equity');
         await user.type(
             within(form).getByLabelText('ACCOUNT NUMBER'),
             '40-01 2345678',
@@ -149,8 +152,9 @@ describe('Profile', () => {
             data: {
                 type: 'bank',
                 network: 'airtel',
-                bank: 'EQUITY',
+                bank: 'equity',
                 number: '40012345678',
+                request_id: expect.stringMatching(/^[0-9a-f-]{36}$/u),
             },
         });
         expect(
@@ -459,9 +463,7 @@ describe('Profile', () => {
         expect(
             screen.getByRole('link', { name: /Change password/u }),
         ).toHaveAttribute('href', '/preview/investor-profile-security');
-        expect(screen.queryByText(/Login alerts/u)).not.toBeInTheDocument();
         expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
-        expect(screen.queryByRole('switch')).not.toBeInTheDocument();
         unmount();
 
         const off = profile(securityFixture);
@@ -473,9 +475,44 @@ describe('Profile', () => {
         ).toHaveTextContent('Off · add an authenticator app code at sign-in');
     });
 
+    it('switches the login alert e-mail off and on', async () => {
+        const user = userEvent.setup();
+        const { unmount } = render(
+            <InvestorProfile {...profile(securityFixture)} />,
+        );
+
+        expect(
+            screen.getByText('Email me on new device sign-in'),
+        ).toBeInTheDocument();
+        await user.click(screen.getByRole('switch', { name: 'Login alerts' }));
+        expect(inertia.posts).toEqual([
+            {
+                url: '/preview/investor-profile-security',
+                data: { enabled: '0' },
+            },
+        ]);
+        expect(inertia.forms).toContainEqual({
+            action: '/preview/investor-profile-security',
+            method: 'put',
+        });
+        unmount();
+
+        const off = profile(securityFixture);
+
+        off.security.login_alerts = false;
+        render(<InvestorProfile {...off} />);
+        expect(
+            screen.getByRole('switch', { name: 'Login alerts' }),
+        ).not.toBeChecked();
+        await user.click(screen.getByRole('switch', { name: 'Login alerts' }));
+        expect(inertia.posts[1]).toEqual({
+            url: '/preview/investor-profile-security',
+            data: { enabled: '1' },
+        });
+    });
+
     it.each([
         [planFixture, 'Rozine Plus', 'Rozine Plus is not open yet'],
-        [helpFixture, 'Help center', 'Coming to the app soon'],
         [termsFixture, 'Terms & Conditions', 'Coming to the app soon'],
         [privacyFixture, 'Privacy Note', 'Coming to the app soon'],
     ])(
@@ -491,4 +528,186 @@ describe('Profile', () => {
             expect(screen.queryByRole('button')).not.toBeInTheDocument();
         },
     );
+
+    it('opens a Help center answer in full, and messages support from it', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorProfile {...profile(helpFixture)} />);
+
+        expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(9);
+        expect(screen.getByText('4 answers')).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Academy|points|referral/iu),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: /What is the Rozine rating\?/u,
+            }),
+        );
+        let sheet = screen.getByRole('dialog', {
+            name: 'What is the Rozine rating?',
+        });
+
+        expect(
+            within(sheet).getByText('Risk & how businesses are vetted'),
+        ).toBeInTheDocument();
+        expect(sheet).toHaveTextContent(
+            'Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0)',
+        );
+        expect(sheet).toHaveTextContent('Last updated 15 October 2026');
+
+        await user.click(within(sheet).getByRole('button', { name: 'Close' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', { name: /Where is my money held\?/u }),
+        );
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: /Will a sale be guaranteed\?/u,
+            }),
+        );
+        sheet = screen.getByRole('dialog', {
+            name: 'Will a sale be guaranteed?',
+        });
+        await user.click(
+            within(sheet).getByRole('button', { name: 'Message support' }),
+        );
+
+        expect(
+            screen.queryByRole('dialog', {
+                name: 'Will a sale be guaranteed?',
+            }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Rozine Support' }),
+            ).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the Help center answers, with the support chat over real complaints', async () => {
+        const user = userEvent.setup();
+
+        inertia.succeed = true;
+        render(<InvestorProfile {...profile(helpFixture)} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Help center' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('Coming to the app soon'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Getting started' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /CMP-00000001/u }),
+        ).toHaveTextContent('Answered');
+        expect(
+            screen.getByRole('button', { name: /CMP-00000002/u }),
+        ).toHaveTextContent('Resolved');
+
+        /* The floating button opens the complaint not yet resolved, and a reply goes to it. */
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        let chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
+        expect(
+            within(chat).getByText(/We are checking it with the provider/u),
+        ).toBeInTheDocument();
+        expect(
+            within(chat).getByText(
+                'You can take a complaint to the Capital Market Authority at any stage.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'Any news?',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.posts).toHaveLength(1);
+        expect(inertia.posts[0].url).toBe('/preview/investor-profile-help');
+        expect(inertia.posts[0].data).toMatchObject({ body: 'Any news?' });
+        expect(String(inertia.posts[0].data.request_id)).toMatch(
+            /^[0-9a-f-]{36}$/u,
+        );
+        expect(within(chat).getByLabelText('Your message')).toHaveValue('');
+
+        /* A resolved complaint takes nothing more; a new message starts a new one, then follows it. */
+        await user.click(within(chat).getByRole('button', { name: 'Close' }));
+        await user.click(screen.getByRole('button', { name: /CMP-00000002/u }));
+        chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText('This complaint is resolved.'),
+        ).toBeInTheDocument();
+        expect(within(chat).getByText(/^Resolution ·/u)).toBeInTheDocument();
+        await user.click(
+            within(chat).getByRole('button', { name: 'New message' }),
+        );
+        expect(
+            within(chat).getByText(/Your message opens a complaint/u),
+        ).toBeInTheDocument();
+        await user.type(
+            within(chat).getByLabelText('Your message'),
+            'Something else.',
+        );
+        await user.click(within(chat).getByRole('button', { name: 'Send' }));
+        expect(inertia.posts[1].url).toBe('/preview/investor-profile-help');
+        expect(
+            within(chat).getByText('Reference CMP-00000001'),
+        ).toBeInTheDocument();
+
+        /* The scrim closes the panel too. */
+        await user.click(screen.getByTestId('support-scrim'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        /* Escape closes it, and focus returns to the button that opened it. */
+        const opener = screen.getByRole('button', {
+            name: 'Contact Rozine Support',
+        });
+        await user.click(opener);
+        expect(
+            screen.getByRole('dialog', { name: 'Rozine Support' }),
+        ).toHaveFocus();
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('opens a fresh conversation when nothing is open, and shows a refusal on the message', async () => {
+        const user = userEvent.setup();
+        const page = profile(helpFixture);
+
+        page.support.complaints = [];
+        inertia.errors = { body: 'Tell us what happened.' };
+        render(<InvestorProfile {...page} />);
+
+        expect(screen.queryByText('Your complaints')).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Contact Rozine Support' }),
+        );
+        const chat = screen.getByRole('dialog', { name: 'Rozine Support' });
+
+        expect(
+            within(chat).getByText(
+                'We acknowledge within 4 hours and resolve within 48',
+            ),
+        ).toBeInTheDocument();
+        expect(within(chat).getByRole('alert')).toHaveTextContent(
+            'Tell us what happened.',
+        );
+        expect(within(chat).getByLabelText('Your message')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+    });
 });

@@ -19,7 +19,7 @@ export const FORM_PRIMARY =
 
 /** The design's note field (L1419): white, 12px radius, 13.5px at 1.5. */
 export const NOTE_FIELD =
-    'w-full resize-none rounded-xl border border-rz-border bg-rz-surface px-[13px] py-3 text-[13.5px] leading-[1.5] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border';
+    'w-full resize-none rounded-xl border border-rz-border bg-rz-surface px-[13px] py-3 text-[13.5px] leading-[1.5] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border';
 
 /** A sheet form field's label: 10px capitals (design L1419). */
 export const SHEET_LABEL =
@@ -49,6 +49,7 @@ export function ChoiceChips<Code extends string>({
             <div
                 role="radiogroup"
                 aria-label={legend}
+                aria-describedby={errorId}
                 className="mt-[7px] flex flex-wrap gap-[7px]"
             >
                 {choices.map((choice) => {

@@ -501,7 +501,9 @@ export function useSealFlow({
                 placeholder={t('auditor.seal.note_placeholder')}
                 aria-invalid={center.errors.note ? true : undefined}
                 aria-describedby={
-                    unsaved ? 'auditor-seal-note-unsaved' : undefined
+                    unsaved
+                        ? 'auditor-seal-note-error auditor-seal-note-unsaved'
+                        : 'auditor-seal-note-error'
                 }
                 className={cn(NOTE_FIELD, 'mt-2 min-h-[84px]')}
             />

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Disbursement;
 
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -19,9 +20,11 @@ use App\Application\Disbursement\VerifiedPayoutEvent;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\VerifyAuthenticator;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Domain\Disbursement\DisbursementReason;
 use App\Domain\Disbursement\DisbursementState;
 use App\Domain\Disbursement\DisbursementViolation;
@@ -30,6 +33,7 @@ use App\Domain\Disbursement\IssueSchedule;
 use App\Domain\Disbursement\PayoutOutcome;
 use App\Domain\Disbursement\Reconciliation;
 use App\Domain\Disbursement\StaffIndependence;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\Disbursement;
@@ -79,7 +83,8 @@ final class EloquentDisbursementStore implements DisbursementStore
     public function __construct(private FundedCampaigns $funding, private PayoutDestinations $destinations, private StaffConnections $connections,
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
         private VerifyAuthenticator $authenticator, private Repository $config, private EnvironmentIsolation $isolation,
-        private IdentityAccessStore $identities) {}
+        private IdentityAccessStore $identities, private FundedPurchaseChanges $purchases, private PartyNotices $notices,
+        private BusinessNoticeAudience $audience) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -303,6 +308,7 @@ final class EloquentDisbursementStore implements DisbursementStore
                 return;
             }
             (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => $sent ? 'sent' : 'unsent', 'created_at' => now('UTC')])->save();
+            $this->purchases->record($disbursement->business_campaign_id);
             $state = $this->state($disbursement);
             if ($state->state === 'queued') {
                 $this->appendEvent($disbursement, $state->revision + 1, 'dispatched', null, null, null, ['sent' => $sent, 'intent_id' => $intent->id]);
@@ -409,6 +415,13 @@ final class EloquentDisbursementStore implements DisbursementStore
             $this->funding->issue($campaign, new IssueInstruction($closingId, $disbursement->id, $intent->operation_id, $effectiveAt,
                 $schedule->effectiveDate, $schedule->dueDates, $recordedAt->toIso8601String()));
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
+            // The Business is told the funds reached its verified account (BRS v2.0 NTF-R01); a
+            // synthetic payout's business has no profile and tells nobody.
+            $party = $this->audience->findEntityParty($disbursement->business_id);
+            $party === null || $this->notices->record($party, PartyNoticeKind::BusinessDisbursementSent, [
+                'title' => (string) $disbursement->payload['title'], 'amount' => $disbursement->amount, 'currency' => 'RWF',
+                'account' => $this->maskedDestination($disbursement), 'reference' => $closingId, 'business_id' => $disbursement->business_id,
+                'campaign_id' => $disbursement->business_campaign_id], 'business-disbursement-sent:'.$disbursement->id);
 
             return 'matched_success';
         }
@@ -523,6 +536,7 @@ final class EloquentDisbursementStore implements DisbursementStore
         (new DisbursementDispatch)->forceFill(['intent_id' => $intent->id, 'phase' => 'queued', 'created_at' => now('UTC')])->save();
         $event = $this->appendEvent($disbursement, $state->revision + 1, 'intent_recorded', $userId, $operationId, $requestId,
             ['reason' => $reason, 'intent_id' => $intent->id, 'recheck' => ['state' => 'passed', 'policy_version' => $recheck->policyVersion]]);
+        $this->purchases->record($disbursement->business_campaign_id);
         $intentId = $intent->id;
         DB::afterCommit(function () use ($intentId): void {
             try {
@@ -646,8 +660,9 @@ final class EloquentDisbursementStore implements DisbursementStore
      *
      * Lock order: this transaction-scoped advisory lock is the LEAF lock of every observation
      * path. It is taken after the disbursement and intent rows (and, for requery, after the
-     * Business and staff locks), and nothing is locked after it: the holder only reads events and
-     * inserts one. A waiter therefore never holds anything the holder needs, so it adds no cycle.
+     * Business and staff locks), and nothing is locked after it but the change feed's per-subject
+     * leaf: the holder only reads events, inserts one and, for an applied one, records the funded
+     * purchases' changes. A waiter therefore never holds anything the holder needs, so it adds no cycle.
      */
     private function lockProviderEventIdentity(string $provider, string $eventId): void
     {
@@ -682,6 +697,9 @@ final class EloquentDisbursementStore implements DisbursementStore
             'observed_at' => $event->observedAt, 'effective_at' => $event->effectiveAt, 'disposition' => $outcome->disposition,
             'mismatches' => $outcome->disposition === 'unverifiable' ? $mismatches : [], 'evidence' => $event->evidence, 'created_at' => now('UTC')]);
         $record->save();
+        if ($outcome->disposition === 'applied') {
+            $this->purchases->record(Disbursement::query()->findOrFail($intent->disbursement_id)->business_campaign_id);
+        }
 
         return $outcome->disposition;
     }

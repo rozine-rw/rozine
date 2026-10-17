@@ -186,7 +186,14 @@ describe('Pulse primitive components', () => {
         expect(screen.getByText('RWF')).toBeInTheDocument();
         expect(screen.getByText('6MO')).toBeInTheDocument();
         expect(screen.getByText('Saved')).toBeInTheDocument();
-        expect(screen.getAllByAltText('rozine')).toHaveLength(2);
+        expect(
+            screen
+                .getAllByAltText('rozine')
+                .map((image) => image.getAttribute('src')),
+        ).toEqual([
+            '/images/rozine-lockup-blue.png',
+            '/images/rozine-lockup-white.png',
+        ]);
     });
 });
 
@@ -321,6 +328,10 @@ describe('Pulse signup controls', () => {
             </SignupFields>,
         );
 
+        expect(screen.getByPlaceholderText('Name')).toHaveAccessibleName();
+        expect(
+            screen.getByRole('textbox', { name: 'Phone number' }),
+        ).toBeInTheDocument();
         await user.type(screen.getByPlaceholderText('Name'), ' A');
         await user.selectOptions(screen.getByLabelText('Province'), 'Kigali');
         await user.selectOptions(screen.getByLabelText('District'), 'Kicukiro');
@@ -368,6 +379,8 @@ describe('Pulse signup controls', () => {
         );
 
         const contact = screen.getByPlaceholderText('you@email.com');
+
+        expect(contact).toHaveAccessibleName('Email address');
 
         expect(contact).not.toHaveAttribute('aria-invalid');
         expect(screen.getByLabelText('District')).toHaveDisplayValue(

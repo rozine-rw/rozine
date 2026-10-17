@@ -51,8 +51,9 @@
     --rz-slate: #3a465e;
     --rz-body: #69748a;
     --rz-secondary: #5b6578;
-    --rz-muted: #8a94a8;
+    --rz-muted: #647087;
     --rz-faint: #9aa3b5;
+    --rz-placeholder: #687286;
     --rz-group: #aab4c6;
 
     /* Lines */
@@ -66,12 +67,12 @@
     --rz-investor-tint: rgba(30, 58, 255, 0.14);
     --rz-investor-glow: rgba(30, 58, 255, 0.55);
     --rz-business: #1d9e75;
-    --rz-business-text: #1d9e75;
+    --rz-business-text: #177e5d;
     --rz-business-strong: #17795a;
     --rz-business-tint: rgba(29, 158, 117, 0.14);
     --rz-business-glow: rgba(29, 158, 117, 0.5);
     --rz-auditor: #c2661f;
-    --rz-auditor-text: #c2661f;
+    --rz-auditor-text: #ac5a1b;
     --rz-auditor-strong: #7d420f;
     --rz-auditor-tint: rgba(194, 102, 31, 0.14);
     --rz-auditor-glow: rgba(194, 102, 31, 0.5);
@@ -139,7 +140,8 @@
     --rz-body: #93a1bd;
     --rz-secondary: #a3afc6;
     --rz-muted: #7c89a5;
-    --rz-faint: #6b7a99;
+    --rz-faint: #7785a1;
+    --rz-placeholder: #7785a1;
     --rz-group: #5d6b87;
 
     --rz-hairline: rgba(255, 255, 255, 0.08);
@@ -219,6 +221,7 @@
     --color-rz-secondary: var(--rz-secondary);
     --color-rz-muted: var(--rz-muted);
     --color-rz-faint: var(--rz-faint);
+    --color-rz-placeholder: var(--rz-placeholder);
     --color-rz-group: var(--rz-group);
     --color-rz-hairline: var(--rz-hairline);
     --color-rz-divider: var(--rz-divider);
@@ -497,5 +500,37 @@
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+/*
+ * WCAG 2.2 SC 2.4.7: whatever has keyboard focus always shows it. Many fields drop the browser's own
+ * outline for a softer border; this ring, in the audience's accent, comes back for keyboard focus and
+ * stays outside any layer so no utility can remove it.
+ */
+:focus-visible {
+    outline: 2px solid var(--rz-accent-fill, var(--rz-admin-fill));
+    outline-offset: 2px;
+}
+
+/* A modal dialog takes focus itself when it opens; the dialog is not a control to ring. */
+[role='dialog'][tabindex='-1']:focus-visible,
+[role='alertdialog'][tabindex='-1']:focus-visible {
+    outline: none;
+}
+
+/*
+ * WCAG 2.2 SC 2.3.3: a person who asks their system for reduced motion gets none of the app's
+ * entrances, spinners, pulses or transitions. Every page loads this stylesheet through app.css, so
+ * the rule also covers the Pulse and Auditor keyframes.
+ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }

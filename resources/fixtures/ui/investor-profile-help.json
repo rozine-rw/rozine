@@ -19,7 +19,12 @@
             "address": null
         },
         "security": {
-            "two_factor": false
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/investor-profile-security",
+                "method": "put"
+            }
         },
         "linked": {
             "accounts": [
@@ -48,24 +53,85 @@
             ],
             "banks": [
                 {
-                    "code": "BK",
+                    "code": "bk",
                     "name": "Bank of Kigali"
                 },
                 {
-                    "code": "EQUITY",
+                    "code": "equity",
                     "name": "Equity Bank Rwanda"
                 },
                 {
-                    "code": "IM",
+                    "code": "im",
                     "name": "I&M Bank Rwanda"
                 },
                 {
-                    "code": "BPR",
+                    "code": "bpr",
                     "name": "BPR Bank Rwanda"
                 }
             ]
         },
         "statements": null,
+        "support": {
+            "open": {
+                "url": "/preview/investor-profile-help",
+                "method": "post"
+            },
+            "complaints": [
+                {
+                    "id": "01k7a0c0000000000000000001",
+                    "reference": "CMP-00000001",
+                    "status": "answered",
+                    "opened_at": "2026-10-14T08:00:00+02:00",
+                    "acknowledge_by": "2026-10-14T12:00:00+02:00",
+                    "resolve_by": "2026-10-16T08:00:00+02:00",
+                    "messages": [
+                        {
+                            "id": "01k7a0c0000000000000000101",
+                            "author": "customer",
+                            "body": "My withdrawal to MTN MoMo has not arrived.",
+                            "resolves": false,
+                            "at": "2026-10-14T08:00:00+02:00"
+                        },
+                        {
+                            "id": "01k7a0c0000000000000000102",
+                            "author": "staff",
+                            "body": "Thank you. We are checking it with the provider and will update you here.",
+                            "resolves": false,
+                            "at": "2026-10-14T09:10:00+02:00"
+                        }
+                    ],
+                    "reply": {
+                        "url": "/preview/investor-profile-help",
+                        "method": "post"
+                    }
+                },
+                {
+                    "id": "01k7a0c0000000000000000002",
+                    "reference": "CMP-00000002",
+                    "status": "resolved",
+                    "opened_at": "2026-10-01T10:00:00+02:00",
+                    "acknowledge_by": "2026-10-01T14:00:00+02:00",
+                    "resolve_by": "2026-10-03T10:00:00+02:00",
+                    "messages": [
+                        {
+                            "id": "01k7a0c0000000000000000201",
+                            "author": "customer",
+                            "body": "A statement month is missing.",
+                            "resolves": false,
+                            "at": "2026-10-01T10:00:00+02:00"
+                        },
+                        {
+                            "id": "01k7a0c0000000000000000202",
+                            "author": "staff",
+                            "body": "The September statement is now available under Statements & tax.",
+                            "resolves": true,
+                            "at": "2026-10-01T11:30:00+02:00"
+                        }
+                    ],
+                    "reply": null
+                }
+            ]
+        },
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -92,7 +158,7 @@
                 "method": "get"
             },
             "notifications": {
-                "url": "/preview/investor-deals",
+                "url": "/preview/investor-notices",
                 "method": "get"
             },
             "launcher": {

@@ -94,6 +94,14 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                     {entry.posted_by.reason !== null &&
                         ` · ${t('admin.trail.reason', { reason: entry.posted_by.reason })}`}
                 </p>
+                <p className={cn('mt-1 text-[12px]', EXPLAIN)}>
+                    {entry.origin === null
+                        ? t('admin.ledger.origin_none')
+                        : t('admin.ledger.origin', {
+                              actor: entry.origin.actor,
+                              at: formatTimestamp(entry.origin.at),
+                          })}
+                </p>
 
                 <h3 className="mt-5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
                     {t('admin.ledger.postings')}

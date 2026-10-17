@@ -75,9 +75,9 @@ export function BusinessHero({
                     {business.name.trim().charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <p className="truncate text-[17px] leading-[1.2] font-bold tracking-[-.2px] text-white">
+                    <h1 className="truncate text-[17px] leading-[1.2] font-bold tracking-[-.2px] text-white">
                         {business.name}
-                    </p>
+                    </h1>
                     {business.company_code !== null && (
                         <p className="mt-[3px] truncate text-xs text-white">
                             {t('business.home.company_code', {

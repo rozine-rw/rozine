@@ -62,7 +62,8 @@ it('renders the empty portfolio in the live-minimal shape, with real routes and 
             ['key' => 'matured', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=matured', 'method' => 'get']],
             ['key' => 'secondary', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=secondary', 'method' => 'get']],
             ['key' => 'saved', 'active' => false, 'link' => ['url' => '/investor/portfolio?tab=saved', 'method' => 'get']]])
-        ->and($props['links'])->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
+        ->and($props['links']['changes']['url'])->toStartWith('/changes?topics=purchase%2Cwallet&after=')
+        ->and(array_diff_key($props['links'], ['changes' => true]))->toBe(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'market' => ['url' => '/investor/market', 'method' => 'get'], 'cart' => ['url' => '/investor/cart', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
             'notifications' => null, 'launcher' => ['url' => '/dashboard', 'method' => 'get']])

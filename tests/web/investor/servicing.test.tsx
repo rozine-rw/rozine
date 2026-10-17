@@ -205,7 +205,7 @@ describe('A servicing holding (investor-servicing-v1)', () => {
 
         expect(fees).toHaveTextContent('Your share, all linesRWF 568');
         expect(fees).toHaveTextContent(
-            'Late fees are paid to you only if and when the business pays them. Rozine does not guarantee them. Disclosure late-fee-disclosure-draft-0.',
+            'Late charges and penalty fees are accrued daily upon default and are payable to note holders only as and when collected from the borrower. Rozine does not guarantee or advance late fee recoveries. Disclosure late-fee-disclosure-draft-0.',
         );
 
         const exit = region('Exit options');

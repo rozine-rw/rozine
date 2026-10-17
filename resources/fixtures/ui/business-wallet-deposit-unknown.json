@@ -5,7 +5,10 @@
         "contract_version": "business-servicing-v1",
         "identity_context_revision": 4,
         "server_time": "2026-12-01T09:00:00+02:00",
-        "allowed_actions": ["business.wallet.deposit"],
+        "allowed_actions": [
+            "business.wallet.deposit",
+            "business.wallet.withdraw"
+        ],
         "business": {
             "id": "01k6r4m2n6p8q0r2s4t6v8b1z2",
             "name": "GreenLeaf Agro"
@@ -21,6 +24,10 @@
             "pending_deposits": {
                 "currency": "RWF",
                 "amount": "1000000"
+            },
+            "pending_withdrawals": {
+                "currency": "RWF",
+                "amount": "0"
             }
         },
         "funding": {
@@ -40,6 +47,22 @@
                     "currency": "RWF",
                     "amount": "5000000"
                 }
+            },
+            "withdrawal": {
+                "version": "LED-R04/2026-10",
+                "minimum": {
+                    "currency": "RWF",
+                    "amount": "1000"
+                },
+                "maximum": {
+                    "currency": "RWF",
+                    "amount": "2000000"
+                },
+                "charge": {
+                    "currency": "RWF",
+                    "amount": "0"
+                },
+                "quote": null
             },
             "methods": [
                 {
@@ -174,6 +197,7 @@
                 }
             }
         ],
+        "withdrawals": [],
         "history": {
             "movement": "external",
             "filters": [
@@ -278,8 +302,16 @@
                 "url": "/preview/business-wallet-deposit",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/preview/business-wallet-withdraw",
+                "method": "get"
+            },
             "operation": {
                 "url": "/preview/business-wallet-operation-{request_id}",
+                "method": "get"
+            },
+            "withdrawal_operation": {
+                "url": "/preview/business-wallet-withdraw-operation-{request_id}",
                 "method": "get"
             },
             "repayments": {
@@ -290,6 +322,10 @@
         "actions": {
             "deposit": {
                 "url": "/preview/business-wallet-deposit-pending",
+                "method": "post"
+            },
+            "withdraw": {
+                "url": "/preview/business-wallet-withdraw-pending",
                 "method": "post"
             }
         }

@@ -1,6 +1,4 @@
 import en from '@/lib/i18n/catalogs/en';
-import fr from '@/lib/i18n/catalogs/fr';
-import rw from '@/lib/i18n/catalogs/rw';
 import { pseudoCatalog } from '@/lib/i18n/pseudo';
 import type { Catalog, Locale } from '@/lib/i18n/types';
 
@@ -11,12 +9,25 @@ export const PSEUDO_LOCALE: Locale = 'en-XA';
 
 export const LOCALES: readonly Locale[] = ['en', 'fr', 'rw', PSEUDO_LOCALE];
 
-const CATALOGS: Record<Locale, () => Catalog> = {
-    en: () => en as Catalog,
-    fr: () => fr,
-    rw: () => rw,
-    [PSEUDO_LOCALE]: () => pseudoCatalog(en as Catalog),
+/**
+ * French and Kinyarwanda are fetched only for a page rendered in them, so an English page does not
+ * download two other catalogs (about two thirds of the shell script) before it can respond.
+ */
+const LOADERS: Partial<Record<Locale, () => Promise<{ default: Catalog }>>> = {
+    fr: () => import('@/lib/i18n/catalogs/fr'),
+    rw: () => import('@/lib/i18n/catalogs/rw'),
 };
+
+const loaded: Partial<Record<Locale, Catalog>> = {};
+
+/** Fetches a locale's catalog once; English and the pseudo locale are always at hand. */
+export async function loadCatalog(locale: Locale): Promise<void> {
+    const load = LOADERS[locale];
+
+    if (load !== undefined && loaded[locale] === undefined) {
+        loaded[locale] = (await load()).default;
+    }
+}
 
 export function isLocale(value: string): value is Locale {
     return (LOCALES as readonly string[]).includes(value);
@@ -43,8 +54,16 @@ export function resolveLocale(requested: string | null | undefined): Locale {
     return isLocale(base) ? base : DEFAULT_LOCALE;
 }
 
+/**
+ * The catalog for a locale. One not yet fetched with `loadCatalog` (or whose fetch failed) reads as
+ * English, which is also what each missing message falls back to.
+ */
 export function catalogFor(locale: Locale): Catalog {
-    return CATALOGS[locale]();
+    if (locale === PSEUDO_LOCALE) {
+        return pseudoCatalog(en as Catalog);
+    }
+
+    return loaded[locale] ?? (en as Catalog);
 }
 
 export type {

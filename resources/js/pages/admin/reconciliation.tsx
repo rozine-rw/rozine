@@ -183,15 +183,17 @@ function BreakRow({
                 </span>
             </span>
             <div role="cell" className="flex justify-end">
-                <Link
-                    href={item.link}
-                    aria-label={t('admin.reconciliation.open_named', {
-                        reference: item.reference,
-                    })}
-                    className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
-                >
-                    {t('admin.disbursements.action.open')}
-                </Link>
+                {item.link !== null && (
+                    <Link
+                        href={item.link}
+                        aria-label={t('admin.reconciliation.open_named', {
+                            reference: item.reference,
+                        })}
+                        className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
+                    >
+                        {t('admin.disbursements.action.open')}
+                    </Link>
+                )}
             </div>
         </div>
     );

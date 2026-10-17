@@ -50,4 +50,11 @@ interface SyntheticWalletFixtures
      * @return array{intent_id: string, message: array<string, string>}
      */
     public function event(string $requestId, string $state, ?string $eventId, ?string $amount): array;
+
+    /**
+     * A signed synthetic provider outcome for the withdrawal recorded under this request id.
+     *
+     * @return array{withdrawal_id: string, message: array<string, string>}
+     */
+    public function withdrawalEvent(string $requestId, string $state, ?string $eventId, ?string $amount): array;
 }

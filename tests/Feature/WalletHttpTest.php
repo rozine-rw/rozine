@@ -49,21 +49,27 @@ it('renders the live wallet with real routes, the literal lookup token and nothi
 
     expect($response->headers->get('Cache-Control'))->toContain('no-store')->toContain('private')
         ->and($props['contract_version'])->toBe('investor-primary-v1')->and($props['identity_context_revision'])->toBe(1)
-        ->and($props['allowed_actions'])->toBe(['wallet.deposit'])->and($props)->not->toHaveKey('preview_outcome')
+        ->and($props['allowed_actions'])->toBe(['wallet.deposit', 'wallet.withdraw'])->and($props)->not->toHaveKey('preview_outcome')
         ->and($json)->not->toContain('/preview/')->not->toContain('syn_')
         ->and($props['links'])->toMatchArray(['deals' => ['url' => '/investor/deals', 'method' => 'get'], 'portfolio' => ['url' => '/investor/portfolio', 'method' => 'get'],
             'profile' => ['url' => '/investor/profile', 'method' => 'get'], 'notifications' => null, 'link_account' => null,
             'wallet' => ['url' => '/investor/wallet', 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
             'close' => ['url' => '/investor/wallet', 'method' => 'get'], 'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get'],
-            'operation' => ['url' => '/investor/wallet-operations/{request_id}?command=wallet.deposit&identity_context_revision=1', 'method' => 'get']])
-        ->and($props['actions'])->toBe(['deposit' => ['url' => '/investor/wallet/deposits', 'method' => 'post']])
+            'operation' => ['url' => '/investor/wallet-operations/{request_id}?command=wallet.deposit&identity_context_revision=1', 'method' => 'get'],
+            'withdraw' => ['url' => '/investor/wallet?kind=withdraw', 'method' => 'get'],
+            'withdraw_operation' => ['url' => '/investor/wallet-operations/{request_id}?command=wallet.withdraw&identity_context_revision=1', 'method' => 'get']])
+        ->and($props['actions'])->toBe(['deposit' => ['url' => '/investor/wallet/deposits', 'method' => 'post'],
+            'withdraw' => ['url' => '/investor/wallet/withdrawals', 'method' => 'post']])
         ->and($props['wallet'])->toBe(['revision' => 0, 'status' => 'active', 'restriction' => null, 'total' => ['currency' => 'RWF', 'amount' => '0'],
             'breakdown' => ['available' => ['currency' => 'RWF', 'amount' => '0'], 'held' => ['currency' => 'RWF', 'amount' => '0'], 'committed' => ['currency' => 'RWF', 'amount' => '0']],
-            'pending_deposits' => ['currency' => 'RWF', 'amount' => '0']])
+            'pending_deposits' => ['currency' => 'RWF', 'amount' => '0'], 'pending_withdrawals' => ['currency' => 'RWF', 'amount' => '0']])
         ->and($props['funding'])->toBe(['kind' => null, 'policy' => ['version' => $fixture['policy']->version, 'synthetic' => true,
             'fee' => ['currency' => 'RWF', 'amount' => '0'], 'minimum' => ['currency' => 'RWF', 'amount' => '1000'], 'maximum' => ['currency' => 'RWF', 'amount' => '1000000']],
-            'methods' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']], 'picks' => [], 'quote' => null])
-        ->and([$props['holds'], $props['deposits'], $props['receipt'], $props['earnings'], $props['exports']])->toBe([[], [], null, null, null])
+            'methods' => [['id' => $fixture['method']->id, 'kind' => 'mtn', 'label' => 'MTN MoMo', 'masked' => '+250 788 ···· 456']], 'picks' => [], 'quote' => null,
+            'withdrawal' => ['version' => 'LED-R04/2026-10', 'minimum' => ['currency' => 'RWF', 'amount' => '1000'], 'maximum' => ['currency' => 'RWF', 'amount' => '2000000'],
+                'charge' => ['currency' => 'RWF', 'amount' => '0'], 'quote' => null]])
+        ->and([$props['holds'], $props['deposits'], $props['withdrawals'], $props['receipt'], $props['earnings']])->toBe([[], [], [], null, null])
+        ->and($props['exports'])->toBe(['csv' => ['url' => '/investor/wallet/statement.csv', 'method' => 'get'], 'pdf' => ['url' => '/investor/wallet/statement.pdf', 'method' => 'get']])
         ->and(InvestorWallet::query()->where('party_id', $fixture['party']->id)->exists())->toBeFalse();
 });
 
@@ -99,7 +105,8 @@ it('offers no deposit form without a policy and refuses a direct post POLICY_INP
     $investor = InvestorWalletFixture::investor();
     $fixture = [...$investor, 'method' => InvestorWalletFixture::method($investor['party'])];
     $props = walletPage($this->actingAs($fixture['user'])->get(route('investor.wallet', ['kind' => 'deposit', 'amount' => '5000'])));
-    expect($props['allowed_actions'])->toBe([])->and($props['funding']['policy'])->toBeNull()->and($props['funding']['quote'])->toBeNull();
+    // A withdrawal needs no deposit policy, so only deposit closes.
+    expect($props['allowed_actions'])->toBe(['wallet.withdraw'])->and($props['funding']['policy'])->toBeNull()->and($props['funding']['quote'])->toBeNull();
 
     $this->postJson(route('investor.wallet.deposit'), walletDepositBody($fixture))->assertStatus(409)
         ->assertJsonPath('status', 'rejected')->assertJsonPath('code', 'POLICY_INPUT_REQUIRED')
@@ -112,7 +119,7 @@ it('records a deposit over HTTP and answers the immutable receipt beside the fre
     $body = walletDepositBody($fixture);
     $response = $this->actingAs($fixture['user'])->postJson(route('investor.wallet.deposit'), $body)->assertOk()
         ->assertJsonPath('status', 'completed')->assertJsonPath('code', 'DEPOSIT_INTENT_RECORDED')->assertJsonPath('data.next', null)
-        ->assertJsonPath('allowed_actions', ['wallet.deposit']);
+        ->assertJsonPath('allowed_actions', ['wallet.deposit', 'wallet.withdraw']);
     $intent = WalletDepositIntent::query()->sole();
     $data = $response->json('data');
 
@@ -250,9 +257,9 @@ it('serves the same Resource over the API under investor token abilities only', 
 
     Sanctum::actingAs($fixture['user'], ['investor:read', 'investor:command']);
     $body = walletDepositBody($fixture);
-    $this->postJson(route('api.v1.investor.wallet.deposit'), $body)->assertOk()->assertJsonPath('allowed_actions', ['wallet.deposit'])
+    $this->postJson(route('api.v1.investor.wallet.deposit'), $body)->assertOk()->assertJsonPath('allowed_actions', ['wallet.deposit', 'wallet.withdraw'])
         ->assertJsonPath('data.receipt.link.url', '/api/v1/investor/wallet-operations/'.$body['request_id'].'?command=wallet.deposit&identity_context_revision=1');
-    expect($this->getJson(route('api.v1.investor.wallet'))->json('data.allowed_actions'))->toBe(['wallet.deposit']);
+    expect($this->getJson(route('api.v1.investor.wallet'))->json('data.allowed_actions'))->toBe(['wallet.deposit', 'wallet.withdraw']);
 
     Sanctum::actingAs($fixture['user'], ['investor:read']);
     $this->getJson(route('api.v1.investor.wallet.operations.show', ['request_id' => $body['request_id'], 'command' => 'wallet.deposit', 'identity_context_revision' => 1]))

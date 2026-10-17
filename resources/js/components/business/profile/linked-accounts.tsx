@@ -1,4 +1,5 @@
-import { Link } from '@inertiajs/react';
+import { Form } from '@inertiajs/react';
+import { LinkAccountForm } from '@/components/investor/profile/profile-parts';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -11,8 +12,10 @@ const KIND_ICON: Record<LinkedAccount['kind'], IconName> = {
 };
 
 /**
- * "Linked accounts" (design L1829–1840). The payout bank carries no Unlink: only Rozine support can
- * change it, as onboarding tells the business.
+ * "Linked accounts" (design L1829–1840): the Business's own verified accounts. Where the server
+ * offers it, linking sends the details with a fresh `request_id`, and the server verifies the account
+ * is held in the business's registered name (BRS v2.0 KYC-R03) before it answers; unlinking revokes
+ * one. Without those commands the accounts are only listed.
  */
 export function LinkedAccounts({
     linked,
@@ -41,28 +44,47 @@ export function LinkedAccounts({
                             </p>
                         </div>
                         {account.unlink !== null && (
-                            <Link
-                                href={account.unlink}
-                                as="button"
-                                aria-label={t(
-                                    'business.profile.linked.unlink_named',
-                                    { name: account.name },
-                                )}
-                                className="text-[12.5px] font-semibold text-rz-danger-text"
+                            <Form
+                                action={account.unlink.url}
+                                method={account.unlink.method}
+                                transform={(data) => ({
+                                    ...data,
+                                    request_id: crypto.randomUUID(),
+                                })}
+                                options={{ preserveScroll: true }}
                             >
-                                {t('business.profile.linked.unlink')}
-                            </Link>
+                                <button
+                                    type="submit"
+                                    aria-label={t(
+                                        'business.profile.linked.unlink_named',
+                                        { name: account.name },
+                                    )}
+                                    className="text-[12.5px] font-semibold text-rz-danger-text"
+                                >
+                                    {t('business.profile.linked.unlink')}
+                                </button>
+                            </Form>
                         )}
                     </li>
                 ))}
+                {linked.accounts.length === 0 && (
+                    <li className="rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-5 text-center text-[12.5px] text-rz-secondary dark:border-rz-border">
+                        {t(
+                            linked.add === null
+                                ? 'business.profile.linked.empty'
+                                : 'business.profile.linked.none',
+                        )}
+                    </li>
+                )}
             </ul>
             {linked.add !== null && (
-                <Link
-                    href={linked.add}
-                    className="mt-3.5 flex h-[50px] w-full items-center justify-center rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] bg-rz-surface text-sm font-semibold text-rz-accent-app-text dark:border-rz-border"
-                >
-                    {t('business.profile.linked.add')}
-                </Link>
+                <LinkAccountForm
+                    banks={linked.banks}
+                    action={linked.add}
+                    hasAccounts={linked.accounts.length > 0}
+                    addLabel="business.profile.linked.add"
+                    footnote="business.profile.linked.footnote"
+                />
             )}
         </>
     );

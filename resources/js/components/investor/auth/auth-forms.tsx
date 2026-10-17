@@ -8,8 +8,8 @@ import type { InvestorAuthProps } from '@/types/investor';
 type Variant = 'phone' | 'desk';
 
 const FIELD: Record<Variant, string> = {
-    phone: 'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border',
-    desk: 'box-border w-full rounded-xl border border-rz-border bg-rz-surface-sunken px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border',
+    phone: 'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border',
+    desk: 'box-border w-full rounded-xl border border-rz-border bg-rz-surface-sunken px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border',
 };
 
 const LABEL: Record<Variant, string> = {

@@ -32,7 +32,7 @@ it('projects the current normalized declaration under only the Business gate wit
     sort($expected);
     expect($evidence)->toMatchArray(['scope' => 'declared-business-connections-v1', 'business_id' => $business->id,
         'entity_party_id' => $fixture['entity'], 'mandate_id' => $mandate->id, 'mandate_version' => 1,
-        'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'party_ids' => $expected, 'complete' => false])
+        'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'party_ids' => $expected, 'complete' => true])
         ->and($evidence['mandate_sha256'])->toMatch('/^[0-9a-f]{64}$/D')
         ->and($source->lockDeclared($business->id))->toBe($evidence)
         ->and(array_values(array_filter($queries, fn (string $sql): bool => str_contains($sql, 'for update'))))

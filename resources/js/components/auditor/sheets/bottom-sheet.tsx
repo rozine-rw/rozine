@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useSheetPresence } from '@/components/auditor/commands';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
 type BottomSheetProps = {
@@ -21,6 +22,7 @@ export function BottomSheet({
     children,
 }: BottomSheetProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLDivElement>(onClose);
 
     useSheetPresence();
 
@@ -33,6 +35,8 @@ export function BottomSheet({
                 className="absolute inset-0 animate-[rz-scrim_.24s_ease] bg-[rgba(10,18,38,.36)] lg:rounded-2xl lg:bg-[rgba(10,18,38,.32)]"
             />
             <div
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}

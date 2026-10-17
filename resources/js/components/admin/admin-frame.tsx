@@ -5,6 +5,7 @@ import { InfoTip } from '@/components/admin/ui';
 import { ConnectivityNotice } from '@/components/rozine/connectivity-notice';
 import { IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
+import { MAIN_CONTENT_ID, SkipLink } from '@/components/rozine/skip-link';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
@@ -218,6 +219,12 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="12" cy="10.5" r="2.2" />
         </>
     ),
+    complaints: (
+        <path
+            d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
+            strokeLinejoin="round"
+        />
+    ),
     mail_testers: (
         <>
             <rect x="3" y="5" width="18" height="14" rx="2.5" />
@@ -266,7 +273,7 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
  * yet still appear: their link opens the frame with an empty state. Pages the design's sidebar does
  * not name light the entry they sit under (see LIT_BY): Payments for disbursements, repayments and
  * the ledger; Notes for the book; Risk Center for exceptions; Finance for reconciliation; Auditors
- * for partner coverage. Staging mail testers is a staging-only tool the server sends to whoever may
+ * for partner coverage; Compliance for complaints. Staging mail testers is a staging-only tool the server sends to whoever may
  * manage it.
  */
 const GROUPS: {
@@ -315,6 +322,7 @@ const LIT_BY: Partial<Record<AdminFrameSection, AdminFrameSection>> = {
     exceptions: 'risk',
     reconciliation: 'finance',
     coverage: 'auditors',
+    complaints: 'compliance',
 };
 
 type AdminFrameProps = AdminFrameShellProps & {
@@ -490,6 +498,7 @@ export function AdminFrame({
             className="rz-surface min-h-svh bg-rz-page-console lg:bg-rz-frame"
         >
             <Head title={title} />
+            <SkipLink />
             <IconGradients />
             <ConnectivityNotice />
             <div className="relative lg:mx-auto lg:flex lg:h-svh lg:min-h-[640px] lg:max-w-[var(--rz-desktop-max)] lg:overflow-hidden lg:bg-rz-page-console">
@@ -659,7 +668,11 @@ export function AdminFrame({
                     </header>
 
                     <div className="relative flex flex-col lg:min-h-0 lg:flex-1">
-                        <main className="rz-scroll px-4 pt-5 pb-10 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-7 lg:pt-[26px] lg:pb-[34px]">
+                        <main
+                            id={MAIN_CONTENT_ID}
+                            tabIndex={-1}
+                            className="rz-scroll px-4 pt-5 pb-10 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-7 lg:pt-[26px] lg:pb-[34px]"
+                        >
                             {children}
                         </main>
                         {overlay}

@@ -7,7 +7,7 @@ import type { RouteAction } from '@/types';
 import type { BusinessProfileProps, CompanyProfile } from '@/types/business';
 
 const INPUT =
-    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border disabled:text-rz-secondary';
+    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border disabled:text-rz-secondary';
 
 function Field({
     id,
@@ -49,6 +49,7 @@ function Select({
         <span className="relative block">
             <select
                 id={id}
+                aria-describedby={`${id}-error`}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
                 className={`${INPUT} cursor-pointer appearance-none pr-[38px]`}
@@ -86,7 +87,8 @@ type CompanyFormProps = {
 
 /**
  * "Company information" (design L1726–1743). The registered name comes from RDB and is shown
- * read-only; contact details and the address are the business's to keep current.
+ * read-only; contact details and the address are the business's to keep current. Each save
+ * carries a fresh `request_id`, so a repeated click is answered once.
  */
 export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
     const { t } = useTranslation();
@@ -109,6 +111,10 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
         <form
             onSubmit={(event) => {
                 event.preventDefault();
+                form.transform((current) => ({
+                    ...current,
+                    request_id: crypto.randomUUID(),
+                }));
                 form.put(action.url, {
                     preserveScroll: true,
                     onSuccess: () => show(t('business.profile.company.saved')),
@@ -134,6 +140,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 >
                     <input
                         id="company-email"
+                        aria-describedby="company-email-error"
                         type="email"
                         value={data.email}
                         onChange={(event) =>
@@ -150,6 +157,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 >
                     <input
                         id="company-phone"
+                        aria-describedby="company-phone-error"
                         inputMode="numeric"
                         maxLength={10}
                         value={data.phone}
@@ -173,6 +181,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-province"
                         label={t('business.profile.company.province')}
+                        error={errors.province}
                     >
                         <Select
                             id="company-province"
@@ -212,6 +221,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-sector"
                         label={t('business.profile.company.sector')}
+                        error={errors.sector}
                     >
                         <input
                             id="company-sector"
@@ -228,6 +238,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     <Field
                         id="company-cell"
                         label={t('business.profile.company.cell')}
+                        error={errors.cell}
                     >
                         <input
                             id="company-cell"
@@ -245,6 +256,7 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                 <Field
                     id="company-street"
                     label={t('business.profile.company.street')}
+                    error={errors.street}
                 >
                     <input
                         id="company-street"

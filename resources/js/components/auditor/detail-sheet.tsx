@@ -1,6 +1,7 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { ClockChip } from '@/components/auditor/clock';
+import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
@@ -32,6 +33,11 @@ export function DetailSheet({
     children,
 }: DetailSheetProps) {
     const { t } = useTranslation();
+    const dialog = useModalDialog<HTMLElement>(
+        dismissible
+            ? () => router.visit(close.url, { preserveScroll: true })
+            : undefined,
+    );
     const scrim =
         'absolute inset-0 z-[48] hidden animate-[rz-scrim_.26s_ease] rounded-2xl bg-[rgba(8,14,28,.28)] lg:block';
 
@@ -47,6 +53,8 @@ export function DetailSheet({
                 <div className={cn(scrim, 'cursor-default')} />
             )}
             <section
+                ref={dialog}
+                tabIndex={-1}
                 role="dialog"
                 aria-modal="true"
                 aria-label={label}
@@ -127,9 +135,9 @@ export function JobHeader({
             </div>
             <div className="mt-3.5 flex items-center justify-between gap-2.5">
                 <div className="min-w-0">
-                    <h2 className="truncate text-[17px] font-bold text-rz-ink">
+                    <h1 className="truncate text-[17px] font-bold text-rz-ink">
                         {business}
-                    </h2>
+                    </h1>
                     <p className="mt-px text-[11.5px] text-rz-secondary">
                         {distanceKm === null
                             ? district

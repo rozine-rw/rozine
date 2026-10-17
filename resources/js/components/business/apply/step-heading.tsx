@@ -17,9 +17,9 @@ export function StepHeading({
             <p className="text-[13px] font-semibold tracking-[.06em] text-rz-accent-app-text uppercase">
                 {t('business.apply.step_of', { step, total: 3 })}
             </p>
-            <h2 className="mt-1.5 text-[21px] font-semibold text-rz-ink">
+            <h1 className="mt-1.5 text-[21px] font-semibold text-rz-ink">
                 {title}
-            </h2>
+            </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">{subtitle}</p>
         </>
     );

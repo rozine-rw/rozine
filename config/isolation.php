@@ -11,6 +11,13 @@ return [
     'demo_enabled' => env('ROZINE_DEMO_ENABLED', false),
     'demo_reset_enabled' => env('ROZINE_DEMO_RESET_ENABLED', false),
 
+    /*
+    | Owner-approved staging test data (Erastus, 2026-10-15). On UAT only, it
+    | allows the synthetic seed packs and the synthetic records they rely on.
+    | It never allows a wipe or reset, and every other profile refuses it.
+    */
+    'uat_seed_enabled' => env('ROZINE_UAT_SEED_ENABLED', false),
+
     /* Engineering-owned temporary switches. Expiry is 00:00 UTC; review before extension. */
     'demo_flags' => [
         'owner' => 'Aminu and Erastus (Engineering/Security)',

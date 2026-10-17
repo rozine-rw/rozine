@@ -48,6 +48,16 @@ it('isolates a failure at the outer PostgreSQL commit and retains later campaign
         expect(BusinessCampaignClosure::query()->sole()->business_campaign_id)->toBe($second->id)
             ->and(app(BusinessExposureStore::class)->current($first->business_id))->toHaveCount(1)
             ->and(app(BusinessExposureStore::class)->current($second->business_id))->toBe([]);
+        $expiryNotices = DB::table('party_notices')->where('kind', 'business.raise_expired');
+        $failedEvent = 'business-raise-expired:'.$first->id;
+        $notice = (clone $expiryNotices)->where('event_key', 'business-raise-expired:'.$second->id)->sole();
+        expect(json_decode($notice->facts, true)['campaign_id'])->toBe($second->id)
+            ->and((clone $expiryNotices)->count())->toBe(1)
+            ->and((clone $expiryNotices)->where('event_key', $failedEvent)->exists())->toBeFalse()
+            ->and(DB::table('party_notice_deliveries')->whereIn('party_notice_id',
+                (clone $expiryNotices)->where('event_key', $failedEvent)->select('id'))->count())->toBe(0)
+            ->and(DB::table('party_notice_deliveries')->where('party_notice_id', $notice->id)->where('channel', 'mail')->count())->toBeGreaterThan(0)
+            ->and(DB::table('party_notice_deliveries')->whereNotIn('party_notice_id', DB::table('party_notices')->select('id'))->count())->toBe(0);
         $failure = DB::table('business_campaign_expiry_failures')->sole();
         expect($failure->business_campaign_id)->toBe($first->id)
             ->and($failure->exception_class)->toBe(PDOException::class)

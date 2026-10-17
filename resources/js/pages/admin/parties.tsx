@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
@@ -99,6 +99,14 @@ export default function AdminParties(props: AdminPartiesProps) {
                             </select>
                         ))}
                     </div>
+                )}
+                {props.kind === 'auditor' && props.nav.coverage && (
+                    <Link
+                        href={props.nav.coverage}
+                        className="rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-[9px] text-[12.5px] font-semibold text-rz-slate"
+                    >
+                        {t('admin.parties.coverage_link')}
+                    </Link>
                 )}
             </div>
             <p className="mb-2.5 text-[12px] font-semibold text-rz-muted">

@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it, vi } from 'vite-plus/test';
 import I18nProvider from '@/components/i18n-provider';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -65,6 +67,41 @@ describe('locale resolution', () => {
     it('falls back to the default for a language it does not carry', () => {
         expect(resolveLocale('de-DE')).toBe(DEFAULT_LOCALE);
         expect(resolveLocale('sw')).toBe(DEFAULT_LOCALE);
+    });
+});
+
+describe('catalog loading', () => {
+    it('reads English for a locale until its catalog is fetched, then fetches it once', async () => {
+        vi.resetModules();
+        const fresh = await import('@/lib/i18n');
+        const english = fresh.catalogFor('en');
+
+        expect(fresh.catalogFor('fr')).toBe(english);
+
+        await fresh.loadCatalog('fr');
+        const french = fresh.catalogFor('fr');
+
+        expect(french['auth.login.email_label']).toBe('Adresse e-mail');
+
+        await fresh.loadCatalog('fr');
+        await fresh.loadCatalog('en');
+
+        expect(fresh.catalogFor('fr')).toBe(french);
+        expect(fresh.catalogFor('en')).toBe(english);
+        expect(fresh.catalogFor('rw')).toBe(english);
+    });
+
+    it('keeps French and Kinyarwanda out of the shell script (throttled-3G budget)', () => {
+        const entry = readFileSync(
+            path.resolve(__dirname, '../../../resources/js/lib/i18n/index.ts'),
+            'utf8',
+        );
+
+        expect(entry).not.toMatch(
+            /^import .* from '@\/lib\/i18n\/catalogs\/(?:fr|rw)';$/mu,
+        );
+        expect(entry).toContain("fr: () => import('@/lib/i18n/catalogs/fr'),");
+        expect(entry).toContain("rw: () => import('@/lib/i18n/catalogs/rw'),");
     });
 });
 

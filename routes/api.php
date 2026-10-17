@@ -14,25 +14,39 @@ use App\Http\Controllers\Api\V1\RoleBookmarkController;
 use App\Http\Controllers\Api\V1\StaffAccessController;
 use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
+use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
+use App\Http\Controllers\InvestorHoldingController;
+use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
+use App\Http\Controllers\StaffComplaintController;
+use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffExceptionsController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
+use App\Http\Controllers\StaffLedgerController;
+use App\Http\Controllers\StaffMessagingController;
+use App\Http\Controllers\StaffPaymentsController;
+use App\Http\Controllers\StaffPrimaryMarketController;
+use App\Http\Controllers\StaffReconciliationController;
+use App\Http\Controllers\StaffSystemHealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -66,9 +80,16 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 Route::get('v1/business/{business}', [BusinessHomeController::class, 'show'])->middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])
     ->whereUlid('business')->name('api.v1.business.show');
 
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.notices.')->group(function (): void {
+    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->name('index');
+    Route::post('{business}/notices/read-all', [BusinessNoticesController::class, 'readAll'])->whereUlid('business')->name('read_all');
+    Route::post('{business}/notices/{notice}/read', [BusinessNoticesController::class, 'read'])->whereUlid(['business', 'notice'])->name('read');
+});
+
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');
     Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
+    Route::post('{business}/wallet/withdrawals', [BusinessWalletController::class, 'withdraw'])->whereUlid('business')->name('withdraw');
     Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
 
@@ -121,6 +142,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name('api.v1.auditor.')->group(function (): void {
+    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware('cache.headers:private;no_store')->name('notices');
+    Route::post('notices/read-all', [AuditorNoticesController::class, 'readAll'])->middleware('cache.headers:private;no_store')->name('notices.read_all');
+    Route::post('notices/{notice}/read', [AuditorNoticesController::class, 'read'])->whereUlid('notice')->middleware('cache.headers:private;no_store')->name('notices.read');
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
     Route::get('report-operations/{request_id}', [AuditorProcedureController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('reports.operations.show');
     Route::post('reports/{report}/dispute/uphold', [AuditDisputeController::class, 'uphold'])->whereUlid('report')->middleware('cache.headers:private;no_store')->name('reports.disputes.uphold');
@@ -176,13 +200,22 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/investor')->name('api.v1.investor.')->group(function (): void {
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
+    Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
+    Route::get('wallet/statement.{format}', [InvestorWalletController::class, 'statement'])->whereIn('format', ['csv', 'pdf'])->name('wallet.statement');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
+    Route::post('wallet/withdrawals', [InvestorWalletController::class, 'withdraw'])->name('wallet.withdraw');
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
+    Route::get('risk-statements', [InvestorRiskAcknowledgementController::class, 'show'])->name('risks.show');
+    Route::post('risk-statements/acknowledgements', [InvestorRiskAcknowledgementController::class, 'store'])->name('risks.acknowledge');
+    Route::get('notices', [InvestorNoticesController::class, 'index'])->name('notices');
+    Route::post('notices/read-all', [InvestorNoticesController::class, 'readAll'])->name('notices.read_all');
+    Route::post('notices/{notice}/read', [InvestorNoticesController::class, 'read'])->whereUlid('notice')->name('notices.read');
     Route::post('deals/{campaign}/reservations', [InvestorPrimaryController::class, 'reserve'])->whereUlid('campaign')->name('primary.reserve');
     Route::post('reservations/{reservation}/confirm', [InvestorPrimaryController::class, 'confirm'])->whereUlid('reservation')->name('primary.confirm');
     Route::post('reservations/{reservation}/release', [InvestorPrimaryController::class, 'release'])->whereUlid('reservation')->name('primary.release');
     Route::get('commitments/{commitment}', [InvestorPrimaryController::class, 'commitment'])->whereUlid('commitment')->name('commitments.show');
+    Route::get('holdings/{holding}', [InvestorHoldingController::class, 'show'])->whereUlid('holding')->name('holdings.show');
     Route::post('commitments/{commitment}/cancel', [InvestorPrimaryController::class, 'cancel'])->whereUlid('commitment')->name('primary.cancel');
     Route::get('deals/{campaign}/primary-operations/{request_id}', [InvestorPrimaryController::class, 'operation'])->whereUlid('campaign')->whereUuid('request_id')
         ->name('primary.operations.show');
@@ -212,6 +245,15 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/dashboard', StaffDashboardController::class)->name('api.v1.staff.dashboard');
     Route::get('v1/staff/staff', [StaffDirectoryController::class, 'index'])->name('api.v1.staff.staff.index');
     Route::get('v1/staff/activity', [StaffActivityController::class, 'index'])->name('api.v1.staff.events.index');
+    Route::get('v1/staff/reconciliation', StaffReconciliationController::class)->name('api.v1.staff.reconciliation.index');
+    Route::get('v1/staff/messaging/history', StaffMessagingController::class)->name('api.v1.staff.messaging.index');
+    Route::get('v1/staff/ledger', StaffLedgerController::class)->name('api.v1.staff.ledger.index');
+    Route::get('v1/staff/exceptions', StaffExceptionsController::class)->name('api.v1.staff.exceptions.index');
+    Route::get('v1/staff/primary-market', StaffPrimaryMarketController::class)->name('api.v1.staff.primary-market.index');
+    Route::get('v1/staff/payments', StaffPaymentsController::class)->name('api.v1.staff.payments.index');
+    Route::get('v1/staff/coverage', StaffCoverageController::class)->name('api.v1.staff.coverage.index');
+    Route::get('v1/staff/complaints', [StaffComplaintController::class, 'index'])->name('api.v1.staff.complaints.index');
+    Route::get('v1/staff/system-health', StaffSystemHealthController::class)->name('api.v1.staff.system-health.index');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/investor-verifications')->name('api.v1.staff.investor-verifications.')->group(function (): void {

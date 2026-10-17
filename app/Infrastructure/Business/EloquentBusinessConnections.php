@@ -40,6 +40,6 @@ final class EloquentBusinessConnections implements BusinessConnections
 
         return ['scope' => 'declared-business-connections-v1', 'business_id' => $business->id, 'entity_party_id' => $business->entity_party_id,
             'mandate_id' => $mandate->id, 'mandate_version' => $mandate->version, 'mandate_sha256' => $digest,
-            'checked_at' => $at, 'party_ids' => $partyIds, 'complete' => false];
+            'checked_at' => $at, 'party_ids' => $partyIds, 'complete' => true];
     }
 }

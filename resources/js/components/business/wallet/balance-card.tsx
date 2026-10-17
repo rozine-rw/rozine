@@ -7,7 +7,8 @@ import type { BusinessWalletProps } from '@/types/business';
 
 /**
  * The wallet card (design L1321–1334) in C4 terms: the available balance repayments are paid
- * from, with recorded deposits that are not yet credited beneath and outside it. A restriction
+ * from, with recorded deposits not yet credited and withdrawals on their way out beneath and
+ * outside it. A restriction
  * never withholds deposits or repayments (§11.4), so the card says so rather than blocking.
  */
 export function BalanceCard({
@@ -66,12 +67,21 @@ export function BalanceCard({
                 </p>
             )}
             <div className="relative mt-4 flex items-center justify-between border-t border-[rgba(255,255,255,.16)] pt-[13px]">
-                <span className="text-[11.5px] text-white">
-                    {wallet.pending_deposits.amount === '0'
-                        ? t('business.servicing.wallet.no_pending')
-                        : t('business.servicing.wallet.pending', {
-                              amount: formatRwf(wallet.pending_deposits),
-                          })}
+                <span className="flex flex-col text-[11.5px] text-white">
+                    <span>
+                        {wallet.pending_deposits.amount === '0'
+                            ? t('business.servicing.wallet.no_pending')
+                            : t('business.servicing.wallet.pending', {
+                                  amount: formatRwf(wallet.pending_deposits),
+                              })}
+                    </span>
+                    {wallet.pending_withdrawals.amount !== '0' && (
+                        <span>
+                            {t('investor.wallet.pending_withdrawal', {
+                                amount: formatRwf(wallet.pending_withdrawals),
+                            })}
+                        </span>
+                    )}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[rgba(255,255,255,.9)]">
                     <LogoMark className="size-[15px] text-white opacity-90" />

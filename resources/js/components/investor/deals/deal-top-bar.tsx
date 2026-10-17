@@ -1,5 +1,10 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
+import {
+    NoticesPanel,
+    useNotices,
+} from '@/components/investor/notices/notices-panel';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompact } from '@/lib/investor/format';
 import { formatDayMonth, formatRwf } from '@/lib/rozine/format';
@@ -14,7 +19,7 @@ type DealTopBarProps = {
     links: {
         wallet: RouteLink | null;
         deposit: RouteLink | null;
-        /** Null until notifications have a live route; the bell is then not shown. */
+        /** The notices the bell opens; null where there are none to read, and the bell is not shown. */
         notifications: RouteLink | null;
     };
 };
@@ -61,59 +66,87 @@ function Bell({
     href: RouteLink | null;
     size: 'phone' | 'desk';
 }) {
-    const { t } = useTranslation();
-
     if (href === null) {
         return null;
     }
 
+    return <NoticesBell unread={unread} href={href} size={size} />;
+}
+
+/** The bell opens the notices panel over the page, loading the notices as it opens. */
+function NoticesBell({
+    unread,
+    href,
+    size,
+}: {
+    unread: number;
+    href: RouteLink;
+    size: 'phone' | 'desk';
+}) {
+    const { t } = useTranslation();
+    const notices = useNotices(href);
+    const [open, setOpen] = useState(false);
+
     return (
-        <Link
-            href={href}
-            aria-label={
-                unread > 0
-                    ? t('investor.deals.notifications_unread', {
-                          count: unread,
-                      })
-                    : t('investor.deals.notifications')
-            }
-            className={cn(
-                'relative flex shrink-0 items-center justify-center border border-rz-border bg-rz-surface text-[#16233c] dark:text-rz-ink',
-                size === 'phone'
-                    ? 'size-[34px] rounded-xl'
-                    : 'ml-auto size-[46px] rounded-2xl text-[#46526b] dark:text-rz-slate',
-            )}
-        >
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden
-                className={size === 'phone' ? 'size-[17px]' : 'size-5'}
+        <>
+            <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => {
+                    setOpen(true);
+                    void notices.load();
+                }}
+                aria-label={
+                    unread > 0
+                        ? t('investor.deals.notifications_unread', {
+                              count: unread,
+                          })
+                        : t('investor.deals.notifications')
+                }
+                className={cn(
+                    'relative flex shrink-0 items-center justify-center border border-rz-border bg-rz-surface text-[#16233c] dark:text-rz-ink',
+                    size === 'phone'
+                        ? 'size-[34px] rounded-xl'
+                        : 'ml-auto size-[46px] rounded-2xl text-[#46526b] dark:text-rz-slate',
+                )}
             >
-                <path
-                    d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinejoin="round"
-                />
-                <path
-                    d="M10 19a2 2 0 0 0 4 0"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                />
-            </svg>
-            {unread > 0 && (
-                <span
-                    className={cn(
-                        'absolute rounded-full border-2 border-rz-surface bg-[#b3383c]',
-                        size === 'phone'
-                            ? 'top-1.5 right-[7px] size-[7px]'
-                            : 'top-[11px] right-3 size-2',
-                    )}
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                    className={size === 'phone' ? 'size-[17px]' : 'size-5'}
+                >
+                    <path
+                        d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinejoin="round"
+                    />
+                    <path
+                        d="M10 19a2 2 0 0 0 4 0"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                    />
+                </svg>
+                {unread > 0 && (
+                    <span
+                        className={cn(
+                            'absolute rounded-full border-2 border-rz-surface bg-[#b3383c]',
+                            size === 'phone'
+                                ? 'top-1.5 right-[7px] size-[7px]'
+                                : 'top-[11px] right-3 size-2',
+                        )}
+                    />
+                )}
+            </button>
+            {open && (
+                <NoticesPanel
+                    notices={notices}
+                    onClose={() => setOpen(false)}
                 />
             )}
-        </Link>
+        </>
     );
 }
 

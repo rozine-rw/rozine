@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Wallet\Contracts\PayoutAccounts;
+use App\Application\Wallet\Contracts\WalletStore;
+use App\Domain\Wallet\PayoutAccount;
 
 /**
  * The Profile facts for the authenticated Investor (MVP-INVESTOR-SCR-11), read under current
@@ -12,16 +15,20 @@ use App\Application\Identity\Contracts\InvestorVerificationStore;
  * verified funding methods on their wallet. The Investor role and its verification are for a
  * person only (`RoleAccess`, `InvestorVerificationCase`), so every Investor is an individual. No
  * verification expiry is recorded, so `expired` is never reported. The identity document is the one
- * staff approved, and only its last four characters leave the server.
+ * staff approved, and only its last four characters leave the server. A verified Investor also gets
+ * the months their wallet has statement rows for, and may link payout accounts wherever an account
+ * can be verified.
  *
  * @phpstan-type ProfileFacts array{identity_context_revision: int, kyc: 'verified'|'pending'|'unverified', investor_type: 'individual',
- *     methods: list<array<string, mixed>>, document: array{id_type: 'national_id'|'passport'|'drivers_license', id_number: string}|null}
+ *     methods: list<array<string, mixed>>, document: array{id_type: 'national_id'|'passport'|'drivers_license', id_number: string}|null,
+ *     statement_months: list<string>, linkable: bool, banks: list<array{code: string, name: string}>}
  */
 final class GetInvestorProfile
 {
     public const array SECTIONS = ['overview', 'personal', 'plan', 'security', 'linked', 'statements', 'help', 'terms', 'privacy', 'automation'];
 
-    public function __construct(private GetInvestorViewer $viewer, private InvestorVerificationStore $verifications) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorVerificationStore $verifications, private WalletStore $wallets,
+        private PayoutAccounts $accounts) {}
 
     /** @return ProfileFacts */
     public function handle(int $userId, ?int $contextRevision): array
@@ -30,14 +37,20 @@ final class GetInvestorProfile
         /** @var list<array<string, mixed>> $methods */
         $methods = $viewer['wallet']['funding']['methods'] ?? [];
         $document = $this->verifications->approvedDocument($userId);
+        $context = (int) $viewer['identity_context_revision'];
 
-        return ['identity_context_revision' => $viewer['identity_context_revision'], 'investor_type' => 'individual', 'methods' => $methods,
+        $facts = ['identity_context_revision' => $viewer['identity_context_revision'], 'investor_type' => 'individual', 'methods' => $methods,
             'kyc' => match ($viewer['verification']) {
                 null => 'verified',
                 'pending' => 'pending',
                 'required' => 'unverified',
             },
-            'document' => $document === null ? null : ['id_type' => $document['id_type'], 'id_number' => self::masked($document['id_number'])]];
+            'document' => $document === null ? null : ['id_type' => $document['id_type'], 'id_number' => self::masked($document['id_number'])],
+            'statement_months' => $viewer['verification'] === null ? $this->wallets->statementMonths($userId, $context) : []];
+        $linkable = $viewer['verification'] === null && $this->accounts->linkable();
+
+        return [...$facts, 'linkable' => $linkable, 'banks' => $linkable
+            ? array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS) : []];
     }
 
     /** Every character but the last four hidden; a 16-digit card number is grouped in fours as printed. */

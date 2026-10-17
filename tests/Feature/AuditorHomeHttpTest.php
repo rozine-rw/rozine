@@ -9,6 +9,7 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditAssignmentFixture;
@@ -89,14 +90,14 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
         'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
         'nearby' => ['count' => 0, 'closest_km' => null], 'in_progress' => [],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED', 'on_time_pct' => null, 'avg_variance_pct' => null,
-            'variance_flagged' => false, 'jobs_done' => 0, 'clock_expiries' => null],
+            'variance_flagged' => false, 'jobs_done' => 0, 'clock_expiries' => 0],
         'activity' => [], 'wallet' => ['available' => null], 'unread_notifications' => 0,
     ])->and($props['links'])->toBe([
         'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
         'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
         'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
         'operation' => ['url' => '/auditor/operations/{request_id}', 'method' => 'get'],
-        'statement' => null, 'withdraw' => null, 'notifications' => null,
+        'statement' => null, 'withdraw' => null, 'notifications' => ['url' => '/auditor/notices', 'method' => 'get'],
     ]);
     $this->get('/auditor')->assertHeaderContains('Cache-Control', 'no-store')->assertHeaderContains('Cache-Control', 'private');
     foreach (['jobs' => 'auditor/jobs', 'portfolio' => 'auditor/portfolio', 'profile' => 'auditor/profile', 'conflicts' => 'auditor/conflicts'] as $tab => $component) {
@@ -137,10 +138,30 @@ it('lists the partner\'s filings as recent activity and counts them as jobs done
     $fixture = AuditSealingFixture::ready();
     $props = auditorHomeProps($fixture['user']);
     expect($props['activity'])->toBe([])->and($props['standing']['jobs_done'])->toBe(0)
+        ->and($props['standing']['on_time_pct'])->toBeNull()->and($props['standing']['clock_expiries'])->toBe(0)
         ->and($props['in_progress'][0]['status'])->toBe('in_progress');
     $sealed = AuditSealingFixture::seal($fixture);
     $props = auditorHomeProps($fixture['user']);
     expect($props['activity'])->toBe([['kind' => 'report_filed', 'at' => $sealed['data']['sealed']['sealed_at'], 'business' => 'Synthetic business', 'variance_pct' => null]])
         ->and($props['standing']['jobs_done'])->toBe(1)->and($props['in_progress'][0]['status'])->toBe('awaiting_cosign')
-        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['jobs_done'])->toBe(1);
+        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['jobs_done'])->toBe(1)
+        ->and($props['standing']['on_time_pct'])->toBe(100)
+        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['on_time_pct'])->toBe(100);
+
+    $assignment = $fixture['assignment']->refresh();
+    $assignment->forceFill(['state' => [...$assignment->state, 'complete_by' => CarbonImmutable::parse($sealed['data']['sealed']['sealed_at'])->subSecond()->format('Y-m-d\TH:i:s\Z')]])->save();
+    expect(auditorHomeProps($fixture['user'])['standing']['on_time_pct'])->toBe(0);
+});
+
+it('counts the offers that ran out on a partner as clock expiries', function (): void {
+    $fixture = AuditAssignmentFixture::make();
+    $offer = AuditAssignmentFixture::request($fixture);
+    $first = AuditAssignmentFixture::recipient($fixture, $offer);
+    $this->travel(1)->hours();
+    expect(Artisan::call('audits:advance-offers'))->toBe(0);
+    $second = AuditAssignmentFixture::recipient($fixture, $offer->refresh());
+
+    expect($second['party']->id)->not->toBe($first['party']->id)
+        ->and(auditorHomeProps($first['user'])['standing']['clock_expiries'])->toBe(1)
+        ->and(auditorHomeProps($second['user'])['standing']['clock_expiries'])->toBe(0);
 });

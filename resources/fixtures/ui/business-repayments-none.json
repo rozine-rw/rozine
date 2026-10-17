@@ -13,6 +13,7 @@
         "pay": null,
         "receipt": null,
         "recent": [],
+        "issued": [],
         "bases": {},
         "home": null,
         "shell_links": {

@@ -153,10 +153,10 @@ export type UnitRights = {
 };
 
 /**
- * A Rozine Plus tier, from the Investor's currently active deployed capital (Robert's #99 policy).
- * Bands are lower-inclusive and upper-exclusive, in RWF: Standard below 1M; Bronze [1M, 5M);
- * Silver [5M, 30M); Gold [30M, 100M); Platinum [100M, 250M); Diamond from 250M. The server picks
- * the tier; the client never derives it from a balance.
+ * A Rozine Plus band, from the Investor's active capital after the checkout (BRS v2.0 INV-R04).
+ * Bands are lower-inclusive and upper-exclusive, in RWF: Standard 15% below 1M; Bronze 12% [1M, 5M);
+ * Silver 10% [5M, 25M); Gold 9% [25M, 100M); Platinum 8% from 100M. The server picks the band; the
+ * client never derives it from a balance. `diamond` remains only in older preview fixtures.
  */
 export type PlusTier =
     | 'standard'

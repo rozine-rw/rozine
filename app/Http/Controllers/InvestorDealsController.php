@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Primary\GetInvestorCheckout;
 use App\Application\Primary\GetInvestorDeals;
 use App\Http\Requests\Investor\ShowDealsRequest;
+use App\Http\Resources\InvestorCheckoutResource;
 use App\Http\Resources\InvestorDealsResource;
 use Inertia\Inertia;
 use Inertia\Response;
 
-/** The Investor Deals deck and one deal (`investor.deals`, `investor.deals.show`) on both transports. */
+/** The Investor Deals deck, one deal and its checkout (`investor.deals`, `investor.deals.show`, `investor.checkout`) on both transports. */
 class InvestorDealsController extends Controller
 {
     public function index(ShowDealsRequest $request, GetInvestorDeals $action): Response|InvestorDealsResource
@@ -27,6 +29,17 @@ class InvestorDealsController extends Controller
         $resource = new InvestorDealsResource($action->show($this->user($request), $this->context($request), $campaign), true);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('investor/deal', $resource->resolve($request));
+    }
+
+    /** The live checkout sheet for one deal (`investor.checkout`), on both transports. */
+    public function checkout(ShowDealsRequest $request, GetInvestorCheckout $action, string $campaign): Response|InvestorCheckoutResource
+    {
+        $units = $request->validated('units');
+        $reservation = $request->validated('reservation');
+        $resource = new InvestorCheckoutResource($action->handle($this->user($request), $this->context($request), $campaign,
+            $units === null ? null : (int) $units, is_string($reservation) ? strtolower($reservation) : null));
+
+        return $request->routeIs('api.*') ? $resource : Inertia::render('investor/checkout', $resource->resolve($request));
     }
 
     private function user(ShowDealsRequest $request): int

@@ -34,9 +34,9 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
 
     return (
         <>
-            <h2 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
+            <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
                 {t('business.onboarding.documents.title')}
-            </h2>
+            </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                 {t('business.onboarding.documents.subtitle')}
             </p>
@@ -101,6 +101,7 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                         {t('business.onboarding.documents.certificate_number')}
                     </label>
                     <input
+                        aria-describedby="certificate-number-error"
                         id="certificate-number"
                         value={form.data.number}
                         onChange={(event) =>
@@ -113,7 +114,7 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                             form.errors.number !== undefined || undefined
                         }
                         disabled={verified}
-                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe3f0] bg-rz-field px-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border dark:border-rz-border"
+                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dbe3f0] bg-rz-field px-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border dark:border-rz-border"
                     />
                     <FieldError id="certificate-number-error">
                         {form.errors.number}

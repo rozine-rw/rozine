@@ -116,9 +116,9 @@ export default function BusinessPublish({
                 <span className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-2xl">
                     <Icon name="check-badge" tone="green" />
                 </span>
-                <h2 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
+                <h1 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
                     {t('business.publish.published.title')}
-                </h2>
+                </h1>
             </div>
             <p className="mt-3 text-[12.5px] leading-normal text-rz-secondary">
                 {t('business.publish.published.body', {
@@ -191,9 +191,9 @@ export default function BusinessPublish({
                         <span className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-2xl">
                             <Icon name="rocket" tone="green" />
                         </span>
-                        <h2 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
+                        <h1 className="text-[19px] leading-[1.25] font-semibold text-rz-ink">
                             {t('business.publish.title')}
-                        </h2>
+                        </h1>
                     </div>
                     <p className="mt-3 text-[12.5px] leading-normal text-rz-secondary">
                         {t('business.publish.intro', {

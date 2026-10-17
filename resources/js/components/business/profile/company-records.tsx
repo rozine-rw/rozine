@@ -9,9 +9,14 @@ import type { CompanyProfile, CompanyRegistration } from '@/types/business';
  * The certificate and signatories on file (MVP-BUSINESS-SCR-09). The design has no screen for
  * these, so they reuse its onboarding key–value card and people rows, read-only.
  */
-export function CompanyRecords({ company }: { company: CompanyProfile }) {
+export function CompanyRecords({
+    company,
+    certificate,
+}: {
+    company: CompanyProfile;
+    certificate: NonNullable<CompanyProfile['certificate']>;
+}) {
     const { t, locale } = useTranslation();
-    const { certificate } = company;
     const expired = certificate.status === 'expired';
 
     return (
@@ -100,7 +105,7 @@ export function CompanyRecords({ company }: { company: CompanyProfile }) {
 
 /**
  * The verified registration and mandate on file, read-only: what live Profile shows while no
- * contact or certificate record exists to edit. It reuses the same key–value card and people
+ * RDB certificate record is held. It reuses the same key–value card and people
  * rows; a sole trader has no company code line, and no year is shown when none is on file.
  */
 export function CompanyRegistrationRecord({

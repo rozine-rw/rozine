@@ -45,7 +45,49 @@ describe('Ledger', () => {
             screen.getByRole('searchbox', { name: 'Search the ledger' }),
             'contra{Enter}',
         );
-        expect(inertia.reload).toEqual([{ data: { q: 'contra' } }]);
+        expect(inertia.reload).toEqual([
+            {
+                data: {
+                    q: 'contra',
+                    entry: undefined,
+                    limit: undefined,
+                    before: undefined,
+                },
+            },
+        ]);
+    });
+
+    it('pages back to older entries and returns to the newest', () => {
+        const { unmount } = render(
+            <AdminLedger
+                {...ledgerProps(ledgerFixture)}
+                older={{ url: '/admin/ledger?before=LED-1880', method: 'get' }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: /Older entries/ }),
+        ).toHaveAttribute('href', '/admin/ledger?before=LED-1880');
+        expect(
+            screen.queryByRole('link', { name: /Back to the newest/ }),
+        ).not.toBeInTheDocument();
+        unmount();
+        render(
+            <AdminLedger
+                {...ledgerProps(ledgerFixture)}
+                more={null}
+                newest={{ url: '/admin/ledger', method: 'get' }}
+            />,
+        );
+        expect(
+            screen.getByRole('link', { name: /Back to the newest/ }),
+        ).toHaveAttribute('href', '/admin/ledger');
+        expect(
+            screen.queryByRole('link', { name: /See all/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /Older entries/ }),
+        ).not.toBeInTheDocument();
     });
 
     it('says when nothing is in range or the search found nothing', () => {
@@ -92,6 +134,11 @@ describe('Ledger', () => {
                 'Posted by System · disbursement dsb_0598 · 2026-09-23 16:20:37',
             ),
         ).toBeInTheDocument();
+        expect(
+            within(drawer).getByText(
+                'Flow started by PARTY-7F3K2Q9D · 2026-09-23 16:20:37. Later movements in the same flow keep this origin.',
+            ),
+        ).toBeInTheDocument();
         const postings = within(drawer).getByRole('table', {
             name: 'Postings',
         });
@@ -125,12 +172,18 @@ describe('Ledger', () => {
                 at: '2026-09-23T13:31:45+02:00',
                 reason: 'Duplicate credit',
             },
+            origin: null,
             contra_of: { id: 'LED-1911', link: { url: '/x', method: 'get' } },
             contra_by: null,
         };
         render(<AdminLedger {...fixture} />);
 
         expect(screen.getByText('Out of balance')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'No starting operation is recorded for this entry.',
+            ),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(/Reason: Duplicate credit/),
         ).toBeInTheDocument();

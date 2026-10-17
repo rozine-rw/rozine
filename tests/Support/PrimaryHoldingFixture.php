@@ -21,6 +21,7 @@ use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -103,15 +104,7 @@ final class PrimaryHoldingFixture
     /** @param array<string, mixed> $snapshot */
     private static function close(BusinessCampaign $campaign, array $snapshot, string $kind): string
     {
-        $disbursement = Disbursement::factory()->create([...['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
-            'exposure_reservation_id' => $campaign->exposure_reservation_id, 'amount' => $campaign->principal], ...$snapshot]);
-        [$maker, $checker] = [User::factory()->create()->id, User::factory()->create()->id];
-        $event = fn (int $revision, string $name, ?int $actor, ?string $operation = null): bool => DB::table('disbursement_events')->insert([
-            'id' => self::id(), 'disbursement_id' => $disbursement->id, 'revision' => $revision, 'kind' => $name, 'actor_user_id' => $actor,
-            'operation_id' => $actor === null ? null : ($operation ?? self::operation($actor)), 'request_id' => $actor === null ? null : (string) Str::uuid(),
-            'binding_sha256' => $name === 'authorized' ? str_repeat('b', 64) : null, 'destination_sha256' => $name === 'authorized' ? str_repeat('d', 64) : null,
-            'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
-        $event(1, 'authorized', $maker);
+        [$disbursement, $event, $maker, $checker] = self::authorized($campaign, $snapshot);
         if ($kind !== 'issued') {
             // An approve-time closing commits only with its own completed approve command (#96 5925545895).
             $closing = self::id();
@@ -122,22 +115,7 @@ final class PrimaryHoldingFixture
             return self::closing($disbursement->id, $kind, ['id' => $closing, 'cause' => 'approve_recheck', 'causes' => '["mandate"]', 'operation_id' => $approve->id,
                 'actor_user_id' => $checker, 'request_id' => $approve->request_id]);
         }
-        [$intent, $operation] = [self::id(), self::operation($checker)];
-        DB::table('disbursement_intents')->insert(['id' => $intent, 'disbursement_id' => $disbursement->id, 'operation_id' => $operation,
-            'request_id' => (string) Str::uuid(), 'revision' => 1, 'amount' => $disbursement->amount, 'currency' => 'RWF', 'destination_id' => 'dest-1',
-            'destination_revision' => 1, 'destination_sha256' => str_repeat('d', 64), 'commitments_digest' => $disbursement->commitments_digest,
-            'binding_sha256' => str_repeat('b', 64), 'intent_digest' => str_repeat('i', 64), 'provider' => 'synthetic', 'provider_reference' => 'x',
-            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => 'testing', 'idempotent_sends' => false, 'maker_user_id' => $maker,
-            'checker_user_id' => $checker, 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
-        $event(2, 'intent_recorded', $checker, $operation);
-        foreach (['queued', 'claimed', 'sent'] as $phase) {
-            if ($phase === 'sent') {
-                DB::table('disbursement_provider_calls')->insert(['id' => self::id(), 'intent_id' => $intent, 'kind' => 'send', 'source' => 'dispatch',
-                    'operation_id' => null, 'created_at' => now()]);
-            }
-            DB::table('disbursement_dispatches')->insert(['id' => self::id(), 'intent_id' => $intent, 'phase' => $phase, 'created_at' => now()]);
-        }
-        $event(3, 'dispatched', null);
+        [$intent, $operation] = self::dispatch($disbursement, $event, $maker, $checker, sent: true);
         [$observation, $reconciliation] = [self::id(), self::id()];
         DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
             'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'callback', 'state' => 'succeeded',
@@ -149,6 +127,78 @@ final class PrimaryHoldingFixture
 
         return self::closing($disbursement->id, 'issued', ['intent_id' => $intent, 'reconciliation_id' => $reconciliation, 'cause' => 'reconciled_success',
             'effective_at' => '2027-01-31T08:00:00Z', 'effective_date' => '2027-01-31', 'due_dates' => '["2027-02-28"]']);
+    }
+
+    /**
+     * The campaign's disbursement approved and dispatched, its payout in flight: sent to the
+     * provider, or a send whose delivery is unknown, optionally with an applied non-final provider
+     * observation.
+     */
+    /** The campaign's disbursement authorized by its maker, still awaiting the second approver. */
+    public static function awaitingApproval(BusinessCampaign $campaign): void
+    {
+        DB::transaction(fn (): array => self::authorized($campaign, []));
+    }
+
+    public static function inFlight(BusinessCampaign $campaign, bool $sent = true, ?string $observed = null): void
+    {
+        DB::transaction(function () use ($campaign, $sent, $observed): void {
+            [$disbursement, $event, $maker, $checker] = self::authorized($campaign, []);
+            [$intent, $operation] = self::dispatch($disbursement, $event, $maker, $checker, $sent);
+            if ($observed !== null) {
+                $observation = self::id();
+                DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
+                    'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'query', 'state' => $observed,
+                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+                    'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => null,
+                    'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
+            }
+        });
+    }
+
+    /**
+     * @param  Closure(int, string, ?int, ?string=): bool  $event
+     * @return array{string, string} the intent and its operation
+     */
+    private static function dispatch(Disbursement $disbursement, Closure $event, int $maker, int $checker, bool $sent): array
+    {
+        [$intent, $operation] = [self::id(), self::operation($checker)];
+        DB::table('disbursement_intents')->insert(['id' => $intent, 'disbursement_id' => $disbursement->id, 'operation_id' => $operation,
+            'request_id' => (string) Str::uuid(), 'revision' => 1, 'amount' => $disbursement->amount, 'currency' => 'RWF', 'destination_id' => 'dest-1',
+            'destination_revision' => 1, 'destination_sha256' => str_repeat('d', 64), 'commitments_digest' => $disbursement->commitments_digest,
+            'binding_sha256' => str_repeat('b', 64), 'intent_digest' => str_repeat('i', 64), 'provider' => 'synthetic', 'provider_reference' => 'x',
+            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => 'testing', 'idempotent_sends' => false, 'maker_user_id' => $maker,
+            'checker_user_id' => $checker, 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+        $event(2, 'intent_recorded', $checker, $operation);
+        foreach (['queued', 'claimed', $sent ? 'sent' : 'unsent'] as $phase) {
+            if ($phase === 'sent' || $phase === 'unsent') {
+                DB::table('disbursement_provider_calls')->insert(['id' => self::id(), 'intent_id' => $intent, 'kind' => 'send', 'source' => 'dispatch',
+                    'operation_id' => null, 'created_at' => now()]);
+            }
+            DB::table('disbursement_dispatches')->insert(['id' => self::id(), 'intent_id' => $intent, 'phase' => $phase, 'created_at' => now()]);
+        }
+        $event(3, 'dispatched', null);
+
+        return [$intent, $operation];
+    }
+
+    /**
+     * @param  array<string, mixed>  $snapshot
+     * @return array{Disbursement, Closure(int, string, ?int, ?string=): bool, int, int}
+     */
+    private static function authorized(BusinessCampaign $campaign, array $snapshot): array
+    {
+        $disbursement = Disbursement::factory()->create([...['business_campaign_id' => $campaign->id, 'business_id' => $campaign->business_id,
+            'exposure_reservation_id' => $campaign->exposure_reservation_id, 'amount' => $campaign->principal], ...$snapshot]);
+        [$maker, $checker] = [User::factory()->create()->id, User::factory()->create()->id];
+        $event = fn (int $revision, string $name, ?int $actor, ?string $operation = null): bool => DB::table('disbursement_events')->insert([
+            'id' => self::id(), 'disbursement_id' => $disbursement->id, 'revision' => $revision, 'kind' => $name, 'actor_user_id' => $actor,
+            'operation_id' => $actor === null ? null : ($operation ?? self::operation($actor)), 'request_id' => $actor === null ? null : (string) Str::uuid(),
+            'binding_sha256' => $name === 'authorized' ? str_repeat('b', 64) : null, 'destination_sha256' => $name === 'authorized' ? str_repeat('d', 64) : null,
+            'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+        $event(1, 'authorized', $maker);
+
+        return [$disbursement, $event, $maker, $checker];
     }
 
     /**

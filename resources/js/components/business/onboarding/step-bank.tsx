@@ -75,9 +75,9 @@ export function StepBank({
 
     const subtitle = (
         <>
-            <h2 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
+            <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
                 {t('business.onboarding.bank.title')}
-            </h2>
+            </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                 {t('business.onboarding.bank.subtitle', { count: required })}
             </p>
@@ -135,6 +135,7 @@ export function StepBank({
                     <Icon name="bank" />
                 </span>
                 <select
+                    aria-describedby="bank-error"
                     id="bank"
                     value={data.bank}
                     onChange={(event) =>
@@ -205,6 +206,7 @@ export function StepBank({
                 </button>
             </div>
             <input
+                aria-describedby="account-name-error"
                 id="account_name"
                 value={data.account_name}
                 onChange={(event) =>
@@ -214,7 +216,7 @@ export function StepBank({
                 aria-invalid={
                     form.errors.account_name !== undefined || undefined
                 }
-                className="mt-1.5 w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                className="mt-1.5 w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
             />
             <FieldError id="account-name-error">
                 {form.errors.account_name}
@@ -227,6 +229,7 @@ export function StepBank({
                 {t('business.onboarding.bank.account_number')}
             </label>
             <input
+                aria-describedby="account-number-error"
                 id="account_number"
                 inputMode="numeric"
                 maxLength={16}
@@ -240,7 +243,7 @@ export function StepBank({
                 placeholder={t(
                     'business.onboarding.bank.account_number_placeholder',
                 )}
-                className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm tracking-[.05em] text-rz-ink outline-none placeholder:text-rz-faint focus:border-rz-focus-border"
+                className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-sm tracking-[.05em] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border"
             />
             <FieldError id="account-number-error">
                 {form.errors.account_number}
@@ -270,6 +273,7 @@ export function StepBank({
 
                     return (
                         <button
+                            aria-describedby="signatories-error"
                             key={person.id}
                             type="button"
                             role="checkbox"

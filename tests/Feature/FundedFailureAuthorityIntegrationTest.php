@@ -14,7 +14,7 @@ use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Application\Wallet\PostingSource;
-use App\Domain\Operations\CommandRejection;
+use App\Domain\Disbursement\DisbursementViolation;
 use App\Domain\Wallet\WalletMoney;
 use App\Infrastructure\Business\RetainedFundedCampaignFacts;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
@@ -25,6 +25,7 @@ use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\PrimaryHoldingFixture;
 
@@ -145,8 +146,8 @@ it('keeps authenticated funded failure authority distinct from permission to ref
                 new PostingSource('primary_reservation', $purchase['reservation_id'], $purchase['cash']['origin_operation_id']));
         }))->toThrow(QueryException::class, 'Funded principal requires authoritative failed closing');
     }
-    expect(fn () => DB::transaction(fn () => app(EloquentFundedCampaigns::class)->failClose($facts, $call['instruction'])))
-        ->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
+    expect(fn () => DB::transaction(fn () => app(EloquentFundedCampaigns::class)->failClose($facts, new FailedClosing(strtolower((string) Str::ulid()), $call['instruction']->disbursementId, $call['instruction']->cause, $call['instruction']->causes))))
+        ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_UNAVAILABLE');
     expect([DB::table('ledger_entries')->orderBy('id')->get()->toJson(),
         DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count(),
         app(BusinessExposureStore::class)->current($facts->businessId)])->toBe($before)

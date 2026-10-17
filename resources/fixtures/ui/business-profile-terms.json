@@ -75,7 +75,12 @@
             }
         ],
         "security": {
-            "two_factor": false
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/business-profile-security",
+                "method": "put"
+            }
         },
         "provinces": [
             {
@@ -267,6 +272,13 @@
                     "body": "If any provision of these Terms is found unenforceable, the remaining provisions continue in full force. Rozine’s failure to enforce any right is not a waiver of that right. You may not assign your rights under these Terms; Rozine may assign or transfer its rights and obligations freely.\n\nThese Terms, together with the Privacy Note, constitute the entire agreement between your business and Rozine and supersede all prior understandings regarding the Platform."
                 }
             ]
+        },
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
         },
         "links": {
             "home": {

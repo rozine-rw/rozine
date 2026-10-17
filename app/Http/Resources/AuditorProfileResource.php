@@ -11,8 +11,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * The Auditor Profile page (auditor-filing-v1, MVP-AUDITOR-SCR profile): the accreditation facts
  * and `allowed_actions` exactly as `AccreditationView` presents them, with the links and command
  * targets the page may use. Jobs done counts the partner's filed reports and the open-offers
- * badge comes from their work as Jobs reads it. Facts without a record yet stay null — the
- * partner's firm, professional body and start year, quality score and on-time share — so the page
+ * badge comes from their work as Jobs reads it; the on-time share is their own track record. Facts
+ * without a record yet stay null — the partner's firm, professional body and start year and the
+ * quality score — so the page
  * leaves them out rather than showing a stand-in. Every section of the design's menu is linked:
  * contact carries the account's own email, security whether two-factor sign-in is on, and legal
  * the engagement terms the partner accepted; earnings, the payout account, telemetry and the
@@ -23,7 +24,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  *
- * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int}
+ * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int, on_time_pct?: int|null}
  */
 class AuditorProfileResource extends JsonResource
 {
@@ -54,7 +55,7 @@ class AuditorProfileResource extends JsonResource
             'section' => in_array($page['section'], self::SECTIONS, true) ? $page['section'] : self::DEFAULT_SECTION,
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,
-            'on_time_pct' => null,
+            'on_time_pct' => $page['on_time_pct'] ?? null,
             'jobs_done' => $page['filed'],
             'contact' => ['email' => $page['email'], 'phone' => null, 'address' => null],
             'security' => ['two_factor' => $page['two_factor']],

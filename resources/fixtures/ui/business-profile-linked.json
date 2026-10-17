@@ -75,7 +75,12 @@
             }
         ],
         "security": {
-            "two_factor": false
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/business-profile-security",
+                "method": "put"
+            }
         },
         "provinces": [
             {
@@ -188,13 +193,21 @@
                     "detail": "+250 788 ···· 211",
                     "unlink": {
                         "url": "/preview/business-profile-linked",
-                        "method": "delete"
+                        "method": "post"
                     }
                 }
             ],
-            "add": null
+            "add": null,
+            "banks": []
         },
         "legal": null,
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",

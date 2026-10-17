@@ -26,19 +26,27 @@ class InvestorWalletResource extends JsonResource
         $movement = $data['history']['movement'];
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
-            'allowed_actions' => $data['allowed_actions'], 'wallet' => $data['wallet'], 'holds' => [], 'funding' => $data['funding'],
+            'allowed_actions' => $data['allowed_actions'], 'wallet' => $data['wallet'],
+            'holds' => array_map(fn (array $hold): array => ['reservation_id' => $hold['reservation_id'], 'deal_name' => $hold['deal_name'], 'amount' => $hold['amount'],
+                'units' => $hold['units'], 'clock' => ['starts_at' => $hold['starts_at'], 'expires_at' => $hold['expires_at']],
+                'link' => self::link($request, 'investor.checkout', ['campaign' => $hold['campaign_id'], 'reservation' => $hold['reservation_id']])], $data['holds']),
+            'funding' => $data['funding'],
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $context, $deposit), $data['deposits']),
+            'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,
                 'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key])], ['external', 'internal']),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, 'before' => $data['history']['next_before']])]],
-            'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null, 'exports' => null,
+            'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null,
+            'exports' => ['csv' => self::link($request, 'investor.wallet.statement', ['format' => 'csv']), 'pdf' => self::link($request, 'investor.wallet.statement', ['format' => 'pdf'])],
             'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $wallet(), 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'), 'close' => $wallet(),
-                'deposit' => $wallet(['kind' => 'deposit']), 'link_account' => null, 'operation' => self::lookup($request, $context),
+                'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => $wallet(['kind' => 'withdraw']), 'link_account' => null,
+                'operation' => self::lookup($request, $context), 'withdraw_operation' => self::lookup($request, $context, null, 'wallet.withdraw'),
                 'changes' => isset($data['changes_cursor']) ? self::link($request, 'changes.index', ['topics' => 'wallet', 'after' => (string) $data['changes_cursor']]) : null],
-            'actions' => ['deposit' => ['url' => route(self::prefix($request).'investor.wallet.deposit', [], false), 'method' => 'post']]];
+            'actions' => ['deposit' => ['url' => route(self::prefix($request).'investor.wallet.deposit', [], false), 'method' => 'post'],
+                'withdraw' => ['url' => route(self::prefix($request).'investor.wallet.withdraw', [], false), 'method' => 'post']]];
     }
 
     /**
@@ -57,15 +65,31 @@ class InvestorWalletResource extends JsonResource
     }
 
     /**
-     * The operation lookup. Without a request id its url keeps the literal `{request_id}` token.
+     * A recorded withdrawal with its links: the request receipt resolves through the withdrawal
+     * lookup by its own request; the withdrawal and its settled receipt open on the wallet.
+     *
+     * @param  array<string, mixed>  $withdrawal
+     * @return array<string, mixed>
+     */
+    public static function withdrawal(Request $request, int $context, array $withdrawal): array
+    {
+        $opens = self::link($request, 'investor.wallet', ['receipt' => $withdrawal['id']]);
+
+        return [...$withdrawal, 'request_receipt' => [...$withdrawal['request_receipt'], 'link' => self::lookup($request, $context, $withdrawal['request_id'], 'wallet.withdraw')],
+            'settled_receipt' => $withdrawal['settled_receipt'] === null ? null : [...$withdrawal['settled_receipt'], 'link' => $opens], 'link' => $opens];
+    }
+
+    /**
+     * The operation lookup for a wallet command. Without a request id its url keeps the literal
+     * `{request_id}` token.
      *
      * @return array{url: string, method: 'get'}
      */
-    public static function lookup(Request $request, int $context, ?string $requestId = null): array
+    public static function lookup(Request $request, int $context, ?string $requestId = null, string $command = 'wallet.deposit'): array
     {
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $url = route(self::prefix($request).'investor.wallet.operations.show',
-            ['request_id' => $requestId ?? $placeholder, 'command' => 'wallet.deposit', 'identity_context_revision' => $context], false);
+            ['request_id' => $requestId ?? $placeholder, 'command' => $command, 'identity_context_revision' => $context], false);
 
         return ['url' => $requestId === null ? str_replace($placeholder, '{request_id}', $url) : $url, 'method' => 'get'];
     }
@@ -80,9 +104,12 @@ class InvestorWalletResource extends JsonResource
             return null;
         }
 
-        return $receipt['type'] === 'deposit' ? self::deposit($request, $context, $receipt['deposit'])
-            : [...$receipt['entry'], 'link' => self::link($request, 'investor.wallet', ['receipt' => $receipt['entry']['id']]),
-                'receipt' => [...$receipt['receipt'], 'link' => self::link($request, 'investor.wallet', ['receipt' => $receipt['entry']['id']])]];
+        return match ($receipt['type']) {
+            'deposit' => self::deposit($request, $context, $receipt['deposit']),
+            'withdrawal' => self::withdrawal($request, $context, $receipt['withdrawal']),
+            default => [...$receipt['entry'], 'link' => self::link($request, 'investor.wallet', ['receipt' => $receipt['entry']['id']]),
+                'receipt' => [...$receipt['receipt'], 'link' => self::link($request, 'investor.wallet', ['receipt' => $receipt['entry']['id']])]],
+        };
     }
 
     /**

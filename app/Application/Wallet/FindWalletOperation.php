@@ -15,10 +15,10 @@ final class FindWalletOperation
     /** @return array<string, mixed> */
     public function handle(int $userId, int $contextRevision, string $command, string $requestId): array
     {
-        if ($command !== 'wallet.deposit') {
-            throw new CommandRejection('OPERATION_NOT_FOUND', 404);
-        }
-
-        return $this->store->findDeposit($userId, $contextRevision, $requestId);
+        return match ($command) {
+            'wallet.deposit' => $this->store->findDeposit($userId, $contextRevision, $requestId),
+            'wallet.withdraw' => $this->store->findWithdrawal($userId, $contextRevision, $requestId),
+            default => throw new CommandRejection('OPERATION_NOT_FOUND', 404),
+        };
     }
 }

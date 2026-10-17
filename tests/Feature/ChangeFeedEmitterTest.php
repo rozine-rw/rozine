@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\ReadChanges;
+use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Domain\Operations\ChangeScope;
 use App\Models\BusinessCampaign;
 use App\Models\InvestorWallet;
@@ -14,6 +15,9 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryFailedClosingFixture;
+use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\PrimaryIssuanceFixture;
 
 /*
  * The C3 effects that emit a beacon change (S4-E), each in the effect's own transaction: a
@@ -179,4 +183,52 @@ it('gives each live page its beacon link at the render-time cursor, and none ove
         ->json('data.links.changes.url'))->toStartWith('/api/v1/changes?topics=campaign&after=');
     Sanctum::actingAs($live['staff'], ['staff:applications:read']);
     expect($this->getJson(route('api.v1.staff.applications.index'))->json('data.links'))->toHaveKey('changes', null);
+});
+
+/**
+ * The last `$count` Investor changes, each named by its buyer (A for the first Party to buy, B
+ * for the second) and topic.
+ *
+ * @return list<string>
+ */
+function lastInvestorChanges(int $count): array
+{
+    $rows = DB::table('change_feed')->whereNotNull('party_id')->orderBy('id')->get(['party_id', 'topic']);
+    $buyers = array_flip(array_values(array_unique($rows->pluck('party_id')->all())));
+
+    return array_slice($rows->map(fn (object $row): string => ['A', 'B'][$buyers[$row->party_id]].' '.$row->topic)->all(), -$count);
+}
+
+it('tells each funded Investor when their raise is funded, its payout approved, sent and confirmed, and their Holding issued', function (): void {
+    ['instruction' => $instruction, 'campaign' => $campaign] = PrimaryIssuanceFixture::close();
+
+    expect(lastInvestorChanges(12))->toBe([
+        'A purchase', 'B purchase', // funding locked
+        'A purchase', 'B purchase', // payout approved
+        'A purchase', 'B purchase', // payout sent
+        'A purchase', 'B purchase', // provider confirmed it
+        'A wallet', 'B wallet', 'A purchase', 'B purchase', // Holdings issued
+    ]);
+
+    $count = DB::table('change_feed')->count();
+    PrimaryIssuanceFixture::replay($campaign, $instruction);
+    expect(DB::table('change_feed')->count())->toBe($count);
+});
+
+it('tells each funded Investor when a failed closing refunds their purchase', function (): void {
+    PrimaryFailedClosingFixture::close();
+
+    expect(lastInvestorChanges(6))->toBe([
+        'A purchase', 'B purchase', // funding locked
+        'A wallet', 'A purchase', 'B wallet', 'B purchase', // refunded by the failed closing
+    ]);
+});
+
+it('tells nobody again when a funding lock is replayed', function (): void {
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed();
+    $count = DB::table('change_feed')->count();
+
+    DB::transaction(fn (): array => app(PrimaryFunding::class)->lock($campaign->id, fn (): array => PrimaryHoldingFixture::admission($campaign)));
+
+    expect(DB::table('change_feed')->count())->toBe($count);
 });

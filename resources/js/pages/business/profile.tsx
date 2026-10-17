@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 import { BusinessShell } from '@/components/business/business-shell';
 import {
     PendingSection,
@@ -10,9 +11,15 @@ import {
     CompanyRecords,
     CompanyRegistrationRecord,
 } from '@/components/business/profile/company-records';
+import {
+    HELP_GROUPS,
+    HELP_UPDATED,
+} from '@/components/business/profile/help-answers';
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
+import { HelpCenter } from '@/components/rozine/help-center';
+import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { BusinessProfileProps } from '@/types/business';
@@ -37,10 +44,12 @@ export default function BusinessProfile({
     security,
     linked,
     legal,
+    support,
     links,
     actions,
 }: BusinessProfileProps) {
     const { t } = useTranslation();
+    const [supportRequest, setSupportRequest] = useState(0);
 
     return (
         <BusinessShell
@@ -97,9 +106,13 @@ export default function BusinessProfile({
                                         action={actions.save_company}
                                     />
                                 )}
-                            {company !== null && (
-                                <CompanyRecords company={company} />
-                            )}
+                            {company !== null &&
+                                company.certificate !== null && (
+                                    <CompanyRecords
+                                        company={company}
+                                        certificate={company.certificate}
+                                    />
+                                )}
                             {registration !== null && (
                                 <CompanyRegistrationRecord
                                     registration={registration}
@@ -122,7 +135,22 @@ export default function BusinessProfile({
                         ) : (
                             <LinkedAccounts linked={linked} />
                         ))}
-                    {section === 'support' && <PendingSection kind="support" />}
+                    {section === 'support' && (
+                        <>
+                            <HelpCenter
+                                intro="business.help.intro"
+                                groups={HELP_GROUPS}
+                                updated={HELP_UPDATED}
+                                onMessage={() =>
+                                    setSupportRequest((n) => n + 1)
+                                }
+                            />
+                            <SupportChat
+                                support={support}
+                                openRequest={supportRequest}
+                            />
+                        </>
+                    )}
                     {(section === 'terms' || section === 'privacy') &&
                         (legal === null ? (
                             <PendingSection kind={section} />
