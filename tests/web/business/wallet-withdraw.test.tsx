@@ -45,7 +45,7 @@ afterEach(() => {
 describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
     it('quotes a withdrawal to the Business account and records it as business.wallet.withdraw', async () => {
         vi.useFakeTimers();
-        render(<BusinessWallet {...wallet()} />);
+        const { rerender } = render(<BusinessWallet {...wallet()} />);
 
         const panel = screen.getByRole('form', { name: 'Withdraw' });
 
@@ -68,13 +68,26 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
             screen.queryByRole('form', { name: 'Add money' }),
         ).not.toBeInTheDocument();
 
+        inertia.holdReload = true;
         fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
             target: { value: '40,000' },
         });
-        act(() => vi.advanceTimersByTime(300));
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm withdrawal' }),
+        ).toBeDisabled();
+        void act(() => vi.advanceTimersByTime(300));
         expect(inertia.reloads.at(-1)).toMatchObject({
             only: ['funding'],
             data: { kind: 'withdraw', amount: '40000' },
+        });
+        const quoted = wallet();
+
+        quoted.funding.withdrawal!.quote!.amount.amount = '40000';
+        quoted.funding.withdrawal!.quote!.received.amount = '40000';
+        inertia.reloadProps = quoted;
+        rerender(<BusinessWallet {...quoted} />);
+        act(() => {
+            inertia.finishReload[0]();
         });
         vi.useRealTimers();
         fireEvent.click(within(panel).getByRole('radio', { name: /MTN/u }));
@@ -164,7 +177,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
             '/preview/business-wallet-withdrawal-receipt',
         );
 
-        act(() => vi.advanceTimersByTime(POLL_INTERVAL_MS));
+        void act(() => vi.advanceTimersByTime(POLL_INTERVAL_MS));
         expect(inertia.reloads.at(-1)).toMatchObject({
             only: ['wallet', 'deposits', 'withdrawals', 'history'],
         });
