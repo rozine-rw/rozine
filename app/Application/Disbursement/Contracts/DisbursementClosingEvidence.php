@@ -19,8 +19,8 @@ use App\Application\Disbursement\ClosingEvidence;
  * contradicts itself or its ancestry refuses `DISBURSEMENT_CLOSING_INTEGRITY_FAILED`. Neither is
  * ever an evidenced financial failure.
  *
- * It is safe to call from inside the closing's own effect. An approve-time closing (cause
- * `approve_recheck`) is recorded before the operation journal records its approve command, so its
+ * It is safe to call from inside the closing's own effect. A legacy approve-time closing (cause
+ * `approve_recheck`, recorded by the retired maker/checker release and still read as history) was recorded before the operation journal records its approve command, so its
  * command authority (`disbursement.approve`, this disbursement, the approve's actor and request)
  * is retained in the closing itself, digested, and the deferred `disbursement_closings_authority`
  * trigger refuses the outer commit unless the recorded command matches it and its receipt names

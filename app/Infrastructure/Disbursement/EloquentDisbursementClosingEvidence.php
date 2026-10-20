@@ -16,9 +16,11 @@ use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderEvent;
 use App\Models\DisbursementReconciliation;
+use App\Models\DisbursementStepUpProof;
 use Brick\Math\BigInteger;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Authenticates a retained closing from its own records (#96 5925426310, 5925545895): the closing
@@ -39,15 +41,24 @@ use Illuminate\Database\Eloquent\Model;
  * retried read sees the same historical evidence.
  *
  * An automatic closing (`auto_recheck`, BRS v2.0 SVC-R01) carries no intent and no staff authority:
- * the system closed a funded campaign whose recheck failed before any payout was recorded. No
- * closing carries staff authority any more; one recorded at approve under the retired maker/checker
- * release is refused as unverifiable.
+ * the system closed a funded campaign whose recheck failed before any payout was recorded. New
+ * closings carry no staff authority.
+ *
+ * Legacy approve command authority: a failed closing recorded at approve under the retired
+ * maker/checker release (`approve_recheck`) stays verifiable history. It belongs to a disbursement
+ * opened before the platform fee, retains the approve's operation, actor and request in its digested
+ * payload and native columns, and is checked against the step-up proof that approve consumed and the
+ * recorded `disbursement.approve` command of this disbursement by that actor and request, completed
+ * with a `CAMPAIGN_FAILED_CLOSING` receipt naming this closing. Retiring the approve command does
+ * not revoke the evidence it already recorded.
  */
 final class EloquentDisbursementClosingEvidence implements DisbursementClosingEvidence
 {
     private const string UNAVAILABLE = 'DISBURSEMENT_CLOSING_UNAVAILABLE';
 
     private const string INTEGRITY_FAILED = 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED';
+
+    private const string APPROVE = 'disbursement.approve';
 
     public function __construct(private CanonicalJson $json) {}
 
@@ -74,14 +85,18 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
         if ($closing->reconciliation_id !== null && $intent !== null) {
             $this->assertReconciliation($closing->reconciliation_id, $closing, $payload, $intent);
         }
+        if ($closing->cause === 'approve_recheck') {
+            $this->assertApproveAuthority($closing, $disbursement);
+        }
         if ($closing->kind === 'issued') {
             $this->assertSchedule($closing, $disbursement);
         }
 
-        // assertClosing admitted only the four closing shapes.
+        // assertClosing admitted only the five closing shapes.
         $kind = $closing->kind === 'issued' ? 'issued' : 'failed_closing';
         $cause = match ($closing->cause) {
             'auto_recheck' => 'auto_recheck',
+            'approve_recheck' => 'approve_recheck',
             'worker_recheck' => 'worker_recheck',
             'reconciled_failure' => 'reconciled_failure',
             default => 'reconciled_success',
@@ -142,10 +157,11 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
     private function assertClosing(DisbursementClosing $closing, array $payload, Disbursement $disbursement): void
     {
         $failed = $closing->kind === 'failed_closing';
+        $approve = $closing->cause === 'approve_recheck';
         $expected = ['closing_id' => $closing->id, 'disbursement_id' => $disbursement->id, 'kind' => $closing->kind, 'cause' => $closing->cause,
             'causes' => $closing->causes, 'intent_id' => $closing->intent_id, 'reconciliation_id' => $closing->reconciliation_id,
             'provider_event_id' => $closing->reconciliation_id === null ? null : ($payload['provider_event_id'] ?? null),
-            'operation_id' => $closing->operation_id, 'command' => null, 'actor_user_id' => $closing->actor_user_id,
+            'operation_id' => $closing->operation_id, 'command' => $approve ? self::APPROVE : null, 'actor_user_id' => $closing->actor_user_id,
             'request_id' => $closing->request_id, 'effective_at' => $closing->effective_at?->toIso8601String(),
             'effective_date' => $closing->effective_date?->format('Y-m-d'), 'due_dates' => $closing->due_dates,
             'refund' => $failed ? ['commitments' => $disbursement->commitment_count, 'amount' => $disbursement->amount, 'fee' => '0'] : null,
@@ -164,9 +180,11 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
             'reconciled_failure' => $failed && $intent && $reconciled && ! $operation && ! $effective,
             'worker_recheck' => $failed && $intent && ! $reconciled && ! $operation && ! $effective && $closing->causes !== [],
             'auto_recheck' => $failed && ! $intent && ! $reconciled && ! $operation && ! $effective && $closing->causes !== [],
+            'approve_recheck' => $failed && ! $intent && ! $reconciled && $operation && ! $effective && $closing->causes !== []
+                && $disbursement->fee_version === null,
             default => false,
         };
-        if ($payload !== $expected || ! $causes || ! $shape || $authority || $closing->request_id !== null
+        if ($payload !== $expected || ! $causes || ! $shape || $authority !== $approve || (! $approve && $closing->request_id !== null)
             || ! in_array($closing->kind, ['issued', 'failed_closing'], true)) {
             throw new DisbursementViolation(self::INTEGRITY_FAILED);
         }
@@ -249,6 +267,26 @@ final class EloquentDisbursementClosingEvidence implements DisbursementClosingEv
             || $event->provider_reference_sha256 !== $intent->provider_reference_sha256 || $event->environment !== $intent->environment
             || $event->amount !== $intent->amount || $event->currency !== 'RWF' || $event->destination_sha256 !== $intent->destination_sha256
             || ($issued && ($effectiveAt === null || $closing->effective_at?->toIso8601String() !== $effectiveAt))) {
+            throw new DisbursementViolation(self::INTEGRITY_FAILED);
+        }
+    }
+
+    /**
+     * The legacy approve that closed before any intent: its retained command authority, against the
+     * step-up proof it consumed and, once the journal has recorded it, the command itself.
+     */
+    private function assertApproveAuthority(DisbursementClosing $closing, Disbursement $disbursement): void
+    {
+        $proof = DisbursementStepUpProof::query()->where('consumed_operation_id', $closing->operation_id)->first() ?? throw new DisbursementViolation(self::UNAVAILABLE);
+        $operation = DB::table('command_operations')->where('id', $closing->operation_id)
+            ->first(['command', 'actor_user_id', 'request_id', 'target_type', 'target_id', 'result']);
+        $result = $operation === null ? null : json_decode((string) $operation->result, true);
+        $recorded = is_array($result) ? [$result['status'] ?? null, $result['code'] ?? null, $result['data']['receipt']['receipt_id'] ?? null] : null;
+        if ($proof->purpose !== self::APPROVE || $proof->disbursement_id !== $disbursement->id || $proof->amount !== $disbursement->amount
+            || $proof->consumed_at === null || $proof->actor_user_id !== $closing->actor_user_id
+            || ($operation !== null && ([$operation->command, (int) $operation->actor_user_id, (string) $operation->request_id, $operation->target_type,
+                $operation->target_id, $recorded] !== [self::APPROVE, $closing->actor_user_id, $closing->request_id, 'disbursement', $disbursement->id,
+                    ['completed', 'CAMPAIGN_FAILED_CLOSING', $closing->id]]))) {
             throw new DisbursementViolation(self::INTEGRITY_FAILED);
         }
     }
