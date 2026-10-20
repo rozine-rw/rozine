@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +17,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +36,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +46,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +66,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::index
-* @see app/Http/Controllers/StaffDisbursementController.php:28
+* @see app/Http/Controllers/StaffDisbursementController.php:25
 * @route '/api/v1/staff/disbursements'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 export const show = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +98,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 show.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -125,7 +125,7 @@ show.url = (args: { disbursement: string | number } | [disbursement: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 show.get = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -135,7 +135,7 @@ show.get = (args: { disbursement: string | number } | [disbursement: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 show.head = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -145,7 +145,7 @@ show.head = (args: { disbursement: string | number } | [disbursement: string | n
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 const showForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -155,7 +155,7 @@ const showForm = (args: { disbursement: string | number } | [disbursement: strin
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 showForm.get = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -165,7 +165,7 @@ showForm.get = (args: { disbursement: string | number } | [disbursement: string 
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::show
-* @see app/Http/Controllers/StaffDisbursementController.php:33
+* @see app/Http/Controllers/StaffDisbursementController.php:30
 * @route '/api/v1/staff/disbursements/{disbursement}'
 */
 showForm.head = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,304 +181,8 @@ showForm.head = (args: { disbursement: string | number } | [disbursement: string
 show.form = showForm
 
 /**
-* @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:48
-* @route '/api/v1/staff/disbursements/{disbursement}/step-up'
-*/
-export const stepUp = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: stepUp.url(args, options),
-    method: 'post',
-})
-
-stepUp.definition = {
-    methods: ["post"],
-    url: '/api/v1/staff/disbursements/{disbursement}/step-up',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:48
-* @route '/api/v1/staff/disbursements/{disbursement}/step-up'
-*/
-stepUp.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { disbursement: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            disbursement: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        disbursement: args.disbursement,
-    }
-
-    return stepUp.definition.url
-            .replace('{disbursement}', parsedArgs.disbursement.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:48
-* @route '/api/v1/staff/disbursements/{disbursement}/step-up'
-*/
-stepUp.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: stepUp.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:48
-* @route '/api/v1/staff/disbursements/{disbursement}/step-up'
-*/
-const stepUpForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: stepUp.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::stepUp
-* @see app/Http/Controllers/StaffDisbursementController.php:48
-* @route '/api/v1/staff/disbursements/{disbursement}/step-up'
-*/
-stepUpForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: stepUp.url(args, options),
-    method: 'post',
-})
-
-stepUp.form = stepUpForm
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::authorize
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/authorize'
-*/
-export const authorize = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: authorize.url(args, options),
-    method: 'post',
-})
-
-authorize.definition = {
-    methods: ["post"],
-    url: '/api/v1/staff/disbursements/{disbursement}/authorize',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::authorize
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/authorize'
-*/
-authorize.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { disbursement: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            disbursement: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        disbursement: args.disbursement,
-    }
-
-    return authorize.definition.url
-            .replace('{disbursement}', parsedArgs.disbursement.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::authorize
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/authorize'
-*/
-authorize.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: authorize.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::authorize
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/authorize'
-*/
-const authorizeForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: authorize.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::authorize
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/authorize'
-*/
-authorizeForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: authorize.url(args, options),
-    method: 'post',
-})
-
-authorize.form = authorizeForm
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::approve
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/approve'
-*/
-export const approve = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: approve.url(args, options),
-    method: 'post',
-})
-
-approve.definition = {
-    methods: ["post"],
-    url: '/api/v1/staff/disbursements/{disbursement}/approve',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::approve
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/approve'
-*/
-approve.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { disbursement: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            disbursement: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        disbursement: args.disbursement,
-    }
-
-    return approve.definition.url
-            .replace('{disbursement}', parsedArgs.disbursement.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::approve
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/approve'
-*/
-approve.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: approve.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::approve
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/approve'
-*/
-const approveForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: approve.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::approve
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/approve'
-*/
-approveForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: approve.url(args, options),
-    method: 'post',
-})
-
-approve.form = approveForm
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::reject
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/reject'
-*/
-export const reject = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: reject.url(args, options),
-    method: 'post',
-})
-
-reject.definition = {
-    methods: ["post"],
-    url: '/api/v1/staff/disbursements/{disbursement}/reject',
-} satisfies RouteDefinition<["post"]>
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::reject
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/reject'
-*/
-reject.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
-    if (typeof args === 'string' || typeof args === 'number') {
-        args = { disbursement: args }
-    }
-
-    if (Array.isArray(args)) {
-        args = {
-            disbursement: args[0],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        disbursement: args.disbursement,
-    }
-
-    return reject.definition.url
-            .replace('{disbursement}', parsedArgs.disbursement.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::reject
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/reject'
-*/
-reject.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-    url: reject.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::reject
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/reject'
-*/
-const rejectForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: reject.url(args, options),
-    method: 'post',
-})
-
-/**
-* @see \App\Http\Controllers\StaffDisbursementController::reject
-* @see app/Http/Controllers/StaffDisbursementController.php:38
-* @route '/api/v1/staff/disbursements/{disbursement}/reject'
-*/
-rejectForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-    action: reject.url(args, options),
-    method: 'post',
-})
-
-reject.form = rejectForm
-
-/**
 * @see \App\Http\Controllers\StaffDisbursementController::hold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/hold'
 */
 export const hold = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -493,7 +197,7 @@ hold.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::hold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/hold'
 */
 hold.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -520,7 +224,7 @@ hold.url = (args: { disbursement: string | number } | [disbursement: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::hold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/hold'
 */
 hold.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -530,7 +234,7 @@ hold.post = (args: { disbursement: string | number } | [disbursement: string | n
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::hold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/hold'
 */
 const holdForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -540,7 +244,7 @@ const holdForm = (args: { disbursement: string | number } | [disbursement: strin
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::hold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/hold'
 */
 holdForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -552,7 +256,7 @@ hold.form = holdForm
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::releaseHold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/release-hold'
 */
 export const releaseHold = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -567,7 +271,7 @@ releaseHold.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::releaseHold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/release-hold'
 */
 releaseHold.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -594,7 +298,7 @@ releaseHold.url = (args: { disbursement: string | number } | [disbursement: stri
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::releaseHold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/release-hold'
 */
 releaseHold.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -604,7 +308,7 @@ releaseHold.post = (args: { disbursement: string | number } | [disbursement: str
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::releaseHold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/release-hold'
 */
 const releaseHoldForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -614,7 +318,7 @@ const releaseHoldForm = (args: { disbursement: string | number } | [disbursement
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::releaseHold
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/release-hold'
 */
 releaseHoldForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -626,7 +330,7 @@ releaseHold.form = releaseHoldForm
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::requery
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/requery'
 */
 export const requery = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -641,7 +345,7 @@ requery.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::requery
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/requery'
 */
 requery.url = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -668,7 +372,7 @@ requery.url = (args: { disbursement: string | number } | [disbursement: string |
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::requery
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/requery'
 */
 requery.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -678,7 +382,7 @@ requery.post = (args: { disbursement: string | number } | [disbursement: string 
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::requery
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/requery'
 */
 const requeryForm = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -688,7 +392,7 @@ const requeryForm = (args: { disbursement: string | number } | [disbursement: st
 
 /**
 * @see \App\Http\Controllers\StaffDisbursementController::requery
-* @see app/Http/Controllers/StaffDisbursementController.php:38
+* @see app/Http/Controllers/StaffDisbursementController.php:35
 * @route '/api/v1/staff/disbursements/{disbursement}/requery'
 */
 requeryForm.post = (args: { disbursement: string | number } | [disbursement: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -702,10 +406,6 @@ const disbursements = {
     index: Object.assign(index, index),
     operations: Object.assign(operations, operations),
     show: Object.assign(show, show),
-    stepUp: Object.assign(stepUp, stepUp),
-    authorize: Object.assign(authorize, authorize),
-    approve: Object.assign(approve, approve),
-    reject: Object.assign(reject, reject),
     hold: Object.assign(hold, hold),
     releaseHold: Object.assign(releaseHold, releaseHold),
     requery: Object.assign(requery, requery),
