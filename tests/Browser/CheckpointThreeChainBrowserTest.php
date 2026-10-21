@@ -207,7 +207,7 @@ function c3ReserveAndConfirm(BrowserJourney $journey, string $session, int $unit
             await page.getByRole("button", {name:/^Reserve · /}).click();
             await page.getByRole("checkbox").check();
             const confirmed = page.waitForResponse((response) => response.url().includes("/confirm") && response.request().method() === "POST");
-            await page.getByRole("button", {name:/^Confirm · /}).click();
+            await page.getByRole("button", {name:/^Confirm investment · /}).click();
             const response = await confirmed;
             const sent = response.request().postDataJSON();
             const body = await response.json();

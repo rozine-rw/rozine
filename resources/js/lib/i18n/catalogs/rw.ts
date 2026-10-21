@@ -3335,7 +3335,8 @@ const rw: Catalog = {
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
     'investor.checkout.pay_with': 'ISHYURA UKORESHEJE',
     'investor.checkout.wallet': 'Ikofi',
-    'investor.checkout.wallet_detail': 'Ikofi ya Rozine · {amount} birahari',
+    'investor.checkout.funding_source': 'Aho amafaranga ava',
+    'investor.checkout.wallet_available': 'Ahari: {amount}',
     'investor.checkout.insufficient':
         'Amafaranga arenze ayo ufite ku ikofi. Shyira amafaranga ku ikofi cyangwa ugabanye umubare.',
     'investor.checkout.deposit': 'Shyiraho',
@@ -3357,7 +3358,7 @@ const rw: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Amabwiriza yahindutse urimo gusoma. Yongere uyasome wemeze.',
     'investor.checkout.processing': 'Biremezwa…',
-    'investor.checkout.confirm': 'Emeza · {amount}',
+    'investor.checkout.confirm': 'Emeza ishoramari · {amount}',
     'investor.checkout.fine_print':
         'Amafaranga ahita yiyemezwa · Inyungu iteganyijwe, ntisezeranyijwe',
     'investor.checkout.confirmed': 'Ishoramari ryemejwe',

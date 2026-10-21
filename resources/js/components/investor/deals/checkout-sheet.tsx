@@ -18,6 +18,7 @@ import {
 import { ACCENT_FILL, POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice, useRefusalText } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
+import { LogoMark } from '@/components/rozine/logo';
 import { useC3Command } from '@/hooks/use-c3-command';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
@@ -649,11 +650,30 @@ export function CheckoutSheet({
                     {t('investor.checkout.c3.indicative')}
                 </p>
                 {quoteRows}
-                <p className="mt-[7px] text-center text-[11px] text-rz-secondary">
-                    {t('investor.checkout.wallet_detail', {
-                        amount: formatRwf(wallet.available),
-                    })}
+                <p className={cn(LABEL, 'mt-3.5')}>
+                    {t('investor.checkout.funding_source')}
                 </p>
+                <div className="mt-[7px] flex items-center gap-3 rounded-2xl border border-rz-accent-fill bg-rz-surface px-3.5 py-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft">
+                        <LogoMark className="size-[18px] text-rz-accent-fill" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-[13.5px] font-semibold text-rz-ink">
+                            {t('investor.wallet.rozine_wallet')}
+                        </span>
+                        <span className="mt-px block text-xs text-rz-slate">
+                            {t('investor.checkout.wallet_available', {
+                                amount: formatRwf(wallet.available),
+                            })}
+                        </span>
+                    </span>
+                    <span
+                        aria-hidden
+                        className="flex size-5 shrink-0 items-center justify-center rounded-full bg-rz-accent-fill text-xs text-white"
+                    >
+                        ✓
+                    </span>
+                </div>
                 {shortWallet}
                 {pageRefusal}
             </div>

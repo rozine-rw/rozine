@@ -3346,8 +3346,8 @@ const fr: Catalog = {
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.pay_with': 'PAYER AVEC',
     'investor.checkout.wallet': 'Portefeuille',
-    'investor.checkout.wallet_detail':
-        'Portefeuille Rozine · {amount} disponibles',
+    'investor.checkout.funding_source': 'Source de financement',
+    'investor.checkout.wallet_available': 'Disponible : {amount}',
     'investor.checkout.insufficient':
         'Le montant dépasse votre solde. Déposez sur votre portefeuille ou réduisez le montant.',
     'investor.checkout.deposit': 'Déposer',
@@ -3369,7 +3369,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer · {amount}',
+    'investor.checkout.confirm': 'Confirmer l’investissement · {amount}',
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
