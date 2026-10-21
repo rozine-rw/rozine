@@ -282,6 +282,52 @@
                 }
             ]
         },
-        "party": null
+        "party": null,
+        "desk": [
+            {
+                "id": "aud_claude",
+                "name": "Claude Mukamana, CPA",
+                "licence": "PPC-0501",
+                "expires_on": "2027-06-30",
+                "submitted_at": "2026-10-01T08:30:00Z",
+                "links": {
+                    "review": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    },
+                    "approve": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    },
+                    "reject": {
+                        "url": "/preview/admin-auditors-licence",
+                        "method": "get"
+                    }
+                }
+            }
+        ],
+        "requests": [
+            {
+                "id": "aud_jean",
+                "name": "Jean Habimana, CPA",
+                "licence": "PPC-0388-R",
+                "expires_on": "2027-12-31",
+                "submitted_at": "2026-09-28T14:10:00Z",
+                "links": {
+                    "review": {
+                        "url": "/preview/admin-auditors",
+                        "method": "get"
+                    },
+                    "approve": {
+                        "url": "/preview/admin-auditors",
+                        "method": "get"
+                    },
+                    "reject": {
+                        "url": "/preview/admin-auditors",
+                        "method": "get"
+                    }
+                }
+            }
+        ]
     }
 }

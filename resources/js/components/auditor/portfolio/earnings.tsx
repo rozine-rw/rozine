@@ -5,12 +5,17 @@ import {
     EmptyState,
     StatTile,
     StatusPill,
+    TILE,
     initials,
 } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatAmount, formatDate } from '@/lib/rozine/format';
+import { cn } from '@/lib/utils';
 import type { AuditorEarnings, EarningLine } from '@/types/auditor';
 import type { RouteLink } from '@/types/routing';
+
+/** A tile whose label may wrap keeps its figure on the row's baseline. */
+const ALIGNED = cn(TILE, 'flex flex-col justify-between');
 
 /**
  * The CPA card (design L334–337): proof of accreditation, which the Profile's Accreditation section
@@ -196,14 +201,17 @@ export function ManagedDeals({ deals }: { deals: EarningLine[] }) {
                             <div className="mt-3 flex gap-2">
                                 <StatTile
                                     label={t('auditor.portfolio.managed.raise')}
+                                    className={ALIGNED}
                                     value={compactRwf(deal.raise)}
                                 />
                                 <StatTile
                                     label={t('auditor.portfolio.managed.fee')}
+                                    className={ALIGNED}
                                     value={compactRwf(deal.platform_fee)}
                                 />
                                 <StatTile
                                     label={t('auditor.portfolio.managed.share')}
+                                    className={ALIGNED}
                                     value={compactRwf(deal.amount)}
                                 />
                             </div>

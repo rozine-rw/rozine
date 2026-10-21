@@ -121,7 +121,7 @@ function ReportCard({ report }: { report: MonthlyReportCard }) {
                 <StatTile
                     label={t('auditor.monthly.cover')}
                     value={report.cover === null ? '—' : `${report.cover}×`}
-                    className="border border-[#f2d69a] bg-rz-surface dark:border-[rgba(240,160,96,.3)]"
+                    className="flex-[0.7] border border-[#f2d69a] bg-rz-surface dark:border-[rgba(240,160,96,.3)]"
                     labelClassName={AMBER_TEXT}
                 />
             </div>

@@ -1929,6 +1929,25 @@ const fr: Catalog = {
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
     'admin.parties.coverage_link': 'Couverture des partenaires',
+    'admin.parties.queue.requests.title':
+        'Demandes de modification des partenaires',
+    'admin.parties.queue.requests.caption':
+        "Renouvellements de licence en attente d'examen. Le partenaire voit sa demande en attente jusqu'à votre décision.",
+    'admin.parties.queue.requests.empty':
+        'Aucun renouvellement de licence en attente.',
+    'admin.parties.queue.requests.chip': 'RENOUVELLEMENT',
+    'admin.parties.queue.desk.title': 'Bureau de vérification ICPAR',
+    'admin.parties.queue.desk.caption':
+        "Confirmez la licence au registre de l'ICPAR, puis approuvez pour que le partenaire puisse prendre des audits.",
+    'admin.parties.queue.desk.empty':
+        'Aucune licence en attente de vérification.',
+    'admin.parties.queue.desk.chip': 'VÉRIFICATION EN ATTENTE',
+    'admin.parties.queue.approve': 'Approuver',
+    'admin.parties.queue.reject': 'Rejeter',
+    'admin.parties.queue.review': 'Examiner',
+    'admin.parties.queue.field.licence': 'Licence',
+    'admin.parties.queue.field.expires_on': 'Expire le',
+    'admin.parties.queue.field.submitted_at': 'Soumise le',
     'admin.parties.chip.all': 'Tous',
     'admin.parties.chip.healthy': 'Sains',
     'admin.parties.chip.watch': 'Sous surveillance',
