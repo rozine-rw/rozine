@@ -240,6 +240,11 @@ export const SECTION_DESIGNS: Record<
             ratings.block('book', {
                 columns: ['business', 'sector', 'band', 'change', 'reason'],
             }),
+            ratings.block('weights', {
+                sub: ratings.sub('weights'),
+                columns: ENGINE_COLUMNS,
+            }),
+            ratings.block('bands', { columns: ENGINE_COLUMNS }),
         ],
     },
     deferrals: {

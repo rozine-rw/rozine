@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
+use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffViewerResource;
@@ -18,8 +19,9 @@ use Inertia\Response;
  * A console section the design shows but whose screen is not wired yet: any staff member may open
  * it, and it renders the console frame with the section's title and an empty state. Nothing is
  * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
- * read: Policies lists the rules the domain enforces, and Finance shows the ledger's fee revenue to
- * whoever may read the ledger.
+ * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
+ * whoever may read the ledger, and Engines and Ratings show underwriters the engine's settings and
+ * the rating scorecard.
  */
 class StaffSectionController extends Controller
 {
@@ -47,13 +49,20 @@ class StaffSectionController extends Controller
         }
         $name = (string) $request->user()?->name;
         $finance = $section === 'finance' && in_array('ledger.view', $permissions, true) ? self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier())) : [];
+        $underwriter = in_array('applications.review', $permissions, true);
 
         return Inertia::render('admin/section', ['server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance]);
+            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance,
+            'engine' => match (true) {
+                ! $underwriter => [],
+                $section === 'engines' => EngineSettings::engines(),
+                $section === 'ratings' => EngineSettings::scorecard(),
+                default => [],
+            }]);
     }
 
     /**

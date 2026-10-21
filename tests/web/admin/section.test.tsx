@@ -317,6 +317,86 @@ describe('Finance', () => {
     });
 });
 
+describe('Engines and Ratings', () => {
+    it("lists the engine's settings under their tab, with the rule set each comes from", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'engines',
+                    engine: [
+                        {
+                            tab: 'sizing',
+                            key: 'target_dscr',
+                            value: '1.50×',
+                            source: 'loan-capacity-v1',
+                        },
+                        {
+                            tab: 'cpa',
+                            key: 'cpa_share',
+                            value: '40%',
+                            source: 'brs-2.0-fee-r01',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const sizing = screen.getByRole('table', { name: 'Sizing' });
+        expect(within(sizing).getAllByRole('row')).toHaveLength(2);
+        expect(within(sizing).getAllByRole('row')[1]).toHaveTextContent(
+            'Target DSCR1.50×loan-capacity-v1',
+        );
+
+        fireEvent.click(screen.getByRole('tab', { name: 'CPA split' }));
+        expect(
+            within(
+                screen.getByRole('table', { name: 'CPA split' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Audit Partner share of the fee40%brs-2.0-fee-r01');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Refinance' }));
+        expect(
+            screen.getByText('No refinance inputs to show yet.'),
+        ).toBeVisible();
+    });
+
+    it('explains how a rating is computed: the weights, the caps and the bands', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    engine: [
+                        {
+                            tab: 'weights',
+                            key: 'coverage',
+                            value: '30% · 1.00×–1.50×',
+                            source: 'scorecard-v1',
+                        },
+                        {
+                            tab: 'bands',
+                            key: 'distressed',
+                            value: '< 2.0',
+                            source: 'scorecard-v1',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('table', { name: 'How a rating is computed' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Debt coverage30% · 1.00×–1.50×scorecard-v1');
+        expect(
+            within(screen.getByRole('table', { name: 'Bands' })).getAllByRole(
+                'row',
+            )[1],
+        ).toHaveTextContent('Distressed< 2.0scorecard-v1');
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);

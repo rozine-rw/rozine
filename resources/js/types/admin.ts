@@ -103,6 +103,40 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     figures?: Partial<Record<string, Money>>;
     /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
     streams?: FinanceStream[];
+    /** Engines and Ratings, for underwriters: the engine's settings and the rating scorecard. */
+    engine?: EngineRow[];
+};
+
+/** One engine setting under its design tab, with the rule set version it comes from. */
+export type EngineRow = {
+    tab: string;
+    key:
+        | 'target_dscr'
+        | 'minimum_dscr'
+        | 'repeat_monthly_dscr'
+        | 'min_principal'
+        | 'max_principal'
+        | 'issuance_unit'
+        | 'first_issue_months'
+        | 'repeat_issue_months'
+        | 'tenors'
+        | 'rate_band'
+        | 'platform_fee'
+        | 'cpa_share'
+        | 'coverage'
+        | 'cfads_margin'
+        | 'nocf_stability'
+        | 'positive_months'
+        | 'history_depth'
+        | 'conduct'
+        | 'adverse_conduct_cap'
+        | 'default_cap'
+        | 'strong'
+        | 'stable'
+        | 'weak'
+        | 'distressed';
+    value: string;
+    source: string;
 };
 
 export type FinanceStream = {

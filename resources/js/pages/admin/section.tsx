@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
     FinanceStream,
+    EngineRow,
     PolicyRule,
 } from '@/types/admin';
 
@@ -129,9 +130,13 @@ function figureOf(
     return figure === undefined ? NO_FIGURE : formatRwfShort(figure);
 }
 
+/** The blocks that list engine settings: Engines' tabs and the Ratings scorecard. */
+const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands']);
+
 /**
- * The rows the server read for a block, as cell text: Policies' rules under the selected tab and
- * Finance's fee streams. Every other block has none and keeps its empty state.
+ * The rows the server read for a block, as cell text: Policies' rules under the selected tab,
+ * Finance's fee streams, and the engine settings Engines and Ratings list for underwriters. Every
+ * other block has none and keeps its empty state.
  */
 function rowsOf(
     block: DesignBlock,
@@ -149,6 +154,15 @@ function rowsOf(
                     rule.value,
                     rule.version ?? NO_FIGURE,
                 ],
+            }));
+    }
+
+    if (ENGINE_BLOCKS.has(block.key)) {
+        return (props.engine ?? [])
+            .filter((row: EngineRow) => row.tab === (block.tab ?? block.key))
+            .map((row) => ({
+                key: row.key,
+                cells: [t(`admin.engine.${row.key}`), row.value, row.source],
             }));
     }
 
