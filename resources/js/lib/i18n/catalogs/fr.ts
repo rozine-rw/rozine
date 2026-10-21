@@ -419,6 +419,13 @@ const fr: Catalog = {
         'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
+    'business.apply.approved.title': 'Votre demande est approuvée',
+    'business.apply.approved.body':
+        'Publiez-la sur le fil des investisseurs pour commencer la levée. Les frais de publication sont offerts.',
+    'business.apply.approved.publish': 'Publier sur le fil des investisseurs',
+    'business.apply.published.title': 'Votre levée est publiée',
+    'business.apply.published.body':
+        "Les investisseurs la voient dans le fil et peuvent s'engager dès maintenant.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
     'business.apply.submitted.body':
         "Votre demande est en cours d'examen. Vous serez notifié à chaque étape.",
@@ -2231,7 +2238,7 @@ const fr: Catalog = {
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
     'business.servicing.wallet.instalments': 'Échéances {list}',
     'business.servicing.wallet.empty': 'Rien pour le moment.',
-    'business.servicing.wallet.older': 'Afficher plus ancien',
+    'business.servicing.wallet.older': 'Afficher plus',
     'business.servicing.wallet.receipt.label': 'Reçu de la transaction',
     'business.servicing.wallet.receipt.psp_fee': 'Frais du prestataire',
     'business.servicing.wallet.receipt.policy': 'Version de la politique',
@@ -2894,7 +2901,7 @@ const fr: Catalog = {
     'business.rating.financials': 'Chiffres vérifiés',
     'business.rating.sources': 'Banque · MoMo',
     'business.rating.financial.revenue': 'CA mensuel moyen',
-    'business.rating.financial.ebitda': 'EBITDA / mois',
+    'business.rating.financial.ebitda': 'Trésorerie nette / mois',
     'business.rating.financial.margin': 'Marge nette',
     'business.rating.financial.outstanding': 'Encours',
 
@@ -4884,7 +4891,7 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
-    'business.campaign.state.live': 'En ligne',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
     'business.campaign.state.funded_pending_disbursement':

@@ -417,6 +417,13 @@ const rw: Catalog = {
         'Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
+    'business.apply.approved.title': 'Ubusabe bwawe bwemejwe',
+    'business.apply.approved.body':
+        "Bushyire ku rutonde rw'abashoramari kugira ngo utangire gukusanya. Nta mafaranga yo gushyira ku rutonde.",
+    'business.apply.approved.publish': "Shyira ku rutonde rw'abashoramari",
+    'business.apply.published.title': 'Ikusanya ryawe ryashyizwe ahagaragara',
+    'business.apply.published.body':
+        'Abashoramari barayibona ku rutonde kandi bashobora gushora ubu.',
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',
     'business.apply.submitted.body':
         'Ubusabe bwawe burimo gusuzumwa. Uzamenyeshwa buri ntambwe.',
@@ -2885,7 +2892,7 @@ const rw: Catalog = {
     'business.rating.financials': 'Imibare yemejwe',
     'business.rating.sources': 'Banki · MoMo',
     'business.rating.financial.revenue': 'Ayinjira buri kwezi',
-    'business.rating.financial.ebitda': 'EBITDA / ukwezi',
+    'business.rating.financial.ebitda': 'Amafaranga asigaye / ukwezi',
     'business.rating.financial.margin': 'Inyungu nyayo',
     'business.rating.financial.outstanding': 'Ibitarishyurwa',
 

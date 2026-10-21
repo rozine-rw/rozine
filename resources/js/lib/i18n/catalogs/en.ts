@@ -407,6 +407,13 @@ const en = {
         'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
+    'business.apply.approved.title': 'Your application is approved',
+    'business.apply.approved.body':
+        'Publish it to the investor feed to start raising. The listing fee is waived.',
+    'business.apply.approved.publish': 'Publish to the investor feed',
+    'business.apply.published.title': 'Your raise is published',
+    'business.apply.published.body':
+        'Investors can see it in the feed and commit now.',
     'business.apply.submitted.title': 'Your application has been submitted',
     'business.apply.submitted.body':
         "Your application is being reviewed. You'll be notified at each stage.",
@@ -2131,7 +2138,7 @@ const en = {
     'business.servicing.wallet.entry.repayment': 'Repayment · {note}',
     'business.servicing.wallet.instalments': 'Instalments {list}',
     'business.servicing.wallet.empty': 'Nothing here yet.',
-    'business.servicing.wallet.older': 'Show older',
+    'business.servicing.wallet.older': 'Show more',
     'business.servicing.wallet.receipt.label': 'Transaction receipt',
     'business.servicing.wallet.receipt.psp_fee': 'Provider fee',
     'business.servicing.wallet.receipt.policy': 'Policy version',
@@ -2776,7 +2783,7 @@ const en = {
     'business.rating.financials': 'Verified financials',
     'business.rating.sources': 'Bank · MoMo',
     'business.rating.financial.revenue': 'Avg monthly rev.',
-    'business.rating.financial.ebitda': 'EBITDA / month',
+    'business.rating.financial.ebitda': 'Net cash / month',
     'business.rating.financial.margin': 'Net margin',
     'business.rating.financial.outstanding': 'Outstanding',
     'business.repayments.title': 'Repayments',
@@ -4644,7 +4651,7 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
-    'business.campaign.state.live': 'Live',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
     'business.campaign.state.funded_pending_disbursement':
