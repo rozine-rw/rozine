@@ -109,6 +109,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     counts?: Partial<Record<string, number>>;
     /** Ratings only, for whoever may view Businesses: every Business with a published rating. */
     book?: RatingBookRow[];
+    /** App Control only: how much of each sandbox hard limit is used now (SBX-R01). */
+    sandbox?: SandboxUsage[];
 };
 
 /** One rated Business in the rating book. */
@@ -152,6 +154,14 @@ export type EngineRow = {
         | 'distressed';
     value: string;
     source: string;
+};
+
+/** Whole numbers as strings: a count, or RWF for `principal`. */
+export type SandboxUsage = {
+    key: 'businesses' | 'investors' | 'principal';
+    used: string;
+    cap: string;
+    used_pct: number;
 };
 
 export type FinanceStream = {

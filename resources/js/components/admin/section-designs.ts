@@ -362,6 +362,10 @@ export const SECTION_DESIGNS: Record<
     },
     app_control: {
         blocks: [
+            appControl.block('sandbox', {
+                sub: appControl.sub('sandbox'),
+                columns: ['limit', 'used', 'cap', 'share'],
+            }),
             appControl.block('apps', {
                 sub: appControl.sub('apps'),
                 columns: ['app', 'status', 'features'],
