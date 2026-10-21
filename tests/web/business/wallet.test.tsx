@@ -103,7 +103,7 @@ describe('Business wallet (business-servicing-v1)', () => {
             'Deposit from Bank of Kigali ····2231',
         );
         expect(
-            within(history).queryByRole('link', { name: 'Show older' }),
+            within(history).queryByRole('link', { name: 'Show more' }),
         ).not.toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Back to Home' }),
@@ -264,7 +264,7 @@ describe('Business wallet (business-servicing-v1)', () => {
         expect(history).toHaveTextContent('Repayment · Fleet Expansion');
         expect(history).toHaveTextContent('Instalments 2');
         expect(
-            within(history).getByRole('link', { name: 'Show older' }),
+            within(history).getByRole('link', { name: 'Show more' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');
     });
 

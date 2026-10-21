@@ -2193,7 +2193,7 @@ const fr: Catalog = {
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
     'business.servicing.wallet.instalments': 'Échéances {list}',
     'business.servicing.wallet.empty': 'Rien pour le moment.',
-    'business.servicing.wallet.older': 'Afficher plus ancien',
+    'business.servicing.wallet.older': 'Afficher plus',
     'business.servicing.wallet.receipt.label': 'Reçu de la transaction',
     'business.servicing.wallet.receipt.psp_fee': 'Frais du prestataire',
     'business.servicing.wallet.receipt.policy': 'Version de la politique',
@@ -4623,7 +4623,7 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
-    'business.campaign.state.live': 'En ligne',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
     'business.campaign.state.funded_pending_disbursement':

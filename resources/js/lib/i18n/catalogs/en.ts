@@ -2098,7 +2098,7 @@ const en = {
     'business.servicing.wallet.entry.repayment': 'Repayment · {note}',
     'business.servicing.wallet.instalments': 'Instalments {list}',
     'business.servicing.wallet.empty': 'Nothing here yet.',
-    'business.servicing.wallet.older': 'Show older',
+    'business.servicing.wallet.older': 'Show more',
     'business.servicing.wallet.receipt.label': 'Transaction receipt',
     'business.servicing.wallet.receipt.psp_fee': 'Provider fee',
     'business.servicing.wallet.receipt.policy': 'Policy version',
@@ -4401,7 +4401,7 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
-    'business.campaign.state.live': 'Live',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
     'business.campaign.state.funded_pending_disbursement':
