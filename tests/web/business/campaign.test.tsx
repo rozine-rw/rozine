@@ -99,6 +99,7 @@ describe('A raising campaign', () => {
             view.getByRole('heading', { name: 'Cold-Chain Hub' }),
         ).toBeInTheDocument();
         expect(view.getByText('Raising · live')).toBeInTheDocument();
+        expect(screen.queryByText(/RNP-2026-0118/u)).not.toBeInTheDocument();
         expect(view.getByText('RWF 14.1M')).toBeInTheDocument();
         expect(view.getByText('78.1%')).toBeInTheDocument();
         expect(view.getByText('318')).toBeInTheDocument();
@@ -106,7 +107,8 @@ describe('A raising campaign', () => {
             view.getByRole('progressbar', { name: 'Commitment tracker' }),
         ).toHaveValue(78.1);
         expect(view.getByText('78.1% committed')).toBeInTheDocument();
-        expect(view.getAllByText('Committed')).toHaveLength(3);
+        expect(view.getAllByText('Committed')).toHaveLength(2);
+        expect(view.getByText('Of target')).toBeInTheDocument();
         expect(
             view.getByText('Not yet committed or reserved'),
         ).toBeInTheDocument();

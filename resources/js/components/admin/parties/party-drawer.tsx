@@ -94,6 +94,9 @@ export function PartyDrawer({
 }) {
     const { t, locale } = useTranslation();
     const format = useStatFormatter();
+    // A party still in onboarding may have no name on record yet.
+    const name =
+        party.name.trim() === '' ? t('admin.parties.name_pending') : party.name;
     // A submission waiting for review opens on Controls, where its documents and decision are.
     const [tab, setTab] = useState<Tab>(
         party.verification?.status === 'submitted' ? 'controls' : 'overview',
@@ -123,7 +126,7 @@ export function PartyDrawer({
             <ReasonStage
                 key={stage.key}
                 title={t(`admin.parties.stage.${stage.key}.title`, {
-                    name: party.name,
+                    name,
                 })}
                 body={t(`admin.parties.stage.${stage.key}.body`, {
                     app: t(`admin.parties.app.${party.kind}`),
@@ -150,7 +153,7 @@ export function PartyDrawer({
 
     return (
         <Drawer
-            label={t('admin.parties.drawer_label', { name: party.name })}
+            label={t('admin.parties.drawer_label', { name })}
             close={party.links.close}
         >
             <div className="shrink-0 border-b border-rz-hairline bg-rz-surface px-[18px] pt-4">
@@ -164,12 +167,12 @@ export function PartyDrawer({
                                     : avatarColor(party.id),
                         }}
                     >
-                        {initialOf(party.name)}
+                        {initialOf(party.name) || '?'}
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <h2 className="truncate text-[17px] font-bold text-rz-ink">
-                                {party.name}
+                                {name}
                             </h2>
                             <span className="flex shrink-0 items-center gap-[5px]">
                                 <span

@@ -1740,6 +1740,7 @@ const en = {
     'admin.parties.empty.staff': 'No operators match these filters.',
     'admin.parties.col.business': 'Business',
     'admin.parties.col.rating': 'Rating',
+    'admin.parties.name_pending': 'Name pending',
     'admin.parties.col.active_notes': 'Active notes',
     'admin.parties.col.investors': 'Funders',
     'admin.parties.col.raised': 'Funded',
@@ -4375,6 +4376,7 @@ const en = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         "Not eligible for new commitments since {date}; what's already committed stays.",
     'business.campaign.tile.committed': 'Committed',
+    'business.campaign.tile.of_target': 'Of target',
     'business.campaign.tile.refunded': 'Refunded',
     'business.campaign.tracker.title': 'Commitment tracker',
     'business.campaign.tracker.committed_pct': '{pct}% committed',

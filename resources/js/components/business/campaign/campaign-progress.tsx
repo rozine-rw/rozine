@@ -182,7 +182,7 @@ function Raising({
                     value={formatRwfShort(progress.committed)}
                 />
                 <Tile
-                    label={t('business.campaign.tile.committed')}
+                    label={t('business.campaign.tile.of_target')}
                     value={t('business.note.pct', { pct: progress.funded_pct })}
                     green
                 />

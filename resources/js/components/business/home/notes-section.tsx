@@ -19,7 +19,7 @@ type NoteFilter = (typeof FILTERS)[number];
 const FILTER_OF: Record<NoteStatus, NoteFilter> = {
     draft: 'draft',
     active: 'active',
-    funded: 'repaying',
+    funded: 'active',
     repaying: 'repaying',
     completed: 'archived',
     failed: 'failed',
@@ -94,7 +94,7 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
                         {note.title}
                     </h3>
                     <p className="mt-0.5 text-[11px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">
-                        {note.id} · {created}
+                        {created}
                     </p>
                 </div>
             </div>
@@ -115,7 +115,7 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
                                 {note.title}
                             </span>
                             <span className="block truncate text-[10.5px] text-rz-secondary">
-                                {note.id} · {created}
+                                {created}
                             </span>
                         </span>
                         <span

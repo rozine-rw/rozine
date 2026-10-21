@@ -1820,6 +1820,7 @@ const rw: Catalog = {
     'admin.parties.empty.staff': "Nta mukozi uhuye n'ibi byatoranyijwe.",
     'admin.parties.col.business': 'Ikigo',
     'admin.parties.col.rating': 'Amanota',
+    'admin.parties.name_pending': 'Izina ritaraboneka',
     'admin.parties.col.active_notes': 'Inyandiko zikora',
     'admin.parties.col.investors': 'Abateye inkunga',
     'admin.parties.col.raised': 'Byatewe inkunga',
@@ -4577,6 +4578,7 @@ const rw: Catalog = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         'Ntiyemerewe ibyiyemezo bishya kuva ku wa {date}; ibyamaze kwiyemezwa birahaguma.',
     'business.campaign.tile.committed': 'Byiyemejwe',
+    'business.campaign.tile.of_target': "By'intego",
     'business.campaign.tile.refunded': 'Byasubijwe',
     'business.campaign.tracker.title': "Ikurikirana ry'ibyiyemejwe",
     'business.campaign.tracker.committed_pct': '{pct}% byiyemejwe',

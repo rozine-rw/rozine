@@ -83,6 +83,30 @@ describe('Party directories', () => {
         ).toBeGreaterThan(0);
     });
 
+    it('names an investor still in onboarding as pending, never blank', () => {
+        const fixture = props(investorsFixture);
+
+        if (fixture.directory.kind !== 'investor') {
+            throw new Error('fixture lists investors');
+        }
+
+        fixture.directory.rows[0] = { ...fixture.directory.rows[0], name: '' };
+        render(
+            <AdminParties
+                {...fixture}
+                party={{ ...party(overdueFixture), name: ' ' }}
+            />,
+        );
+
+        expect(
+            screen.getAllByRole('link', { name: 'Name pending' }).length,
+        ).toBeGreaterThan(0);
+        expect(
+            within(screen.getByRole('dialog')).getAllByText('Name pending')
+                .length,
+        ).toBeGreaterThan(0);
+    });
+
     it('lists Audit Partners with their standing', () => {
         render(<AdminParties {...props(auditorsFixture)} />);
 

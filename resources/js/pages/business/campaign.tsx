@@ -119,7 +119,6 @@ export default function BusinessCampaign({
                             {note.title}
                         </h1>
                         <p className="text-xs text-rz-secondary">
-                            {note.id} ·{' '}
                             <span
                                 className={cn(
                                     CLOSED.includes(campaign.lifecycle)

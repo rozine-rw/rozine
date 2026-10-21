@@ -123,6 +123,18 @@ describe('Business Home', () => {
         );
     });
 
+    it('prints the RDB prefix once when the recorded code already carries it', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                business={{ ...fixture.business, company_code: 'RDB-0048213' }}
+            />,
+        );
+
+        expect(screen.getByText('RDB 0048213')).toBeInTheDocument();
+        expect(screen.queryByText(/RDB RDB/u)).not.toBeInTheDocument();
+    });
+
     it('shows a verified sole trader with no company line, never a stand-in number', () => {
         render(
             <BusinessHome
@@ -425,8 +437,10 @@ describe('Business Home', () => {
             />,
         );
 
-        await user.click(screen.getByRole('button', { name: 'Repaying' }));
+        // A funded note is counted as active, so it sits under the Active tab.
+        await user.click(screen.getByRole('button', { name: 'Active' }));
         expect(screen.getAllByText('Funded')).toHaveLength(2);
+        expect(screen.queryByText(/N-1/u)).not.toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'Failed' }));
         expect(

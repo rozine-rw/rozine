@@ -1826,6 +1826,7 @@ const fr: Catalog = {
     'admin.parties.empty.staff': 'Aucun opérateur ne correspond à ces filtres.',
     'admin.parties.col.business': 'Entreprise',
     'admin.parties.col.rating': 'Notation',
+    'admin.parties.name_pending': 'Nom en attente',
     'admin.parties.col.active_notes': 'Titres actifs',
     'admin.parties.col.investors': 'Financeurs',
     'admin.parties.col.raised': 'Financé',
@@ -4599,6 +4600,7 @@ const fr: Catalog = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         'Non éligible à de nouveaux engagements depuis le {date} ; ceux déjà pris restent.',
     'business.campaign.tile.committed': 'Engagé',
+    'business.campaign.tile.of_target': "De l'objectif",
     'business.campaign.tile.refunded': 'Remboursé',
     'business.campaign.tracker.title': 'Suivi des engagements',
     'business.campaign.tracker.committed_pct': '{pct} % engagé',

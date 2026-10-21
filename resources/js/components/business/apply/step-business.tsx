@@ -1,4 +1,5 @@
 import { StepHeading } from '@/components/business/apply/step-heading';
+import { bareCompanyCode } from '@/components/business/home/business-hero';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -150,7 +151,9 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             {business.company_code !== null && (
                                 <p className="mt-1 inline-flex items-center gap-[5px] rounded-[10px] border border-rz-border bg-rz-surface px-2 py-0.5 text-[11px] font-bold tracking-[.02em] text-rz-accent-app-text">
                                     {t('business.home.company_code', {
-                                        code: business.company_code,
+                                        code: bareCompanyCode(
+                                            business.company_code,
+                                        ),
                                     })}
                                 </p>
                             )}

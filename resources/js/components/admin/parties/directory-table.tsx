@@ -87,13 +87,15 @@ function PartyCell({
     avatar?: string;
     badges: ReactNode;
 }) {
+    const { t } = useTranslation();
+
     return (
         <div role="cell" className="flex min-w-0 items-center gap-[11px]">
             <div
                 className="flex size-9 shrink-0 items-center justify-center rounded-[10px] text-[14px] font-bold text-white"
                 style={{ background: avatar ?? avatarColor(id) }}
             >
-                {initialOf(name)}
+                {initialOf(name) || '?'}
             </div>
             <div className="min-w-0">
                 <div className="flex min-w-0 items-center gap-[7px]">
@@ -102,7 +104,10 @@ function PartyCell({
                         href={link}
                         className="truncate text-[13.5px] font-bold text-rz-ink after:absolute after:inset-0"
                     >
-                        {name}
+                        {/* A party still in onboarding may have no name on record yet. */}
+                        {name.trim() === ''
+                            ? t('admin.parties.name_pending')
+                            : name}
                     </Link>
                 </div>
                 <div className="truncate text-[11.5px] text-rz-muted">
