@@ -1226,6 +1226,66 @@ const fr: Catalog = {
     'admin.messaging.audience.business': 'Entreprises',
     'admin.messaging.audience.auditor': 'Partenaires d’audit',
     'admin.messaging.audience.everyone': 'Tous les titulaires de compte',
+    'admin.messaging.trigger.verification.approved':
+        'La conformité approuve une vérification d’identité',
+    'admin.messaging.trigger.verification.rejected':
+        'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.wallet.deposit_received':
+        'Le prestataire confirme un dépôt',
+    'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
+    'admin.messaging.trigger.wallet.withdrawal_returned':
+        'Un retrait revient dans le portefeuille',
+    'admin.messaging.trigger.primary.refunded':
+        'Une levée se clôt sans atteindre son objectif',
+    'admin.messaging.trigger.primary.report_published':
+        'Le rapport mensuel d’une entreprise détenue est scellé',
+    'admin.messaging.trigger.primary.raise_funded':
+        'Une levée où l’investisseur s’est engagé est entièrement financée',
+    'admin.messaging.trigger.primary.holding_issued':
+        'Des titres sont émis pour l’investisseur',
+    'admin.messaging.trigger.security.password_changed':
+        'Le mot de passe est modifié',
+    'admin.messaging.trigger.security.payout_account_linked':
+        'Un compte de versement est lié',
+    'admin.messaging.trigger.security.payout_account_unlinked':
+        'Un compte de versement est retiré',
+    'admin.messaging.trigger.security.new_device':
+        'Un nouvel appareil se connecte',
+    'admin.messaging.trigger.business.deposit_received':
+        'Le prestataire confirme un dépôt de l’entreprise',
+    'admin.messaging.trigger.business.application_approved':
+        'La demande de financement est approuvée',
+    'admin.messaging.trigger.business.raise_expired':
+        'La levée se clôt sans atteindre son objectif',
+    'admin.messaging.trigger.business.raise_funded':
+        'La levée est entièrement financée',
+    'admin.messaging.trigger.business.disbursement_sent':
+        'Les fonds levés sont versés',
+    'admin.messaging.trigger.business.withdrawal_sent':
+        'Un retrait de l’entreprise est versé',
+    'admin.messaging.trigger.business.withdrawal_returned':
+        'Un retrait de l’entreprise revient',
+    'admin.messaging.trigger.business.report_sealed':
+        'Le partenaire d’audit scelle le rapport mensuel',
+    'admin.messaging.trigger.business.report_review_closing':
+        'Le délai pour cosigner ou contester un rapport se termine',
+    'admin.messaging.trigger.auditor.accreditation_approved':
+        'L’accréditation est approuvée',
+    'admin.messaging.trigger.auditor.accreditation_rejected':
+        'L’accréditation est refusée',
+    'admin.messaging.trigger.auditor.job_offered':
+        'Une mission d’audit est proposée',
+    'admin.messaging.trigger.auditor.accreditation_renewal_due':
+        'Le renouvellement de la licence arrive à échéance',
+    'admin.messaging.trigger.support.complaint_answered':
+        'Le support répond à une réclamation',
+    'admin.messaging.trigger.support.complaint_resolved':
+        'Une réclamation est résolue',
+    'admin.messaging.automations.live': '{count} automatisations actives',
+    'admin.messaging.automations.fire':
+        'Chacune se déclenche d’elle-même lorsque son événement survient',
+    'admin.messaging.automations.group': 'Automatisations · {audience}',
+    'admin.design.col.on': 'Active',
     'admin.messaging.timing': 'Dès l’événement · {channels}',
     'admin.messaging.state.live': 'Active',
     'admin.messaging.automations.sub':

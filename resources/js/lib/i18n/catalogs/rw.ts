@@ -1217,6 +1217,63 @@ const rw: Catalog = {
     'admin.messaging.audience.business': 'Ibigo',
     'admin.messaging.audience.auditor': 'Abafatanyabikorwa mu igenzura',
     'admin.messaging.audience.everyone': 'Abafite konti bose',
+    'admin.messaging.trigger.verification.approved':
+        'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
+    'admin.messaging.trigger.verification.rejected':
+        'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.wallet.deposit_received':
+        'Utanga serivisi yemeje kubitsa',
+    'admin.messaging.trigger.wallet.withdrawal_sent':
+        'Amafaranga yabikujwe yoherejwe',
+    'admin.messaging.trigger.wallet.withdrawal_returned':
+        'Amafaranga yabikujwe agarutse mu gikapu',
+    'admin.messaging.trigger.primary.refunded':
+        'Ikusanya rirangiye ritageze ku ntego',
+    'admin.messaging.trigger.primary.report_published':
+        'Raporo y’ukwezi y’ikigo ufitemo imigabane ifunzwe',
+    'admin.messaging.trigger.primary.raise_funded':
+        'Ikusanya umushoramari yiyemeje ryuzuye',
+    'admin.messaging.trigger.primary.holding_issued':
+        'Impapuro z’umwenda zihawe umushoramari',
+    'admin.messaging.trigger.security.password_changed':
+        'Ijambo ry’ibanga rihinduwe',
+    'admin.messaging.trigger.security.payout_account_linked':
+        'Konti yo kwakiriraho ihujwe',
+    'admin.messaging.trigger.security.payout_account_unlinked':
+        'Konti yo kwakiriraho ikuweho',
+    'admin.messaging.trigger.security.new_device': 'Igikoresho gishya cyinjiye',
+    'admin.messaging.trigger.business.deposit_received':
+        'Utanga serivisi yemeje kubitsa kw’ikigo',
+    'admin.messaging.trigger.business.application_approved':
+        'Ubusabe bw’inkunga bwemejwe',
+    'admin.messaging.trigger.business.raise_expired':
+        'Ikusanya rirangiye ritageze ku ntego',
+    'admin.messaging.trigger.business.raise_funded': 'Ikusanya ryuzuye',
+    'admin.messaging.trigger.business.disbursement_sent':
+        'Amafaranga yakusanyijwe yoherejwe',
+    'admin.messaging.trigger.business.withdrawal_sent':
+        'Amafaranga ikigo cyabikuje yoherejwe',
+    'admin.messaging.trigger.business.withdrawal_returned':
+        'Amafaranga ikigo cyabikuje agarutse',
+    'admin.messaging.trigger.business.report_sealed':
+        'Umugenzuzi afunze raporo y’ukwezi',
+    'admin.messaging.trigger.business.report_review_closing':
+        'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
+    'admin.messaging.trigger.auditor.accreditation_approved':
+        'Uruhushya rwemejwe',
+    'admin.messaging.trigger.auditor.accreditation_rejected':
+        'Uruhushya ruhakanywe',
+    'admin.messaging.trigger.auditor.job_offered': 'Akazi k’igenzura gatanzwe',
+    'admin.messaging.trigger.auditor.accreditation_renewal_due':
+        'Igihe cyo kuvugurura uruhushya kirageze',
+    'admin.messaging.trigger.support.complaint_answered':
+        'Ubufasha busubije ikirego',
+    'admin.messaging.trigger.support.complaint_resolved': 'Ikirego gikemutse',
+    'admin.messaging.automations.live': 'Automatisation {count} zikora',
+    'admin.messaging.automations.fire':
+        'Buri imwe yikora iyo icyayitera kibaye',
+    'admin.messaging.automations.group': 'Automatisation · {audience}',
+    'admin.design.col.on': 'Irakora',
     'admin.messaging.timing': 'Ako kanya · {channels}',
     'admin.messaging.state.live': 'Irakora',
     'admin.messaging.automations.sub':

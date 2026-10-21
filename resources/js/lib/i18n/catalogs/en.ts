@@ -1160,6 +1160,65 @@ const en = {
     'admin.messaging.audience.business': 'Businesses',
     'admin.messaging.audience.auditor': 'Audit Partners',
     'admin.messaging.audience.everyone': 'Everyone with an account',
+    'admin.messaging.trigger.verification.approved':
+        'Compliance approves an identity check',
+    'admin.messaging.trigger.verification.rejected':
+        'Compliance sends an identity check back',
+    'admin.messaging.trigger.wallet.deposit_received':
+        'The provider confirms a deposit',
+    'admin.messaging.trigger.wallet.withdrawal_sent':
+        'A withdrawal is paid out',
+    'admin.messaging.trigger.wallet.withdrawal_returned':
+        'A withdrawal comes back to the wallet',
+    'admin.messaging.trigger.primary.refunded':
+        'A raise closes without reaching its target',
+    'admin.messaging.trigger.primary.report_published':
+        "A held business's monthly report is sealed",
+    'admin.messaging.trigger.primary.raise_funded':
+        'A raise the investor committed to is fully funded',
+    'admin.messaging.trigger.primary.holding_issued':
+        'Notes are issued to the investor',
+    'admin.messaging.trigger.security.password_changed':
+        'The password is changed',
+    'admin.messaging.trigger.security.payout_account_linked':
+        'A payout account is linked',
+    'admin.messaging.trigger.security.payout_account_unlinked':
+        'A payout account is removed',
+    'admin.messaging.trigger.security.new_device': 'A new device signs in',
+    'admin.messaging.trigger.business.deposit_received':
+        'The provider confirms a business deposit',
+    'admin.messaging.trigger.business.application_approved':
+        'The funding application is approved',
+    'admin.messaging.trigger.business.raise_expired':
+        'The raise closes without reaching its target',
+    'admin.messaging.trigger.business.raise_funded':
+        'The raise is fully funded',
+    'admin.messaging.trigger.business.disbursement_sent':
+        'The raised funds are disbursed',
+    'admin.messaging.trigger.business.withdrawal_sent':
+        'A business withdrawal is paid out',
+    'admin.messaging.trigger.business.withdrawal_returned':
+        'A business withdrawal comes back',
+    'admin.messaging.trigger.business.report_sealed':
+        'The Audit Partner seals the monthly report',
+    'admin.messaging.trigger.business.report_review_closing':
+        'The window to co-sign or dispute a report is closing',
+    'admin.messaging.trigger.auditor.accreditation_approved':
+        'Accreditation is approved',
+    'admin.messaging.trigger.auditor.accreditation_rejected':
+        'Accreditation is declined',
+    'admin.messaging.trigger.auditor.job_offered': 'An audit job is offered',
+    'admin.messaging.trigger.auditor.accreditation_renewal_due':
+        'The licence renewal falls due',
+    'admin.messaging.trigger.support.complaint_answered':
+        'Support answers a complaint',
+    'admin.messaging.trigger.support.complaint_resolved':
+        'A complaint is resolved',
+    'admin.messaging.automations.live': '{count} automations live',
+    'admin.messaging.automations.fire':
+        'Each fires on its own when its trigger happens',
+    'admin.messaging.automations.group': '{audience} automations',
+    'admin.design.col.on': 'On',
     'admin.messaging.timing': 'As it happens · {channels}',
     'admin.messaging.state.live': 'Live',
     'admin.messaging.automations.sub':

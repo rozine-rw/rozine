@@ -16,6 +16,8 @@ import { formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminMessagingProps,
+    MessageAudience,
+    MessageAutomation,
     MessageHistoryRow,
     MessageTemplate,
 } from '@/types/admin';
@@ -27,12 +29,24 @@ const TABS = ['automations', 'templates', 'campaigns', 'history'] as const;
 
 type Tab = (typeof TABS)[number];
 
+type CatalogueTab = Exclude<Tab, 'history' | 'automations'>;
+
 /** Each catalogue tab's columns; Campaigns has no read yet and keeps its empty state. */
-const COLUMNS: Record<Exclude<Tab, 'history'>, DesignColumn[]> = {
-    automations: ['rule', 'audience', 'timing', 'state'],
+const COLUMNS: Record<CatalogueTab, DesignColumn[]> = {
     templates: ['template', 'audience', 'channel'],
     campaigns: ['campaign', 'audience', 'sent'],
 };
+
+/** The design lists business rules first, then investor ones; then the other audiences. */
+const AUDIENCES: readonly MessageAudience[] = [
+    'business',
+    'investor',
+    'auditor',
+    'everyone',
+];
+
+const RULE_GRID =
+    'grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_minmax(0,1.5fr)_56px] items-center gap-4';
 
 /** A search reloads from the first page, so it drops the older-page cursor. */
 const SEARCH_QUERY = { param: 'q', clears: ['before'] };
@@ -83,16 +97,17 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
 }
 
 /**
- * Messaging & Automations (design T2327–2462). History lists every notice that went out, newest
- * first: who it reached, the message, its category, the automation behind it and whether it
- * arrived, the channel and when. Automations lists every notice the platform sends as its event
- * happens, and Templates every transactional email; neither can be edited yet, so nothing is
- * offered. Campaigns are not sent yet, so that tab keeps its empty state.
+ * Messaging & Automations (design T2327–2462). It opens on Automations, as the design does, or
+ * on History when a search is in force. Automations lists every notice the platform sends as its
+ * event happens, by audience, and Templates every transactional email; neither can be edited
+ * yet, so nothing is offered. History lists every notice that went out, newest first: who it
+ * reached, the message, its category, the automation behind it and whether it arrived, the
+ * channel and when. Campaigns are not sent yet, so that tab keeps its empty state.
  */
 export default function AdminMessaging(props: AdminMessagingProps) {
     const { t } = useTranslation();
-    const [tab, setTab] = useState<Tab>('history');
     const searched = props.search !== '';
+    const [tab, setTab] = useState<Tab>(searched ? 'history' : 'automations');
 
     return (
         <AdminFrame section="messaging" searchQuery={SEARCH_QUERY} {...props}>
@@ -172,6 +187,8 @@ export default function AdminMessaging(props: AdminMessagingProps) {
                         <HistoryLine key={row.id} row={row} />
                     ))}
                 </TableCard>
+            ) : tab === 'automations' ? (
+                <Automations automations={props.automations} />
             ) : (
                 <CatalogueTable tab={tab} rows={catalogueRows(tab, props, t)} />
             )}
@@ -179,32 +196,170 @@ export default function AdminMessaging(props: AdminMessagingProps) {
     );
 }
 
+/** The live automations (design T2337–2381): a count, then one block of rules per audience. */
+function Automations({
+    automations,
+}: {
+    automations: readonly MessageAutomation[];
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <div>
+            <p className="mb-4 flex items-center gap-2.5 rounded-[11px] border border-rz-hairline bg-rz-surface-sunken px-3.5 py-2.5 text-[12.5px] text-rz-body">
+                <svg
+                    aria-hidden
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="shrink-0 stroke-rz-accent-fill"
+                >
+                    <path
+                        d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"
+                        strokeWidth="1.7"
+                        strokeLinejoin="round"
+                    />
+                </svg>
+                <span>
+                    <strong className="font-bold text-rz-ink">
+                        {t('admin.messaging.automations.live', {
+                            count: automations.length,
+                        })}
+                    </strong>
+                    {' · '}
+                    {t('admin.messaging.automations.fire')}
+                </span>
+            </p>
+            {automations.length === 0 && (
+                <EmptyState
+                    title={t('admin.design.messaging.automations.empty')}
+                />
+            )}
+            {AUDIENCES.map((audience) => {
+                const rules = automations.filter(
+                    (automation) => automation.audience === audience,
+                );
+
+                if (rules.length === 0) {
+                    return null;
+                }
+
+                const heading = t('admin.messaging.automations.group', {
+                    audience: t(`admin.messaging.audience.${audience}`),
+                });
+
+                return (
+                    <section
+                        key={audience}
+                        aria-label={heading}
+                        className="mb-6"
+                    >
+                        <h3 className="mb-2.5 text-[11px] font-bold tracking-[.1em] text-rz-muted uppercase">
+                            {heading}
+                        </h3>
+                        <div
+                            role="table"
+                            aria-label={heading}
+                            className="flex flex-col gap-[9px]"
+                        >
+                            <div
+                                role="row"
+                                className={cn(
+                                    RULE_GRID,
+                                    'px-[18px] text-[10px] font-bold tracking-[.06em] text-rz-faint uppercase',
+                                )}
+                            >
+                                {(
+                                    [
+                                        'rule',
+                                        'fires_when',
+                                        'timing',
+                                        'on',
+                                    ] as const
+                                ).map((column) => (
+                                    <span
+                                        key={column}
+                                        role="columnheader"
+                                        className={cn(
+                                            column === 'on' && 'text-right',
+                                        )}
+                                    >
+                                        {t(`admin.design.col.${column}`)}
+                                    </span>
+                                ))}
+                            </div>
+                            {rules.map((rule) => (
+                                <div
+                                    key={rule.kind}
+                                    role="row"
+                                    className={cn(
+                                        RULE_GRID,
+                                        'rounded-xl border border-rz-hairline bg-rz-surface px-[18px] py-[13px]',
+                                    )}
+                                >
+                                    <span
+                                        role="cell"
+                                        className="flex min-w-0 items-center gap-[9px]"
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className="size-[7px] shrink-0 rounded-full bg-[#1d9e75]"
+                                        />
+                                        <span className="truncate text-[13px] font-bold text-rz-ink">
+                                            {t(
+                                                `investor.notices.${rule.kind}.title`,
+                                            )}
+                                        </span>
+                                    </span>
+                                    <span
+                                        role="cell"
+                                        className="truncate text-[12.5px] text-rz-muted"
+                                    >
+                                        {t(
+                                            `admin.messaging.trigger.${rule.kind}`,
+                                        )}
+                                    </span>
+                                    <span
+                                        role="cell"
+                                        className="truncate text-[11.5px] text-rz-faint"
+                                    >
+                                        {t('admin.messaging.timing', {
+                                            channels: rule.channels
+                                                .map((channel) =>
+                                                    t(
+                                                        `admin.messaging.channel.${channel}`,
+                                                    ),
+                                                )
+                                                .join(', '),
+                                        })}
+                                    </span>
+                                    <span
+                                        role="cell"
+                                        className="justify-self-end"
+                                    >
+                                        <Chip tone="green">
+                                            {t('admin.messaging.state.live')}
+                                        </Chip>
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            })}
+        </div>
+    );
+}
+
 type Translate = ReturnType<typeof useTranslation>['t'];
 
-/** A catalogue tab's rows as cell text; the last cell of an automation is its state chip. */
+/** A catalogue tab's rows as cell text. */
 function catalogueRows(
-    tab: Exclude<Tab, 'history'>,
+    tab: CatalogueTab,
     props: AdminMessagingProps,
     t: Translate,
 ): { key: string; cells: string[] }[] {
-    if (tab === 'automations') {
-        return props.automations.map((automation) => ({
-            key: automation.kind,
-            cells: [
-                t(`investor.notices.${automation.kind}.title`),
-                t(`admin.messaging.audience.${automation.audience}`),
-                t('admin.messaging.timing', {
-                    channels: automation.channels
-                        .map((channel) =>
-                            t(`admin.messaging.channel.${channel}`),
-                        )
-                        .join(', '),
-                }),
-                t('admin.messaging.state.live'),
-            ],
-        }));
-    }
-
     if (tab === 'templates') {
         return props.templates.map((template: MessageTemplate) => ({
             key: template.key,
@@ -224,7 +379,7 @@ function CatalogueTable({
     tab,
     rows,
 }: {
-    tab: Exclude<Tab, 'history'>;
+    tab: CatalogueTab;
     rows: { key: string; cells: string[] }[];
 }) {
     const { t } = useTranslation();
@@ -271,26 +426,20 @@ function CatalogueTable({
                         )}
                         style={grid}
                     >
-                        {row.cells.map((cell, index) =>
-                            tab === 'automations' && index === 3 ? (
-                                <span role="cell" key={index}>
-                                    <Chip tone="green">{cell}</Chip>
-                                </span>
-                            ) : (
-                                <span
-                                    role="cell"
-                                    key={index}
-                                    className={cn(
-                                        'min-w-0 truncate text-[12.5px]',
-                                        index === 0
-                                            ? 'font-semibold text-rz-ink'
-                                            : 'text-rz-muted',
-                                    )}
-                                >
-                                    {cell}
-                                </span>
-                            ),
-                        )}
+                        {row.cells.map((cell, index) => (
+                            <span
+                                role="cell"
+                                key={index}
+                                className={cn(
+                                    'min-w-0 truncate text-[12.5px]',
+                                    index === 0
+                                        ? 'font-semibold text-rz-ink'
+                                        : 'text-rz-muted',
+                                )}
+                            >
+                                {cell}
+                            </span>
+                        ))}
                     </div>
                 ))}
             </TableCard>

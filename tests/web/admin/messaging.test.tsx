@@ -73,6 +73,10 @@ describe('Messaging History', () => {
         expect(screen.getByTestId('head')).toHaveTextContent(
             'Messaging & Automations',
         );
+        expect(
+            screen.getByRole('tab', { name: 'Automations' }),
+        ).toHaveAttribute('aria-selected', 'true');
+        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
         expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
             'aria-selected',
             'true',
@@ -116,6 +120,10 @@ describe('Messaging History', () => {
             />,
         );
 
+        expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
         expect(
             screen.getByText('No messages match your search.'),
         ).toBeInTheDocument();
@@ -140,6 +148,7 @@ describe('Messaging History', () => {
 
     it('shows an empty history before any notice went out', () => {
         render(<AdminMessaging {...props({ history: [], older: null })} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
 
         expect(
             screen.getByText('No messages to show yet.'),
@@ -174,26 +183,37 @@ describe('Messaging History', () => {
             />,
         );
 
-        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
+        expect(screen.getByText('2 automations live')).toBeInTheDocument();
         expect(
-            screen.getByText(/Each notice goes out by itself/u),
-        ).toBeInTheDocument();
+            screen
+                .getAllByRole('heading', { level: 3 })
+                .map((heading) => heading.textContent),
+        ).toEqual([
+            'Investors automations',
+            'Everyone with an account automations',
+        ]);
+        expect(
+            within(screen.getByRole('table', { name: 'Investors automations' }))
+                .getAllByRole('columnheader')
+                .map((cell) => cell.textContent),
+        ).toEqual(['Rule', 'Fires when', 'Timing & channels', 'On']);
         expect(
             within(rowOf('You are verified'))
                 .getAllByRole('cell')
                 .map((cell) => cell.textContent),
         ).toEqual([
             'You are verified',
-            'Investors',
+            'Compliance approves an identity check',
             'As it happens · In-app, Email',
             'Live',
         ]);
-        expect(rowOf('Complaint resolved')).toHaveTextContent(
-            'Everyone with an account',
-        );
-        expect(rowOf('Complaint resolved')).toHaveTextContent(
-            'As it happens · In-app',
-        );
+        expect(
+            within(
+                screen.getByRole('table', {
+                    name: 'Everyone with an account automations',
+                }),
+            ).getByRole('row', { name: /Complaint resolved/u }),
+        ).toHaveTextContent('A complaint is resolvedAs it happens · In-app');
         expect(
             screen.queryByRole('button', { name: /edit/i }),
         ).not.toBeInTheDocument();
@@ -214,7 +234,7 @@ describe('Messaging History', () => {
     it('keeps automations, templates and campaigns at their empty state', () => {
         render(<AdminMessaging {...props()} />);
 
-        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
+        expect(screen.getByText('0 automations live')).toBeInTheDocument();
         expect(
             screen.getByText('No automations to show yet.'),
         ).toBeInTheDocument();
