@@ -1655,6 +1655,8 @@ export type C3InvestorPortfolioProps = Omit<InvestorPortfolioProps, 'links'> &
 /** Servicing fields keep their C3 empty states; they are C4 facts. */
 export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
     updates: MonthlyUpdateSummary[];
+    /** The newest published monthly report, which sets the Holding's health; null before the first. */
+    latest_report?: Pick<MonthlyUpdate, 'month' | 'status' | 'summary'> | null;
     issue: IssuedHolding;
 };
 

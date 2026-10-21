@@ -70,6 +70,7 @@
             "arrears": null,
             "photos": [],
             "updates": [],
+            "latest_report": null,
             "issue": {
                 "id": "h-greenleaf-c3",
                 "revision": 1,
