@@ -25,7 +25,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, reason: string}
  * @phpstan-type Page array{
  *     rows: list<StaffRow>, matching: int, counts: Counts, chip: string, search: string, member: Member|null,
- *     matrix: list<array{key: string, roles: list<string>}>, roles: list<string>, permissions: list<string>, log: list<LogEntry>
+ *     matrix: list<array{key: string, roles: list<string>, withheld?: string}>, roles: list<string>, permissions: list<string>, log: list<LogEntry>
  * }
  */
 class StaffDirectoryResource extends JsonResource

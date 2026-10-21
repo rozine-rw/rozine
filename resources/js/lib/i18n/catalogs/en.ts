@@ -2049,7 +2049,28 @@ const en = {
         'Choose who receives email on staging.',
     'admin.permission.staff.manage': 'Manage operators',
     'admin.permission_detail.staff.manage':
-        "Suspend or reactivate another operator's access, with a reason.",
+        "Add an operator, or suspend or reactivate another operator's access, with a reason.",
+    'admin.permission.accounts.freeze': 'Freeze / suspend',
+    'admin.permission_detail.accounts.freeze':
+        "Pause an investor's or business's access to their app.",
+    'admin.permission.capacity.adjust': 'Adjust capacity',
+    'admin.permission_detail.capacity.adjust':
+        'Change how much a business may raise.',
+    'admin.permission.records.edit': 'Edit entities',
+    'admin.permission_detail.records.edit':
+        'Change stored details on any record.',
+    'admin.permission.ledger.correct': 'Reversals',
+    'admin.permission_detail.ledger.correct':
+        'Correct a settled entry with a new linked entry and a reason.',
+    'admin.permission.policies.change': 'Policies',
+    'admin.permission_detail.policies.change':
+        'Change pricing, eligibility and automation rules.',
+    'admin.permission.records.delete': 'Delete',
+    'admin.permission_detail.records.delete':
+        'Remove a record from the platform permanently.',
+    'admin.matrix.withheld.not_built': 'No role yet: not built',
+    'admin.matrix.withheld.by_rule':
+        'No role, by rule: ledger and audit entries are never deleted',
     'admin.action_log.title': 'Admin action log',
     'admin.staff.invite.open': '+ Invite operator',
     'admin.staff.invite.title': 'Invite an operator',

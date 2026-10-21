@@ -2143,7 +2143,28 @@ const rw: Catalog = {
         'Guhitamo abakira imeri kuri staging.',
     'admin.permission.staff.manage': 'Gucunga abakozi',
     'admin.permission_detail.staff.manage':
-        "Guhagarika cyangwa gusubizaho uburenganzira bw'undi mukozi, hatanzwe impamvu.",
+        "Kongeramo umukozi, cyangwa guhagarika cyangwa gusubizaho uburenganzira bw'undi mukozi, hatanzwe impamvu.",
+    'admin.permission.accounts.freeze': 'Guhagarika konti',
+    'admin.permission_detail.accounts.freeze':
+        "Guhagarika by'agateganyo uburenganzira bw'umushoramari cyangwa ubucuruzi kuri porogaramu yabo.",
+    'admin.permission.capacity.adjust': 'Guhindura ubushobozi',
+    'admin.permission_detail.capacity.adjust':
+        'Guhindura umubare ubucuruzi bushobora gukusanya.',
+    'admin.permission.records.edit': 'Guhindura amakuru',
+    'admin.permission_detail.records.edit':
+        'Guhindura amakuru yabitswe ku nyandiko iyo ari yo yose.',
+    'admin.permission.ledger.correct': 'Gukosora ibyakozwe',
+    'admin.permission_detail.ledger.correct':
+        'Gukosora igikorwa cyarangiye hakoreshejwe igikorwa gishya gihujwe nacyo, hatanzwe impamvu.',
+    'admin.permission.policies.change': 'Amategeko',
+    'admin.permission_detail.policies.change':
+        "Guhindura amategeko y'ibiciro, ibisabwa n'ibikorwa byikora.",
+    'admin.permission.records.delete': 'Gusiba',
+    'admin.permission_detail.records.delete':
+        'Gukura burundu inyandiko kuri platform.',
+    'admin.matrix.withheld.not_built': 'Nta ruhare kugeza ubu: ntikirubakwa',
+    'admin.matrix.withheld.by_rule':
+        "Nta ruhare, ku itegeko: ibyanditswe mu gitabo cy'imari n'igenzura ntibisibwa",
     'admin.action_log.title': "Igitabo cy'ibikorwa by'ubuyobozi",
     'admin.staff.invite.open': '+ Tumira umukozi',
     'admin.staff.invite.title': 'Tumira umukozi',

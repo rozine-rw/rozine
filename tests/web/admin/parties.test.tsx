@@ -396,6 +396,15 @@ describe('Party directories', () => {
             ),
         ).toBeInTheDocument();
 
+        const remove = within(matrix).getByRole('row', { name: /^Delete/ });
+
+        expect(
+            within(remove).getByText(
+                'No role, by rule: ledger and audit entries are never deleted',
+            ),
+        ).toBeInTheDocument();
+        expect(within(remove).getAllByLabelText('Not allowed')).toHaveLength(5);
+
         const requery = within(matrix).getByRole('row', {
             name: /Requery disbursements/,
         });
@@ -417,7 +426,7 @@ describe('Party directories', () => {
             'Allowed',
             'Not allowed',
         ]);
-        expect(within(matrix).getAllByRole('row')).toHaveLength(22);
+        expect(within(matrix).getAllByRole('row')).toHaveLength(28);
     });
 
     it('shows no permission matrix outside Staff & Roles', () => {

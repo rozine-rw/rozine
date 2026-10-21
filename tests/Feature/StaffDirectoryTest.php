@@ -126,7 +126,11 @@ test('the permission matrix lists what each role may do from the role definition
         ->assertInertia(fn (Assert $page) => $page->where('permission_matrix', function (Collection $matrix): bool {
             $roles = $matrix->pluck('roles', 'key');
 
-            return $matrix->count() === 22 && $matrix->pluck('key')->unique()->count() === 22
+            return $matrix->count() === 28 && $matrix->pluck('key')->unique()->count() === 28
+                && $matrix->whereNotNull('withheld')->pluck('withheld', 'key')->all() === ['accounts.freeze' => 'not_built',
+                    'capacity.adjust' => 'not_built', 'records.edit' => 'not_built', 'ledger.correct' => 'not_built', 'policies.change' => 'not_built',
+                    'records.delete' => 'by_rule']
+                && $matrix->whereNotNull('withheld')->every(fn (array $row): bool => $row['roles'] === [])
                 && $roles['admin.open'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
                 && $roles['primary.view'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
                 && $roles['investors.verify'] === ['superadmin', 'compliance']
