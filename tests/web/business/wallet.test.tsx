@@ -99,9 +99,7 @@ describe('Business wallet (business-servicing-v1)', () => {
         expect(
             within(history).getByRole('link', { name: 'Repayments' }),
         ).not.toHaveAttribute('aria-current');
-        expect(history).toHaveTextContent(
-            'Deposit · Bank of Kigali ····2231',
-        );
+        expect(history).toHaveTextContent('Deposit · Bank of Kigali ····2231');
         expect(
             within(history).queryByRole('link', { name: 'Show more' }),
         ).not.toBeInTheDocument();
