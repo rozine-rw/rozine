@@ -588,7 +588,7 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
 }
 
 /**
- * How the Holding was issued, its repayment progress and the audited monthly updates (design
+ * The Holding's repayment progress and audited monthly updates, then how it was issued (design
  * L1583–1642; C3 v2 §2d). Servicing figures keep their empty states until C4.
  */
 export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
@@ -597,7 +597,6 @@ export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
 
     return (
         <>
-            <IssueRecord issue={holding.issue} />
             <h2 className={cn(HEADING, 'mt-[18px]')}>
                 {t('investor.holding.progress')}
             </h2>
@@ -660,6 +659,7 @@ export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
             {update !== null && (
                 <UpdateSheet update={update} onClose={() => setUpdate(null)} />
             )}
+            <IssueRecord issue={holding.issue} />
         </>
     );
 }
