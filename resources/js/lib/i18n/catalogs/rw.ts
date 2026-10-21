@@ -398,7 +398,7 @@ const rw: Catalog = {
     'business.apply.raise.term': 'Igihe',
     'business.apply.raise.term_months': 'Amezi {months}',
     'business.apply.raise.rate': 'Igipimo',
-    'business.apply.raise.rate_info': 'Uko iki gipimo gishyirwaho',
+    'business.apply.raise.rate_info': 'Uko iyi nyungu ibarwa',
     'business.apply.raise.rate_how': 'Uko igipimo cyawe gishyirwaho',
     'business.apply.raise.rate_one_charge':
         "Ikiguzi kimwe ku byo uguza. Igikurwamo cyonyine ni amafaranga ya platifomu ya 3%, akurwa ku mafaranga wakusanyije igihe akoherejwe — nta yandi mafaranga y'inyongera.",
@@ -419,6 +419,7 @@ const rw: Catalog = {
     'business.apply.raise.interest': '+ Inyungu',
     'business.apply.raise.interest_basis': '({rate}% · amezi {months})',
     'business.apply.raise.you_repay': 'Wishyura',
+    'business.apply.raise.per_month': '{amount} / ukwezi',
     'business.apply.raise.first_payment':
         'Bitangira ukwezi kumwe nyuma yo kubona amafaranga',
     'business.apply.raise.reserve': 'Ikigega cyo kurinda abashoramari',

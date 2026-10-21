@@ -401,7 +401,7 @@ const fr: Catalog = {
     'business.apply.raise.term': 'Durée',
     'business.apply.raise.term_months': '{months} mois',
     'business.apply.raise.rate': 'Taux',
-    'business.apply.raise.rate_info': 'Comment ce taux est fixé',
+    'business.apply.raise.rate_info': 'Comment ce rendement est calculé',
     'business.apply.raise.rate_how': 'Comment votre taux est fixé',
     'business.apply.raise.rate_one_charge':
         'Un seul coût forfaitaire sur ce que vous empruntez. La seule déduction est la commission de plateforme de 3 %, prélevée sur votre levée lors du versement — aucuns frais de dossier ni prélèvement en plus.',
@@ -423,6 +423,7 @@ const fr: Catalog = {
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',
     'business.apply.raise.you_repay': 'Vous remboursez',
+    'business.apply.raise.per_month': '{amount} / mois',
     'business.apply.raise.first_payment':
         "À partir d'un mois après le financement",
     'business.apply.raise.reserve': 'Réserve de protection des investisseurs',

@@ -388,7 +388,7 @@ const en = {
     'business.apply.raise.term': 'Term',
     'business.apply.raise.term_months': '{months} Months',
     'business.apply.raise.rate': 'Rate',
-    'business.apply.raise.rate_info': 'How this rate is set',
+    'business.apply.raise.rate_info': 'How this yield is calculated',
     'business.apply.raise.rate_how': 'How your rate is set',
     'business.apply.raise.rate_one_charge':
         'One flat charge on what you borrow. The only deduction is the 3% platform fee, taken from your raise when it is paid out — there is no origination fee or levy on top.',
@@ -409,6 +409,7 @@ const en = {
     'business.apply.raise.interest': '+ Interest',
     'business.apply.raise.interest_basis': '({rate}% flat · {months} months)',
     'business.apply.raise.you_repay': 'You repay',
+    'business.apply.raise.per_month': '{amount} / month',
     'business.apply.raise.first_payment': 'Starting 1 month after funding',
     'business.apply.raise.reserve': 'Investor protection reserve',
     'business.apply.raise.reserve_detail':
