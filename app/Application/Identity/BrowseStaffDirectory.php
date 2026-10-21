@@ -10,11 +10,12 @@ use App\Domain\Operations\CommandRejection;
 
 /**
  * Staff & Roles (`admin.open`): every operator with their roles and account state, and one
- * operator's access history. Read only: no staff command is reachable from here. Every read checks
- * the permission first.
+ * operator's access history, and the latest access changes. Read only: no staff command is
+ * reachable from here. Every read checks the permission first.
  *
  * @phpstan-import-type Directory from StaffDirectoryStore
  * @phpstan-import-type Member from StaffDirectoryStore
+ * @phpstan-import-type LogEntry from StaffDirectoryStore
  */
 final class BrowseStaffDirectory
 {
@@ -49,5 +50,13 @@ final class BrowseStaffDirectory
         $this->staff->check($actorId, 'admin.open');
 
         return $this->store->member($userId) ?? throw new CommandRejection('STAFF_MEMBER_NOT_FOUND', 404);
+    }
+
+    /** @return list<LogEntry> */
+    public function log(int $actorId): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return $this->store->log(20);
     }
 }
