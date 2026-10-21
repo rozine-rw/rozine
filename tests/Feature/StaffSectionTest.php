@@ -41,18 +41,19 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             ->where('rules.0', ['tab' => 'fees', 'key' => 'platform_fee', 'value' => '3%', 'version' => 'brs-2.0-fee-r01']));
     $values = array_column($rules, 'value', 'key');
 
-    expect(array_intersect_key($values, array_flip(['target_dscr', 'rate_band', 'min_principal', 'max_principal', 'tenors',
-        'first_issue_months', 'repeat_issue_months', 'minimum_age', 'complaint_resolve', 'withdrawal_max'])))->toBe([
-            'target_dscr' => '1.50×', 'rate_band' => '10–15%', 'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000',
-            'tenors' => '3–6', 'first_issue_months' => '36', 'repeat_issue_months' => '12', 'minimum_age' => '18',
-            'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
+    expect($values)->toMatchArray([
+        'target_dscr' => '1.50×', 'min_rate' => '10%', 'max_rate' => '15%', 'note_unit_price' => 'RWF 5,000', 'min_principal' => 'RWF 3,000,000',
+        'max_principal' => 'RWF 100,000,000', 'min_term' => '3', 'max_term' => '6', 'first_issue_months' => '36', 'repeat_issue_months' => '12',
+        'minimum_age' => '18', 'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
+        ->and($values)->not->toHaveKeys(['rate_band', 'tenors'])
         ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'investor', 'kyc', 'penalties', 'limits'])
         ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
             'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'concentration' => '50%', 'resale_listing_days' => '7',
             'resale_reservation_minutes' => '5', 'cpa_radius' => '30 km', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000', 'risk_statements' => '5'])
         ->and(array_column(array_filter($rules, fn (array $rule): bool => isset($rule['term'])), 'term', 'key'))->toBe([
-            'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'rdb_certificate' => 'required',
-            'max_notes' => 'not_set', 'residency' => 'resident_rwanda', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
+            'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'registration_countries' => 'rwanda',
+            'rdb_certificate' => 'required', 'max_notes' => 'not_set', 'residency' => 'resident_rwanda', 'kyc_investor_id' => 'required',
+            'kyc_investor_selfie' => 'required', 'kyc_investor_dob' => 'required', 'kyc_investor_address' => 'not_collected', 'kyc_business_rdb' => 'required', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
             'default_at' => 'day_31', 'auto_freeze' => 'not_set'])
         ->and(array_column($rules, 'version', 'key'))->toMatchArray(['min_revenue' => 'brs-2.0-uw-r01', 'max_notes' => 'brs-2.0-od-20',
             'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null]);

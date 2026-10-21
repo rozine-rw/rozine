@@ -260,7 +260,6 @@ export type PolicyItem = {
         | 'complaint_resolve'
         | 'min_principal'
         | 'max_principal'
-        | 'tenors'
         | 'first_issue_months'
         | 'repeat_issue_months'
         | 'withdrawal_min'
@@ -289,7 +288,18 @@ export type PolicyItem = {
         | 'sandbox_investors'
         | 'sandbox_principal'
         | 'residency'
-        | 'risk_statements';
+        | 'risk_statements'
+        | 'min_rate'
+        | 'max_rate'
+        | 'note_unit_price'
+        | 'min_term'
+        | 'max_term'
+        | 'registration_countries'
+        | 'kyc_investor_id'
+        | 'kyc_investor_selfie'
+        | 'kyc_investor_dob'
+        | 'kyc_investor_address'
+        | 'kyc_business_rdb';
     /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
     term?: PolicyTerm;
@@ -304,7 +314,9 @@ export type PolicyTerm =
     | 'late_from_due'
     | 'day_31'
     | 'late_schedule'
-    | 'resident_rwanda';
+    | 'resident_rwanda'
+    | 'rwanda'
+    | 'not_collected';
 
 /** One entry in a record's trail: an action taken on it, by whom and when. */
 export type TrailEntry = {

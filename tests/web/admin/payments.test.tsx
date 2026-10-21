@@ -110,7 +110,9 @@ describe('Payment Center', () => {
         expect(screen.getByText('Deposits')).toBeInTheDocument();
         expect(screen.getByText('3 txns · last 14 days')).toBeInTheDocument();
         expect(screen.getByText('1 txn · last 14 days')).toBeInTheDocument();
-        expect(screen.getByText('0 txns · last 14 days')).toBeInTheDocument();
+        expect(
+            screen.getByText('0 payouts to businesses · last 14 days'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Awaiting the provider')).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Fee schedule in effect' }),
