@@ -71,7 +71,7 @@ function engagementUiProps(User $user, string $url = '/auditor/engagement', stri
             return $inertia->component($component);
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /**

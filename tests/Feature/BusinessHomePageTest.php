@@ -27,7 +27,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route('business.show', ['business' => $business]))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component('business/home'))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
     };
     $this->purchase = function (BusinessCampaign $campaign, string $units): void {
         $investor = PrimaryReservationFixture::investor();

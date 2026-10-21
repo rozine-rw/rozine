@@ -66,7 +66,7 @@ function jobsUiProps(User $user, string $url, string $fixture): array
             return $inertia->component($page['component']);
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /**

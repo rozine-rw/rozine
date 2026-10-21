@@ -77,7 +77,7 @@ function applyUiProps(User $user, string $url): array
             return $inertia->component('business/apply');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /**
@@ -94,7 +94,7 @@ function applyUiHome(User $user, string $business): array
         return $inertia->component('business/home');
     });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /**
