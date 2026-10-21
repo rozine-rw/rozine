@@ -5,6 +5,7 @@ import { avatarColor, initialOf } from '@/components/admin/format';
 import { KYC_STATUS_TONE, KycReview } from '@/components/admin/kyc-review';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
+    CardTitle,
     Chip,
     EmptyState,
     EXPLAIN,
@@ -77,6 +78,9 @@ export default function AdminInvestorVerifications(
                 )}
             </div>
             <KycStats stats={props.stats} pending={props.tabs[0].count} />
+            <div className="mt-5 mb-3.5">
+                <CardTitle>{t('admin.kyc.queue')}</CardTitle>
+            </div>
             <PillTabs
                 label={t('admin.kyc.tabs')}
                 tabs={props.tabs.map((tab) => ({

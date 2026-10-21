@@ -27,7 +27,8 @@ use Brick\Math\BigRational;
  * while deferred.
  *
  * A worded value travels as a `term` the console translates, with `value` empty: `every_deal`,
- * `required`, `not_set`, `none`, `late_from_due`, `day_31`, `late_schedule` and `resident_rwanda`.
+ * `required`, `not_set`, `none`, `late_from_due`, `day_31`, `late_schedule`, `resident_rwanda`,
+ * `rwanda` and `not_collected`.
  *
  * The values are code, not versioned policy data yet, so the console only reads them: a change goes
  * through a release under ADM-R05 rather than an Edit form.
@@ -152,21 +153,26 @@ final class PlatformPolicies
                 self::brs($resale, 'FEE-R01'), self::brs($listing, 'FEE-R01'), self::brs($repayment, 'FEE-R01'),
                 self::brs(['key' => 'application_fee', 'value' => self::rwf(0)], 'FEE-R01'),
                 self::brs(self::term('withdrawal_fee', 'none'), 'LED-R04'), self::brs(self::term('loss_reserve', 'none'), 'GEN-R01')]),
-            ...self::tab('underwriting', FlatReturnPricing::POLICY_VERSION, [...self::underwriting(),
-                self::brs(['key' => 'min_rating', 'value' => self::MIN_RATING], 'UW-R04'),
-                self::brs(['key' => 'revenue_cap', 'value' => self::REVENUE_CAP_PERCENT.'%'], 'UW-R03'),
+            ...self::tab('underwriting', FlatReturnPricing::POLICY_VERSION, [...array_values(array_filter(self::underwriting(), fn (array $item): bool => $item['key'] !== 'rate_band')),
+                ['key' => 'min_rate', 'value' => FlatReturnPricing::MINIMUM_RETURN_PERCENT.'%'], ['key' => 'max_rate', 'value' => FlatReturnPricing::MAXIMUM_RETURN_PERCENT.'%'],
+                ['key' => 'note_unit_price', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
+                ['key' => 'min_term', 'value' => (string) min($tenors)], ['key' => 'max_term', 'value' => (string) max($tenors)],
                 ['key' => 'min_principal', 'value' => self::rwf(LoanCapacity::MINIMUM_PRINCIPAL)],
                 ['key' => 'max_principal', 'value' => self::rwf(LoanCapacity::MAXIMUM_PRINCIPAL)],
-                ['key' => 'tenors', 'value' => min($tenors).'–'.max($tenors)]]),
-            ...self::tab('business', UnderwritingObservationWindow::VERSION, [self::brs($business[0], 'UW-R01'),
+                self::brs(['key' => 'min_rating', 'value' => self::MIN_RATING], 'UW-R04'),
+                self::brs(['key' => 'revenue_cap', 'value' => self::REVENUE_CAP_PERCENT.'%'], 'UW-R03')]),
+            ...self::tab('business', UnderwritingObservationWindow::VERSION, [self::brs(self::term('registration_countries', 'rwanda'), 'KYC-R03'),
+                ['key' => 'min_statement_years', 'value' => $business[1]['value']], self::brs($business[0], 'UW-R01'),
                 ['key' => 'first_issue_months', 'value' => (string) UnderwritingObservationWindow::FIRST_ISSUE_MONTHS],
                 ['key' => 'repeat_issue_months', 'value' => (string) UnderwritingObservationWindow::REPEAT_ISSUE_MONTHS],
                 self::brs($business[2], 'KYC-R03'), self::brs($business[3], 'OD-20')]),
-            ...self::tab('investor', null, [['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
+            ...self::tab('investor', null, [self::brs(self::term('residency', 'resident_rwanda'), 'KYC-R02'),
+                ['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
+                ['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
                 self::brs(['key' => 'concentration', 'value' => self::CONCENTRATION_PERCENT.'%'], 'INV-R01'),
-                self::brs(self::term('residency', 'resident_rwanda'), 'KYC-R02'),
                 ['key' => 'risk_statements', 'value' => (string) count(RiskStatements::STATEMENTS)]]),
-            ...self::tab('kyc', null, [['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
+            ...self::tab('kyc', null, [self::term('kyc_investor_id', 'required'), self::term('kyc_investor_selfie', 'required'),
+                self::term('kyc_investor_dob', 'required'), self::term('kyc_investor_address', 'not_collected'), self::term('kyc_business_rdb', 'required'),
                 ['key' => 'identity_evidence', 'value' => (string) count(InvestorVerificationCase::SLOTS)], self::brs($compliance[2], 'KYC-R04')]),
             ...self::tab('penalties', null, [self::brs(self::term('late_charge', 'late_schedule'), 'COL-R02'), self::brs($compliance[0], 'COL-R02'),
                 self::brs($compliance[1], 'COL-R06'), self::brs($compliance[3], 'COL-R06'),

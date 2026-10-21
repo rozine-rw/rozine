@@ -173,6 +173,9 @@ describe('Party directories', () => {
             within(operators).getAllByText('Approver').length,
         ).toBeGreaterThan(1);
         expect(within(operators).getByText('Analyst')).toBeInTheDocument();
+        expect(
+            within(operators).getAllByText('Suspended').length,
+        ).toBeGreaterThan(0);
         expect(within(operators).getByText('Super-admin')).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
         expect(

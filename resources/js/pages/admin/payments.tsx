@@ -158,9 +158,15 @@ export default function AdminPayments(props: AdminPaymentsProps) {
                         index={STAT_ACCENT[stat.key]}
                         label={t(`admin.design.payments.kpi.${stat.key}`)}
                         value={formatRwfShort(stat.value)}
-                        sub={t('admin.payments.kpi.count', {
-                            count: stat.count,
-                        })}
+                        sub={
+                            stat.key === 'disbursed'
+                                ? t('admin.payments.kpi.disbursed_count', {
+                                      count: stat.count,
+                                  })
+                                : t('admin.payments.kpi.count', {
+                                      count: stat.count,
+                                  })
+                        }
                     />
                 ))}
                 <KpiTile

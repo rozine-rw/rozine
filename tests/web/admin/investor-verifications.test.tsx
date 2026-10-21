@@ -222,10 +222,11 @@ describe('Compliance identity queue', () => {
             within(console).getByRole('link', { name: 'Investors' }),
         ).not.toHaveAttribute('aria-current');
         expect(
+            screen.getByRole('heading', { name: 'KYC review queue' }),
+        ).toBeInTheDocument();
+        expect(
             screen.getByRole('region', { name: 'Compliance rules in effect' }),
-        ).toHaveTextContent(
-            'Minimum investor age18Complaint resolved within48 h',
-        );
+        ).toHaveTextContent('Minimum age18Complaint resolved within48 h');
     });
 
     it('lists submissions with their document, age and state, and pages on', () => {

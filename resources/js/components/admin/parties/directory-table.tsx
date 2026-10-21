@@ -367,7 +367,7 @@ function StaffRow({ row }: { row: StaffPartyRow }) {
                 >
                     {t(
                         row.frozen
-                            ? 'admin.parties.status.frozen'
+                            ? 'admin.parties.status.suspended'
                             : 'admin.parties.status.active',
                     )}
                 </Chip>
