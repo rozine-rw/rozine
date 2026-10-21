@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Disbursement\PlatformFee;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
@@ -28,7 +27,7 @@ class StaffPaymentsResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{from: string, movements: Movements, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>} $resource */
+        /** @var array{from: string, movements: Movements, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
         $resource = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $route = fn (array $query = []): array => ['url' => route($prefix.'staff.payments.index', $query, false), 'method' => 'get'];
@@ -46,7 +45,7 @@ class StaffPaymentsResource extends JsonResource
         return ['contract_version' => 'staff-payments-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'viewer' => (new StaffViewerResource($resource['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($resource['permissions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'], 'policy' => self::policy(),
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'], 'policy' => $resource['policy'],
             'stats' => [['key' => 'deposits', 'value' => $money($movements['deposits']['amount']), 'count' => $movements['deposits']['count']],
                 ['key' => 'withdrawals', 'value' => $money($movements['withdrawals']['amount']), 'count' => $movements['withdrawals']['count']],
                 ['key' => 'disbursed', 'value' => $money($movements['disbursed']['amount']), 'count' => $movements['disbursed']['count']]],
@@ -54,21 +53,5 @@ class StaffPaymentsResource extends JsonResource
             'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'], 'amount' => $money($bar['amount']), 'height_pct' => $bar['height_pct']], $resource['bars']),
             'payouts' => array_slice($matched, 0, $resource['limit']),
             'pagination' => ['next' => count($matched) > $resource['limit'] && $resource['limit'] < 500 ? $route([...$query, 'limit' => 500]) : null]];
-    }
-
-    /**
-     * The fees money moves under, read from the rule the disbursement applies (BRS v2.0 FEE-R01):
-     * 3% of the raise at disbursement with 40% of it to the Audit Partner. No listing or
-     * per-repayment fee is charged (#154).
-     *
-     * @return list<array{key: string, value: string}>
-     */
-    public static function policy(): array
-    {
-        $percent = fn (int $basisPoints): string => rtrim(rtrim(number_format($basisPoints / 100, 2, '.', ''), '0'), '.').'%';
-
-        return [['key' => 'platform_fee', 'value' => $percent(PlatformFee::FEE_BPS)],
-            ['key' => 'cpa_share', 'value' => $percent(PlatformFee::AUDIT_PARTNER_SHARE_BPS)],
-            ['key' => 'listing_fee', 'value' => '0%'], ['key' => 'repayment_fee', 'value' => '0%']];
     }
 }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Underwriting\FlatReturnPricing;
-use App\Domain\Underwriting\LoanCapacity;
-use Brick\Math\BigRational;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,7 +36,7 @@ class StaffApplicationsResource extends JsonResource
             'viewer' => ['id' => (string) $request->user()->getAuthIdentifier(), 'name' => $name, 'email' => $request->user()->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => in_array('superadmin', $roles, true) ? 'superadmin' : 'approver'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
-            'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => self::policy(),
+            'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => $page['policy'],
             'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved']),
             'applications' => array_map(function (array $entry) use ($link, $position): array {
                 unset($entry['capacity'], $entry['use_of_funds']);
@@ -49,21 +46,5 @@ class StaffApplicationsResource extends JsonResource
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'links' => ['operation' => StaffApplicationReleaseResource::lookup($request), 'changes' => $request->routeIs('api.*') ? null
                 : ['url' => route('staff.changes.index', ['topics' => 'staff_queue', 'after' => (string) $page['changes_cursor']], false), 'method' => 'get']]];
-    }
-
-    /**
-     * The underwriting rules this queue is decided under, read from the policy the engine applies:
-     * the coverage offers are sized to, the coverage below which an application is rejected, and the
-     * flat return band.
-     *
-     * @return list<array{key: string, value: string}>
-     */
-    public static function policy(): array
-    {
-        $coverage = fn (string $ratio): string => BigRational::of($ratio)->toScale(2).'×';
-
-        return [['key' => 'target_dscr', 'value' => $coverage(LoanCapacity::TARGET_COVERAGE)],
-            ['key' => 'audit_routing', 'value' => '≥ '.$coverage(LoanCapacity::MINIMUM_COVERAGE)],
-            ['key' => 'rate_band', 'value' => FlatReturnPricing::MINIMUM_RETURN_PERCENT.'–'.FlatReturnPricing::MAXIMUM_RETURN_PERCENT.'%']];
     }
 }

@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
+use App\Application\Operations\PlatformPolicies;
 use App\Http\Resources\StaffNavigationResource;
-use App\Http\Resources\StaffPolicyRulesResource;
 use App\Http\Resources\StaffViewerResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,7 +53,7 @@ class StaffSectionController extends Controller
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? StaffPolicyRulesResource::rows() : [], ...$finance]);
+            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance]);
     }
 
     /**

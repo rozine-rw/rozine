@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Identity\Complaint;
-use App\Domain\Identity\InvestorVerificationCase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,7 +22,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * }
  * @phpstan-type Page array{
  *     tab: string, search: string, limit: int, before: string|null, entries: list<Entry>, next_cursor: string|null,
- *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>
+ *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>,
+ *     policy: list<array{key: string, value: string}>
  * }
  */
 class StaffInvestorVerificationsResource extends JsonResource
@@ -47,27 +46,12 @@ class StaffInvestorVerificationsResource extends JsonResource
                 'initials' => StaffViewerResource::initials($name), 'role' => $role],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
-            'active_tab' => $page['tab'], 'policy' => self::policy(),
+            'active_tab' => $page['tab'], 'policy' => $page['policy'],
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['submitted', 'decided']),
             'entries' => array_map(fn (array $entry): array => [...$entry, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
-    }
-
-    /**
-     * The compliance rules this queue is decided under, read from the rules the domain enforces:
-     * the minimum investor age, the identity evidence every case carries and the complaint
-     * acknowledgement and resolution windows.
-     *
-     * @return list<array{key: string, value: string}>
-     */
-    public static function policy(): array
-    {
-        return [['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
-            ['key' => 'identity_evidence', 'value' => (string) count(InvestorVerificationCase::SLOTS)],
-            ['key' => 'complaint_acknowledge', 'value' => Complaint::ACKNOWLEDGE_HOURS.' h'],
-            ['key' => 'complaint_resolve', 'value' => Complaint::RESOLVE_HOURS.' h']];
     }
 
     /**

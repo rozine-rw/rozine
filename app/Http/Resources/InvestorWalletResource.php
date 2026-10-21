@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Application\Wallet\Contracts\WalletStore;
+use App\Http\Requests\Investor\ShowWalletRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -40,7 +40,7 @@ class InvestorWalletResource extends JsonResource
             'history' => ['movement' => $movement, 'period' => $period,
                 'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet($kept(['movement' => $key]))], ['external', 'internal']),
                 'periods' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $period,
-                    'link' => $wallet($key === 'all' ? ['movement' => $movement] : ['movement' => $movement, 'period' => $key])], WalletStore::HISTORY_PERIODS),
+                    'link' => $wallet($key === 'all' ? ['movement' => $movement] : ['movement' => $movement, 'period' => $key])], ShowWalletRequest::PERIODS),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet($kept(['movement' => $movement, 'before' => $data['history']['next_before']]))]],
             'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null,

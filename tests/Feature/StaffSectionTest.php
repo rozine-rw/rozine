@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Operations\PlatformPolicies;
 use App\Http\Controllers\StaffSectionController;
-use App\Http\Resources\StaffPolicyRulesResource;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -31,7 +31,7 @@ test('every design section opens the console frame with its empty state for any 
     array_combine(array_keys(StaffSectionController::SECTIONS), array_keys(StaffSectionController::SECTIONS))));
 
 test('Policies lists the rules the domain enforces under the design tabs, and other sections list none', function (): void {
-    $rules = StaffPolicyRulesResource::rows();
+    $rules = PlatformPolicies::rules();
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/policies')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'policies')->has('rules', count($rules))
             ->where('rules.0', ['tab' => 'fees', 'key' => 'platform_fee', 'value' => '3%', 'version' => 'brs-2.0-fee-r01']));
