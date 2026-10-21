@@ -67,6 +67,31 @@ describe('Investor tabs', () => {
             screen.getAllByRole('link', { name: 'Cart' })[0],
         ).toHaveAttribute('aria-current', 'page');
     });
+
+    it('counts the cart lines on the Cart tab, and draws no badge for an empty cart', () => {
+        inertia.shared = { cart_count: 3 };
+        const { unmount } = render(
+            <InvestorCart {...cart(emptyCartFixture)} />,
+        );
+
+        const tabs = screen
+            .getAllByRole('link')
+            .filter((link) => link.textContent.includes('Cart'));
+        expect(tabs.map((link) => link.textContent)).toEqual([
+            '3Cart',
+            '3Cart (3)',
+        ]);
+        unmount();
+
+        inertia.shared = { cart_count: 0 };
+        render(<InvestorCart {...cart(emptyCartFixture)} />);
+        expect(
+            screen
+                .getAllByRole('link')
+                .filter((link) => link.textContent.includes('Cart'))
+                .map((link) => link.textContent),
+        ).toEqual(['Cart', 'Cart']);
+    });
 });
 
 describe('Market', () => {

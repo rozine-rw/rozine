@@ -7,6 +7,7 @@ namespace App\Infrastructure\Primary;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Models\InvestorCartLine;
+use App\Models\User;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -17,6 +18,13 @@ use Illuminate\Support\Str;
 final readonly class EloquentInvestorCart implements InvestorCart
 {
     public function __construct(private AuthorizeActiveRole $authority) {}
+
+    public function count(int $userId): int
+    {
+        $partyId = User::query()->whereKey($userId)->value('party_id');
+
+        return $partyId === null ? 0 : $this->countFor(strtolower((string) $partyId));
+    }
 
     public function lines(int $userId, ?int $contextRevision): array
     {
@@ -31,7 +39,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
         return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($campaignId, $units, $admit): array {
             $partyId = strtolower((string) $identity['party']['id']);
             $line = InvestorCartLine::query()->where('party_id', $partyId)->where('business_campaign_id', $campaignId)->first();
-            $admit($line !== null, $this->count($partyId));
+            $admit($line !== null, $this->countFor($partyId));
             $at = now('UTC')->toDateTimeImmutable();
             if ($line === null) {
                 $line = new InvestorCartLine;
@@ -39,7 +47,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
             }
             $line->forceFill(['units' => $units, 'updated_at' => $at])->save();
 
-            return ['campaign_id' => $campaignId, 'units' => $units, 'count' => $this->count($partyId)];
+            return ['campaign_id' => $campaignId, 'units' => $units, 'count' => $this->countFor($partyId)];
         });
     }
 
@@ -49,11 +57,11 @@ final readonly class EloquentInvestorCart implements InvestorCart
             $partyId = strtolower((string) $identity['party']['id']);
             $removed = InvestorCartLine::query()->where('party_id', $partyId)->where('business_campaign_id', $campaignId)->delete() > 0;
 
-            return ['campaign_id' => $campaignId, 'removed' => $removed, 'count' => $this->count($partyId)];
+            return ['campaign_id' => $campaignId, 'removed' => $removed, 'count' => $this->countFor($partyId)];
         });
     }
 
-    private function count(string $partyId): int
+    private function countFor(string $partyId): int
     {
         return InvestorCartLine::query()->where('party_id', $partyId)->count();
     }

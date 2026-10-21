@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
@@ -77,6 +77,7 @@ export function InvestorShell({
     children,
 }: InvestorShellProps) {
     const { t } = useTranslation();
+    const cartCount = usePage().props.cart_count;
     useChangeBeacon(beacon);
     const nav = (
         ['deals', 'portfolio', 'market', 'cart', 'profile'] as const
@@ -91,6 +92,10 @@ export function InvestorShell({
                       label: t(`investor.nav.${key}`),
                       href,
                       glyph: GLYPHS[key],
+                      badge:
+                          key === 'cart' && typeof cartCount === 'number'
+                              ? cartCount
+                              : undefined,
                   },
               ];
     });

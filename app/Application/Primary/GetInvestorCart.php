@@ -29,6 +29,12 @@ final readonly class GetInvestorCart
     public function __construct(private GetInvestorViewer $viewer, private InvestorCart $cart, private InvestorDealCatalogue $catalogue,
         private InvestorCheckoutFacts $facts) {}
 
+    /** How many lines the user's cart holds, for the Cart tab's badge. */
+    public function count(int $userId): int
+    {
+        return $this->cart->count($userId);
+    }
+
     /** @return CartPage */
     public function handle(int $userId, ?int $contextRevision): array
     {

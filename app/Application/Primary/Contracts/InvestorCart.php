@@ -19,6 +19,12 @@ interface InvestorCart
     public const int MAX_LINES = 50;
 
     /**
+     * How many lines the user's Party holds, for the Cart tab's badge: a plain count, taken without
+     * the authority lock, and zero for a user with no Party.
+     */
+    public function count(int $userId): int;
+
+    /**
      * The Party's lines, oldest first.
      *
      * @return list<CartLine>
