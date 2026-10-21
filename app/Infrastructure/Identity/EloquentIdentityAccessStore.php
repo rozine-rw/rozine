@@ -137,6 +137,45 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
+    /**
+     * A superadmin suspends or reactivates another operator's staff access with a reason (ADM-R02).
+     * Roles are kept, so reactivating restores exactly what was suspended; reactivation still needs
+     * a verified email and confirmed MFA. Nobody changes their own access here.
+     *
+     * @return array<string, mixed>
+     */
+    public function setStaffEnabled(int $actorId, int $userId, bool $enabled, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $userId, $enabled, $reason, $requestId): array {
+            $hash = $this->requestHash(['staff.enable', $userId, $enabled, $reason], $reason, $requestId);
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if ($actorId === $userId) {
+                throw new IdentityViolation('STAFF_SELF_CHANGE_FORBIDDEN', 409);
+            }
+            $user = User::query()->lockForUpdate()->find($userId);
+            $staff = StaffAccount::query()->lockForUpdate()->find($userId);
+            if ($user === null || $staff === null) {
+                throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
+            }
+            if ($staff->enabled === $enabled) {
+                throw new IdentityViolation('STAFF_STATE_UNCHANGED', 409);
+            }
+            if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
+                throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            }
+            $before = ['enabled' => $staff->enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles];
+            $staff->forceFill(['enabled' => $enabled])->save();
+            $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
+            $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles], $result);
+
+            return $result;
+        }, 3);
+    }
+
     /** @return array<string, mixed> */
     public function resolvePerson(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId): array
     {

@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
@@ -126,6 +127,12 @@ export default function AdminParties(props: AdminPartiesProps) {
             <DirectoryTable directory={props.directory} />
             {props.kind === 'staff' && props.permission_matrix && (
                 <PermissionMatrix rows={props.permission_matrix} />
+            )}
+            {props.kind === 'staff' && props.action_log && (
+                <ActionLog
+                    entries={props.action_log}
+                    serverTime={props.server_time}
+                />
             )}
         </AdminFrame>
     );

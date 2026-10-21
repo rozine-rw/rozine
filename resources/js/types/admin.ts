@@ -811,6 +811,17 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     party: PartyDetail | null;
     /** Staff & Roles only: what each role may do. */
     permission_matrix?: PermissionMatrixRow[];
+    /** Staff & Roles only: the latest staff access changes, newest first. */
+    action_log?: StaffActionLogEntry[];
+};
+
+export type StaffActionLogEntry = {
+    id: string;
+    at: string;
+    actor: string;
+    target: string;
+    action: 'staff_suspended' | 'staff_enabled';
+    reason: string;
 };
 
 /* ------------------------------------------------------------------------------------------ */

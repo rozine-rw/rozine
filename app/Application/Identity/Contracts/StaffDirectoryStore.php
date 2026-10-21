@@ -18,6 +18,7 @@ namespace App\Application\Identity\Contracts;
  *     before: array<string, mixed>, after: array<string, mixed>
  * }
  * @phpstan-type Member array{row: StaffRow, history: list<HistoryEntry>}
+ * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, reason: string}
  */
 interface StaffDirectoryStore
 {
@@ -37,4 +38,12 @@ interface StaffDirectoryStore
      * @return Member|null
      */
     public function member(int $userId): ?array;
+
+    /**
+     * The latest staff access changes across every operator, newest first: who enabled or
+     * disabled whose access, and why.
+     *
+     * @return list<LogEntry>
+     */
+    public function log(int $limit): array;
 }

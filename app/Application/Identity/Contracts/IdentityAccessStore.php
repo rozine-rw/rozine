@@ -19,6 +19,9 @@ interface IdentityAccessStore
     public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId, array $roles = []): array;
 
     /** @return array<string, mixed> */
+    public function setStaffEnabled(int $actorId, int $userId, bool $enabled, string $reason, string $requestId): array;
+
+    /** @return array<string, mixed> */
     public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
 
     /**

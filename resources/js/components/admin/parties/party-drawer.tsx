@@ -146,7 +146,9 @@ export function PartyDrawer({
                               expected_revision: review.revision,
                               submission_id: review.submission_id,
                           }
-                        : undefined
+                        : stage.key === 'freeze' || stage.key === 'release'
+                          ? { request_id: stage.requestId }
+                          : undefined
                 }
             />
         ) : null;

@@ -92,11 +92,12 @@ test("an operator's 360 shows their roles, access history and the freeze that di
             ->where('party.freeze', fn ($freeze): bool => $freeze['actor'] === 'Server console' && $freeze['reason'] === 'Left the operations team.' && is_string($freeze['at']))
             ->where('party.restrictions.0.kind', 'freeze')->where('party.restrictions.0.action.label', 'Disabled staff access')
             ->where('party.restrictions.1.kind', 'release')->where('party.restrictions.1.action', ['code' => 'staff.configure', 'label' => 'Enabled staff access', 'tone' => 'green'])
-            ->where('party.links.close.url', '/admin/staff')->where('party.actions', []));
+            ->where('party.links.close.url', '/admin/staff')
+            ->where('party.actions', ['release' => ['url' => '/admin/staff/'.$frozen->id.'/reactivate', 'method' => 'post']]));
 
     $this->actingAs($viewer)->get(route('staff.staff.index', ['operator' => $viewer->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.health', 'active')->where('party.freeze', null)
-            ->where('party.stats.0.value.value', 'Super-admin')->has('party.restrictions', 1));
+            ->where('party.stats.0.value.value', 'Super-admin')->has('party.restrictions', 1)->where('party.actions', []));
     $bare = StaffAccount::factory()->create(['enabled' => false, 'roles' => []]);
     $this->actingAs($viewer)->get(route('staff.staff.index', ['operator' => $bare->user_id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.health', 'frozen')->where('party.freeze', null)
@@ -125,14 +126,68 @@ test('the permission matrix lists what each role may do from the role definition
         ->assertInertia(fn (Assert $page) => $page->where('permission_matrix', function (Collection $matrix): bool {
             $roles = $matrix->pluck('roles', 'key');
 
-            return $matrix->count() === 21 && $matrix->pluck('key')->unique()->count() === 21
+            return $matrix->count() === 22 && $matrix->pluck('key')->unique()->count() === 22
                 && $roles['admin.open'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
                 && $roles['primary.view'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
                 && $roles['investors.verify'] === ['superadmin', 'compliance']
                 && $roles['disbursements.hold'] === ['compliance', 'approver', 'treasury']
                 && $roles['disbursements.requery'] === ['treasury']
-                && $roles['staging.mail.testers.manage'] === ['superadmin']
+                && $roles['staging.mail.testers.manage'] === ['superadmin'] && $roles['staff.manage'] === ['superadmin']
                 && $matrix->filter(fn (array $row): bool => in_array('analyst', $row['roles'], true))->pluck('key')->all()
                     === ['admin.open', 'businesses.view', 'audit.reports.view', 'primary.view'];
         }));
+});
+
+test('a superadmin suspends and reactivates another operator with a reason, and the action log shows it', function (): void {
+    $superadmin = rosterStaff(['superadmin'], ['name' => 'A. Diane']);
+    $eric = rosterStaff(['approver', 'treasury'], ['name' => 'Eric Ndoli']);
+
+    $this->actingAs($superadmin)->get(route('staff.staff.index', ['operator' => $eric->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.actions', ['freeze' => ['url' => '/admin/staff/'.$eric->id.'/suspend', 'method' => 'post']]));
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => ''])
+        ->assertSessionHasErrors('reason');
+    $request = (string) Str::uuid();
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => $request, 'reason' => 'On leave until November.'])
+        ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => $request, 'reason' => 'On leave until November.'])
+        ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
+    expect(StaffAccount::query()->find($eric->id))->enabled->toBeFalse()->roles->toBe(['approver', 'treasury']);
+    $this->actingAs($eric)->get(route('staff.staff.index'))->assertForbidden();
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Again.'])
+        ->assertSessionHasErrors(['reason' => "This operator's access already changed. Review it again."]);
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => $request, 'reason' => 'Different reason.'])
+        ->assertSessionHasErrors(['reason' => 'That request was already used for different details. Try again.']);
+
+    $this->actingAs($superadmin)->get(route('staff.staff.index', ['operator' => $eric->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.health', 'frozen')->where('party.freeze.actor', 'A. Diane')
+            ->where('party.freeze.reason', 'On leave until November.')
+            ->where('party.actions', ['release' => ['url' => '/admin/staff/'.$eric->id.'/reactivate', 'method' => 'post']])
+            ->where('action_log.0', fn ($entry): bool => $entry['actor'] === 'A. Diane' && $entry['target'] === 'Eric Ndoli'
+                && $entry['action'] === 'staff_suspended' && $entry['reason'] === 'On leave until November.' && is_string($entry['at']))
+            ->where('action_log.1.action', 'staff_enabled')->where('action_log.1.actor', 'Server console'));
+
+    $this->actingAs($superadmin)->post(route('staff.staff.reactivate', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Back from leave.'])
+        ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
+    expect(StaffAccount::query()->find($eric->id))->enabled->toBeTrue()->roles->toBe(['approver', 'treasury']);
+    $this->actingAs($eric)->get(route('staff.staff.index'))->assertOk();
+});
+
+test('nobody changes their own access, other roles cannot, and reactivation still needs MFA', function (): void {
+    $superadmin = rosterStaff(['superadmin']);
+    $compliance = rosterStaff(['compliance']);
+    $frozen = rosterStaff(['analyst']);
+    app(ConfigureStaffAccess::class)->handle($frozen->id, false, 'Left.', (string) Str::uuid(), ['analyst']);
+    $frozen->forceFill(['two_factor_confirmed_at' => null])->save();
+
+    $this->actingAs($superadmin)->post(route('staff.staff.suspend', $superadmin->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Test.'])
+        ->assertSessionHasErrors(['reason' => 'You cannot change your own access. Ask another super-admin.']);
+    $this->actingAs($compliance)->post(route('staff.staff.suspend', $superadmin->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Test.'])
+        ->assertForbidden();
+    $this->actingAs($superadmin)->post(route('staff.staff.reactivate', $frozen->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Back.'])
+        ->assertSessionHasErrors(['reason' => 'This operator needs a verified email and two-factor sign-in before access can return.']);
+    $this->actingAs($superadmin)->post(route('staff.staff.reactivate', 999999), ['request_id' => (string) Str::uuid(), 'reason' => 'Back.'])
+        ->assertNotFound();
+    $this->actingAs($compliance)->get(route('staff.staff.index', ['operator' => $superadmin->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.actions', []));
+    expect(StaffAccount::query()->find($superadmin->id))->enabled->toBeTrue();
 });
