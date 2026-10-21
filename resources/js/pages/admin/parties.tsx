@@ -116,6 +116,20 @@ export default function AdminParties(props: AdminPartiesProps) {
                     <InviteOperator action={props.grant} />
                 )}
             </div>
+            {props.kind === 'staff' && props.access && (
+                <p className="mb-3 text-[12px] text-rz-muted">
+                    <span className="mr-1.5 text-[10px] font-bold tracking-[.06em] text-rz-faint uppercase">
+                        {t('admin.staff.signed_in_as')}
+                    </span>
+                    <span className="font-semibold text-rz-ink">
+                        {t(`admin.role.${props.viewer.role}`)}
+                    </span>
+                    {' · '}
+                    {props.access.granted === props.access.total
+                        ? t('admin.staff.access_full')
+                        : t('admin.staff.access_count', props.access)}
+                </p>
+            )}
             <p className="mb-2.5 text-[12px] font-semibold text-rz-muted">
                 {props.shown < props.total
                     ? t(`admin.parties.showing.${props.kind}`, {
