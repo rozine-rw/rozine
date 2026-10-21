@@ -43,6 +43,10 @@ const queue = (
     badges: { applications: null, disbursements: null },
     search: '',
     active_tab: 'submitted',
+    policy: [
+        { key: 'minimum_age', value: '18' },
+        { key: 'complaint_resolve', value: '48 h' },
+    ],
     tabs: [
         {
             key: 'submitted',
@@ -205,6 +209,11 @@ describe('Compliance identity queue', () => {
         expect(
             within(console).getByRole('link', { name: 'Investors' }),
         ).not.toHaveAttribute('aria-current');
+        expect(
+            screen.getByRole('region', { name: 'Compliance rules in effect' }),
+        ).toHaveTextContent(
+            'Minimum investor age18Complaint resolved within48 h',
+        );
     });
 
     it('lists submissions with their document, age and state, and pages on', () => {

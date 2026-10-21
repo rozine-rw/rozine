@@ -165,7 +165,11 @@ export type PolicyItem = {
         | 'platform_fee'
         | 'cpa_share'
         | 'listing_fee'
-        | 'repayment_fee';
+        | 'repayment_fee'
+        | 'minimum_age'
+        | 'identity_evidence'
+        | 'complaint_acknowledge'
+        | 'complaint_resolve';
     value: string;
 };
 
@@ -1660,6 +1664,8 @@ export type InvestorVerificationReview = {
 export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
     contract_version: 'staff-investor-verifications-v1';
     active_tab: 'submitted' | 'decided';
+    /** The compliance rules the queue is decided under. */
+    policy: PolicyItem[];
     tabs: {
         key: 'submitted' | 'decided';
         count: number;

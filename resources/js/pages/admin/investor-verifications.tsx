@@ -10,6 +10,7 @@ import {
     EXPLAIN,
     HeadCell,
     PillTabs,
+    PolicyPeek,
     ROW_RULE,
     ShowMoreLink,
     TABLE_HEAD,
@@ -56,6 +57,10 @@ export default function AdminInvestorVerifications(
                 )
             }
         >
+            <PolicyPeek
+                title={t('admin.kyc.policy_title')}
+                items={props.policy}
+            />
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <p className={cn('max-w-[720px] text-[13px]', EXPLAIN)}>
                     {t('admin.kyc.intro')}
