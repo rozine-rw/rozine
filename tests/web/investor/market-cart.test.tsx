@@ -356,6 +356,32 @@ describe('Cart with notes', () => {
         expect(sebeya.getByText('Fully funded')).toBeInTheDocument();
     });
 
+    it('moves the total but saves nothing for a line the server offers no change for', () => {
+        vi.useFakeTimers();
+        const page = cart();
+        const line = page.cart?.lines?.find(
+            (entry) => entry.campaign_id === 'cmp_greenleaf',
+        );
+
+        if (line !== undefined) {
+            line.actions.units = null;
+        }
+
+        render(<InvestorCart {...page} />);
+
+        const slider = within(
+            screen.getByTestId('cart-line-cmp_greenleaf'),
+        ).getByRole('slider', { name: 'Number of notes in GreenLeaf Agro' });
+        fireEvent.change(slider, { target: { value: '20' } });
+        act(() => {
+            vi.advanceTimersByTime(400);
+        });
+
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('120,000');
+        expect(inertia.calls).toHaveLength(0);
+        vi.useRealTimers();
+    });
+
     it('moves the total at once with a slider, saves the quantity once it rests and names the cap at the most allowed', () => {
         vi.useFakeTimers();
         inertia.queue.push(answers({ data: { units: 20 } }));

@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
+import { bareCompanyCode } from '@/components/business/home/business-hero';
 import BusinessHome from '@/pages/business/home';
 import type { BusinessHomeProps, BusinessTodo } from '@/types/business';
 import inbox from '../../../resources/fixtures/business-notices.json';
@@ -446,5 +447,13 @@ describe('Business Home', () => {
         expect(
             screen.getByRole('heading', { name: 'Failed note' }),
         ).toBeInTheDocument();
+    });
+});
+
+describe('The RDB company code', () => {
+    it('drops a recorded RDB prefix once, and keeps a code that is nothing but the prefix', () => {
+        expect(bareCompanyCode('RDB-2016-196807')).toBe('2016-196807');
+        expect(bareCompanyCode('103847291')).toBe('103847291');
+        expect(bareCompanyCode('RDB')).toBe('RDB');
     });
 });
