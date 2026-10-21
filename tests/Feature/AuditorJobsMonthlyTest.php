@@ -51,7 +51,7 @@ it('shows an accepted monthly visit with no report yet as a window to open, link
 });
 
 it('puts a started monthly report on the clock, then awaiting co-signature, then under desk review once disputed', function (): void {
-    $fixture = AuditSealingFixture::ready(kind: 'monthly');
+    $fixture = AuditSealingFixture::ready(kind: 'monthly', findings: true);
     $user = $fixture['user'];
     $report = $fixture['report'];
     $period = $report->binding['period'];
@@ -71,7 +71,7 @@ it('puts a started monthly report on the clock, then awaiting co-signature, then
     ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('code', 'REPORT_DISPUTED');
 
     expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [], 'desk_reviews' => [['id' => $report->id, 'business' => 'Synthetic business',
-        'month' => $period.'-01', 'status' => 'disputed', 'link' => ['url' => '/auditor/reports/'.$report->id, 'method' => 'get']]]]);
+        'month' => $period.'-01', 'status' => 'disputed', 'variance_pct' => '0.0', 'proofs' => 1, 'link' => ['url' => '/auditor/reports/'.$report->id, 'method' => 'get']]]]);
 });
 
 it('marks a monthly report still open after its window closes as overdue', function (): void {

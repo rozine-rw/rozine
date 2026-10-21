@@ -2487,6 +2487,12 @@ const rw: Catalog = {
     'auditor.desk_review.status.escalated': 'Ryoherejwe hejuru',
     'auditor.desk_review.note':
         'Ikigo cyajuririye iyi raporo. Iguma isomwa gusa kugeza isuzuma rya Rozine rifashe icyemezo.',
+    'auditor.desk_review.proofs': 'Ibimenyetso byatanzwe',
+    'auditor.desk_review.proofs_value': {
+        one: 'Ikimenyetso {count}',
+        other: 'Ibimenyetso {count}',
+    },
+    'auditor.desk_review.variance': 'Ikinyuranyo cyawe kiremereye',
     'auditor.desk_review.view': 'Reba raporo →',
     'auditor.monthly.open': 'Fungura igenzura',
     'auditor.monthly.show_all': 'Erekana amadirishya {count} yose afunguye',

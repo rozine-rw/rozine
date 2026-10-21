@@ -19,6 +19,7 @@ use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorIndependence;
 use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\AuditReadPolicy;
+use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Identity\IdentityViolation;
@@ -32,6 +33,7 @@ use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\AuditReport;
+use App\Models\AuditReportSeal;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -227,8 +229,27 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 return $operation(['assignment' => $this->view($record, $candidate),
                     'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
                     'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
-                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status')]]);
+                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status'),
+                        ...$this->dispute($report->id, $report->getAttribute('publication_status'))]]);
             }, [$partyId]);
+    }
+
+    /**
+     * A disputed report's desk-review facts for its partner: the weighted variance the seal
+     * recorded and how many proof originals the Business filed.
+     *
+     * @return array{variance_pct?: string|null, proofs?: int}
+     */
+    private function dispute(string $reportId, ?string $publication): array
+    {
+        if (! in_array($publication, ['disputed', 'escalated'], true)) {
+            return [];
+        }
+        $seal = AuditReportSeal::query()->where('audit_report_id', $reportId)->first();
+
+        return ['variance_pct' => $seal === null ? null : AuditVariance::weighted($seal->payload['report']['findings'] ?? []),
+            'proofs' => DB::table('audit_dispute_proofs')->join('audit_report_publications as publications', 'publications.id', '=', 'audit_dispute_proofs.audit_report_publication_id')
+                ->where('publications.audit_report_id', $reportId)->count()];
     }
 
     /**
