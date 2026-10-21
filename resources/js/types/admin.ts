@@ -411,11 +411,12 @@ export type AdminTodayProps = AdminFrameShellProps & {
         grain: 'year' | 'month' | 'day' | 'hour';
         bars: { label: string; amount: Money; height_pct: number }[];
     };
+    /** Issued notes by their newest monthly report; distress is null until servicing records it. */
     portfolio_health: {
         total: number;
         healthy: { count: number; pct: number };
         watch: { count: number; pct: number };
-        distressed: { count: number; pct: number };
+        distressed: { count: number; pct: number } | null;
     } | null;
     /** Null while the console has no ledger feed. */
     activity: ActivityItem[] | null;

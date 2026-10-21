@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
@@ -85,7 +86,7 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
                 ['key' => 'frozen_accounts', 'count' => null, 'link' => null]])
-            ->where('breaks', null)->where('portfolio_health', null)->where('activity', null)->where('sector_exposure', [])->where('collections', null)
+            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->where('activity', null)->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
@@ -133,7 +134,16 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
             ->where('attention.0.link', ['url' => '/admin/applications', 'method' => 'get'])
             ->where('badges', ['applications' => 0, 'disbursements' => 0])
             ->where('sector_exposure', [['sector' => (string) DB::table('business_profiles')->value('profile->industry'),
-                'outstanding' => ['currency' => 'RWF', 'amount' => $total], 'notes' => 1, 'at_risk' => false]]));
+                'outstanding' => ['currency' => 'RWF', 'amount' => $total], 'notes' => 1, 'at_risk' => false]])
+            ->where('portfolio_health', ['total' => 1, 'healthy' => ['count' => 1, 'pct' => 100], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null]));
+
+    // The Business's newest monthly report is on watch: so is its note, and its sector is at risk.
+    $deals = $this->createMock(InvestorDealCatalogue::class);
+    $deals->method('updates')->willReturn([['status' => 'watch'], ['status' => 'healthy']]);
+    app()->instance(InvestorDealCatalogue::class, $deals);
+    $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('sector_exposure.0.at_risk', true)
+            ->where('portfolio_health', ['total' => 1, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 1, 'pct' => 100], 'distressed' => null]));
 
     // Kigali is UTC+2: 22:30 UTC on 1 March is already 2 March there.
     $window = fn (string $from, ?string $to = null): array => $this->actingAs($viewer)->get(route('staff.dashboard', array_filter(['from' => $from, 'to' => $to])))

@@ -140,10 +140,11 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
     public function sectorExposure(): array
     {
         return array_values(array_map(fn (object $row): array => ['sector' => (string) $row->sector, 'principal' => (string) $row->principal,
-            'notes' => (int) $row->notes], DB::table('primary_holdings AS h')
+            'notes' => (int) $row->notes, 'campaigns' => explode(',', (string) $row->campaigns)], DB::table('primary_holdings AS h')
                 ->join('business_campaigns AS c', 'c.id', '=', 'h.business_campaign_id')
                 ->join('business_profiles AS b', 'b.id', '=', 'c.business_id')
-                ->selectRaw("b.profile->>'industry' AS sector, sum(h.principal) AS principal, count(DISTINCT c.id) AS notes")
+                ->selectRaw("b.profile->>'industry' AS sector, sum(h.principal) AS principal, count(DISTINCT c.id) AS notes,
+                    string_agg(DISTINCT c.id, ',' ORDER BY c.id) AS campaigns")
                 ->groupBy('sector')->orderByDesc('principal')->orderBy('sector')->get()->all()));
     }
 

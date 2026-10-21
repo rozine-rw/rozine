@@ -28,7 +28,7 @@ namespace App\Application\Operations\Contracts;
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Movement array{amount: string, count: int}
  * @phpstan-type Movements array{deposits: Movement, withdrawals: Movement, disbursed: Movement}
- * @phpstan-type Sector array{sector: string, principal: string, notes: int}
+ * @phpstan-type Sector array{sector: string, principal: string, notes: int, campaigns: list<string>}
  * @phpstan-type Payout array{id: string, owner: 'investor'|'business', name: string|null, amount: string, received: string, account: string, state: 'pending'|'unknown', requested_at: string}
  */
 interface OperationsDashboardStore
@@ -90,7 +90,8 @@ interface OperationsDashboardStore
     public function payoutsInFlight(): array;
 
     /**
-     * Issued Holding principal per Business industry, largest first, with how many notes it spans.
+     * Issued Holding principal per Business industry, largest first, with the notes (campaigns) it
+     * spans.
      * The platform records no repayment yet, so issued principal is what stays outstanding.
      *
      * @return list<Sector>
