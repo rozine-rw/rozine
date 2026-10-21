@@ -58,8 +58,10 @@
             "items": [],
             "pagination": {
                 "next": null
-            }
+            },
+            "range": null
         },
+        "exports": null,
         "receipt": null,
         "bases": {},
         "shell_links": {

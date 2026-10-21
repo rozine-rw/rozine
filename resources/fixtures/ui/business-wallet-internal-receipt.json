@@ -215,8 +215,10 @@
             ],
             "pagination": {
                 "next": null
-            }
+            },
+            "range": null
         },
+        "exports": null,
         "receipt": {
             "id": "bwr-1123",
             "movement": "internal",

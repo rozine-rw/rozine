@@ -18,6 +18,7 @@ class ShowBusinessWalletRequest extends FormRequest
     {
         return ['identity_context_revision' => ['sometimes', 'integer', 'min:0'], 'kind' => ['sometimes', 'nullable', 'string', 'in:deposit,withdraw'],
             'amount' => ['sometimes', 'nullable', 'string', 'regex:/^[0-9]{0,15}$/D'], 'movement' => ['sometimes', 'string', 'in:external,internal'],
-            'before' => ['sometimes', 'ulid'], 'receipt' => ['sometimes', 'ulid']];
+            'before' => ['sometimes', 'ulid'], 'receipt' => ['sometimes', 'ulid'], 'from' => ['sometimes', 'nullable', 'date_format:Y-m-d'],
+            'to' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:from']];
     }
 }

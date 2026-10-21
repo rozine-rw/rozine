@@ -12,6 +12,7 @@ use App\Application\Wallet\DispatchBusinessWithdrawals;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Application\Wallet\RecordBusinessWithdrawal;
 use App\Domain\Operations\CommandRejection;
+use App\Models\BusinessDepositCredit;
 use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
@@ -24,6 +25,7 @@ use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
 use App\Models\PartyNotice;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -335,4 +337,62 @@ it('settles a Business withdrawal accepted before the staging switch through the
         ->and(BusinessWithdrawalEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
         ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '30000'])
         ->and(LedgerEntry::query()->where('kind', 'business_withdrawal_payout')->count())->toBe(1);
+});
+
+it('downloads the Business wallet statement with its deposit and paid withdrawal, newest first, and narrows it by date', function (): void {
+    $fixture = businessWithdrawalFixture();
+    $business = $fixture['business']->id;
+    $credit = BusinessDepositCredit::query()->sole();
+    $this->travel(1)->days();
+    businessWithdraw($fixture);
+    businessWithdrawalOutcome(BusinessWithdrawal::query()->sole()->id);
+    businessWithdrawalCommits();
+    $payout = LedgerEntry::query()->where('kind', 'business_withdrawal_payout')->sole();
+    $zone = (string) config('app.timezone');
+    $day = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-d');
+    $time = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-d H:i');
+    $withdrawalRow = '"'.$time($payout->payload['recorded_at']).'","Withdrawal to MTN MoMo +250 788 ···· 456","Cash","100000","out","RZW-'.strtoupper(substr($payout->id, -10)).'"';
+    $depositRow = '"'.$time($credit->payload['recorded_at']).'","Deposit from MTN MoMo +250 788 ···· 456","Cash","500000","in","RZC-'.strtoupper(substr($credit->id, -10)).'"';
+
+    $response = $this->actingAs($fixture['viewer'])->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv']))->assertOk()
+        ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('Content-Disposition', 'attachment; filename=rozine-business-wallet-statement.csv');
+    expect($response->headers->get('Cache-Control'))->toContain('no-store')
+        ->and($response->getContent())->toBe("\u{FEFF}".implode("\r\n", ['"Date","Description","Type","Amount (RWF)","Direction","Reference"', $withdrawalRow, $depositRow])."\r\n");
+
+    $since = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'from' => $day($payout->created_at)]))->getContent();
+    $until = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'to' => $day($credit->created_at)]))->getContent();
+    expect($since)->toContain($withdrawalRow)->not->toContain($depositRow)
+        ->and($until)->toContain($depositRow)->not->toContain($withdrawalRow);
+    $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'from' => '2026-02-02', 'to' => '2026-02-01']))->assertSessionHasErrors('to');
+
+    $pdf = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'pdf']))->assertOk()
+        ->assertHeader('Content-Type', 'application/pdf')->getContent();
+    expect($pdf)->toStartWith('%PDF-1.4')->toContain('-RWF 100,000')->toContain('+RWF 500,000');
+
+    $page = $this->get(route('business.wallet.show', ['business' => $business, 'from' => $day($payout->created_at)]))->viewData('page')['props'];
+    expect($page['history']['items'])->toBe([])
+        ->and($page['history']['range'])->toBe(['from' => $day($payout->created_at), 'to' => null,
+            'base' => ['url' => '/business/'.$business.'/wallet?movement=external', 'method' => 'get']])
+        ->and($page['history']['filters'][1]['link']['url'])->toBe('/business/'.$business.'/wallet?movement=internal&from='.$day($payout->created_at))
+        ->and($page['exports']['csv']['url'])->toBe('/business/'.$business.'/wallet/statement.csv?from='.$day($payout->created_at));
+    $page = $this->get(route('business.wallet.show', ['business' => $business, 'to' => $day($credit->created_at)]))->viewData('page')['props'];
+    expect(array_column($page['history']['items'], 'id'))->toBe([$credit->id])
+        ->and($page['exports']['pdf']['url'])->toBe('/business/'.$business.'/wallet/statement.pdf?to='.$day($credit->created_at));
+});
+
+it('serves the Business wallet statement only to the Business\'s own mandate holders, and to API tokens that may read it', function (): void {
+    $fixture = businessWithdrawalFixture();
+    $business = $fixture['business']->id;
+    $stranger = BusinessAuthorityFixture::make();
+    BusinessAuthorityFixture::configure($stranger);
+
+    $this->actingAs($stranger['users'][0])->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv']))->assertNotFound();
+    $this->actingAs(User::factory()->create())->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv']))->assertForbidden();
+    $this->actingAs($fixture['user'])->get('/business/'.$business.'/wallet/statement.xlsx')->assertNotFound();
+    Sanctum::actingAs($fixture['user'], ['investor:read']);
+    $this->get(route('api.v1.business.wallet.statement', ['business' => $business, 'format' => 'csv']))->assertForbidden();
+    Sanctum::actingAs($fixture['user'], ['business:read']);
+    expect(substr_count((string) $this->get(route('api.v1.business.wallet.statement', ['business' => $business, 'format' => 'csv']))->assertOk()->getContent(), "\r\n"))->toBe(2)
+        ->and($this->getJson(route('api.v1.business.wallet.show', $business))->assertOk()->json('data.exports.csv.url'))->toBe('/api/v1/business/'.$business.'/wallet/statement.csv');
 });

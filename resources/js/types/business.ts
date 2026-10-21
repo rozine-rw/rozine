@@ -1109,7 +1109,18 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         }[];
         items: BusinessWalletEntry[];
         pagination: Pagination;
+        /**
+         * The inclusive calendar days the history is narrowed to, and the unnarrowed view to apply
+         * a new range to. Null where no range can be chosen (a preview state).
+         */
+        range: {
+            from: string | null;
+            to: string | null;
+            base: RouteLink;
+        } | null;
     };
+    /** The statement downloads for the same range; null where none is served (a preview state). */
+    exports: { pdf: RouteLink; csv: RouteLink } | null;
     /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
     receipt:
         | (BusinessWalletEntry & { receipt: Receipt })

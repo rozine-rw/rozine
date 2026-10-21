@@ -88,6 +88,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.wallet.')->group(function (): void {
     Route::get('{business}/wallet', [BusinessWalletController::class, 'show'])->whereUlid('business')->name('show');
+    Route::get('{business}/wallet/statement.{format}', [BusinessWalletController::class, 'statement'])->whereUlid('business')->whereIn('format', ['csv', 'pdf'])->name('statement');
     Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
     Route::post('{business}/wallet/withdrawals', [BusinessWalletController::class, 'withdraw'])->whereUlid('business')->name('withdraw');
     Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');

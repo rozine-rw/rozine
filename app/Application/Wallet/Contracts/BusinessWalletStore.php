@@ -12,11 +12,16 @@ use Closure;
  * The Business servicing wallet port (S4-A1). Every read and command runs under current Business
  * authority: the actor's current Business role and mandate. A deposit records an intent and its
  * queued dispatch only; nothing is credited until a verified provider success.
+ *
+ * @phpstan-import-type Statement from \App\Application\Wallet\WalletStatementDocument
  */
 interface BusinessWalletStore
 {
     /**
-     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * The wallet page. `from` and `to` bound the history to inclusive calendar days in the app
+     * timezone, as the statement download does.
+     *
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null, from?: string|null, to?: string|null}  $query
      * @return array<string, mixed>
      */
     public function page(int $userId, int $contextRevision, string $businessId, array $query): array;
@@ -35,6 +40,15 @@ interface BusinessWalletStore
      * @return list<array{id: string, kind: string, label: string, masked: string}>
      */
     public function methods(int $userId, int $contextRevision, string $businessId): array;
+
+    /**
+     * The Business wallet's recorded movements for a period, newest first: credited deposits,
+     * paid withdrawals and repayments posted from the wallet. `from` and `to` are inclusive
+     * calendar days in the app timezone; null leaves that end open.
+     *
+     * @return Statement
+     */
+    public function statement(int $userId, int $contextRevision, string $businessId, ?string $from, ?string $to): array;
 
     /**
      * @param  array{currency: string, amount: string}  $amount

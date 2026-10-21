@@ -350,3 +350,80 @@ describe('Business wallet (business-servicing-v1)', () => {
         ).not.toBeInTheDocument();
     });
 });
+
+describe('Business wallet history range and statement', () => {
+    it('applies a date range by reloading the history with it, and clears back to all time', () => {
+        render(<BusinessWallet {...wallet()} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Date range: All time' }),
+        );
+        fireEvent.change(screen.getByLabelText('From'), {
+            target: { value: '2026-11-01' },
+        });
+        fireEvent.change(screen.getByLabelText('To'), {
+            target: { value: '2026-11-30' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+        expect(inertia.visits).toEqual([
+            {
+                url: '/preview/business-wallet?from=2026-11-01&to=2026-11-30',
+            },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Date range: All time' }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+
+        expect(inertia.visits.at(-1)).toEqual({
+            url: '/preview/business-wallet',
+        });
+    });
+
+    it('names the chosen range and offers the statement for it as PDF or Excel downloads', () => {
+        const props = wallet();
+        props.history.range = {
+            from: '2026-11-01',
+            to: null,
+            base: {
+                url: '/business/b1/wallet?movement=external',
+                method: 'get',
+            },
+        };
+        render(<BusinessWallet {...props} />);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: 1 Nov 2026 – Now',
+            }),
+        );
+        expect(screen.getByLabelText('From')).toHaveValue('2026-11-01');
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+        expect(inertia.visits).toEqual([
+            { url: '/business/b1/wallet?movement=external&from=2026-11-01' },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Download statement' }),
+        );
+        expect(
+            screen.getByRole('link', { name: /Download PDF/ }),
+        ).toHaveAttribute('href', '/preview/business-wallet-statement.pdf');
+        expect(
+            screen.getByRole('link', { name: /Download Excel/ }),
+        ).toHaveAttribute('href', '/preview/business-wallet-statement.csv');
+    });
+
+    it('shows neither control where the server serves no range or statement', () => {
+        render(<BusinessWallet {...wallet(emptyFixture)} />);
+
+        expect(
+            screen.queryByRole('button', { name: /Date range/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download statement' }),
+        ).not.toBeInTheDocument();
+    });
+});
