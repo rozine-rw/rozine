@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 const decideb0ace22935edb94b050be0f480b7c60f = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ decideb0ace22935edb94b050be0f480b7c60f.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 decideb0ace22935edb94b050be0f480b7c60f.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ decideb0ace22935edb94b050be0f480b7c60f.url = (args: { party: string | number } |
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 decideb0ace22935edb94b050be0f480b7c60f.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -224,7 +224,7 @@ decideb0ace22935edb94b050be0f480b7c60f.post = (args: { party: string | number } 
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 const decideb0ace22935edb94b050be0f480b7c60fForm = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -234,7 +234,7 @@ const decideb0ace22935edb94b050be0f480b7c60fForm = (args: { party: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 decideb0ace22935edb94b050be0f480b7c60fForm.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -245,7 +245,7 @@ decideb0ace22935edb94b050be0f480b7c60fForm.post = (args: { party: string | numbe
 decideb0ace22935edb94b050be0f480b7c60f.form = decideb0ace22935edb94b050be0f480b7c60fForm
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 const decide146bb3aac4ed95f60b4912e52bd7a892 = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -260,7 +260,7 @@ decide146bb3aac4ed95f60b4912e52bd7a892.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 decide146bb3aac4ed95f60b4912e52bd7a892.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -287,7 +287,7 @@ decide146bb3aac4ed95f60b4912e52bd7a892.url = (args: { party: string | number } |
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 decide146bb3aac4ed95f60b4912e52bd7a892.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -297,7 +297,7 @@ decide146bb3aac4ed95f60b4912e52bd7a892.post = (args: { party: string | number } 
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 const decide146bb3aac4ed95f60b4912e52bd7a892Form = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -307,7 +307,7 @@ const decide146bb3aac4ed95f60b4912e52bd7a892Form = (args: { party: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 decide146bb3aac4ed95f60b4912e52bd7a892Form.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -318,7 +318,7 @@ decide146bb3aac4ed95f60b4912e52bd7a892Form.post = (args: { party: string | numbe
 decide146bb3aac4ed95f60b4912e52bd7a892.form = decide146bb3aac4ed95f60b4912e52bd7a892Form
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/approve'
 */
 const decideb6a30e00e0c578ede3b3623e9f641973 = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -333,7 +333,7 @@ decideb6a30e00e0c578ede3b3623e9f641973.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/approve'
 */
 decideb6a30e00e0c578ede3b3623e9f641973.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -360,7 +360,7 @@ decideb6a30e00e0c578ede3b3623e9f641973.url = (args: { party: string | number } |
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/approve'
 */
 decideb6a30e00e0c578ede3b3623e9f641973.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -370,7 +370,7 @@ decideb6a30e00e0c578ede3b3623e9f641973.post = (args: { party: string | number } 
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/approve'
 */
 const decideb6a30e00e0c578ede3b3623e9f641973Form = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -380,7 +380,7 @@ const decideb6a30e00e0c578ede3b3623e9f641973Form = (args: { party: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/approve'
 */
 decideb6a30e00e0c578ede3b3623e9f641973Form.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -391,7 +391,7 @@ decideb6a30e00e0c578ede3b3623e9f641973Form.post = (args: { party: string | numbe
 decideb6a30e00e0c578ede3b3623e9f641973.form = decideb6a30e00e0c578ede3b3623e9f641973Form
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/reject'
 */
 const decide1ff94fac3be191d026e9e50a2441058e = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -406,7 +406,7 @@ decide1ff94fac3be191d026e9e50a2441058e.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/reject'
 */
 decide1ff94fac3be191d026e9e50a2441058e.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -433,7 +433,7 @@ decide1ff94fac3be191d026e9e50a2441058e.url = (args: { party: string | number } |
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/reject'
 */
 decide1ff94fac3be191d026e9e50a2441058e.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -443,7 +443,7 @@ decide1ff94fac3be191d026e9e50a2441058e.post = (args: { party: string | number } 
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/reject'
 */
 const decide1ff94fac3be191d026e9e50a2441058eForm = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -453,7 +453,7 @@ const decide1ff94fac3be191d026e9e50a2441058eForm = (args: { party: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::decide
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:62
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
 * @route '/admin/auditors/{party}/licence/reject'
 */
 decide1ff94fac3be191d026e9e50a2441058eForm.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

@@ -752,6 +752,19 @@ export type PartyDetail = {
         verify_licence?: RouteAction;
         reject_licence?: RouteAction;
     };
+    /** The licence decision the review queue opened this 360 on, if any. */
+    stage?: 'verify_licence' | 'reject_licence' | null;
+};
+
+/** A licence waiting for review, as the Audit Partner network's queues list it. */
+export type LicenceQueueEntry = {
+    id: string;
+    name: string;
+    licence: string;
+    expires_on: string;
+    submitted_at: string;
+    /** Approve and reject open the 360's reason stage; absent when the viewer may not decide. */
+    links: { review: RouteLink; approve?: RouteLink; reject?: RouteLink };
 };
 
 export type DirectoryChipKey =
@@ -811,6 +824,10 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     party: PartyDetail | null;
     /** Staff & Roles only: what each role may do. */
     permission_matrix?: PermissionMatrixRow[];
+    /** Audit Partners only: first licences waiting for ICPAR verification, oldest first. */
+    desk?: LicenceQueueEntry[];
+    /** Audit Partners only: licence renewals waiting for review, oldest first. */
+    requests?: LicenceQueueEntry[];
 };
 
 /* ------------------------------------------------------------------------------------------ */

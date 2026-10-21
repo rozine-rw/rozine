@@ -17,6 +17,6 @@ class ListAuditorDirectoryRequest extends FormRequest
     public function rules(): array
     {
         return ['chip' => ['sometimes', 'string', 'in:all,active,pending,licence_expired'], 'q' => ['sometimes', 'nullable', 'string', 'max:120'],
-            'auditor' => ['sometimes', 'string', 'ulid']];
+            'auditor' => ['sometimes', 'string', 'ulid'], 'decide' => ['sometimes', 'string', 'in:approve,reject']];
     }
 }
