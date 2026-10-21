@@ -56,7 +56,9 @@ it('presents the same real offered case over web and API without exposing origin
     $this->get('/auditor/jobs/'.$assignment->id)->assertOk()->assertInertia(fn (Assert $page): Assert => $page
         ->component('auditor/file')->where('job.state', 'offered')->where('job.kind', 'flash')->where('blocked', null)
         ->where('file.raise.requested.amount', '8000000')->where('file.raise.term_months', 6)->where('file.raise.return_pct', null)
-        ->where('file.documents', [])->where('file.prescreen', [])->where('file.reason', null)->where('links.procedure', null));
+        ->where('file.documents', [])->where('file.prescreen', [])->where('links.procedure', null)
+        ->where('file.reason', fn (string $reason): bool => str_starts_with($reason, 'No note can list until an Audit Partner has visited'))
+        ->where('file.mandate.0', 'Check in at the business premises; your live location is logged with the audit.')->has('file.mandate', 4));
     Sanctum::actingAs($user, ['auditor:read']);
     $api = $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertHeader('Cache-Control', 'no-store, private')
         ->assertJsonPath('data.eligible.0.requested', ['currency' => 'RWF', 'amount' => '8000000'])
@@ -69,6 +71,25 @@ it('presents the same real offered case over web and API without exposing origin
         ->and($web['eligible'][0]['actions']['accept']['url'])->toBe('/auditor/jobs/'.$assignment->id.'/accept');
     $file = $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()->json('data');
     expect(json_encode($file, JSON_THROW_ON_ERROR))->not->toContain('private-account-reference', 'Test-only business plan', 'selection_basis', 'mandate_sha256', 'source_hashes');
+});
+
+it('lists the statements on file once the partner holds the work, without their original names', function (): void {
+    $fixture = Fixture::make(1);
+    $user = $fixture['partners'][0]['user'];
+    Fixture::statements($fixture);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond($user, $assignment);
+    $documents = [];
+    $this->actingAs($user)->get('/auditor/jobs/'.$assignment->id)->assertOk()->assertInertia(function (Assert $page) use (&$documents): Assert {
+        $documents = $page->toArray()['props']['file']['documents'];
+
+        return $page->component('auditor/file')->where('job.state', 'assigned');
+    });
+
+    expect($documents)->toHaveCount(1)->and($documents[0])->toMatchArray(['name' => 'Statement (CSV)', 'kind' => 'statement'])
+        ->and($documents[0]['status'])->toBeIn(['parsed', 'present'])
+        ->and($documents[0]['detail'])->toStartWith('Received '.now('Africa/Kigali')->format('j M Y'))
+        ->and(json_encode($documents, JSON_THROW_ON_ERROR))->not->toContain('private-account-reference');
 });
 
 it('keeps unavailable draft fields null and maps Routine to monthly with its original visit deadline', function (): void {
@@ -86,7 +107,8 @@ it('keeps unavailable draft fields null and maps Routine to monthly with its ori
     $this->travel(3)->days();
     $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.assigned.0.status', 'overdue')->assertJsonPath('data.assigned.0.deadline.due_at', $deadline);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()->assertJsonPath('data.job.state', 'assigned')
-        ->assertJsonPath('data.job.accept_by', null)->assertJsonPath('data.job.deadline.due_at', $deadline);
+        ->assertJsonPath('data.job.accept_by', null)->assertJsonPath('data.job.deadline.due_at', $deadline)
+        ->assertJsonPath('data.file.documents', [])->assertJsonPath('data.file.mandate.3', 'Seal the report by D−3 so holders receive it before payment day.');
 });
 
 it('replays one acceptance across web and API with fresh response time and current actions', function (): void {
