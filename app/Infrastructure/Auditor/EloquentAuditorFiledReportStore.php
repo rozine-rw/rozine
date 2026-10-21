@@ -12,6 +12,8 @@ use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditAssignment;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +36,9 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
      * amendment, which is listed in its own right once sealed.
      */
     private const STANDING = ['pending', 'disputed', 'escalated', 'published'];
+
+    /** The findings measured in francs; counted units are not weighed against money. */
+    private const MONEY = ['stock_value', 'cash'];
 
     public function __construct(private IdentityRepository $identities, private AuthorizeActiveRole $roles, private AuditReportWindow $window) {}
 
@@ -71,8 +76,10 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
             $seals = AuditReportSeal::query()->whereIn('audit_report_id', $reports->modelKeys())->get()->keyBy('audit_report_id');
             $assignments = AuditAssignment::query()->whereIn('id', $reports->pluck('assignment_id')->all())->get()->keyBy('id');
             $timed = $onTime = 0;
+            $findings = [];
             foreach ($reports as $report) {
                 $filed = $this->report($report, $seals[$report->id], $assignments[$report->assignment_id]);
+                $findings = [...$findings, ...self::findings($seals[$report->id])];
                 if ($filed['due_at'] !== null) {
                     $timed++;
                     $onTime += $filed['sealed_at'] <= $filed['due_at'] ? 1 : 0;
@@ -84,7 +91,8 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
                 ->where('offers.party_id', $partyId)->where('offers.status', 'offered')
                 ->whereIn('exits.command', ['audit.assignment.expire', 'audit.assignment.advance'])->count();
 
-            return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries];
+            return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries,
+                'avg_variance_pct' => self::variance($findings)];
         });
     }
 
@@ -98,6 +106,38 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
         return ['id' => $report->id, 'kind' => $report->kind, 'period' => $period,
             'business' => $sealed['business']['profile']['name'], 'district' => $sealed['business']['profile']['district'],
             'sealed_at' => $sealed['sealed_at'], 'published' => $report->getAttribute('publication_status') === 'published',
-            'due_at' => $period === null ? ($assignment->state['complete_by'] ?? null) : $this->window->dueAt($period)];
+            'due_at' => $period === null ? ($assignment->state['complete_by'] ?? null) : $this->window->dueAt($period),
+            'variance_pct' => self::variance(self::findings($seal))];
+    }
+
+    /**
+     * The sealed findings measured in francs, with what was reported and what was observed.
+     *
+     * @return list<array{reported: string, observed: string}>
+     */
+    private static function findings(AuditReportSeal $seal): array
+    {
+        /** @var array{report: array{findings?: list<array{measure: string, reported?: string, observed?: mixed}>}} $sealed */
+        $sealed = $seal->payload;
+
+        return array_values(array_map(fn (array $finding): array => ['reported' => (string) $finding['reported'], 'observed' => (string) $finding['observed']],
+            array_filter($sealed['report']['findings'] ?? [], fn (array $finding): bool => in_array($finding['measure'], self::MONEY, true))));
+    }
+
+    /**
+     * The weighted variance of money findings: the sum of absolute differences over the sum of
+     * reported amounts, as a percentage to one decimal; null with nothing reported to weigh.
+     *
+     * @param  list<array{reported: string, observed: string}>  $findings
+     */
+    private static function variance(array $findings): ?string
+    {
+        $reported = $difference = BigDecimal::zero();
+        foreach ($findings as $finding) {
+            $reported = $reported->plus(BigDecimal::of($finding['reported']));
+            $difference = $difference->plus(BigDecimal::of($finding['observed'])->minus(BigDecimal::of($finding['reported']))->abs());
+        }
+
+        return $reported->isZero() ? null : (string) $difference->multipliedBy(100)->dividedBy($reported, 1, RoundingMode::HalfUp);
     }
 }

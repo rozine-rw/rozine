@@ -17,7 +17,9 @@ use DateTimeZone;
 /**
  * The partner's platform fee shares, read under the current Auditor role and its Party lock. Each
  * credit names the Business as the partner sealed it (the seal's own record of it) and repeats the
- * raise and the fee its disbursement was opened under. The month is the Kigali calendar month.
+ * raise and the fee its disbursement was opened under. The month is the Kigali calendar month. No
+ * ledger entry pays the pooled `audit_partner_fee_payable` account out yet (it is only ever
+ * credited), so every credit is still owed; a partner payout must be subtracted here once it exists.
  *
  * @phpstan-import-type Earnings from AuditorEarningsStore
  */
@@ -49,8 +51,10 @@ final class EloquentAuditorEarningsStore implements AuditorEarningsStore
                     'credited_at' => $credit->created_at->toIso8601String()];
             }
 
-            return ['month' => $local->format('Y-m'), 'this_month' => self::sum(array_column($lines, 'amount')),
-                'total' => (string) AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->selectRaw('COALESCE(SUM(amount), 0)::text AS total')->value('total'),
+            $total = (string) AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->selectRaw('COALESCE(SUM(amount), 0)::text AS total')->value('total');
+
+            return ['month' => $local->format('Y-m'), 'this_month' => self::sum(array_column($lines, 'amount')), 'total' => $total,
+                'owed' => $total, 'deals' => AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->count(),
                 'lines' => $lines];
         });
     }
