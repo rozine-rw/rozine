@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Controllers\StaffSectionController;
+use App\Http\Resources\StaffPolicyRulesResource;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -27,6 +28,23 @@ test('every design section opens the console frame with its empty state for any 
             ->where('nav.businesses.url', '/admin/businesses')->where('nav.auditors', null));
 })->with(fn (): array => array_map(fn (string $slug): array => [$slug, StaffSectionController::SECTIONS[$slug]],
     array_combine(array_keys(StaffSectionController::SECTIONS), array_keys(StaffSectionController::SECTIONS))));
+
+test('Policies lists the rules the domain enforces under the design tabs, and other sections list none', function (): void {
+    $rules = StaffPolicyRulesResource::rows();
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/policies')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'policies')->has('rules', count($rules))
+            ->where('rules.0', ['tab' => 'fees', 'key' => 'platform_fee', 'value' => '3%', 'version' => 'brs-2.0-fee-r01']));
+    $values = array_column($rules, 'value', 'key');
+
+    expect(array_intersect_key($values, array_flip(['target_dscr', 'rate_band', 'min_principal', 'max_principal', 'tenors',
+        'first_issue_months', 'repeat_issue_months', 'minimum_age', 'complaint_resolve', 'withdrawal_max'])))->toBe([
+            'target_dscr' => '1.50×', 'rate_band' => '10–15%', 'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000',
+            'tenors' => '3–6', 'first_issue_months' => '36', 'repeat_issue_months' => '12', 'minimum_age' => '18',
+            'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
+        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits']);
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('rules', []));
+});
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {
     $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()

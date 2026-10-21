@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
 use App\Http\Resources\StaffNavigationResource;
+use App\Http\Resources\StaffPolicyRulesResource;
 use App\Http\Resources\StaffViewerResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,8 @@ use Inertia\Response;
 /**
  * A console section the design shows but whose screen is not wired yet: any staff member may open
  * it, and it renders the console frame with the section's title and an empty state. Nothing is
- * read beyond the viewer's own access, so nothing can be invented.
+ * read beyond the viewer's own access, so nothing can be invented. Policies also lists the rules the
+ * domain enforces.
  */
 class StaffSectionController extends Controller
 {
@@ -47,6 +49,7 @@ class StaffSectionController extends Controller
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section]]);
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
+            'rules' => $section === 'policies' ? StaffPolicyRulesResource::rows() : []]);
     }
 }

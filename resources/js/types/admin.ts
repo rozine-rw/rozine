@@ -97,6 +97,14 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
         | 'auditors'
         | 'staff'
         | 'events';
+    /** Policies only: each rule the platform enforces, under its design tab. */
+    rules?: PolicyRule[];
+};
+
+/** One rule in effect, with the policy version it comes from when the rule carries one. */
+export type PolicyRule = PolicyItem & {
+    tab: string;
+    version: string | null;
 };
 
 /** Every section the frame can mark as current. */
@@ -169,7 +177,14 @@ export type PolicyItem = {
         | 'minimum_age'
         | 'identity_evidence'
         | 'complaint_acknowledge'
-        | 'complaint_resolve';
+        | 'complaint_resolve'
+        | 'min_principal'
+        | 'max_principal'
+        | 'tenors'
+        | 'first_issue_months'
+        | 'repeat_issue_months'
+        | 'withdrawal_min'
+        | 'withdrawal_max';
     value: string;
 };
 

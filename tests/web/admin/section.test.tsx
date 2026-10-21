@@ -227,6 +227,51 @@ describe('The title ⓘ', () => {
     });
 });
 
+describe('Policies', () => {
+    it("lists the rules in effect under the selected tab, with each rule's version", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'policies',
+                    rules: [
+                        {
+                            tab: 'fees',
+                            key: 'platform_fee',
+                            value: '3%',
+                            version: 'brs-2.0-fee-r01',
+                        },
+                        {
+                            tab: 'kyc',
+                            key: 'minimum_age',
+                            value: '18',
+                            version: null,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rules = screen.getByRole('table', { name: 'Rules' });
+        expect(within(rules).getAllByRole('row')).toHaveLength(2);
+        expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · at disbursement3%brs-2.0-fee-r01',
+        );
+        expect(screen.queryByText('No rules to show yet.')).toBeNull();
+
+        fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
+        expect(
+            within(screen.getByRole('table', { name: 'Rules' })).getAllByRole(
+                'row',
+            )[1],
+        ).toHaveTextContent('Minimum investor age18—');
+
+        fireEvent.click(
+            screen.getByRole('tab', { name: 'Investor eligibility' }),
+        );
+        expect(screen.getByText('No rules to show yet.')).toBeVisible();
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);

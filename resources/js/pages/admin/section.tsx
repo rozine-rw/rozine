@@ -10,12 +10,13 @@ import {
     EmptyState,
     HeadCell,
     KpiTile,
+    ROW_RULE,
     TABLE_HEAD,
     TableCard,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { AdminPendingSectionProps } from '@/types/admin';
+import type { AdminPendingSectionProps, PolicyRule } from '@/types/admin';
 
 /** A figure the server has not stated: the tile keeps its place and says nothing. */
 const NO_FIGURE = '—';
@@ -100,7 +101,13 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                                 block.tab === undefined || block.tab === tab,
                         )
                         .map((block) => (
-                            <Block key={block.key} block={block} />
+                            <Block
+                                key={block.key}
+                                block={block}
+                                rules={(props.rules ?? []).filter(
+                                    (rule) => rule.tab === tab,
+                                )}
+                            />
                         ))}
                 </div>
             </section>
@@ -108,12 +115,18 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
     );
 }
 
-/** One designed panel: its title and caption over a chart's or a table's empty state. */
-function Block({ block }: { block: DesignBlock }) {
+/**
+ * One designed panel: its title and caption over a chart's or a table's empty state. Policies'
+ * table lists the rules the server says are in effect under the selected tab.
+ */
+function Block({ block, rules }: { block: DesignBlock; rules: PolicyRule[] }) {
     const { t } = useTranslation();
     const title = t(block.title);
-    const empty = <EmptyState title={t(block.empty)} />;
     const columns = block.columns ?? [];
+    const grid = {
+        gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+    };
+    const empty = <EmptyState title={t(block.empty)} />;
 
     return (
         <div>
@@ -133,13 +146,15 @@ function Block({ block }: { block: DesignBlock }) {
                     {empty}
                 </section>
             ) : (
-                <TableCard label={title} minWidth="min-w-[720px]" empty={empty}>
+                <TableCard
+                    label={title}
+                    minWidth="min-w-[720px]"
+                    empty={rules.length === 0 ? empty : undefined}
+                >
                     <div
                         role="row"
                         className={cn('grid gap-3 px-5 py-[13px]', TABLE_HEAD)}
-                        style={{
-                            gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
-                        }}
+                        style={grid}
                     >
                         {columns.map((column) => (
                             <HeadCell key={column}>
@@ -147,6 +162,36 @@ function Block({ block }: { block: DesignBlock }) {
                             </HeadCell>
                         ))}
                     </div>
+                    {rules.map((rule) => (
+                        <div
+                            key={rule.key}
+                            role="row"
+                            className={cn(
+                                'grid items-center gap-3 px-5 py-3.5',
+                                ROW_RULE,
+                            )}
+                            style={grid}
+                        >
+                            <span
+                                role="cell"
+                                className="min-w-0 text-[13px] font-semibold text-rz-ink"
+                            >
+                                {t(`admin.policy.${rule.key}`)}
+                            </span>
+                            <span
+                                role="cell"
+                                className="min-w-0 text-[13px] font-bold text-rz-ink"
+                            >
+                                {rule.value}
+                            </span>
+                            <span
+                                role="cell"
+                                className="min-w-0 truncate font-mono text-[12px] text-rz-muted"
+                            >
+                                {rule.version ?? NO_FIGURE}
+                            </span>
+                        </div>
+                    ))}
                 </TableCard>
             )}
         </div>

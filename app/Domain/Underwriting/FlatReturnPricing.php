@@ -16,9 +16,12 @@ final class FlatReturnPricing
 
     public const int MAXIMUM_RETURN_PERCENT = 15;
 
+    /** The terms a note may run, in months. */
+    public const array TENORS = [3, 4, 5, 6];
+
     public static function validateTenor(int $tenor): void
     {
-        if (! in_array($tenor, [3, 4, 5, 6], true)) {
+        if (! in_array($tenor, self::TENORS, true)) {
             throw new UnderwritingViolation('INVALID_TENOR');
         }
     }
