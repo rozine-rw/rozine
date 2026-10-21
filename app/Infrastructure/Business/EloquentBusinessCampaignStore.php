@@ -201,17 +201,44 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         });
     }
 
+    /**
+     * The verified financials behind the Business's rating, from the bank and mobile-money statements
+     * its newest rated application was underwritten on: average monthly revenue, net operating cash
+     * per month and the net margin over that window, and the principal of its funded notes, none of
+     * which has been repaid before servicing begins. Null before the Business has a rating.
+     *
+     * @param  array<string, mixed>|null  $evidence
+     * @return array{avg_monthly_revenue: array{currency: string, amount: string}, net_cash_month: array{currency: string, amount: string},
+     *     net_margin_percent: string, outstanding: array{currency: string, amount: string}}|null
+     */
+    private static function financials(?array $evidence, BigInteger $raised): ?array
+    {
+        $months = $evidence['period']['months'] ?? 0;
+        $revenue = $evidence['totals']['revenue']['amount'] ?? null;
+        $net = $evidence['totals']['net_profit']['amount'] ?? null;
+        if ($months < 1 || ! is_string($revenue) || ! is_string($net) || $revenue === '0') {
+            return null;
+        }
+        $money = fn (BigDecimal $amount): array => ['currency' => 'RWF', 'amount' => (string) $amount->toScale(0, RoundingMode::HalfUp)];
+
+        return ['avg_monthly_revenue' => $money(BigDecimal::of($revenue)->dividedBy($months, 2, RoundingMode::HalfUp)),
+            'net_cash_month' => $money(BigDecimal::of($net)->dividedBy($months, 2, RoundingMode::HalfUp)),
+            'net_margin_percent' => (string) BigDecimal::of($net)->multipliedBy(100)->dividedBy($revenue, 1, RoundingMode::HalfUp),
+            'outstanding' => ['currency' => 'RWF', 'amount' => (string) $raised]];
+    }
+
     /** @return array<string, mixed> */
     public function home(int $userId, int $contextRevision, string $businessId): array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function () use ($businessId): array {
             $notes = [];
-            $rating = null;
+            $rating = $evidence = null;
             $raised = BigInteger::zero();
             $investors = [];
             foreach (BusinessCampaign::query()->where('business_id', $businessId)->orderByDesc('live_at')->orderByDesc('id')->get() as $campaign) {
                 $payload = $this->publications->find($campaign->id);
                 $rating ??= $payload['public_evidence']['rating'] ?? null;
+                $evidence ??= $payload['public_evidence'] ?? null;
                 $closure = $this->closures->find($campaign->id);
                 $progress = $closure === null ? $this->progress->project($campaign->id, $payload)['progress'] : null;
                 if ($progress !== null && $progress['phase'] === 'funded') {
@@ -233,11 +260,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ->filter(fn (BusinessApplication $application): bool => $this->releaseRecord($application) !== null);
             // Before its first listing, a Business's rating is the one staff released with its newest application.
             foreach ($rating === null ? $released->reverse() : [] as $application) {
-                $rating ??= BusinessApplicationSubmission::query()->where('business_application_id', $application->id)
-                    ->whereKey($application->current_submission_id)->first()?->payload['public_evidence']['rating'] ?? null;
+                $found = BusinessApplicationSubmission::query()->where('business_application_id', $application->id)
+                    ->whereKey($application->current_submission_id)->first()?->payload['public_evidence'] ?? null;
+                [$rating, $evidence] = $rating === null ? [$found['rating'] ?? null, $found] : [$rating, $evidence];
             }
 
             return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
+                'financials' => self::financials($evidence, $raised),
                 'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
                 'capital' => ['raised' => ['currency' => 'RWF', 'amount' => (string) $raised], 'investors' => count(array_unique($investors)),
                     'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))]];

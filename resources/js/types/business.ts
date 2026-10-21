@@ -1209,7 +1209,8 @@ export type BusinessRatingProps = {
     /** Audited financials the rating rests on; null while none is published, and none is shown. */
     financials: {
         avg_monthly_revenue: Money;
-        ebitda_month: Money;
+        /** Net operating cash per month over the statement window; not accounting profit. */
+        net_cash_month: Money;
         net_margin_percent: string;
         outstanding: Money;
     } | null;

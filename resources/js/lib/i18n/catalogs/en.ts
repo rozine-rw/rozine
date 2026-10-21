@@ -2743,7 +2743,7 @@ const en = {
     'business.rating.financials': 'Verified financials',
     'business.rating.sources': 'Bank · MoMo',
     'business.rating.financial.revenue': 'Avg monthly rev.',
-    'business.rating.financial.ebitda': 'EBITDA / month',
+    'business.rating.financial.ebitda': 'Net cash / month',
     'business.rating.financial.margin': 'Net margin',
     'business.rating.financial.outstanding': 'Outstanding',
     'business.repayments.title': 'Repayments',

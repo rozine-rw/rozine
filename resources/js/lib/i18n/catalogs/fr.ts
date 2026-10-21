@@ -2856,7 +2856,7 @@ const fr: Catalog = {
     'business.rating.financials': 'Chiffres vérifiés',
     'business.rating.sources': 'Banque · MoMo',
     'business.rating.financial.revenue': 'CA mensuel moyen',
-    'business.rating.financial.ebitda': 'EBITDA / mois',
+    'business.rating.financial.ebitda': 'Trésorerie nette / mois',
     'business.rating.financial.margin': 'Marge nette',
     'business.rating.financial.outstanding': 'Encours',
 

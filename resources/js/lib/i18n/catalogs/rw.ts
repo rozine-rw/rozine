@@ -2846,7 +2846,7 @@ const rw: Catalog = {
     'business.rating.financials': 'Imibare yemejwe',
     'business.rating.sources': 'Banki · MoMo',
     'business.rating.financial.revenue': 'Ayinjira buri kwezi',
-    'business.rating.financial.ebitda': 'EBITDA / ukwezi',
+    'business.rating.financial.ebitda': 'Amafaranga asigaye / ukwezi',
     'business.rating.financial.margin': 'Inyungu nyayo',
     'business.rating.financial.outstanding': 'Ibitarishyurwa',
 
