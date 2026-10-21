@@ -3827,6 +3827,219 @@ const fr: Catalog = {
     'support.help.still_body':
         'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
     'support.help.still_action': 'Écrire au support',
+    'investor.academy.title': 'Académie de l’investisseur',
+    'investor.academy.learning': 'Apprendre',
+    'investor.academy.summary_start':
+        'Découvrez le fonctionnement des notes Rozine',
+    'investor.academy.summary_resume': 'Reprenez là où vous vous êtes arrêté',
+    'investor.academy.summary_done': 'Toutes les leçons sont terminées',
+    'investor.academy.done_count': '{done} leçons sur {total} terminées',
+    'investor.academy.tracks': '{count} parcours',
+    'investor.academy.intro':
+        'De courtes leçons sur le fonctionnement des notes, des notations et des remboursements. Votre progression est enregistrée sur cet appareil uniquement.',
+    'investor.academy.group.basics': 'Les bases de Rozine',
+    'investor.academy.group.mission': 'Notre mission',
+    'investor.academy.group.investing': 'Investir : les bases',
+    'investor.academy.group.rozine': 'Investir sur Rozine',
+    'investor.academy.group_progress': '{done}/{total} terminées',
+    'investor.academy.status.start': 'Commencer',
+    'investor.academy.status.progress': '{done}/{total}',
+    'investor.academy.status.done': 'Terminé ✓',
+    'investor.academy.close': 'Fermer la leçon',
+    'investor.academy.progress': 'Progression de la leçon',
+    'investor.academy.step': '{step} sur {total}',
+    'investor.academy.got_it': 'Compris',
+    'investor.academy.quick_check': 'Petit test',
+    'investor.academy.correct': 'Bonne réponse',
+    'investor.academy.correct_body': 'C’est exact. Passons à la suite.',
+    'investor.academy.wrong': 'Pas tout à fait',
+    'investor.academy.wrong_body':
+        'Relisez ce thème : il revient une fois avant la fin de la leçon.',
+    'investor.academy.next': 'Suivant',
+    'investor.academy.finish': 'Terminer',
+    'investor.academy.done_title': 'Leçon terminée',
+    'investor.academy.done_body': 'Vous avez terminé « {lesson} ».',
+    'investor.academy.done_cta': 'Retour à l’Académie',
+    'investor.academy.lesson.notes.title': 'Les notes Rozine',
+    'investor.academy.lesson.notes.sub':
+        'Ce que vous achetez et comment il rapporte',
+    'investor.academy.lesson.notes.topic1.title': 'Qu’est-ce qu’une note ?',
+    'investor.academy.lesson.notes.topic1.body':
+        'Une note est un prêt court à une entreprise rwandaise vérifiée, vendu par parts de 5 000 RWF. L’entreprise rembourse votre principal et un rendement fixe sur 3 à 6 mois.',
+    'investor.academy.lesson.notes.topic1.q': 'Acheter une note, c’est…',
+    'investor.academy.lesson.notes.topic1.option1':
+        'Prêter à une entreprise vérifiée contre un rendement fixe',
+    'investor.academy.lesson.notes.topic1.option2':
+        'Acheter des actions de Rozine',
+    'investor.academy.lesson.notes.topic1.option3':
+        'Recevoir une prime quoi qu’il arrive',
+    'investor.academy.lesson.notes.topic2.title': 'Rendement et remboursement',
+    'investor.academy.lesson.notes.topic2.body':
+        'Chaque offre indique son rendement total et sa durée. L’entreprise rembourse par mensualités égales, et votre part de chacune est créditée sur votre portefeuille, moins les frais de Rozine sur la part de rendement.',
+    'investor.academy.lesson.notes.topic2.q': 'Votre rendement est versé…',
+    'investor.academy.lesson.notes.topic2.option1':
+        'En une seule fois après un an',
+    'investor.academy.lesson.notes.topic2.option2':
+        'Chaque mois, pendant la durée de la note',
+    'investor.academy.lesson.notes.topic2.option3':
+        'Seulement si vous le demandez',
+    'investor.academy.lesson.wallet.title': 'Votre portefeuille Rozine',
+    'investor.academy.lesson.wallet.sub': 'Dépôts, versements et retraits',
+    'investor.academy.lesson.wallet.topic1.title':
+        'Disponible, réservé et engagé',
+    'investor.academy.lesson.wallet.topic1.body':
+        'L’argent disponible peut être investi ou retiré. L’argent réservé pour un paiement, ou engagé dans une levée que vous avez rejointe, est mis de côté jusqu’à ce que la levée soit complète ou remboursée.',
+    'investor.academy.lesson.wallet.topic1.q':
+        'L’argent engagé dans une levée est…',
+    'investor.academy.lesson.wallet.topic1.option1': 'Retirable à tout moment',
+    'investor.academy.lesson.wallet.topic1.option2': 'Perdu définitivement',
+    'investor.academy.lesson.wallet.topic1.option3':
+        'Mis de côté jusqu’à ce que la levée soit complète ou remboursée',
+    'investor.academy.lesson.wallet.topic2.title': 'Être payé',
+    'investor.academy.lesson.wallet.topic2.body':
+        'Les versements arrivent sur votre portefeuille à chaque échéance. Vous pouvez les placer dans une autre levée ouverte ou les retirer vers un compte vérifié à votre nom.',
+    'investor.academy.lesson.wallet.topic2.q':
+        'Quand une entreprise rembourse, l’argent…',
+    'investor.academy.lesson.wallet.topic2.option1':
+        'Arrive automatiquement sur votre portefeuille',
+    'investor.academy.lesson.wallet.topic2.option2':
+        'Doit être réclamé dans la journée',
+    'investor.academy.lesson.wallet.topic2.option3':
+        'Va directement dans une nouvelle note',
+    'investor.academy.lesson.rating.title': 'Lire la notation Rozine',
+    'investor.academy.lesson.rating.sub': 'Une note, un mot',
+    'investor.academy.lesson.rating.topic1.title':
+        'Ce que signifie la notation',
+    'investor.academy.lesson.rating.topic1.body':
+        'Chaque entreprise reçoit une note sur 5,0 accompagnée d’un mot : Solide (4,0 à 5,0), Stable (3,0 à 3,9), Faible (2,0 à 2,9) ou En difficulté (moins de 2,0). Une entreprise doit obtenir au moins 2,0 pour lever des fonds.',
+    'investor.academy.lesson.rating.topic1.q': 'Une entreprise notée 4,4 est…',
+    'investor.academy.lesson.rating.topic1.option1': 'En difficulté',
+    'investor.academy.lesson.rating.topic1.option2': 'Solide',
+    'investor.academy.lesson.rating.topic1.option3':
+        'Interdite de lever des fonds',
+    'investor.academy.lesson.rating.topic2.title': 'Bien s’en servir',
+    'investor.academy.lesson.rating.topic2.body':
+        'La note est recalculée à chaque rapport mensuel scellé. Une note plus élevée signifie un risque plus faible, pas l’absence de risque : répartissez donc votre argent sur plusieurs notes.',
+    'investor.academy.lesson.rating.topic2.q': 'La notation sert surtout de…',
+    'investor.academy.lesson.rating.topic2.option1': 'Promesse de profit',
+    'investor.academy.lesson.rating.topic2.option2':
+        'Raison de tout placer dans une seule note',
+    'investor.academy.lesson.rating.topic2.option3':
+        'Repère, en plus de la répartition de votre argent',
+    'investor.academy.lesson.mission.title': 'Pourquoi Rozine existe',
+    'investor.academy.lesson.mission.sub': 'Notre mission et nos valeurs',
+    'investor.academy.lesson.mission.topic1.title': 'La mission',
+    'investor.academy.lesson.mission.topic1.body':
+        'Rozine met en relation des investisseurs ordinaires et des entreprises rwandaises vérifiées qui ont besoin de fonds de roulement, pour que les entreprises locales grandissent et que les investisseurs perçoivent un rendement fixe.',
+    'investor.academy.lesson.mission.topic1.q': 'Rozine existe pour…',
+    'investor.academy.lesson.mission.topic1.option1':
+        'Relier les investisseurs à des entreprises locales vérifiées',
+    'investor.academy.lesson.mission.topic1.option2':
+        'Négocier des actions étrangères',
+    'investor.academy.lesson.mission.topic1.option3': 'Vendre des assurances',
+    'investor.academy.lesson.mission.topic2.title': 'La transparence d’abord',
+    'investor.academy.lesson.mission.topic2.body':
+        'Chaque offre s’appuie sur des relevés bancaires et mobile money vérifiés, une visite indépendante sur site et des rapports mensuels scellés : vous voyez dans quoi vous investissez.',
+    'investor.academy.lesson.mission.topic2.q':
+        'Rozine appuie chaque offre sur…',
+    'investor.academy.lesson.mission.topic2.option1':
+        'Les seules promesses de l’entreprise',
+    'investor.academy.lesson.mission.topic2.option2':
+        'Des relevés vérifiés et des rapports mensuels scellés',
+    'investor.academy.lesson.mission.topic2.option3':
+        'Un engagement de Rozine à rembourser',
+    'investor.academy.lesson.fundamentals.title':
+        'Les fondamentaux de l’investissement',
+    'investor.academy.lesson.fundamentals.sub': 'Risque et rendement',
+    'investor.academy.lesson.fundamentals.topic1.title': 'Risque et rendement',
+    'investor.academy.lesson.fundamentals.topic1.body':
+        'Un rendement potentiel plus élevé s’accompagne généralement d’un risque plus élevé. Vous pouvez perdre tout ou partie de l’argent investi si une entreprise ne rembourse pas.',
+    'investor.academy.lesson.fundamentals.topic1.q':
+        'Un rendement potentiel plus élevé s’accompagne en général…',
+    'investor.academy.lesson.fundamentals.topic1.option1': 'D’aucun risque',
+    'investor.academy.lesson.fundamentals.topic1.option2':
+        'D’une promesse de profit',
+    'investor.academy.lesson.fundamentals.topic1.option3':
+        'D’un risque plus élevé',
+    'investor.academy.lesson.fundamentals.topic2.title':
+        'Investir avec un plan',
+    'investor.academy.lesson.fundamentals.topic2.body':
+        'Les notes ne peuvent pas être encaissées avant leur terme : n’investissez que l’argent dont vous n’aurez pas besoin pendant la durée, et décidez à l’avance du montant à placer.',
+    'investor.academy.lesson.fundamentals.topic2.q':
+        'Avant d’investir, il faut…',
+    'investor.academy.lesson.fundamentals.topic2.option1':
+        'N’utiliser que l’argent dont vous n’aurez pas besoin pendant la durée',
+    'investor.academy.lesson.fundamentals.topic2.option2':
+        'Emprunter pour investir davantage',
+    'investor.academy.lesson.fundamentals.topic2.option3':
+        'Prévoir d’encaisser avant le terme',
+    'investor.academy.lesson.diversify.title': 'La diversification',
+    'investor.academy.lesson.diversify.sub': 'Répartissez votre argent',
+    'investor.academy.lesson.diversify.topic1.title': 'Répartir',
+    'investor.academy.lesson.diversify.topic1.body':
+        'Répartir votre argent entre plusieurs entreprises réduit l’effet sur votre total d’une entreprise qui paie en retard.',
+    'investor.academy.lesson.diversify.topic1.q': 'Diversifier sert surtout à…',
+    'investor.academy.lesson.diversify.topic1.option1':
+        'Faire rapporter plus chaque note',
+    'investor.academy.lesson.diversify.topic1.option2':
+        'Réduire l’effet d’une seule entreprise',
+    'investor.academy.lesson.diversify.topic1.option3': 'Supprimer tout risque',
+    'investor.academy.lesson.diversify.topic2.title':
+        'Varier secteurs et durées',
+    'investor.academy.lesson.diversify.topic2.body':
+        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous pouvez détenir au plus la moitié d’une levée.',
+    'investor.academy.lesson.diversify.topic2.q':
+        'Varier secteurs et durées vous aide à…',
+    'investor.academy.lesson.diversify.topic2.option1':
+        'Ne pas dépendre d’un seul choc',
+    'investor.academy.lesson.diversify.topic2.option2': 'Payer moins de frais',
+    'investor.academy.lesson.diversify.topic2.option3':
+        'Détenir plus de la moitié d’une levée',
+    'investor.academy.lesson.deals.title': 'Choisir une offre',
+    'investor.academy.lesson.deals.sub': 'Lire la page de l’offre',
+    'investor.academy.lesson.deals.topic1.title': 'Ce qu’il faut vérifier',
+    'investor.academy.lesson.deals.topic1.body':
+        'Sur chaque page d’offre, regardez la notation, le rendement, la durée, ce qui reste à financer, les chiffres vérifiés et les rapports mensuels scellés avant de vous engager.',
+    'investor.academy.lesson.deals.topic1.q': 'Avant d’investir, examinez…',
+    'investor.academy.lesson.deals.topic1.option1':
+        'Seulement le nom de l’entreprise',
+    'investor.academy.lesson.deals.topic1.option2':
+        'Le nombre de personnes qui l’ont aimée',
+    'investor.academy.lesson.deals.topic1.option3':
+        'La notation, le rendement, la durée et les chiffres vérifiés',
+    'investor.academy.lesson.deals.topic2.title': 'Combien vous pouvez placer',
+    'investor.academy.lesson.deals.topic2.body':
+        'Les notes sont vendues par parts de 5 000 RWF : vous pouvez commencer avec une seule part. Un investissement ne peut jamais dépasser ce qui reste à financer.',
+    'investor.academy.lesson.deals.topic2.q':
+        'Le plus petit investissement est…',
+    'investor.academy.lesson.deals.topic2.option1': '1 000 000 RWF',
+    'investor.academy.lesson.deals.topic2.option2': 'Une part de 5 000 RWF',
+    'investor.academy.lesson.deals.topic2.option3': 'La moitié de la levée',
+    'investor.academy.lesson.repayments.title': 'Remboursements et versements',
+    'investor.academy.lesson.repayments.sub': 'Comment vous êtes remboursé',
+    'investor.academy.lesson.repayments.topic1.title': 'Payé pendant la durée',
+    'investor.academy.lesson.repayments.topic1.body':
+        'La première mensualité est due un mois après le versement des fonds à l’entreprise, puis chaque mois le même jour. L’échéancier est affiché avant votre engagement et ne change jamais.',
+    'investor.academy.lesson.repayments.topic1.q':
+        'Les remboursements Rozine sont…',
+    'investor.academy.lesson.repayments.topic1.option1':
+        'Mensuels, selon un échéancier fixé',
+    'investor.academy.lesson.repayments.topic1.option2':
+        'Un paiement unique à la fin',
+    'investor.academy.lesson.repayments.topic1.option3':
+        'Quand l’entreprise le décide',
+    'investor.academy.lesson.repayments.topic2.title': 'Réinvestir ou retirer',
+    'investor.academy.lesson.repayments.topic2.body':
+        'Chaque versement vous appartient : placez-le dans une autre levée ouverte ou retirez-le. Rien n’est réinvesti automatiquement.',
+    'investor.academy.lesson.repayments.topic2.q':
+        'Quand vous recevez un versement, vous pouvez…',
+    'investor.academy.lesson.repayments.topic2.option1':
+        'Seulement le laisser dans la note',
+    'investor.academy.lesson.repayments.topic2.option2':
+        'Seulement l’utiliser pour des frais',
+    'investor.academy.lesson.repayments.topic2.option3':
+        'Le réinvestir ou le retirer',
+
     'investor.help.group.start': 'Premiers pas',
     'investor.help.group.returns': 'Rendements et versements',
     'investor.help.group.risk': 'Risque et vérification des entreprises',

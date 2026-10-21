@@ -3690,6 +3690,206 @@ const en = {
     'support.help.still_body':
         'Message us. We acknowledge every message within 4 hours.',
     'support.help.still_action': 'Message support',
+    'investor.academy.title': 'Investor Academy',
+    'investor.academy.learning': 'Learning',
+    'investor.academy.summary_start': 'Learn how Rozine notes work',
+    'investor.academy.summary_resume': 'Pick up where you left off',
+    'investor.academy.summary_done': 'All lessons complete',
+    'investor.academy.done_count': '{done} of {total} lessons done',
+    'investor.academy.tracks': '{count} tracks',
+    'investor.academy.intro':
+        'Short lessons on how notes, ratings and repayments work. Your progress is saved on this device only.',
+    'investor.academy.group.basics': 'Rozine basics',
+    'investor.academy.group.mission': 'Our mission',
+    'investor.academy.group.investing': 'Investing 101',
+    'investor.academy.group.rozine': 'Investing on Rozine',
+    'investor.academy.group_progress': '{done}/{total} done',
+    'investor.academy.status.start': 'Start',
+    'investor.academy.status.progress': '{done}/{total}',
+    'investor.academy.status.done': 'Done ✓',
+    'investor.academy.close': 'Close lesson',
+    'investor.academy.progress': 'Lesson progress',
+    'investor.academy.step': '{step} of {total}',
+    'investor.academy.got_it': 'Got it',
+    'investor.academy.quick_check': 'Quick check',
+    'investor.academy.correct': 'Correct',
+    'investor.academy.correct_body': 'That’s right. On to the next one.',
+    'investor.academy.wrong': 'Not quite',
+    'investor.academy.wrong_body':
+        'Take another look at this topic. It comes round once more before the lesson ends.',
+    'investor.academy.next': 'Next',
+    'investor.academy.finish': 'Finish',
+    'investor.academy.done_title': 'Lesson complete',
+    'investor.academy.done_body': 'You finished {lesson}.',
+    'investor.academy.done_cta': 'Back to the Academy',
+    'investor.academy.lesson.notes.title': 'Rozine notes',
+    'investor.academy.lesson.notes.sub': 'What you buy and how it pays',
+    'investor.academy.lesson.notes.topic1.title': 'What is a note?',
+    'investor.academy.lesson.notes.topic1.body':
+        'A note is a short loan to a verified Rwandan business, sold in units of RWF 5,000. The business repays your principal plus a fixed return over 3 to 6 months.',
+    'investor.academy.lesson.notes.topic1.q': 'Buying a note means you…',
+    'investor.academy.lesson.notes.topic1.option1':
+        'Lend to a verified business for a fixed return',
+    'investor.academy.lesson.notes.topic1.option2': 'Buy shares in Rozine',
+    'investor.academy.lesson.notes.topic1.option3':
+        'Get a bonus whatever happens',
+    'investor.academy.lesson.notes.topic2.title': 'Returns and repayment',
+    'investor.academy.lesson.notes.topic2.body':
+        'Each deal shows its total return and term. The business repays in equal monthly instalments, and your share of each one is credited to your wallet, less Rozine’s fee on the return part.',
+    'investor.academy.lesson.notes.topic2.q': 'Your return is paid…',
+    'investor.academy.lesson.notes.topic2.option1':
+        'In one lump sum after a year',
+    'investor.academy.lesson.notes.topic2.option2':
+        'Monthly, over the term of the note',
+    'investor.academy.lesson.notes.topic2.option3': 'Only if you ask for it',
+    'investor.academy.lesson.wallet.title': 'Your Rozine wallet',
+    'investor.academy.lesson.wallet.sub': 'Deposits, payouts and withdrawals',
+    'investor.academy.lesson.wallet.topic1.title':
+        'Available, held and committed',
+    'investor.academy.lesson.wallet.topic1.body':
+        'Available money is ready to invest or withdraw. Money held for a checkout, or committed to a raise you joined, is set aside until the raise fills or is refunded.',
+    'investor.academy.lesson.wallet.topic1.q': 'Money committed to a raise is…',
+    'investor.academy.lesson.wallet.topic1.option1':
+        'Free to withdraw at any time',
+    'investor.academy.lesson.wallet.topic1.option2': 'Lost for good',
+    'investor.academy.lesson.wallet.topic1.option3':
+        'Set aside until the raise fills or is refunded',
+    'investor.academy.lesson.wallet.topic2.title': 'Getting paid',
+    'investor.academy.lesson.wallet.topic2.body':
+        'Payouts land in your wallet on each payment day. You can put them into another open raise, or withdraw them to a verified account in your own name.',
+    'investor.academy.lesson.wallet.topic2.q':
+        'When a business repays, the money…',
+    'investor.academy.lesson.wallet.topic2.option1':
+        'Lands in your wallet automatically',
+    'investor.academy.lesson.wallet.topic2.option2':
+        'Must be claimed within a day',
+    'investor.academy.lesson.wallet.topic2.option3':
+        'Goes straight into a new note',
+    'investor.academy.lesson.rating.title': 'Reading the Rozine rating',
+    'investor.academy.lesson.rating.sub': 'One score, one word',
+    'investor.academy.lesson.rating.topic1.title': 'What the rating means',
+    'investor.academy.lesson.rating.topic1.body':
+        'Every business gets one score out of 5.0 with a plain word: Strong (4.0 to 5.0), Stable (3.0 to 3.9), Weak (2.0 to 2.9) or Distressed (below 2.0). A business must score at least 2.0 to raise.',
+    'investor.academy.lesson.rating.topic1.q': 'A business rated 4.4 is…',
+    'investor.academy.lesson.rating.topic1.option1': 'Distressed',
+    'investor.academy.lesson.rating.topic1.option2': 'Strong',
+    'investor.academy.lesson.rating.topic1.option3': 'Not allowed to raise',
+    'investor.academy.lesson.rating.topic2.title': 'Using it well',
+    'investor.academy.lesson.rating.topic2.body':
+        'The score is recomputed with every sealed monthly report. A higher score means lower risk, not no risk, so spread your money across several notes.',
+    'investor.academy.lesson.rating.topic2.q': 'The rating is best used as…',
+    'investor.academy.lesson.rating.topic2.option1': 'A promise of profit',
+    'investor.academy.lesson.rating.topic2.option2':
+        'A reason to put everything in one note',
+    'investor.academy.lesson.rating.topic2.option3':
+        'A guide, alongside spreading your money',
+    'investor.academy.lesson.mission.title': 'Why Rozine exists',
+    'investor.academy.lesson.mission.sub': 'Our mission and values',
+    'investor.academy.lesson.mission.topic1.title': 'The mission',
+    'investor.academy.lesson.mission.topic1.body':
+        'Rozine connects everyday investors with verified Rwandan businesses that need working capital, so local firms can grow and investors can earn a fixed return.',
+    'investor.academy.lesson.mission.topic1.q': 'Rozine exists to…',
+    'investor.academy.lesson.mission.topic1.option1':
+        'Connect investors with verified local businesses',
+    'investor.academy.lesson.mission.topic1.option2': 'Trade foreign shares',
+    'investor.academy.lesson.mission.topic1.option3': 'Sell insurance',
+    'investor.academy.lesson.mission.topic2.title': 'Transparency first',
+    'investor.academy.lesson.mission.topic2.body':
+        'Every deal is backed by verified bank and mobile money statements, an independent on-site visit and sealed monthly reports, so you can see what you are investing in.',
+    'investor.academy.lesson.mission.topic2.q': 'Rozine backs each deal with…',
+    'investor.academy.lesson.mission.topic2.option1':
+        'The business’s own promises',
+    'investor.academy.lesson.mission.topic2.option2':
+        'Verified records and sealed monthly reports',
+    'investor.academy.lesson.mission.topic2.option3':
+        'A pledge from Rozine to repay',
+    'investor.academy.lesson.fundamentals.title': 'Investing fundamentals',
+    'investor.academy.lesson.fundamentals.sub': 'Risk and return',
+    'investor.academy.lesson.fundamentals.topic1.title': 'Risk and return',
+    'investor.academy.lesson.fundamentals.topic1.body':
+        'A higher possible return usually comes with higher risk. You can lose some or all of the money you invest if a business does not repay.',
+    'investor.academy.lesson.fundamentals.topic1.q':
+        'A higher possible return usually comes with…',
+    'investor.academy.lesson.fundamentals.topic1.option1': 'No risk at all',
+    'investor.academy.lesson.fundamentals.topic1.option2':
+        'A promise of profit',
+    'investor.academy.lesson.fundamentals.topic1.option3': 'Higher risk',
+    'investor.academy.lesson.fundamentals.topic2.title': 'Invest with a plan',
+    'investor.academy.lesson.fundamentals.topic2.body':
+        'Notes cannot be cashed in before they end, so only invest money you will not need during the term, and decide in advance how much you want to put in.',
+    'investor.academy.lesson.fundamentals.topic2.q':
+        'Before you invest, you should…',
+    'investor.academy.lesson.fundamentals.topic2.option1':
+        'Only use money you will not need during the term',
+    'investor.academy.lesson.fundamentals.topic2.option2':
+        'Borrow to invest more',
+    'investor.academy.lesson.fundamentals.topic2.option3':
+        'Plan to cash in early',
+    'investor.academy.lesson.diversify.title': 'Diversification',
+    'investor.academy.lesson.diversify.sub': 'Spread your money out',
+    'investor.academy.lesson.diversify.topic1.title': 'Spread it out',
+    'investor.academy.lesson.diversify.topic1.body':
+        'Spreading your money across several businesses means one that pays late has a smaller effect on your total.',
+    'investor.academy.lesson.diversify.topic1.q':
+        'Diversifying mainly helps to…',
+    'investor.academy.lesson.diversify.topic1.option1':
+        'Make every note pay more',
+    'investor.academy.lesson.diversify.topic1.option2':
+        'Reduce the effect of one business',
+    'investor.academy.lesson.diversify.topic1.option3': 'Remove all risk',
+    'investor.academy.lesson.diversify.topic2.title':
+        'Mix industries and terms',
+    'investor.academy.lesson.diversify.topic2.body':
+        'Mixing industries, ratings and terms keeps you from depending on a single shock. You can hold at most half of any one raise.',
+    'investor.academy.lesson.diversify.topic2.q':
+        'Mixing industries and terms helps you…',
+    'investor.academy.lesson.diversify.topic2.option1':
+        'Avoid depending on a single shock',
+    'investor.academy.lesson.diversify.topic2.option2': 'Pay lower fees',
+    'investor.academy.lesson.diversify.topic2.option3':
+        'Hold more than half of a raise',
+    'investor.academy.lesson.deals.title': 'Choosing a deal',
+    'investor.academy.lesson.deals.sub': 'Reading the deal page',
+    'investor.academy.lesson.deals.topic1.title': 'What to check',
+    'investor.academy.lesson.deals.topic1.body':
+        'On each deal page, look at the rating, return, term, how much is left to fill, the verified figures and the sealed monthly reports before you commit.',
+    'investor.academy.lesson.deals.topic1.q':
+        'Before investing you should review…',
+    'investor.academy.lesson.deals.topic1.option1': 'Only the business’s name',
+    'investor.academy.lesson.deals.topic1.option2': 'How many people liked it',
+    'investor.academy.lesson.deals.topic1.option3':
+        'Rating, return, term and verified figures',
+    'investor.academy.lesson.deals.topic2.title': 'How much you can put in',
+    'investor.academy.lesson.deals.topic2.body':
+        'Notes are sold in units of RWF 5,000, so you can start with one unit. An investment can never be more than what is left to fill.',
+    'investor.academy.lesson.deals.topic2.q': 'The smallest investment is…',
+    'investor.academy.lesson.deals.topic2.option1': 'RWF 1,000,000',
+    'investor.academy.lesson.deals.topic2.option2': 'One unit of RWF 5,000',
+    'investor.academy.lesson.deals.topic2.option3': 'Half of the raise',
+    'investor.academy.lesson.repayments.title': 'Repayments and payouts',
+    'investor.academy.lesson.repayments.sub': 'How you get paid back',
+    'investor.academy.lesson.repayments.topic1.title': 'Paid over the term',
+    'investor.academy.lesson.repayments.topic1.body':
+        'The first instalment is due one month after the money reaches the business, then monthly on the same day. The schedule is shown before you commit and never changes.',
+    'investor.academy.lesson.repayments.topic1.q': 'Rozine repayments are…',
+    'investor.academy.lesson.repayments.topic1.option1':
+        'Scheduled monthly over the term',
+    'investor.academy.lesson.repayments.topic1.option2':
+        'A single payment at the end',
+    'investor.academy.lesson.repayments.topic1.option3':
+        'Whenever the business chooses',
+    'investor.academy.lesson.repayments.topic2.title': 'Reinvest or withdraw',
+    'investor.academy.lesson.repayments.topic2.body':
+        'Each payout is yours to put into another open raise or to withdraw. Nothing is reinvested automatically.',
+    'investor.academy.lesson.repayments.topic2.q':
+        'When you receive a payout you can…',
+    'investor.academy.lesson.repayments.topic2.option1':
+        'Only leave it in the note',
+    'investor.academy.lesson.repayments.topic2.option2':
+        'Only spend it on fees',
+    'investor.academy.lesson.repayments.topic2.option3':
+        'Reinvest it or withdraw it',
+
     'investor.help.group.start': 'Getting started',
     'investor.help.group.returns': 'Returns & payouts',
     'investor.help.group.risk': 'Risk & how businesses are vetted',

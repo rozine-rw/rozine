@@ -550,6 +550,7 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
+        "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
@@ -753,10 +754,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 725,
+        "totalTrackedSources": 723,
         "generated": 310,
         "declarationOnly": 19,
-        "authoredExecutable": 396
+        "authoredExecutable": 394
     },
-    "coverageSetSha256": "ac6d9b3f0bf2de148fbaa5a640ee55da5f1b333a42cca8889b7cabadba4de405"
+    "coverageSetSha256": "6185f2f3f848624043f4941ccb1badebfed0cc939e91d2540cf4b28bd9eadb19"
 }

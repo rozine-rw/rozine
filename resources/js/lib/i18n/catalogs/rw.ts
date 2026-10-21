@@ -3813,6 +3813,217 @@ const rw: Catalog = {
     'support.help.still_body':
         'Twandikire. Twemeza ko twakiriye buri butumwa mu masaha 4.',
     'support.help.still_action': 'Andikira ubufasha',
+    'investor.academy.title': 'Ishuri ry’Umushoramari',
+    'investor.academy.learning': 'Kwiga',
+    'investor.academy.summary_start':
+        'Menya uko inyandiko z’umwenda za Rozine zikora',
+    'investor.academy.summary_resume': 'Komereza aho wari ugeze',
+    'investor.academy.summary_done': 'Amasomo yose yarangiye',
+    'investor.academy.done_count': 'Amasomo {done} kuri {total} yarangiye',
+    'investor.academy.tracks': 'Ibyiciro {count}',
+    'investor.academy.intro':
+        'Amasomo magufi ku buryo inyandiko z’umwenda, amanota n’ubwishyu bikora. Aho ugeze ubikwa kuri iki gikoresho gusa.',
+    'investor.academy.group.basics': 'Ibanze kuri Rozine',
+    'investor.academy.group.mission': 'Intego yacu',
+    'investor.academy.group.investing': 'Ishoramari: ibanze',
+    'investor.academy.group.rozine': 'Gushora kuri Rozine',
+    'investor.academy.group_progress': '{done}/{total} birangiye',
+    'investor.academy.status.start': 'Tangira',
+    'investor.academy.status.progress': '{done}/{total}',
+    'investor.academy.status.done': 'Byarangiye ✓',
+    'investor.academy.close': 'Funga isomo',
+    'investor.academy.progress': 'Aho isomo rigeze',
+    'investor.academy.step': '{step} kuri {total}',
+    'investor.academy.got_it': 'Ndabyumvise',
+    'investor.academy.quick_check': 'Isuzuma rito',
+    'investor.academy.correct': 'Ni byo',
+    'investor.academy.correct_body': 'Ni byo rwose. Komeza ku gikurikira.',
+    'investor.academy.wrong': 'Si byo neza',
+    'investor.academy.wrong_body':
+        'Ongera usome iyi ngingo. Izagaruka rimwe mbere y’uko isomo rirangira.',
+    'investor.academy.next': 'Komeza',
+    'investor.academy.finish': 'Soza',
+    'investor.academy.done_title': 'Isomo ryarangiye',
+    'investor.academy.done_body': 'Urangije isomo “{lesson}”.',
+    'investor.academy.done_cta': 'Subira ku Ishuri',
+    'investor.academy.lesson.notes.title': 'Inyandiko z’umwenda za Rozine',
+    'investor.academy.lesson.notes.sub': 'Icyo ugura n’uko cyishyura',
+    'investor.academy.lesson.notes.topic1.title': 'Inyandiko y’umwenda ni iki?',
+    'investor.academy.lesson.notes.topic1.body':
+        'Inyandiko y’umwenda ni inguzanyo y’igihe gito ihabwa ubucuruzi bwo mu Rwanda bwagenzuwe, igurishwa mu migabane ya RWF 5,000. Ubucuruzi bukwishyura igishoro cyawe n’inyungu idahinduka mu mezi 3 kugeza kuri 6.',
+    'investor.academy.lesson.notes.topic1.q':
+        'Kugura inyandiko y’umwenda bivuga ko…',
+    'investor.academy.lesson.notes.topic1.option1':
+        'Uguriza ubucuruzi bwagenzuwe ku nyungu idahinduka',
+    'investor.academy.lesson.notes.topic1.option2':
+        'Ugura imigabane muri Rozine',
+    'investor.academy.lesson.notes.topic1.option3':
+        'Uhabwa agahimbazamusyi uko byagenda kose',
+    'investor.academy.lesson.notes.topic2.title': 'Inyungu n’ubwishyu',
+    'investor.academy.lesson.notes.topic2.body':
+        'Buri shoramari ryerekana inyungu yaryo yose n’igihe cyaryo. Ubucuruzi bwishyura mu byiciro bingana buri kwezi, kandi umugabane wawe kuri buri cyiciro ushyirwa mu gasanduku kawe, havuyemo amafaranga ya Rozine ku gice cy’inyungu.',
+    'investor.academy.lesson.notes.topic2.q': 'Inyungu yawe yishyurwa…',
+    'investor.academy.lesson.notes.topic2.option1': 'Icyarimwe nyuma y’umwaka',
+    'investor.academy.lesson.notes.topic2.option2':
+        'Buri kwezi, mu gihe cyose cy’inyandiko',
+    'investor.academy.lesson.notes.topic2.option3': 'Ari uko ubisabye gusa',
+    'investor.academy.lesson.wallet.title': 'Agasanduku kawe ka Rozine',
+    'investor.academy.lesson.wallet.sub': 'Kubitsa, ubwishyu no kubikuza',
+    'investor.academy.lesson.wallet.topic1.title': 'Ahari, afashwe n’ayemejwe',
+    'investor.academy.lesson.wallet.topic1.body':
+        'Amafaranga ahari ashobora gushorwa cyangwa gukurwamo. Amafaranga afashwe kubera kwishyura, cyangwa yemejwe mu ikusanya winjiyemo, abikwa ku ruhande kugeza ikusanya ryuzuye cyangwa usubijwe amafaranga.',
+    'investor.academy.lesson.wallet.topic1.q':
+        'Amafaranga yemejwe mu ikusanya…',
+    'investor.academy.lesson.wallet.topic1.option1':
+        'Ashobora gukurwamo igihe cyose',
+    'investor.academy.lesson.wallet.topic1.option2': 'Aba yatakaye burundu',
+    'investor.academy.lesson.wallet.topic1.option3':
+        'Abikwa ku ruhande kugeza ikusanya ryuzuye cyangwa asubijwe',
+    'investor.academy.lesson.wallet.topic2.title': 'Kwishyurwa',
+    'investor.academy.lesson.wallet.topic2.body':
+        'Ubwishyu bugera mu gasanduku kawe kuri buri munsi wo kwishyura. Ushobora kubushora mu rindi kusanya rifunguye, cyangwa kubukura ukabwohereza kuri konti yagenzuwe iri mu izina ryawe.',
+    'investor.academy.lesson.wallet.topic2.q':
+        'Iyo ubucuruzi bwishyuye, amafaranga…',
+    'investor.academy.lesson.wallet.topic2.option1':
+        'Agera mu gasanduku kawe mu buryo bwikora',
+    'investor.academy.lesson.wallet.topic2.option2':
+        'Agomba gusabwa mu munsi umwe',
+    'investor.academy.lesson.wallet.topic2.option3':
+        'Ahita ajya mu yindi nyandiko',
+    'investor.academy.lesson.rating.title': 'Gusoma amanota ya Rozine',
+    'investor.academy.lesson.rating.sub': 'Amanota amwe, ijambo rimwe',
+    'investor.academy.lesson.rating.topic1.title': 'Icyo amanota asobanura',
+    'investor.academy.lesson.rating.topic1.body':
+        'Buri bucuruzi buhabwa amanota kuri 5.0 aherekejwe n’ijambo: Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9), Intege nke (2.0 kugeza 2.9) cyangwa Mu bibazo (munsi ya 2.0). Ubucuruzi bugomba kugira nibura 2.0 kugira ngo bukusanye.',
+    'investor.academy.lesson.rating.topic1.q':
+        'Ubucuruzi bufite amanota 4.4 ni…',
+    'investor.academy.lesson.rating.topic1.option1': 'Mu bibazo',
+    'investor.academy.lesson.rating.topic1.option2': 'Ikomeye',
+    'investor.academy.lesson.rating.topic1.option3': 'Ntibwemerewe gukusanya',
+    'investor.academy.lesson.rating.topic2.title': 'Kuyakoresha neza',
+    'investor.academy.lesson.rating.topic2.body':
+        'Amanota yongera kubarwa kuri buri raporo y’ukwezi ifite umukono. Amanota menshi asobanura ingaruka nke, si ukubura ingaruka, bityo gabanya amafaranga yawe mu nyandiko nyinshi.',
+    'investor.academy.lesson.rating.topic2.q': 'Amanota akoreshwa neza nk’…',
+    'investor.academy.lesson.rating.topic2.option1': 'Isezerano ry’inyungu',
+    'investor.academy.lesson.rating.topic2.option2':
+        'Impamvu yo gushyira byose mu nyandiko imwe',
+    'investor.academy.lesson.rating.topic2.option3':
+        'Umuyobozi, hamwe no kugabanya amafaranga yawe',
+    'investor.academy.lesson.mission.title': 'Impamvu Rozine ibaho',
+    'investor.academy.lesson.mission.sub': 'Intego yacu n’indangagaciro zacu',
+    'investor.academy.lesson.mission.topic1.title': 'Intego',
+    'investor.academy.lesson.mission.topic1.body':
+        'Rozine ihuza abashoramari basanzwe n’ubucuruzi bwo mu Rwanda bwagenzuwe bukeneye igishoro cyo gukora, kugira ngo ibigo byo mu gihugu bikure kandi abashoramari babone inyungu idahinduka.',
+    'investor.academy.lesson.mission.topic1.q': 'Rozine ibaho kugira ngo…',
+    'investor.academy.lesson.mission.topic1.option1':
+        'Ihuze abashoramari n’ubucuruzi bwo mu gihugu bwagenzuwe',
+    'investor.academy.lesson.mission.topic1.option2':
+        'Icuruze imigabane yo hanze',
+    'investor.academy.lesson.mission.topic1.option3': 'Igurishe ubwishingizi',
+    'investor.academy.lesson.mission.topic2.title': 'Gukorera mu mucyo mbere',
+    'investor.academy.lesson.mission.topic2.body':
+        'Buri shoramari rishingiye ku nyandiko za banki na mobile money zagenzuwe, isura ryigenga aho bukorera na raporo z’ukwezi zifite umukono, kugira ngo ubone icyo ushoramo.',
+    'investor.academy.lesson.mission.topic2.q':
+        'Rozine ishingira buri shoramari kuri…',
+    'investor.academy.lesson.mission.topic2.option1':
+        'Amasezerano y’ubucuruzi ubwabwo',
+    'investor.academy.lesson.mission.topic2.option2':
+        'Inyandiko zagenzuwe na raporo z’ukwezi zifite umukono',
+    'investor.academy.lesson.mission.topic2.option3':
+        'Isezerano rya Rozine ryo kwishyura',
+    'investor.academy.lesson.fundamentals.title': 'Ibanze by’ishoramari',
+    'investor.academy.lesson.fundamentals.sub': 'Ingaruka n’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.title': 'Ingaruka n’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.body':
+        'Inyungu ishobora kuba nini akenshi iherekezwa n’ingaruka nyinshi. Ushobora gutakaza igice cyangwa amafaranga yose washoye iyo ubucuruzi butishyuye.',
+    'investor.academy.lesson.fundamentals.topic1.q':
+        'Inyungu ishobora kuba nini akenshi iherekezwa na…',
+    'investor.academy.lesson.fundamentals.topic1.option1': 'Nta ngaruka na nke',
+    'investor.academy.lesson.fundamentals.topic1.option2':
+        'Isezerano ry’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.option3': 'Ingaruka nyinshi',
+    'investor.academy.lesson.fundamentals.topic2.title': 'Shora ufite gahunda',
+    'investor.academy.lesson.fundamentals.topic2.body':
+        'Inyandiko ntishobora kuvunjwamo amafaranga mbere y’igihe cyayo, bityo shora gusa amafaranga utazakenera muri icyo gihe, kandi wiyemeze mbere amafaranga ushaka gushora.',
+    'investor.academy.lesson.fundamentals.topic2.q':
+        'Mbere yo gushora, ukwiye…',
+    'investor.academy.lesson.fundamentals.topic2.option1':
+        'Gukoresha gusa amafaranga utazakenera muri icyo gihe',
+    'investor.academy.lesson.fundamentals.topic2.option2':
+        'Kuguza kugira ngo ushore byinshi',
+    'investor.academy.lesson.fundamentals.topic2.option3':
+        'Gutegura kuvunja mbere y’igihe',
+    'investor.academy.lesson.diversify.title': 'Kugabanya ishoramari',
+    'investor.academy.lesson.diversify.sub': 'Gabanya amafaranga yawe',
+    'investor.academy.lesson.diversify.topic1.title': 'Kugabanya',
+    'investor.academy.lesson.diversify.topic1.body':
+        'Kugabanya amafaranga yawe mu bucuruzi bwinshi bituma ubutinze kwishyura bugira ingaruka nto ku mafaranga yawe yose.',
+    'investor.academy.lesson.diversify.topic1.q':
+        'Kugabanya ishoramari bifasha cyane cyane…',
+    'investor.academy.lesson.diversify.topic1.option1':
+        'Gutuma buri nyandiko yishyura byinshi',
+    'investor.academy.lesson.diversify.topic1.option2':
+        'Kugabanya ingaruka z’ubucuruzi bumwe',
+    'investor.academy.lesson.diversify.topic1.option3':
+        'Gukuraho ingaruka zose',
+    'investor.academy.lesson.diversify.topic2.title': 'Vanga inzego n’ibihe',
+    'investor.academy.lesson.diversify.topic2.body':
+        'Kuvanga inzego, amanota n’ibihe bikurinda guterwa n’ikibazo kimwe. Ntushobora gutunga ibirenze kimwe cya kabiri cy’ikusanya rimwe.',
+    'investor.academy.lesson.diversify.topic2.q':
+        'Kuvanga inzego n’ibihe bigufasha…',
+    'investor.academy.lesson.diversify.topic2.option1':
+        'Kudaterwa n’ikibazo kimwe',
+    'investor.academy.lesson.diversify.topic2.option2':
+        'Kwishyura amafaranga make',
+    'investor.academy.lesson.diversify.topic2.option3':
+        'Gutunga ibirenze kimwe cya kabiri cy’ikusanya',
+    'investor.academy.lesson.deals.title': 'Guhitamo ishoramari',
+    'investor.academy.lesson.deals.sub': 'Gusoma urupapuro rw’ishoramari',
+    'investor.academy.lesson.deals.topic1.title': 'Ibyo ugomba kureba',
+    'investor.academy.lesson.deals.topic1.body':
+        'Ku rupapuro rwa buri shoramari, reba amanota, inyungu, igihe, igisigaye kuzuzwa, imibare yagenzuwe na raporo z’ukwezi zifite umukono mbere yo kwiyemeza.',
+    'investor.academy.lesson.deals.topic1.q': 'Mbere yo gushora ukwiye kureba…',
+    'investor.academy.lesson.deals.topic1.option1': 'Izina ry’ubucuruzi gusa',
+    'investor.academy.lesson.deals.topic1.option2':
+        'Umubare w’abantu babukunze',
+    'investor.academy.lesson.deals.topic1.option3':
+        'Amanota, inyungu, igihe n’imibare yagenzuwe',
+    'investor.academy.lesson.deals.topic2.title': 'Ayo ushobora gushora',
+    'investor.academy.lesson.deals.topic2.body':
+        'Inyandiko z’umwenda zigurishwa mu migabane ya RWF 5,000, bityo ushobora gutangirira ku mugabane umwe. Ishoramari ntirishobora kurenga igisigaye kuzuzwa.',
+    'investor.academy.lesson.deals.topic2.q':
+        'Ishoramari rito kurusha ayandi ni…',
+    'investor.academy.lesson.deals.topic2.option1': 'RWF 1,000,000',
+    'investor.academy.lesson.deals.topic2.option2':
+        'Umugabane umwe wa RWF 5,000',
+    'investor.academy.lesson.deals.topic2.option3':
+        'Kimwe cya kabiri cy’ikusanya',
+    'investor.academy.lesson.repayments.title': 'Ubwishyu n’amafaranga uhabwa',
+    'investor.academy.lesson.repayments.sub': 'Uko wishyurwa',
+    'investor.academy.lesson.repayments.topic1.title':
+        'Wishyurwa mu gihe cyose',
+    'investor.academy.lesson.repayments.topic1.body':
+        'Icyiciro cya mbere kigomba kwishyurwa ukwezi kumwe nyuma y’uko amafaranga ageze ku bucuruzi, hanyuma buri kwezi ku munsi umwe. Ingengabihe yerekanwa mbere yo kwiyemeza kandi ntihinduka.',
+    'investor.academy.lesson.repayments.topic1.q': 'Ubwishyu bwa Rozine…',
+    'investor.academy.lesson.repayments.topic1.option1':
+        'Buteganyijwe buri kwezi mu gihe cyose',
+    'investor.academy.lesson.repayments.topic1.option2':
+        'Bwishyurwa rimwe ku iherezo',
+    'investor.academy.lesson.repayments.topic1.option3':
+        'Igihe ubucuruzi bubishakiye',
+    'investor.academy.lesson.repayments.topic2.title':
+        'Ongera ushore cyangwa ubikuze',
+    'investor.academy.lesson.repayments.topic2.body':
+        'Buri bwishyu ni ubwawe: ushobora kubushora mu rindi kusanya rifunguye cyangwa kububikuza. Nta kintu cyongera gushorwa mu buryo bwikora.',
+    'investor.academy.lesson.repayments.topic2.q':
+        'Iyo uhawe ubwishyu ushobora…',
+    'investor.academy.lesson.repayments.topic2.option1':
+        'Kubusiga mu nyandiko gusa',
+    'investor.academy.lesson.repayments.topic2.option2':
+        'Kubukoresha ku mafaranga y’serivisi gusa',
+    'investor.academy.lesson.repayments.topic2.option3':
+        'Kongera kubushora cyangwa kububikuza',
+
     'investor.help.group.start': 'Gutangira',
     'investor.help.group.returns': "Inyungu n'ubwishyu",
     'investor.help.group.risk': "Ingaruka n'uko ubucuruzi bugenzurwa",
