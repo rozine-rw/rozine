@@ -68,7 +68,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
     $banks = array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS);
 
-    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
+    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Kigali City, Gasabo', 'verified' => true, 'rating' => null],
         'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => []], 'legal' => null,
         'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
             'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
