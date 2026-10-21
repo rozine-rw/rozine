@@ -20,12 +20,12 @@ import {
     formatMonthYearLong,
 } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import type { Tone } from '@/types/admin';
 import type {
     AdminAuditReportsProps,
     AuditRegisterRow,
     AuditRegisterStatus,
-    Tone,
-} from '@/types/admin';
+} from '@/types/admin-audit';
 
 const GRID =
     'grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_minmax(0,.7fr)_minmax(150px,1.1fr)] gap-3 px-5';
