@@ -36,11 +36,11 @@ it('presents an honest empty draft over web and API without creating financial f
     $path = '/business/'.$fixture['business']->id.'/applications/'.$fixture['application']->id;
     $web = [];
     $this->actingAs($user)->get($path)->assertOk()->assertHeader('Cache-Control', 'no-store, private')
-        ->assertInertia(function (Assert $page) use (&$web): Assert {
+        ->assertInertia(function (Assert $page) use (&$web, $fixture): Assert {
             $web = $page->toArray()['props'];
 
             return $page->component('business/apply')->where('contract_version', 'business-application-v1')->where('step', 'business')
-                ->where('quote', null)->where('home', null)->where('acceptance.documents', [])->where('evidence.business.company_code', null)
+                ->where('quote', null)->where('home.links.home.url', '/business/'.$fixture['business']->id)->where('acceptance.documents', [])->where('evidence.business.company_code', null)
                 ->where('evidence.verified.registry', false)->where('evidence.verified.statements', false)->where('evidence.period', null)
                 ->where('evidence.totals.revenue', null)->where('evidence.existing_debt', null)->where('evidence.capacity', null)
                 ->where('evidence.rating', null)->where('allowed_actions', ['application.save', 'application.evaluate']);

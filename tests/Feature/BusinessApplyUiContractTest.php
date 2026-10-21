@@ -81,6 +81,23 @@ function applyUiProps(User $user, string $url): array
 }
 
 /**
+ * The business's own Home props, which the wide-screen wizard draws beneath its sheet.
+ *
+ * @return array<string, mixed>
+ */
+function applyUiHome(User $user, string $business): array
+{
+    $props = [];
+    actingAs($user)->get("/business/{$business}")->assertOk()->assertInertia(function (Assert $inertia) use (&$props): Assert {
+        $props = $inertia->toArray()['props'];
+
+        return $inertia->component('business/home');
+    });
+
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+}
+
+/**
  * The command envelope exactly as the pages send it.
  *
  * @return array{identity_context_revision: int, expected_revision: int, request_id: string}
@@ -139,7 +156,7 @@ it('renders a just-created draft with the shape of the live-minimal fixture and 
         ->and($props['step'])->toBe('business')
         ->and($props['quote'])->toBeNull()
         ->and($props['submission'])->toBeNull()
-        ->and($props['home'])->toBeNull()
+        ->and($props['home'])->toBe(applyUiHome($fixture['authority']['users'][0], $business))
         ->and($props)->not->toHaveKey('preview_outcome')
         ->and($props['application'])->toBe(['id' => $application, 'revision' => 1, 'title' => '', 'target' => null,
             'term_months' => null, 'use_of_funds' => [], 'story' => ''])

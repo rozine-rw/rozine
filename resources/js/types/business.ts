@@ -567,8 +567,8 @@ export type BusinessApplyProps = {
     acceptance: ApplicationAcceptance;
     submission: ApplicationSubmission | null;
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
@@ -1452,8 +1452,8 @@ export type C3BusinessPublishProps = {
         review: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
@@ -1541,9 +1541,8 @@ export type BusinessCampaignProps = Omit<
         changes?: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home (the
-     * live Business Home is the application directory, not the preview dashboard), in which case
-     * the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
