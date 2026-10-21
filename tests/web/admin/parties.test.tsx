@@ -276,6 +276,44 @@ describe('Party directories', () => {
         expect(within(jean).getByText('Huye')).toBeInTheDocument();
     });
 
+    it('lists the admin action log, newest first, or says it is empty', () => {
+        const fixture = props(staffFixture);
+
+        fixture.action_log = [
+            {
+                id: 'log-1',
+                at: fixture.server_time,
+                actor: 'A. Diane',
+                target: 'Jean-Paul M.',
+                action: 'staff_suspended',
+                reason: 'On leave until November.',
+            },
+            {
+                id: 'log-2',
+                at: fixture.server_time,
+                actor: 'Server console',
+                target: 'Eric Ndoli',
+                action: 'staff_enabled',
+                reason: 'Joined operations.',
+            },
+        ];
+        const { unmount } = render(<AdminParties {...fixture} />);
+        const log = screen.getByRole('table', { name: 'Admin action log' });
+        const rows = within(log).getAllByRole('row');
+
+        expect(rows[1]).toHaveTextContent('Suspended access');
+        expect(rows[1]).toHaveTextContent('A. Diane');
+        expect(rows[1]).toHaveTextContent('Jean-Paul M.');
+        expect(rows[1]).toHaveTextContent('On leave until November.');
+        expect(rows[2]).toHaveTextContent('Enabled access');
+        unmount();
+
+        render(<AdminParties {...{ ...fixture, action_log: [] }} />);
+        expect(
+            screen.getByText('No admin actions logged yet.'),
+        ).toBeInTheDocument();
+    });
+
     it('shows every role an operator holds and what each role may do', () => {
         render(<AdminParties {...props(staffFixture)} />);
 
@@ -443,7 +481,10 @@ describe('Party 360', () => {
         expect(inertia.posts).toEqual([
             {
                 url: '/admin/parties/biz_rugali/release',
-                data: { reason: 'Cleared.' },
+                data: {
+                    reason: 'Cleared.',
+                    request_id: expect.any(String),
+                },
             },
         ]);
         expect(within(drawer).getByText('Freeze history')).toBeInTheDocument();
@@ -723,7 +764,10 @@ describe('Party 360', () => {
             },
             {
                 url: '/admin/parties/aud_claude/freeze',
-                data: { reason: 'Fraud alert.' },
+                data: {
+                    reason: 'Fraud alert.',
+                    request_id: answers.request_id,
+                },
             },
         ]);
     });

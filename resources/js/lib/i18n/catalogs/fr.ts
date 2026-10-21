@@ -2074,6 +2074,18 @@ const fr: Catalog = {
     'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choisir qui reçoit les e-mails en préproduction.',
+    'admin.permission.staff.manage': "Gérer les opérateurs",
+    'admin.permission_detail.staff.manage': "Suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+    'admin.action_log.title': "Journal des actions d'administration",
+    'admin.action_log.info': "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
+    'admin.action_log.empty': "Aucune action d'administration enregistrée pour l'instant.",
+    'admin.action_log.col.action': "Action",
+    'admin.action_log.col.by': "Par",
+    'admin.action_log.col.target': "Cible",
+    'admin.action_log.col.reason': "Motif",
+    'admin.action_log.col.when': "Quand",
+    'admin.action_log.action.staff_suspended': "Accès suspendu",
+    'admin.action_log.action.staff_enabled': "Accès activé",
     'admin.permission.reconciliation.view': 'Voir le rapprochement',
     'admin.permission_detail.reconciliation.view':
         'Comparer le grand livre aux relevés des prestataires.',

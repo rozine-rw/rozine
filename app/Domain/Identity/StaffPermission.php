@@ -16,7 +16,7 @@ final class StaffPermission
             'disbursements.view', 'disbursements.hold', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
         // No superadmin bypass (§10.6, §11.1): disbursements are view-only here, never held or released.
         'superadmin' => ['businesses.view', 'businesses.verify', 'investors.verify', 'applications.review', 'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record', 'ledger.view',
-            'disbursements.view', 'staging.mail.testers.manage', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
+            'disbursements.view', 'staging.mail.testers.manage', 'staff.manage', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
     ];
 
     /** The console's roles from most to least privileged, as the matrix lists them. */

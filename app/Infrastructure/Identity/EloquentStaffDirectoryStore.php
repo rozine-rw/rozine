@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-import-type Directory from StaffDirectoryStore
  * @phpstan-import-type StaffRow from StaffDirectoryStore
  * @phpstan-import-type Member from StaffDirectoryStore
+ * @phpstan-import-type LogEntry from StaffDirectoryStore
  */
 final class EloquentStaffDirectoryStore implements StaffDirectoryStore
 {
@@ -52,6 +53,21 @@ final class EloquentStaffDirectoryStore implements StaffDirectoryStore
             'id' => (string) $event->id, 'at' => Carbon::parse((string) $event->created_at)->toIso8601String(),
             'actor' => $event->name === null ? null : (string) $event->name, 'action' => (string) $event->action, 'reason' => (string) $event->reason,
             'before' => self::json($event->before), 'after' => self::json($event->after)])->all())];
+    }
+
+    /** @return list<LogEntry> */
+    public function log(int $limit): array
+    {
+        $events = DB::table('identity_audit_events AS event')->join('users AS target', DB::raw('target.id::text'), '=', 'event.target_id')
+            ->leftJoin('users AS actor', 'actor.id', '=', 'event.actor_user_id')->where('event.target_type', 'user')
+            ->where('event.action', 'staff.configure')
+            ->orderByDesc('event.created_at')->orderByDesc('event.id')->limit($limit)
+            ->get(['event.id', 'event.created_at', 'actor.name AS actor', 'target.name AS target', 'event.reason', 'event.after']);
+
+        return array_values($events->map(fn (object $event): array => ['id' => (string) $event->id,
+            'at' => Carbon::parse((string) $event->created_at)->toIso8601String(), 'actor' => $event->actor === null ? null : (string) $event->actor,
+            'target' => (string) $event->target, 'enabled' => (bool) (self::json($event->after)['enabled'] ?? false),
+            'reason' => (string) $event->reason])->all());
     }
 
     /** @return StaffRow */

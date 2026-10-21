@@ -2065,6 +2065,18 @@ const rw: Catalog = {
     'admin.permission.staging.mail.testers.manage': 'Gucunga abagerageza imeri',
     'admin.permission_detail.staging.mail.testers.manage':
         'Guhitamo abakira imeri kuri staging.',
+    'admin.permission.staff.manage': "Gucunga abakozi",
+    'admin.permission_detail.staff.manage': "Guhagarika cyangwa gusubizaho uburenganzira bw'undi mukozi, hatanzwe impamvu.",
+    'admin.action_log.title': "Igitabo cy'ibikorwa by'ubuyobozi",
+    'admin.action_log.info': "Impinduka ziheruka ku burenganzira bw'abakozi, izigezweho mbere: uwazikoze, uwo zahinduriye uburenganzira n'impamvu.",
+    'admin.action_log.empty': "Nta gikorwa cy'ubuyobozi kiranditswe.",
+    'admin.action_log.col.action': "Igikorwa",
+    'admin.action_log.col.by': "Na",
+    'admin.action_log.col.target': "Uwo bireba",
+    'admin.action_log.col.reason': "Impamvu",
+    'admin.action_log.col.when': "Ryari",
+    'admin.action_log.action.staff_suspended': "Uburenganzira bwahagaritswe",
+    'admin.action_log.action.staff_enabled': "Uburenganzira bwemejwe",
     'admin.permission.reconciliation.view': 'Kureba guhuza konti',
     'admin.permission_detail.reconciliation.view':
         "Kugereranya igitabo cy'imari n'imbonerahamwe z'abatanga serivisi.",

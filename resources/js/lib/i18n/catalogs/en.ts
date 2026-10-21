@@ -1976,6 +1976,18 @@ const en = {
     'admin.permission.staging.mail.testers.manage': 'Manage mail testers',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choose who receives email on staging.',
+    'admin.permission.staff.manage': "Manage operators",
+    'admin.permission_detail.staff.manage': "Suspend or reactivate another operator's access, with a reason.",
+    'admin.action_log.title': "Admin action log",
+    'admin.action_log.info': "The latest changes to staff access, newest first: who made each one, whose access it changed and why.",
+    'admin.action_log.empty': "No admin actions logged yet.",
+    'admin.action_log.col.action': "Action",
+    'admin.action_log.col.by': "By",
+    'admin.action_log.col.target': "Target",
+    'admin.action_log.col.reason': "Reason",
+    'admin.action_log.col.when': "When",
+    'admin.action_log.action.staff_suspended': "Suspended access",
+    'admin.action_log.action.staff_enabled': "Enabled access",
     'admin.permission.reconciliation.view': 'View reconciliation',
     'admin.permission_detail.reconciliation.view':
         'Compare the ledger with provider statements.',
