@@ -1440,9 +1440,15 @@ export type AdminNotesProps = AdminFrameShellProps &
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
     StaffPrimaryMarketPageContract & {
         stats: { key: PrimaryMarketStatKey; value: StatValue }[];
-        /** Cash committed per Kigali day over the last fourteen days; days with none are left out. */
+        /**
+         * Cash committed per Kigali day over the last fourteen days, or over the chosen window of
+         * dates (`to` set, both ends included; by month over a long window). Buckets with none are
+         * left out.
+         */
         trend: {
             from: string;
+            to: string | null;
+            grain: 'day' | 'month';
             bars: { label: string; amount: Money; height_pct: number }[];
         };
         raises: PrimaryMarketRaise[];

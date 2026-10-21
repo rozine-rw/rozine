@@ -72,7 +72,7 @@ it('lists a live publication with its fill, terms and days left, and offers no m
         ->and($props['stats'])->toBe([['key' => 'active', 'value' => ['kind' => 'count', 'value' => 1]],
             ['key' => 'in_flight', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '15000']]],
             ['key' => 'fill', 'value' => ['kind' => 'percent', 'value' => $props['stats'][2]['value']['value']]], ['key' => 'completion', 'value' => ['kind' => 'percent', 'value' => '0']]])
-        ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(),
+        ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day',
             'bars' => [['label' => $today->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'height_pct' => 100]]])
         ->and($props['raises'])->toBe([['id' => $campaign->id, 'reference' => 'RSE-'.Str::upper(Str::substr($campaign->id, -6)),
             'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
@@ -105,7 +105,7 @@ it('measures fill and completion across raises, leaves funded raises out, search
     expect(array_column($props['stats'], 'value', 'key'))->toBe(['active' => ['kind' => 'count', 'value' => 2],
         'in_flight' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '4000000']],
         'fill' => ['kind' => 'percent', 'value' => '40'], 'completion' => ['kind' => 'percent', 'value' => '75']])
-        ->and($props['trend'])->toBe(['from' => '2026-10-02T00:00:00+02:00',
+        ->and($props['trend'])->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => null, 'grain' => 'day',
             'bars' => [['label' => '10-15', 'amount' => ['currency' => 'RWF', 'amount' => '250000'], 'height_pct' => 100]]])
         ->and(array_column($props['raises'], 'reference'))->toBe(['RSE-00AAAA', 'RSE-00BBBB'])
         ->and(array_column($props['raises'], 'days_left'))->toBe([5, 0])
@@ -113,6 +113,25 @@ it('measures fill and completion across raises, leaves funded raises out, search
 
     expect(array_column(($this->page)($staff, ['q' => 'greenleaf'])['raises'], 'business'))->toBe(['GreenLeaf Agro'])
         ->and(($this->page)($staff, ['limit' => 1])['pagination']['next'])->toBe(['url' => '/admin/primary-market?limit=500', 'method' => 'get']);
+});
+
+it('reads the funding trend over a chosen window of Kigali dates, by month once it spans more than two months', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-10-15 10:00', 'Africa/Kigali'));
+    app()->instance(InvestorDealCatalogue::class, Mockery::mock(InvestorDealCatalogue::class, ['deals' => []]));
+    $store = Mockery::mock(OperationsDashboardStore::class, ['figures' => ['capital_raised' => '0', 'active_businesses' => 0, 'disbursements_waiting' => 0,
+        'disbursed' => '0', 'notes' => ['live' => 0, 'funded' => 0, 'repaying' => 0, 'failed' => 0]]]);
+    $store->shouldReceive('committed')->once()->with('day', '2026-10-01T22:00:00+00:00', '2026-10-05T22:00:00+00:00')->andReturn([]);
+    $store->shouldReceive('committed')->once()->with('month', '2026-04-30T22:00:00+00:00', null)->andReturn([]);
+    $store->shouldReceive('committed')->once()->with('day', '2026-09-22T22:00:00+00:00', '2026-10-06T22:00:00+00:00')->andReturn([]);
+    app()->instance(OperationsDashboardStore::class, $store);
+    $staff = primaryMarketStaff(['analyst']);
+
+    expect(($this->page)($staff, ['from' => '2026-10-02', 'to' => '2026-10-05'])['trend'])
+        ->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => '2026-10-05T00:00:00+02:00', 'grain' => 'day', 'bars' => []])
+        ->and(($this->page)($staff, ['from' => '2026-05-01'])['trend']['grain'])->toBe('month')
+        ->and(($this->page)($staff, ['to' => '2026-10-06'])['trend']['from'])->toBe('2026-09-23T00:00:00+02:00');
+    $this->actingAs($staff)->get(route('staff.primary-market.index', ['from' => '2026-10-05', 'to' => '2026-10-02']))->assertSessionHasErrors('to');
+    $this->actingAs($staff)->get(route('staff.primary-market.index', ['from' => '5 October']))->assertSessionHasErrors('from');
 });
 
 it('is for staff who may view the primary market, and over the API for a primary read token', function (): void {
