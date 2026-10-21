@@ -5972,8 +5972,6 @@ const rw: Catalog = {
     'admin.payments.title': 'Ubwishyu buri mu nzira',
     'admin.payments.caption':
         'Kubikuza amafaranga yabo afashwe mu gihe utanga serivisi yemeza ubwishyu. Buri kimwe cyishyurwa, cyangwa kigasubira mu gikapu, hakurikijwe igisubizo cyemejwe.',
-    'admin.payments.movement.caption':
-        'Amafaranga yashyizwe kuri konti n’ayabikujwe yishyuwe ku munsi (Kigali), iminsi 14 ishize',
     'admin.payments.kpi.count': {
         one: 'Igikorwa {count} · iminsi 14 ishize',
         other: 'Ibikorwa {count} · iminsi 14 ishize',

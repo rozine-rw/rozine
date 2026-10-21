@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
  * `AdminPaymentsProps` (`staff-payments-v1`) from the money that moved. The four figures follow the
  * design's Payment Center over the last fourteen Kigali days: credited deposits, paid-out
  * withdrawals and closed disbursements with their counts, and how many withdrawals are still in
- * flight. The bars are deposits plus payouts per Kigali day. No payout has a release, hold or
+ * flight. The bars are deposits plus payouts per Kigali day (per month over a long chosen window, `trend`). No payout has a release, hold or
  * reverse command, so none is offered.
  *
  * The search matches the reference, the owner's name and the account; the limit then cuts the list,
@@ -27,7 +27,7 @@ class StaffPaymentsResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{from: string, movements: Movements, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
+        /** @var array{from: string, movements: Movements, trend: array{from: string, to: string|null, grain: 'day'|'month'}, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
         $resource = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $route = fn (array $query = []): array => ['url' => route($prefix.'staff.payments.index', $query, false), 'method' => 'get'];
@@ -45,7 +45,7 @@ class StaffPaymentsResource extends JsonResource
         return ['contract_version' => 'staff-payments-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'viewer' => (new StaffViewerResource($resource['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($resource['permissions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'], 'policy' => $resource['policy'],
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'], 'trend' => $resource['trend'], 'policy' => $resource['policy'],
             'stats' => [['key' => 'deposits', 'value' => $money($movements['deposits']['amount']), 'count' => $movements['deposits']['count']],
                 ['key' => 'withdrawals', 'value' => $money($movements['withdrawals']['amount']), 'count' => $movements['withdrawals']['count']],
                 ['key' => 'disbursed', 'value' => $money($movements['disbursed']['amount']), 'count' => $movements['disbursed']['count']]],
