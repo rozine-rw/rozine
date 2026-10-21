@@ -66,7 +66,40 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
     return (
         <AdminFrame {...props}>
             <section aria-label={title}>
-                <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+                <div
+                    role="tablist"
+                    aria-label={t('admin.design.tabs', { section: title })}
+                    className="rz-hscroll mb-4 flex gap-2 overflow-x-auto"
+                >
+                    {TABS.map((item) => (
+                        <button
+                            key={item}
+                            type="button"
+                            role="tab"
+                            aria-selected={item === tab}
+                            onClick={() => setTab(item)}
+                            className={cn(
+                                'shrink-0 rounded-[10px] border px-[15px] py-2 text-[13px] font-semibold whitespace-nowrap',
+                                item === tab
+                                    ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
+                                    : 'border-rz-hairline bg-rz-surface text-rz-slate',
+                            )}
+                        >
+                            {t(`admin.design.academies.tab.${item}`)}{' '}
+                            <span
+                                className={cn(
+                                    'ml-0.5',
+                                    item === tab
+                                        ? 'text-white/70'
+                                        : 'text-rz-muted',
+                                )}
+                            >
+                                {ROWS[item].length}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+                <div className="mb-[18px] grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                     <KpiTile
                         index={0}
                         label={t('admin.design.academies.kpi.live')}
@@ -89,33 +122,29 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
                         sub={t('admin.design.academies.kpi.completed.sub')}
                     />
                 </div>
-                <div
-                    role="tablist"
-                    aria-label={t('admin.design.tabs', { section: title })}
-                    className="rz-hscroll mb-[18px] flex gap-2 overflow-x-auto"
-                >
-                    {TABS.map((item) => (
-                        <button
-                            key={item}
-                            type="button"
-                            role="tab"
-                            aria-selected={item === tab}
-                            onClick={() => setTab(item)}
-                            className={cn(
-                                'shrink-0 rounded-[10px] border px-[15px] py-2 text-[13px] font-semibold whitespace-nowrap',
-                                item === tab
-                                    ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
-                                    : 'border-rz-hairline bg-rz-surface text-rz-slate',
-                            )}
-                        >
-                            {t(`admin.design.academies.tab.${item}`)}
-                        </button>
-                    ))}
-                </div>
                 <div className="mb-3.5">
-                    <CardTitle>
-                        {t('admin.design.academies.lessons.title')}
-                    </CardTitle>
+                    <div className="flex items-center gap-2.5">
+                        <CardTitle>
+                            {t('admin.design.academies.lessons.title')}
+                        </CardTitle>
+                        {rows.length > 0 && (
+                            <span className="rounded-full bg-[#e3f5ee] px-2.5 py-[3px] text-[11.5px] font-semibold text-[#17795a] dark:bg-rz-surface-sunken dark:text-[#3fcda0]">
+                                {tab === 'all'
+                                    ? t('admin.design.academies.lessons.live', {
+                                          count: rows.length,
+                                      })
+                                    : t(
+                                          'admin.design.academies.lessons.live_in',
+                                          {
+                                              count: rows.length,
+                                              app: t(
+                                                  `admin.design.academies.app.${tab}`,
+                                              ),
+                                          },
+                                      )}
+                            </span>
+                        )}
+                    </div>
                     <p className={cn('mt-1 text-[12.5px]', CAPTION)}>
                         {t('admin.design.academies.lessons.sub')}
                     </p>
@@ -149,15 +178,17 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
                             role="row"
                             className={cn(GRID, ROW_RULE, 'items-center py-3')}
                         >
-                            <span
-                                role="cell"
-                                className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-rz-ink"
-                            >
-                                <span aria-hidden="true">
-                                    {lesson.topics[0].emoji}
+                            <span role="cell" className="min-w-0">
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <span className="shrink-0 rounded-md bg-[#e3f5ee] px-1.5 py-px text-[10px] font-semibold text-[#17795a] dark:bg-rz-surface-sunken dark:text-[#3fcda0]">
+                                        {t('admin.design.academies.state.live')}
+                                    </span>
+                                    <span className="truncate text-[13px] font-bold text-rz-ink">
+                                        {t(`${lesson.code}.title`)}
+                                    </span>
                                 </span>
-                                <span className="truncate">
-                                    {t(`${lesson.code}.title`)}
+                                <span className="mt-[3px] block truncate text-xs text-rz-muted">
+                                    {t(`${lesson.code}.sub`)}
                                 </span>
                             </span>
                             <span

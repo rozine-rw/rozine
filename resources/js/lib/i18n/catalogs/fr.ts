@@ -1339,6 +1339,12 @@ const fr: Catalog = {
     'admin.design.academies.tab.business': 'Académie Entreprises',
     'admin.design.academies.tab.auditor': 'Académie Auditeurs',
     'admin.design.academies.tab.all': 'Toutes',
+    'admin.design.academies.lessons.live': '{count} en ligne',
+    'admin.design.academies.lessons.live_in': '{count} en ligne dans {app}',
+    'admin.design.academies.app.investor': 'l’app Investisseur',
+    'admin.design.academies.app.business': 'l’app Entreprise',
+    'admin.design.academies.app.auditor': 'l’app Auditeur',
+    'admin.design.academies.state.live': 'En ligne',
     'admin.design.academies.lessons.title': 'Leçons',
     'admin.design.academies.lessons.empty':
         'Aucune leçon à afficher pour le moment.',
