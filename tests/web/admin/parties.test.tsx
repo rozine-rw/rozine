@@ -126,6 +126,70 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(0);
     });
 
+    it('queues renewals and first licences above the Audit Partner directory, each opening its decision', () => {
+        render(<AdminParties {...props(auditorsFixture)} />);
+
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(
+            within(requests).getByText('Jean Habimana, CPA'),
+        ).toBeInTheDocument();
+        expect(within(requests).getByText('RENEWAL')).toBeInTheDocument();
+        expect(within(requests).getByText('PPC-0388-R')).toBeInTheDocument();
+        expect(
+            within(desk).getByText('Claude Mukamana, CPA'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(within(desk).getByText('1 Oct 2026')).toBeInTheDocument();
+        expect(within(desk).getByText('30 Jun 2027')).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(
+            within(desk).getByRole('link', { name: 'Reject' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+    });
+
+    it('offers only Review to a viewer who may not decide, and says when a queue is empty', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = [];
+        fixture.requests = fixture.requests?.map((entry) => ({
+            ...entry,
+            links: { review: entry.links.review },
+        }));
+        render(<AdminParties {...fixture} />);
+
+        expect(
+            screen.getByText('No licences waiting for verification.'),
+        ).toBeInTheDocument();
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+
+        expect(
+            within(requests).getByRole('link', { name: 'Review' }),
+        ).toBeInTheDocument();
+        expect(
+            within(requests).queryByRole('link', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows no licence queues outside the Audit Partner network', () => {
+        render(<AdminParties {...props(businessesFixture)} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'ICPAR verification desk' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('opens Partner coverage from the Audit Partner directory for staff who may see it', () => {
         const auditors = props(auditorsFixture);
         const { unmount } = render(<AdminParties {...auditors} />);
@@ -624,6 +688,31 @@ describe('Party 360', () => {
         await user.click(screen.getByRole('button', { name: 'Cancel' }));
         await user.click(
             within(licence).getByRole('button', { name: 'Reject' }),
+        );
+        expect(
+            screen.getByRole('form', {
+                name: 'Reject licence for Claude Mukamana, CPA',
+            }),
+        ).toBeInTheDocument();
+    });
+
+    it('opens on the decision the review queue chose, with its reason stage ready', () => {
+        const fixture = props(licenceFixture);
+        const detail = party(licenceFixture);
+
+        fixture.party = {
+            ...detail,
+            licence: detail.licence && {
+                ...detail.licence,
+                review: { revision: 3, submission_id: 'sub-a' },
+            },
+            stage: 'reject_licence',
+        };
+        render(<AdminParties {...fixture} />);
+
+        expect(screen.getByRole('tab', { name: 'Controls' })).toHaveAttribute(
+            'aria-selected',
+            'true',
         );
         expect(
             screen.getByRole('form', {

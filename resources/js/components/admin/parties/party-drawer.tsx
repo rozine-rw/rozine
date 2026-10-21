@@ -97,16 +97,25 @@ export function PartyDrawer({
     // A party still in onboarding may have no name on record yet.
     const name =
         party.name.trim() === '' ? t('admin.parties.name_pending') : party.name;
-    // A submission waiting for review opens on Controls, where its documents and decision are.
+    // A submission waiting for review, or a licence decision opened from the review queue, opens on
+    // Controls, where its documents and decision are.
     const [tab, setTab] = useState<Tab>(
-        party.verification?.status === 'submitted' ? 'controls' : 'overview',
+        party.verification?.status === 'submitted' || party.stage
+            ? 'controls'
+            : 'overview',
     );
     // Each opened stage is one request: a double submit replays it, a later decision is new.
     const [stage, setStage] = useState<{
         key: Command;
         action: RouteAction;
         requestId: string;
-    } | null>(null);
+    } | null>(() => {
+        const action = party.stage ? party.actions[party.stage] : undefined;
+
+        return party.stage && action
+            ? { key: party.stage, action, requestId: crypto.randomUUID() }
+            : null;
+    });
     const frozen = party.freeze !== null;
     const overdue = party.kyc?.state === 'overdue';
     const review = party.licence?.review ?? null;

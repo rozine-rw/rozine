@@ -1919,6 +1919,23 @@ const rw: Catalog = {
     'admin.parties.policy_title': "Amabwiriza yo kwemererwa kw'ibigo",
     'admin.parties.filter': 'Tondeka ukurikije imiterere',
     'admin.parties.coverage_link': 'Aho abafatanyabikorwa bagera',
+    'admin.parties.queue.requests.title': "Ibisabwa n'abafatanyabikorwa",
+    'admin.parties.queue.requests.caption':
+        'Kongerera igihe impushya bitegereje gusuzumwa. Umufatanyabikorwa abona ko bigitegereje kugeza ufashe icyemezo.',
+    'admin.parties.queue.requests.empty':
+        'Nta kongerera igihe uruhushya bitegereje.',
+    'admin.parties.queue.requests.chip': 'KONGERERA IGIHE',
+    'admin.parties.queue.desk.title': 'Ibiro byo kugenzura ICPAR',
+    'admin.parties.queue.desk.caption':
+        'Emeza uruhushya mu gitabo cya ICPAR, hanyuma wemeze kugira ngo umufatanyabikorwa ashobore gufata igenzura.',
+    'admin.parties.queue.desk.empty': 'Nta mpushya zitegereje kugenzurwa.',
+    'admin.parties.queue.desk.chip': 'BITEGEREJE KUGENZURWA',
+    'admin.parties.queue.approve': 'Emeza',
+    'admin.parties.queue.reject': 'Wanga',
+    'admin.parties.queue.review': 'Suzuma',
+    'admin.parties.queue.field.licence': 'Uruhushya',
+    'admin.parties.queue.field.expires_on': 'Birangira',
+    'admin.parties.queue.field.submitted_at': 'Byoherejwe',
     'admin.parties.chip.all': 'Byose',
     'admin.parties.chip.healthy': 'Bimeze neza',
     'admin.parties.chip.watch': 'Bikurikiranwa',
