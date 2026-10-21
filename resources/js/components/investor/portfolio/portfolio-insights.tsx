@@ -61,9 +61,11 @@ export function TotalCard({
                     {t('investor.portfolio.total_value')}
                 </span>
                 <span className="inline-flex shrink-0 items-center rounded-[10px] bg-white/[.16] px-2.5 py-[5px] text-[11.5px] font-semibold whitespace-nowrap text-white">
-                    {t('investor.portfolio.businesses', {
-                        count: totals.businesses,
-                    })}
+                    {totals.businesses === 1
+                        ? t('investor.portfolio.businesses_one')
+                        : t('investor.portfolio.businesses', {
+                              count: totals.businesses,
+                          })}
                 </span>
             </div>
             <p className="mt-[5px] text-[26px] font-bold tracking-[-.5px] whitespace-nowrap text-white">

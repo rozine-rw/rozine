@@ -97,7 +97,7 @@ export function BalanceCard({
                         <dt className="text-[10px] font-semibold text-white/80">
                             {t(`investor.wallet.c3.bucket.${bucket}`)}
                         </dt>
-                        <dd className="mt-0.5 truncate text-[13px] font-bold text-white">
+                        <dd className="mt-0.5 text-[13px] leading-tight font-bold text-white">
                             {formatRwf(wallet.breakdown[bucket])}
                         </dd>
                     </div>

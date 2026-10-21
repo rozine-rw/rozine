@@ -903,6 +903,75 @@ describe('Deals in C3 states', () => {
         expect(screen.getByRole('button', { name: 'Invest' })).toBeDisabled();
     });
 
+    it('opens the checkout from the focused live deal when the server sends no quote, as the live Deals page does', async () => {
+        const user = userEvent.setup();
+        const props = deals();
+
+        props.quote = null;
+        props.allowed_actions = [];
+        render(<InvestorDeals {...props} />);
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+
+        expect(bar).toHaveTextContent('RWF5,000');
+        expect(
+            within(bar).getByRole('link', { name: 'Invest' }),
+        ).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=1',
+        );
+
+        fireEvent.change(within(bar).getByRole('slider'), {
+            target: { value: '3' },
+        });
+        expect(bar).toHaveTextContent('RWF15,000');
+        expect(
+            within(bar).getByRole('link', { name: 'Invest' }),
+        ).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=3',
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+        expect(
+            within(
+                screen.getByRole('region', {
+                    name: 'Invest in Sebeya Logistics',
+                }),
+            ).getByRole('button', { name: 'Invest' }),
+        ).toBeDisabled();
+    });
+
+    it('opens the checkout from an unquoted deal page at the deal’s unit price', async () => {
+        const user = userEvent.setup();
+        const props = deal();
+
+        props.quote = null;
+        props.allowed_actions = [];
+        render(<InvestorDeal {...props} />);
+
+        expect(screen.getByText('RWF 5,000 × 1 note')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'One note more' }));
+        expect(screen.getByText('RWF 5,000 × 2 notes')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Invest' })).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=2',
+        );
+    });
+
+    it('counts a single investor in the singular', () => {
+        const props = deals();
+
+        props.deals[0].investors = 1;
+        render(<InvestorDeals {...props} />);
+
+        expect(
+            screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+        ).toHaveTextContent(/1\s*investor(?!s)/);
+    });
+
     it('names the cap that binds once the chosen quantity reaches it', () => {
         const props = deals();
         const quote = props.quote as NonNullable<C3InvestorDealsProps['quote']>;

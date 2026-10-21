@@ -2932,6 +2932,7 @@ const en = {
     'investor.deals.avg_revenue_short': 'AVG MO. REV.',
     'investor.deals.avg_revenue': 'AVG MONTHLY REV.',
     'investor.deals.funded_label': '{name} funding progress',
+    'investor.deals.investors_one': 'investor',
     'investor.deals.investors': 'investors',
     'investor.deals.left_to_fill': 'LEFT TO FILL',
     'investor.deals.notes': 'NOTES',
@@ -3008,7 +3009,7 @@ const en = {
     'investor.deal.total_return': 'Total return',
     'investor.deal.repayment': 'Repayment',
     'investor.deal.monthly': 'Monthly',
-    'investor.deal.term': 'TERM',
+    'investor.deal.term': 'Term',
     'investor.deal.months_long': '{count} months',
     'investor.deal.track_record': 'Track record on Rozine',
     'investor.deal.history': 'HISTORY',
@@ -3414,6 +3415,7 @@ const en = {
     'investor.portfolio.empty.saved.title': 'No saved deals yet',
     'investor.portfolio.browse_deals': 'Browse opportunities',
     'investor.portfolio.total_value': 'TOTAL VALUE',
+    'investor.portfolio.businesses_one': '1 business',
     'investor.portfolio.businesses': '{count} businesses',
     'investor.portfolio.invested': 'INVESTED',
     'investor.portfolio.total_gain': 'TOTAL GAIN',
@@ -4785,6 +4787,8 @@ const en = {
     'investor.checkout.risks.accept': 'I understand these risks',
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
+    'investor.checkout.c3.reserve_after_risks':
+        'Confirm the risk statements above to reserve.',
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':

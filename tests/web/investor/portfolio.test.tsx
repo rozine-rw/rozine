@@ -39,6 +39,17 @@ beforeEach(() => {
 });
 
 describe('Portfolio', () => {
+    it('counts a single business in the singular', () => {
+        const props = portfolio();
+
+        props.totals.businesses = 1;
+        render(<InvestorPortfolio {...props} />);
+
+        expect(
+            screen.getByRole('region', { name: 'TOTAL VALUE' }),
+        ).toHaveTextContent(/1 business(?!es)/);
+    });
+
     it('shows value, holdings and health from server facts, three at a time on a phone', async () => {
         const user = userEvent.setup();
 

@@ -3055,6 +3055,7 @@ const fr: Catalog = {
     'investor.deals.avg_revenue_short': 'REV. MOY. MENS.',
     'investor.deals.avg_revenue': 'REVENU MENSUEL MOYEN',
     'investor.deals.funded_label': 'Financement de {name}',
+    'investor.deals.investors_one': 'investisseur',
     'investor.deals.investors': 'investisseurs',
     'investor.deals.left_to_fill': 'RESTE À LEVER',
     'investor.deals.notes': 'TITRES',
@@ -3132,7 +3133,7 @@ const fr: Catalog = {
     'investor.deal.total_return': 'Rendement total',
     'investor.deal.repayment': 'Remboursement',
     'investor.deal.monthly': 'Mensuel',
-    'investor.deal.term': 'DURÉE',
+    'investor.deal.term': 'Durée',
     'investor.deal.months_long': '{count} mois',
     'investor.deal.track_record': 'Historique sur Rozine',
     'investor.deal.history': 'HISTORIQUE',
@@ -3545,6 +3546,7 @@ const fr: Catalog = {
         'Aucune opération enregistrée pour le moment',
     'investor.portfolio.browse_deals': 'Voir les opportunités',
     'investor.portfolio.total_value': 'VALEUR TOTALE',
+    'investor.portfolio.businesses_one': '1 entreprise',
     'investor.portfolio.businesses': '{count} entreprises',
     'investor.portfolio.invested': 'INVESTI',
     'investor.portfolio.total_gain': 'GAIN TOTAL',
@@ -5017,6 +5019,8 @@ const fr: Catalog = {
     'investor.checkout.risks.accept': 'Je comprends ces risques',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
+    'investor.checkout.c3.reserve_after_risks':
+        'Confirmez les déclarations de risque ci-dessus pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':

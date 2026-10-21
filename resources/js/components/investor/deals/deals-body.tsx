@@ -152,8 +152,10 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
         });
     };
 
+    /* The checkout link is the focused deal's, so another card in front waits for its focus. */
     const checkout =
         current !== null &&
+        props.focus?.campaign_id === current.campaign_id &&
         props.links.checkout !== null &&
         canReserve({
             deal: current,
@@ -242,7 +244,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         }
                     />
                     <div className="flex min-h-0 flex-1 items-stretch gap-[26px]">
-                        <div className="relative flex min-h-0 min-w-0 flex-[0_0_508px] flex-col">
+                        <div className="relative flex min-h-0 min-w-[420px] flex-[0_1_508px] flex-col">
                             <SortChips sorts={props.sorts} size="desk" />
                             {current === null ? (
                                 <EmptyDeals gate={props.gate} />

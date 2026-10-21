@@ -3043,6 +3043,7 @@ const rw: Catalog = {
     'investor.deals.avg_revenue_short': "IMPUZANDENGO Y'UKWEZI",
     'investor.deals.avg_revenue': "IMPUZANDENGO Y'INJIZA Y'UKWEZI",
     'investor.deals.funded_label': 'Aho ishoramari rya {name} rigeze',
+    'investor.deals.investors_one': 'umushoramari',
     'investor.deals.investors': 'abashoramari',
     'investor.deals.left_to_fill': 'ASIGAYE',
     'investor.deals.notes': 'IMPAPURO',
@@ -3120,7 +3121,7 @@ const rw: Catalog = {
     'investor.deal.total_return': 'Inyungu yose',
     'investor.deal.repayment': 'Kwishyura',
     'investor.deal.monthly': 'Buri kwezi',
-    'investor.deal.term': 'IGIHE',
+    'investor.deal.term': 'Igihe',
     'investor.deal.months_long': 'Amezi {count}',
     'investor.deal.track_record': 'Amateka kuri Rozine',
     'investor.deal.history': 'AMATEKA',
@@ -3530,6 +3531,7 @@ const rw: Catalog = {
     'investor.portfolio.empty.saved.title': 'Nta mahirwe urabika',
     'investor.portfolio.browse_deals': 'Reba amahirwe',
     'investor.portfolio.total_value': 'AGACIRO KOSE',
+    'investor.portfolio.businesses_one': 'Ikigo 1',
     'investor.portfolio.businesses': 'Ibigo {count}',
     'investor.portfolio.invested': 'BYASHOWE',
     'investor.portfolio.total_gain': 'INYUNGU YOSE',
@@ -4990,6 +4992,8 @@ const rw: Catalog = {
     'investor.checkout.risks.accept': 'Ndumva izi ngaruka',
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
+    'investor.checkout.c3.reserve_after_risks':
+        "Emeza amagambo y'ingaruka ari hejuru kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
     'investor.checkout.c3.reserve_fine_print':
         "Gufata bibika impapuro n'amafaranga iminota 5 mu gihe wemeza.",

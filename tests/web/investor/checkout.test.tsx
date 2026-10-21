@@ -1205,6 +1205,22 @@ describe('Checkout: the risk statements (BRS KYC-R05)', () => {
         return page;
     };
 
+    it('says the statements come before reserving while the server offers no reserve yet', () => {
+        const page = withRisks();
+
+        page.allowed_actions = page.allowed_actions.filter(
+            (action) => action !== 'primary.reserve',
+        );
+        render(<InvestorCheckout {...page} />);
+
+        expect(
+            screen.getByText('Confirm the risk statements above to reserve.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText("Reserving isn't available right now."),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows nothing once the statements are acknowledged', () => {
         render(<InvestorCheckout {...withRisks(true)} />);
 

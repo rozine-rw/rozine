@@ -92,6 +92,10 @@ describe('Wallet (C3)', () => {
 
         expect(balance).toHaveTextContent('RWF 1,733,485');
         expect(balance).toHaveTextContent('AvailableRWF 1,253,485');
+        /* A clipped figure reads as a different amount, so a long one wraps instead. */
+        expect(within(balance).getByText('RWF 1,253,485')).not.toHaveClass(
+            'truncate',
+        );
         expect(balance).toHaveTextContent('HeldRWF 30,000');
         expect(balance).toHaveTextContent('CommittedRWF 450,000');
         expect(balance).toHaveTextContent(

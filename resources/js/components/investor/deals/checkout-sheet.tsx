@@ -674,7 +674,11 @@ export function CheckoutSheet({
                             role="status"
                             className="text-center text-[12px] text-rz-secondary"
                         >
-                            {t('investor.checkout.c3.reserve_unavailable')}
+                            {t(
+                                risks?.acknowledged === false
+                                    ? 'investor.checkout.c3.reserve_after_risks'
+                                    : 'investor.checkout.c3.reserve_unavailable',
+                            )}
                         </p>
                     )}
                     <p className="mt-2 text-center text-[10px] leading-[1.4] text-rz-secondary">

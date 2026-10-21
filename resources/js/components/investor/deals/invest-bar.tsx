@@ -18,8 +18,10 @@ export const RANGE_CLASS =
     'h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-[3px] bg-[#e2e8f2] outline-none dark:bg-rz-surface-muted [&::-moz-range-thumb]:size-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:size-[22px] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(30,58,255,.4)] active:[&::-webkit-slider-thumb]:shadow-[0_0_0_7px_rgba(30,58,255,.10)]';
 
 /**
- * Whether a deal may be reserved now (C3 v2 §2b): the server lists `primary.reserve`, the campaign
- * is live with no restriction, the Investor is eligible and the quote allows at least one unit.
+ * Whether a deal may be reserved now (C3 v2 §2b): the campaign is live with no restriction and the
+ * Investor is eligible. Where the server quotes the deck, it must also list `primary.reserve` and
+ * allow at least one unit. The live Deals pages send no quote, only the checkout link (offered
+ * when the Investor has a wallet and no restriction); the checkout quotes and admits from there.
  */
 export function canReserve({
     deal,
@@ -33,12 +35,12 @@ export function canReserve({
     quote: PrimaryQuote | null;
 }): boolean {
     return (
-        allowed.includes('primary.reserve') &&
         deal.lifecycle === 'live' &&
         deal.restriction === null &&
         gate.status === 'eligible' &&
-        quote !== null &&
-        Number(quote.capacity.max_units) >= 1
+        (quote === null ||
+            (allowed.includes('primary.reserve') &&
+                Number(quote.capacity.max_units) >= 1))
     );
 }
 
@@ -114,7 +116,11 @@ export function InvestBar({
     const { t } = useTranslation();
     const [draft, setDraft] = useState<string | null>(null);
     const current = quote;
-    const max = Math.max(Number(current?.capacity.max_units ?? '1'), 1);
+    /* Unquoted, the notes still open bound the choice; the checkout applies the Investor's caps. */
+    const max = Math.max(
+        Number(current?.capacity.max_units ?? deal.units.available),
+        1,
+    );
     const soldOut = deal.lifecycle !== 'live' || deal.restriction !== null;
     const phone = size === 'phone';
     const micro = cn(
@@ -272,7 +278,16 @@ export function InvestBar({
                         <span className="mr-[3px]">
                             {t('investor.money.rwf')}
                         </span>
-                        {current === null ? '—' : formatAmount(current.amount)}
+                        {current !== null
+                            ? formatAmount(current.amount)
+                            : checkout !== null
+                              ? formatAmount({
+                                    ...deal.unit_price,
+                                    amount: String(
+                                        Number(deal.unit_price.amount) * units,
+                                    ),
+                                })
+                              : '—'}
                     </p>
                 </div>
                 <span
