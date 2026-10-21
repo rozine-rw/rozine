@@ -8,7 +8,7 @@ use App\Application\Identity\BrowseStaffDirectory;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\GrantStaffAccess;
 use App\Application\Identity\SetStaffAccess;
-use App\Domain\Identity\IdentityViolation;
+use App\Application\Identity\StaffAccessRefused;
 use App\Http\Requests\Staff\GrantStaffAccessRequest;
 use App\Http\Requests\Staff\ListStaffDirectoryRequest;
 use App\Http\Requests\Staff\SetStaffAccessRequest;
@@ -82,11 +82,11 @@ class StaffDirectoryController extends Controller
     {
         try {
             return $change();
-        } catch (IdentityViolation $violation) {
-            if (! array_key_exists($violation->reason, self::MESSAGES)) {
-                throw $violation;
+        } catch (StaffAccessRefused $refusal) {
+            if (! array_key_exists($refusal->reason, self::MESSAGES)) {
+                throw $refusal->violation();
             }
-            throw ValidationException::withMessages([$field => [self::MESSAGES[$violation->reason]]]);
+            throw ValidationException::withMessages([$field => [self::MESSAGES[$refusal->reason]]]);
         }
     }
 }
