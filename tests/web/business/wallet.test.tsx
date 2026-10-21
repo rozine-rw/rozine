@@ -84,10 +84,10 @@ describe('Business wallet (business-servicing-v1)', () => {
             screen.queryByRole('region', { name: 'Withdrawals' }),
         ).not.toBeInTheDocument();
 
-        const deposits = screen.getByRole('region', { name: 'Deposits' });
-
-        expect(deposits).toHaveTextContent('Deposit from Bank of Kigali');
-        expect(deposits).toHaveTextContent('Credited');
+        // The credited deposit shows once, in the history, not again under Deposits.
+        expect(
+            screen.queryByRole('region', { name: 'Deposits' }),
+        ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
             name: 'Transaction history',

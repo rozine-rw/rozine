@@ -108,6 +108,20 @@ beforeEach(() => {
 });
 
 describe('Home — starting a raise', () => {
+    it('leaves the section out when there is no headroom and no way to apply', () => {
+        render(
+            <GrowSection
+                headroom={null}
+                links={{ rating: link('/rating'), apply: null }}
+                createApplication={null}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('heading', { name: 'Grow' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('resumes an open draft by link, without a command', () => {
         renderGrow(link('/business/apply'), entry);
 

@@ -86,7 +86,7 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
         'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(),
         'allowed_actions' => [], 'engagement' => ['status' => 'unavailable', 'link' => ['url' => '/auditor/engagement', 'method' => 'get']],
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
-        'quality_score' => null, 'earned_this_month' => null, 'active_deals' => null, 'licence_expires_on' => null,
+        'quality_score' => null, 'earned_this_month' => ['currency' => 'RWF', 'amount' => '0'], 'active_deals' => null, 'licence_expires_on' => null,
         'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
         'nearby' => ['count' => 0, 'closest_km' => null], 'in_progress' => [],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED', 'on_time_pct' => null, 'avg_variance_pct' => null,

@@ -49,6 +49,9 @@ it('states the platform fee share credited to the partner who sealed the report,
         ->and(auditorEarnings($auditor, 'auditor.profile'))->toBe($statement)
         ->and(auditorEarnings(AuditorFixture::make()['user'], 'auditor.portfolio.index'))->toBe(['month' => $month.'-01',
             'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => []]);
+    // Home's "earned this month" is the same month's credit.
+    actingAs($auditor)->get(route('auditor.home'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('earned_this_month', ['currency' => 'RWF', 'amount' => '129600']));
 
     $this->travelTo(CarbonImmutable::parse($month.'-01 00:00:00', 'Africa/Kigali')->addMonthNoOverflow());
     expect(auditorEarnings($auditor, 'auditor.profile'))->toBe([...$statement, 'month' => now('Africa/Kigali')->format('Y-m').'-01',

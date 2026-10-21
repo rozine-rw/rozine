@@ -147,10 +147,18 @@ export function HoldsList({
 
 /**
  * Recorded deposit intents. `pending` and `unknown` read "not yet confirmed" and are never shown as
- * credited or failed; the Investor sees no provider reference (H15).
+ * credited or failed; the Investor sees no provider reference (H15). A credited deposit is left to
+ * the history, where its credit already shows, so it is not listed twice.
  */
-export function DepositIntents({ deposits }: { deposits: DepositIntent[] }) {
+export function DepositIntents({
+    deposits: recorded,
+}: {
+    deposits: DepositIntent[];
+}) {
     const { t, locale } = useTranslation();
+    const deposits = recorded.filter(
+        (deposit) => deposit.state !== 'succeeded',
+    );
 
     if (deposits.length === 0) {
         return null;

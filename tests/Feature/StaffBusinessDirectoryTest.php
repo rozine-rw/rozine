@@ -231,6 +231,15 @@ test('a funded Business counts its funded principal, its distinct Investors and 
                 && $history->firstWhere('action.code', 'business.authority.configure')['reason'] === 'Reviewed complete authority evidence.'));
 });
 
+test('a live raise counts the Investors committed to it before it funds, as Primary market does', function (): void {
+    // One Investor makes two purchases and another buys once; the raise is still live.
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed(['540', '540', '1080'], fund: false, buyers: [0 => 'same', 1 => 'same']);
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $campaign->business_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.id', $campaign->business_id)->where('directory.rows.0.investors', 2)
+            ->where('directory.rows.0.raised', ['currency' => 'RWF', 'amount' => '0'])->where('directory.rows.0.active_notes', 1));
+});
+
 test('the directory answers over the API with the read ability and links API routes', function (): void {
     $seed = businessDirectoryNote('Isoko Farms', 'Agriculture', ['title' => 'Seed stock']);
 

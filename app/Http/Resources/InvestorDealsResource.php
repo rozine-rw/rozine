@@ -55,7 +55,7 @@ class InvestorDealsResource extends JsonResource
             'server_time' => now()->toIso8601String(), 'allowed_actions' => [], 'gate' => self::gate($request, $data),
             'wallet' => $funded ? ['available' => $data['available'], 'next_payout' => null] : null, 'unread_notifications' => $data['unread_notifications'],
             'sorts' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $data['sort'], 'link' => $filter($key, $data['industry'])],
-                ['all', 'top_interest', 'top_rated']),
+                ['all', 'top_interest', 'top_rated', 'top_picks']),
             'industries' => array_map(fn (array $row): array => [...$row, 'active' => $row['industry'] === $data['industry'],
                 'link' => $filter($data['sort'], $row['industry'])], $data['industries']),
             'deals' => array_map(fn (array $deal): array => self::withLink($request, $deal), $data['deals']),

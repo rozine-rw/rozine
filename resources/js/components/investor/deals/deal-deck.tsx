@@ -113,7 +113,7 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
     };
 
     return (
-        <div className="relative mt-3 h-[364px] flex-none overflow-visible">
+        <div className="relative mt-3 max-h-[540px] min-h-[364px] shrink-0 grow-[100] basis-[364px] overflow-visible">
             <div
                 className="absolute inset-y-0 right-[30px] left-[30px] animate-[rz-fade_.5s_cubic-bezier(.22,.9,.3,1)_both]"
                 onPointerDown={down}

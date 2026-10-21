@@ -24,7 +24,7 @@ use Brick\Math\BigDecimal;
  */
 final class GetInvestorDeals
 {
-    public const array SORTS = ['all', 'top_interest', 'top_rated'];
+    public const array SORTS = ['all', 'top_interest', 'top_rated', 'top_picks'];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices) {}
 
@@ -83,7 +83,8 @@ final class GetInvestorDeals
     }
 
     /**
-     * Newest first unless asked otherwise: most filled, or highest rated. Ties keep that order.
+     * Newest first unless asked otherwise: most filled, highest rated, or the design's Top Picks,
+     * the best rating weighted by the interest rate. Ties keep that order.
      *
      * @param  list<array<string, mixed>>  $deals
      * @return list<array<string, mixed>>
@@ -93,15 +94,13 @@ final class GetInvestorDeals
         if ($sort === 'all') {
             return $deals;
         }
-        $key = $sort === 'top_interest' ? 'funded_pct' : 'score';
-        usort($deals, fn (array $a, array $b): int => BigDecimal::of(self::metric($b, $key))->compareTo(self::metric($a, $key)));
+        $metric = match ($sort) {
+            'top_interest' => fn (array $deal): BigDecimal => BigDecimal::of((string) $deal['funded_pct']),
+            'top_rated' => fn (array $deal): BigDecimal => BigDecimal::of((string) $deal['rating']['score']),
+            default => fn (array $deal): BigDecimal => BigDecimal::of((string) $deal['rating']['score'])->multipliedBy((string) $deal['rate_pct']),
+        };
+        usort($deals, fn (array $a, array $b): int => $metric($b)->compareTo($metric($a)));
 
         return $deals;
-    }
-
-    /** @param array<string, mixed> $deal */
-    private static function metric(array $deal, string $key): string
-    {
-        return $key === 'score' ? (string) $deal['rating']['score'] : (string) $deal['funded_pct'];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
+use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -50,8 +51,11 @@ it('offers a released application for publication before anything is listed', fu
 
     $props = ($this->props)($user, $business);
 
+    // Before its first listing, the rating is the one staff released with the application.
+    $rating = BusinessApplicationSubmission::query()->whereKey($application->refresh()->current_submission_id)->sole()->payload['public_evidence']['rating'];
+    expect($rating)->toBeArray()->and($props['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
     // The sealed report awaiting the Business and the approved application are its two unread notices.
-    expect($props)->toMatchArray(['rating' => null, 'live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
+    expect($props)->toMatchArray(['live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
         'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'create_application' => null,
         'today' => [['kind' => 'application_approved', 'title' => $application->refresh()->draft['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
             'link' => ['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']]],

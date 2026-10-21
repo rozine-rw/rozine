@@ -124,10 +124,10 @@ describe('Wallet (C3)', () => {
         act(() => vi.advanceTimersByTime(60_000));
         expect(holds).toHaveTextContent('00:02:00');
 
-        const deposits = screen.getByRole('region', { name: 'Deposits' });
-
-        expect(deposits).toHaveTextContent('Deposit from MTN MoMo');
-        expect(deposits).toHaveTextContent('Credited');
+        // A credited deposit shows once, as its credit in the history, not again under Deposits.
+        expect(
+            screen.queryByRole('region', { name: 'Deposits' }),
+        ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
             name: 'Transaction history',

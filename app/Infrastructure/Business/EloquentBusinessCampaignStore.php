@@ -231,6 +231,11 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 ->whereIn('id', BusinessApplicationRelease::query()->select('business_application_id'))
                 ->whereNotIn('id', BusinessCampaign::query()->select('business_application_id'))->orderBy('id')->get()
                 ->filter(fn (BusinessApplication $application): bool => $this->releaseRecord($application) !== null);
+            // Before its first listing, a Business's rating is the one staff released with its newest application.
+            foreach ($rating === null ? $released->reverse() : [] as $application) {
+                $rating ??= BusinessApplicationSubmission::query()->where('business_application_id', $application->id)
+                    ->whereKey($application->current_submission_id)->first()?->payload['public_evidence']['rating'] ?? null;
+            }
 
             return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
                 'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
