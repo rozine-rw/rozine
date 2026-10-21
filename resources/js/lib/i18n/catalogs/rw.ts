@@ -2417,6 +2417,14 @@ const rw: Catalog = {
     'auditor.monthly.to_open': 'Amagenzura yo gufungura',
     'auditor.monthly.waiting': '{count} bitegereje',
     'auditor.monthly.not_opened': "{month} · dosiye y'igenzura ntirafungurwa",
+    'auditor.monthly.not_opened_undated': "Dosiye y'igenzura ntirafungurwa",
+    'auditor.desk_review.eyebrow': 'Isuzuma ry’impapuro · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Isuzuma ry’impapuro',
+    'auditor.desk_review.status.disputed': 'Riri gusuzumwa',
+    'auditor.desk_review.status.escalated': 'Ryoherejwe hejuru',
+    'auditor.desk_review.note':
+        'Ikigo cyajuririye iyi raporo. Iguma isomwa gusa kugeza isuzuma rya Rozine rifashe icyemezo.',
+    'auditor.desk_review.view': 'Reba raporo →',
     'auditor.monthly.open': 'Fungura igenzura',
     'auditor.monthly.show_all': 'Erekana amadirishya {count} yose afunguye',
     'auditor.monthly.show_fewer': 'Erekana bike · {shown} kuri {count}',
@@ -2702,6 +2710,12 @@ const rw: Catalog = {
     'auditor.portfolio.yield.empty':
         "Ubwishyu bw'umugabane ku nyungu bugaragara hano bumaze kwishyurwa.",
     'auditor.portfolio.managed.title': 'Imishinga ucunga',
+    'auditor.portfolio.managed.count': '{count} zose',
+    'auditor.portfolio.managed.sub': '{district} · yishyuwe {date}',
+    'auditor.portfolio.managed.funded': 'Byatewe inkunga',
+    'auditor.portfolio.managed.raise': 'Amafaranga yashakwaga',
+    'auditor.portfolio.managed.fee': "Amafaranga y'urubuga",
+    'auditor.portfolio.managed.share': '40% yawe',
     'auditor.portfolio.managed.empty':
         "Nta mishinga uracunga. Tsinda Igenzura ryihuse kugira ngo ube ushinzwe konti y'ubucuruzi.",
     'auditor.calendar.title': "Ingengabihe y'igenzura",

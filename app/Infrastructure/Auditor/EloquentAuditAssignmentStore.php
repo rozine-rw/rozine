@@ -32,6 +32,7 @@ use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\AuditReport;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
@@ -247,7 +248,10 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
         return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision,
             'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
-            'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
+            'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions,
+            // A monthly visit audits the Kigali month before the one it was first dispatched in.
+            'period' => $state['kind'] === 'routine'
+                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null];
     }
 
     /**

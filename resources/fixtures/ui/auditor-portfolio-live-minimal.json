@@ -51,7 +51,9 @@
                 "currency": "RWF",
                 "amount": "0"
             },
-            "lines": []
+            "lines": [],
+            "deals": 0,
+            "managed": []
         },
         "owed": [],
         "owed_complete": true,

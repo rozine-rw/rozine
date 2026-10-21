@@ -10,7 +10,7 @@ use Closure;
  * @phpstan-import-type State from \App\Domain\Auditor\AuditEngagementState
  * @phpstan-import-type Acceptance from \App\Domain\Auditor\AuditEngagementDocuments
  *
- * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>}
+ * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>, period: string|null}
  * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'|'closed'}
  * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
  * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}

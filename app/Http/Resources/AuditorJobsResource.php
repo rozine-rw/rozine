@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Auditor\AuditReportWindow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,6 +23,7 @@ class AuditorJobsResource extends JsonResource
         $page = $this->resource;
         $eligible = [];
         $assigned = [];
+        $monthly = ['windows' => [], 'reports' => [], 'desk_reviews' => []];
         foreach ($page['data'] as $record) {
             $job = self::job($record);
             if ($job['state'] === 'offered') {
@@ -35,14 +37,54 @@ class AuditorJobsResource extends JsonResource
                     'status' => ($report['status'] ?? null) === 'sealed' ? 'awaiting_cosign'
                         : ($job['deadline'] !== null && $job['deadline']['due_at'] <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress'),
                     'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']])];
+                if ($job['kind'] === 'monthly') {
+                    $monthly = self::monthly($monthly, $record, $job);
+                }
             }
         }
 
         return [...self::envelope($page['identity_context_revision']), 'radius_km' => 30, 'flash_hours' => 24,
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
-            'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => null,
+            'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => $monthly,
             'decline_options' => self::declineOptions(), 'outcome' => null, 'links' => self::links($request),
             'pagination' => self::pagination($request, 'jobs.index', $page['next_cursor'], $page['limit'])];
+    }
+
+    /**
+     * Sorts one monthly visit the partner holds into the design's monthly section (L245–318): a
+     * window not yet opened, a report on the clock (sealed by the window's due date, then awaiting
+     * the Business's co-signature), or a report the Business disputed, which sits read-only under
+     * desk review until Rozine resolves it. Cash flow figures are not stated here; the report
+     * itself shows them once its statements step reads them.
+     *
+     * @param  array{windows: list<array<string, mixed>>, reports: list<array<string, mixed>>, desk_reviews: list<array<string, mixed>>}  $monthly
+     * @param  AuditApplication  $record
+     * @param  array{id: string, business: string, deadline: array{due_at: string}|null}  $job
+     * @return array{windows: list<array<string, mixed>>, reports: list<array<string, mixed>>, desk_reviews: list<array<string, mixed>>}
+     */
+    private static function monthly(array $monthly, array $record, array $job): array
+    {
+        $report = $record['work']['report'] ?? null;
+        $period = $record['work']['assignment']['period'];
+        $month = $period === null ? null : $period.'-01';
+        $title = $record['application']['title'] ?? '';
+        $note = $title === '' ? $job['business'] : $title;
+        if ($report === null) {
+            $monthly['windows'][] = ['id' => $job['id'], 'note_title' => $note, 'note_id' => null, 'business' => $job['business'],
+                'month' => $month, 'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']])];
+        } elseif (in_array($report['publication_status'], ['disputed', 'escalated'], true)) {
+            $monthly['desk_reviews'][] = ['id' => $report['id'], 'business' => $job['business'], 'month' => $month,
+                'status' => $report['publication_status'], 'link' => self::link('auditor.reports.show', ['report' => $report['id']])];
+        } else {
+            $due = app(AuditReportWindow::class)->dueAt($period);
+            $sealed = $report['status'] === 'sealed';
+            $monthly['reports'][] = ['id' => $report['id'], 'business' => $job['business'], 'sector' => self::sector($record['work']['business']['industry']),
+                'note_title' => $note, 'due_on' => $due, 'status' => $sealed ? 'awaiting_cosign'
+                    : ($due !== null && $due <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress'),
+                'inflow' => null, 'outflow' => null, 'cover' => null, 'link' => self::link('auditor.reports.show', ['report' => $report['id']])];
+        }
+
+        return $monthly;
     }
 
     /** @return array<string, mixed> */

@@ -108,14 +108,34 @@ describe('Auditor Portfolio', () => {
 
         expect(within(earned).getByText('259,200')).toBeInTheDocument();
         expect(within(earned).getByText('RWF')).toBeInTheDocument();
-        expect(within(earned).getAllByText('—')).toHaveLength(2);
+        expect(within(earned).getAllByText('—')).toHaveLength(1);
         expect(within(earned).getByText('Managed deals')).toBeInTheDocument();
+        expect(within(earned).getByText('2')).toBeInTheDocument();
         expect(within(earned).getByText('Next payout')).toBeInTheDocument();
         expect(
             screen.getByText(
                 'Yield-share payouts appear here once they are paid.',
             ),
         ).toBeInTheDocument();
+
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        expect(within(managed).getByText('2 total')).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Kigali Fresh Foods'),
+        ).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Gasabo · credited 2 Oct 2026'),
+        ).toBeInTheDocument();
+        expect(within(managed).getAllByText('Funded')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 10.8M')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 324K')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 130K')).toHaveLength(2);
+    });
+
+    it('says there are no managed deals before a Flash Audit funds one', () => {
+        render(<AuditorPortfolio {...props(emptyFixture)} />);
+
         expect(
             screen.getByRole('region', { name: 'Managed deals' }),
         ).toHaveTextContent(

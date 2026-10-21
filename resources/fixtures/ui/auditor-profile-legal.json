@@ -33,7 +33,9 @@
                 "currency": "RWF",
                 "amount": "0"
             },
-            "lines": []
+            "lines": [],
+            "deals": 0,
+            "managed": []
         },
         "contact": {
             "email": "diane.uwase@uwaseco.rw",
