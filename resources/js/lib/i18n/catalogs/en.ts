@@ -1687,6 +1687,9 @@ const en = {
     'admin.applications.older': 'Older applications',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Current release review required: a retained quote is not a current approval. Check the release gates below.',
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF': "Coverage below 1.25: cash flow cannot carry the instalment.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE': "An active credit restriction blocks new borrowing.",
+    'admin.applications.term_only': "{term}mo",
     'admin.applications.decision.approve': 'Auto-approve',
     'admin.applications.decision.reject': 'Flag: reject',
     'admin.applications.decision.audit': 'Route to audit',

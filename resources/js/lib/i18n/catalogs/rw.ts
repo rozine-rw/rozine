@@ -1768,6 +1768,9 @@ const rw: Catalog = {
     'admin.applications.older': 'Ubusabe bwa kera',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Hakenewe isuzuma ryo kurekura riri gukorwa: igiciro cyabitswe si icyemezo kiriho. Reba amagenzura yo kurekura ari hepfo.',
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF': "Ubwishingizi buri munsi ya 1,25: amafaranga yinjira ntashobora kwishyura igice.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE': "Inzitizi y'inguzanyo iriho ibuza kongera kuguza.",
+    'admin.applications.term_only': "Amezi {term}",
     'admin.applications.decision.approve': 'Kwemeza byikora',
     'admin.applications.decision.reject': 'Ikimenyetso: kwanga',
     'admin.applications.decision.audit': 'Ohereza mu igenzura',

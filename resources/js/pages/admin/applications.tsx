@@ -69,12 +69,18 @@ function QueueRow({
                     {initialOf(row.business)}
                 </div>
                 <div className="min-w-0">
-                    <Link
-                        href={row.link}
-                        className="block truncate text-[13px] font-bold text-rz-ink after:absolute after:inset-0"
-                    >
-                        {row.business}
-                    </Link>
+                    {row.link === null ? (
+                        <span className="block truncate text-[13px] font-bold text-rz-ink">
+                            {row.business}
+                        </span>
+                    ) : (
+                        <Link
+                            href={row.link}
+                            className="block truncate text-[13px] font-bold text-rz-ink after:absolute after:inset-0"
+                        >
+                            {row.business}
+                        </Link>
+                    )}
                     <div className="truncate text-[11px] text-rz-faint">
                         {row.note_title} · {row.id}
                     </div>
@@ -88,10 +94,14 @@ function QueueRow({
                     {formatRwfShort(row.requested)}
                 </div>
                 <div className="text-[11px] text-rz-faint">
-                    {t('admin.applications.terms', {
-                        term: row.term_months,
-                        rate: row.rate_pct,
-                    })}
+                    {row.rate_pct === null
+                        ? t('admin.applications.term_only', {
+                              term: row.term_months,
+                          })
+                        : t('admin.applications.terms', {
+                              term: row.term_months,
+                              rate: row.rate_pct,
+                          })}
                 </div>
             </div>
             {row.capacity_used_pct === null ? (
@@ -135,7 +145,7 @@ function QueueRow({
                 role="cell"
                 className="relative z-[1] flex flex-col items-end gap-1.5"
             >
-                {actionable ? (
+                {actionable && row.link !== null ? (
                     <>
                         <span
                             title={decisionReason(row.decision)}
@@ -178,7 +188,14 @@ function QueueRow({
                         </div>
                     </>
                 ) : (
-                    <ApplicationStateChip state={row.state} />
+                    <>
+                        <ApplicationStateChip state={row.state} />
+                        {row.state === 'rejected' && (
+                            <span className="max-w-[220px] truncate text-right text-[11px] text-rz-muted">
+                                {decisionReason(row.decision)}
+                            </span>
+                        )}
+                    </>
                 )}
             </div>
         </div>
