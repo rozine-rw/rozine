@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminParties from '@/pages/admin/parties';
 import type { AdminPartiesProps, PartyDetail } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 import licenceFixture from '../../../resources/fixtures/ui/admin-auditors-licence.json';
 import auditorsFixture from '../../../resources/fixtures/ui/admin-auditors.json';
 import frozenFixture from '../../../resources/fixtures/ui/admin-businesses-frozen.json';
@@ -15,7 +16,7 @@ import { inertia, resetInertia } from './inertia-mock';
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as AdminPartiesProps;
+    structuredClone(fixture.props) as AdminPartiesProps & LicenceQueues;
 
 const party = (fixture: { props: unknown }): PartyDetail => {
     const detail = props(fixture).party;

@@ -13,6 +13,7 @@ import {
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AdminPartiesProps, AdminSection, PartyKind } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 
 const SECTION: Record<PartyKind, AdminSection> = {
     business: 'businesses',
@@ -28,7 +29,7 @@ const SECTION: Record<PartyKind, AdminSection> = {
  * Audit Partners also see the licences waiting for review, queued above their directory.
  * Filtering and sorting are server queries; the page never re-sorts or re-counts rows itself.
  */
-export default function AdminParties(props: AdminPartiesProps) {
+export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
     const { t } = useTranslation();
     const format = useStatFormatter();
     const section = SECTION[props.kind];
