@@ -1928,15 +1928,20 @@ const fr: Catalog = {
         "ex. MTN confirme l'annulation complète de MM-88213 ; destination revérifiée.",
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
-    'admin.audit_reports.title': "Rapports d'audit",
+    'admin.audit_reports.title': 'Suivi de conformité des audits mensuels',
     'admin.audit_reports.caption':
         "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+    'admin.audit_reports.feed.title': 'Récemment audités et publiés',
+    'admin.audit_reports.feed.audited':
+        '✓ Audité sur place par {auditor} · {licence}',
+    'admin.audit_reports.feed.empty':
+        'Aucun rapport mensuel audité pour le moment.',
     'admin.audit_reports.filter': "Vues des rapports d'audit",
     'admin.audit_reports.table': "Rapports d'audit",
-    'admin.audit_reports.empty_title': 'Aucun audit dans cette vue',
+    'admin.audit_reports.empty_title': 'Rien dans cette vue.',
     'admin.audit_reports.empty_body':
         "Les audits apparaissent ici dès qu'un partenaire d'audit les accepte.",
-    'admin.audit_reports.monthly': 'Audit mensuel · {month}',
+    'admin.audit_reports.monthly': 'Audit mensuel',
     'admin.audit_reports.flash': 'Audit flash',
     'admin.audit_reports.due': 'Échéance {date}',
     'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
@@ -1946,12 +1951,12 @@ const fr: Catalog = {
     'admin.audit_reports.remind_business':
         'Relancer {business} pour cosigner ou contester',
     'admin.audit_reports.reminded': 'Relancé le {date}',
-    'admin.audit_reports.pdf': 'PDF',
+    'admin.audit_reports.pdf': 'Générer le PDF',
     'admin.audit_reports.pdf_named':
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
     'admin.audit_reports.stats.awaiting_cosign': 'En attente de cosignature',
-    'admin.audit_reports.stats.overdue': 'Audits en retard',
+    'admin.audit_reports.stats.overdue': 'SLA dépassé',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
@@ -1959,7 +1964,7 @@ const fr: Catalog = {
     'admin.audit_reports.chip.published': 'Publiés',
     'admin.audit_reports.chip.disputed': 'Contestés',
     'admin.audit_reports.col.business': 'Entreprise',
-    'admin.audit_reports.col.due': 'Échéance',
+    'admin.audit_reports.col.period': 'Période',
     'admin.audit_reports.col.partner': "Partenaire d'audit",
     'admin.audit_reports.col.status': 'Statut',
     'admin.audit_reports.col.variance': 'Écart',
