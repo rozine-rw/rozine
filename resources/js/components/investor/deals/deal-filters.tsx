@@ -125,7 +125,7 @@ export function IndustryTabs({ industries, className }: IndustryTabsProps) {
                                 'text-[11px]',
                                 entry.active
                                     ? 'font-bold text-rz-ink opacity-55'
-                                    : 'font-semibold text-[#8b95a8]',
+                                    : 'font-semibold text-[#636e86]',
                             )}
                         >
                             {entry.count}

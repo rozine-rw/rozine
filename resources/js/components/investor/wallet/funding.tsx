@@ -427,7 +427,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     <dt className="text-xs text-rz-secondary">
                         {t('investor.wallet.c3.credited_on_success')}
                     </dt>
-                    <dd className="text-xs font-bold text-[#17795a] dark:text-[#3fcda0]">
+                    <dd className="text-xs font-bold text-[#157357] dark:text-[#3fcda0]">
                         {quote === null ? '—' : formatRwf(quote.credited)}
                     </dd>
                 </div>

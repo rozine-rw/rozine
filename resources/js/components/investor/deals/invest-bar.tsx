@@ -124,7 +124,7 @@ export function InvestBar({
     const soldOut = deal.lifecycle !== 'live' || deal.restriction !== null;
     const phone = size === 'phone';
     const micro = cn(
-        'font-bold tracking-[.08em] whitespace-nowrap text-[#7c869a] uppercase dark:text-rz-muted',
+        'font-bold tracking-[.08em] whitespace-nowrap text-[#636e86] uppercase dark:text-rz-muted',
         phone ? 'text-[9.5px] leading-3' : 'text-[10px] leading-[13px]',
     );
     const value = cn(
@@ -211,7 +211,7 @@ export function InvestBar({
                         <span
                             aria-hidden
                             className={cn(
-                                'flex items-center border-l border-[#eef2f8] bg-rz-surface-sunken font-bold tracking-[.08em] whitespace-nowrap text-[#7c869a] dark:border-rz-divider dark:text-rz-muted',
+                                'flex items-center border-l border-[#eef2f8] bg-rz-surface-sunken font-bold tracking-[.08em] whitespace-nowrap text-[#636e86] dark:border-rz-divider dark:text-rz-muted',
                                 phone
                                     ? 'h-7 px-2 text-[9.5px]'
                                     : 'h-[30px] px-[9px] text-[10px]',
@@ -223,7 +223,7 @@ export function InvestBar({
                     {raiseOpen(deal.lifecycle) && (
                         <span
                             className={cn(
-                                'truncate whitespace-nowrap text-[#9aa3b4] dark:text-rz-faint',
+                                'truncate whitespace-nowrap text-[#636e86] dark:text-rz-faint',
                                 phone ? 'text-[11px]' : 'text-[11.5px]',
                             )}
                         >
@@ -243,7 +243,7 @@ export function InvestBar({
                 >
                     <span
                         className={cn(
-                            'font-bold tracking-[.08em] text-[#7c869a] dark:text-rz-muted',
+                            'font-bold tracking-[.08em] text-[#636e86] dark:text-rz-muted',
                             phone ? 'text-[9.5px]' : 'text-[10px]',
                         )}
                     >
@@ -293,7 +293,7 @@ export function InvestBar({
                 <span
                     aria-hidden
                     className={cn(
-                        'self-end font-bold text-[#a3abbb]',
+                        'self-end font-bold text-[#636e86]',
                         phone ? 'pl-1.5 text-sm' : 'pl-2 text-[15px]',
                     )}
                 >
@@ -308,7 +308,7 @@ export function InvestBar({
                 <span
                     aria-hidden
                     className={cn(
-                        'self-end font-bold text-[#a3abbb]',
+                        'self-end font-bold text-[#636e86]',
                         phone ? 'pr-1.5 text-sm' : 'pr-2 text-[15px]',
                     )}
                 >

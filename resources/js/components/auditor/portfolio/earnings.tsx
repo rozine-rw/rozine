@@ -48,7 +48,7 @@ export function SourcedDeals() {
                 >
                     {t('auditor.portfolio.sourced.title')}
                 </h2>
-                <span className="shrink-0 text-[10px] font-bold tracking-[.06em] text-[#c2661f] uppercase dark:text-[#e3b56a]">
+                <span className="shrink-0 text-[10px] font-bold tracking-[.06em] text-[#a4521a] uppercase dark:text-[#e3b56a]">
                     {t('auditor.portfolio.sourced.tag')}
                 </span>
             </div>
@@ -92,7 +92,7 @@ export function EarningsSummary({ earnings }: { earnings: AuditorEarnings }) {
                         key={key}
                         className="min-w-0 flex-1 rounded-[10px] bg-white/15 px-[11px] py-[9px]"
                     >
-                        <dt className="text-[10px] font-bold whitespace-nowrap text-white/75 uppercase">
+                        <dt className="text-[10px] font-bold whitespace-nowrap text-white uppercase">
                             {t(`auditor.portfolio.earnings.${key}`)}
                         </dt>
                         <dd className="mt-[3px] text-[14px] font-bold">—</dd>

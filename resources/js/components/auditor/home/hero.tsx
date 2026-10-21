@@ -27,8 +27,8 @@ function GlassTile({
     children: ReactNode;
 }) {
     return (
-        <div className="min-w-0 flex-1 rounded-xl bg-white/15 px-[11px] py-2.5">
-            <p className="text-[10px] font-bold tracking-[.03em] whitespace-nowrap text-white/78 uppercase">
+        <div className="min-w-0 flex-1 rounded-xl bg-white/10 px-[11px] py-2.5">
+            <p className="text-[10px] font-bold tracking-[.03em] whitespace-nowrap text-white uppercase">
                 {label}
             </p>
             <div className="mt-[3px] flex items-baseline gap-[3px] text-white">
@@ -103,21 +103,21 @@ export function Hero({
         .join(' · ');
 
     return (
-        <div className="relative overflow-hidden rounded-[20px] bg-[#c2661f] p-[17px] shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)]">
+        <div className="relative overflow-hidden rounded-[20px] bg-[#8f4a14] p-[17px] shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)]">
             <div className="relative flex items-center gap-[13px]">
                 <Avatar
                     auditor={auditor}
                     className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-[1.5px] border-white/35 text-[18px] font-bold text-white/85 shadow-[0_6px_16px_-6px_rgba(0,0,0,.4)]"
                 />
                 <div className="min-w-0 flex-1">
-                    <p className="text-[11.5px] font-medium text-white/82">
+                    <p className="text-[11.5px] font-medium text-white/90">
                         {greeting}
                     </p>
                     <h1 className="truncate text-[17px] font-bold text-white">
                         {auditor.name}
                     </h1>
                     {affiliation !== '' && (
-                        <p className="mt-0.5 truncate text-[11px] text-white/80">
+                        <p className="mt-0.5 truncate text-[11px] text-white/90">
                             {affiliation}
                         </p>
                     )}
@@ -154,7 +154,7 @@ export function Hero({
                         <span className="text-[15px] font-bold">—</span>
                     ) : (
                         <>
-                            <span className="text-[10px] font-bold opacity-80">
+                            <span className="text-[10px] font-bold">
                                 {t('common.currency.rwf')}
                             </span>
                             <span className="text-[15px] font-bold">

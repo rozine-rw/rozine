@@ -21,8 +21,8 @@ const ROLES: StaffRole[] = [
 /** The design's role colours on the column heads. */
 const ROLE_TEXT: Record<StaffRole, string> = {
     superadmin: 'text-[#1e3aff] dark:text-[#99a3ff]',
-    compliance: 'text-[#c2661f] dark:text-[#f0a060]',
-    approver: 'text-[#1d9e75] dark:text-[#3fcda0]',
+    compliance: 'text-[#a4521a] dark:text-[#f0a060]',
+    approver: 'text-[#157357] dark:text-[#3fcda0]',
     treasury: 'text-[#1428a8] dark:text-[#99a3ff]',
     analyst: 'text-[#7c3aed] dark:text-[#b199fb]',
 };
@@ -101,8 +101,8 @@ export function PermissionMatrix({ rows }: { rows: PermissionMatrixRow[] }) {
                                     className={cn(
                                         'text-center text-[13px] font-extrabold',
                                         granted
-                                            ? 'text-[#1d9e75] dark:text-[#3fcda0]'
-                                            : 'text-[#cbd5e6] dark:text-rz-muted',
+                                            ? 'text-[#157357] dark:text-[#3fcda0]'
+                                            : 'text-rz-faint dark:text-rz-muted',
                                     )}
                                 >
                                     <span aria-hidden>

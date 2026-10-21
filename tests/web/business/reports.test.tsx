@@ -46,6 +46,9 @@ describe('Business Reports', () => {
             screen.getByRole('tabpanel', { name: 'Published' }),
         );
 
+        /* The panel holds a real list, so each report reads as an item of it. */
+        expect(list.getByRole('list')).toBeInTheDocument();
+
         expect(
             list.getByRole('link', {
                 name: /^May 2026/,

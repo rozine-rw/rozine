@@ -451,7 +451,7 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
                                                           POSITIVE_TEXT,
                                                       )
                                                     : step.state === 'current'
-                                                      ? 'border-[#c2661f] bg-[#c2661f] text-white'
+                                                      ? 'border-[#a4521a] bg-[#a4521a] text-white'
                                                       : 'border-[#f0dcb8] bg-rz-surface dark:border-rz-border',
                                             )}
                                         >
@@ -508,7 +508,10 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
                             {t('investor.deal.reported_by_business')}
                         </SourceBadge>
                     </div>
-                    <div className="rz-hscroll -mx-5 mt-2.5 flex gap-2.5 overflow-x-auto px-5 lg:-mx-[18px] lg:px-[18px]">
+                    <div
+                        tabIndex={0}
+                        className="rz-hscroll -mx-5 mt-2.5 flex gap-2.5 overflow-x-auto px-5 lg:-mx-[18px] lg:px-[18px]"
+                    >
                         {holding.photos.map((photo) => (
                             <figure
                                 key={photo.caption}

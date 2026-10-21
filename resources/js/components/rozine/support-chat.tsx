@@ -19,7 +19,7 @@ const STATUS_TONE: Record<ComplaintStatus, string> = {
         'bg-[#fff4e5] text-[#a35a00] dark:bg-[rgba(255,170,60,.14)] dark:text-[#ffb35c]',
     answered: 'bg-rz-accent-soft text-rz-accent-app-text',
     resolved:
-        'bg-[#e8f6f0] text-[#17795a] dark:bg-[rgba(63,205,160,.14)] dark:text-[#3fcda0]',
+        'bg-[#e8f6f0] text-[#157357] dark:bg-[rgba(63,205,160,.14)] dark:text-[#3fcda0]',
 };
 
 /** The bubble icon the design's support button and header share. */
@@ -149,7 +149,7 @@ function MessageForm({
             {form.errors.body !== undefined && (
                 <p
                     role="alert"
-                    className="mt-1.5 px-1 text-[12px] font-semibold text-[#e5484d]"
+                    className="mt-1.5 px-1 text-[12px] font-semibold text-[#b3352a]"
                 >
                     {form.errors.body}
                 </p>

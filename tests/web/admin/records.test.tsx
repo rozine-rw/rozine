@@ -290,6 +290,12 @@ describe('Event log', () => {
             'aria-pressed',
             'true',
         );
+        /* The empty state sits outside the table, which holds only rows. */
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Audit trail' }),
+            ).queryByRole('button', { name: 'Clear filters' }),
+        ).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Clear filters' }));
         await user.click(screen.getByRole('button', { name: 'Clear' }));
         expect(inertia.reload).toEqual([
@@ -415,4 +421,28 @@ describe('Event log', () => {
             screen.getByRole('link', { name: 'Download export' }),
         ).toHaveAttribute('href', '/exports/1');
     });
+});
+
+describe('Table structure', () => {
+    it.each([
+        ['Ledger', () => <AdminLedger {...ledgerProps(ledgerFixture)} />],
+        ['Audit trail', () => <AdminEvents {...eventProps(eventsFixture)} />],
+    ])(
+        'keeps the %s title and search outside the rows, in a scroller a keyboard can reach',
+        (name, page) => {
+            render(page());
+
+            const table = screen.getByRole('table', { name });
+            const scroller = screen.getByRole('group', { name });
+
+            expect(scroller).toHaveAttribute('tabindex', '0');
+            expect(scroller).toContainElement(table);
+            expect(within(scroller).getByRole('search')).toBeInTheDocument();
+            expect(within(table).queryByRole('search')).not.toBeInTheDocument();
+            expect(
+                within(table).queryByRole('heading'),
+            ).not.toBeInTheDocument();
+            expect(within(table).getAllByRole('row').length).toBeGreaterThan(1);
+        },
+    );
 });

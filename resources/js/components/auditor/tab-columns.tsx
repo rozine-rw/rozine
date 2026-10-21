@@ -43,6 +43,7 @@ export function TabColumns({
             className={COLUMN}
         >
             <div
+                tabIndex={0}
                 className={cn(
                     'rz-scroll lg:flex-1 lg:overflow-y-auto',
                     backdrop && 'max-lg:hidden',

@@ -47,29 +47,28 @@ export function ContactSection({
                     <div
                         key={row.key}
                         className={cn(
-                            'flex items-center gap-3 border-b px-[15px] py-3 last:border-b-0',
+                            'relative border-b py-3 pr-[15px] pl-[57px] last:border-b-0',
                             DIVIDER,
                         )}
                     >
-                        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
-                            <Icon name={row.icon} tone="amber" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                            <dt className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                                {t(`auditor.profile.contact.${row.key}`)}
-                            </dt>
-                            <dd
-                                className={cn(
-                                    'mt-0.5 truncate text-[13px] font-semibold',
-                                    row.value === null
-                                        ? 'text-rz-muted'
-                                        : 'text-rz-ink',
-                                )}
-                            >
-                                {row.value ??
-                                    t('auditor.profile.contact.not_provided')}
-                            </dd>
-                        </div>
+                        <dt className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                            {/* The mark sits in the term so the row keeps one term and one description. */}
+                            <span className="absolute top-1/2 left-[15px] flex size-[30px] -translate-y-1/2 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
+                                <Icon name={row.icon} tone="amber" />
+                            </span>
+                            {t(`auditor.profile.contact.${row.key}`)}
+                        </dt>
+                        <dd
+                            className={cn(
+                                'mt-0.5 truncate text-[13px] font-semibold',
+                                row.value === null
+                                    ? 'text-rz-muted'
+                                    : 'text-rz-ink',
+                            )}
+                        >
+                            {row.value ??
+                                t('auditor.profile.contact.not_provided')}
+                        </dd>
                     </div>
                 ))}
             </dl>

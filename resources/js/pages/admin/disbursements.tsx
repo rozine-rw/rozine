@@ -39,7 +39,7 @@ const OPEN_LABEL: Record<C3DisbursementState, 'check' | 'open' | 'inspect'> = {
 };
 
 const OPEN_TONE: Partial<Record<C3DisbursementState, string>> = {
-    failed_closing: 'bg-[#e5484d] text-white',
+    failed_closing: 'bg-[#b3352a] text-white',
 };
 
 function Row({ row }: { row: C3DisbursementRow }) {

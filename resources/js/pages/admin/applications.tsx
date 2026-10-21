@@ -170,7 +170,7 @@ function QueueRow({
                                             name: row.business,
                                         },
                                     )}
-                                    className="rounded-lg bg-[#1d9e75] px-[11px] py-1.5 text-[11.5px] font-semibold text-white"
+                                    className="rounded-lg bg-[#157357] px-[11px] py-1.5 text-[11.5px] font-semibold text-white"
                                 >
                                     {t('admin.applications.approve')}
                                 </Link>

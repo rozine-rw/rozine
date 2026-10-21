@@ -21,7 +21,7 @@ function PeriodLabel({ period }: { period: EvidencePeriod }) {
     const { t, locale } = useTranslation();
 
     return (
-        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/70">
+        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/90">
             {t('business.apply.business.period', {
                 from: monthLabel(period.from_month, locale),
                 through: monthLabel(period.through_month, locale),
@@ -251,7 +251,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                                         {t(`business.apply.business.${key}`)}
                                     </p>
                                     <p
-                                        className={`mt-[3px] text-[13px] font-bold whitespace-nowrap ${value === null ? 'text-white/70' : tone}`}
+                                        className={`mt-[3px] text-[13px] font-bold whitespace-nowrap ${value === null ? 'text-white/90' : tone}`}
                                     >
                                         {figure(value)}
                                     </p>
@@ -331,7 +331,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                 <div className="mt-3 rounded-2xl border border-[#cdeddb] bg-rz-surface p-4 dark:border-rz-border">
                     <p className="text-[11px] font-bold tracking-[.02em] text-[#3d7a68] uppercase dark:text-rz-accent-app-text">
                         {t('business.apply.business.capacity')}{' '}
-                        <span className="text-[10.5px] opacity-80">
+                        <span className="text-[10.5px]">
                             {t('business.apply.business.capacity_basis')}
                         </span>
                     </p>

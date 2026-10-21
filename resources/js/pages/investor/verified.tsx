@@ -49,7 +49,7 @@ export default function InvestorVerified({
                         <p className="text-[11px] font-semibold text-rz-secondary uppercase">
                             {t('investor.verified.kyc')}
                         </p>
-                        <p className="mt-1 text-[15px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
+                        <p className="mt-1 text-[15px] font-semibold text-[#157357] dark:text-[#3fcda0]">
                             {t('investor.verified.verified')}
                         </p>
                     </div>

@@ -23,8 +23,8 @@ import type {
     TodayKpi,
 } from '@/types/admin';
 
-const RED = 'text-[#e5484d] dark:text-[#ff6b6f]';
-const GREEN = 'text-[#1d9e75] dark:text-[#3fcda0]';
+const RED = 'text-[#b3352a] dark:text-[#ff6b6f]';
+const GREEN = 'text-[#157357] dark:text-[#3fcda0]';
 
 /** The trend line under each figure, and when it is a warning. */
 function useTrend(): (kpi: TodayKpi) => { text: string; tone?: string } {

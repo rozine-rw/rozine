@@ -64,7 +64,10 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
     return (
         <article className="overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
             <div className="relative h-[138px] lg:hidden">
-                <div className="rz-hscroll absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
+                <div
+                    tabIndex={0}
+                    className="rz-hscroll absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+                >
                     {BANNERS.map((banner) => (
                         <div
                             key={banner.glyph}

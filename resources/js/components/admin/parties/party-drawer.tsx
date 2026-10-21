@@ -59,12 +59,12 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
 };
 
 const SECTION =
-    'text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted';
+    'text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted';
 const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface';
 const VERIFY =
-    'h-[38px] flex-1 rounded-[10px] bg-[#1d9e75] text-[12.5px] font-bold text-white';
+    'h-[38px] flex-1 rounded-[10px] bg-[#157357] text-[12.5px] font-bold text-white';
 const REJECT =
-    'h-[38px] flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface text-[12.5px] font-bold text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]';
+    'h-[38px] flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface text-[12.5px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]';
 
 function ListDetail({ detail }: { detail: PartyListRow['detail'] }) {
     const { t } = useTranslation();
@@ -199,7 +199,7 @@ export function PartyDrawer({
                                 </MicroBadge>
                             )}
                         </div>
-                        <p className="mt-0.5 truncate text-[12px] text-[#7b8699] dark:text-rz-muted">
+                        <p className="mt-0.5 truncate text-[12px] text-[#636e86] dark:text-rz-muted">
                             <span className="uppercase">
                                 {t(`admin.parties.type.${party.kind}`)}
                             </span>{' '}
@@ -240,6 +240,7 @@ export function PartyDrawer({
 
             <div
                 role="tabpanel"
+                tabIndex={0}
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
             >
                 {tab === 'overview' && (
@@ -492,7 +493,7 @@ export function PartyDrawer({
                                                 key={key}
                                                 className="rounded-[10px] border border-[#f0e6d4] bg-[#faf7f1] px-[11px] py-[9px] dark:border-rz-border dark:bg-rz-surface-sunken"
                                             >
-                                                <dt className="text-[10px] font-bold text-[#a1875a] uppercase dark:text-[#f0a060]">
+                                                <dt className="text-[10px] font-bold text-[#7a5d33] uppercase dark:text-[#f0a060]">
                                                     {t(
                                                         `admin.parties.licence_field.${key}`,
                                                     )}
@@ -554,7 +555,7 @@ export function PartyDrawer({
                             </h3>
                             {party.freeze !== null && (
                                 <div className="mb-3 rounded-xl border border-[#fdeaea] bg-rz-surface px-3.5 py-3 dark:border-[rgba(255,107,111,.25)]">
-                                    <div className="text-[13px] font-bold text-[#e5484d] dark:text-[#ff6b6f]">
+                                    <div className="text-[13px] font-bold text-[#b3352a] dark:text-[#ff6b6f]">
                                         {t('admin.parties.frozen_by', {
                                             actor: party.freeze.actor,
                                             at: formatTimestamp(
@@ -585,7 +586,7 @@ export function PartyDrawer({
                                 <button
                                     type="button"
                                     onClick={() => open('freeze', freeze)}
-                                    className="h-[46px] w-full rounded-xl border border-[#fdeaea] bg-[rgba(255,77,79,.08)] text-[13.5px] font-bold text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
+                                    className="h-[46px] w-full rounded-xl border border-[#fdeaea] bg-[rgba(255,77,79,.08)] text-[13.5px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
                                 >
                                     {t('admin.parties.freeze')}
                                 </button>
@@ -594,7 +595,7 @@ export function PartyDrawer({
                                 <button
                                     type="button"
                                     onClick={() => open('release', release)}
-                                    className="h-[46px] w-full rounded-xl border border-[#1d9e75] bg-[#1d9e75] text-[13.5px] font-bold text-white"
+                                    className="h-[46px] w-full rounded-xl border border-[#157357] bg-[#157357] text-[13.5px] font-bold text-white"
                                 >
                                     {t('admin.parties.release')}
                                 </button>

@@ -36,7 +36,7 @@ const STAT_ACCENT: Record<NotesStatKey, number> = {
 const STATE_TONE: Record<NoteState, string> = {
     live: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-[#99a3ff]',
     funded: 'bg-[rgba(20,40,168,.10)] text-[#1428a8] dark:text-[#99a3ff]',
-    repaying: 'bg-[rgba(29,158,117,.12)] text-[#17795a] dark:text-[#4cc497]',
+    repaying: 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#4cc497]',
     failed: 'bg-[rgba(229,72,77,.10)] text-rz-danger-text',
 };
 

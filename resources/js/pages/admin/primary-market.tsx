@@ -35,7 +35,7 @@ const STAT_ACCENT: Record<PrimaryMarketStatKey, number> = {
 /** Green once the raise is full, blue while it fills (design `pctColor`). */
 const fillColour = (raise: PrimaryMarketRaise): [string, string] =>
     Number(raise.funded_pct) >= 100
-        ? ['bg-[#1d9e75]', 'text-[#1d9e75]']
+        ? ['bg-[#1d9e75]', 'text-[#157357]']
         : ['bg-[#1e3aff]', 'text-[#1e3aff] dark:text-[#99a3ff]'];
 
 /** "Funding trend": the cash Investors committed per Kigali day, as the server buckets it. */
@@ -97,7 +97,7 @@ function Row({ raise }: { raise: PrimaryMarketRaise }) {
                         {raise.business}
                     </span>
                     {raise.lifecycle !== 'live' && (
-                        <span className="shrink-0 rounded-[5px] bg-[rgba(210,120,45,.14)] px-1.5 py-0.5 text-[9px] font-bold text-[#c2661f] uppercase">
+                        <span className="shrink-0 rounded-[5px] bg-[rgba(210,120,45,.14)] px-1.5 py-0.5 text-[9px] font-bold text-[#a4521a] uppercase">
                             {t(`admin.primary.lifecycle.${raise.lifecycle}`)}
                         </span>
                     )}

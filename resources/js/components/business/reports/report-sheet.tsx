@@ -92,7 +92,10 @@ export function ReportSheet({
                     <span aria-hidden>×</span>
                 </Link>
             </div>
-            <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-3.5 pb-[18px]">
+            <div
+                tabIndex={0}
+                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-3.5 pb-[18px]"
+            >
                 <dl className="grid grid-cols-3 gap-2">
                     {(
                         [

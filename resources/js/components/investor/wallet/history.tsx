@@ -315,7 +315,7 @@ function StatementExport({
             key: 'csv',
             link: exports.csv,
             label: t('investor.wallet.tx.csv'),
-            tint: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         },
     ];
 

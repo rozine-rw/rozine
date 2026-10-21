@@ -8,14 +8,14 @@ import type { C3DisbursementDetail, Tone } from '@/types/admin';
 import type { Receipt } from '@/types/settlement';
 
 const HEADING =
-    'mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted';
+    'mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted';
 
 const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface px-4 py-3';
 
 const NOTE = 'mt-2.5 rounded-xl px-3.5 py-2.5 text-[12.5px] leading-[1.5]';
 
 const NOTE_TONE = {
-    info: 'bg-[rgba(30,58,255,.07)] text-[#5f6fc8] dark:text-[#99a3ff]',
+    info: 'bg-[rgba(30,58,255,.07)] text-[#4f5fb8] dark:text-[#99a3ff]',
     warn: 'bg-[rgba(194,102,31,.09)] text-[#a55418] dark:text-[#f0a060]',
     block: 'border border-[#fdeaea] bg-[rgba(255,77,79,.06)] text-[#c4373c] dark:border-[rgba(255,107,111,.25)] dark:text-[#ff6b6f]',
 } as const;

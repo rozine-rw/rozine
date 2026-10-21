@@ -57,7 +57,7 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
                     className={cn(
                         'truncate text-[11px]',
                         row.status === 'failed'
-                            ? 'font-semibold text-[#e5484d] dark:text-[#ff6b6f]'
+                            ? 'font-semibold text-[#b3352a] dark:text-[#ff6b6f]'
                             : 'text-rz-faint',
                     )}
                 >

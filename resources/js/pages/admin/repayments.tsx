@@ -57,7 +57,7 @@ function Row({ row }: { row: RepaymentRow }) {
                     className={cn(
                         'shrink-0 rounded-lg px-3 py-1.5 text-[11.5px] font-semibold',
                         row.state === 'exception'
-                            ? 'bg-[#e5484d] text-white'
+                            ? 'bg-[#b3352a] text-white'
                             : 'border border-rz-hairline bg-rz-surface text-rz-slate',
                     )}
                 >

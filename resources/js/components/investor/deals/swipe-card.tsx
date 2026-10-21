@@ -153,7 +153,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             <span className="text-[11px] font-bold text-rz-ink">
                                 {formatCount(deal.investors)}
                             </span>
-                            <span className="text-[11px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
+                            <span className="text-[11px] font-semibold text-[#157357] dark:text-[#3fcda0]">
                                 {t(
                                     deal.investors === 1
                                         ? 'investor.deals.investors_one'

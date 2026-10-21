@@ -198,7 +198,7 @@ export function KycReview({
                                         action: approve,
                                     })
                                 }
-                                className="h-[42px] flex-1 rounded-[11px] bg-[#1d9e75] text-[13.5px] font-bold text-white"
+                                className="h-[42px] flex-1 rounded-[11px] bg-[#157357] text-[13.5px] font-bold text-white"
                             >
                                 {t('admin.kyc.approve')}
                             </button>

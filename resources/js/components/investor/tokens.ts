@@ -40,7 +40,7 @@ export const RATING_STYLE: Record<
     { text: string; plate: string; tint: string }
 > = {
     strong: {
-        text: 'text-[#17795a] dark:text-[#3fcda0]',
+        text: 'text-[#157357] dark:text-[#3fcda0]',
         plate: '#0b5f30',
         tint: 'bg-[rgba(29,158,117,.10)] dark:bg-[rgba(63,205,160,.14)]',
     },
@@ -62,7 +62,7 @@ export const RATING_STYLE: Record<
 };
 
 /** Section-title green used for yields, "GET BACK" and incoming money. */
-export const POSITIVE_TEXT = 'text-[#17795a] dark:text-[#3fcda0]';
+export const POSITIVE_TEXT = 'text-[#157357] dark:text-[#3fcda0]';
 
 /** Warm text on the amber callouts (arrears, concentration, overdue report). */
 export const AMBER_TEXT = 'text-[#8a4a14] dark:text-[#f0a060]';

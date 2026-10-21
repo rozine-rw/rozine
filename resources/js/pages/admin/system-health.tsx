@@ -121,7 +121,7 @@ function SignalCard({ signal }: { signal: HealthSignal }) {
                 )}
             />
             <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 truncate text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
+                <span className="min-w-0 truncate text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
                     {t(`admin.health.${signal.key}.label`)}
                 </span>
                 <Chip tone={STATUS_TONE[signal.status]}>
@@ -138,7 +138,7 @@ function SignalCard({ signal }: { signal: HealthSignal }) {
             >
                 {value}
             </div>
-            <div className="mt-[3px] truncate text-[11.5px] text-[#8a94a8] dark:text-rz-muted">
+            <div className="mt-[3px] truncate text-[11.5px] text-[#636e86] dark:text-rz-muted">
                 {detail}
             </div>
             {rec !== null && (

@@ -48,7 +48,7 @@ export function EarningsSection({ earnings }: { earnings: AuditorEarnings }) {
                     </span>
                 </p>
                 <dl className="mt-3 rounded-[10px] bg-white/15 px-[11px] py-[9px]">
-                    <dt className="text-[10px] font-bold text-white/75 uppercase">
+                    <dt className="text-[10px] font-bold text-white uppercase">
                         {t('auditor.profile.earnings.total')}
                     </dt>
                     <dd className="mt-[3px] text-[14px] font-bold">
@@ -129,7 +129,7 @@ export function EarningsSection({ earnings }: { earnings: AuditorEarnings }) {
                                         )}
                                     </p>
                                 </div>
-                                <span className="shrink-0 text-[13px] font-bold text-[#17795a] dark:text-[#5fd0a5]">
+                                <span className="shrink-0 text-[13px] font-bold text-[#157357] dark:text-[#5fd0a5]">
                                     {formatRwf(line.amount)}
                                 </span>
                             </div>

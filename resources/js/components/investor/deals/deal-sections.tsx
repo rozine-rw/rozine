@@ -290,6 +290,7 @@ export function PhotosRow({
             }
         >
             <div
+                tabIndex={0}
                 className={cn(
                     'rz-hscroll flex overflow-x-auto',
                     variant === 'phone'

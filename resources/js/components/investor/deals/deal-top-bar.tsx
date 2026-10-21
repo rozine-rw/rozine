@@ -185,7 +185,7 @@ export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
                             {formatRwf(wallet.available)}
                         </span>
                         {payout !== null && (
-                            <span className="truncate text-[10px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
+                            <span className="truncate text-[10px] font-semibold text-[#157357] dark:text-[#3fcda0]">
                                 {payout}
                             </span>
                         )}
@@ -229,7 +229,7 @@ export function DeskTopBar({
                             {formatRwf(wallet.available)}
                         </span>
                         {payout !== null && (
-                            <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#17795a] dark:text-[#3fcda0]">
+                            <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#157357] dark:text-[#3fcda0]">
                                 {payout}
                             </span>
                         )}
