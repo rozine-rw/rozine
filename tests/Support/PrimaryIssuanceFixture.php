@@ -27,9 +27,9 @@ final class PrimaryIssuanceFixture
      * @param  array<int, string>  $buyers
      * @return array{campaign: FundedCampaign, intent: DisbursementIntent, observe: \Closure(string): IssueInstruction}
      */
-    public static function approved(bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
+    public static function approved(bool $settle = true, array $units = ['1080', '1080'], array $buyers = [], ?string $live = null): array
     {
-        ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: $units, requoted: [0], buyers: $buyers);
+        ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: $units, requoted: [0], buyers: $buyers, live: $live);
         $adapter = new class(app(EloquentFundedCampaigns::class), app(SyntheticDisbursementSources::class), $settle) implements FundedCampaigns
         {
             public function __construct(private FundedCampaigns $retained, private FundedCampaigns $current, private bool $settle) {}
@@ -96,9 +96,10 @@ final class PrimaryIssuanceFixture
      * @param  array<int, string>  $buyers
      * @return array{campaign: FundedCampaign, instruction: IssueInstruction}
      */
-    public static function close(string $effectiveAt = '2026-01-30T22:30:00+00:00', bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
+    public static function close(string $effectiveAt = '2026-01-30T22:30:00+00:00', bool $settle = true, array $units = ['1080', '1080'], array $buyers = [],
+        ?string $live = null): array
     {
-        $approved = self::approved($settle, $units, $buyers);
+        $approved = self::approved($settle, $units, $buyers, $live);
 
         return ['campaign' => $approved['campaign'], 'instruction' => $approved['observe']($effectiveAt)];
     }

@@ -39,14 +39,17 @@ final class PrimaryHoldingFixture
      * @param  list<string>  $units  one real purchase per entry, in order
      * @param  list<int>  $requoted  indexes of purchases that are requoted once before confirming
      * @param  array<int, string>  $buyers  purchase index to a buyer key; purchases sharing a key share one Investor
+     * @param  string|null  $live  the ID of a campaign already listed, used instead of a new one
      * @return array{campaign: BusinessCampaign, commitments: list<PrimaryCommitment>}
      */
-    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = []): array
+    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = [], ?string $live = null): array
     {
         InvestorWalletFixture::policy(maximum: null);
-        // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
-        Cache::flush();
-        $campaign = PrimaryReservationFixture::campaign();
+        if ($live === null) {
+            // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
+            Cache::flush();
+        }
+        $campaign = $live === null ? PrimaryReservationFixture::campaign() : BusinessCampaign::query()->findOrFail($live);
         $checkout = app(PrimaryCheckout::class);
         $commitments = [];
         $investors = [];
