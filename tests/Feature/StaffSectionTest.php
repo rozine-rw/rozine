@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Controllers\StaffSectionController;
+use App\Models\BusinessCampaign;
+use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -59,6 +62,42 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
                 ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money('0')]]));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('section', 'finance')->missing('figures')->missing('streams'));
+});
+
+test('Engines and Ratings show underwriters the engine settings and the scorecard, and nothing to anyone else', function (): void {
+    $approver = sectionStaff(['approver']);
+    $this->actingAs($approver)->get('/admin/engines')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'engines')->where('engine', EngineSettings::engines()));
+    $this->actingAs($approver)->get('/admin/ratings')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'ratings')->where('engine', EngineSettings::scorecard()));
+    $this->actingAs($approver)->get('/admin/risk')->assertOk()->assertInertia(fn (Assert $page) => $page->where('engine', []));
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/engines')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'engines')->where('engine', []));
+
+    $engines = array_column(EngineSettings::engines(), 'value', 'key');
+    $scorecard = array_column(EngineSettings::scorecard(), 'value', 'key');
+    expect($engines)->toBe(['target_dscr' => '1.50×', 'minimum_dscr' => '1.25×', 'repeat_monthly_dscr' => '1.35×',
+        'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000', 'issuance_unit' => 'RWF 5,000',
+        'first_issue_months' => '36', 'repeat_issue_months' => '12', 'tenors' => '3–6', 'rate_band' => '10–15%',
+        'platform_fee' => '3%', 'cpa_share' => '40%'])
+        ->and($scorecard)->toBe(['coverage' => '30% · 1.00×–1.50×', 'cfads_margin' => '20% · 5%–25%', 'nocf_stability' => '20% · 10%–60%',
+            'positive_months' => '10% · 50%–100%', 'history_depth' => '5% · 6–18', 'conduct' => '15%', 'new_issuer_conduct' => '50', 'instalment_conduct' => '70%', 'report_conduct' => '30%', 'adverse_conduct_cap' => '2.9',
+            'default_cap' => '1.9', 'strong' => '≥ 4.0', 'stable' => '≥ 3.0', 'weak' => '≥ 2.0', 'distressed' => '< 2.0'])
+        ->and(array_values(array_unique(array_column(EngineSettings::scorecard(), 'tab'))))->toBe(['weights', 'movers', 'bands']);
+});
+
+test('Ratings lists every rated Business and counts them for whoever may view Businesses', function (): void {
+    $rated = BusinessCampaign::factory()->create(['payload' => ['title' => 'Seed stock', 'public_evidence' => ['rating' => ['band' => 'stable', 'score' => '3.1']]]]);
+    BusinessCampaign::factory()->create(['payload' => ['title' => 'Unrated']]);
+    $profile = BusinessProfile::query()->whereKey($rated->business_id)->sole();
+    $profile->forceFill(['profile' => [...$profile->profile, 'name' => 'Isoko Farms', 'industry' => 'Agriculture']])->save();
+
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/ratings')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'ratings')->where('counts', ['rated' => 1])
+            ->where('book', [['key' => $rated->business_id, 'business' => 'Isoko Farms', 'sector' => 'Agriculture',
+                'rating' => ['band' => 'stable', 'score' => '3.1']]])->where('engine', []));
+    $this->actingAs(sectionStaff(['treasury']))->get('/admin/risk')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->missing('book')->missing('counts'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

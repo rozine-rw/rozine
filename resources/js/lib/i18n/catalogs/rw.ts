@@ -1562,6 +1562,52 @@ const rw: Catalog = {
     'admin.rating.band.stable': 'Ihamye',
     'admin.rating.band.weak': 'Intege nke',
     'admin.rating.band.distressed': 'Iri mu bibazo',
+    'admin.design.ratings.weights.title': 'Uko amanota abarwa',
+    'admin.design.ratings.weights.sub':
+        "Buri gipimo gishyirwa hagati ya 0 na 100, kigahabwa uburemere, bigateranywa; amanota agabanyijwe na 20 ni amanota kuri 5. Imipaka y'imyitwarire ikurikizwa nyuma.",
+    'admin.design.ratings.weights.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona uru rutonde.",
+    'admin.design.ratings.bands.title': 'Ibyiciro',
+    'admin.design.ratings.bands.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona ibyiciro.",
+    'admin.engine.target_dscr': 'DSCR igamijwe',
+    'admin.engine.minimum_dscr': 'DSCR ntoya',
+    'admin.engine.repeat_monthly_dscr': 'DSCR ya buri kwezi · indi nshuro',
+    'admin.engine.min_principal': 'Ubusabe buto',
+    'admin.engine.max_principal': 'Ubusabe bunini',
+    'admin.engine.issuance_unit': 'Ubusabe buzengurutswa kuri',
+    'admin.engine.first_issue_months': 'Amezi agenzuwe · bwa mbere',
+    'admin.engine.repeat_issue_months': 'Amezi agenzuwe · indi nshuro',
+    'admin.engine.tenors': 'Igihe · amezi',
+    'admin.engine.rate_band': "Urwego rw'inyungu · ihamye",
+    'admin.engine.platform_fee': "Amafaranga y'urubuga · igihe cyo gutanga",
+    'admin.engine.cpa_share': "Umugabane w'umugenzuzi",
+    'admin.engine.coverage': 'Ubushobozi bwo kwishyura umwenda',
+    'admin.engine.cfads_margin': 'Amafaranga aboneka / amafaranga yinjiye',
+    'admin.engine.nocf_stability': "Ugutekana kw'amafaranga y'ibikorwa",
+    'admin.engine.positive_months': 'Amezi afite amafaranga asigaye',
+    'admin.engine.history_depth': "Amezi y'amateka",
+    'admin.engine.conduct': 'Imyitwarire yo kwishyura no gutanga raporo',
+    'admin.engine.adverse_conduct_cap':
+        'Umupaka · raporo zakererewe cyangwa zabuze',
+    'admin.engine.default_cap': 'Umupaka · kunanirwa kwishyura',
+    'admin.engine.strong': 'Bikomeye',
+    'admin.engine.stable': 'Bihamye',
+    'admin.engine.weak': 'Bidakomeye',
+    'admin.engine.distressed': 'Mu bibazo',
+    'admin.design.engines.sizing.sub':
+        "Imipaka ine yose irakurikizwa, iya hasi ni yo ikurikizwa: ubushobozi kuri DSCR igamijwe, amafaranga yasabwe, ubusabe bunini n'umwanya usigaye. Ubusabe buri munsi y'ubuto bwemewe buranga. Nyuma amafaranga aragabanywa kugeza DSCR igamijwe yubahirijwe, akazengurutswa ku rugero rwo gutanga.",
+    'admin.design.ratings.movers.title': 'Ibihindura amanota',
+    'admin.design.ratings.movers.sub':
+        "Buri raporo y'imari yemejwe isubiramo ibipimo by'imari, bityo kuzamuka cyangwa kugabanuka kw'amafaranga yinjiye bihindura amanota. Kwishyura na raporo za buri kwezi bihindura imyitwarire, kandi imipaka igumisha amanota hasi igihe hari ibirarane, kutubahiriza raporo cyangwa kunanirwa kwishyura. Nta mukozi ushobora kubihindura.",
+    'admin.design.ratings.movers.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona ibihindura amanota.",
+    'admin.engine.new_issuer_conduct':
+        'Imyitwarire mbere yo kwishyura · kuri 100',
+    'admin.engine.instalment_conduct':
+        "Ibyishyuwe ku gihe · umugabane w'imyitwarire",
+    'admin.engine.report_conduct':
+        "Raporo za buri kwezi ku gihe · umugabane w'imyitwarire",
     'admin.policy.eyebrow': 'Byashyizweho mu mabwiriza',
     'admin.policy.target_dscr': 'DSCR igamijwe',
     'admin.policy.listing_audit': 'Igenzura ryo gushyirwa ku isoko',
@@ -3333,7 +3379,7 @@ const rw: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
-    'investor.checkout.pay_with': 'ISHYURA UKORESHEJE',
+    'investor.checkout.pay_with': 'AHO AMAFARANGA AVA',
     'investor.checkout.wallet': 'Ikofi',
     'investor.checkout.funding_source': 'Aho amafaranga ava',
     'investor.checkout.wallet_available': 'Ahari: {amount}',

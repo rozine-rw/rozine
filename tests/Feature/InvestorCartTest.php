@@ -188,6 +188,11 @@ it('refuses to add while the account is restricted, and leaves the cart without 
 it('refuses a new line once the cart is full', function (): void {
     app()->instance(InvestorCart::class, new class implements InvestorCart
     {
+        public function count(int $userId): int
+        {
+            return 0;
+        }
+
         public function lines(int $userId, ?int $contextRevision): array
         {
             return [];
@@ -224,4 +229,14 @@ it('runs the cart commands on API v1 with the command scope and shows API cart c
         ->assertJsonPath('data.cart.remove', ['url' => "/api/v1/investor/cart/{$campaign}/remove", 'method' => 'post']);
     $this->postJson(route('api.v1.investor.cart_remove', ['campaign' => $campaign]), ['identity_context_revision' => 1])
         ->assertOk()->assertJsonPath('data.removed', true);
+});
+
+it('counts the cart lines on every Investor page for the Cart tab, and nowhere else', function (): void {
+    expect(($this->cart)()['cart_count'])->toBe(0);
+    ($this->add)('2')->assertOk();
+
+    expect(($this->cart)()['cart_count'])->toBe(1)
+        ->and(($this->deals)()['cart_count'])->toBe(1);
+    ($this->as)()->get(route('home'))->assertInertia(fn (Assert $page): Assert => $page->where('cart_count', null));
+    expect(app(InvestorCart::class)->count(User::factory()->create()->id))->toBe(0);
 });

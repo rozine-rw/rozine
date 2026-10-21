@@ -1571,6 +1571,52 @@ const fr: Catalog = {
     'admin.rating.band.stable': 'Stable',
     'admin.rating.band.weak': 'Faible',
     'admin.rating.band.distressed': 'En difficulté',
+    'admin.design.ratings.weights.title': 'Calcul de la notation',
+    'admin.design.ratings.weights.sub':
+        "Chaque critère est ramené de 0 à 100 sur sa plage, pondéré puis additionné ; le score divisé par 20 donne la note sur 5. Les plafonds de conduite s'appliquent ensuite.",
+    'admin.design.ratings.weights.empty':
+        'Seuls les analystes crédit voient la grille.',
+    'admin.design.ratings.bands.title': 'Catégories',
+    'admin.design.ratings.bands.empty':
+        'Seuls les analystes crédit voient les catégories.',
+    'admin.engine.target_dscr': 'DSCR cible',
+    'admin.engine.minimum_dscr': 'DSCR minimal',
+    'admin.engine.repeat_monthly_dscr': 'DSCR mensuel · nouvelle émission',
+    'admin.engine.min_principal': 'Levée minimale',
+    'admin.engine.max_principal': 'Levée maximale',
+    'admin.engine.issuance_unit': 'Levée arrondie à',
+    'admin.engine.first_issue_months': 'Mois audités · première émission',
+    'admin.engine.repeat_issue_months': 'Mois audités · nouvelle émission',
+    'admin.engine.tenors': 'Durée · mois',
+    'admin.engine.rate_band': 'Fourchette de taux · fixe, tout compris',
+    'admin.engine.platform_fee': 'Frais de plateforme · au décaissement',
+    'admin.engine.cpa_share': "Part du partenaire d'audit",
+    'admin.engine.coverage': 'Couverture de la dette',
+    'admin.engine.cfads_margin': 'Trésorerie disponible / revenus',
+    'admin.engine.nocf_stability': "Stabilité de la trésorerie d'exploitation",
+    'admin.engine.positive_months': 'Mois de trésorerie positive',
+    'admin.engine.history_depth': "Mois d'historique",
+    'admin.engine.conduct': 'Conduite de remboursement et de reporting',
+    'admin.engine.adverse_conduct_cap':
+        'Plafond · rapports en retard ou manquants',
+    'admin.engine.default_cap': 'Plafond · défaut',
+    'admin.engine.strong': 'Solide',
+    'admin.engine.stable': 'Stable',
+    'admin.engine.weak': 'Faible',
+    'admin.engine.distressed': 'En difficulté',
+    'admin.design.engines.sizing.sub':
+        "Les quatre limites s'appliquent et la plus basse l'emporte : capacité au DSCR cible, montant demandé, levée maximale et marge d'exposition restante. Une levée sous le minimum est refusée. Le montant est ensuite réduit jusqu'à tenir le DSCR cible, puis arrondi à l'unité d'émission.",
+    'admin.design.ratings.movers.title': 'Ce qui fait bouger une note',
+    'admin.design.ratings.movers.sub':
+        "Chaque relevé vérifié recalcule les critères financiers : la hausse ou la baisse des revenus et de la trésorerie fait bouger la note. Les remboursements et les rapports mensuels font bouger la conduite, et les plafonds maintiennent la note basse tant qu'un retard, un manquement de reporting ou un défaut persiste. Aucune dérogation du personnel n'existe.",
+    'admin.design.ratings.movers.empty':
+        'Seuls les analystes crédit voient ce qui fait bouger une note.',
+    'admin.engine.new_issuer_conduct':
+        'Conduite avant tout remboursement · sur 100',
+    'admin.engine.instalment_conduct':
+        'Échéances payées à temps · part de la conduite',
+    'admin.engine.report_conduct':
+        'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",
@@ -3344,7 +3390,7 @@ const fr: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
-    'investor.checkout.pay_with': 'PAYER AVEC',
+    'investor.checkout.pay_with': 'SOURCE DE FINANCEMENT',
     'investor.checkout.wallet': 'Portefeuille',
     'investor.checkout.funding_source': 'Source de financement',
     'investor.checkout.wallet_available': 'Disponible : {amount}',

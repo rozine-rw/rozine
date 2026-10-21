@@ -100,8 +100,9 @@ export const fullyFunded = (deal: Pick<C3DealCard, 'lifecycle' | 'units'>) =>
 /**
  * Add to cart (BRS v2.0 INV-R02, design desktop L393–398): adds the deal at the chosen number of
  * notes, or, once it is in the cart, reads "In cart · Remove" and takes it out. A fully funded
- * deal cannot be added, so the button is disabled and says so. The server decides; the cart is
- * reloaded for the deal in front after each change.
+ * deal cannot be added, so the button is disabled and says so. On a phone it is the design's
+ * square cart button beside Invest, named by its label. The server decides; the cart is reloaded
+ * for the deal in front after each change.
  */
 export function CartToggle({
     deal,
@@ -120,6 +121,12 @@ export function CartToggle({
     const [failed, setFailed] = useState(false);
     const full = !cart.inCart && fullyFunded(deal);
     const action = cart.action;
+    const label = cart.inCart
+        ? t('investor.cart.in_cart_remove')
+        : full
+          ? t('investor.deals.fully_funded')
+          : t('investor.cart.add');
+    const phone = size === 'phone';
 
     const toggle = async (target: RouteAction) => {
         setBusy(true);
@@ -149,17 +156,19 @@ export function CartToggle({
     };
 
     return (
-        <>
+        <div className={cn(phone && 'relative shrink-0')}>
             <button
                 type="button"
                 onClick={() => action !== null && toggle(action)}
                 disabled={full || action === null || busy}
                 aria-pressed={cart.inCart}
+                aria-label={phone ? label : undefined}
+                title={phone ? label : undefined}
                 className={cn(
-                    'flex w-full items-center justify-center gap-2 rounded-xl border font-semibold transition-colors',
-                    size === 'phone'
-                        ? 'mt-2.5 h-10 text-[13px]'
-                        : 'h-[42px] text-[13.5px]',
+                    'flex items-center justify-center gap-2 border font-semibold transition-colors',
+                    phone
+                        ? 'size-12 rounded-[14px]'
+                        : 'h-[42px] w-full rounded-xl text-[13.5px]',
                     cart.inCart
                         ? 'border-rz-accent-fill/30 bg-rz-accent-soft text-rz-accent-text'
                         : full
@@ -184,23 +193,22 @@ export function CartToggle({
                     <circle cx="9.6" cy="19.6" r="1.35" fill="currentColor" />
                     <circle cx="17" cy="19.6" r="1.35" fill="currentColor" />
                 </svg>
-                <span>
-                    {cart.inCart
-                        ? t('investor.cart.in_cart_remove')
-                        : full
-                          ? t('investor.deals.fully_funded')
-                          : t('investor.cart.add')}
-                </span>
+                {!phone && <span>{label}</span>}
             </button>
             {failed && (
                 <p
                     role="alert"
-                    className="mt-1.5 text-center text-[11px] text-rz-secondary"
+                    className={cn(
+                        'text-[11px] text-rz-secondary',
+                        phone
+                            ? 'absolute top-full right-0 mt-1 w-max max-w-56 text-right'
+                            : 'mt-1.5 text-center',
+                    )}
                 >
                     {t('investor.cart.update_failed')}
                 </p>
             )}
-        </>
+        </div>
     );
 }
 
@@ -484,15 +492,15 @@ export function InvestBar({
                         {investLabel}
                     </Link>
                 )}
+                {phone && cart !== null && (
+                    <CartToggle
+                        deal={deal}
+                        cart={cart}
+                        units={units}
+                        size="phone"
+                    />
+                )}
             </div>
-            {phone && cart !== null && (
-                <CartToggle
-                    deal={deal}
-                    cart={cart}
-                    units={units}
-                    size="phone"
-                />
-            )}
             {gate.status !== 'eligible' ? (
                 <p
                     role="status"

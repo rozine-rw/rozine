@@ -16,7 +16,28 @@ export type AppNavItem = {
     href: RouteLink;
     /** The 24-unit stroke glyph, drawn in `currentColor`. */
     glyph: ReactNode;
+    /** A count drawn on the glyph, such as the Cart's lines; none when absent or zero. */
+    badge?: number;
 };
+
+/** The glyph with its count badge, as the design draws the Cart tab. */
+function Glyph({ item }: { item: AppNavItem }) {
+    if (item.badge === undefined || item.badge < 1) {
+        return item.glyph;
+    }
+
+    return (
+        <span className="relative flex">
+            {item.glyph}
+            <span
+                aria-hidden
+                className="absolute -top-1 -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-lg bg-rz-accent-fill px-1 text-[9.5px] leading-none font-bold text-white shadow-[0_0_0_2px_var(--color-rz-surface)]"
+            >
+                {item.badge}
+            </span>
+        </span>
+    );
+}
 
 type Audience = 'investor' | 'business' | 'auditor';
 
@@ -107,12 +128,12 @@ export function AppFrame({
                             >
                                 <span
                                     className={cn(
-                                        'flex size-5 shrink-0 items-center justify-center [&>svg]:size-[19px]',
+                                        'flex size-5 shrink-0 items-center justify-center [&_svg]:size-[19px]',
                                         item.key !== active &&
                                             'text-rz-secondary',
                                     )}
                                 >
-                                    {item.glyph}
+                                    <Glyph item={item} />
                                 </span>
                                 <span className="flex-1">{item.label}</span>
                             </Link>
@@ -173,11 +194,16 @@ export function AppFrame({
                                     : 'text-rz-secondary',
                             )}
                         >
-                            <span className="flex [&>svg]:size-[22px]">
-                                {item.glyph}
+                            <span className="flex [&_svg]:size-[22px]">
+                                <Glyph item={item} />
                             </span>
                             <span className="text-[10.5px] font-semibold">
                                 {item.label}
+                                {item.badge !== undefined && item.badge > 0 && (
+                                    <span className="sr-only">
+                                        {` (${item.badge})`}
+                                    </span>
+                                )}
                             </span>
                         </Link>
                     ))}

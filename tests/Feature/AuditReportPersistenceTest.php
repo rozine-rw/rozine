@@ -246,6 +246,9 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     // The platform fee and automatic disbursement migrations reference these tables and rebind the closing authority, so they come off first and go back last.
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    // The Investor cart references campaigns, so it comes off first and goes back last.
+    $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
+    $cartLines->down();
     $automaticDisbursement->down();
     $platformFee->down();
     $businessWithdrawals->down();
@@ -352,6 +355,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $businessWithdrawals->up();
     $platformFee->up();
     $automaticDisbursement->up();
+    $cartLines->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)

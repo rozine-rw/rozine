@@ -318,6 +318,21 @@ afterEach(() => {
 });
 
 describe('Apply — step 1, business & finances', () => {
+    it('labels a mandate person by their most senior role when the record holds roles, not titles', () => {
+        const page = props(businessStep);
+        page.evidence.business.officers = [
+            { name: 'Eric Ntwari', role: 'controller, owner, signatory' },
+            { name: 'Aline Uwase', role: 'signatory' },
+        ];
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByText('Owner')).toBeInTheDocument();
+        expect(screen.getByText('Signatory')).toBeInTheDocument();
+        expect(
+            screen.queryByText('controller, owner, signatory'),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows the verified record read-only and saves the draft to move on to step 2', async () => {
         const user = userEvent.setup();
         const page = props(businessStep);

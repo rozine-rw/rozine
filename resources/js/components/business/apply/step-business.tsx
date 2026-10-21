@@ -8,10 +8,41 @@ import {
     formatRwfShort,
 } from '@/lib/rozine/format';
 import type { Money } from '@/types';
-import type { ApplicationEvidence, EvidencePeriod } from '@/types/business';
+import type {
+    ApplicationEvidence,
+    EvidencePeriod,
+    MandateRole,
+} from '@/types/business';
 
 /** A full calendar year of evidence; any fewer months is labelled with its count. */
 const FULL_YEAR = 12;
+
+/** Mandate roles, most senior first: an officer is labelled by the first one they hold. */
+const ROLE_ORDER: MandateRole[] = [
+    'owner',
+    'director',
+    'controller',
+    'beneficial_owner',
+    'representative',
+    'signatory',
+];
+
+/**
+ * The server sends a mandate person's roles as a comma list of role keys (no job titles are
+ * recorded). Show the most senior one, translated; anything else is printed as sent.
+ */
+function useOfficerRole() {
+    const { t } = useTranslation();
+
+    return (role: string): string => {
+        const held = role.split(',').map((part) => part.trim());
+        const senior = ROLE_ORDER.find((key) => held.includes(key));
+
+        return senior === undefined
+            ? role
+            : t(`business.profile.registration.role.${senior}`);
+    };
+}
 
 /** "Oct 2023" from the server's `YYYY-MM` month. */
 const monthLabel = (month: string, locale: string): string =>
@@ -108,6 +139,7 @@ function IneligibleNotice({ message }: { message: string }) {
 export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
     const { t } = useTranslation();
     const figure = useFigure();
+    const officerRole = useOfficerRole();
     const { business, eligibility } = evidence;
     const degrees =
         evidence.rating === null
@@ -179,7 +211,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             {business.officers.map((officer) => (
                                 <div key={`${officer.role}-${officer.name}`}>
                                     <p className="text-[10px] font-bold tracking-[.02em] text-rz-slate uppercase">
-                                        {officer.role}
+                                        {officerRole(officer.role)}
                                     </p>
                                     <p className="mt-0.5 text-[13px] font-semibold text-rz-ink">
                                         {officer.name}
