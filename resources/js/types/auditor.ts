@@ -541,6 +541,10 @@ export type DeskReview = {
     /** First day of the audited month, ISO 8601; null when the server cannot state it. */
     month: string | null;
     status: 'disputed' | 'escalated';
+    /** The weighted variance the seal recorded, percent to one decimal; null with nothing to weigh. */
+    variance_pct: string | null;
+    /** How many proof originals the Business filed with its dispute. */
+    proofs: number;
     link: RouteLink;
 };
 

@@ -512,6 +512,8 @@ describe('Auditor Jobs', () => {
                             business: 'GreenLeaf Agro',
                             month: '2026-09-01',
                             status: 'disputed',
+                            variance_pct: '4.2',
+                            proofs: 3,
                             link: { url: '/auditor/reports/r1', method: 'get' },
                         },
                         {
@@ -519,6 +521,8 @@ describe('Auditor Jobs', () => {
                             business: 'Isoko Energy',
                             month: null,
                             status: 'escalated',
+                            variance_pct: null,
+                            proofs: 1,
                             link: { url: '/auditor/reports/r2', method: 'get' },
                         },
                     ],
@@ -532,6 +536,14 @@ describe('Auditor Jobs', () => {
         expect(screen.getByText('Desk review')).toBeInTheDocument();
         expect(screen.getByText('Under desk review')).toBeInTheDocument();
         expect(screen.getByText('Escalated')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveTextContent(
+            'Counter-proof filed3 itemsYour weighted variance4.2%',
+        );
+        expect(
+            screen.getByRole('link', { name: /Isoko Energy/u }),
+        ).toHaveTextContent('Counter-proof filed1 itemYour weighted variance—');
         expect(
             screen.getByRole('link', { name: /GreenLeaf Agro/u }),
         ).toHaveAttribute('href', '/auditor/reports/r1');
