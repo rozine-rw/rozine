@@ -191,3 +191,50 @@ test('nobody changes their own access, other roles cannot, and reactivation stil
         ->assertInertia(fn (Assert $page) => $page->where('party.actions', []));
     expect(StaffAccount::query()->find($superadmin->id))->enabled->toBeTrue();
 });
+
+test('a superadmin adds an operator by email with one role and a reason, and the action log shows it', function (): void {
+    $superadmin = rosterStaff(['superadmin'], ['name' => 'A. Diane']);
+    $analyst = rosterStaff(['analyst']);
+    $candidate = User::factory()->withTwoFactor()->create(['name' => 'Eric Kamanzi', 'email' => 'eric.kamanzi@example.test']);
+
+    $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('grant', ['url' => '/admin/staff', 'method' => 'post']));
+    $this->actingAs($analyst)->get(route('staff.staff.index'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('grant', null));
+    $this->actingAs($superadmin)->getJson(route('api.v1.staff.staff.index'))->assertOk()->assertJsonPath('data.grant', null);
+
+    $this->actingAs($superadmin)->post(route('staff.staff.grant'), ['request_id' => (string) Str::uuid(), 'email' => 'nope', 'role' => 'owner', 'reason' => ''])
+        ->assertSessionHasErrors(['email' => 'Enter a valid email address.', 'role' => 'Choose a role.', 'reason' => 'Give the reason for this change.']);
+    $request = (string) Str::uuid();
+    $payload = ['request_id' => $request, 'email' => 'Eric.Kamanzi@example.test', 'role' => 'treasury', 'reason' => 'Joins the treasury desk.'];
+    $this->actingAs($superadmin)->post(route('staff.staff.grant'), $payload)->assertRedirect(route('staff.staff.index', ['operator' => $candidate->id]));
+    $this->actingAs($superadmin)->post(route('staff.staff.grant'), $payload)->assertRedirect(route('staff.staff.index', ['operator' => $candidate->id]));
+    $this->actingAs($superadmin)->post(route('staff.staff.grant'), [...$payload, 'role' => 'analyst'])
+        ->assertSessionHasErrors(['email' => 'That request was already used for different details. Try again.']);
+    expect(StaffAccount::query()->find($candidate->id))->enabled->toBeTrue()->roles->toBe(['treasury'])
+        ->and($candidate->refresh()->party_id)->toBeNull();
+    $this->actingAs($candidate)->get(route('staff.staff.index'))->assertOk();
+
+    $this->actingAs($superadmin)->get(route('staff.staff.index', ['operator' => $candidate->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('action_log.0', fn ($entry): bool => $entry['actor'] === 'A. Diane'
+            && $entry['target'] === 'Eric Kamanzi' && $entry['action'] === 'staff_enabled' && $entry['reason'] === 'Joins the treasury desk.'));
+    $this->actingAs($superadmin)->post(route('staff.staff.grant'), [...$payload, 'request_id' => (string) Str::uuid()])
+        ->assertSessionHasErrors(['email' => 'That account is already an operator. Open it to suspend or reactivate it.']);
+});
+
+test('adding an operator refuses unknown, own, unsecured and participant accounts, and other roles', function (): void {
+    $superadmin = rosterStaff(['superadmin']);
+    $compliance = rosterStaff(['compliance']);
+    $unsecured = User::factory()->create();
+    $investor = User::factory()->withTwoFactor()->for(Party::factory()->verified())->create();
+    $grant = fn (User $actor, string $email) => $this->actingAs($actor)->post(route('staff.staff.grant'),
+        ['request_id' => (string) Str::uuid(), 'email' => $email, 'role' => 'analyst', 'reason' => 'New operator.']);
+
+    $grant($superadmin, 'nobody@example.test')->assertSessionHasErrors(['email' => 'No account uses that email. The operator signs up first, then you add them.']);
+    $grant($superadmin, $superadmin->email)->assertSessionHasErrors(['email' => 'You cannot change your own access. Ask another super-admin.']);
+    $grant($superadmin, $unsecured->email)
+        ->assertSessionHasErrors(['email' => 'This operator needs a verified email and two-factor sign-in before access can return.']);
+    $grant($superadmin, $investor->email)
+        ->assertSessionHasErrors(['email' => 'That account invests or runs a business. Operators need a separate, dedicated account.']);
+    $grant($compliance, $unsecured->email)->assertForbidden();
+    $this->assertDatabaseCount('staff_accounts', 2);
+});

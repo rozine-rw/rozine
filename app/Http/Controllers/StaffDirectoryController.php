@@ -6,8 +6,10 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\BrowseStaffDirectory;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\GrantStaffAccess;
 use App\Application\Identity\SetStaffAccess;
 use App\Domain\Identity\IdentityViolation;
+use App\Http\Requests\Staff\GrantStaffAccessRequest;
 use App\Http\Requests\Staff\ListStaffDirectoryRequest;
 use App\Http\Requests\Staff\SetStaffAccessRequest;
 use App\Http\Resources\StaffDirectoryResource;
@@ -18,8 +20,9 @@ use Inertia\Response;
 
 /**
  * The designed Staff & Roles directory (`admin.open`): every operator with their role and account
- * state, and one operator's 360 with their access history. A superadmin suspends or reactivates
- * another operator from the 360 with a reason; a refusal returns to the reason stage in plain words.
+ * state, and one operator's 360 with their access history. A superadmin adds an operator by email
+ * with one role, and suspends or reactivates another operator from the 360, each with a reason; a
+ * refusal returns to the form in plain words.
  */
 class StaffDirectoryController extends Controller
 {
@@ -29,6 +32,9 @@ class StaffDirectoryController extends Controller
         'STAFF_STATE_UNCHANGED' => "This operator's access already changed. Review it again.",
         'STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED' => 'This operator needs a verified email and two-factor sign-in before access can return.',
         'IDEMPOTENCY_KEY_REUSED' => 'That request was already used for different details. Try again.',
+        'STAFF_EMAIL_NOT_FOUND' => 'No account uses that email. The operator signs up first, then you add them.',
+        'STAFF_ALREADY_OPERATOR' => 'That account is already an operator. Open it to suspend or reactivate it.',
+        'DEDICATED_STAFF_ACCOUNT_REQUIRED' => 'That account invests or runs a business. Operators need a separate, dedicated account.',
     ];
 
     public function index(ListStaffDirectoryRequest $request, BrowseStaffDirectory $directory, GetStaffAccess $access): Response|StaffDirectoryResource
@@ -47,20 +53,40 @@ class StaffDirectoryController extends Controller
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }
 
+    /** Add an operator, then open their 360. */
+    public function grant(GrantStaffAccessRequest $request, GrantStaffAccess $action): RedirectResponse
+    {
+        $result = $this->refusing('email', fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (string) $request->validated('email'),
+            (string) $request->validated('role'), (string) $request->validated('reason'), (string) $request->validated('request_id')));
+
+        return redirect()->route('staff.staff.index', ['operator' => $result['user_id']]);
+    }
+
     /** Suspend (`enabled` false) or reactivate another operator, then reopen their 360. */
     public function access(SetStaffAccessRequest $request, SetStaffAccess $action): RedirectResponse
     {
         $userId = (int) $request->route('operator');
+        $this->refusing('reason', fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), $userId, (bool) $request->route('enabled'),
+            (string) $request->validated('reason'), (string) $request->validated('request_id')));
+
+        return redirect()->route('staff.staff.index', ['operator' => $userId]);
+    }
+
+    /**
+     * Runs a staff change, turning a refusal the form can explain into a message on `$field`.
+     *
+     * @param  callable(): array<string, mixed>  $change
+     * @return array<string, mixed>
+     */
+    private function refusing(string $field, callable $change): array
+    {
         try {
-            $action->handle((int) $request->user()?->getAuthIdentifier(), $userId, (bool) $request->route('enabled'),
-                (string) $request->validated('reason'), (string) $request->validated('request_id'));
+            return $change();
         } catch (IdentityViolation $violation) {
             if (! array_key_exists($violation->reason, self::MESSAGES)) {
                 throw $violation;
             }
-            throw ValidationException::withMessages(['reason' => [self::MESSAGES[$violation->reason]]]);
+            throw ValidationException::withMessages([$field => [self::MESSAGES[$violation->reason]]]);
         }
-
-        return redirect()->route('staff.staff.index', ['operator' => $userId]);
     }
 }

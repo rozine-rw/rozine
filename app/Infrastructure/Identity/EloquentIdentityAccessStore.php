@@ -53,10 +53,8 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 throw new IdentityViolation('OPERATOR_VERIFIED_EMAIL_AND_MFA_REQUIRED');
             }
 
-            if ($enabled && $party !== null && ($party->kind !== 'person' || $party->verified_at !== null
-                || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
-                || User::query()->where('party_id', $party->id)->whereKeyNot($userId)->exists())) {
-                throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+            if ($enabled) {
+                $this->requireDedicated($user, $party);
             }
 
             $operator = IdentityOperator::query()->find($userId);
@@ -171,6 +169,44 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
             $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
                 $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function grantStaff(int $actorId, string $email, string $role, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $email, $role, $reason, $requestId): array {
+            $email = mb_strtolower(trim($email));
+            $hash = $this->requestHash(['staff.grant', $email, $role, $reason], $reason, $requestId);
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            $roles = StaffPermission::normalizeRoles([$role]);
+            $user = User::query()->whereRaw('lower(email) = ?', [$email])->lockForUpdate()->first();
+            if ($user === null) {
+                throw new IdentityViolation('STAFF_EMAIL_NOT_FOUND', 404);
+            }
+            if ($user->id === $actorId) {
+                throw new IdentityViolation('STAFF_SELF_CHANGE_FORBIDDEN', 409);
+            }
+            $staff = StaffAccount::query()->lockForUpdate()->find($user->id);
+            if ($staff !== null) {
+                throw new IdentityViolation('STAFF_ALREADY_OPERATOR', 409);
+            }
+            if (! $this->emailVerified($user) || ! $this->mfaConfirmed($user)) {
+                throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            }
+            $this->requireDedicated($user, $this->lockParty($user->party_id));
+            $before = ['enabled' => false, 'party_id' => $user->party_id, 'roles' => []];
+            (new StaffAccount)->forceFill(['user_id' => $user->id, 'enabled' => true, 'roles' => $roles])->save();
+            $user->forceFill(['party_id' => null, 'active_membership_id' => null, 'active_membership_revision' => null,
+                'context_revision' => $user->context_revision + 1])->save();
+            $result = ['code' => 'STAFF_ACCESS_ENABLED', 'user_id' => $user->id];
+            $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.configure', $reason, $requestId, $hash,
+                $before, ['enabled' => true, 'party_id' => null, 'roles' => $roles], $result);
 
             return $result;
         }, 3);
@@ -701,6 +737,19 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     {
         return Features::enabled(Features::twoFactorAuthentication()) && $user->two_factor_secret !== null
             && $user->two_factor_confirmed_at !== null && $user->two_factor_confirmed_at->lte(now());
+    }
+
+    /**
+     * Staff access goes only to a dedicated account: one with no party, or a lone unverified person
+     * party with no memberships or verified identity.
+     */
+    private function requireDedicated(User $user, ?Party $party): void
+    {
+        if ($party !== null && ($party->kind !== 'person' || $party->verified_at !== null
+            || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
+            || User::query()->where('party_id', $party->id)->whereKeyNot($user->id)->exists())) {
+            throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+        }
     }
 
     private function lockParty(?string $partyId): ?Party

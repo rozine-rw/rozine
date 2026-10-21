@@ -316,6 +316,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
     Route::get('admin/dashboard', StaffDashboardController::class)->name('staff.dashboard');
     Route::get('admin/staff', [StaffDirectoryController::class, 'index'])->name('staff.staff.index');
+    Route::post('admin/staff', [StaffDirectoryController::class, 'grant'])->name('staff.staff.grant');
     Route::post('admin/staff/{operator}/suspend', [StaffDirectoryController::class, 'access'])->whereNumber('operator')->defaults('enabled', false)->name('staff.staff.suspend');
     Route::post('admin/staff/{operator}/reactivate', [StaffDirectoryController::class, 'access'])->whereNumber('operator')->defaults('enabled', true)->name('staff.staff.reactivate');
     Route::get('admin/activity', [StaffActivityController::class, 'index'])->name('staff.events.index');

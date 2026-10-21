@@ -2053,6 +2053,14 @@ const en = {
     'admin.permission_detail.staff.manage':
         "Suspend or reactivate another operator's access, with a reason.",
     'admin.action_log.title': 'Admin action log',
+    'admin.staff.invite.open': '+ Invite operator',
+    'admin.staff.invite.title': 'Invite an operator',
+    'admin.staff.invite.body':
+        'Give an existing account console access with one role. The operator signs up with their own dedicated account and turns on two-factor sign-in first. The change is logged with your name and reason.',
+    'admin.staff.invite.email': 'Account email',
+    'admin.staff.invite.role': 'Role',
+    'admin.staff.invite.cancel': 'Cancel',
+    'admin.staff.invite.submit': 'Give access',
     'admin.action_log.info':
         'The latest changes to staff access, newest first: who made each one, whose access it changed and why.',
     'admin.action_log.empty': 'No admin actions logged yet.',

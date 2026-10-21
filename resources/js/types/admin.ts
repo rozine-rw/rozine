@@ -874,6 +874,8 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     permission_matrix?: PermissionMatrixRow[];
     /** Staff & Roles only: the latest staff access changes, newest first. */
     action_log?: StaffActionLogEntry[];
+    /** Staff only, for a viewer who may manage staff: adds an operator by email with one role. */
+    grant?: RouteAction | null;
 };
 
 export type StaffActionLogEntry = {
