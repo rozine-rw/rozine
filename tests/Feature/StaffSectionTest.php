@@ -147,11 +147,11 @@ test('participants and guests cannot open a console section, and unknown section
     $this->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertRedirect(route('login'));
 });
 
-test('Oversight lists the design\'s Reports, which opens its section page from the sidebar and the Audit desk command', function (): void {
-    expect(StaffSectionController::SECTIONS)->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 1, 3))
-        ->toBe(['reports', 'risk', 'compliance']);
+test('Oversight lists the design\'s Reports, which opens the audit report register from the sidebar and the Audit desk command', function (): void {
+    expect(StaffSectionController::SECTIONS)->not->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 1, 2))
+        ->toBe(['risk', 'compliance']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/reports')->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'reports')
+        ->assertInertia(fn (Assert $page) => $page->component('admin/audit-reports')
             ->where('nav.reports', ['url' => '/admin/reports', 'method' => 'get'])
             ->where('nav.policies', ['url' => '/admin/policies', 'method' => 'get']));
     $this->actingAs(sectionStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()
