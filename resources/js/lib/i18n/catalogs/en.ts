@@ -1685,9 +1685,11 @@ const en = {
     'admin.applications.older': 'Older applications',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Current release review required: a retained quote is not a current approval. Check the release gates below.',
-    'admin.decision.reason_code.DSCR_BELOW_CUTOFF': "Coverage below 1.25: cash flow cannot carry the instalment.",
-    'admin.decision.reason_code.RESTRICTION_ACTIVE': "An active credit restriction blocks new borrowing.",
-    'admin.applications.term_only': "{term}mo",
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        'Coverage below 1.25: cash flow cannot carry the instalment.',
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        'An active credit restriction blocks new borrowing.',
+    'admin.applications.term_only': '{term}mo',
     'admin.applications.decision.approve': 'Auto-approve',
     'admin.applications.decision.reject': 'Flag: reject',
     'admin.applications.decision.audit': 'Route to audit',
@@ -1979,18 +1981,20 @@ const en = {
     'admin.permission.staging.mail.testers.manage': 'Manage mail testers',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choose who receives email on staging.',
-    'admin.permission.staff.manage': "Manage operators",
-    'admin.permission_detail.staff.manage': "Suspend or reactivate another operator's access, with a reason.",
-    'admin.action_log.title': "Admin action log",
-    'admin.action_log.info': "The latest changes to staff access, newest first: who made each one, whose access it changed and why.",
-    'admin.action_log.empty': "No admin actions logged yet.",
-    'admin.action_log.col.action': "Action",
-    'admin.action_log.col.by': "By",
-    'admin.action_log.col.target': "Target",
-    'admin.action_log.col.reason': "Reason",
-    'admin.action_log.col.when': "When",
-    'admin.action_log.action.staff_suspended': "Suspended access",
-    'admin.action_log.action.staff_enabled': "Enabled access",
+    'admin.permission.staff.manage': 'Manage operators',
+    'admin.permission_detail.staff.manage':
+        "Suspend or reactivate another operator's access, with a reason.",
+    'admin.action_log.title': 'Admin action log',
+    'admin.action_log.info':
+        'The latest changes to staff access, newest first: who made each one, whose access it changed and why.',
+    'admin.action_log.empty': 'No admin actions logged yet.',
+    'admin.action_log.col.action': 'Action',
+    'admin.action_log.col.by': 'By',
+    'admin.action_log.col.target': 'Target',
+    'admin.action_log.col.reason': 'Reason',
+    'admin.action_log.col.when': 'When',
+    'admin.action_log.action.staff_suspended': 'Suspended access',
+    'admin.action_log.action.staff_enabled': 'Enabled access',
     'admin.permission.reconciliation.view': 'View reconciliation',
     'admin.permission_detail.reconciliation.view':
         'Compare the ledger with provider statements.',
