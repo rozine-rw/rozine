@@ -1745,6 +1745,7 @@ const rw: Catalog = {
     'admin.today.sectors.tip':
         'Imari itararangira muri buri rwego. Umutuku bivuze ko hari nibura inyandiko imwe ikurikiranwa cyangwa iri mu bibazo.',
     'admin.today.sectors.notes': 'Inyandiko {count}',
+    'admin.today.sectors.empty': 'Nta nyandiko irasohoka.',
     'admin.today.treasury.title': "Incamake y'ububiko bw'imari",
     'admin.today.treasury.invested': 'Imari yashowe (isoko rya mbere)',
     'admin.today.treasury.disbursed': 'Yishyuwe ibigo',
