@@ -16,7 +16,7 @@ class ListStaffApplicationsRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['tab' => ['sometimes', 'string', 'in:pending,approved'], 'search' => ['sometimes', 'nullable', 'string', 'max:120'],
+        return ['tab' => ['sometimes', 'string', 'in:pending,approved,rejected'], 'search' => ['sometimes', 'nullable', 'string', 'max:120'],
             'before' => ['sometimes', 'string', 'ulid'], 'limit' => ['sometimes', 'integer', 'min:1', 'max:50'],
             'application' => ['sometimes', 'string', 'ulid']];
     }

@@ -444,15 +444,16 @@ export type ApplicationRow = {
     sector: string;
     requested: Money;
     term_months: number;
-    /** Flat total return over the term, one decimal: "12.1". Not an APR. */
-    rate_pct: string;
+    /** Flat total return over the term, one decimal: "12.1". Not an APR. Null when the engine refused it. */
+    rate_pct: string | null;
     /** Null while the server does not project capacity usage; shown as unavailable, never 0. */
     capacity_used_pct: number | null;
     rating: Rating | null;
     submitted_at: string;
     state: ApplicationState;
     decision: EngineDecision;
-    link: RouteLink;
+    /** Null for an engine refusal: the draft opens no staff review. */
+    link: RouteLink | null;
     /** Opens the review with the approval stage ready, when the server allows approving. */
     approve_link: RouteLink | null;
 };

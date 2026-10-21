@@ -1775,6 +1775,9 @@ const fr: Catalog = {
     'admin.applications.older': 'Demandes plus anciennes',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF': "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE': "Une restriction de crédit active bloque tout nouvel emprunt.",
+    'admin.applications.term_only': "{term} mois",
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",
