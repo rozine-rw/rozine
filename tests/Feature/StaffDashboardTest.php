@@ -132,7 +132,7 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
             ->where('attention.1.link', ['url' => '/admin/investors?chip=pending', 'method' => 'get'])
             ->where('attention.0.link', ['url' => '/admin/applications', 'method' => 'get'])
             ->where('badges', ['applications' => 0, 'disbursements' => 0])
-            ->where('sector_exposure', [['sector' => (string) DB::table('business_profiles')->value(DB::raw("profile->>'industry'")),
+            ->where('sector_exposure', [['sector' => (string) DB::table('business_profiles')->value('profile->industry'),
                 'outstanding' => ['currency' => 'RWF', 'amount' => $total], 'notes' => 1, 'at_risk' => false]]));
 
     // Kigali is UTC+2: 22:30 UTC on 1 March is already 2 March there.

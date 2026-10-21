@@ -118,11 +118,15 @@ it('measures fill and completion across raises, leaves funded raises out, search
 it('reads the funding trend over a chosen window of Kigali dates, by month once it spans more than two months', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-10-15 10:00', 'Africa/Kigali'));
     app()->instance(InvestorDealCatalogue::class, Mockery::mock(InvestorDealCatalogue::class, ['deals' => []]));
-    $store = Mockery::mock(OperationsDashboardStore::class, ['figures' => ['capital_raised' => '0', 'active_businesses' => 0, 'disbursements_waiting' => 0,
-        'disbursed' => '0', 'notes' => ['live' => 0, 'funded' => 0, 'repaying' => 0, 'failed' => 0]]]);
-    $store->shouldReceive('committed')->once()->with('day', '2026-10-01T22:00:00+00:00', '2026-10-05T22:00:00+00:00')->andReturn([]);
-    $store->shouldReceive('committed')->once()->with('month', '2026-04-30T22:00:00+00:00', null)->andReturn([]);
-    $store->shouldReceive('committed')->once()->with('day', '2026-09-22T22:00:00+00:00', '2026-10-06T22:00:00+00:00')->andReturn([]);
+    $windows = [];
+    $store = $this->createMock(OperationsDashboardStore::class);
+    $store->method('figures')->willReturn(['capital_raised' => '0', 'active_businesses' => 0, 'disbursements_waiting' => 0,
+        'disbursed' => '0', 'notes' => ['live' => 0, 'funded' => 0, 'repaying' => 0, 'failed' => 0]]);
+    $store->expects($this->exactly(3))->method('committed')->willReturnCallback(function (?string ...$window) use (&$windows): array {
+        $windows[] = $window;
+
+        return [];
+    });
     app()->instance(OperationsDashboardStore::class, $store);
     $staff = primaryMarketStaff(['analyst']);
 
@@ -130,6 +134,8 @@ it('reads the funding trend over a chosen window of Kigali dates, by month once 
         ->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => '2026-10-05T00:00:00+02:00', 'grain' => 'day', 'bars' => []])
         ->and(($this->page)($staff, ['from' => '2026-05-01'])['trend']['grain'])->toBe('month')
         ->and(($this->page)($staff, ['to' => '2026-10-06'])['trend']['from'])->toBe('2026-09-23T00:00:00+02:00');
+    expect($windows)->toBe([['day', '2026-10-01T22:00:00+00:00', '2026-10-05T22:00:00+00:00'],
+        ['month', '2026-04-30T22:00:00+00:00', null], ['day', '2026-09-22T22:00:00+00:00', '2026-10-06T22:00:00+00:00']]);
     $this->actingAs($staff)->get(route('staff.primary-market.index', ['from' => '2026-10-05', 'to' => '2026-10-02']))->assertSessionHasErrors('to');
     $this->actingAs($staff)->get(route('staff.primary-market.index', ['from' => '5 October']))->assertSessionHasErrors('from');
 });
