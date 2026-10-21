@@ -4,7 +4,7 @@ import { CAPTION, CARD_SHADOW } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { LicenceQueueEntry } from '@/types/admin';
+import type { LicenceQueueEntry } from '@/types/admin-audit';
 
 /**
  * The Audit Partner network's review queues (design T640–706): partner change requests (licence

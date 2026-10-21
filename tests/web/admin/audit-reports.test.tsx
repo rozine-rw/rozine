@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminAuditReports from '@/pages/admin/audit-reports';
-import type { AdminAuditReportsProps } from '@/types/admin';
+import type { AdminAuditReportsProps } from '@/types/admin-audit';
 import registerFixture from '../../../resources/fixtures/ui/admin-audit-reports.json';
 import { resetInertia } from './inertia-mock';
 
