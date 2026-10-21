@@ -221,7 +221,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         const list = screen.getByRole('region', { name: 'Withdrawals' });
         const [waiting, paid] = within(list).getAllByRole('listitem');
 
-        expect(waiting).toHaveTextContent('Withdrawal to MTN MoMo');
+        expect(waiting).toHaveTextContent('Withdrawal · MTN MoMo');
         expect(waiting).toHaveTextContent('Sending');
         expect(waiting).toHaveTextContent('RWF 100,000');
         expect(paid).toHaveTextContent('Paid out');
@@ -243,7 +243,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
             name: 'Transaction receipt',
         });
 
-        expect(sheet).toHaveTextContent('Withdrawal to MTN MoMo');
+        expect(sheet).toHaveTextContent('Withdrawal · MTN MoMo');
         expect(sheet).toHaveTextContent('RWF 200,000');
         expect(sheet).toHaveTextContent('StatusPaid out');
         expect(sheet).toHaveTextContent('Provider chargeRWF 0');
@@ -317,7 +317,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
             name: 'Transaction history',
         });
 
-        expect(history).toHaveTextContent('Withdrawal to MTN MoMo');
+        expect(history).toHaveTextContent('Withdrawal · MTN MoMo');
         expect(
             within(history).getByText('Returned from MTN MoMo'),
         ).toBeInTheDocument();

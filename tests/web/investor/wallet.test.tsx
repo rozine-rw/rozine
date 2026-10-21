@@ -103,7 +103,7 @@ describe('Wallet (C3)', () => {
         expect(balance).toHaveTextContent(
             'Only Available can be spent. Held is in a live checkout; Committed awaits issue.',
         );
-        expect(balance).toHaveTextContent('No deposits waiting');
+        expect(balance).toHaveTextContent('Instantly available to invest');
         expect(screen.getByRole('link', { name: 'Deposit' })).toHaveAttribute(
             'href',
             '/preview/investor-wallet-deposit',
@@ -138,7 +138,7 @@ describe('Wallet (C3)', () => {
         expect(
             within(history).getByRole('link', { name: 'Cash in and out' }),
         ).toHaveAttribute('aria-current', 'true');
-        expect(history).toHaveTextContent('Deposit from Bank of Kigali');
+        expect(history).toHaveTextContent('Deposit · Bank of Kigali');
         expect(
             within(history).queryByRole('link', { name: 'Show older' }),
         ).not.toBeInTheDocument();
@@ -393,7 +393,7 @@ describe('Wallet (C3)', () => {
             name: 'Transaction receipt',
         });
 
-        expect(sheet).toHaveTextContent('Deposit from Airtel');
+        expect(sheet).toHaveTextContent('Deposit · Airtel');
         expect(sheet).toHaveTextContent(
             "Not yet confirmed — we're checking with the provider",
         );
@@ -432,7 +432,7 @@ describe('Wallet (C3)', () => {
             name: 'Transaction receipt',
         });
 
-        expect(sheet).toHaveTextContent('Deposit from MTN MoMo');
+        expect(sheet).toHaveTextContent('Deposit · MTN MoMo');
         expect(sheet).toHaveTextContent('RWF 500,000');
         expect(sheet).toHaveTextContent('RZ-DEP-5520');
         expect(sheet).toHaveTextContent('30 Sept 2026 · 10:04');
@@ -491,7 +491,7 @@ describe('Wallet (C3)', () => {
             within(ranges)
                 .getAllByRole('link')
                 .map((link) => link.textContent),
-        ).toEqual(['Today', '7 days', '30 days', 'All']);
+        ).toEqual(['Today', '7 days', '30 days', 'All time']);
         expect(
             within(ranges).getByRole('link', { name: '7 days' }),
         ).toHaveAttribute('aria-current', 'true');
@@ -502,7 +502,7 @@ describe('Wallet (C3)', () => {
             '/investor/wallet?movement=external&period=30d',
         );
         expect(
-            within(ranges).getByRole('link', { name: 'All' }),
+            within(ranges).getByRole('link', { name: 'All time' }),
         ).not.toHaveAttribute('aria-current');
     });
 

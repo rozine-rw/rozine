@@ -2134,7 +2134,7 @@ const en = {
     'business.servicing.wallet.movement': 'Movement type',
     'business.servicing.wallet.filter.external': 'Deposits',
     'business.servicing.wallet.filter.internal': 'Repayments',
-    'business.servicing.wallet.entry.deposit': 'Deposit from {counterparty}',
+    'business.servicing.wallet.entry.deposit': 'Deposit · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Repayment · {note}',
     'business.servicing.wallet.instalments': 'Instalments {list}',
     'business.servicing.wallet.empty': 'Nothing here yet.',
@@ -4520,7 +4520,7 @@ const en = {
         'A restriction has applied since {date}. Deposits still work.',
     'investor.wallet.c3.restricted_unavailable':
         'A restriction has applied since {date}. Deposits are not currently available.',
-    'investor.wallet.c3.no_pending': 'No deposits waiting',
+    'investor.wallet.c3.no_pending': 'Instantly available to invest',
     'investor.wallet.c3.pending_deposits':
         '{amount} not yet confirmed — not in the total',
     'investor.wallet.c3.no_policy':
@@ -4542,13 +4542,13 @@ const en = {
     },
     'investor.wallet.c3.hold_expires': 'Released in {time} unless you confirm',
     'investor.wallet.c3.deposits': 'Deposits',
-    'investor.wallet.c3.deposit_from': 'Deposit from {method}',
+    'investor.wallet.c3.deposit_from': 'Deposit · {method}',
     'investor.wallet.c3.intent.pending': 'Not yet confirmed',
     'investor.wallet.c3.intent.unknown':
         "Not yet confirmed — we're checking with the provider",
     'investor.wallet.c3.intent.succeeded': 'Credited',
     'investor.wallet.c3.intent.failed': "Didn't go through — nothing credited",
-    'investor.wallet.c3.entry.deposit_in': 'Deposit from {counterparty}',
+    'investor.wallet.c3.entry.deposit_in': 'Deposit · {counterparty}',
     'investor.wallet.c3.entry.deposit_out': 'Transfer to {counterparty}',
     'investor.wallet.c3.entry.hold': 'Held for {name}',
     'investor.wallet.c3.entry.hold_release': 'Hold released · {name}',
@@ -4559,7 +4559,7 @@ const en = {
     'investor.wallet.c3.range.today': 'Today',
     'investor.wallet.c3.range.7d': '7 days',
     'investor.wallet.c3.range.30d': '30 days',
-    'investor.wallet.c3.range.all': 'All',
+    'investor.wallet.c3.range.all': 'All time',
     'investor.wallet.c3.filter.external': 'Cash in and out',
     'investor.wallet.c3.filter.internal': 'Holds and commitments',
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -4580,7 +4580,7 @@ const en = {
     'investor.wallet.c3.withdraw_only_on_success':
         'The amount leaves your available balance now and is paid out once the provider confirms. If the payout fails, it comes back to your wallet.',
     'investor.wallet.c3.withdrawals': 'Withdrawals',
-    'investor.wallet.c3.withdrawal_to': 'Withdrawal to {method}',
+    'investor.wallet.c3.withdrawal_to': 'Withdrawal · {method}',
     'investor.wallet.c3.withdrawal.pending': 'Sending',
     'investor.wallet.c3.withdrawal.unknown':
         "Sending — we're checking with the provider",
@@ -4592,7 +4592,7 @@ const en = {
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_PAID': 'Payout receipt',
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED': 'Return receipt',
     'investor.wallet.c3.entry.withdrawal_in': 'Returned from {counterparty}',
-    'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal to {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal · {counterparty}',
     'business.publish.intro':
         "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
     'business.publish.release.awaiting':

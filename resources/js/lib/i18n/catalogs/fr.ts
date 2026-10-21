@@ -2234,7 +2234,7 @@ const fr: Catalog = {
     'business.servicing.wallet.movement': 'Type de mouvement',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
-    'business.servicing.wallet.entry.deposit': 'Dépôt depuis {counterparty}',
+    'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
     'business.servicing.wallet.instalments': 'Échéances {list}',
     'business.servicing.wallet.empty': 'Rien pour le moment.',
@@ -4758,7 +4758,7 @@ const fr: Catalog = {
         "Une restriction s'applique depuis le {date}. Les dépôts restent possibles.",
     'investor.wallet.c3.restricted_unavailable':
         "Une restriction s'applique depuis le {date}. Les dépôts ne sont pas disponibles pour le moment.",
-    'investor.wallet.c3.no_pending': 'Aucun dépôt en attente',
+    'investor.wallet.c3.no_pending': 'Disponible tout de suite pour investir',
     'investor.wallet.c3.pending_deposits':
         '{amount} pas encore confirmé — hors du total',
     'investor.wallet.c3.no_policy':
@@ -4780,13 +4780,13 @@ const fr: Catalog = {
     },
     'investor.wallet.c3.hold_expires': 'Libéré dans {time} sauf confirmation',
     'investor.wallet.c3.deposits': 'Dépôts',
-    'investor.wallet.c3.deposit_from': 'Dépôt depuis {method}',
+    'investor.wallet.c3.deposit_from': 'Dépôt · {method}',
     'investor.wallet.c3.intent.pending': 'Pas encore confirmé',
     'investor.wallet.c3.intent.unknown':
         'Pas encore confirmé — nous vérifions auprès du prestataire',
     'investor.wallet.c3.intent.succeeded': 'Crédité',
     'investor.wallet.c3.intent.failed': "Non abouti — rien n'a été crédité",
-    'investor.wallet.c3.entry.deposit_in': 'Dépôt depuis {counterparty}',
+    'investor.wallet.c3.entry.deposit_in': 'Dépôt · {counterparty}',
     'investor.wallet.c3.entry.deposit_out': 'Virement vers {counterparty}',
     'investor.wallet.c3.entry.hold': 'Réservé pour {name}',
     'investor.wallet.c3.entry.hold_release': 'Réservation libérée · {name}',
@@ -4797,7 +4797,7 @@ const fr: Catalog = {
     'investor.wallet.c3.range.today': 'Aujourd’hui',
     'investor.wallet.c3.range.7d': '7 jours',
     'investor.wallet.c3.range.30d': '30 jours',
-    'investor.wallet.c3.range.all': 'Tout',
+    'investor.wallet.c3.range.all': 'Depuis le début',
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -4818,7 +4818,7 @@ const fr: Catalog = {
     'investor.wallet.c3.withdraw_only_on_success':
         'Le montant quitte votre solde disponible maintenant et est versé dès que le prestataire confirme. Si le versement échoue, il revient dans votre portefeuille.',
     'investor.wallet.c3.withdrawals': 'Retraits',
-    'investor.wallet.c3.withdrawal_to': 'Retrait vers {method}',
+    'investor.wallet.c3.withdrawal_to': 'Retrait · {method}',
     'investor.wallet.c3.withdrawal.pending': "En cours d'envoi",
     'investor.wallet.c3.withdrawal.unknown':
         "En cours d'envoi — nous vérifions auprès du prestataire",
@@ -4831,7 +4831,7 @@ const fr: Catalog = {
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED':
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
-    'investor.wallet.c3.entry.withdrawal_out': 'Retrait vers {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
     'business.publish.release.awaiting':

@@ -100,7 +100,7 @@ describe('Business wallet (business-servicing-v1)', () => {
             within(history).getByRole('link', { name: 'Repayments' }),
         ).not.toHaveAttribute('aria-current');
         expect(history).toHaveTextContent(
-            'Deposit from Bank of Kigali ····2231',
+            'Deposit · Bank of Kigali ····2231',
         );
         expect(
             within(history).queryByRole('link', { name: 'Show more' }),
@@ -223,7 +223,7 @@ describe('Business wallet (business-servicing-v1)', () => {
         rerender(<BusinessWallet {...wallet(unknownFixture)} />);
         expect(
             screen.getByRole('region', { name: 'Deposits' }),
-        ).toHaveTextContent('Deposit from Bank of Kigali');
+        ).toHaveTextContent('Deposit · Bank of Kigali');
     });
 
     it('states a restriction without withholding deposits (§11.4)', () => {

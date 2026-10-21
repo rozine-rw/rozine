@@ -2230,8 +2230,7 @@ const rw: Catalog = {
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",
     'business.servicing.wallet.filter.external': 'Ibyabikijwe',
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
-    'business.servicing.wallet.entry.deposit':
-        'Kubitsa uvuye kuri {counterparty}',
+    'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Kwishyura · {note}',
     'business.servicing.wallet.instalments': 'Ibice {list}',
     'business.servicing.wallet.empty': 'Nta kirimo kugeza ubu.',
@@ -4734,7 +4733,7 @@ const rw: Catalog = {
         'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa biracyashoboka.',
     'investor.wallet.c3.restricted_unavailable':
         'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa ntibiboneka muri iki gihe.',
-    'investor.wallet.c3.no_pending': 'Nta kubitsa gutegereje',
+    'investor.wallet.c3.no_pending': 'Bihita bishobora gushorwa',
     'investor.wallet.c3.pending_deposits':
         '{amount} ntibiremezwa — ntibiri mu giteranyo',
     'investor.wallet.c3.no_policy':
@@ -4756,14 +4755,14 @@ const rw: Catalog = {
     },
     'investor.wallet.c3.hold_expires': 'Birekurwa mu {time} keretse wemeje',
     'investor.wallet.c3.deposits': 'Ibyabikijwe',
-    'investor.wallet.c3.deposit_from': 'Kubitsa uvuye kuri {method}',
+    'investor.wallet.c3.deposit_from': 'Kubitsa · {method}',
     'investor.wallet.c3.intent.pending': 'Ntibiremezwa',
     'investor.wallet.c3.intent.unknown':
         "Ntibiremezwa — turi kugenzura n'utanga serivisi",
     'investor.wallet.c3.intent.succeeded': 'Byashyizwe kuri konti',
     'investor.wallet.c3.intent.failed':
         'Ntibyakunze — nta cyashyizwe kuri konti',
-    'investor.wallet.c3.entry.deposit_in': 'Kubitsa uvuye kuri {counterparty}',
+    'investor.wallet.c3.entry.deposit_in': 'Kubitsa · {counterparty}',
     'investor.wallet.c3.entry.deposit_out': 'Kohereza kuri {counterparty}',
     'investor.wallet.c3.entry.hold': 'Afashwe kuri {name}',
     'investor.wallet.c3.entry.hold_release': 'Ifatwa ryarekuwe · {name}',
@@ -4774,7 +4773,7 @@ const rw: Catalog = {
     'investor.wallet.c3.range.today': 'Uyu munsi',
     'investor.wallet.c3.range.7d': 'Iminsi 7',
     'investor.wallet.c3.range.30d': 'Iminsi 30',
-    'investor.wallet.c3.range.all': 'Byose',
+    'investor.wallet.c3.range.all': 'Igihe cyose',
     'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
     'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -4796,7 +4795,7 @@ const rw: Catalog = {
     'investor.wallet.c3.withdraw_only_on_success':
         'Amafaranga ava ku yo ushobora gukoresha ubu, akoherezwa iyo utanga serivisi abyemeje. Iyo kohereza binaniranye, agaruka mu gikapu cyawe.',
     'investor.wallet.c3.withdrawals': 'Ibyabikujwe',
-    'investor.wallet.c3.withdrawal_to': 'Kubikuza kuri {method}',
+    'investor.wallet.c3.withdrawal_to': 'Kubikuza · {method}',
     'investor.wallet.c3.withdrawal.pending': 'Biroherezwa',
     'investor.wallet.c3.withdrawal.unknown':
         'Biroherezwa — turi kubaza utanga serivisi',
@@ -4811,7 +4810,7 @@ const rw: Catalog = {
         'Inyemezabwishyu yo kugarura',
     'investor.wallet.c3.entry.withdrawal_in':
         'Byagarutse bivuye kuri {counterparty}',
-    'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza kuri {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza · {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
     'business.publish.release.awaiting':
