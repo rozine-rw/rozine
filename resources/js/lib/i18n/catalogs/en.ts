@@ -2496,9 +2496,24 @@ const en = {
         'Accepted · the platform MSA and agreed procedures',
     'auditor.profile.legal.required': 'Needs your acceptance',
     'auditor.profile.legal.unavailable': "Can't be read right now",
-    'auditor.profile.pending.earnings_title': 'No earnings yet',
-    'auditor.profile.pending.earnings_body':
-        'Your 40% share of the platform fee on raises you audited will show here once it accrues.',
+    'auditor.profile.earnings.title': 'Earnings',
+    'auditor.profile.earnings.lead':
+        'Everything you have earned this month, every line, and exactly how it was worked out.',
+    'auditor.profile.earnings.this_month': 'Earned in {month}',
+    'auditor.profile.earnings.total': 'Earned in total',
+    'auditor.profile.earnings.sources': 'Where it came from',
+    'auditor.profile.earnings.platform_fee': 'Platform fee share',
+    'auditor.profile.earnings.platform_fee_rule':
+        '40% of the 3% platform fee on each raise you audited, credited when it is paid out.',
+    'auditor.profile.earnings.earnings_fee': 'Earnings fee share',
+    'auditor.profile.earnings.earnings_fee_rule':
+        '25% of the earnings fee on each monthly payout to investors. Starts with the first payout.',
+    'auditor.profile.earnings.lines': 'Every line this month',
+    'auditor.profile.earnings.line_count': '{count} lines',
+    'auditor.profile.earnings.empty':
+        'Nothing earned yet this month. A line appears the moment a raise you audited is paid out.',
+    'auditor.profile.earnings.basis':
+        'Raise {raise} · 3% platform fee {fee} · your 40% {amount}',
     'auditor.profile.pending.payout_title': 'No payout account yet',
     'auditor.profile.pending.payout_body':
         'The bank account your earnings are paid to will show here.',

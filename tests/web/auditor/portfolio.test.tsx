@@ -106,7 +106,9 @@ describe('Auditor Portfolio', () => {
             name: 'Verification earned · this month',
         });
 
-        expect(within(earned).getAllByText('—')).toHaveLength(3);
+        expect(within(earned).getByText('259,200')).toBeInTheDocument();
+        expect(within(earned).getByText('RWF')).toBeInTheDocument();
+        expect(within(earned).getAllByText('—')).toHaveLength(2);
         expect(within(earned).getByText('Managed deals')).toBeInTheDocument();
         expect(within(earned).getByText('Next payout')).toBeInTheDocument();
         expect(

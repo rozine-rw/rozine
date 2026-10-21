@@ -16,6 +16,7 @@ import {
 } from '@/components/auditor/profile/account-sections';
 import { AccreditationSection } from '@/components/auditor/profile/accreditation-section';
 import { AvailabilitySection } from '@/components/auditor/profile/availability-section';
+import { EarningsSection } from '@/components/auditor/profile/earnings-section';
 import { IdentityCard } from '@/components/auditor/profile/identity-card';
 import { COLUMN } from '@/components/auditor/tab-columns';
 import { DIVIDER } from '@/components/auditor/ui';
@@ -64,7 +65,7 @@ export default function AuditorProfile(props: AuditorProfileProps) {
         />
     );
     const sections: Record<ProfileSection, ReactNode> = {
-        earnings: <PendingSection kind="earnings" />,
+        earnings: <EarningsSection earnings={props.earnings} />,
         contact: <ContactSection contact={props.contact} />,
         accreditation,
         payout: <PendingSection kind="payout" />,

@@ -2586,9 +2586,25 @@ const rw: Catalog = {
         "Yemejwe · amasezerano rusange n'uburyo bwumvikanyweho",
     'auditor.profile.legal.required': 'Bisaba ko ubyemeza',
     'auditor.profile.legal.unavailable': 'Ntibishoboka gusomwa ubu',
-    'auditor.profile.pending.earnings_title': 'Nta byo winjije biraboneka',
-    'auditor.profile.pending.earnings_body':
-        "Umugabane wawe wa 40% w'amafaranga ya platform ku nkunga wagenzuye uzagaragara hano numara kuboneka.",
+    'auditor.profile.earnings.title': 'Ibyo winjije',
+    'auditor.profile.earnings.lead':
+        "Ibyo winjije byose uku kwezi, umurongo ku murongo, n'uko buri mubare wabazwe.",
+    'auditor.profile.earnings.this_month': 'Ibyo winjije muri {month}',
+    'auditor.profile.earnings.total': 'Ibyo winjije byose hamwe',
+    'auditor.profile.earnings.sources': 'Aho byaturutse',
+    'auditor.profile.earnings.platform_fee':
+        "Umugabane w'amafaranga ya platform",
+    'auditor.profile.earnings.platform_fee_rule':
+        "40% by'amafaranga ya platform ya 3% kuri buri nkunga wagenzuye, ashyirwa kuri konti iyo yishyuwe.",
+    'auditor.profile.earnings.earnings_fee': "Umugabane w'amafaranga ku nyungu",
+    'auditor.profile.earnings.earnings_fee_rule':
+        "25% by'amafaranga ku nyungu kuri buri bwishyu bwa buri kwezi bw'abashoramari. Bitangirana n'ubwishyu bwa mbere.",
+    'auditor.profile.earnings.lines': "Imirongo yose y'uku kwezi",
+    'auditor.profile.earnings.line_count': 'Imirongo {count}',
+    'auditor.profile.earnings.empty':
+        'Nta cyo urinjiza uku kwezi. Umurongo ugaragara ako kanya inkunga wagenzuye yishyuwe.',
+    'auditor.profile.earnings.basis':
+        'Inkunga {raise} · amafaranga ya platform ya 3% {fee} · 40% byawe {amount}',
     'auditor.profile.pending.payout_title':
         'Nta konti yo kwishyurirwaho iracyahari',
     'auditor.profile.pending.payout_body':

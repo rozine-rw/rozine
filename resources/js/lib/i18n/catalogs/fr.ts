@@ -2595,9 +2595,24 @@ const fr: Catalog = {
         'Acceptées · le contrat-cadre et les procédures convenues',
     'auditor.profile.legal.required': 'Votre acceptation est requise',
     'auditor.profile.legal.unavailable': 'Lecture impossible pour le moment',
-    'auditor.profile.pending.earnings_title': 'Aucun revenu pour le moment',
-    'auditor.profile.pending.earnings_body':
-        "Votre part de 40 % des frais de plateforme sur les levées que vous avez auditées apparaîtra ici dès qu'elle sera acquise.",
+    'auditor.profile.earnings.title': 'Revenus',
+    'auditor.profile.earnings.lead':
+        'Tout ce que vous avez gagné ce mois-ci, ligne par ligne, et comment chaque montant a été calculé.',
+    'auditor.profile.earnings.this_month': 'Gagné en {month}',
+    'auditor.profile.earnings.total': 'Gagné au total',
+    'auditor.profile.earnings.sources': 'Provenance',
+    'auditor.profile.earnings.platform_fee': 'Part des frais de plateforme',
+    'auditor.profile.earnings.platform_fee_rule':
+        '40 % des frais de plateforme de 3 % sur chaque levée que vous avez auditée, crédités au décaissement.',
+    'auditor.profile.earnings.earnings_fee': 'Part des frais sur les gains',
+    'auditor.profile.earnings.earnings_fee_rule':
+        '25 % des frais sur les gains à chaque versement mensuel aux investisseurs. Commence au premier versement.',
+    'auditor.profile.earnings.lines': 'Toutes les lignes du mois',
+    'auditor.profile.earnings.line_count': '{count} lignes',
+    'auditor.profile.earnings.empty':
+        "Rien de gagné ce mois-ci. Une ligne apparaît dès qu'une levée que vous avez auditée est décaissée.",
+    'auditor.profile.earnings.basis':
+        'Levée {raise} · frais de plateforme de 3 % {fee} · vos 40 % {amount}',
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',

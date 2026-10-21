@@ -32,8 +32,8 @@ import type { AuditorPortfolioProps } from '@/types/auditor';
  *
  * The calendar is built from the partner's own reads: each verification still owed by its due
  * date, and each filed report (MVP-AUDITOR-SCR-07) with its co-signature state and, if rejected,
- * its linked amendment. Earnings, origination, yield-share and managed deals have no read yet and
- * show the design's empty states. A declaration is offered only while `allowed_actions` lists
+ * its linked amendment. Earnings are the partner's platform fee shares this month; origination,
+ * yield-share and managed deals have no read yet and show the design's empty states. A declaration is offered only while `allowed_actions` lists
  * `conflict.declare`.
  */
 export default function AuditorPortfolio(props: AuditorPortfolioProps) {
@@ -70,7 +70,7 @@ export default function AuditorPortfolio(props: AuditorPortfolioProps) {
                             />
                             <SourcedDeals />
                             <ConflictRegister conflicts={props.conflicts} />
-                            <EarningsSummary />
+                            <EarningsSummary earnings={props.earnings} />
                             <YieldShare />
                             <AuditCalendar
                                 today={today}

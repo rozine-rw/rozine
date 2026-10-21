@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { Eyebrow, EmptyState } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatAmount } from '@/lib/rozine/format';
+import type { AuditorEarnings } from '@/types/auditor';
 import type { RouteLink } from '@/types/routing';
 
 /**
@@ -58,10 +60,11 @@ export function SourcedDeals() {
 }
 
 /**
- * This month's verification earnings, managed deals and next payout (design L416–424). None has a
- * read yet, so each reads as a dash.
+ * This month's earnings, managed deals and next payout (design L416–424). Earnings are the
+ * partner's platform fee shares credited this Kigali month. Managed deals and the next payout have
+ * no read yet, so each reads as a dash.
  */
-export function EarningsSummary() {
+export function EarningsSummary({ earnings }: { earnings: AuditorEarnings }) {
     const { t } = useTranslation();
 
     return (
@@ -75,7 +78,14 @@ export function EarningsSummary() {
             >
                 {t('auditor.portfolio.earnings.title')}
             </h2>
-            <p className="mt-[5px] text-[30px] font-bold tracking-[-.5px]">—</p>
+            <p className="mt-[5px] flex items-baseline gap-1.5">
+                <span className="text-[14px] font-bold text-white/80">
+                    {earnings.this_month.currency}
+                </span>
+                <span className="text-[30px] font-bold tracking-[-.5px]">
+                    {formatAmount(earnings.this_month)}
+                </span>
+            </p>
             <dl className="mt-3 flex gap-2">
                 {(['managed', 'next_payout'] as const).map((key) => (
                     <div

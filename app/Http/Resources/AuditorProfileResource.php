@@ -16,15 +16,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * quality score — so the page
  * leaves them out rather than showing a stand-in. Every section of the design's menu is linked:
  * contact carries the account's own email, security whether two-factor sign-in is on, and legal
- * the engagement terms the partner accepted; earnings, the payout account, telemetry and the
- * academy have no read yet and show an empty state.
+ * the engagement terms the partner accepted, and earnings the partner's platform fee shares; the
+ * payout account, telemetry and the academy have no read yet and show an empty state.
  *
  * @phpstan-type Accreditation array{contract_version: string, identity_context_revision: int, server_time: string, standing: array<string, mixed>, accreditation: array{submission: array{status: string, id?: string}}&array<string, mixed>, availability: array<string, mixed>, allowed_actions: list<string>}
  *
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
+ * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
  *
- * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int, on_time_pct?: int|null}
+ * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int, on_time_pct?: int|null, earnings: Earnings}
  */
 class AuditorProfileResource extends JsonResource
 {
@@ -57,6 +58,7 @@ class AuditorProfileResource extends JsonResource
             'quality_score' => null,
             'on_time_pct' => $page['on_time_pct'] ?? null,
             'jobs_done' => $page['filed'],
+            'earnings' => AuditorPortfolioResource::earnings($page['earnings']),
             'contact' => ['email' => $page['email'], 'phone' => null, 'address' => null],
             'security' => ['two_factor' => $page['two_factor']],
             'accreditation' => $data['accreditation'],

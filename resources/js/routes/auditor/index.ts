@@ -91,7 +91,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -106,7 +106,7 @@ profile.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 profile.url = (options?: RouteQueryOptions) => {
@@ -115,7 +115,7 @@ profile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -125,7 +125,7 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -135,7 +135,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -155,7 +155,7 @@ profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:41
+* @see app/Http/Controllers/AuditorProfileController.php:42
 * @route '/auditor/profile'
 */
 profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
