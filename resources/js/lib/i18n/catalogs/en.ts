@@ -1781,6 +1781,73 @@ const en = {
     'admin.parties.standing.pending': 'Pending verification',
     'admin.parties.standing.licence_expired': 'Licence expired',
     'admin.parties.standing.suspended': 'Suspended',
+    'admin.matrix.title': 'Role permissions',
+    'admin.matrix.info':
+        'What each tier may do. Lower tiers are blocked from destructive actions, not just hidden from them.',
+    'admin.matrix.col.capability': 'Capability',
+    'admin.matrix.col.detail': 'What it allows',
+    'admin.matrix.granted': 'Allowed',
+    'admin.matrix.withheld': 'Not allowed',
+    'admin.permission.admin.open': 'Open the console',
+    'admin.permission_detail.admin.open':
+        'Sign in to the staff console, its dashboard and Staff & Roles.',
+    'admin.permission.businesses.view': 'View businesses',
+    'admin.permission_detail.businesses.view':
+        'Read the business directory and each business 360.',
+    'admin.permission.businesses.verify': 'Verify businesses',
+    'admin.permission_detail.businesses.verify':
+        'Decide business verification, with a recorded reason.',
+    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission_detail.investors.verify':
+        'Decide investor identity checks and read Activity & Audit.',
+    'admin.permission.applications.review': 'Review applications',
+    'admin.permission_detail.applications.review':
+        'Review raise applications and release them for publishing.',
+    'admin.permission.audit.partners.verify': 'Verify Audit Partners',
+    'admin.permission_detail.audit.partners.verify':
+        'Approve CPA firms and read partner coverage.',
+    'admin.permission.audit.assignments.manage': 'Assign audits',
+    'admin.permission_detail.audit.assignments.manage':
+        'Dispatch and reassign audits to Audit Partners.',
+    'admin.permission.audit.reports.view': 'Read audit reports',
+    'admin.permission_detail.audit.reports.view':
+        'Open sealed audit reports and their evidence.',
+    'admin.permission.consent.documents.record': 'Record legal documents',
+    'admin.permission_detail.consent.documents.record':
+        'Record new versions of the Terms and the Privacy Note.',
+    'admin.permission.ledger.view': 'View the ledger',
+    'admin.permission_detail.ledger.view': 'Read ledger entries and balances.',
+    'admin.permission.disbursements.view': 'View disbursements',
+    'admin.permission_detail.disbursements.view':
+        'See the disbursement queue and each release.',
+    'admin.permission.disbursements.hold': 'Hold disbursements',
+    'admin.permission_detail.disbursements.hold':
+        'Hold a disbursement before it is released.',
+    'admin.permission.disbursements.requery': 'Requery disbursements',
+    'admin.permission_detail.disbursements.requery':
+        "Ask the payment provider for a disbursement's current state.",
+    'admin.permission.staging.mail.testers.manage': 'Manage mail testers',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Choose who receives email on staging.',
+    'admin.permission.reconciliation.view': 'View reconciliation',
+    'admin.permission_detail.reconciliation.view':
+        'Compare the ledger with provider statements.',
+    'admin.permission.exceptions.view': 'View exceptions',
+    'admin.permission_detail.exceptions.view':
+        "See the Risk Center's open exceptions.",
+    'admin.permission.messaging.view': 'View messaging',
+    'admin.permission_detail.messaging.view': 'Read the messaging history.',
+    'admin.permission.primary.view': 'View the primary market',
+    'admin.permission_detail.primary.view':
+        'Follow live raises and the Notes register.',
+    'admin.permission.payments.view': 'View payments',
+    'admin.permission_detail.payments.view': 'Open the Payment Center.',
+    'admin.permission.complaints.answer': 'Answer complaints',
+    'admin.permission_detail.complaints.answer':
+        'Reply to and close participant complaints.',
+    'admin.permission.health.view': 'View system health',
+    'admin.permission_detail.health.view':
+        'See queues, jobs and service status.',
     'admin.parties.you': 'You',
     'admin.parties.drawer_label': '{name}, party record',
     'admin.parties.type.business': 'Business',

@@ -19,6 +19,27 @@ final class StaffPermission
             'disbursements.view', 'staging.mail.testers.manage', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
     ];
 
+    /** The console's roles from most to least privileged, as the matrix lists them. */
+    private const ORDER = ['superadmin', 'compliance', 'approver', 'treasury', 'analyst'];
+
+    /**
+     * Every capability a staff role can grant, in the order the roles first grant them (the most
+     * privileged first), with the roles that grant it. Every enabled operator may open the console.
+     *
+     * @return list<array{key: string, roles: list<string>}>
+     */
+    public static function matrix(): array
+    {
+        $matrix = ['admin.open' => self::ORDER];
+        foreach (self::ORDER as $role) {
+            foreach (self::ROLES[$role] as $permission) {
+                $matrix[$permission][] = $role;
+            }
+        }
+
+        return array_map(fn (string $key, array $roles): array => ['key' => $key, 'roles' => array_values(array_unique($roles))], array_keys($matrix), array_values($matrix));
+    }
+
     /**
      * @param  list<string>  $roles
      * @return list<string>

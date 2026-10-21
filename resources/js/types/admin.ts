@@ -552,9 +552,41 @@ export type StaffPartyRow = {
     initials: string;
     /** The operator's most privileged role; null when they hold none. */
     role: StaffRole | null;
+    /** Every role the operator holds, most privileged first. */
+    roles: StaffRole[];
     frozen: boolean;
     you: boolean;
     link: RouteLink;
+};
+
+/** A capability a staff role can grant (`StaffPermission`); every operator may open the console. */
+export type StaffPermissionKey =
+    | 'admin.open'
+    | 'businesses.view'
+    | 'businesses.verify'
+    | 'investors.verify'
+    | 'applications.review'
+    | 'audit.partners.verify'
+    | 'audit.assignments.manage'
+    | 'audit.reports.view'
+    | 'consent.documents.record'
+    | 'ledger.view'
+    | 'disbursements.view'
+    | 'disbursements.hold'
+    | 'disbursements.requery'
+    | 'staging.mail.testers.manage'
+    | 'reconciliation.view'
+    | 'exceptions.view'
+    | 'messaging.view'
+    | 'primary.view'
+    | 'payments.view'
+    | 'complaints.answer'
+    | 'health.view';
+
+/** One row of the Staff & Roles permission matrix: a capability and the roles that grant it. */
+export type PermissionMatrixRow = {
+    key: StaffPermissionKey;
+    roles: StaffRole[];
 };
 
 export type PartyDirectory =
@@ -695,6 +727,8 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     total: number;
     directory: PartyDirectory;
     party: PartyDetail | null;
+    /** Staff & Roles only: what each role may do. */
+    permission_matrix?: PermissionMatrixRow[];
 };
 
 /* ------------------------------------------------------------------------------------------ */

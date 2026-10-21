@@ -135,16 +135,21 @@ describe('Party directories', () => {
                 id: 'stf_05',
                 name: 'Nadia K.',
                 role: 'superadmin',
+                roles: ['superadmin'],
             });
         }
 
         render(<AdminParties {...fixture} />);
 
+        const operators = screen.getByRole('table', { name: 'Operators' });
+
         expect(screen.getByText('4 operators')).toBeInTheDocument();
         expect(screen.getByText('You')).toBeInTheDocument();
-        expect(screen.getAllByText('Approver').length).toBeGreaterThan(1);
-        expect(screen.getByText('Analyst')).toBeInTheDocument();
-        expect(screen.getByText('Super-admin')).toBeInTheDocument();
+        expect(
+            within(operators).getAllByText('Approver').length,
+        ).toBeGreaterThan(1);
+        expect(within(operators).getByText('Analyst')).toBeInTheDocument();
+        expect(within(operators).getByText('Super-admin')).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('region', {
@@ -247,13 +252,78 @@ describe('Party directories', () => {
         expect(within(jean).getByText('Huye')).toBeInTheDocument();
     });
 
+    it('shows every role an operator holds and what each role may do', () => {
+        render(<AdminParties {...props(staffFixture)} />);
+
+        const eric = screen.getByRole('row', { name: /Eric Ndoli/ });
+
+        expect(within(eric).getByText('Approver')).toBeInTheDocument();
+        expect(within(eric).getByText('Treasury')).toBeInTheDocument();
+
+        const matrix = screen.getByRole('table', { name: 'Role permissions' });
+
+        expect(
+            within(matrix)
+                .getAllByRole('columnheader')
+                .map((cell) => cell.textContent),
+        ).toEqual([
+            'Capability',
+            'What it allows',
+            'Super-admin',
+            'Compliance',
+            'Approver',
+            'Treasury',
+            'Analyst',
+        ]);
+        expect(
+            screen.getByText(
+                'What each tier may do. Lower tiers are blocked from destructive actions, not just hidden from them.',
+            ),
+        ).toBeInTheDocument();
+
+        const requery = within(matrix).getByRole('row', {
+            name: /Requery disbursements/,
+        });
+
+        expect(
+            within(requery).getByText(
+                "Ask the payment provider for a disbursement's current state.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(requery)
+                .getAllByRole('cell')
+                .slice(2)
+                .map((cell) => cell.getAttribute('aria-label')),
+        ).toEqual([
+            'Not allowed',
+            'Not allowed',
+            'Not allowed',
+            'Allowed',
+            'Not allowed',
+        ]);
+        expect(within(matrix).getAllByRole('row')).toHaveLength(22);
+    });
+
+    it('shows no permission matrix outside Staff & Roles', () => {
+        render(<AdminParties {...props(investorsFixture)} />);
+
+        expect(
+            screen.queryByRole('table', { name: 'Role permissions' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('lists a Treasury operator, and one without a role as a dash', () => {
         const fixture = props(staffFixture);
 
         if (fixture.directory.kind === 'staff') {
             fixture.directory.rows = [
-                { ...fixture.directory.rows[1], role: 'treasury' },
-                { ...fixture.directory.rows[2], role: null },
+                {
+                    ...fixture.directory.rows[1],
+                    role: 'treasury',
+                    roles: ['treasury'],
+                },
+                { ...fixture.directory.rows[2], role: null, roles: [] },
             ];
         }
 
@@ -269,7 +339,11 @@ describe('Party directories', () => {
                 '—',
             ),
         ).toBeInTheDocument();
-        expect(screen.queryByText('Analyst')).not.toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Operators' }),
+            ).queryByText('Analyst'),
+        ).not.toBeInTheDocument();
     });
 
     it('says when nothing matches, and without stats', () => {

@@ -9,8 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * The designed Staff & Roles directory (`admin/parties`, kind staff) from live staff accounts: the
- * three figures, the chips with their counts, every operator with their most privileged role, and
- * one operator's 360. A disabled staff account reads as frozen, attributed to the identity audit
+ * three figures, the chips with their counts, every operator with their most privileged role and
+ * all their roles, what each role may do (the permission matrix), and one operator's 360. A disabled staff account reads as frozen, attributed to the identity audit
  * entry that disabled it; its enable and disable entries are its freezes and releases. Sign-ins
  * are not recorded, so the 360 shows no last sign-in. No staff command is offered here.
  *
@@ -22,7 +22,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Member array{row: StaffRow, history: list<HistoryEntry>}
  * @phpstan-type Page array{
  *     rows: list<StaffRow>, matching: int, counts: Counts, chip: string, search: string, member: Member|null,
- *     roles: list<string>, permissions: list<string>
+ *     matrix: list<array{key: string, roles: list<string>}>, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffDirectoryResource extends JsonResource
@@ -56,9 +56,11 @@ class StaffDirectoryResource extends JsonResource
             'filters' => [], 'shown' => count($page['rows']), 'total' => $page['matching'],
             'directory' => ['kind' => 'staff', 'rows' => array_map(fn (array $row): array => ['id' => (string) $row['user_id'], 'name' => $row['name'],
                 'email' => $row['email'], 'initials' => StaffViewerResource::initials($row['name']), 'role' => StaffViewerResource::role($row['roles']),
+                'roles' => array_values(array_intersect(StaffViewerResource::ROLES, $row['roles'])),
                 'frozen' => ! $row['enabled'], 'you' => (string) $row['user_id'] === $viewer,
                 'link' => $link([...$position, 'operator' => $row['user_id']])], $page['rows'])],
-            'party' => $page['member'] === null ? null : self::member($page['member'], $link($position))];
+            'party' => $page['member'] === null ? null : self::member($page['member'], $link($position)),
+            'permission_matrix' => $page['matrix']];
     }
 
     /**

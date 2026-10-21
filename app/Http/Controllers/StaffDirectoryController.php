@@ -27,7 +27,7 @@ class StaffDirectoryController extends Controller
         $staff = $access->handle($actorId);
 
         $resource = new StaffDirectoryResource([...$directory->directory($actorId, $chip, $search), 'chip' => $chip, 'search' => $search,
-            'member' => $operator === null ? null : $directory->member($actorId, (int) $operator),
+            'member' => $operator === null ? null : $directory->member($actorId, (int) $operator), 'matrix' => $directory->permissions($actorId),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));

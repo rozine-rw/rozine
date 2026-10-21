@@ -1860,6 +1860,76 @@ const rw: Catalog = {
     'admin.parties.standing.pending': 'Ategereje kwemezwa',
     'admin.parties.standing.licence_expired': 'Uruhushya rwarangiye',
     'admin.parties.standing.suspended': "Yahagaritswe by'agateganyo",
+    'admin.matrix.title': "Uburenganzira bw'inshingano",
+    'admin.matrix.info':
+        'Icyo buri rwego rwemerewe gukora. Inzego zo hasi zibuzwa ibikorwa byangiza, ntizihishwa gusa.',
+    'admin.matrix.col.capability': 'Ubushobozi',
+    'admin.matrix.col.detail': 'Icyo bwemerera',
+    'admin.matrix.granted': 'Byemewe',
+    'admin.matrix.withheld': 'Ntibyemewe',
+    'admin.permission.admin.open': 'Gufungura konsole',
+    'admin.permission_detail.admin.open':
+        "Kwinjira muri konsole y'abakozi, imbonerahamwe yayo n'Abakozi n'inshingano.",
+    'admin.permission.businesses.view': 'Kureba ibigo',
+    'admin.permission_detail.businesses.view':
+        "Gusoma urutonde rw'ibigo n'amakuru yose ya buri kigo.",
+    'admin.permission.businesses.verify': 'Kugenzura ibigo',
+    'admin.permission_detail.businesses.verify':
+        "Gufata icyemezo ku igenzura ry'ibigo, handitswe impamvu.",
+    'admin.permission.investors.verify': 'Kugenzura abashoramari',
+    'admin.permission_detail.investors.verify':
+        "Gufata icyemezo ku igenzura ry'umwirondoro w'abashoramari no gusoma Ibikorwa n'igenzura.",
+    'admin.permission.applications.review': 'Gusuzuma ubusabe',
+    'admin.permission_detail.applications.review':
+        'Gusuzuma ubusabe bwo gukusanya imari no kubwemerera gutangazwa.',
+    'admin.permission.audit.partners.verify':
+        'Kugenzura abafatanyabikorwa mu igenzura',
+    'admin.permission_detail.audit.partners.verify':
+        'Kwemeza ibigo bya CPA no kureba aho abafatanyabikorwa bakorera.',
+    'admin.permission.audit.assignments.manage': 'Gutanga igenzura',
+    'admin.permission_detail.audit.assignments.manage':
+        'Kohereza no kwimurira igenzura ku bafatanyabikorwa mu igenzura.',
+    'admin.permission.audit.reports.view': "Gusoma raporo z'igenzura",
+    'admin.permission_detail.audit.reports.view':
+        "Gufungura raporo z'igenzura zafunzwe n'ibimenyetso byazo.",
+    'admin.permission.consent.documents.record':
+        "Kwandika inyandiko z'amategeko",
+    'admin.permission_detail.consent.documents.record':
+        "Kwandika verisiyo nshya z'Amabwiriza n'Itangazo ry'ibanga.",
+    'admin.permission.ledger.view': "Kureba igitabo cy'imari",
+    'admin.permission_detail.ledger.view':
+        "Gusoma ibyanditswe mu gitabo cy'imari n'amafaranga asigaye.",
+    'admin.permission.disbursements.view': 'Kureba kwishyura',
+    'admin.permission_detail.disbursements.view':
+        "Kureba urutonde rw'ibyishyurwa na buri kurekurwa.",
+    'admin.permission.disbursements.hold': 'Guhagarika kwishyura',
+    'admin.permission_detail.disbursements.hold':
+        'Guhagarika ubwishyu mbere y’uko burekurwa.',
+    'admin.permission.disbursements.requery': 'Kongera kubaza ku bwishyu',
+    'admin.permission_detail.disbursements.requery':
+        "Kubaza utanga serivisi z'ubwishyu uko ubwishyu buhagaze ubu.",
+    'admin.permission.staging.mail.testers.manage': 'Gucunga abagerageza imeri',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Guhitamo abakira imeri kuri staging.',
+    'admin.permission.reconciliation.view': 'Kureba guhuza konti',
+    'admin.permission_detail.reconciliation.view':
+        "Kugereranya igitabo cy'imari n'imbonerahamwe z'abatanga serivisi.",
+    'admin.permission.exceptions.view': 'Kureba ibidasanzwe',
+    'admin.permission_detail.exceptions.view':
+        "Kureba ibidasanzwe bifunguye mu Kigo cy'ingaruka.",
+    'admin.permission.messaging.view': 'Kureba ubutumwa',
+    'admin.permission_detail.messaging.view': "Gusoma amateka y'ubutumwa.",
+    'admin.permission.primary.view': "Kureba isoko ry'ibanze",
+    'admin.permission_detail.primary.view':
+        "Gukurikirana ikusanyamari riri gukorwa n'urutonde rw'inoti.",
+    'admin.permission.payments.view': 'Kureba ubwishyu',
+    'admin.permission_detail.payments.view': "Gufungura Ikigo cy'ubwishyu.",
+    'admin.permission.complaints.answer': 'Gusubiza ibirego',
+    'admin.permission_detail.complaints.answer':
+        "Gusubiza no gufunga ibirego by'abitabiriye.",
+    'admin.permission.health.view': 'Kureba ubuzima bwa sisitemu',
+    'admin.permission_detail.health.view':
+        "Kureba imirongo y'ibitegereje, imirimo n'uko serivisi zihagaze.",
     'admin.parties.you': 'Wowe',
     'admin.parties.drawer_label': "{name}, amakuru y'uruhande",
     'admin.parties.type.business': 'Ikigo',

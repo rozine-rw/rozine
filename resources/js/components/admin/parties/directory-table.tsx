@@ -339,7 +339,7 @@ function StaffRow({ row }: { row: StaffPartyRow }) {
                     </div>
                 </div>
             </div>
-            <span role="cell">
+            <span role="cell" className="flex flex-wrap items-center gap-1">
                 {row.role === null ? (
                     <span className="text-[12.5px] text-rz-muted">—</span>
                 ) : (
@@ -347,6 +347,13 @@ function StaffRow({ row }: { row: StaffPartyRow }) {
                         {t(`admin.role.${row.role}`)}
                     </Chip>
                 )}
+                {row.roles
+                    .filter((role) => role !== row.role)
+                    .map((role) => (
+                        <Chip key={role} tone="grey" className="text-[11px]">
+                            {t(`admin.role.${role}`)}
+                        </Chip>
+                    ))}
             </span>
             <span role="cell">
                 <Chip

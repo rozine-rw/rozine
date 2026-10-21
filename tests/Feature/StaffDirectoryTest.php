@@ -33,7 +33,7 @@ test('every staff member sees the designed Staff & Roles directory; participants
             ->where('stats', [['key' => 'operators', 'value' => ['kind' => 'count', 'value' => 1]], ['key' => 'approvers', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'frozen_accounts', 'value' => ['kind' => 'count', 'value' => 0]]])
             ->where('directory.rows', [['id' => (string) $analyst->id, 'name' => 'Grace Kalisa', 'email' => $analyst->email, 'initials' => 'GK', 'role' => 'analyst',
-                'frozen' => false, 'you' => true, 'link' => ['url' => '/admin/staff?operator='.$analyst->id, 'method' => 'get']]]));
+                'roles' => ['analyst'], 'frozen' => false, 'you' => true, 'link' => ['url' => '/admin/staff?operator='.$analyst->id, 'method' => 'get']]]));
     $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get(route('staff.staff.index'))->assertForbidden();
     auth()->logout();
     $this->get(route('staff.staff.index'))->assertRedirect(route('login'));
@@ -57,7 +57,8 @@ test('rows carry real roles and account states, and the chips and search count t
             ->where('directory.rows', function (Collection $rows) use ($viewer, $eric, $frozen, $treasury): bool {
                 $rows = $rows->keyBy('id');
 
-                return $rows[(string) $viewer->id]['role'] === 'compliance' && $rows[(string) $viewer->id]['you'] === true
+                return $rows[(string) $viewer->id]['role'] === 'compliance' && $rows[(string) $viewer->id]['roles'] === ['compliance', 'approver']
+                    && $rows[(string) $viewer->id]['you'] === true
                     && $rows[(string) $eric->id]['role'] === 'approver' && $rows[(string) $eric->id]['you'] === false
                     && $rows[(string) $frozen->id]['frozen'] === true && $rows[(string) $frozen->id]['initials'] === 'JP'
                     && $rows[(string) $treasury->id]['role'] === 'treasury'
@@ -113,7 +114,25 @@ test('the directory answers over the API with the read ability and links API rou
         ->assertJsonPath('data.nav.today.url', '/api/v1/staff/dashboard')
         ->assertJsonPath('data.nav.events.url', '/api/v1/staff/activity')
         ->assertJsonPath('data.directory.rows.0.link.url', '/api/v1/staff/staff?operator='.$viewer->id)
-        ->assertJsonPath('data.party.links.close.url', '/api/v1/staff/staff');
+        ->assertJsonPath('data.party.links.close.url', '/api/v1/staff/staff')
+        ->assertJsonPath('data.permission_matrix.0', ['key' => 'admin.open', 'roles' => ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']]);
     Sanctum::actingAs($viewer, ['staff:investors:read']);
     $this->getJson('/api/v1/staff/staff')->assertForbidden();
+});
+
+test('the permission matrix lists what each role may do from the role definitions', function (): void {
+    $this->actingAs(rosterStaff(['analyst']))->get(route('staff.staff.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('permission_matrix', function (Collection $matrix): bool {
+            $roles = $matrix->pluck('roles', 'key');
+
+            return $matrix->count() === 21 && $matrix->pluck('key')->unique()->count() === 21
+                && $roles['admin.open'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
+                && $roles['primary.view'] === ['superadmin', 'compliance', 'approver', 'treasury', 'analyst']
+                && $roles['investors.verify'] === ['superadmin', 'compliance']
+                && $roles['disbursements.hold'] === ['compliance', 'approver', 'treasury']
+                && $roles['disbursements.requery'] === ['treasury']
+                && $roles['staging.mail.testers.manage'] === ['superadmin']
+                && $matrix->filter(fn (array $row): bool => in_array('analyst', $row['roles'], true))->pluck('key')->all()
+                    === ['admin.open', 'businesses.view', 'audit.reports.view', 'primary.view'];
+        }));
 });

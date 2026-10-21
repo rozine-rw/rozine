@@ -1867,6 +1867,77 @@ const fr: Catalog = {
     'admin.parties.standing.pending': 'Vérification en attente',
     'admin.parties.standing.licence_expired': 'Licence expirée',
     'admin.parties.standing.suspended': 'Suspendu',
+    'admin.matrix.title': 'Permissions des rôles',
+    'admin.matrix.info':
+        'Ce que chaque niveau peut faire. Les niveaux inférieurs sont bloqués pour les actions destructrices, pas seulement privés de leur affichage.',
+    'admin.matrix.col.capability': 'Capacité',
+    'admin.matrix.col.detail': 'Ce qu’elle permet',
+    'admin.matrix.granted': 'Autorisé',
+    'admin.matrix.withheld': 'Non autorisé',
+    'admin.permission.admin.open': 'Ouvrir la console',
+    'admin.permission_detail.admin.open':
+        'Se connecter à la console du personnel, à son tableau de bord et à Personnel et rôles.',
+    'admin.permission.businesses.view': 'Voir les entreprises',
+    'admin.permission_detail.businesses.view':
+        "Consulter l'annuaire des entreprises et la fiche 360 de chacune.",
+    'admin.permission.businesses.verify': 'Vérifier les entreprises',
+    'admin.permission_detail.businesses.verify':
+        'Décider de la vérification des entreprises, avec un motif consigné.',
+    'admin.permission.investors.verify': 'Vérifier les investisseurs',
+    'admin.permission_detail.investors.verify':
+        "Décider des contrôles d'identité des investisseurs et consulter Activité et audit.",
+    'admin.permission.applications.review': 'Examiner les demandes',
+    'admin.permission_detail.applications.review':
+        'Examiner les demandes de levée et les libérer pour publication.',
+    'admin.permission.audit.partners.verify':
+        "Vérifier les partenaires d'audit",
+    'admin.permission_detail.audit.partners.verify':
+        'Approuver les cabinets CPA et consulter la couverture des partenaires.',
+    'admin.permission.audit.assignments.manage': 'Attribuer les audits',
+    'admin.permission_detail.audit.assignments.manage':
+        "Envoyer et réattribuer les audits aux partenaires d'audit.",
+    'admin.permission.audit.reports.view': "Lire les rapports d'audit",
+    'admin.permission_detail.audit.reports.view':
+        "Ouvrir les rapports d'audit scellés et leurs preuves.",
+    'admin.permission.consent.documents.record':
+        'Enregistrer les documents juridiques',
+    'admin.permission_detail.consent.documents.record':
+        'Enregistrer les nouvelles versions des Conditions et de la Note de confidentialité.',
+    'admin.permission.ledger.view': 'Voir le grand livre',
+    'admin.permission_detail.ledger.view':
+        'Consulter les écritures et les soldes du grand livre.',
+    'admin.permission.disbursements.view': 'Voir les décaissements',
+    'admin.permission_detail.disbursements.view':
+        'Voir la file des décaissements et chaque libération.',
+    'admin.permission.disbursements.hold': 'Suspendre les décaissements',
+    'admin.permission_detail.disbursements.hold':
+        'Suspendre un décaissement avant sa libération.',
+    'admin.permission.disbursements.requery': 'Réinterroger les décaissements',
+    'admin.permission_detail.disbursements.requery':
+        "Demander au prestataire de paiement l'état actuel d'un décaissement.",
+    'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Choisir qui reçoit les e-mails en préproduction.',
+    'admin.permission.reconciliation.view': 'Voir le rapprochement',
+    'admin.permission_detail.reconciliation.view':
+        'Comparer le grand livre aux relevés des prestataires.',
+    'admin.permission.exceptions.view': 'Voir les exceptions',
+    'admin.permission_detail.exceptions.view':
+        'Voir les exceptions ouvertes du Centre des risques.',
+    'admin.permission.messaging.view': 'Voir la messagerie',
+    'admin.permission_detail.messaging.view':
+        "Consulter l'historique de la messagerie.",
+    'admin.permission.primary.view': 'Voir le marché primaire',
+    'admin.permission_detail.primary.view':
+        'Suivre les levées en cours et le registre des notes.',
+    'admin.permission.payments.view': 'Voir les paiements',
+    'admin.permission_detail.payments.view': 'Ouvrir le Centre des paiements.',
+    'admin.permission.complaints.answer': 'Répondre aux réclamations',
+    'admin.permission_detail.complaints.answer':
+        'Répondre aux réclamations des participants et les clôturer.',
+    'admin.permission.health.view': "Voir l'état du système",
+    'admin.permission_detail.health.view':
+        "Voir les files, les tâches et l'état des services.",
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',
