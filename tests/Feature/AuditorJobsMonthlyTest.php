@@ -23,8 +23,8 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-/** @return array{windows: list<array<string, mixed>>, reports: list<array<string, mixed>>, desk_reviews: list<array<string, mixed>>} */
-function auditorMonthly(User $user): array
+/** @return array{windows: list<array<string, mixed>>, reports: list<array<string, mixed>>, desk_reviews: list<array<string, mixed>>}|null */
+function auditorMonthly(User $user): ?array
 {
     $monthly = [];
     actingAs($user)->get('/auditor/jobs')->assertOk()->assertInertia(function (Assert $page) use (&$monthly): Assert {
@@ -40,7 +40,7 @@ it('shows an accepted monthly visit with no report yet as a window to open, link
     $fixture = AuditAssignmentFixture::make(1);
     $user = $fixture['partners'][0]['user'];
     $assignment = AuditAssignmentFixture::request($fixture, 'routine');
-    expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [], 'desk_reviews' => []]);
+    expect(auditorMonthly($user))->toBeNull();
 
     AuditAssignmentFixture::respond($user, $assignment);
     $period = now('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');
