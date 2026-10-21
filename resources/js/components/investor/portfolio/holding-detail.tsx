@@ -214,7 +214,7 @@ function LatestReport({
                     {t(
                         onPlan
                             ? 'investor.holding.on_plan'
-                            : 'investor.updates.status.watch',
+                            : 'investor.holding.on_watch',
                     )}
                 </p>
                 {report.summary !== '' && (

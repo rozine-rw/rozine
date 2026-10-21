@@ -454,7 +454,7 @@ describe('Holding detail', () => {
         render(<InvestorHolding {...props} />);
         expect(
             screen.getByRole('region', { name: 'Latest report' }),
-        ).toHaveTextContent('On watch');
+        ).toHaveTextContent('Watchlist · under review');
     });
 
     it('keeps the plain diversification note where the page states no business count', () => {

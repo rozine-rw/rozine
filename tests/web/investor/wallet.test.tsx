@@ -466,7 +466,7 @@ describe('Wallet (C3)', () => {
         ).toHaveAttribute('aria-current', 'true');
         expect(history).toHaveTextContent('Held for GreenLeaf Agro');
         expect(history).toHaveTextContent('Available → Held');
-        expect(history).toHaveTextContent('Committed to Kivu Coffee');
+        expect(history).toHaveTextContent('Investment · Kivu Coffee');
         expect(history).toHaveTextContent('Hold released · Umucyo Solar');
         expect(history).toHaveTextContent('Refund · Nyamirambo Bakery');
     });
@@ -513,7 +513,7 @@ describe('Wallet (C3)', () => {
             name: 'Transaction receipt',
         });
 
-        expect(sheet).toHaveTextContent('Committed to Kivu Coffee');
+        expect(sheet).toHaveTextContent('Investment · Kivu Coffee');
         expect(sheet).toHaveTextContent('RZ-CMT-7731');
     });
 
