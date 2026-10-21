@@ -386,11 +386,7 @@ body:has(.rz-site) {
     background: #ffffff;
 }
 .rz-site {
-    font-family:
-        'Inter',
-        -apple-system,
-        system-ui,
-        sans-serif;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
     color: #0c1830;
     -webkit-font-smoothing: antialiased;
     /* The design is authored against the UA default line-height; Tailwind's
