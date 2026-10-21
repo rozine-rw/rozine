@@ -10,6 +10,7 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
@@ -115,6 +116,19 @@ test('Ratings lists every rated Business and counts them for whoever may view Bu
                 'rating' => ['band' => 'stable', 'score' => '3.1']]])->where('engine', []));
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->missing('book')->missing('counts'));
+});
+
+test('App Control shows how much of the sandbox limits the platform uses, and no other section does', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $principal = (string) DB::table('primary_holdings')->sum('principal');
+
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/app-control')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'app_control')->where('sandbox', [
+            ['key' => 'businesses', 'used' => '1', 'cap' => '100', 'used_pct' => 1],
+            ['key' => 'investors', 'used' => '2', 'cap' => '10000', 'used_pct' => 0],
+            ['key' => 'principal', 'used' => $principal, 'cap' => '5000000000', 'used_pct' => intdiv((int) $principal * 100, 5000000000)]]));
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/engines')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->missing('sandbox'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

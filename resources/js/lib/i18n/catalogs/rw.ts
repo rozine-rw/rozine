@@ -1088,6 +1088,10 @@ const rw: Catalog = {
     'admin.design.col.bands': 'Ibyiciro',
     'admin.design.col.filled_mtd': 'Ibyuzuye uku kwezi',
     'admin.design.col.stream': "Inkomoko y'amafaranga",
+    'admin.design.col.limit': 'Imbibi',
+    'admin.design.col.used': 'Byakoreshejwe',
+    'admin.design.col.cap': 'Igisenge',
+    'admin.design.col.share': 'Igice cyakoreshejwe',
     'admin.design.col.rate': 'Igipimo',
     'admin.design.col.paid_by': 'Byishyurwa na',
     'admin.design.col.collected': 'Ayakiriwe',
@@ -1309,6 +1313,13 @@ const rw: Catalog = {
         "Porogaramu z'abashoramari, ibigo n'abagenzuzi n'ibiziranga.",
     'admin.design.app_control.apps.empty':
         'Nta igenamiterere rya porogaramu ryo kwerekana ubu.',
+    'admin.design.app_control.sandbox.title': 'Imbibi za sandbox',
+    'admin.design.app_control.sandbox.sub':
+        'Igice cyakoreshejwe cya buri mbibi za sandbox ya CMA. Nta kirenze imbibi cyemerwa.',
+    'admin.design.app_control.sandbox.empty': 'Nta mikoreshereze irerekanwa.',
+    'admin.design.app_control.sandbox.businesses': 'Ibigo bifite manda ikora',
+    'admin.design.app_control.sandbox.investors': 'Abashoramari bemejwe',
+    'admin.design.app_control.sandbox.principal': 'Igishoro gisigaye',
     'admin.design.app_control.content.title': 'Ibikubiyemo',
     'admin.design.app_control.content.sub':
         "Ibiri muri porogaramu z'abashoramari, ibigo n'abagenzuzi.",

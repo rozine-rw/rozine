@@ -9,6 +9,7 @@ use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
+use App\Application\Operations\ReadSandboxUsage;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffViewerResource;
 use Brick\Math\BigInteger;
@@ -23,7 +24,8 @@ use Inertia\Response;
  * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
  * whoever may read the ledger, Engines and Ratings show underwriters the engine's settings and the
- * rating scorecard, and Ratings lists every rated Business to whoever may view Businesses.
+ * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, and App
+ * Control shows how much of the sandbox's limits is used.
  */
 class StaffSectionController extends Controller
 {
@@ -42,7 +44,8 @@ class StaffSectionController extends Controller
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
 
     /** Compliance has one dashboard: whoever may review investor identities is sent to that live queue. */
-    public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, string $section): Response|RedirectResponse
+    public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, ReadSandboxUsage $sandbox,
+        string $section): Response|RedirectResponse
     {
         $staff = $access->handle((int) $request->user()?->getAuthIdentifier(), true);
         /** @var list<string> $roles */
@@ -64,6 +67,7 @@ class StaffSectionController extends Controller
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
             'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance, ...$book,
+            ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier())] : []),
             'engine' => match (true) {
                 ! $underwriter => [],
                 $section === 'engines' => EngineSettings::engines(),

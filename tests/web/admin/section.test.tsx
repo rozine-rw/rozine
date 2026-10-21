@@ -501,3 +501,48 @@ describe('A designed screen whose live data is wired elsewhere', () => {
         expect(within(section).queryByRole('tab')).not.toBeInTheDocument();
     });
 });
+
+describe('App Control', () => {
+    it('shows how much of each sandbox limit is used, as counts and RWF', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    sandbox: [
+                        {
+                            key: 'businesses',
+                            used: '12',
+                            cap: '100',
+                            used_pct: 12,
+                        },
+                        {
+                            key: 'investors',
+                            used: '2400',
+                            cap: '10000',
+                            used_pct: 24,
+                        },
+                        {
+                            key: 'principal',
+                            used: '250000000',
+                            cap: '5000000000',
+                            used_pct: 5,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const limits = screen.getByRole('table', { name: 'Sandbox limits' });
+        const rows = within(limits).getAllByRole('row');
+
+        expect(rows).toHaveLength(4);
+        expect(rows[1]).toHaveTextContent(
+            'Businesses with an active mandate1210012%',
+        );
+        expect(rows[2]).toHaveTextContent('Verified investors2,40010,00024%');
+        expect(rows[3]).toHaveTextContent(
+            'Principal outstandingRWF 250,000,000RWF 5,000,000,0005%',
+        );
+        expect(screen.getByText('No app settings to show yet.')).toBeVisible();
+    });
+});
