@@ -287,7 +287,9 @@ export type PolicyItem = {
         | 'cpa_radius'
         | 'sandbox_businesses'
         | 'sandbox_investors'
-        | 'sandbox_principal';
+        | 'sandbox_principal'
+        | 'residency'
+        | 'risk_statements';
     /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
     term?: PolicyTerm;
@@ -301,7 +303,8 @@ export type PolicyTerm =
     | 'none'
     | 'late_from_due'
     | 'day_31'
-    | 'late_schedule';
+    | 'late_schedule'
+    | 'resident_rwanda';
 
 /** One entry in a record's trail: an action taken on it, by whom and when. */
 export type TrailEntry = {
