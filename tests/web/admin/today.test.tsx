@@ -158,6 +158,12 @@ describe('Admin Today', () => {
         grids.forEach((grid) => expect(grid).toHaveClass('grid-cols-1'));
     });
 
+    it('keeps each capital-raised bar to one bar wide, however few there are', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+
+        expect(screen.getByText('2026').parentElement).toHaveClass('max-w-14');
+    });
+
     it('shows the headline figures without a second score', () => {
         render(<AdminToday {...props(todayFixture)} />);
 

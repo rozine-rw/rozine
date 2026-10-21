@@ -56,6 +56,10 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Watch').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Healthy').length).toBeGreaterThan(1);
         expect(screen.getByText('1,657')).toBeInTheDocument();
+        /* Raised and investors count funded raises only, so they say so: a live raise is not funded. */
+        expect(screen.getByText('Capital Funded')).toBeInTheDocument();
+        expect(screen.getAllByText('Funded').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Funders').length).toBeGreaterThan(0);
 
         fireEvent.change(screen.getByRole('combobox', { name: 'Sector' }), {
             target: { value: 'agriculture' },
@@ -73,6 +77,10 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Pending').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Verified').length).toBeGreaterThan(1);
+        /* The portfolio includes live commitments, while holdings count issued notes only. */
+        expect(
+            screen.getAllByText('Invested + committed').length,
+        ).toBeGreaterThan(0);
     });
 
     it('lists Audit Partners with their standing', () => {
