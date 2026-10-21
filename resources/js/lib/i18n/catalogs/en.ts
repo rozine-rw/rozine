@@ -1836,6 +1836,53 @@ const en = {
         'e.g. MTN confirmed reference MM-88213 reversed in full; destination re-verified.',
     'admin.parties.policy_title': 'Business eligibility rules',
     'admin.parties.filter': 'Filter by status',
+    'admin.audit_reports.title': 'Audit reports',
+    'admin.audit_reports.caption':
+        'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to co-sign or dispute.',
+    'admin.audit_reports.filter': 'Audit report views',
+    'admin.audit_reports.table': 'Audit reports',
+    'admin.audit_reports.empty_title': 'No audits in this view',
+    'admin.audit_reports.empty_body':
+        'Audits appear here once an Audit Partner accepts them.',
+    'admin.audit_reports.monthly': 'Monthly audit · {month}',
+    'admin.audit_reports.flash': 'Flash Audit',
+    'admin.audit_reports.due': 'Due {date}',
+    'admin.audit_reports.cosign_by': 'Co-sign by {date}',
+    'admin.audit_reports.remind': 'Remind',
+    'admin.audit_reports.remind_auditor':
+        'Remind the Audit Partner about {business}',
+    'admin.audit_reports.remind_business':
+        'Remind {business} to co-sign or dispute',
+    'admin.audit_reports.reminded': 'Reminded {date}',
+    'admin.audit_reports.pdf': 'PDF',
+    'admin.audit_reports.pdf_named':
+        'Download the sealed report for {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Audited & published',
+    'admin.audit_reports.stats.awaiting_cosign': 'Awaiting co-sign',
+    'admin.audit_reports.stats.overdue': 'Overdue audits',
+    'admin.audit_reports.stats.on_time': 'On-time audit rate',
+    'admin.audit_reports.chip.all': 'All',
+    'admin.audit_reports.chip.owed': 'Owed by a partner',
+    'admin.audit_reports.chip.awaiting_cosign': 'Awaiting co-sign',
+    'admin.audit_reports.chip.published': 'Published',
+    'admin.audit_reports.chip.disputed': 'In dispute',
+    'admin.audit_reports.col.business': 'Business',
+    'admin.audit_reports.col.due': 'Due',
+    'admin.audit_reports.col.partner': 'Audit Partner',
+    'admin.audit_reports.col.status': 'Status',
+    'admin.audit_reports.col.variance': 'Variance',
+    'admin.audit_reports.col.action': 'Action',
+    'admin.audit_reports.status.not_started': 'Not started',
+    'admin.audit_reports.status.in_progress': 'In progress',
+    'admin.audit_reports.status.overdue': 'Overdue',
+    'admin.audit_reports.status.returned': 'Returned',
+    'admin.audit_reports.status.sealed': 'Sealed',
+    'admin.audit_reports.status.awaiting_cosign': 'Awaiting co-sign',
+    'admin.audit_reports.status.published': 'Published',
+    'admin.audit_reports.status.disputed': 'Disputed',
+    'admin.audit_reports.status.escalated': 'Escalated',
+    'admin.audit_reports.status.amended': 'Amended',
+    'admin.audit_reports.status.withdrawn': 'Withdrawn',
     'admin.parties.coverage_link': 'Partner coverage',
     'admin.parties.queue.requests.title': 'Partner change requests',
     'admin.parties.queue.requests.caption':
@@ -4888,6 +4935,11 @@ const en = {
         'Accreditation renewal due',
     'investor.notices.auditor.accreditation_renewal_due.body':
         'Licence {licence} expires on {date}. Upload the renewal from your profile to keep taking audit jobs.',
+    'investor.notices.auditor.report_reminder.title': 'Audit report reminder',
+    'investor.notices.auditor.report_reminder.body_monthly':
+        'Rozine reminds you that the {month} audit for {business} is due by {date}.',
+    'investor.notices.auditor.report_reminder.body_flash':
+        'Rozine reminds you that the Flash Audit for {business} is due by {date}.',
     'investor.notices.support.complaint_answered.title':
         'Rozine answered your complaint',
     'investor.notices.support.complaint_answered.body':

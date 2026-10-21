@@ -37,6 +37,7 @@ class InvestorNoticesResource extends JsonResource
         'auditor.accreditation_rejected' => ['auditor.profile', []],
         'auditor.job_offered' => ['auditor.jobs.index', []],
         'auditor.accreditation_renewal_due' => ['auditor.profile', []],
+        'auditor.report_reminder' => ['auditor.jobs.show', ['assignment' => ':assignment_id']],
         'support.complaint_answered' => ['investor.profile', ['section' => 'help']],
         'support.complaint_resolved' => ['investor.profile', ['section' => 'help']],
     ];

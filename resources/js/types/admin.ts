@@ -1887,3 +1887,64 @@ export type AdminSystemHealthProps = AdminFrameShellProps &
         /** Worst first: critical, watch, healthy, then the untracked signals. */
         signals: HealthSignal[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Audit report register (Reports oversight, `audit.reports.view`)                            */
+/* ------------------------------------------------------------------------------------------ */
+
+export type AuditRegisterStatus =
+    | 'not_started'
+    | 'in_progress'
+    | 'overdue'
+    | 'returned'
+    | 'sealed'
+    | 'awaiting_cosign'
+    | 'published'
+    | 'disputed'
+    | 'escalated'
+    | 'amended'
+    | 'withdrawn';
+
+export type AuditRegisterRow = {
+    /** The audit assignment. */
+    id: string;
+    business: string;
+    kind: 'flash' | 'monthly';
+    /** The audited month's first day; null for a Flash Audit. */
+    period: string | null;
+    auditor: string | null;
+    /** The licence the seal recorded; null before the seal. */
+    licence: string | null;
+    status: AuditRegisterStatus;
+    due_at: string | null;
+    /** The Business's co-sign or dispute deadline while it is owed. */
+    cosign_by: string | null;
+    sealed_at: string | null;
+    /** The seal digest's first twelve characters. */
+    digest: string | null;
+    variance_pct: string | null;
+    owes: 'auditor' | 'business' | null;
+    reminded_at: string | null;
+    links: { pdf: RouteLink | null; remind: RouteAction | null };
+};
+
+export type AuditRegisterChipKey =
+    | 'all'
+    | 'owed'
+    | 'awaiting_cosign'
+    | 'published'
+    | 'disputed';
+
+export type AdminAuditReportsProps = AdminFrameShellProps & {
+    stats: {
+        key: 'published' | 'awaiting_cosign' | 'overdue' | 'on_time';
+        value: StatValue;
+    }[];
+    chips: {
+        key: AuditRegisterChipKey;
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    rows: AuditRegisterRow[];
+};

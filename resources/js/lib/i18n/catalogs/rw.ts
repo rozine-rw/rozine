@@ -1920,6 +1920,52 @@ const rw: Catalog = {
         'urugero: MTN yemeje ko MM-88213 yasubijwe yose; aho yoherezwa hongeye kugenzurwa.',
     'admin.parties.policy_title': "Amabwiriza yo kwemererwa kw'ibigo",
     'admin.parties.filter': 'Tondeka ukurikije imiterere',
+    'admin.audit_reports.title': "Raporo z'igenzura",
+    'admin.audit_reports.caption':
+        "Igenzura ryose n'uko raporo yaryo ihagaze. Igenzura rya buri kwezi rikorerwa aho ubucuruzi buri bitarenze ku itariki ya 7; nyuma ubucuruzi bugira amasaha 24 yo gusinya cyangwa kujuririra.",
+    'admin.audit_reports.filter': "Uko raporo z'igenzura zigaragara",
+    'admin.audit_reports.table': "Raporo z'igenzura",
+    'admin.audit_reports.empty_title': 'Nta genzura riri hano',
+    'admin.audit_reports.empty_body':
+        'Igenzura rigaragara hano iyo umugenzuzi aryemeye.',
+    'admin.audit_reports.monthly': 'Igenzura rya buri kwezi · {month}',
+    'admin.audit_reports.flash': 'Igenzura ryihuse',
+    'admin.audit_reports.due': 'Bigomba kurangira {date}',
+    'admin.audit_reports.cosign_by': 'Gusinya bitarenze {date}',
+    'admin.audit_reports.remind': 'Ibutsa',
+    'admin.audit_reports.remind_auditor': 'Ibutsa umugenzuzi ibya {business}',
+    'admin.audit_reports.remind_business':
+        'Ibutsa {business} gusinya cyangwa kujuririra',
+    'admin.audit_reports.reminded': 'Yibukijwe {date}',
+    'admin.audit_reports.pdf': 'PDF',
+    'admin.audit_reports.pdf_named':
+        'Kuramo raporo yashyizweho kashe ya {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Byagenzuwe kandi byatangajwe',
+    'admin.audit_reports.stats.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.stats.overdue': 'Igenzura ryatinze',
+    'admin.audit_reports.stats.on_time': 'Igipimo cyo kurangiza ku gihe',
+    'admin.audit_reports.chip.all': 'Byose',
+    'admin.audit_reports.chip.owed': 'Bitegereje umugenzuzi',
+    'admin.audit_reports.chip.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.chip.published': 'Byatangajwe',
+    'admin.audit_reports.chip.disputed': 'Byajuririwe',
+    'admin.audit_reports.col.business': 'Ubucuruzi',
+    'admin.audit_reports.col.due': 'Itariki ntarengwa',
+    'admin.audit_reports.col.partner': 'Umugenzuzi',
+    'admin.audit_reports.col.status': 'Uko bihagaze',
+    'admin.audit_reports.col.variance': 'Ikinyuranyo',
+    'admin.audit_reports.col.action': 'Igikorwa',
+    'admin.audit_reports.status.not_started': 'Ntibiratangira',
+    'admin.audit_reports.status.in_progress': 'Birakomeje',
+    'admin.audit_reports.status.overdue': 'Byatinze',
+    'admin.audit_reports.status.returned': 'Byagaruwe',
+    'admin.audit_reports.status.sealed': 'Byashyizweho kashe',
+    'admin.audit_reports.status.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.status.published': 'Byatangajwe',
+    'admin.audit_reports.status.disputed': 'Byajuririwe',
+    'admin.audit_reports.status.escalated': 'Byazamuwe',
+    'admin.audit_reports.status.amended': 'Byahinduwe',
+    'admin.audit_reports.status.withdrawn': 'Byakuweho',
     'admin.parties.coverage_link': 'Aho abafatanyabikorwa bagera',
     'admin.parties.queue.requests.title': "Ibisabwa n'abafatanyabikorwa",
     'admin.parties.queue.requests.caption':
@@ -5099,6 +5145,12 @@ const rw: Catalog = {
         'Igihe cyo kuvugurura uruhushya kirageze',
     'investor.notices.auditor.accreditation_renewal_due.body':
         "Uruhushya {licence} ruzarangira ku wa {date}. Ohereza uruhushya ruvuguruye uhereye kuri porofayili yawe kugira ngo ukomeze kwakira imirimo y'igenzura.",
+    'investor.notices.auditor.report_reminder.title':
+        "Kwibutsa raporo y'igenzura",
+    'investor.notices.auditor.report_reminder.body_monthly':
+        'Rozine irakwibutsa ko igenzura rya {month} rya {business} rigomba kurangira bitarenze {date}.',
+    'investor.notices.auditor.report_reminder.body_flash':
+        'Rozine irakwibutsa ko igenzura ryihuse rya {business} rigomba kurangira bitarenze {date}.',
     'investor.notices.support.complaint_answered.title':
         'Rozine yashubije ikirego cyawe',
     'investor.notices.support.complaint_answered.body':
