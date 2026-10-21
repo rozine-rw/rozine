@@ -475,3 +475,23 @@ test('a failed e-mail still leaves the notice, with a failed receipt', function 
         ->and(PartyNoticeDelivery::query()->where('channel', 'mail')->sole()->only(['status', 'detail']))
         ->toBe(['status' => 'failed', 'detail' => RuntimeException::class]);
 });
+
+test('the queue carries completion, turnaround and 30-day decision figures over every case', function (): void {
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats', ['completion_pct' => null, 'verified' => 0, 'total' => 0,
+            'turnaround_hours' => null, 'approved_30d' => 0, 'rejected_30d' => 0]));
+    $approved = reviewSubmitted($this->person);
+    $rejected = reviewSubmitted(User::factory()->create(['name' => 'Eric N', 'party_id' => Party::factory()]), number: '1 1991 8 0012345 6 79');
+    reviewSubmitted(User::factory()->create(['name' => 'Grace K', 'party_id' => Party::factory()]), number: '1 1992 8 0012345 6 70');
+    $this->travel(3)->hours();
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $approved), reviewDecision($approved))->assertSessionHasNoErrors();
+    $this->travel(6)->hours();
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.reject', $rejected), reviewDecision($rejected, 'Blurred.'))->assertSessionHasNoErrors();
+
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats', ['completion_pct' => '33.3', 'verified' => 1, 'total' => 3,
+            'turnaround_hours' => '6.0', 'approved_30d' => 1, 'rejected_30d' => 1]));
+    $this->travel(31)->days();
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats.turnaround_hours', null)->where('stats.approved_30d', 0)->where('stats.completion_pct', '33.3'));
+});

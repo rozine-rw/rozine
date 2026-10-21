@@ -85,6 +85,14 @@ const queue = (
             link: link('/admin/investor-verifications?verification=b'),
         },
     ],
+    stats: {
+        completion_pct: '97.8',
+        verified: 44,
+        total: 45,
+        turnaround_hours: '6.0',
+        approved_30d: 12,
+        rejected_30d: 3,
+    },
     pagination: {
         next: link('/admin/investor-verifications?tab=submitted&before=b'),
     },
@@ -671,5 +679,61 @@ describe('Compliance document viewer', () => {
         expect(
             within(documents).getByText('Earlier uploads'),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Compliance figures and decisions', () => {
+    it('shows completion, pending turnaround and 30-day decisions, and a review button per waiting case', () => {
+        renderWithUser(<AdminInvestorVerifications {...queue()} />);
+
+        expect(screen.getByText('97.8%')).toBeInTheDocument();
+        expect(screen.getByText('44 of 45 verified')).toBeInTheDocument();
+        expect(screen.getByText('Avg 6.0h turnaround')).toBeInTheDocument();
+        expect(screen.getAllByText('Last 30 days')).toHaveLength(2);
+        expect(
+            screen.getByRole('link', { name: 'Review Jean Habimana' }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/investor-verifications?verification=b',
+        );
+    });
+
+    it('reads empty figures and shows when a decided case was decided', () => {
+        const base = queue();
+
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    active_tab: 'decided',
+                    stats: {
+                        completion_pct: null,
+                        verified: 0,
+                        total: 0,
+                        turnaround_hours: null,
+                        approved_30d: 0,
+                        rejected_30d: 0,
+                    },
+                    entries: [
+                        {
+                            ...base.entries[0],
+                            status: 'approved',
+                            decided_at: '2026-10-06T09:00:00+00:00',
+                        },
+                        {
+                            ...base.entries[1],
+                            status: 'rejected',
+                            decided_at: null,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByText('—')).toBeInTheDocument();
+        expect(screen.getByText('No decisions in 30 days')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /^Review / }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('1h ago')).toBeInTheDocument();
     });
 });

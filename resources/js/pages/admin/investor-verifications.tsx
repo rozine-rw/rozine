@@ -9,6 +9,7 @@ import {
     EmptyState,
     EXPLAIN,
     HeadCell,
+    KpiTile,
     PillTabs,
     PolicyPeek,
     ROW_RULE,
@@ -26,7 +27,7 @@ import type {
 } from '@/types/admin';
 
 const GRID =
-    'grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)] gap-3 px-5';
+    'grid grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(84px,0.7fr)] gap-3 px-5';
 
 /** A new search starts from the first page with no case open. */
 const SEARCH_QUERY = { param: 'search', clears: ['before', 'verification'] };
@@ -74,6 +75,7 @@ export default function AdminInvestorVerifications(
                     </Link>
                 )}
             </div>
+            <KycStats stats={props.stats} pending={props.tabs[0].count} />
             <PillTabs
                 label={t('admin.kyc.tabs')}
                 tabs={props.tabs.map((tab) => ({
@@ -108,6 +110,7 @@ export default function AdminInvestorVerifications(
                         <HeadCell>{t('admin.kyc.col.document')}</HeadCell>
                         <HeadCell>{t('admin.kyc.col.submitted')}</HeadCell>
                         <HeadCell>{t('admin.kyc.col.status')}</HeadCell>
+                        <HeadCell end>{t('admin.kyc.col.decision')}</HeadCell>
                     </div>
                     {props.entries.map((entry) => (
                         <div
@@ -166,11 +169,104 @@ export default function AdminInvestorVerifications(
                                     {t(`admin.kyc.status.${entry.status}`)}
                                 </Chip>
                             </div>
+                            <div
+                                role="cell"
+                                className="relative z-[1] flex justify-end"
+                            >
+                                {entry.status === 'submitted' ? (
+                                    <Link
+                                        href={entry.link}
+                                        preserveScroll
+                                        aria-label={t(
+                                            'admin.kyc.review_named',
+                                            {
+                                                name: entry.name,
+                                            },
+                                        )}
+                                        className="rounded-lg bg-[#157357] px-[11px] py-1.5 text-[11.5px] font-semibold text-white"
+                                    >
+                                        {t('admin.kyc.review')}
+                                    </Link>
+                                ) : (
+                                    entry.decided_at !== null && (
+                                        <time
+                                            dateTime={entry.decided_at}
+                                            className="text-[11.5px] text-rz-muted tabular-nums"
+                                        >
+                                            {ago(entry.decided_at)}
+                                        </time>
+                                    )
+                                )}
+                            </div>
                         </div>
                     ))}
                 </TableCard>
             )}
         </AdminFrame>
+    );
+}
+
+/** The design's four compliance figures, from every case the server holds. */
+function KycStats({
+    stats,
+    pending,
+}: {
+    stats: AdminInvestorVerificationsProps['stats'];
+    pending: number;
+}) {
+    const { t } = useTranslation();
+    const tiles = [
+        {
+            key: 'completion',
+            label: t('admin.kyc.stats.completion'),
+            value:
+                stats.completion_pct === null
+                    ? '—'
+                    : t('admin.kyc.stats.percent', {
+                          value: stats.completion_pct,
+                      }),
+            sub: t('admin.kyc.stats.completion_sub', {
+                verified: stats.verified,
+                total: stats.total,
+            }),
+        },
+        {
+            key: 'pending',
+            label: t('admin.kyc.stats.pending'),
+            value: String(pending),
+            sub:
+                stats.turnaround_hours === null
+                    ? t('admin.kyc.stats.turnaround_none')
+                    : t('admin.kyc.stats.turnaround', {
+                          hours: stats.turnaround_hours,
+                      }),
+        },
+        {
+            key: 'approved',
+            label: t('admin.kyc.stats.approved'),
+            value: String(stats.approved_30d),
+            sub: t('admin.kyc.stats.last_30_days'),
+        },
+        {
+            key: 'rejected',
+            label: t('admin.kyc.stats.rejected'),
+            value: String(stats.rejected_30d),
+            sub: t('admin.kyc.stats.last_30_days'),
+        },
+    ];
+
+    return (
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+            {tiles.map((tile, index) => (
+                <KpiTile
+                    key={tile.key}
+                    index={index}
+                    label={tile.label}
+                    value={tile.value}
+                    sub={tile.sub}
+                />
+            ))}
+        </div>
     );
 }
 
