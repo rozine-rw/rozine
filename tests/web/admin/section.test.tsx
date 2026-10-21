@@ -256,7 +256,9 @@ describe('Policies', () => {
         expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
             'Platform fee · at disbursement3%brs-2.0-fee-r01',
         );
-        expect(screen.queryByText('No rules to show yet.')).toBeNull();
+        expect(
+            screen.queryByText('No rules to show yet.'),
+        ).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
         expect(
