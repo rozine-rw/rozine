@@ -20,6 +20,7 @@ import {
     SignOut,
     Statements,
     SubHeading,
+    SupportCard,
 } from '@/components/investor/profile/profile-parts';
 import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
@@ -55,6 +56,7 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                 {t('investor.profile.title')}
             </h1>
             <IdentityCard identity={props.identity} />
+            <SupportCard help={props.links.help} />
             <ProfileMenu
                 section={sub ?? props.section}
                 kyc={props.identity.kyc}

@@ -3894,6 +3894,11 @@ const fr: Catalog = {
     'investor.profile.kyc.expired': 'Document expiré',
     'investor.profile.type.individual': 'Particulier',
     'investor.profile.type.institution': 'Institution',
+    'investor.profile.support.label': 'Assistance',
+    'investor.profile.support.title': 'Contacter l’assistance Rozine',
+    'investor.profile.support.sub':
+        'Posez une question ou déposez une réclamation. L’équipe répond dans le centre d’aide.',
+    'investor.profile.support.message': 'Écrire',
     'investor.profile.member_since': 'Membre depuis {date}',
     'investor.profile.item.linked': 'Comptes liés',
     'investor.profile.item.statements': 'Relevés et impôts',

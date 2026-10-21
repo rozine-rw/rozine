@@ -3878,6 +3878,11 @@ const rw: Catalog = {
     'investor.profile.kyc.expired': 'Icyangombwa cyarangiye',
     'investor.profile.type.individual': 'Umuntu ku giti cye',
     'investor.profile.type.institution': 'Ikigo',
+    'investor.profile.support.label': 'Ubufasha',
+    'investor.profile.support.title': 'Vugana n’ubufasha bwa Rozine',
+    'investor.profile.support.sub':
+        'Baza ikibazo cyangwa utange ikirego. Itsinda rigusubiza mu gice cy’ubufasha.',
+    'investor.profile.support.message': 'Andika',
     'investor.profile.member_since': 'Umunyamuryango kuva {date}',
     'investor.profile.item.linked': 'Konti zahujwe',
     'investor.profile.item.statements': "Inyandiko z'imari n'imisoro",

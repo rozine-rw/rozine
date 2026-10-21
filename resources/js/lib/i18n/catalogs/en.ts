@@ -3755,6 +3755,11 @@ const en = {
     'investor.profile.kyc.expired': 'Document expired',
     'investor.profile.type.individual': 'Individual',
     'investor.profile.type.institution': 'Institution',
+    'investor.profile.support.label': 'Support',
+    'investor.profile.support.title': 'Talk to Rozine support',
+    'investor.profile.support.sub':
+        'Ask a question or raise a complaint. The team replies in the Help center.',
+    'investor.profile.support.message': 'Message',
     'investor.profile.member_since': 'Member since {date}',
     'investor.profile.item.linked': 'Linked accounts',
     'investor.profile.item.statements': 'Statements & tax',
