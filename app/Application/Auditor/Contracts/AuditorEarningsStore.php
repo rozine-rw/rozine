@@ -14,7 +14,7 @@ use DateTimeImmutable;
  * What is owed is every credit not yet paid out to the partner.
  *
  * @phpstan-type EarningLine array{id: string, business: string, district: string, raise: string, platform_fee: string, amount: string, credited_at: string}
- * @phpstan-type Earnings array{month: string, this_month: string, total: string, owed: string, deals: int, lines: list<EarningLine>}
+ * @phpstan-type Earnings array{month: string, this_month: string, total: string, owed: string, deals: int, lines: list<EarningLine>, managed: list<EarningLine>}
  */
 interface AuditorEarningsStore
 {

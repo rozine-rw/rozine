@@ -502,11 +502,13 @@ export type EligibleJob = {
 export type MonthlyWindow = {
     id: string;
     note_title: string;
-    note_id: string;
+    /** A short note reference, or null when none is published: no raw record ID is shown. */
+    note_id: string | null;
     business: string;
-    /** First day of the audited month, ISO 8601. */
-    month: string;
-    open: RouteAction;
+    /** First day of the audited month, ISO 8601; null when the server cannot state it. */
+    month: string | null;
+    /** The job file, where the audit is opened. */
+    link: RouteLink;
 };
 
 export type MonthlyReportStatus =
@@ -518,14 +520,27 @@ export type MonthlyReportStatus =
 export type MonthlyReportCard = {
     id: string;
     business: string;
-    sector: SectorCode;
+    /** Null when the Business industry matches no sector. */
+    sector: SectorCode | null;
     note_title: string;
-    due_on: string;
+    /** When the report must be sealed; null when the server cannot state it. */
+    due_on: string | null;
     status: MonthlyReportStatus;
-    inflow: Money;
-    outflow: Money;
+    /** Null while the server does not state the month's cash flow on this card. */
+    inflow: Money | null;
+    outflow: Money | null;
     /** Liquidity cover from the statements, formatted: "1.3". */
     cover: string | null;
+    link: RouteLink;
+};
+
+/** A sealed monthly report the Business disputed, read-only until Rozine resolves it. */
+export type DeskReview = {
+    id: string;
+    business: string;
+    /** First day of the audited month, ISO 8601; null when the server cannot state it. */
+    month: string | null;
+    status: 'disputed' | 'escalated';
     link: RouteLink;
 };
 
@@ -593,6 +608,8 @@ export type AuditorJobsProps = AuditorPageContract &
         monthly: {
             windows: MonthlyWindow[];
             reports: MonthlyReportCard[];
+            /** Disputed reports, read-only under Rozine's desk review (BRS AUD-R06). */
+            desk_reviews: DeskReview[];
         } | null;
         /**
          * The server's labelled reasons for declining an offer. The page shows each `label` as sent and
@@ -1185,6 +1202,10 @@ export type AuditorEarnings = {
     this_month: Money;
     total: Money;
     lines: EarningLine[];
+    /** How many funded raises have credited the partner. */
+    deals: number;
+    /** Every credit, newest first: the raises the partner manages. */
+    managed: EarningLine[];
 };
 
 /**

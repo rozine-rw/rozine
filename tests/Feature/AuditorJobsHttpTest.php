@@ -51,7 +51,7 @@ it('presents the same real offered case over web and API without exposing origin
         ->assertInertia(function (Assert $page) use (&$web, $assignment): Assert {
             $web = $page->toArray()['props'];
 
-            return $page->component('auditor/jobs')->where('eligible.0.id', $assignment->id)->where('monthly', null);
+            return $page->component('auditor/jobs')->where('eligible.0.id', $assignment->id)->where('monthly', ['windows' => [], 'reports' => [], 'desk_reviews' => []]);
         });
     $this->get('/auditor/jobs/'.$assignment->id)->assertOk()->assertInertia(fn (Assert $page): Assert => $page
         ->component('auditor/file')->where('job.state', 'offered')->where('job.kind', 'flash')->where('blocked', null)

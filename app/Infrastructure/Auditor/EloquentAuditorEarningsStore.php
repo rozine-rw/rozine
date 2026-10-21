@@ -13,6 +13,7 @@ use App\Models\AuditPartnerCredit;
 use App\Models\AuditReportSeal;
 use DateTimeImmutable;
 use DateTimeZone;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The partner's platform fee shares, read under the current Auditor role and its Party lock. Each
@@ -22,10 +23,14 @@ use DateTimeZone;
  * credited), so every credit is still owed; a partner payout must be subtracted here once it exists.
  *
  * @phpstan-import-type Earnings from AuditorEarningsStore
+ * @phpstan-import-type EarningLine from AuditorEarningsStore
  */
 final class EloquentAuditorEarningsStore implements AuditorEarningsStore
 {
     private const string ZONE = 'Africa/Kigali';
+
+    /** The most deals the Portfolio lists; `deals` still counts them all. */
+    private const int MANAGED = 50;
 
     public function __construct(private IdentityRepository $identities, private AuthorizeActiveRole $roles, private DisbursementFeeFacts $fees) {}
 
@@ -37,26 +42,39 @@ final class EloquentAuditorEarningsStore implements AuditorEarningsStore
         $start = new DateTimeImmutable($local->format('Y-m').'-01 00:00:00', new DateTimeZone(self::ZONE));
 
         return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, function () use ($partyId, $local, $start): array {
-            $credits = AuditPartnerCredit::query()->where('auditor_party_id', $partyId)
-                ->where('created_at', '>=', $start->setTimezone(new DateTimeZone('UTC')))->orderByDesc('created_at')->orderByDesc('id')->get();
-            $seals = AuditReportSeal::query()->whereIn('audit_report_id', $credits->pluck('audit_report_id')->all())->get()->keyBy('audit_report_id');
-            $fees = $this->fees->forDisbursements(array_values($credits->pluck('disbursement_id')->all()));
-            $lines = [];
-            foreach ($credits as $credit) {
-                /** @var array{business: array{profile: array{name: string, district: string}}} $sealed */
-                $sealed = $seals[$credit->audit_report_id]->payload;
-                $fee = $fees[$credit->disbursement_id];
-                $lines[] = ['id' => $credit->id, 'business' => $sealed['business']['profile']['name'], 'district' => $sealed['business']['profile']['district'],
-                    'raise' => $fee['raise'], 'platform_fee' => $fee['platform_fee'], 'amount' => $credit->amount,
-                    'credited_at' => $credit->created_at->toIso8601String()];
-            }
-
+            $lines = $this->lines(AuditPartnerCredit::query()->where('auditor_party_id', $partyId)
+                ->where('created_at', '>=', $start->setTimezone(new DateTimeZone('UTC'))));
             $total = (string) AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->selectRaw('COALESCE(SUM(amount), 0)::text AS total')->value('total');
 
             return ['month' => $local->format('Y-m'), 'this_month' => self::sum(array_column($lines, 'amount')), 'total' => $total,
                 'owed' => $total, 'deals' => AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->count(),
-                'lines' => $lines];
+                'lines' => $lines, 'managed' => $this->lines(AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->limit(self::MANAGED))];
         });
+    }
+
+    /**
+     * The credits newest first, each with the Business as its seal names it and the raise and fee
+     * its disbursement was opened under.
+     *
+     * @param  Builder<AuditPartnerCredit>  $credits
+     * @return list<EarningLine>
+     */
+    private function lines(Builder $credits): array
+    {
+        $credits = $credits->orderByDesc('created_at')->orderByDesc('id')->get();
+        $seals = AuditReportSeal::query()->whereIn('audit_report_id', $credits->pluck('audit_report_id')->all())->get()->keyBy('audit_report_id');
+        $fees = $this->fees->forDisbursements(array_values($credits->pluck('disbursement_id')->all()));
+        $lines = [];
+        foreach ($credits as $credit) {
+            /** @var array{business: array{profile: array{name: string, district: string}}} $sealed */
+            $sealed = $seals[$credit->audit_report_id]->payload;
+            $fee = $fees[$credit->disbursement_id];
+            $lines[] = ['id' => $credit->id, 'business' => $sealed['business']['profile']['name'], 'district' => $sealed['business']['profile']['district'],
+                'raise' => $fee['raise'], 'platform_fee' => $fee['platform_fee'], 'amount' => $credit->amount,
+                'credited_at' => $credit->created_at->toIso8601String()];
+        }
+
+        return $lines;
     }
 
     /** @param  list<string>  $amounts  whole francs */

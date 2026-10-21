@@ -2424,6 +2424,14 @@ const fr: Catalog = {
     'auditor.monthly.to_open': 'Audits à ouvrir',
     'auditor.monthly.waiting': '{count} en attente',
     'auditor.monthly.not_opened': "{month} · dossier d'audit pas encore ouvert",
+    'auditor.monthly.not_opened_undated': "Dossier d'audit pas encore ouvert",
+    'auditor.desk_review.eyebrow': 'Revue documentaire · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Revue documentaire',
+    'auditor.desk_review.status.disputed': 'En revue documentaire',
+    'auditor.desk_review.status.escalated': 'Escaladé',
+    'auditor.desk_review.note':
+        "L'entreprise a contesté ce rapport. Il reste en lecture seule jusqu'à ce que la revue documentaire de Rozine enregistre une décision.",
+    'auditor.desk_review.view': 'Voir le rapport →',
     'auditor.monthly.open': "Ouvrir l'audit",
     'auditor.monthly.show_all': 'Afficher les {count} fenêtres ouvertes',
     'auditor.monthly.show_fewer': 'Afficher moins · {shown} sur {count}',
@@ -2710,6 +2718,12 @@ const fr: Catalog = {
     'auditor.portfolio.yield.empty':
         'Les versements de part du rendement apparaissent ici une fois payés.',
     'auditor.portfolio.managed.title': 'Opérations gérées',
+    'auditor.portfolio.managed.count': '{count} au total',
+    'auditor.portfolio.managed.sub': '{district} · crédité le {date}',
+    'auditor.portfolio.managed.funded': 'Financé',
+    'auditor.portfolio.managed.raise': 'Levée',
+    'auditor.portfolio.managed.fee': 'Frais de plateforme',
+    'auditor.portfolio.managed.share': 'Vos 40 %',
     'auditor.portfolio.managed.empty':
         "Aucune opération gérée pour l'instant. Réussissez un audit flash pour devenir gestionnaire de compte d'une entreprise.",
     'auditor.calendar.title': "Calendrier d'audit",
