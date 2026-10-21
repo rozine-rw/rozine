@@ -65,6 +65,7 @@ use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Controllers\StaffSystemHealthController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
+use App\Http\Middleware\RedirectBrowserVisit;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
@@ -135,7 +136,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('wallet-operations/{request_id}', [InvestorWalletController::class, 'operation'])->whereUuid('request_id')->name('wallet.operations.show');
     Route::get('risk-statements', [InvestorRiskAcknowledgementController::class, 'show'])->name('risks.show');
     Route::post('risk-statements/acknowledgements', [InvestorRiskAcknowledgementController::class, 'store'])->name('risks.acknowledge');
-    Route::get('notices', [InvestorNoticesController::class, 'index'])->name('notices');
+    Route::get('notices', [InvestorNoticesController::class, 'index'])->middleware(RedirectBrowserVisit::class.':investor.home')->name('notices');
     Route::post('notices/read-all', [InvestorNoticesController::class, 'readAll'])->name('notices.read_all');
     Route::post('notices/{notice}/read', [InvestorNoticesController::class, 'read'])->whereUlid('notice')->name('notices.read');
     Route::post('deals/{campaign}/reservations', [InvestorPrimaryController::class, 'reserve'])->whereUlid('campaign')->name('primary.reserve');
@@ -148,7 +149,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {
-    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware('cache.headers:private;no_store')->name('notices');
+    Route::get('notices', [AuditorNoticesController::class, 'index'])->middleware(['cache.headers:private;no_store', RedirectBrowserVisit::class.':auditor.home'])->name('notices');
     Route::post('notices/read-all', [AuditorNoticesController::class, 'readAll'])->middleware('cache.headers:private;no_store')->name('notices.read_all');
     Route::post('notices/{notice}/read', [AuditorNoticesController::class, 'read'])->whereUlid('notice')->middleware('cache.headers:private;no_store')->name('notices.read');
     Route::post('jobs/{assignment}/report', [AuditorProcedureController::class, 'start'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('reports.start');
@@ -211,7 +212,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.notices.')->group(function (): void {
-    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->name('index');
+    Route::get('{business}/notices', [BusinessNoticesController::class, 'index'])->whereUlid('business')->middleware(RedirectBrowserVisit::class.':business.show')->name('index');
     Route::post('{business}/notices/read-all', [BusinessNoticesController::class, 'readAll'])->whereUlid('business')->name('read_all');
     Route::post('{business}/notices/{notice}/read', [BusinessNoticesController::class, 'read'])->whereUlid(['business', 'notice'])->name('read');
 });
