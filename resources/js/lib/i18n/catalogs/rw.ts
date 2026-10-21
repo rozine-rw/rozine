@@ -3646,12 +3646,17 @@ const rw: Catalog = {
     'investor.portfolio.balanced': 'Byakwirakwijwe neza',
     'investor.portfolio.balanced_body':
         'Igishoro cyawe kiri mu bigo byinshi nta na kimwe kiganje. Komeza utyo.',
+    'investor.portfolio.balanced_count':
+        'Igishoro cyawe kiri mu bigo {count} nta na kimwe kiganje. Komeza utyo.',
     'investor.portfolio.idle': 'BIDAKORA KU IKOFI',
     'investor.portfolio.idle_body': 'Bishore mu rupapuro rushya.',
     'investor.portfolio.reinvest': 'Ongera ushore ›',
     'investor.holding.frozen_title': 'Uru rupapuro rwahagaritswe',
     'investor.holding.frozen_body':
         'Rozine yahagaritse uru rupapuro mu gihe hakorwa isuzuma. Ubwishyu buzasubukurwa rurekuwe; uburenganzira bwawe ntibuhinduka.',
+    'investor.holding.latest_report': 'Raporo iheruka',
+    'investor.holding.latest_report_month': 'Raporo ya {month}',
+    'investor.holding.on_plan': 'Biri ku murongo',
     'investor.holding.invested': 'BYASHOWE',
     'investor.holding.expected_profit': 'INYUNGU ITEGANYIJWE',
     'investor.holding.yield': 'Inyungu ya {rate}%',

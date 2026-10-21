@@ -3658,12 +3658,17 @@ const fr: Catalog = {
     'investor.portfolio.balanced': 'Bien diversifié',
     'investor.portfolio.balanced_body':
         'Votre capital est réparti sur plusieurs entreprises sans position dominante. Continuez ainsi.',
+    'investor.portfolio.balanced_count':
+        'Votre capital est réparti sur {count} entreprises sans position dominante. Continuez ainsi.',
     'investor.portfolio.idle': 'INUTILISÉ SUR LE PORTEFEUILLE',
     'investor.portfolio.idle_body': 'Investissez-le dans un nouveau titre.',
     'investor.portfolio.reinvest': 'Réinvestir ›',
     'investor.holding.frozen_title': 'Ce titre est gelé',
     'investor.holding.frozen_body':
         "Rozine a gelé ce titre le temps d'un examen. Les versements reprennent à sa levée ; votre créance reste inchangée.",
+    'investor.holding.latest_report': 'Dernier rapport',
+    'investor.holding.latest_report_month': 'Rapport de {month}',
+    'investor.holding.on_plan': 'Conforme au plan',
     'investor.holding.invested': 'INVESTI',
     'investor.holding.expected_profit': 'PROFIT ATTENDU',
     'investor.holding.yield': 'Rendement de {rate} %',

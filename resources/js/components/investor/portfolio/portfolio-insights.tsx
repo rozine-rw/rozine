@@ -295,10 +295,15 @@ export function Exposure({
     concentration,
     idle,
     deals,
+    businesses,
 }: Pick<
     InvestorPortfolioProps,
     'industries' | 'risk' | 'concentration' | 'idle'
-> & { deals: RouteLink }) {
+> & {
+    deals: RouteLink;
+    /** How many businesses the holdings span, where the page states it. */
+    businesses: number | null;
+}) {
     const { t } = useTranslation();
 
     return (
@@ -426,7 +431,11 @@ export function Exposure({
                             {t('investor.portfolio.balanced')}
                         </p>
                         <p className="mt-[3px] text-xs leading-normal text-[#3d7a68] dark:text-[#3fcda0]">
-                            {t('investor.portfolio.balanced_body')}
+                            {businesses === null
+                                ? t('investor.portfolio.balanced_body')
+                                : t('investor.portfolio.balanced_count', {
+                                      count: businesses,
+                                  })}
                         </p>
                     </div>
                 </div>

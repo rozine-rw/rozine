@@ -3522,12 +3522,17 @@ const en = {
     'investor.portfolio.balanced': 'Well diversified',
     'investor.portfolio.balanced_body':
         'Your capital is spread across several businesses with no single position dominating. Keep it up.',
+    'investor.portfolio.balanced_count':
+        'Your capital is spread across {count} businesses with no single position dominating. Keep it up.',
     'investor.portfolio.idle': 'IDLE IN WALLET',
     'investor.portfolio.idle_body': 'Put it to work in a new note.',
     'investor.portfolio.reinvest': 'Reinvest ›',
     'investor.holding.frozen_title': 'This note is frozen',
     'investor.holding.frozen_body':
         'Rozine has frozen this note while a review is completed. Payouts resume when it is released; your claim is unchanged.',
+    'investor.holding.latest_report': 'Latest report',
+    'investor.holding.latest_report_month': '{month} report',
+    'investor.holding.on_plan': 'On plan',
     'investor.holding.invested': 'INVESTED',
     'investor.holding.expected_profit': 'EXPECTED PROFIT',
     'investor.holding.yield': '{rate}% yield',

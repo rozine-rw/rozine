@@ -15,7 +15,12 @@ import {
 } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatAmount, formatDate, formatRwf } from '@/lib/rozine/format';
+import {
+    formatAmount,
+    formatDate,
+    formatMonthYearLong,
+    formatRwf,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { C3HoldingDetail, MonthlyUpdateSummary } from '@/types/investor';
@@ -178,6 +183,51 @@ export function HoldingBanner({
 }
 
 /**
+ * Whether the business is on plan, from its newest published monthly report (design: "On plan ·
+ * coupon repaid on time" or "Watchlist"). The report sets the Holding's health.
+ */
+function LatestReport({
+    report,
+}: {
+    report: NonNullable<C3HoldingDetail['latest_report']>;
+}) {
+    const { t, locale } = useTranslation();
+    const onPlan = report.status === 'healthy';
+
+    return (
+        <section
+            aria-label={t('investor.holding.latest_report')}
+            className={cn(
+                'mt-3.5 flex items-start gap-3 rounded-2xl border p-3.5',
+                onPlan
+                    ? 'border-[#cfe9d8] bg-[#f0f9f3] dark:border-[rgba(63,205,160,.25)] dark:bg-[rgba(63,205,160,.08)]'
+                    : 'border-[#f3dfbf] bg-[#fff8ee] dark:border-[rgba(240,160,96,.3)] dark:bg-[rgba(240,160,96,.08)]',
+            )}
+        >
+            <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold tracking-[.05em] text-rz-secondary uppercase">
+                    {t('investor.holding.latest_report_month', {
+                        month: formatMonthYearLong(report.month, locale),
+                    })}
+                </p>
+                <p className="mt-1 text-[13.5px] font-semibold text-rz-ink">
+                    {t(
+                        onPlan
+                            ? 'investor.holding.on_plan'
+                            : 'investor.updates.status.watch',
+                    )}
+                </p>
+                {report.summary !== '' && (
+                    <p className="mt-1 text-[12.5px] leading-normal text-rz-slate">
+                        {report.summary}
+                    </p>
+                )}
+            </div>
+        </section>
+    );
+}
+
+/**
  * The holding's own figures (design L1324–1398): money tiles, the payment metrics, a rating change,
  * a declared recovery plan and an arrears or default timeline (crosswalk SCR-05-ST-01..03), then
  * the photos the business filed. The design's "Sell on the market" card is secondary trading,
@@ -216,6 +266,10 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
                     })}
                 />
             </div>
+
+            {holding.latest_report && (
+                <LatestReport report={holding.latest_report} />
+            )}
 
             <div className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-[15px]">
                 <Metric

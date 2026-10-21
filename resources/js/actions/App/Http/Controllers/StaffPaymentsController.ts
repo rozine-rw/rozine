@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 const StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.url = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.head = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 const StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form = (options?: R
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form.get = (options?: Rou
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/api/v1/staff/payments'
 */
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form.head = (options?: Ro
 StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082.form = StaffPaymentsController4b7fd018556f06bc138d3c9ca29e6082Form
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 const StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.url = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.get = (options?: RouteQu
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030.head = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 const StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030Form = (options?: R
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030Form.get = (options?: Rou
 
 /**
 * @see \App\Http\Controllers\StaffPaymentsController::__invoke
-* @see app/Http/Controllers/StaffPaymentsController.php:24
+* @see app/Http/Controllers/StaffPaymentsController.php:25
 * @route '/admin/payments'
 */
 StaffPaymentsControllerf0a8d547aea657c8a574f1d622b6a030Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
