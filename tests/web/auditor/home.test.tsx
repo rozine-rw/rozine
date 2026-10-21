@@ -354,9 +354,9 @@ describe('Auditor Home', () => {
                 'Engagement terms aren’t available; new work is paused',
             ),
         ).toBeInTheDocument();
-        expect(screen.getByText('Wallet balance')).toBeInTheDocument();
+        expect(screen.getByText('Owed to you')).toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /Wallet balance/ }),
+            screen.queryByRole('link', { name: /Owed to you/ }),
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: 'Withdraw' }),

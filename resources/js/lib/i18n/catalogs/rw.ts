@@ -2328,7 +2328,7 @@ const rw: Catalog = {
     'auditor.time.hours_ago': 'hashize amasaha {count}',
     'auditor.time.days_ago': 'hashize iminsi {count}',
     'auditor.home.head_title': 'Ahabanza',
-    'auditor.home.wallet_balance': 'Amafaranga ari mu gikapu',
+    'auditor.home.wallet_owed': 'Ayo ugomba guhabwa',
     'auditor.home.withdraw': 'Bikuza',
     'auditor.home.statement': "Inyandiko y'ibyakozwe",
     'auditor.home.notifications': 'Ubutumwa',

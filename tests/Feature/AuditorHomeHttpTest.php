@@ -86,18 +86,19 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
         'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(),
         'allowed_actions' => [], 'engagement' => ['status' => 'unavailable', 'link' => ['url' => '/auditor/engagement', 'method' => 'get']],
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
-        'quality_score' => null, 'earned_this_month' => ['currency' => 'RWF', 'amount' => '0'], 'active_deals' => null, 'licence_expires_on' => null,
+        'quality_score' => null, 'earned_this_month' => ['currency' => 'RWF', 'amount' => '0'], 'active_deals' => 0, 'licence_expires_on' => null,
         'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
         'nearby' => ['count' => 0, 'closest_km' => null], 'in_progress' => [],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED', 'on_time_pct' => null, 'avg_variance_pct' => null,
             'variance_flagged' => false, 'jobs_done' => 0, 'clock_expiries' => 0],
-        'activity' => [], 'wallet' => ['available' => null], 'unread_notifications' => 0,
+        'activity' => [], 'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'unread_notifications' => 0,
     ])->and($props['links'])->toBe([
         'home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
         'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
         'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],
         'operation' => ['url' => '/auditor/operations/{request_id}', 'method' => 'get'],
-        'statement' => null, 'withdraw' => null, 'notifications' => ['url' => '/auditor/notices', 'method' => 'get'],
+        'statement' => ['url' => '/auditor/profile?section=earnings', 'method' => 'get'], 'withdraw' => null,
+        'notifications' => ['url' => '/auditor/notices', 'method' => 'get'],
     ]);
     $this->get('/auditor')->assertHeaderContains('Cache-Control', 'no-store')->assertHeaderContains('Cache-Control', 'private');
     foreach (['jobs' => 'auditor/jobs', 'portfolio' => 'auditor/portfolio', 'profile' => 'auditor/profile', 'conflicts' => 'auditor/conflicts'] as $tab => $component) {
@@ -142,7 +143,8 @@ it('lists the partner\'s filings as recent activity and counts them as jobs done
         ->and($props['in_progress'][0]['status'])->toBe('in_progress');
     $sealed = AuditSealingFixture::seal($fixture);
     $props = auditorHomeProps($fixture['user']);
-    expect($props['activity'])->toBe([['kind' => 'report_filed', 'at' => $sealed['data']['sealed']['sealed_at'], 'business' => 'Synthetic business', 'variance_pct' => null]])
+    expect($props['activity'])->toBe([['kind' => 'report_filed', 'at' => $sealed['data']['sealed']['sealed_at'], 'business' => 'Synthetic business', 'variance_pct' => '0.0']])
+        ->and($props['standing'])->toMatchArray(['avg_variance_pct' => '0.0', 'variance_flagged' => false])
         ->and($props['standing']['jobs_done'])->toBe(1)->and($props['in_progress'][0]['status'])->toBe('awaiting_cosign')
         ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['jobs_done'])->toBe(1)
         ->and($props['standing']['on_time_pct'])->toBe(100)
@@ -151,6 +153,18 @@ it('lists the partner\'s filings as recent activity and counts them as jobs done
     $assignment = $fixture['assignment']->refresh();
     $assignment->forceFill(['state' => [...$assignment->state, 'complete_by' => CarbonImmutable::parse($sealed['data']['sealed']['sealed_at'])->subSecond()->format('Y-m-d\TH:i:s\Z')]])->save();
     expect(auditorHomeProps($fixture['user'])['standing']['on_time_pct'])->toBe(0);
+});
+
+it('weighs a sealed money difference into the filing\'s variance and flags the average off the zero tolerance', function (): void {
+    $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
+    $fixture = AuditSealingFixture::ready(findings: true);
+    expect(auditorHomeProps($fixture['user'])['standing'])->toMatchArray(['avg_variance_pct' => null, 'variance_flagged' => false]);
+    AuditSealingFixture::seal($fixture);
+    $props = auditorHomeProps($fixture['user']);
+
+    // Counted RWF 37,000,000 against RWF 38,000,000 reported: 1,000,000 / 38,000,000 = 2.6%.
+    expect($props['activity'][0]['variance_pct'])->toBe('2.6')
+        ->and($props['standing'])->toMatchArray(['avg_variance_pct' => '2.6', 'variance_flagged' => true]);
 });
 
 it('counts the offers that ran out on a partner as clock expiries', function (): void {
