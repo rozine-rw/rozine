@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Http\Controllers\StaffSectionController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Route;
 
 /**
  * The live Admin console sections for a viewer's staff permissions, keyed as the console frame
@@ -37,6 +38,7 @@ class StaffNavigationResource extends JsonResource
         'ledger' => ['permission' => 'ledger.view', 'route' => 'staff.ledger.index'],
         'exceptions' => ['permission' => 'exceptions.view', 'route' => 'staff.exceptions.index'],
         'primary_market' => ['permission' => 'primary.view', 'route' => 'staff.primary-market.index'],
+        'notes' => ['permission' => 'primary.view', 'route' => 'staff.notes.index'],
         'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
         'coverage' => ['permission' => 'audit.partners.verify', 'route' => 'staff.coverage.index'],
         'complaints' => ['permission' => 'complaints.answer', 'route' => 'staff.complaints.index'],
@@ -51,7 +53,8 @@ class StaffNavigationResource extends JsonResource
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $links = ['launcher' => ['url' => route('dashboard', [], false), 'method' => 'get']];
         foreach (self::SECTIONS as $section => $source) {
-            $links[$section] = in_array($source['permission'], $permissions, true)
+            // A web-only screen (Notes) has no API route, so a token sees no link to it.
+            $links[$section] = in_array($source['permission'], $permissions, true) && Route::has($prefix.$source['route'])
                 ? ['url' => route($prefix.$source['route'], [], false), 'method' => 'get'] : null;
         }
 
@@ -72,7 +75,7 @@ class StaffNavigationResource extends JsonResource
             ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['payments'] ?? $links['disbursements'], 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
+            'payments' => $links['payments'] ?? $links['disbursements'] ?? null, 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
             'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),

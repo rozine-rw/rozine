@@ -5591,6 +5591,12 @@ const fr: Catalog = {
     'admin.exceptions.filtered_title': 'Aucune exception de ce type',
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
+    'admin.notes.tabs': 'Notes par état',
+    'admin.notes.state.live': 'En cours',
+    'admin.notes.state.funded': 'Financée',
+    'admin.notes.state.repaying': 'En remboursement',
+    'admin.notes.state.failed': 'Échouée',
+    'admin.notes.more': 'Plus de notes',
     'admin.primary.title': 'Levées en cours',
     'admin.primary.caption':
         'Chaque levée encore ouverte, la plus récente d’abord. Une levée se remplit ou échoue selon son propre délai, il n’y a donc pas de modération ici.',

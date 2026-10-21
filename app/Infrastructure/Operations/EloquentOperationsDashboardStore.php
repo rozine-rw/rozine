@@ -56,6 +56,24 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
                 'repaying' => (int) ($notes->repaying ?? 0), 'failed' => (int) ($notes->failed ?? 0)]];
     }
 
+    public function noteStates(): array
+    {
+        return array_values(array_map(fn (object $row): array => ['campaign_id' => (string) $row->id, 'state' => match ((string) $row->state) {
+            'live' => 'live', 'funded' => 'funded', 'repaying' => 'repaying', default => 'failed',
+        }, 'live_at' => CarbonImmutable::parse((string) $row->live_at)->toIso8601String()], DB::table('business_campaigns AS c')
+            ->leftJoin('business_campaign_closures AS closure', 'closure.business_campaign_id', '=', 'c.id')
+            ->leftJoin('primary_campaign_fundings AS funding', 'funding.business_campaign_id', '=', 'c.id')
+            ->leftJoin('disbursements AS d', 'd.business_campaign_id', '=', 'c.id')
+            ->leftJoin('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
+            ->selectRaw("c.id, c.live_at, CASE
+                WHEN closure.id IS NOT NULL OR closing.kind = 'failed_closing' THEN 'failed'
+                WHEN closing.kind = 'issued' THEN 'repaying'
+                WHEN funding.id IS NOT NULL AND closing.id IS NULL THEN 'funded'
+                WHEN funding.id IS NULL THEN 'live'
+                ELSE 'failed' END AS state")
+            ->orderByDesc('c.live_at')->orderByDesc('c.id')->get()->all()));
+    }
+
     /** @return list<Bar> */
     public function capitalRaised(string $grain, ?string $from, ?string $to): array
     {

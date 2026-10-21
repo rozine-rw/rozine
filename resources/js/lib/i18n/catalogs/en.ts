@@ -5384,6 +5384,12 @@ const en = {
         'Arrears, halts and variances appear here when the core opens one.',
     'admin.exceptions.filtered_title': 'No exceptions of this kind',
     'admin.exceptions.filtered_body': 'Choose All to see every open exception.',
+    'admin.notes.tabs': 'Notes by state',
+    'admin.notes.state.live': 'Live',
+    'admin.notes.state.funded': 'Funded',
+    'admin.notes.state.repaying': 'Repaying',
+    'admin.notes.state.failed': 'Failed',
+    'admin.notes.more': 'More notes',
     'admin.primary.title': 'Live raises',
     'admin.primary.caption':
         'Every raise still filling, newest first. Raises fill or fail on their own clock, so there is no moderation here.',

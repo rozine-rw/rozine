@@ -5562,6 +5562,12 @@ const rw: Catalog = {
     'admin.exceptions.filtered_title': 'Nta kidasanzwe cy’ubu bwoko',
     'admin.exceptions.filtered_body':
         'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
+    'admin.notes.tabs': 'Inyandiko z’imyenda ukurikije aho zigeze',
+    'admin.notes.state.live': 'Irakusanya',
+    'admin.notes.state.funded': 'Yuzuye',
+    'admin.notes.state.repaying': 'Irishyurwa',
+    'admin.notes.state.failed': 'Ntiyagezweho',
+    'admin.notes.more': 'Izindi nyandiko',
     'admin.primary.title': 'Ubukusanyamari buri gukorwa',
     'admin.primary.caption':
         'Ubukusanyamari bwose butaruzura, ubushya mbere. Ubukusanyamari buzura cyangwa bukananirwa ku gihe cyabwo, bityo nta kugenzura kuri hano.',

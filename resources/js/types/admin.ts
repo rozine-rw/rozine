@@ -1262,6 +1262,53 @@ export type PrimaryMarketRaise = {
     days_left: number;
 };
 
+/** The Notes register offers no command; `allowed_actions` is always empty. */
+export type StaffNotesPageContract = {
+    contract_version: 'staff-notes-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type NotesStatKey = 'total' | 'live' | 'repaying' | 'raised';
+
+/**
+ * Where a note sits now, as the dashboard counts it: `live` while it raises, `funded` once full and
+ * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
+ * its payout failed. `matured` is a tab only: servicing records no final repayment yet.
+ */
+export type NoteState = 'live' | 'funded' | 'repaying' | 'failed';
+
+export type NotesTabKey = 'all' | 'live' | 'repaying' | 'matured' | 'failed';
+
+export type NoteRegisterRow = {
+    id: string;
+    reference: string;
+    business: string;
+    sector: string;
+    state: NoteState;
+    rate_pct: string;
+    term_months: number;
+    funded_pct: string;
+    raised: Money;
+    target: Money;
+    investors: number;
+    listed_at: string;
+};
+
+export type AdminNotesProps = AdminFrameShellProps &
+    StaffNotesPageContract & {
+        stats: { key: NotesStatKey; value: StatValue }[];
+        tabs: {
+            key: NotesTabKey;
+            count: number;
+            link: RouteLink;
+            active: boolean;
+        }[];
+        notes: NoteRegisterRow[];
+        pagination: Pagination;
+    };
+
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
     StaffPrimaryMarketPageContract & {
         stats: { key: PrimaryMarketStatKey; value: StatValue }[];

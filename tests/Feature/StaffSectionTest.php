@@ -29,9 +29,9 @@ test('every design section opens the console frame with its empty state for any 
     array_combine(array_keys(StaffSectionController::SECTIONS), array_keys(StaffSectionController::SECTIONS))));
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {
-    $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+    $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('nav.payments.url', '/admin/disbursements'));
-    $this->actingAs(sectionStaff(['approver', 'superadmin']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+    $this->actingAs(sectionStaff(['approver', 'superadmin']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')
             ->where('nav.payments.url', '/admin/payments')->where('nav.compliance.url', '/admin/investor-verifications')
             ->where('nav.investors.url', '/admin/investors')
@@ -39,11 +39,11 @@ test('the frame names the most privileged role, and Payments and Compliance open
 });
 
 test('Compliance opens the investor identity review queue for compliance officers, and the design page otherwise', function (): void {
-    $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+    $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/investor-verifications'));
     $this->actingAs(sectionStaff(['compliance']))->getJson(route('api.v1.staff.investor-verifications.index'))->assertOk()
         ->assertJsonPath('data.nav.compliance.url', '/api/v1/staff/investor-verifications');
-    $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+    $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/compliance'));
     $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'compliance']))
         ->assertRedirect(route('staff.investor-verifications.index'));
@@ -52,7 +52,7 @@ test('Compliance opens the investor identity review queue for compliance officer
 test('the frame shows the same two-letter initials as every other console page', function (): void {
     $user = sectionStaff(['analyst']);
     $user->forceFill(['name' => 'Erastus Nkurunziza'])->save();
-    $this->actingAs($user)->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+    $this->actingAs($user)->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.initials', 'EN'));
 });
 
@@ -64,15 +64,15 @@ test('the Business directory, Audit Partner network, Primary Market and Payment 
 });
 
 test('participants and guests cannot open a console section, and unknown sections do not exist', function (): void {
-    $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get(route('staff.sections.show', ['section' => 'notes']))
+    $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get(route('staff.sections.show', ['section' => 'secondary-market']))
         ->assertForbidden()->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'STAFF_ACCESS_REQUIRED'));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/everything')->assertNotFound();
     auth()->logout();
-    $this->get(route('staff.sections.show', ['section' => 'notes']))->assertRedirect(route('login'));
+    $this->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertRedirect(route('login'));
 });
 
 test('Oversight lists the design\'s Reports, which opens its section page from the sidebar and the Audit desk command', function (): void {
-    expect(StaffSectionController::SECTIONS)->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 2, 3))
+    expect(StaffSectionController::SECTIONS)->toHaveKey('reports')->and(array_slice(array_keys(StaffSectionController::SECTIONS), 1, 3))
         ->toBe(['reports', 'risk', 'compliance']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/reports')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'reports')
