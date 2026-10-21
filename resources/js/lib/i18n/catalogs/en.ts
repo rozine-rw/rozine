@@ -2232,7 +2232,7 @@ const en = {
     'auditor.time.hours_ago': '{count}h ago',
     'auditor.time.days_ago': '{count}d ago',
     'auditor.home.head_title': 'Home',
-    'auditor.home.wallet_balance': 'Wallet balance',
+    'auditor.home.wallet_owed': 'Owed to you',
     'auditor.home.withdraw': 'Withdraw',
     'auditor.home.statement': 'Statement',
     'auditor.home.notifications': 'Notifications',

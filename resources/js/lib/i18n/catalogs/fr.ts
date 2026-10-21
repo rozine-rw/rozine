@@ -2336,7 +2336,7 @@ const fr: Catalog = {
     'auditor.time.hours_ago': 'il y a {count} h',
     'auditor.time.days_ago': 'il y a {count} j',
     'auditor.home.head_title': 'Accueil',
-    'auditor.home.wallet_balance': 'Solde du portefeuille',
+    'auditor.home.wallet_owed': 'Montant dû',
     'auditor.home.withdraw': 'Retirer',
     'auditor.home.statement': 'Relevé',
     'auditor.home.notifications': 'Notifications',

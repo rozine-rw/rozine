@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\GetAuditorEarnings;
 use App\Models\AuditPartnerCredit;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditorFixture;
 use Tests\Support\PrimaryIssuanceFixture;
@@ -49,9 +51,10 @@ it('states the platform fee share credited to the partner who sealed the report,
         ->and(auditorEarnings($auditor, 'auditor.profile'))->toBe($statement)
         ->and(auditorEarnings(AuditorFixture::make()['user'], 'auditor.portfolio.index'))->toBe(['month' => $month.'-01',
             'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => []]);
-    // Home's "earned this month" is the same month's credit.
+    // Home's "earned this month" is the same month's credit, the wallet what is owed, and deals the funded raises.
     actingAs($auditor)->get(route('auditor.home'))->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->where('earned_this_month', ['currency' => 'RWF', 'amount' => '129600']));
+        ->assertInertia(fn (Assert $page): Assert => $page->where('earned_this_month', ['currency' => 'RWF', 'amount' => '129600'])
+            ->where('wallet.available', ['currency' => 'RWF', 'amount' => '129600'])->where('active_deals', 1));
 
     $this->travelTo(CarbonImmutable::parse($month.'-01 00:00:00', 'Africa/Kigali')->addMonthNoOverflow());
     expect(auditorEarnings($auditor, 'auditor.profile'))->toBe([...$statement, 'month' => now('Africa/Kigali')->format('Y-m').'-01',
@@ -69,4 +72,14 @@ it('counts a credit made in the first Kigali hours of a month in that month', fu
 
     expect($credit->created_at->setTimezone('Africa/Kigali')->format('Y-m-d'))->toBe('2026-10-01')
         ->and(auditorEarnings($auditor, 'auditor.profile')['this_month'])->toBe(['currency' => 'RWF', 'amount' => '129600']);
+});
+
+it('owes the partner every credit while nothing in the ledger pays their pooled share out', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $credit = AuditPartnerCredit::query()->sole();
+    $auditor = User::query()->where('party_id', $credit->auditor_party_id)->sole();
+
+    expect(app(GetAuditorEarnings::class)->handle($auditor->id, 1))->toMatchArray(['total' => '129600', 'owed' => '129600', 'deals' => 1])
+        ->and(DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.kind', 'audit_partner_fee_payable')->pluck('ledger_lines.direction')->all())->toBe(['credit']);
 });
