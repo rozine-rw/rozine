@@ -616,11 +616,9 @@ const rw: Catalog = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
     'business.reports.guide.cosign.body':
-        'Iyo igenzura rifunzwe, wongeraho incamake ugashyiraho umukono bitarenze tariki ya {day}, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+        'Iyo igenzura rifunzwe, ufite amasaha 24 yo kuyisuzuma no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso. Nutagira icyo ukora mu masaha 24, raporo ifatwa nk’iyemejwe. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.guide.visit.body_undated':
         "CPA wagenewe asura aho ukorera agasuzuma inyandiko, agahuza amafaranga yinjira n'asohoka, hanyuma agafunga raporo.",
-    'business.reports.guide.cosign.body_undated':
-        'Iyo igenzura rifunzwe, urayisuzuma ugashyiraho umukono mu gihe cyagenewe isuzuma, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',

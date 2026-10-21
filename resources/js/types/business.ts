@@ -854,11 +854,11 @@ export type BusinessReportsProps = {
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
     /**
-     * Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. Null when
-     * no such day is published (the live monthly review closes a fixed time after delivery): the
-     * guide then names no day.
+     * Audit-cycle policy the guide quotes: the day audits seal by. Null when no such day is
+     * published: the guide then names no day. The co-sign window is always the BRS's 24 hours
+     * after sealing (OD-07), so it is not a policy field.
      */
-    policy: { seal_day: number; cosign_day: number } | null;
+    policy: { seal_day: number } | null;
     links: BusinessAppLinks & { close: RouteLink };
 };
 

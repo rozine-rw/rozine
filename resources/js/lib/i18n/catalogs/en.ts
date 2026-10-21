@@ -599,11 +599,9 @@ const en = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
-        'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+        'When the audit is sealed you have 24 hours to review it and co-sign it, or raise a dispute with counter-proof. If you do neither within 24 hours, the report counts as approved. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.guide.visit.body_undated':
         'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report.',
-    'business.reports.guide.cosign.body_undated':
-        'When the audit is sealed you review it and co-sign it within the review window, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',

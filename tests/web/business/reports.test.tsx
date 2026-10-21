@@ -148,7 +148,7 @@ describe('Business Reports', () => {
         expect(guide.getByText('7th')).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you add a recap and co-sign it by the 7th, or raise a dispute/,
+                /you have 24 hours to review it and co-sign it, or raise a dispute.*If you do neither within 24 hours, the report counts as approved/,
             ),
         ).toBeInTheDocument();
     });
@@ -175,7 +175,7 @@ describe('Business Reports', () => {
         ).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you review it and co-sign it within the review window, or raise a dispute/,
+                /you have 24 hours to review it and co-sign it, or raise a dispute/,
             ),
         ).toBeInTheDocument();
         expect(guide.queryByText(/7th/u)).not.toBeInTheDocument();

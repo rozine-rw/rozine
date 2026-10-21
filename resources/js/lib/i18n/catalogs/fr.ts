@@ -618,11 +618,9 @@ const fr: Catalog = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et le cosigner, ou le contester avec une contre-preuve. Sans réponse de votre part dans les 24 heures, le rapport est considéré comme approuvé. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.guide.visit.body_undated':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
-    'business.reports.guide.cosign.body_undated':
-        "Une fois l'audit scellé, vous l'examinez et le cosignez pendant la période de revue, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
