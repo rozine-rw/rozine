@@ -6020,6 +6020,252 @@ const en = {
         'The customer reads this in the app and gets a notice. A resolution closes the complaint.',
     'admin.complaints.closed':
         'This complaint is resolved. Nothing more can be added.',
+    'auditor.academy.title': 'Auditor Academy',
+    'auditor.academy.intro':
+        'Short lessons on how verification, sealed reports and your pay work on Rozine, from the rules the platform enforces. Your progress is saved on this device only.',
+    'auditor.academy.summary_start': 'Learn how verification works on Rozine',
+    'auditor.academy.resume': 'Resume: {lesson}',
+    'auditor.academy.review': 'Review the Academy',
+    'auditor.academy.browse': 'Browse all lessons',
+    'auditor.academy.group.role': 'Your role',
+    'auditor.academy.group.assignments': 'How work reaches you',
+    'auditor.academy.group.verification': 'Verifying a business',
+    'auditor.academy.group.monthly': 'Every month',
+    'auditor.academy.group.visits': 'Flash Audits and arrears visits',
+    'auditor.academy.group.pay': 'How you are paid',
+    'auditor.academy.lesson.role.title': 'Who you are',
+    'auditor.academy.lesson.role.sub': 'The licensed, independent check',
+    'auditor.academy.lesson.role.topic1.title': 'An independent CPA',
+    'auditor.academy.lesson.role.topic1.body':
+        'You are an Audit Partner: an independent, ICPAR-licensed Certified Public Accountant under contract with Rozine. You check in person what statements alone cannot prove, before a business raises and every month while its note is outstanding.',
+    'auditor.academy.lesson.role.topic1.q':
+        'Who can verify businesses on Rozine?',
+    'auditor.academy.lesson.role.topic1.option1':
+        'Only licensed, independent CPAs',
+    'auditor.academy.lesson.role.topic1.option2': 'Any member of Rozine staff',
+    'auditor.academy.lesson.role.topic1.option3':
+        'The business’s own accountant',
+    'auditor.academy.lesson.role.topic2.title': 'Your licence',
+    'auditor.academy.lesson.role.topic2.body':
+        'Your ICPAR licence is checked when you are accredited and again before every assignment. A lapsed licence blocks new assignments the same day.',
+    'auditor.academy.lesson.role.topic2.q':
+        'Your licence lapses today. What happens?',
+    'auditor.academy.lesson.role.topic2.option1':
+        'You keep a grace period of a month',
+    'auditor.academy.lesson.role.topic2.option2':
+        'You get no new assignments from today',
+    'auditor.academy.lesson.role.topic2.option3':
+        'Nothing until your next audit ends',
+    'auditor.academy.lesson.independence.title': 'Independence',
+    'auditor.academy.lesson.independence.sub': 'Conflicts and what you know',
+    'auditor.academy.lesson.independence.topic1.title':
+        'Declare every conflict',
+    'auditor.academy.lesson.independence.topic1.body':
+        'You declare any conflict of interest. You are never assigned to a business that you or your firm has a relationship with.',
+    'auditor.academy.lesson.independence.topic1.q':
+        'Your firm keeps a business’s books. Can you verify it?',
+    'auditor.academy.lesson.independence.topic1.option1':
+        'Yes, if you mention it in the report',
+    'auditor.academy.lesson.independence.topic1.option2':
+        'Only for a Flash Audit',
+    'auditor.academy.lesson.independence.topic1.option3':
+        'No, you cannot be assigned to it',
+    'auditor.academy.lesson.independence.topic2.title':
+        'Never trade on what you know',
+    'auditor.academy.lesson.independence.topic2.body':
+        'A report, rating or arrears is not public until Rozine publishes it. Buying a note you verify between sealing its report and publication opens a surveillance case.',
+    'auditor.academy.lesson.independence.topic2.q':
+        'You sealed a strong report today and it publishes tomorrow. Can you buy the note today?',
+    'auditor.academy.lesson.independence.topic2.option1':
+        'No, it opens a surveillance case',
+    'auditor.academy.lesson.independence.topic2.option2':
+        'Yes, the report is already sealed',
+    'auditor.academy.lesson.independence.topic2.option3':
+        'Yes, if the amount is small',
+    'auditor.academy.lesson.dispatch.title': 'Assignments',
+    'auditor.academy.lesson.dispatch.sub': 'Nearest eligible CPA, within 30 km',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Within 30 km',
+    'auditor.academy.lesson.dispatch.topic1.body':
+        'Work goes to the nearest eligible CPA whose office is within 30 km of the business premises. Eligible means a current licence, no declared conflict and rotation allowing it.',
+    'auditor.academy.lesson.dispatch.topic1.q':
+        'A business is 31 km from your office. What happens?',
+    'auditor.academy.lesson.dispatch.topic1.option1':
+        'It is offered to you if no one is nearer',
+    'auditor.academy.lesson.dispatch.topic1.option2':
+        'You are never offered it',
+    'auditor.academy.lesson.dispatch.topic1.option3':
+        'You can claim it from the list',
+    'auditor.academy.lesson.dispatch.topic2.title': 'Rotation',
+    'auditor.academy.lesson.dispatch.topic2.body':
+        'CPAs rotate across businesses, so no single CPA verifies the same business indefinitely. Rozine sets how many months in a row one CPA may verify a business.',
+    'auditor.academy.lesson.dispatch.topic2.q': 'Why do CPAs rotate?',
+    'auditor.academy.lesson.dispatch.topic2.option1': 'To share pay out evenly',
+    'auditor.academy.lesson.dispatch.topic2.option2':
+        'Because licences expire every month',
+    'auditor.academy.lesson.dispatch.topic2.option3':
+        'So no CPA verifies the same business indefinitely',
+    'auditor.academy.lesson.baseline.title': 'The baseline report',
+    'auditor.academy.lesson.baseline.sub': 'No note lists without it',
+    'auditor.academy.lesson.baseline.topic1.title': 'Before any listing',
+    'auditor.academy.lesson.baseline.topic1.body':
+        'No note lists until you have visited the business and sealed a baseline report. You perform ISRS 4400 agreed-upon procedures on site, and the sealed report is published on the listing.',
+    'auditor.academy.lesson.baseline.topic1.q':
+        'Can a raise open before its baseline report is sealed?',
+    'auditor.academy.lesson.baseline.topic1.option1': 'No, never',
+    'auditor.academy.lesson.baseline.topic1.option2':
+        'Yes, with a warning to investors',
+    'auditor.academy.lesson.baseline.topic1.option3': 'Yes, for small raises',
+    'auditor.academy.lesson.baseline.topic2.title': 'Evidence rules',
+    'auditor.academy.lesson.baseline.topic2.body':
+        'Photos come only from the in-app camera with live location. Gallery uploads are blocked, and a photo taken outside the premises geofence is rejected.',
+    'auditor.academy.lesson.baseline.topic2.q':
+        'You took a photo with your phone’s own camera yesterday. Can you upload it?',
+    'auditor.academy.lesson.baseline.topic2.option1': 'Yes, from your gallery',
+    'auditor.academy.lesson.baseline.topic2.option2':
+        'No, only live in-app photos count',
+    'auditor.academy.lesson.baseline.topic2.option3': 'Yes, if you add a note',
+    'auditor.academy.lesson.differences.title': 'Differences and the seal',
+    'auditor.academy.lesson.differences.sub':
+        'What blocks a seal and what it binds',
+    'auditor.academy.lesson.differences.topic1.title':
+        'Explain every difference',
+    'auditor.academy.lesson.differences.topic1.body':
+        'Any unexplained difference between the business’s records and what you find on site blocks the seal. Explain each difference in the report, or the report cannot be sealed.',
+    'auditor.academy.lesson.differences.topic1.q':
+        'You count less stock than the records show and cannot explain why. Can you seal?',
+    'auditor.academy.lesson.differences.topic1.option1':
+        'Yes, if the gap is small',
+    'auditor.academy.lesson.differences.topic1.option2': 'Yes, with a comment',
+    'auditor.academy.lesson.differences.topic1.option3':
+        'No, the seal is blocked',
+    'auditor.academy.lesson.differences.topic2.title': 'What the seal binds',
+    'auditor.academy.lesson.differences.topic2.body':
+        'A sealed report is locked with a SHA-256 seal that binds your identity, your licence, the report’s contents and the time. Once sealed, nothing in it can change.',
+    'auditor.academy.lesson.differences.topic2.q': 'What does the seal bind?',
+    'auditor.academy.lesson.differences.topic2.option1':
+        'Your identity, licence, the contents and the time',
+    'auditor.academy.lesson.differences.topic2.option2':
+        'Only the business’s name',
+    'auditor.academy.lesson.differences.topic2.option3':
+        'The investors who hold the note',
+    'auditor.academy.lesson.numbers.title': 'The numbers behind an offer',
+    'auditor.academy.lesson.numbers.sub': 'What your checks confirm',
+    'auditor.academy.lesson.numbers.topic1.title': 'CFADS',
+    'auditor.academy.lesson.numbers.topic1.body':
+        'Cash flow available for debt service is verified monthly cash in, minus operating costs, owner drawings and existing debt payments. RWF 4,200,000 after operating costs, less 600,000 of drawings and a 400,000 loan payment, gives 3,200,000.',
+    'auditor.academy.lesson.numbers.topic1.q':
+        'Cash in after operating costs is RWF 5,000,000, drawings 1,000,000 and an existing loan payment 500,000. What is CFADS?',
+    'auditor.academy.lesson.numbers.topic1.option1': 'RWF 3,500,000',
+    'auditor.academy.lesson.numbers.topic1.option2': 'RWF 4,000,000',
+    'auditor.academy.lesson.numbers.topic1.option3': 'RWF 5,500,000',
+    'auditor.academy.lesson.numbers.topic2.title': 'Coverage and the offer',
+    'auditor.academy.lesson.numbers.topic2.body':
+        'Coverage is CFADS divided by the proposed instalment. The offer is the lowest of the request, the amount at 1.50 coverage, 35% of verified annual revenue and RWF 100,000,000. Your on-site checks confirm the records these numbers are built on.',
+    'auditor.academy.lesson.numbers.topic2.q':
+        'At what coverage does Rozine size an offer?',
+    'auditor.academy.lesson.numbers.topic2.option1': '1.00',
+    'auditor.academy.lesson.numbers.topic2.option2': '1.50',
+    'auditor.academy.lesson.numbers.topic2.option3': '1.25',
+    'auditor.academy.lesson.cycle.title': 'The monthly cycle',
+    'auditor.academy.lesson.cycle.sub': 'From D−10 to the report',
+    'auditor.academy.lesson.cycle.topic1.title': 'D−10 to D−3',
+    'auditor.academy.lesson.cycle.topic1.body':
+        'Counted from each note’s due date D: the business uploads its records by D−10, you verify in person and seal between D−10 and D−3, and by D−1 the sealed report reaches every holder.',
+    'auditor.academy.lesson.cycle.topic1.q':
+        'A note is due on the 18th. By when must you seal?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'The 15th',
+    'auditor.academy.lesson.cycle.topic1.option2': 'The 17th',
+    'auditor.academy.lesson.cycle.topic1.option3': 'The 18th',
+    'auditor.academy.lesson.cycle.topic2.title': 'Late records, late seals',
+    'auditor.academy.lesson.cycle.topic2.body':
+        'If records are not uploaded by D−10, the business gets daily reminders and you are notified. A seal after D−3 is logged as late and alerts the CMA. A missing report is never a default on its own.',
+    'auditor.academy.lesson.cycle.topic2.q':
+        'The business has not uploaded by D−10. What happens?',
+    'auditor.academy.lesson.cycle.topic2.option1': 'The note defaults',
+    'auditor.academy.lesson.cycle.topic2.option2':
+        'Daily reminders, and you are notified',
+    'auditor.academy.lesson.cycle.topic2.option3':
+        'You seal without the records',
+    'auditor.academy.lesson.disputes.title': 'Approvals and disputes',
+    'auditor.academy.lesson.disputes.sub': 'What happens after you seal',
+    'auditor.academy.lesson.disputes.topic1.title': '24 hours to respond',
+    'auditor.academy.lesson.disputes.topic1.body':
+        'After you seal, the business representative has 24 hours to approve or dispute your report.',
+    'auditor.academy.lesson.disputes.topic1.q':
+        'How long does the business have to dispute a sealed report?',
+    'auditor.academy.lesson.disputes.topic1.option1': 'Until payment day',
+    'auditor.academy.lesson.disputes.topic1.option2': 'Seven days',
+    'auditor.academy.lesson.disputes.topic1.option3': '24 hours',
+    'auditor.academy.lesson.disputes.topic2.title': 'Desk review',
+    'auditor.academy.lesson.disputes.topic2.body':
+        'A dispute sends the report to desk review by the Head of Finance & Auditor Network. While it is disputed the note cannot be traded, and the decision and its reason are published with the report.',
+    'auditor.academy.lesson.disputes.topic2.q':
+        'What happens to the note while its report is disputed?',
+    'auditor.academy.lesson.disputes.topic2.option1': 'It cannot be traded',
+    'auditor.academy.lesson.disputes.topic2.option2': 'It defaults',
+    'auditor.academy.lesson.disputes.topic2.option3': 'Nothing changes',
+    'auditor.academy.lesson.flash.title': 'Flash Audits',
+    'auditor.academy.lesson.flash.sub': 'Unannounced, within 24 hours',
+    'auditor.academy.lesson.flash.topic1.title': 'Within 24 hours',
+    'auditor.academy.lesson.flash.topic1.body':
+        'Rozine can send you to a business unannounced. A Flash Audit must be completed within 24 hours of assignment, with the same evidence rules as a baseline report.',
+    'auditor.academy.lesson.flash.topic1.q':
+        'How long do you have to complete a Flash Audit?',
+    'auditor.academy.lesson.flash.topic1.option1': '24 hours from assignment',
+    'auditor.academy.lesson.flash.topic1.option2':
+        '24 hours from when you arrive',
+    'auditor.academy.lesson.flash.topic1.option3': 'Three days',
+    'auditor.academy.lesson.flash.topic2.title': 'When the clock runs out',
+    'auditor.academy.lesson.flash.topic2.body':
+        'An unfinished Flash Audit at 24 hours raises an alert, and a missed CPA deadline alerts the CMA. Only take on what you can finish in time.',
+    'auditor.academy.lesson.flash.topic2.q':
+        'What happens when a Flash Audit is unfinished at 24 hours?',
+    'auditor.academy.lesson.flash.topic2.option1':
+        'The deadline extends itself',
+    'auditor.academy.lesson.flash.topic2.option2': 'An alert is raised',
+    'auditor.academy.lesson.flash.topic2.option3': 'The business is rejected',
+    'auditor.academy.lesson.arrears.title': 'Arrears visits',
+    'auditor.academy.lesson.arrears.sub': 'When a business is a week late',
+    'auditor.academy.lesson.arrears.topic1.title': 'Day 7 of arrears',
+    'auditor.academy.lesson.arrears.topic1.body':
+        'When a business you verify is seven days late, a visit task is created for you. You visit straight away to check stock, cash and operations.',
+    'auditor.academy.lesson.arrears.topic1.q':
+        'When is an arrears visit triggered?',
+    'auditor.academy.lesson.arrears.topic1.option1': 'On the first day late',
+    'auditor.academy.lesson.arrears.topic1.option2': 'On day 30 of arrears',
+    'auditor.academy.lesson.arrears.topic1.option3': 'On day 7 of arrears',
+    'auditor.academy.lesson.arrears.topic2.title': 'A sealed note to holders',
+    'auditor.academy.lesson.arrears.topic2.body':
+        'After the visit you file a sealed note to holders, so investors hear what you found from the person who checked.',
+    'auditor.academy.lesson.arrears.topic2.q':
+        'What do you file after an arrears visit?',
+    'auditor.academy.lesson.arrears.topic2.option1': 'A sealed note to holders',
+    'auditor.academy.lesson.arrears.topic2.option2':
+        'A new offer for the business',
+    'auditor.academy.lesson.arrears.topic2.option3':
+        'Nothing, Rozine writes to holders',
+    'auditor.academy.lesson.earnings.title': 'Your earnings',
+    'auditor.academy.lesson.earnings.sub':
+        'A share of what Rozine earns on your notes',
+    'auditor.academy.lesson.earnings.topic1.title': '40% of the platform fee',
+    'auditor.academy.lesson.earnings.topic1.body':
+        'The business pays a 3% platform fee on the principal at disbursement. 40% of that fee is credited to you, the Audit Partner who verified the note, at disbursement. On a RWF 12,000,000 raise the fee is 360,000 and your share is 144,000.',
+    'auditor.academy.lesson.earnings.topic1.q':
+        'A RWF 10,000,000 raise is disbursed. What is your share of the platform fee?',
+    'auditor.academy.lesson.earnings.topic1.option1': 'RWF 300,000',
+    'auditor.academy.lesson.earnings.topic1.option2': 'RWF 40,000',
+    'auditor.academy.lesson.earnings.topic1.option3': 'RWF 120,000',
+    'auditor.academy.lesson.earnings.topic2.title': '25% of the earnings fee',
+    'auditor.academy.lesson.earnings.topic2.body':
+        'Investors pay an earnings fee on the return part of each monthly payout. 25% of it is credited to you on each payout of the notes you verify, so you earn when the business performs.',
+    'auditor.academy.lesson.earnings.topic2.q':
+        'When is the earnings-fee share credited to you?',
+    'auditor.academy.lesson.earnings.topic2.option1':
+        'On each monthly payout of notes you verify',
+    'auditor.academy.lesson.earnings.topic2.option2':
+        'Once per completed audit',
+    'auditor.academy.lesson.earnings.topic2.option3':
+        'Only when the note matures',
 } as const;
 
 export default en;

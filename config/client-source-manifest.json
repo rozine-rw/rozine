@@ -435,6 +435,7 @@
         "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/earnings.tsx",
+        "resources/js/components/auditor/profile/academy-section.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -582,6 +583,7 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
+        "resources/js/components/rozine/academy.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
@@ -755,10 +757,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 724,
+        "totalTrackedSources": 726,
         "generated": 310,
         "declarationOnly": 19,
-        "authoredExecutable": 395
+        "authoredExecutable": 397
     },
-    "coverageSetSha256": "63fd7c84e6b79b38d4122740d587db55233388882b55b9686250adf12f0281cc"
+    "coverageSetSha256": "463f7b131bb0ca309d0325f3aa76a184a09f48fc3f2425e1762cdabfc496cb32"
 }

@@ -20,14 +20,14 @@ const cells = (row: HTMLElement) =>
 beforeEach(resetInertia);
 
 describe('Academies', () => {
-    it('lists the Investor Academy lessons by track with their topics, and counts them', () => {
+    it('lists the Investor Academy lessons by track with their topics, and counts every academy', () => {
         render(<AdminPendingSection {...props()} />);
 
         const region = screen.getByRole('region', { name: 'Academies' });
 
-        expect(region).toHaveTextContent('Lessons live8');
-        expect(region).toHaveTextContent('Tracks4');
-        expect(region).toHaveTextContent('Quick checks16');
+        expect(region).toHaveTextContent('Lessons live19');
+        expect(region).toHaveTextContent('Tracks10');
+        expect(region).toHaveTextContent('Quick checks38');
         expect(region).toHaveTextContent(
             'Lessons completed—Kept on each learner’s device',
         );
@@ -54,20 +54,30 @@ describe('Academies', () => {
         expect(within(region).queryAllByRole('link')).toEqual([]);
     });
 
-    it('keeps the Business and Auditor academies empty and shows every lesson under All', () => {
+    it('lists the Auditor Academy, keeps the Business academy empty and shows every lesson under All', () => {
         render(<AdminPendingSection {...props()} />);
 
         fireEvent.click(screen.getByRole('tab', { name: 'Business Academy' }));
         expect(screen.getByText('No lessons to show yet.')).toBeVisible();
 
         fireEvent.click(screen.getByRole('tab', { name: 'Auditor Academy' }));
-        expect(screen.getByText('No lessons to show yet.')).toBeVisible();
+
+        const auditor = within(
+            screen.getByRole('table', { name: 'Lessons' }),
+        ).getAllByRole('row');
+
+        expect(auditor).toHaveLength(12);
+        expect(cells(auditor[1] as HTMLElement)).toEqual([
+            '🧾Who you are',
+            'Your role',
+            '2',
+        ]);
 
         fireEvent.click(screen.getByRole('tab', { name: 'All' }));
         expect(
             within(screen.getByRole('table', { name: 'Lessons' })).getAllByRole(
                 'row',
             ),
-        ).toHaveLength(9);
+        ).toHaveLength(20);
     });
 });

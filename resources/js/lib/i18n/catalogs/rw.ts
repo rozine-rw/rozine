@@ -6224,6 +6224,273 @@ const rw: Catalog = {
         'Umukiriya agisoma muri porogaramu kandi akabona ubutumwa. Igisubizo gikemura gifunga ikirego.',
     'admin.complaints.closed':
         'Iki kirego cyakemutse. Nta kindi gishobora kongerwaho.',
+    'auditor.academy.title': 'Ishuri ry’Umugenzuzi',
+    'auditor.academy.intro':
+        'Amasomo magufi ku igenzura, raporo zifunze n’uko uhembwa kuri Rozine, ashingiye ku mategeko urubuga rukurikiza. Aho ugeze ubikwa kuri iki gikoresho gusa.',
+    'auditor.academy.summary_start': 'Menya uko igenzura rikorwa kuri Rozine',
+    'auditor.academy.resume': 'Komeza: {lesson}',
+    'auditor.academy.review': 'Subiramo Ishuri',
+    'auditor.academy.browse': 'Reba amasomo yose',
+    'auditor.academy.group.role': 'Uruhare rwawe',
+    'auditor.academy.group.assignments': 'Uko akazi kakugeraho',
+    'auditor.academy.group.verification': 'Kugenzura ubucuruzi',
+    'auditor.academy.group.monthly': 'Buri kwezi',
+    'auditor.academy.group.visits':
+        'Igenzura ritunguranye n’isura ry’ibirarane',
+    'auditor.academy.group.pay': 'Uko uhembwa',
+    'auditor.academy.lesson.role.title': 'Uri nde',
+    'auditor.academy.lesson.role.sub': 'Umugenzuzi wemewe kandi wigenga',
+    'auditor.academy.lesson.role.topic1.title': 'Umucungamari wigenga',
+    'auditor.academy.lesson.role.topic1.body':
+        'Uri Umufatanyabikorwa mu igenzura: umucungamari w’umwuga wigenga, wemewe na ICPAR kandi ufitanye amasezerano na Rozine. Ugenzura imbonankubone ibyo inyandiko z’imari zonyine zidashobora kwemeza, mbere y’uko ubucuruzi bukusanya amafaranga na buri kwezi igihe inyandiko y’umwenda yabwo itarishyurwa.',
+    'auditor.academy.lesson.role.topic1.q':
+        'Ni nde ushobora kugenzura ubucuruzi kuri Rozine?',
+    'auditor.academy.lesson.role.topic1.option1':
+        'Abacungamari bemewe kandi bigenga gusa',
+    'auditor.academy.lesson.role.topic1.option2':
+        'Umukozi uwo ari we wese wa Rozine',
+    'auditor.academy.lesson.role.topic1.option3':
+        'Umucungamari w’ubwo bucuruzi',
+    'auditor.academy.lesson.role.topic2.title': 'Uruhushya rwawe',
+    'auditor.academy.lesson.role.topic2.body':
+        'Uruhushya rwawe rwa ICPAR rusuzumwa igihe wemerewe, kandi rukongera gusuzumwa mbere ya buri kazi uhawe. Uruhushya rwarangiye ruhagarika akazi gashya uwo munsi nyine.',
+    'auditor.academy.lesson.role.topic2.q':
+        'Uruhushya rwawe rurangiye uyu munsi. Bigenda bite?',
+    'auditor.academy.lesson.role.topic2.option1': 'Uhabwa ukwezi k’inyongera',
+    'auditor.academy.lesson.role.topic2.option2':
+        'Nta kazi gashya uhabwa guhera uyu munsi',
+    'auditor.academy.lesson.role.topic2.option3':
+        'Nta kintu kugeza igenzura ritaha rirangiye',
+    'auditor.academy.lesson.independence.title': 'Kwigenga',
+    'auditor.academy.lesson.independence.sub':
+        'Inyungu zivuguruzanya n’amakuru ufite',
+    'auditor.academy.lesson.independence.topic1.title':
+        'Garagaza buri nyungu ivuguruzanya',
+    'auditor.academy.lesson.independence.topic1.body':
+        'Ugaragaza inyungu zose zivuguruzanya. Ntuzigera uhabwa ubucuruzi wowe cyangwa ikigo cyawe mufitanye isano.',
+    'auditor.academy.lesson.independence.topic1.q':
+        'Ikigo cyawe gikora ibaruramari ry’ubucuruzi runaka. Ushobora kubugenzura?',
+    'auditor.academy.lesson.independence.topic1.option1':
+        'Yego, niba ubivuze muri raporo',
+    'auditor.academy.lesson.independence.topic1.option2':
+        'Mu igenzura ritunguranye gusa',
+    'auditor.academy.lesson.independence.topic1.option3':
+        'Oya, ntushobora kubuhabwa',
+    'auditor.academy.lesson.independence.topic2.title':
+        'Ntugacuruze ushingiye ku byo uzi',
+    'auditor.academy.lesson.independence.topic2.body':
+        'Raporo, amanota cyangwa ibirarane ntibiba ibya rubanda kugeza Rozine ibitangaje. Kugura inyandiko y’umwenda ugenzura hagati yo gufunga raporo yayo no kuyitangaza bifungura dosiye y’igenzura.',
+    'auditor.academy.lesson.independence.topic2.q':
+        'Wafunze raporo nziza uyu munsi, izatangazwa ejo. Ushobora kugura iyo nyandiko uyu munsi?',
+    'auditor.academy.lesson.independence.topic2.option1':
+        'Oya, bifungura dosiye y’igenzura',
+    'auditor.academy.lesson.independence.topic2.option2':
+        'Yego, raporo yamaze gufungwa',
+    'auditor.academy.lesson.independence.topic2.option3':
+        'Yego, niba amafaranga ari make',
+    'auditor.academy.lesson.dispatch.title': 'Akazi uhabwa',
+    'auditor.academy.lesson.dispatch.sub':
+        'Umugenzuzi wujuje ibisabwa uri hafi, muri km 30',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Muri km 30',
+    'auditor.academy.lesson.dispatch.topic1.body':
+        'Akazi gahabwa umucungamari wujuje ibisabwa uri hafi kurusha abandi, ufite ibiro biri muri km 30 uvuye aho ubucuruzi bukorera. Kujuja ibisabwa bivuze kugira uruhushya rugifite agaciro, nta nyungu zivuguruzanya wagaragaje, kandi uburyo bwo gusimburana bubyemera.',
+    'auditor.academy.lesson.dispatch.topic1.q':
+        'Ubucuruzi buri kuri km 31 uvuye ku biro byawe. Bigenda bite?',
+    'auditor.academy.lesson.dispatch.topic1.option1':
+        'Burahabwa wowe niba nta wundi uri hafi',
+    'auditor.academy.lesson.dispatch.topic1.option2': 'Ntuzigera ubuhabwa',
+    'auditor.academy.lesson.dispatch.topic1.option3':
+        'Ushobora kubusaba ku rutonde',
+    'auditor.academy.lesson.dispatch.topic2.title': 'Gusimburana',
+    'auditor.academy.lesson.dispatch.topic2.body':
+        'Abacungamari basimburana ku bucuruzi, ku buryo nta n’umwe ugenzura ubucuruzi bumwe ubuziraherezo. Rozine ishyiraho umubare w’amezi akurikirana umucungamari umwe ashobora kugenzura ubucuruzi.',
+    'auditor.academy.lesson.dispatch.topic2.q':
+        'Kuki abacungamari basimburana?',
+    'auditor.academy.lesson.dispatch.topic2.option1':
+        'Kugira ngo igihembo kigabanywe kimwe',
+    'auditor.academy.lesson.dispatch.topic2.option2':
+        'Kubera ko impushya zirangira buri kwezi',
+    'auditor.academy.lesson.dispatch.topic2.option3':
+        'Kugira ngo nta mucungamari ugenzura ubucuruzi bumwe ubuziraherezo',
+    'auditor.academy.lesson.baseline.title': 'Raporo y’ibanze',
+    'auditor.academy.lesson.baseline.sub':
+        'Nta nyandiko y’umwenda isohoka itariho',
+    'auditor.academy.lesson.baseline.topic1.title':
+        'Mbere y’uko isoko rifungurwa',
+    'auditor.academy.lesson.baseline.topic1.body':
+        'Nta nyandiko y’umwenda ishyirwa ku isoko utarasura ubucuruzi ngo ufunge raporo y’ibanze. Ukurikiza aho hantu uburyo bwumvikanyweho bwa ISRS 4400, kandi raporo ifunze itangazwa hamwe n’isoko.',
+    'auditor.academy.lesson.baseline.topic1.q':
+        'Ikusanya ry’amafaranga rishobora gufungurwa raporo y’ibanze itarafungwa?',
+    'auditor.academy.lesson.baseline.topic1.option1': 'Oya, na rimwe',
+    'auditor.academy.lesson.baseline.topic1.option2':
+        'Yego, abashoramari baburiwe',
+    'auditor.academy.lesson.baseline.topic1.option3': 'Yego, ku makusanya mato',
+    'auditor.academy.lesson.baseline.topic2.title': 'Amategeko y’ibimenyetso',
+    'auditor.academy.lesson.baseline.topic2.body':
+        'Amafoto aturuka gusa kuri kamera iri muri porogaramu, ifite aho uri ako kanya. Kohereza amafoto ari muri telefoni birabujijwe, kandi ifoto yafatiwe hanze y’imbibi z’aho ubucuruzi bukorera irangwa.',
+    'auditor.academy.lesson.baseline.topic2.q':
+        'Ejo wafashe ifoto ukoresheje kamera isanzwe ya telefoni yawe. Ushobora kuyohereza?',
+    'auditor.academy.lesson.baseline.topic2.option1':
+        'Yego, uyikuye mu mafoto yawe',
+    'auditor.academy.lesson.baseline.topic2.option2':
+        'Oya, amafoto yafatiwe muri porogaramu ako kanya ni yo yemewe',
+    'auditor.academy.lesson.baseline.topic2.option3':
+        'Yego, niba wongeyeho ibisobanuro',
+    'auditor.academy.lesson.differences.title':
+        'Itandukaniro no gufunga raporo',
+    'auditor.academy.lesson.differences.sub':
+        'Ibibuza gufunga raporo n’ibyo ihuza',
+    'auditor.academy.lesson.differences.topic1.title':
+        'Sobanura buri tandukaniro',
+    'auditor.academy.lesson.differences.topic1.body':
+        'Itandukaniro ryose ridasobanuwe hagati y’inyandiko z’ubucuruzi n’ibyo usanze aho bukorera ribuza gufunga raporo. Sobanura buri tandukaniro muri raporo, bitabaye ibyo ntishobora gufungwa.',
+    'auditor.academy.lesson.differences.topic1.q':
+        'Ubaze ibicuruzwa bike ugereranyije n’ibiri mu nyandiko, kandi ntubashe gusobanura impamvu. Ushobora gufunga raporo?',
+    'auditor.academy.lesson.differences.topic1.option1':
+        'Yego, niba itandukaniro ari rito',
+    'auditor.academy.lesson.differences.topic1.option2':
+        'Yego, wongeyeho igitekerezo',
+    'auditor.academy.lesson.differences.topic1.option3':
+        'Oya, gufunga birabujijwe',
+    'auditor.academy.lesson.differences.topic2.title':
+        'Ibyo gufunga raporo bihuza',
+    'auditor.academy.lesson.differences.topic2.body':
+        'Raporo ifunze ifungishwa ikimenyetso cya SHA-256 gihuza umwirondoro wawe, uruhushya rwawe, ibiri muri raporo n’igihe. Iyo imaze gufungwa, nta kintu na kimwe kiyihinduraho.',
+    'auditor.academy.lesson.differences.topic2.q':
+        'Ikimenyetso cyo gufunga gihuza iki?',
+    'auditor.academy.lesson.differences.topic2.option1':
+        'Umwirondoro wawe, uruhushya, ibiri muri raporo n’igihe',
+    'auditor.academy.lesson.differences.topic2.option2':
+        'Izina ry’ubucuruzi gusa',
+    'auditor.academy.lesson.differences.topic2.option3':
+        'Abashoramari bafite iyo nyandiko',
+    'auditor.academy.lesson.numbers.title': 'Imibare ishingirwaho itangwa',
+    'auditor.academy.lesson.numbers.sub': 'Ibyo igenzura ryawe ryemeza',
+    'auditor.academy.lesson.numbers.topic1.title': 'CFADS',
+    'auditor.academy.lesson.numbers.topic1.body':
+        'Amafaranga aboneka yo kwishyura imyenda ni amafaranga yinjira buri kwezi yagenzuwe, ukuyemo ibyakoreshejwe mu mikorere, ayo nyirubucuruzi afata n’ayishyurwa ku myenda isanzwe. RWF 4,200,000 nyuma y’ibyakoreshejwe, ukuyemo 600,000 nyirubucuruzi yafashe n’inguzanyo ya 400,000, bisigaza 3,200,000.',
+    'auditor.academy.lesson.numbers.topic1.q':
+        'Amafaranga yinjiye nyuma y’ibyakoreshejwe ni RWF 5,000,000, ayo nyirubucuruzi yafashe ni 1,000,000, inguzanyo isanzwe yishyurwa ni 500,000. CFADS ni angahe?',
+    'auditor.academy.lesson.numbers.topic1.option1': 'RWF 3,500,000',
+    'auditor.academy.lesson.numbers.topic1.option2': 'RWF 4,000,000',
+    'auditor.academy.lesson.numbers.topic1.option3': 'RWF 5,500,000',
+    'auditor.academy.lesson.numbers.topic2.title':
+        'Ubushobozi bwo kwishyura n’itangwa',
+    'auditor.academy.lesson.numbers.topic2.body':
+        'Ubushobozi bwo kwishyura ni CFADS igabanyijwe n’umubare w’ubwishyu bwa buri kwezi busabwa. Itangwa ni rito kurusha ibindi muri ibi: ayasabwe, ayo ubushobozi bwa 1.50 bwemera, 35% by’amafaranga yinjiye ku mwaka yagenzuwe, na RWF 100,000,000. Igenzura ukora aho bukorera ryemeza inyandiko iyo mibare ishingiyeho.',
+    'auditor.academy.lesson.numbers.topic2.q':
+        'Rozine igena itangwa ishingiye ku bushobozi bungana iki?',
+    'auditor.academy.lesson.numbers.topic2.option1': '1.00',
+    'auditor.academy.lesson.numbers.topic2.option2': '1.50',
+    'auditor.academy.lesson.numbers.topic2.option3': '1.25',
+    'auditor.academy.lesson.cycle.title': 'Uruziga rwa buri kwezi',
+    'auditor.academy.lesson.cycle.sub': 'Kuva ku munsi D−10 kugeza kuri raporo',
+    'auditor.academy.lesson.cycle.topic1.title': 'D−10 kugeza D−3',
+    'auditor.academy.lesson.cycle.topic1.body':
+        'Bibarwa uhereye ku munsi wo kwishyura D wa buri nyandiko: ubucuruzi bwohereza inyandiko zabwo bitarenze D−10, ukagenzura imbonankubone ugafunga raporo hagati ya D−10 na D−3, maze bitarenze D−1 raporo ifunze ikagera kuri buri wese uyifite.',
+    'auditor.academy.lesson.cycle.topic1.q':
+        'Inyandiko y’umwenda yishyurwa ku itariki ya 18. Ugomba gufunga raporo bitarenze ryari?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Ku ya 15',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Ku ya 17',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Ku ya 18',
+    'auditor.academy.lesson.cycle.topic2.title': 'Inyandiko n’ifunga byatinze',
+    'auditor.academy.lesson.cycle.topic2.body':
+        'Iyo inyandiko zitoherejwe bitarenze D−10, ubucuruzi bwibutswa buri munsi kandi nawe ukamenyeshwa. Gufunga nyuma ya D−3 byandikwa nk’ibyatinze kandi bikamenyeshwa CMA. Raporo itabonetse ubwayo ntiba ukunanirwa kwishyura.',
+    'auditor.academy.lesson.cycle.topic2.q':
+        'Ubucuruzi ntibwohereje inyandiko bitarenze D−10. Bigenda bite?',
+    'auditor.academy.lesson.cycle.topic2.option1':
+        'Inyandiko ifatwa nk’itarishyuwe',
+    'auditor.academy.lesson.cycle.topic2.option2':
+        'Kwibutswa buri munsi, nawe ukamenyeshwa',
+    'auditor.academy.lesson.cycle.topic2.option3': 'Ufunga raporo nta nyandiko',
+    'auditor.academy.lesson.disputes.title': 'Kwemeza no kujurira',
+    'auditor.academy.lesson.disputes.sub': 'Ibikurikira nyuma yo gufunga',
+    'auditor.academy.lesson.disputes.topic1.title': 'Amasaha 24 yo gusubiza',
+    'auditor.academy.lesson.disputes.topic1.body':
+        'Nyuma yo gufunga, uhagarariye ubucuruzi afite amasaha 24 yo kwemeza cyangwa kujuririra raporo yawe.',
+    'auditor.academy.lesson.disputes.topic1.q':
+        'Ubucuruzi bufite igihe kingana iki cyo kujuririra raporo ifunze?',
+    'auditor.academy.lesson.disputes.topic1.option1':
+        'Kugeza ku munsi wo kwishyura',
+    'auditor.academy.lesson.disputes.topic1.option2': 'Iminsi irindwi',
+    'auditor.academy.lesson.disputes.topic1.option3': 'Amasaha 24',
+    'auditor.academy.lesson.disputes.topic2.title': 'Isuzuma ry’ibiro',
+    'auditor.academy.lesson.disputes.topic2.body':
+        'Ubujurire bwohereza raporo mu isuzuma ry’ibiro rikorwa n’Umuyobozi w’Imari n’Urusobe rw’Abagenzuzi. Igihe ikijurirwa, inyandiko ntishobora gucuruzwa, kandi icyemezo n’impamvu yacyo bitangazwa hamwe na raporo.',
+    'auditor.academy.lesson.disputes.topic2.q':
+        'Inyandiko y’umwenda bigenda bite igihe raporo yayo ijuririrwa?',
+    'auditor.academy.lesson.disputes.topic2.option1': 'Ntishobora gucuruzwa',
+    'auditor.academy.lesson.disputes.topic2.option2': 'Ifatwa nk’itarishyuwe',
+    'auditor.academy.lesson.disputes.topic2.option3': 'Nta gihinduka',
+    'auditor.academy.lesson.flash.title': 'Igenzura ritunguranye',
+    'auditor.academy.lesson.flash.sub': 'Ridateguje, mu masaha 24',
+    'auditor.academy.lesson.flash.topic1.title': 'Mu masaha 24',
+    'auditor.academy.lesson.flash.topic1.body':
+        'Rozine ishobora kukohereza ku bucuruzi butabimenyeshejwe. Igenzura ritunguranye rigomba kurangira mu masaha 24 uhereye igihe urihawe, hakurikijwe amategeko y’ibimenyetso amwe n’aya raporo y’ibanze.',
+    'auditor.academy.lesson.flash.topic1.q':
+        'Ufite igihe kingana iki cyo kurangiza igenzura ritunguranye?',
+    'auditor.academy.lesson.flash.topic1.option1':
+        'Amasaha 24 uhereye igihe urihawe',
+    'auditor.academy.lesson.flash.topic1.option2':
+        'Amasaha 24 uhereye igihe uhagereye',
+    'auditor.academy.lesson.flash.topic1.option3': 'Iminsi itatu',
+    'auditor.academy.lesson.flash.topic2.title': 'Iyo igihe kirangiye',
+    'auditor.academy.lesson.flash.topic2.body':
+        'Igenzura ritunguranye ritarangiye mu masaha 24 ritera impuruza, kandi igihe umucungamari atubahirije kimenyeshwa CMA. Fata gusa ibyo ushobora kurangiza ku gihe.',
+    'auditor.academy.lesson.flash.topic2.q':
+        'Bigenda bite iyo igenzura ritunguranye ritarangiye mu masaha 24?',
+    'auditor.academy.lesson.flash.topic2.option1': 'Igihe cyongerwa ubwacyo',
+    'auditor.academy.lesson.flash.topic2.option2': 'Hatangwa impuruza',
+    'auditor.academy.lesson.flash.topic2.option3': 'Ubucuruzi buhakanwa',
+    'auditor.academy.lesson.arrears.title': 'Isura ry’ibirarane',
+    'auditor.academy.lesson.arrears.sub': 'Iyo ubucuruzi bwatinze icyumweru',
+    'auditor.academy.lesson.arrears.topic1.title': 'Umunsi wa 7 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic1.body':
+        'Iyo ubucuruzi ugenzura bumaze iminsi irindwi butishyura, uhabwa igikorwa cyo kubusura. Uhita ujyayo kugenzura ibicuruzwa, amafaranga n’imikorere.',
+    'auditor.academy.lesson.arrears.topic1.q':
+        'Isura ry’ibirarane ritangira ryari?',
+    'auditor.academy.lesson.arrears.topic1.option1':
+        'Ku munsi wa mbere w’ubukererwe',
+    'auditor.academy.lesson.arrears.topic1.option2':
+        'Ku munsi wa 30 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic1.option3':
+        'Ku munsi wa 7 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic2.title':
+        'Inyandiko ifunze ihabwa abafite inyandiko z’umwenda',
+    'auditor.academy.lesson.arrears.topic2.body':
+        'Nyuma y’isura, wohereza inyandiko ifunze igenewe abafite inyandiko z’umwenda, ku buryo abashoramari bamenya ibyo wasanze babibwiwe n’uwagenzuye.',
+    'auditor.academy.lesson.arrears.topic2.q':
+        'Nyuma y’isura ry’ibirarane wohereza iki?',
+    'auditor.academy.lesson.arrears.topic2.option1':
+        'Inyandiko ifunze igenewe abafite inyandiko z’umwenda',
+    'auditor.academy.lesson.arrears.topic2.option2':
+        'Itangwa rishya ry’ubucuruzi',
+    'auditor.academy.lesson.arrears.topic2.option3':
+        'Nta cyo, Rozine yandikira abafite inyandiko',
+    'auditor.academy.lesson.earnings.title': 'Ibyo winjiza',
+    'auditor.academy.lesson.earnings.sub':
+        'Umugabane ku byo Rozine yinjiza ku nyandiko wagenzuye',
+    'auditor.academy.lesson.earnings.topic1.title':
+        '40% by’amafaranga y’urubuga',
+    'auditor.academy.lesson.earnings.topic1.body':
+        'Ubucuruzi bwishyura amafaranga y’urubuga angana na 3% by’igishoro igihe amafaranga atanzwe. 40% by’ayo mafaranga ashyirwa kuri konti yawe, nk’Umufatanyabikorwa mu igenzura wagenzuye iyo nyandiko, igihe amafaranga atanzwe. Ku ikusanya rya RWF 12,000,000, amafaranga y’urubuga ni 360,000, umugabane wawe ukaba 144,000.',
+    'auditor.academy.lesson.earnings.topic1.q':
+        'Ikusanya rya RWF 10,000,000 ryatanzwe. Umugabane wawe ku mafaranga y’urubuga ni angahe?',
+    'auditor.academy.lesson.earnings.topic1.option1': 'RWF 300,000',
+    'auditor.academy.lesson.earnings.topic1.option2': 'RWF 40,000',
+    'auditor.academy.lesson.earnings.topic1.option3': 'RWF 120,000',
+    'auditor.academy.lesson.earnings.topic2.title':
+        '25% by’amafaranga ku nyungu',
+    'auditor.academy.lesson.earnings.topic2.body':
+        'Abashoramari bishyura amafaranga ku nyungu, ku gice cy’inyungu cya buri kwishyurwa kwa buri kwezi. 25% byayo ashyirwa kuri konti yawe kuri buri kwishyurwa kw’inyandiko ugenzura, bityo winjiza iyo ubucuruzi bwitwaye neza.',
+    'auditor.academy.lesson.earnings.topic2.q':
+        'Umugabane ku mafaranga y’inyungu ugushyirwaho ryari?',
+    'auditor.academy.lesson.earnings.topic2.option1':
+        'Kuri buri kwishyurwa kwa buri kwezi kw’inyandiko ugenzura',
+    'auditor.academy.lesson.earnings.topic2.option2':
+        'Rimwe kuri buri genzura rirangiye',
+    'auditor.academy.lesson.earnings.topic2.option3':
+        'Igihe inyandiko irangiye gusa',
 };
 
 export default rw;

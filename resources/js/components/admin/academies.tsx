@@ -11,7 +11,9 @@ import {
     TABLE_HEAD,
     TableCard,
 } from '@/components/admin/ui';
-import { ACADEMY } from '@/components/investor/profile/academy';
+import { AUDITOR_ACADEMY } from '@/components/auditor/profile/academy-section';
+import { INVESTOR_ACADEMY } from '@/components/investor/profile/academy';
+import type { AcademyCourse } from '@/components/rozine/academy';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { AdminPendingSectionProps } from '@/types/admin';
@@ -28,26 +30,38 @@ const GRID =
 /** A figure no server read states: the tile keeps its place and says nothing. */
 const NO_FIGURE = '—';
 
-const LESSONS = ACADEMY.flatMap((group) =>
-    group.lessons.map((lesson) => ({ group: group.key, lesson })),
-);
+const rowsOf = (...courses: AcademyCourse[]) =>
+    courses.flatMap((course) =>
+        course.groups.flatMap((group) =>
+            group.lessons.map((lesson) => ({ group, lesson })),
+        ),
+    );
 
-const TOPICS = LESSONS.reduce(
+const ROWS: Record<Tab, ReturnType<typeof rowsOf>> = {
+    investor: rowsOf(INVESTOR_ACADEMY),
+    business: [],
+    auditor: rowsOf(AUDITOR_ACADEMY),
+    all: rowsOf(INVESTOR_ACADEMY, AUDITOR_ACADEMY),
+};
+
+const TRACKS = INVESTOR_ACADEMY.groups.length + AUDITOR_ACADEMY.groups.length;
+
+const TOPICS = ROWS.all.reduce(
     (count, { lesson }) => count + lesson.topics.length,
     0,
 );
 
 /**
  * Academies: the lessons each app teaches, by track, with how many topics each holds (every topic
- * ends in one quick check). Only the Investor Academy has lessons yet; the Business and Auditor
- * academies keep their empty state. A learner's progress stays on their own device, so lessons
+ * ends in one quick check). The Investor and Auditor academies have lessons; the Business design
+ * has no academy, so its tab keeps its empty state. A learner's progress stays on their own device, so lessons
  * completed, quiz scores and points are not reported here, and nothing can be edited.
  */
 export function AdminAcademies(props: AdminPendingSectionProps) {
     const { t } = useTranslation();
     const [tab, setTab] = useState<Tab>('investor');
     const title = t('admin.section.academies.title');
-    const rows = tab === 'investor' || tab === 'all' ? LESSONS : [];
+    const rows = ROWS[tab];
 
     return (
         <AdminFrame {...props}>
@@ -56,12 +70,12 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
                     <KpiTile
                         index={0}
                         label={t('admin.design.academies.kpi.live')}
-                        value={String(LESSONS.length)}
+                        value={String(ROWS.all.length)}
                     />
                     <KpiTile
                         index={1}
                         label={t('admin.design.academies.kpi.tracks')}
-                        value={String(ACADEMY.length)}
+                        value={String(TRACKS)}
                     />
                     <KpiTile
                         index={2}
@@ -131,7 +145,7 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
                     </div>
                     {rows.map(({ group, lesson }) => (
                         <div
-                            key={lesson.key}
+                            key={lesson.code}
                             role="row"
                             className={cn(GRID, ROW_RULE, 'items-center py-3')}
                         >
@@ -143,16 +157,14 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
                                     {lesson.topics[0].emoji}
                                 </span>
                                 <span className="truncate">
-                                    {t(
-                                        `investor.academy.lesson.${lesson.key}.title`,
-                                    )}
+                                    {t(`${lesson.code}.title`)}
                                 </span>
                             </span>
                             <span
                                 role="cell"
                                 className="truncate text-[12.5px] text-rz-body"
                             >
-                                {t(`investor.academy.group.${group}`)}
+                                {t(group.label)}
                             </span>
                             <span
                                 role="cell"

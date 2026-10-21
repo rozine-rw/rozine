@@ -6257,6 +6257,273 @@ const fr: Catalog = {
         "Le client la lit dans l'application et reçoit une notification. Une résolution clôt la réclamation.",
     'admin.complaints.closed':
         'Cette réclamation est résolue. Rien ne peut plus y être ajouté.',
+    'auditor.academy.title': 'Académie de l’auditeur',
+    'auditor.academy.intro':
+        'De courtes leçons sur la vérification, les rapports scellés et votre rémunération sur Rozine, d’après les règles appliquées par la plateforme. Votre progression est enregistrée sur cet appareil uniquement.',
+    'auditor.academy.summary_start':
+        'Découvrez le fonctionnement de la vérification sur Rozine',
+    'auditor.academy.resume': 'Reprendre : {lesson}',
+    'auditor.academy.review': 'Revoir l’Académie',
+    'auditor.academy.browse': 'Voir toutes les leçons',
+    'auditor.academy.group.role': 'Votre rôle',
+    'auditor.academy.group.assignments': 'Comment le travail vous parvient',
+    'auditor.academy.group.verification': 'Vérifier une entreprise',
+    'auditor.academy.group.monthly': 'Chaque mois',
+    'auditor.academy.group.visits': 'Audits éclair et visites d’arriérés',
+    'auditor.academy.group.pay': 'Votre rémunération',
+    'auditor.academy.lesson.role.title': 'Qui vous êtes',
+    'auditor.academy.lesson.role.sub': 'Le contrôle agréé et indépendant',
+    'auditor.academy.lesson.role.topic1.title':
+        'Un expert-comptable indépendant',
+    'auditor.academy.lesson.role.topic1.body':
+        'Vous êtes un Partenaire d’audit : un expert-comptable certifié indépendant, agréé par l’ICPAR et sous contrat avec Rozine. Vous vérifiez sur place ce que les relevés seuls ne peuvent prouver, avant qu’une entreprise ne lève des fonds et chaque mois tant que sa note est en cours.',
+    'auditor.academy.lesson.role.topic1.q':
+        'Qui peut vérifier les entreprises sur Rozine ?',
+    'auditor.academy.lesson.role.topic1.option1':
+        'Uniquement des experts-comptables agréés et indépendants',
+    'auditor.academy.lesson.role.topic1.option2':
+        'Tout membre du personnel de Rozine',
+    'auditor.academy.lesson.role.topic1.option3':
+        'Le comptable de l’entreprise',
+    'auditor.academy.lesson.role.topic2.title': 'Votre agrément',
+    'auditor.academy.lesson.role.topic2.body':
+        'Votre agrément ICPAR est contrôlé lors de votre accréditation, puis avant chaque mission. Un agrément expiré bloque toute nouvelle mission le jour même.',
+    'auditor.academy.lesson.role.topic2.q':
+        'Votre agrément expire aujourd’hui. Que se passe-t-il ?',
+    'auditor.academy.lesson.role.topic2.option1':
+        'Vous gardez un mois de délai de grâce',
+    'auditor.academy.lesson.role.topic2.option2':
+        'Vous ne recevez plus de nouvelle mission dès aujourd’hui',
+    'auditor.academy.lesson.role.topic2.option3':
+        'Rien avant la fin de votre prochain audit',
+    'auditor.academy.lesson.independence.title': 'Indépendance',
+    'auditor.academy.lesson.independence.sub':
+        'Conflits et informations privilégiées',
+    'auditor.academy.lesson.independence.topic1.title':
+        'Déclarez chaque conflit',
+    'auditor.academy.lesson.independence.topic1.body':
+        'Vous déclarez tout conflit d’intérêts. Vous n’êtes jamais affecté à une entreprise avec laquelle vous ou votre cabinet avez une relation.',
+    'auditor.academy.lesson.independence.topic1.q':
+        'Votre cabinet tient la comptabilité d’une entreprise. Pouvez-vous la vérifier ?',
+    'auditor.academy.lesson.independence.topic1.option1':
+        'Oui, si vous le mentionnez dans le rapport',
+    'auditor.academy.lesson.independence.topic1.option2':
+        'Seulement pour un audit éclair',
+    'auditor.academy.lesson.independence.topic1.option3':
+        'Non, elle ne peut pas vous être confiée',
+    'auditor.academy.lesson.independence.topic2.title':
+        'Ne négociez jamais sur ce que vous savez',
+    'auditor.academy.lesson.independence.topic2.body':
+        'Un rapport, une notation ou des arriérés ne sont publics qu’une fois publiés par Rozine. Acheter une note que vous vérifiez entre le scellement de son rapport et sa publication ouvre un dossier de surveillance.',
+    'auditor.academy.lesson.independence.topic2.q':
+        'Vous avez scellé un bon rapport aujourd’hui, publié demain. Pouvez-vous acheter la note aujourd’hui ?',
+    'auditor.academy.lesson.independence.topic2.option1':
+        'Non, cela ouvre un dossier de surveillance',
+    'auditor.academy.lesson.independence.topic2.option2':
+        'Oui, le rapport est déjà scellé',
+    'auditor.academy.lesson.independence.topic2.option3':
+        'Oui, si le montant est faible',
+    'auditor.academy.lesson.dispatch.title': 'Missions',
+    'auditor.academy.lesson.dispatch.sub':
+        'L’expert éligible le plus proche, à 30 km au plus',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Dans un rayon de 30 km',
+    'auditor.academy.lesson.dispatch.topic1.body':
+        'Le travail va à l’expert-comptable éligible le plus proche dont le bureau se trouve à 30 km au plus des locaux de l’entreprise. Éligible signifie un agrément valide, aucun conflit déclaré et une rotation qui le permet.',
+    'auditor.academy.lesson.dispatch.topic1.q':
+        'Une entreprise est à 31 km de votre bureau. Que se passe-t-il ?',
+    'auditor.academy.lesson.dispatch.topic1.option1':
+        'Elle vous est proposée si personne n’est plus proche',
+    'auditor.academy.lesson.dispatch.topic1.option2':
+        'Elle ne vous est jamais proposée',
+    'auditor.academy.lesson.dispatch.topic1.option3':
+        'Vous pouvez la réclamer dans la liste',
+    'auditor.academy.lesson.dispatch.topic2.title': 'Rotation',
+    'auditor.academy.lesson.dispatch.topic2.body':
+        'Les experts-comptables tournent entre les entreprises, pour qu’aucun ne vérifie indéfiniment la même. Rozine fixe le nombre de mois consécutifs pendant lesquels un expert peut vérifier une entreprise.',
+    'auditor.academy.lesson.dispatch.topic2.q':
+        'Pourquoi les experts-comptables tournent-ils ?',
+    'auditor.academy.lesson.dispatch.topic2.option1':
+        'Pour répartir la rémunération également',
+    'auditor.academy.lesson.dispatch.topic2.option2':
+        'Parce que les agréments expirent chaque mois',
+    'auditor.academy.lesson.dispatch.topic2.option3':
+        'Pour qu’aucun expert ne vérifie indéfiniment la même entreprise',
+    'auditor.academy.lesson.baseline.title': 'Le rapport initial',
+    'auditor.academy.lesson.baseline.sub': 'Aucune note n’est publiée sans lui',
+    'auditor.academy.lesson.baseline.topic1.title': 'Avant toute publication',
+    'auditor.academy.lesson.baseline.topic1.body':
+        'Aucune note n’est publiée avant que vous ayez visité l’entreprise et scellé un rapport initial. Vous appliquez sur place des procédures convenues selon la norme ISRS 4400, et le rapport scellé est publié avec l’offre.',
+    'auditor.academy.lesson.baseline.topic1.q':
+        'Une levée peut-elle s’ouvrir avant le scellement de son rapport initial ?',
+    'auditor.academy.lesson.baseline.topic1.option1': 'Non, jamais',
+    'auditor.academy.lesson.baseline.topic1.option2':
+        'Oui, avec un avertissement aux investisseurs',
+    'auditor.academy.lesson.baseline.topic1.option3':
+        'Oui, pour les petites levées',
+    'auditor.academy.lesson.baseline.topic2.title': 'Règles de preuve',
+    'auditor.academy.lesson.baseline.topic2.body':
+        'Les photos proviennent uniquement de l’appareil photo de l’application, avec la position en direct. Les imports depuis la galerie sont bloqués et une photo prise hors du périmètre des locaux est refusée.',
+    'auditor.academy.lesson.baseline.topic2.q':
+        'Vous avez pris une photo hier avec l’appareil photo de votre téléphone. Pouvez-vous l’importer ?',
+    'auditor.academy.lesson.baseline.topic2.option1':
+        'Oui, depuis votre galerie',
+    'auditor.academy.lesson.baseline.topic2.option2':
+        'Non, seules les photos prises en direct dans l’application comptent',
+    'auditor.academy.lesson.baseline.topic2.option3':
+        'Oui, si vous ajoutez une note',
+    'auditor.academy.lesson.differences.title': 'Écarts et scellement',
+    'auditor.academy.lesson.differences.sub':
+        'Ce qui bloque le scellement et ce qu’il garantit',
+    'auditor.academy.lesson.differences.topic1.title': 'Expliquez chaque écart',
+    'auditor.academy.lesson.differences.topic1.body':
+        'Tout écart inexpliqué entre les registres de l’entreprise et ce que vous constatez sur place bloque le scellement. Expliquez chaque écart dans le rapport, sinon il ne peut pas être scellé.',
+    'auditor.academy.lesson.differences.topic1.q':
+        'Vous comptez moins de stock que ne l’indiquent les registres et ne pouvez l’expliquer. Pouvez-vous sceller ?',
+    'auditor.academy.lesson.differences.topic1.option1':
+        'Oui, si l’écart est faible',
+    'auditor.academy.lesson.differences.topic1.option2':
+        'Oui, avec un commentaire',
+    'auditor.academy.lesson.differences.topic1.option3':
+        'Non, le scellement est bloqué',
+    'auditor.academy.lesson.differences.topic2.title':
+        'Ce que garantit le scellement',
+    'auditor.academy.lesson.differences.topic2.body':
+        'Un rapport scellé est verrouillé par un sceau SHA-256 qui lie votre identité, votre agrément, son contenu et l’heure. Une fois scellé, rien ne peut y être modifié.',
+    'auditor.academy.lesson.differences.topic2.q': 'Que lie le sceau ?',
+    'auditor.academy.lesson.differences.topic2.option1':
+        'Votre identité, votre agrément, le contenu et l’heure',
+    'auditor.academy.lesson.differences.topic2.option2':
+        'Seulement le nom de l’entreprise',
+    'auditor.academy.lesson.differences.topic2.option3':
+        'Les investisseurs qui détiennent la note',
+    'auditor.academy.lesson.numbers.title': 'Les chiffres derrière une offre',
+    'auditor.academy.lesson.numbers.sub': 'Ce que vos contrôles confirment',
+    'auditor.academy.lesson.numbers.topic1.title': 'CFADS',
+    'auditor.academy.lesson.numbers.topic1.body':
+        'Le flux de trésorerie disponible pour le service de la dette correspond aux encaissements mensuels vérifiés, moins les charges d’exploitation, les prélèvements du propriétaire et les remboursements de dettes existantes. 4 200 000 RWF après charges, moins 600 000 de prélèvements et un remboursement de prêt de 400 000, donnent 3 200 000.',
+    'auditor.academy.lesson.numbers.topic1.q':
+        'Encaissements après charges : 5 000 000 RWF, prélèvements : 1 000 000, remboursement de prêt existant : 500 000. Quel est le CFADS ?',
+    'auditor.academy.lesson.numbers.topic1.option1': '3 500 000 RWF',
+    'auditor.academy.lesson.numbers.topic1.option2': '4 000 000 RWF',
+    'auditor.academy.lesson.numbers.topic1.option3': '5 500 000 RWF',
+    'auditor.academy.lesson.numbers.topic2.title': 'Couverture et offre',
+    'auditor.academy.lesson.numbers.topic2.body':
+        'La couverture est le CFADS divisé par l’échéance proposée. L’offre est la plus basse entre la demande, le montant à une couverture de 1,50, 35 % du chiffre d’affaires annuel vérifié et 100 000 000 RWF. Vos contrôles sur place confirment les registres sur lesquels reposent ces chiffres.',
+    'auditor.academy.lesson.numbers.topic2.q':
+        'À quelle couverture Rozine calcule-t-elle une offre ?',
+    'auditor.academy.lesson.numbers.topic2.option1': '1,00',
+    'auditor.academy.lesson.numbers.topic2.option2': '1,50',
+    'auditor.academy.lesson.numbers.topic2.option3': '1,25',
+    'auditor.academy.lesson.cycle.title': 'Le cycle mensuel',
+    'auditor.academy.lesson.cycle.sub': 'De J−10 au rapport',
+    'auditor.academy.lesson.cycle.topic1.title': 'J−10 à J−3',
+    'auditor.academy.lesson.cycle.topic1.body':
+        'À partir de l’échéance J de chaque note : l’entreprise dépose ses registres avant J−10, vous vérifiez sur place et scellez entre J−10 et J−3, et à J−1 le rapport scellé parvient à chaque détenteur.',
+    'auditor.academy.lesson.cycle.topic1.q':
+        'Une note est due le 18. Avant quand devez-vous sceller ?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Le 15',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Le 17',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Le 18',
+    'auditor.academy.lesson.cycle.topic2.title':
+        'Registres et scellements en retard',
+    'auditor.academy.lesson.cycle.topic2.body':
+        'Si les registres ne sont pas déposés avant J−10, l’entreprise reçoit des rappels quotidiens et vous êtes prévenu. Un scellement après J−3 est enregistré en retard et alerte la CMA. Un rapport manquant n’est jamais à lui seul un défaut.',
+    'auditor.academy.lesson.cycle.topic2.q':
+        'L’entreprise n’a rien déposé à J−10. Que se passe-t-il ?',
+    'auditor.academy.lesson.cycle.topic2.option1': 'La note est en défaut',
+    'auditor.academy.lesson.cycle.topic2.option2':
+        'Des rappels quotidiens, et vous êtes prévenu',
+    'auditor.academy.lesson.cycle.topic2.option3':
+        'Vous scellez sans les registres',
+    'auditor.academy.lesson.disputes.title': 'Approbations et contestations',
+    'auditor.academy.lesson.disputes.sub': 'Ce qui suit le scellement',
+    'auditor.academy.lesson.disputes.topic1.title': '24 heures pour répondre',
+    'auditor.academy.lesson.disputes.topic1.body':
+        'Après le scellement, le représentant de l’entreprise dispose de 24 heures pour approuver ou contester votre rapport.',
+    'auditor.academy.lesson.disputes.topic1.q':
+        'De combien de temps l’entreprise dispose-t-elle pour contester un rapport scellé ?',
+    'auditor.academy.lesson.disputes.topic1.option1':
+        'Jusqu’au jour du paiement',
+    'auditor.academy.lesson.disputes.topic1.option2': 'Sept jours',
+    'auditor.academy.lesson.disputes.topic1.option3': '24 heures',
+    'auditor.academy.lesson.disputes.topic2.title': 'Revue documentaire',
+    'auditor.academy.lesson.disputes.topic2.body':
+        'Une contestation envoie le rapport en revue documentaire auprès du responsable Finance et réseau d’auditeurs. Pendant la contestation, la note ne peut pas être négociée ; la décision et son motif sont publiés avec le rapport.',
+    'auditor.academy.lesson.disputes.topic2.q':
+        'Qu’advient-il de la note pendant la contestation de son rapport ?',
+    'auditor.academy.lesson.disputes.topic2.option1':
+        'Elle ne peut pas être négociée',
+    'auditor.academy.lesson.disputes.topic2.option2': 'Elle est en défaut',
+    'auditor.academy.lesson.disputes.topic2.option3': 'Rien ne change',
+    'auditor.academy.lesson.flash.title': 'Audits éclair',
+    'auditor.academy.lesson.flash.sub': 'Inopinés, sous 24 heures',
+    'auditor.academy.lesson.flash.topic1.title': 'Sous 24 heures',
+    'auditor.academy.lesson.flash.topic1.body':
+        'Rozine peut vous envoyer chez une entreprise sans prévenir. Un audit éclair doit être terminé dans les 24 heures suivant la mission, avec les mêmes règles de preuve qu’un rapport initial.',
+    'auditor.academy.lesson.flash.topic1.q':
+        'De combien de temps disposez-vous pour terminer un audit éclair ?',
+    'auditor.academy.lesson.flash.topic1.option1':
+        '24 heures à compter de la mission',
+    'auditor.academy.lesson.flash.topic1.option2':
+        '24 heures à compter de votre arrivée',
+    'auditor.academy.lesson.flash.topic1.option3': 'Trois jours',
+    'auditor.academy.lesson.flash.topic2.title': 'Quand le délai expire',
+    'auditor.academy.lesson.flash.topic2.body':
+        'Un audit éclair inachevé au bout de 24 heures déclenche une alerte, et un délai manqué par un expert-comptable alerte la CMA. N’acceptez que ce que vous pouvez terminer à temps.',
+    'auditor.academy.lesson.flash.topic2.q':
+        'Que se passe-t-il quand un audit éclair est inachevé au bout de 24 heures ?',
+    'auditor.academy.lesson.flash.topic2.option1':
+        'Le délai se prolonge automatiquement',
+    'auditor.academy.lesson.flash.topic2.option2': 'Une alerte est déclenchée',
+    'auditor.academy.lesson.flash.topic2.option3': 'L’entreprise est refusée',
+    'auditor.academy.lesson.arrears.title': 'Visites d’arriérés',
+    'auditor.academy.lesson.arrears.sub':
+        'Quand une entreprise a une semaine de retard',
+    'auditor.academy.lesson.arrears.topic1.title': 'Septième jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic1.body':
+        'Quand une entreprise que vous vérifiez a sept jours de retard, une tâche de visite vous est attribuée. Vous vous y rendez aussitôt pour contrôler le stock, la trésorerie et l’activité.',
+    'auditor.academy.lesson.arrears.topic1.q':
+        'Quand une visite d’arriérés est-elle déclenchée ?',
+    'auditor.academy.lesson.arrears.topic1.option1':
+        'Au premier jour de retard',
+    'auditor.academy.lesson.arrears.topic1.option2': 'Au 30ᵉ jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic1.option3': 'Au 7ᵉ jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic2.title':
+        'Une note scellée aux détenteurs',
+    'auditor.academy.lesson.arrears.topic2.body':
+        'Après la visite, vous déposez une note scellée à l’intention des détenteurs : les investisseurs apprennent ce que vous avez constaté de la personne qui a vérifié.',
+    'auditor.academy.lesson.arrears.topic2.q':
+        'Que déposez-vous après une visite d’arriérés ?',
+    'auditor.academy.lesson.arrears.topic2.option1':
+        'Une note scellée aux détenteurs',
+    'auditor.academy.lesson.arrears.topic2.option2':
+        'Une nouvelle offre pour l’entreprise',
+    'auditor.academy.lesson.arrears.topic2.option3':
+        'Rien, Rozine écrit aux détenteurs',
+    'auditor.academy.lesson.earnings.title': 'Vos revenus',
+    'auditor.academy.lesson.earnings.sub':
+        'Une part de ce que Rozine gagne sur vos notes',
+    'auditor.academy.lesson.earnings.topic1.title':
+        '40 % des frais de plateforme',
+    'auditor.academy.lesson.earnings.topic1.body':
+        'L’entreprise paie des frais de plateforme de 3 % du principal au décaissement. 40 % de ces frais vous sont crédités, en tant que Partenaire d’audit ayant vérifié la note, au décaissement. Sur une levée de 12 000 000 RWF, les frais sont de 360 000 et votre part de 144 000.',
+    'auditor.academy.lesson.earnings.topic1.q':
+        'Une levée de 10 000 000 RWF est décaissée. Quelle est votre part des frais de plateforme ?',
+    'auditor.academy.lesson.earnings.topic1.option1': '300 000 RWF',
+    'auditor.academy.lesson.earnings.topic1.option2': '40 000 RWF',
+    'auditor.academy.lesson.earnings.topic1.option3': '120 000 RWF',
+    'auditor.academy.lesson.earnings.topic2.title':
+        '25 % des frais sur les gains',
+    'auditor.academy.lesson.earnings.topic2.body':
+        'Les investisseurs paient des frais sur les gains, sur la part de rendement de chaque versement mensuel. 25 % vous en sont crédités à chaque versement des notes que vous vérifiez : vous gagnez quand l’entreprise tient ses engagements.',
+    'auditor.academy.lesson.earnings.topic2.q':
+        'Quand la part des frais sur les gains vous est-elle créditée ?',
+    'auditor.academy.lesson.earnings.topic2.option1':
+        'À chaque versement mensuel des notes que vous vérifiez',
+    'auditor.academy.lesson.earnings.topic2.option2':
+        'Une fois par audit terminé',
+    'auditor.academy.lesson.earnings.topic2.option3':
+        'Seulement à l’échéance de la note',
 };
 
 export default fr;
