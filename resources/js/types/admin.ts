@@ -1554,15 +1554,24 @@ export type PayoutInFlight = {
     requested_at: string;
 };
 
+/** A chart's window as the server read it: no `to` means the last fourteen days. */
+export type TrendWindow = {
+    from: string;
+    to: string | null;
+    grain: 'day' | 'month';
+};
+
 export type AdminPaymentsProps = AdminFrameShellProps &
     StaffPaymentsPageContract & {
-        /** The first Kigali day of the fourteen the figures and bars cover. */
+        /** The first Kigali day of the fourteen the figures cover. */
         from: string;
+        /** The bars' window: the last fourteen days, or the chosen dates (per month over a long one). */
+        trend: TrendWindow;
         stats: { key: PaymentsStatKey; value: Money; count: number }[];
         in_flight: number;
         /** The fee schedule money moves under. */
         policy: PolicyItem[];
-        /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
+        /** Credited deposits plus paid-out withdrawals per Kigali bucket; buckets with none are left out. */
         bars: { label: string; amount: Money; height_pct: number }[];
         payouts: PayoutInFlight[];
         pagination: Pagination;

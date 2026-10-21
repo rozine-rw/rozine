@@ -6004,8 +6004,6 @@ const fr: Catalog = {
     'admin.payments.title': 'Paiements en cours',
     'admin.payments.caption':
         'Retraits dont les fonds sont bloqués pendant que le prestataire confirme le paiement. Chacun est versé, ou revient au portefeuille, selon le résultat vérifié.',
-    'admin.payments.movement.caption':
-        'Dépôts crédités et retraits versés par jour (Kigali), 14 derniers jours',
     'admin.payments.kpi.count': {
         one: '{count} opération · 14 derniers jours',
         other: '{count} opérations · 14 derniers jours',

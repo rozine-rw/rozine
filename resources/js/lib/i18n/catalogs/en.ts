@@ -5777,8 +5777,6 @@ const en = {
     'admin.payments.title': 'Payouts in flight',
     'admin.payments.caption':
         'Withdrawals whose cash is held while the provider confirms the payout. Each one pays out, or returns to the wallet, on the verified outcome.',
-    'admin.payments.movement.caption':
-        'Credited deposits plus paid-out withdrawals per Kigali day, last 14 days',
     'admin.payments.kpi.count': {
         one: '{count} txn · last 14 days',
         other: '{count} txns · last 14 days',
