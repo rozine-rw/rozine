@@ -2154,7 +2154,29 @@ const fr: Catalog = {
         'Choisir qui reçoit les e-mails en préproduction.',
     'admin.permission.staff.manage': 'Gérer les opérateurs',
     'admin.permission_detail.staff.manage':
-        "Suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+        "Ajouter un opérateur, ou suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+    'admin.permission.accounts.freeze': 'Geler / suspendre',
+    'admin.permission_detail.accounts.freeze':
+        "Suspendre l'accès d'un investisseur ou d'une entreprise à son application.",
+    'admin.permission.capacity.adjust': 'Ajuster la capacité',
+    'admin.permission_detail.capacity.adjust':
+        "Modifier le montant qu'une entreprise peut lever.",
+    'admin.permission.records.edit': 'Modifier les fiches',
+    'admin.permission_detail.records.edit':
+        "Modifier les informations enregistrées d'une fiche.",
+    'admin.permission.ledger.correct': 'Contre-passations',
+    'admin.permission_detail.ledger.correct':
+        'Corriger une écriture réglée par une nouvelle écriture liée, avec un motif.',
+    'admin.permission.policies.change': 'Règles',
+    'admin.permission_detail.policies.change':
+        "Modifier les règles de tarification, d'éligibilité et d'automatisation.",
+    'admin.permission.records.delete': 'Supprimer',
+    'admin.permission_detail.records.delete':
+        'Retirer définitivement une fiche de la plateforme.',
+    'admin.matrix.withheld.not_built':
+        'Aucun rôle pour l’instant : pas encore disponible',
+    'admin.matrix.withheld.by_rule':
+        "Aucun rôle, par règle : les écritures du grand livre et de l'audit ne sont jamais supprimées",
     'admin.action_log.title': "Journal des actions d'administration",
     'admin.staff.invite.open': '+ Inviter un opérateur',
     'admin.staff.invite.title': 'Inviter un opérateur',

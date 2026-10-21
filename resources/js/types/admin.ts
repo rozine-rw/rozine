@@ -724,12 +724,23 @@ export type StaffPermissionKey =
     | 'primary.view'
     | 'payments.view'
     | 'complaints.answer'
-    | 'health.view';
+    | 'health.view'
+    | 'staff.manage'
+    | 'accounts.freeze'
+    | 'capacity.adjust'
+    | 'records.edit'
+    | 'ledger.correct'
+    | 'policies.change'
+    | 'records.delete';
 
-/** One row of the Staff & Roles permission matrix: a capability and the roles that grant it. */
+/**
+ * One row of the Staff & Roles permission matrix: a capability and the roles that grant it. A design
+ * capability no role holds says why: not built yet, or barred for every role by rule.
+ */
 export type PermissionMatrixRow = {
     key: StaffPermissionKey;
     roles: StaffRole[];
+    withheld?: 'not_built' | 'by_rule';
 };
 
 export type PartyDirectory =

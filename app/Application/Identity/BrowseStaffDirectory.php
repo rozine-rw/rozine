@@ -35,7 +35,7 @@ final class BrowseStaffDirectory
     /**
      * What each role may do: every capability with the roles that grant it.
      *
-     * @return list<array{key: string, roles: list<string>}>
+     * @return list<array{key: string, roles: list<string>, withheld?: string}>
      */
     public function permissions(int $actorId): array
     {

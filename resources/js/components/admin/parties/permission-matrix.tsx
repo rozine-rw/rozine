@@ -33,7 +33,8 @@ const GRID =
 /**
  * Role permissions (design Staff & Roles): every capability a role can grant, what it allows, and a
  * mark under each role that grants it. Read from the server's role definitions, so the table is
- * the same rule every staff command checks. Read-only: roles are not edited here.
+ * the same rule every staff command checks; a design capability no role holds says why. Read-only:
+ * roles are not edited here.
  */
 export function PermissionMatrix({ rows }: { rows: PermissionMatrixRow[] }) {
     const { t } = useTranslation();
@@ -82,9 +83,16 @@ export function PermissionMatrix({ rows }: { rows: PermissionMatrixRow[] }) {
                         </span>
                         <span
                             role="cell"
-                            className="truncate text-[11.5px] text-rz-muted"
+                            className="min-w-0 text-[11.5px] text-rz-muted"
                         >
-                            {t(`admin.permission_detail.${row.key}`)}
+                            <span className="block truncate">
+                                {t(`admin.permission_detail.${row.key}`)}
+                            </span>
+                            {row.withheld && (
+                                <span className="mt-0.5 block truncate text-[10.5px] font-semibold text-[#a4521a] dark:text-[#f0a060]">
+                                    {t(`admin.matrix.withheld.${row.withheld}`)}
+                                </span>
+                            )}
                         </span>
                         {ROLES.map((role) => {
                             const granted = row.roles.includes(role);
