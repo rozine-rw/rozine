@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
@@ -122,7 +123,7 @@ final class PrimaryHoldingFixture
         [$observation, $reconciliation] = [self::id(), self::id()];
         DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
             'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'callback', 'state' => 'succeeded',
-            'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+            'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now(), 'observed_operation_id' => $operation,
             'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => '2027-01-31T08:00:00Z',
             'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
         DB::table('disbursement_reconciliations')->insert(['id' => $reconciliation, 'intent_id' => $intent, 'provider_event_id' => $observation,
@@ -152,7 +153,7 @@ final class PrimaryHoldingFixture
                 $observation = self::id();
                 DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
                     'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'query', 'state' => $observed,
-                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now(), 'observed_operation_id' => $operation,
                     'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => null,
                     'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
             }
@@ -170,7 +171,7 @@ final class PrimaryHoldingFixture
             'request_id' => (string) Str::uuid(), 'revision' => 1, 'amount' => $disbursement->amount, 'currency' => 'RWF', 'destination_id' => 'dest-1',
             'destination_revision' => 1, 'destination_sha256' => str_repeat('d', 64), 'commitments_digest' => $disbursement->commitments_digest,
             'binding_sha256' => str_repeat('b', 64), 'intent_digest' => str_repeat('i', 64), 'provider' => 'synthetic', 'provider_reference' => 'x',
-            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => 'testing', 'idempotent_sends' => false, 'maker_user_id' => $maker,
+            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => app(EnvironmentIsolation::class)->profile(), 'idempotent_sends' => false, 'maker_user_id' => $maker,
             'checker_user_id' => $checker, 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
         $event(2, 'intent_recorded', $checker, $operation);
         foreach (['queued', 'claimed', $sent ? 'sent' : 'unsent'] as $phase) {

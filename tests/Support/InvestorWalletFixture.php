@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\SelectActiveRole;
 use App\Application\Wallet\ApplyProviderOutcome;
 use App\Application\Wallet\ApplyWithdrawalOutcome;
@@ -85,7 +86,7 @@ final class InvestorWalletFixture
 
         return app(ApplyProviderOutcome::class)->handle(app(SyntheticEventSigner::class)->sign(['provider' => 'synthetic',
             'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(12)), 'reference' => $intent->provider_reference, 'state' => $state,
-            'amount' => $amount ?? $intent->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]));
+            'amount' => $amount ?? $intent->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]));
     }
 
     /**
@@ -137,7 +138,7 @@ final class InvestorWalletFixture
 
         return app(SyntheticWithdrawalSigner::class)->sign([...['provider' => 'synthetic',
             'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(12)), 'reference' => $withdrawal->provider_reference, 'state' => $state,
-            'amount' => $withdrawal->received, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)],
+            'amount' => $withdrawal->received, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)],
             ...$overrides]);
     }
 }

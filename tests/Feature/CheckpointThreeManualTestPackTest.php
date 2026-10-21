@@ -81,3 +81,13 @@ it('refuses a stale manifest instead of reseeding over existing progress', funct
         ->and(Artisan::output())->toContain('C3_MANIFEST_INVALID');
     $this->assertDatabaseCount('users', 0);
 });
+
+it('stages the paid-out note on a local machine, where synthetic provider events carry the local profile', function (): void {
+    app()->detectEnvironment(fn (): string => 'local');
+
+    $pack = app(CheckpointThreeSeeder::class)->prepare();
+
+    expect(PrimaryHolding::query()->count())->toBe(2)
+        ->and(DB::table('primary_commitments')->join('primary_reservations', 'primary_reservations.id', '=', 'primary_commitments.primary_reservation_id')
+            ->where('primary_reservations.business_campaign_id', $pack['scenarios']['live']['campaign'])->count())->toBe(1);
+});
