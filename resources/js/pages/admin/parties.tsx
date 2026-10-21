@@ -1,9 +1,9 @@
 import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
-import { LicenceQueue } from '@/components/admin/parties/licence-queue';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
+import { LicenceQueue } from '@/components/admin/parties/review-queue';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
