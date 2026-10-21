@@ -76,7 +76,9 @@ it('sums the last fourteen days of deposits and payouts, charts them per day and
             ['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => '0'], 'count' => 0]])
         ->and($props['bars'])->toBe([['label' => now('Africa/Kigali')->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '400500'], 'height_pct' => 100]])
         ->and($props['payouts'])->toBe([$row($held, '20000', 'pending'), $row($unknown, '5000', 'unknown')])
-        ->and($props['nav']['payments'])->toBe(['url' => '/admin/payments', 'method' => 'get']);
+        ->and($props['nav']['payments'])->toBe(['url' => '/admin/payments', 'method' => 'get'])
+        ->and($props['policy'])->toBe([['key' => 'platform_fee', 'value' => '3%'], ['key' => 'cpa_share', 'value' => '40%'],
+            ['key' => 'listing_fee', 'value' => '0%'], ['key' => 'repayment_fee', 'value' => '0%']]);
 
     expect(($this->page)(paymentsStaff(['compliance']), ['q' => Str::substr($unknown, -6)])['payouts'])->toHaveCount(1)
         ->and(($this->page)(paymentsStaff(['superadmin']), ['q' => 'aline', 'limit' => 1]))

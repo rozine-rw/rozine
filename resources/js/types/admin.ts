@@ -161,7 +161,11 @@ export type PolicyItem = {
         | 'min_statement_years'
         | 'rdb_certificate'
         | 'max_notes'
-        | 'dual_control_threshold';
+        | 'dual_control_threshold'
+        | 'platform_fee'
+        | 'cpa_share'
+        | 'listing_fee'
+        | 'repayment_fee';
     value: string;
 };
 
@@ -1385,6 +1389,8 @@ export type AdminPaymentsProps = AdminFrameShellProps &
         from: string;
         stats: { key: PaymentsStatKey; value: Money; count: number }[];
         in_flight: number;
+        /** The fee schedule money moves under. */
+        policy: PolicyItem[];
         /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
         bars: { label: string; amount: Money; height_pct: number }[];
         payouts: PayoutInFlight[];

@@ -6,6 +6,7 @@ import {
     HeadCell,
     KpiTile,
     Panel,
+    PolicyPeek,
     ROW_RULE,
     ShowMoreLink,
     TABLE_HEAD,
@@ -134,6 +135,10 @@ export default function AdminPayments(props: AdminPaymentsProps) {
 
     return (
         <AdminFrame section="payments" {...props}>
+            <PolicyPeek
+                title={t('admin.payments.policy_title')}
+                items={props.policy}
+            />
             <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {props.stats.map((stat) => (
                     <KpiTile
