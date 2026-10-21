@@ -69,6 +69,7 @@ const queue = (
             name: 'Aline Uwase',
             email: 'aline@example.rw',
             id_type: 'national_id',
+            checks: ['age', 'id_number', 'documents', 'selfie'],
             selected: true,
             link: link('/admin/investor-verifications?verification=a'),
         },
@@ -81,6 +82,7 @@ const queue = (
             name: 'Jean Habimana',
             email: 'jean@example.rw',
             id_type: 'passport',
+            checks: ['age', 'id_number', 'documents', 'selfie'],
             selected: false,
             link: link('/admin/investor-verifications?verification=b'),
         },
@@ -92,6 +94,8 @@ const queue = (
         turnaround_hours: '6.0',
         approved_30d: 12,
         rejected_30d: 3,
+        aml_alerts: null,
+        sanctions_hits: null,
     },
     pagination: {
         next: link('/admin/investor-verifications?tab=submitted&before=b'),
@@ -255,7 +259,7 @@ describe('Compliance identity queue', () => {
             '/admin/investor-verifications?verification=a',
         );
         expect(within(aline).getByText('National ID')).toBeInTheDocument();
-        expect(within(aline).getByText('2h ago')).toBeInTheDocument();
+        expect(within(aline).getByText('Submitted 2h ago')).toBeInTheDocument();
         expect(within(aline).getAllByText('Waiting')).toHaveLength(1);
         expect(within(jean).getByText('Passport')).toBeInTheDocument();
         expect(within(jean).getByText('jean@example.rw')).toBeInTheDocument();
@@ -683,13 +687,32 @@ describe('Compliance document viewer', () => {
 });
 
 describe('Compliance figures and decisions', () => {
-    it('shows completion, pending turnaround and 30-day decisions, and a review button per waiting case', () => {
+    it("shows completion, unconnected screening, pending turnaround and each case's automated checks", () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 
         expect(screen.getByText('97.8%')).toBeInTheDocument();
         expect(screen.getByText('44 of 45 verified')).toBeInTheDocument();
+        expect(screen.getByText('AML alerts')).toBeInTheDocument();
+        expect(screen.getByText('Sanctions hits')).toBeInTheDocument();
+        expect(screen.getAllByText('Not connected')).toHaveLength(2);
+        expect(
+            screen.getAllByText('Screening (KYC-R04) not built yet'),
+        ).toHaveLength(2);
         expect(screen.getByText('Avg 6.0h turnaround')).toBeInTheDocument();
-        expect(screen.getAllByText('Last 30 days')).toHaveLength(2);
+
+        const jean = screen.getByRole('row', { name: /Jean Habimana/ });
+
+        expect(
+            within(jean).getByText('All 4 checks passed'),
+        ).toBeInTheDocument();
+        expect(
+            within(jean).getByText(
+                'Age, ID number, documents, selfie · no screening yet',
+            ),
+        ).toHaveAttribute(
+            'title',
+            'Age 18 or over · ID number format · Document photos uploaded · Selfie taken',
+        );
         expect(
             screen.getByRole('link', { name: 'Review Jean Habimana' }),
         ).toHaveAttribute(
@@ -712,6 +735,8 @@ describe('Compliance figures and decisions', () => {
                         turnaround_hours: null,
                         approved_30d: 0,
                         rejected_30d: 0,
+                        aml_alerts: 2,
+                        sanctions_hits: 0,
                     },
                     entries: [
                         {
@@ -730,6 +755,7 @@ describe('Compliance figures and decisions', () => {
         );
 
         expect(screen.getByText('—')).toBeInTheDocument();
+        expect(screen.queryByText('Not connected')).not.toBeInTheDocument();
         expect(screen.getByText('No decisions in 30 days')).toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: /^Review / }),

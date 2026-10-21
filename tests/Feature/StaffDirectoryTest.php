@@ -203,7 +203,9 @@ test('a superadmin adds an operator by email with one role and a reason, and the
 
     $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('grant', ['url' => '/admin/staff', 'method' => 'post']));
-    $this->actingAs($analyst)->get(route('staff.staff.index'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('grant', null));
+    $this->actingAs($analyst)->get(route('staff.staff.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('grant', null)->where('access', ['granted' => 4, 'total' => 22]));
+    $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertInertia(fn (Assert $page) => $page->where('access', ['granted' => 20, 'total' => 22]));
     $this->actingAs($superadmin)->getJson(route('api.v1.staff.staff.index'))->assertOk()->assertJsonPath('data.grant', null);
 
     $this->actingAs($superadmin)->post(route('staff.staff.grant'), ['request_id' => (string) Str::uuid(), 'email' => 'nope', 'role' => 'owner', 'reason' => ''])

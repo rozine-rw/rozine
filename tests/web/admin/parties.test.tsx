@@ -360,6 +360,29 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    it('says which role the viewer signed in as and how much it may do', () => {
+        const fixture = props(staffFixture);
+        const { unmount } = render(
+            <AdminParties
+                {...{ ...fixture, access: { granted: 4, total: 22 } }}
+            />,
+        );
+
+        expect(screen.getByText('Signed in as')).toBeInTheDocument();
+        expect(
+            screen.getByText('4 of 22 capabilities', { exact: false }),
+        ).toBeInTheDocument();
+        unmount();
+        render(
+            <AdminParties
+                {...{ ...fixture, access: { granted: 22, total: 22 } }}
+            />,
+        );
+        expect(
+            screen.getByText('Full access', { exact: false }),
+        ).toBeInTheDocument();
+    });
+
     it('hides the invite for operators who cannot manage staff', () => {
         render(<AdminParties {...props(staffFixture)} />);
         expect(
