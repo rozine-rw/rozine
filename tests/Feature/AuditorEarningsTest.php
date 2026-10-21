@@ -45,12 +45,12 @@ it('states the platform fee share credited to the partner who sealed the report,
         'raise' => ['currency' => 'RWF', 'amount' => '10800000'], 'platform_fee' => ['currency' => 'RWF', 'amount' => '324000'],
         'amount' => ['currency' => 'RWF', 'amount' => '129600'], 'credited_at' => $credit->created_at->toIso8601String()];
     $statement = ['month' => $month.'-01', 'this_month' => ['currency' => 'RWF', 'amount' => '129600'],
-        'total' => ['currency' => 'RWF', 'amount' => '129600'], 'lines' => [$line]];
+        'total' => ['currency' => 'RWF', 'amount' => '129600'], 'lines' => [$line], 'deals' => 1, 'managed' => [$line]];
 
     expect(auditorEarnings($auditor, 'auditor.portfolio.index'))->toBe($statement)
         ->and(auditorEarnings($auditor, 'auditor.profile'))->toBe($statement)
         ->and(auditorEarnings(AuditorFixture::make()['user'], 'auditor.portfolio.index'))->toBe(['month' => $month.'-01',
-            'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => []]);
+            'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => [], 'deals' => 0, 'managed' => []]);
     // Home's "earned this month" is the same month's credit, the wallet what is owed, and deals the funded raises.
     actingAs($auditor)->get(route('auditor.home'))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('earned_this_month', ['currency' => 'RWF', 'amount' => '129600'])

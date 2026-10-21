@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { compactRwf } from '@/components/auditor/money';
 import {
@@ -14,6 +14,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatDayMonth, formatMonthYearLong } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
+    DeskReview,
     MonthlyReportCard,
     MonthlyReportStatus,
     MonthlyWindow,
@@ -31,7 +32,6 @@ const STATUS_TONE: Record<MonthlyReportStatus, PillTone> = {
 
 function WindowCard({ window }: { window: MonthlyWindow }) {
     const { t, locale } = useTranslation();
-    const [opening, setOpening] = useState(false);
 
     return (
         <div className="rounded-2xl border border-[#f2dcb0] bg-rz-surface p-3.5 dark:border-[rgba(240,160,96,.3)]">
@@ -47,32 +47,28 @@ function WindowCard({ window }: { window: MonthlyWindow }) {
                         {window.note_title}
                     </p>
                     <p className="mt-px truncate text-[11.5px] text-rz-secondary">
-                        {window.business} · {window.note_id}
+                        {window.note_id === null
+                            ? window.business
+                            : `${window.business} · ${window.note_id}`}
                     </p>
                     <p className={cn('mt-px text-[11.5px]', AMBER_TEXT)}>
-                        {t('auditor.monthly.not_opened', {
-                            month: formatMonthYearLong(window.month, locale),
-                        })}
+                        {window.month === null
+                            ? t('auditor.monthly.not_opened_undated')
+                            : t('auditor.monthly.not_opened', {
+                                  month: formatMonthYearLong(
+                                      window.month,
+                                      locale,
+                                  ),
+                              })}
                     </p>
                 </div>
             </div>
-            <button
-                type="button"
-                disabled={opening}
-                onClick={() =>
-                    router.post(
-                        window.open.url,
-                        {},
-                        {
-                            onStart: () => setOpening(true),
-                            onFinish: () => setOpening(false),
-                        },
-                    )
-                }
-                className="mt-[11px] h-10 w-full cursor-pointer rounded-[10px] bg-rz-accent-fill text-[13px] font-bold text-white disabled:cursor-wait disabled:opacity-80"
+            <Link
+                href={window.link}
+                className="mt-[11px] flex h-10 w-full items-center justify-center rounded-[10px] bg-rz-accent-fill text-[13px] font-bold text-white"
             >
                 {t('auditor.monthly.open')}
-            </button>
+            </Link>
         </div>
     );
 }
@@ -92,10 +88,12 @@ function ReportCard({ report }: { report: MonthlyReportCard }) {
                         {report.business}
                     </span>
                     <span className="mt-0.5 block truncate text-[11.5px] text-rz-secondary">
-                        {t('auditor.monthly.due_line', {
-                            note: report.note_title,
-                            date: formatDayMonth(report.due_on, locale),
-                        })}
+                        {report.due_on === null
+                            ? report.note_title
+                            : t('auditor.monthly.due_line', {
+                                  note: report.note_title,
+                                  date: formatDayMonth(report.due_on, locale),
+                              })}
                     </span>
                 </span>
                 <StatusPill
@@ -108,11 +106,17 @@ function ReportCard({ report }: { report: MonthlyReportCard }) {
             <div className="mt-3 flex gap-2">
                 <StatTile
                     label={t('auditor.monthly.inflow')}
-                    value={compactRwf(report.inflow)}
+                    value={
+                        report.inflow === null ? '—' : compactRwf(report.inflow)
+                    }
                 />
                 <StatTile
                     label={t('auditor.monthly.outflow')}
-                    value={compactRwf(report.outflow)}
+                    value={
+                        report.outflow === null
+                            ? '—'
+                            : compactRwf(report.outflow)
+                    }
                 />
                 <StatTile
                     label={t('auditor.monthly.cover')}
@@ -128,6 +132,54 @@ function ReportCard({ report }: { report: MonthlyReportCard }) {
     );
 }
 
+/** A disputed report under Rozine's desk review (design L245–268): read-only, linked to the report. */
+function DeskReviewCard({ review }: { review: DeskReview }) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <Link
+            href={review.link}
+            className="block rounded-2xl border border-rz-border bg-rz-surface p-[15px] shadow-[0_8px_22px_-16px_rgba(16,40,90,.3)]"
+        >
+            <span className="flex items-center gap-[11px]">
+                <span
+                    aria-hidden
+                    className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-rz-page text-[17px] dark:bg-rz-surface-muted"
+                >
+                    ⚖️
+                </span>
+                <span className="min-w-0 flex-1">
+                    <span className="block text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                        {review.month === null
+                            ? t('auditor.desk_review.eyebrow_undated')
+                            : t('auditor.desk_review.eyebrow', {
+                                  month: formatMonthYearLong(
+                                      review.month,
+                                      locale,
+                                  ),
+                              })}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[15px] font-bold text-rz-ink">
+                        {review.business}
+                    </span>
+                </span>
+                <StatusPill
+                    tone={review.status === 'escalated' ? 'red' : 'amber'}
+                    className="px-2.5 py-[5px] text-[10.5px]"
+                >
+                    {t(`auditor.desk_review.status.${review.status}`)}
+                </StatusPill>
+            </span>
+            <span className="mt-2.5 block text-[11.5px] leading-[1.5] text-rz-secondary">
+                {t('auditor.desk_review.note')}
+            </span>
+            <span className="mt-2 block text-[11.5px] font-bold text-rz-ink">
+                {t('auditor.desk_review.view')}
+            </span>
+        </Link>
+    );
+}
+
 /**
  * Monthly reports (design L275–318): windows to open for the notes the partner stewards, then
  * reports on the clock. Sealing is due by the 7th; the business co-signs after.
@@ -135,9 +187,11 @@ function ReportCard({ report }: { report: MonthlyReportCard }) {
 export function MonthlySection({
     windows,
     reports,
+    deskReviews = [],
 }: {
     windows: MonthlyWindow[];
     reports: MonthlyReportCard[];
+    deskReviews?: DeskReview[];
 }) {
     const { t } = useTranslation();
     const [all, setAll] = useState(false);
@@ -145,7 +199,19 @@ export function MonthlySection({
 
     return (
         <section>
-            <h2 className="mt-[26px] text-[17px] font-bold text-rz-ink lg:mt-0">
+            {deskReviews.length > 0 && (
+                <div className="mt-[26px] flex flex-col gap-3 lg:mt-0">
+                    {deskReviews.map((review) => (
+                        <DeskReviewCard key={review.id} review={review} />
+                    ))}
+                </div>
+            )}
+            <h2
+                className={cn(
+                    'mt-[26px] text-[17px] font-bold text-rz-ink',
+                    deskReviews.length === 0 && 'lg:mt-0',
+                )}
+            >
                 {t('auditor.monthly.title')}
             </h2>
             <p className="mt-[3px] text-[12.5px] leading-[1.45] text-rz-secondary">

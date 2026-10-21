@@ -1,8 +1,15 @@
 import { Link } from '@inertiajs/react';
-import { Eyebrow, EmptyState } from '@/components/auditor/ui';
+import { compactRwf } from '@/components/auditor/money';
+import {
+    Eyebrow,
+    EmptyState,
+    StatTile,
+    StatusPill,
+    initials,
+} from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatAmount } from '@/lib/rozine/format';
-import type { AuditorEarnings } from '@/types/auditor';
+import { formatAmount, formatDate } from '@/lib/rozine/format';
+import type { AuditorEarnings, EarningLine } from '@/types/auditor';
 import type { RouteLink } from '@/types/routing';
 
 /**
@@ -61,8 +68,8 @@ export function SourcedDeals() {
 
 /**
  * This month's earnings, managed deals and next payout (design L416–424). Earnings are the
- * partner's platform fee shares credited this Kigali month. Managed deals and the next payout have
- * no read yet, so each reads as a dash.
+ * partner's platform fee shares credited this Kigali month and managed deals the funded raises that
+ * credited them. No partner payout is scheduled by any read yet, so the next payout reads as a dash.
  */
 export function EarningsSummary({ earnings }: { earnings: AuditorEarnings }) {
     const { t } = useTranslation();
@@ -95,7 +102,9 @@ export function EarningsSummary({ earnings }: { earnings: AuditorEarnings }) {
                         <dt className="text-[10px] font-bold whitespace-nowrap text-white uppercase">
                             {t(`auditor.portfolio.earnings.${key}`)}
                         </dt>
-                        <dd className="mt-[3px] text-[14px] font-bold">—</dd>
+                        <dd className="mt-[3px] text-[14px] font-bold">
+                            {key === 'managed' ? earnings.deals : '—'}
+                        </dd>
                     </div>
                 ))}
             </dl>
@@ -123,22 +132,85 @@ export function YieldShare() {
 }
 
 /**
- * Managed deals (design L507–552). No account-manager read exists yet, so the design's own empty
- * state stands in for the list.
+ * Managed deals (design L507–552): every funded raise whose sealed report the partner wrote, newest
+ * first, with the raise, its platform fee and the partner's 40% share (BRS v2.0 FEE-R02).
  */
-export function ManagedDeals() {
-    const { t } = useTranslation();
+export function ManagedDeals({ deals }: { deals: EarningLine[] }) {
+    const { t, locale } = useTranslation();
 
     return (
         <section aria-labelledby="managed-deals">
-            <Eyebrow as="h2" className="mt-5 lg:mt-0">
-                <span id="managed-deals">
-                    {t('auditor.portfolio.managed.title')}
-                </span>
-            </Eyebrow>
-            <EmptyState className="mt-2.5 py-[26px]">
-                {t('auditor.portfolio.managed.empty')}
-            </EmptyState>
+            <div className="mt-5 flex items-baseline justify-between gap-2.5 lg:mt-0">
+                <Eyebrow as="h2">
+                    <span id="managed-deals">
+                        {t('auditor.portfolio.managed.title')}
+                    </span>
+                </Eyebrow>
+                {deals.length > 0 && (
+                    <span className="text-[11px] text-rz-secondary">
+                        {t('auditor.portfolio.managed.count', {
+                            count: deals.length,
+                        })}
+                    </span>
+                )}
+            </div>
+            {deals.length === 0 ? (
+                <EmptyState className="mt-2.5 py-[26px]">
+                    {t('auditor.portfolio.managed.empty')}
+                </EmptyState>
+            ) : (
+                <ul className="mt-2.5 flex flex-col gap-3">
+                    {deals.map((deal) => (
+                        <li
+                            key={deal.id}
+                            className="rounded-2xl border border-rz-border bg-rz-surface p-[15px]"
+                        >
+                            <div className="flex items-center gap-[11px]">
+                                <span
+                                    aria-hidden
+                                    className="flex size-[38px] shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft text-[14px] font-bold text-rz-ink"
+                                >
+                                    {initials(deal.business)}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[14px] font-bold text-rz-ink">
+                                        {deal.business}
+                                    </p>
+                                    <p className="mt-px truncate text-[11.5px] text-rz-secondary">
+                                        {t('auditor.portfolio.managed.sub', {
+                                            district: deal.district,
+                                            date: formatDate(
+                                                deal.credited_at,
+                                                locale,
+                                            ),
+                                        })}
+                                    </p>
+                                </div>
+                                <StatusPill
+                                    tone="green"
+                                    className="px-2.5 py-[5px] text-[10.5px]"
+                                >
+                                    {t('auditor.portfolio.managed.funded')}
+                                </StatusPill>
+                            </div>
+                            <div className="mt-3 flex gap-2">
+                                <StatTile
+                                    label={t('auditor.portfolio.managed.raise')}
+                                    value={compactRwf(deal.raise)}
+                                />
+                                <StatTile
+                                    label={t('auditor.portfolio.managed.fee')}
+                                    value={compactRwf(deal.platform_fee)}
+                                />
+                                <StatTile
+                                    label={t('auditor.portfolio.managed.share')}
+                                    value={compactRwf(deal.amount)}
+                                />
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </section>
     );
 }

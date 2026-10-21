@@ -2321,6 +2321,14 @@ const en = {
     'auditor.monthly.to_open': 'Audits to open',
     'auditor.monthly.waiting': '{count} waiting',
     'auditor.monthly.not_opened': '{month} · audit file not opened yet',
+    'auditor.monthly.not_opened_undated': 'Audit file not opened yet',
+    'auditor.desk_review.eyebrow': 'Desk review · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Desk review',
+    'auditor.desk_review.status.disputed': 'Under desk review',
+    'auditor.desk_review.status.escalated': 'Escalated',
+    'auditor.desk_review.note':
+        'The business disputed this report. It stays read-only until Rozine’s desk review records a decision.',
+    'auditor.desk_review.view': 'View the report →',
     'auditor.monthly.open': 'Open the audit',
     'auditor.monthly.show_all': 'Show all {count} open windows',
     'auditor.monthly.show_fewer': 'Show fewer · {shown} of {count}',
@@ -2603,6 +2611,12 @@ const en = {
     'auditor.portfolio.yield.empty':
         'Yield-share payouts appear here once they are paid.',
     'auditor.portfolio.managed.title': 'Managed deals',
+    'auditor.portfolio.managed.count': '{count} total',
+    'auditor.portfolio.managed.sub': '{district} · credited {date}',
+    'auditor.portfolio.managed.funded': 'Funded',
+    'auditor.portfolio.managed.raise': 'Raise',
+    'auditor.portfolio.managed.fee': 'Platform fee',
+    'auditor.portfolio.managed.share': 'Your 40%',
     'auditor.portfolio.managed.empty':
         "No managed deals yet. Pass a Flash Audit to become a business's account manager.",
     'auditor.calendar.title': 'Audit calendar',

@@ -81,7 +81,7 @@ class AuditorPortfolioResource extends JsonResource
     /**
      * The partner's earnings statement as the Portfolio and Profile show it: the Kigali month it
      * covers, what was credited in it and ever, and each of that month's credits with the raise and
-     * fee it was worked out from.
+     * fee it was worked out from; then every deal the partner manages, newest first.
      *
      * @param  Earnings  $earnings
      * @return array<string, mixed>
@@ -89,11 +89,12 @@ class AuditorPortfolioResource extends JsonResource
     public static function earnings(array $earnings): array
     {
         $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+        $lines = fn (array $lines): array => array_map(fn (array $line): array => ['id' => $line['id'], 'business' => $line['business'], 'district' => $line['district'],
+            'raise' => $money($line['raise']), 'platform_fee' => $money($line['platform_fee']), 'amount' => $money($line['amount']),
+            'credited_at' => $line['credited_at']], $lines);
 
         return ['month' => $earnings['month'].'-01', 'this_month' => $money($earnings['this_month']), 'total' => $money($earnings['total']),
-            'lines' => array_map(fn (array $line): array => ['id' => $line['id'], 'business' => $line['business'], 'district' => $line['district'],
-                'raise' => $money($line['raise']), 'platform_fee' => $money($line['platform_fee']), 'amount' => $money($line['amount']),
-                'credited_at' => $line['credited_at']], $earnings['lines'])];
+            'lines' => $lines($earnings['lines']), 'deals' => $earnings['deals'], 'managed' => $lines($earnings['managed'])];
     }
 
     /**
