@@ -31,8 +31,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * - Live activity: the six newest ledger postings, each opening its ledger entry, for whoever may
  *   view the ledger; anyone else sees it as not tracked.
  *
- * - Sector exposure: issued principal per Business industry with its note count. No note health is
- *   recorded yet, so no sector is marked at risk.
+ * - Sector exposure: issued principal per Business industry with its note count, at risk while one
+ *   of its notes is on watch.
+ *
+ * - Portfolio health: issued notes by their newest monthly report, healthy or on watch, each with
+ *   its whole-percent share (watch takes the rounding). Distress is not recorded yet, so it is null.
  *
  * The platform does not record a treasury position, default rate, secondary volume, note health,
  * late or at-risk notes, frozen accounts or collections yet, so
@@ -46,7 +49,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
  *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
- *     sectors: list<array{sector: string, principal: string, notes: int}>,
+ *     sectors: list<array{sector: string, principal: string, notes: int, campaigns: list<string>, at_risk: bool}>,
+ *     health: array{total: int, healthy: int, watch: int, distressed: null},
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
  * }
  * @phpstan-type Page array{dashboard: Dashboard, breaks: list<OpenBreak>|null, activity: list<Entry>|null, roles: list<string>, permissions: list<string>}
@@ -66,6 +70,8 @@ class StaffDashboardResource extends JsonResource
         $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
         $count = fn (int $value): array => ['kind' => 'count', 'value' => $value];
         $notes = $figures['notes'];
+        $health = $board['health'];
+        $healthyPct = $health['total'] === 0 ? 0 : intdiv($health['healthy'] * 100, $health['total']);
         $reviews = in_array('applications.review', $permissions, true);
         $funnel = ['submitted' => $board['applications_pending'], 'live' => $notes['live'], 'funded' => $notes['funded'],
             'repaying' => $notes['repaying'], 'matured' => null, 'failed' => $notes['failed']];
@@ -91,7 +97,8 @@ class StaffDashboardResource extends JsonResource
                 'age_days' => $break['age_days'], 'owner' => null, 'actions' => (object) []], $page['breaks']),
             'capital_raised' => [...$board['capital'], 'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'],
                 'amount' => $money($bar['amount']), 'height_pct' => $bar['height_pct']], $board['capital']['bars'])],
-            'portfolio_health' => null,
+            'portfolio_health' => ['total' => $health['total'], 'healthy' => ['count' => $health['healthy'], 'pct' => $healthyPct],
+                'watch' => ['count' => $health['watch'], 'pct' => $health['total'] === 0 ? 0 : 100 - $healthyPct], 'distressed' => null],
             'activity' => $page['activity'] === null ? null : array_map(function (array $entry) use ($prefix): array {
                 $row = StaffLedgerResource::row($entry, ['url' => route($prefix.'staff.ledger.index', ['entry' => $entry['id']], false), 'method' => 'get']);
 
@@ -105,7 +112,7 @@ class StaffDashboardResource extends JsonResource
                 'link' => $reviews ? ['url' => route($prefix.'staff.applications.index', ['application' => $entry['id']], false), 'method' => 'get'] : null],
                 $board['pending']),
             'sector_exposure' => array_map(fn (array $sector): array => ['sector' => $sector['sector'], 'outstanding' => $money($sector['principal']),
-                'notes' => $sector['notes'], 'at_risk' => false], $board['sectors']),
+                'notes' => $sector['notes'], 'at_risk' => $sector['at_risk']], $board['sectors']),
             'treasury' => ['invested' => $money($figures['capital_raised']), 'disbursed' => $money($figures['disbursed']),
                 'platform_net' => null, 'paid_to_investors' => null],
             'collections' => null];
