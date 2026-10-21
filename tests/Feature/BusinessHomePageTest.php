@@ -88,6 +88,31 @@ it('leads Today with a sealed audit report awaiting co-signatures, opening its c
         ->and(($this->props)($user, $business)['today'])->toBe([]);
 })->with(['flash', 'monthly']);
 
+it('moves the submitted application page on to approved, with its publish link, once staff release it', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $business = $fixture['audit']['business'];
+    $application = $fixture['application'];
+    $user = $fixture['audit']['authority']['users'][0];
+    app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $application->id, 0, 'Verified release.', (string) Str::uuid());
+    $page = fn (User $viewer, string $owner, string $id): array => $this->actingAs($viewer)
+        ->get(route('business.applications.show', ['business' => $owner, 'application' => $id]))->assertOk()->viewData('page')['props']['submission'];
+
+    $approved = $page($user, $business, $application->id);
+    expect(array_column($approved['timeline'], 'state'))->toBe(['done', 'done', 'current', 'pending'])
+        ->and($approved['publish'])->toBe(['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']);
+});
+
+it('shows a listed application\'s page as published, with nothing left to publish', function (): void {
+    $campaign = PrimaryReservationFixture::campaign();
+    $published = $this->actingAs(User::query()->findOrFail($campaign->actor_user_id))
+        ->get(route('business.applications.show', ['business' => $campaign->business_id, 'application' => $campaign->business_application_id]))
+        ->assertOk()->viewData('page')['props']['submission'];
+
+    expect(array_column($published['timeline'], 'state'))->toBe(['done', 'done', 'done', 'done'])->and($published['publish'])->toBeNull();
+});
+
 it('shows the live raise, then funded capital, from retained publication and funding facts only', function (): void {
     InvestorWalletFixture::policy(maximum: null);
     $campaign = PrimaryReservationFixture::campaign();

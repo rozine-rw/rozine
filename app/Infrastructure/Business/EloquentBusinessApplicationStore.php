@@ -37,9 +37,11 @@ use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Domain\Underwriting\UnderwritingViolation;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSignature;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessApplicationVersion;
+use App\Models\BusinessCampaign;
 use App\Models\BusinessExposureReservation;
 use Closure;
 use DateTimeImmutable;
@@ -577,7 +579,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                         $pending = $this->pendingApplication($businessId, $applicationId);
 
                         return ['review' => $review, 'business_id' => $businessId, 'identity_context_revision' => $contextRevision,
-                            'pending_application' => $pending === null ? null : ['id' => $pending->id],
+                            'pending_application' => $pending === null ? null : ['id' => $pending->id], 'stage' => $this->stage($application),
                             'evidence' => $submitted === null ? $this->projectEvidence($business, $verification, $credit, $application, $quote) : $submitted['public_evidence'],
                             'allowed_actions' => $this->allowedActions($application, $business, $identity['party']['id'] ?? '', $review, $pending)];
                     });
@@ -738,6 +740,22 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             'mandate_version' => (string) $mandateVersion, 'signers' => $signers,
             'required_signatures' => count($required), 'signatures_complete' => array_diff($required, array_keys($signed)) === [],
         ];
+    }
+
+    /**
+     * Where a submitted application stands after submission: in review until staff release it,
+     * approved once released, and published once its raise is listed. A draft has no stage.
+     *
+     * @return 'review'|'approved'|'published'|null
+     */
+    private function stage(BusinessApplication $application): ?string
+    {
+        return match (true) {
+            $application->status !== 'submitted' => null,
+            BusinessCampaign::query()->where('business_application_id', $application->id)->exists() => 'published',
+            BusinessApplicationRelease::query()->where('business_application_id', $application->id)->exists() => 'approved',
+            default => 'review',
+        };
     }
 
     /** @return array<string, mixed> */

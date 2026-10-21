@@ -2456,6 +2456,58 @@ describe('Apply — submitted', () => {
         expect(screen.getByText('Note ID · RNP-2026-0412')).toBeInTheDocument();
     });
 
+    it('says an approved application is ready to publish and links its publish page', () => {
+        const page = props(submittedStep);
+
+        page.submission = {
+            ...page.submission!,
+            timeline: page.submission!.timeline.map((stage, index) => ({
+                ...stage,
+                state: index < 2 ? 'done' : index === 2 ? 'current' : 'pending',
+            })),
+            publish: {
+                url: '/business/b/applications/a/publish',
+                method: 'get',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('heading', {
+                name: 'Your application is approved',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Publish to the investor feed' }),
+        ).toHaveAttribute('href', '/business/b/applications/a/publish');
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says a listed application is published, with nothing left to publish', () => {
+        const page = props(submittedStep);
+
+        page.submission = {
+            ...page.submission!,
+            timeline: page.submission!.timeline.map((stage) => ({
+                ...stage,
+                state: 'done',
+            })),
+            publish: null,
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Your raise is published' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Publish to the investor feed',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders nothing in the sheet body without a submission record', () => {
         const missing = props(submittedStep);
 

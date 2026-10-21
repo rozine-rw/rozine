@@ -511,6 +511,8 @@ export type ApplicationSubmission = {
     exposure_reservation_id?: string;
     note_id: string | null;
     timeline: TimelineStage[];
+    /** Once staff approve (release) the application, the page that publishes it; null otherwise. */
+    publish?: RouteLink | null;
 };
 
 export type ApplicationCommandName = 'save' | 'evaluate' | 'submit';

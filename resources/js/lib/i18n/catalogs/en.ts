@@ -407,6 +407,13 @@ const en = {
         'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
+    'business.apply.approved.title': 'Your application is approved',
+    'business.apply.approved.body':
+        'Publish it to the investor feed to start raising. The listing fee is waived.',
+    'business.apply.approved.publish': 'Publish to the investor feed',
+    'business.apply.published.title': 'Your raise is published',
+    'business.apply.published.body':
+        'Investors can see it in the feed and commit now.',
     'business.apply.submitted.title': 'Your application has been submitted',
     'business.apply.submitted.body':
         "Your application is being reviewed. You'll be notified at each stage.",

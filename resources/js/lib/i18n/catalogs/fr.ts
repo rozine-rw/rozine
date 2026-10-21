@@ -419,6 +419,13 @@ const fr: Catalog = {
         'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
+    'business.apply.approved.title': 'Votre demande est approuvée',
+    'business.apply.approved.body':
+        'Publiez-la sur le fil des investisseurs pour commencer la levée. Les frais de publication sont offerts.',
+    'business.apply.approved.publish': 'Publier sur le fil des investisseurs',
+    'business.apply.published.title': 'Votre levée est publiée',
+    'business.apply.published.body':
+        "Les investisseurs la voient dans le fil et peuvent s'engager dès maintenant.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
     'business.apply.submitted.body':
         "Votre demande est en cours d'examen. Vous serez notifié à chaque étape.",
