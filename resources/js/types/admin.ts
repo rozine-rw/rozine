@@ -1758,6 +1758,15 @@ export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
         link: RouteLink;
     }[];
     entries: InvestorVerificationEntry[];
+    /** Every case: verified of all started; the last 30 days' decisions and their mean time from submission. */
+    stats: {
+        completion_pct: string | null;
+        verified: number;
+        total: number;
+        turnaround_hours: string | null;
+        approved_30d: number;
+        rejected_30d: number;
+    };
     pagination: { next: RouteLink | null };
     review: InvestorVerificationReview | null;
 };
