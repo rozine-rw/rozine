@@ -3285,7 +3285,7 @@ const fr: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
-    'investor.checkout.pay_with': 'PAYER AVEC',
+    'investor.checkout.pay_with': 'SOURCE DE FINANCEMENT',
     'investor.checkout.wallet': 'Portefeuille',
     'investor.checkout.wallet_detail':
         'Portefeuille Rozine · {amount} disponibles',
@@ -3310,7 +3310,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer · {amount}',
+    'investor.checkout.confirm': "Confirmer l'investissement · {amount}",
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',

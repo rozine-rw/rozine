@@ -3277,7 +3277,7 @@ const rw: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
-    'investor.checkout.pay_with': 'ISHYURA UKORESHEJE',
+    'investor.checkout.pay_with': 'AHO AMAFARANGA AVA',
     'investor.checkout.wallet': 'Ikofi',
     'investor.checkout.wallet_detail': 'Ikofi ya Rozine · {amount} birahari',
     'investor.checkout.insufficient':
@@ -3301,7 +3301,7 @@ const rw: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Amabwiriza yahindutse urimo gusoma. Yongere uyasome wemeze.',
     'investor.checkout.processing': 'Biremezwa…',
-    'investor.checkout.confirm': 'Emeza · {amount}',
+    'investor.checkout.confirm': 'Emeza ishoramari · {amount}',
     'investor.checkout.fine_print':
         'Amafaranga ahita yiyemezwa · Inyungu iteganyijwe, ntisezeranyijwe',
     'investor.checkout.confirmed': 'Ishoramari ryemejwe',

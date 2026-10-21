@@ -3157,7 +3157,7 @@ const en = {
     'investor.plus.tier.platinum': 'Platinum',
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
-    'investor.checkout.pay_with': 'PAY WITH',
+    'investor.checkout.pay_with': 'FUNDING SOURCE',
     'investor.checkout.wallet': 'Wallet',
     'investor.checkout.wallet_detail': 'Rozine Wallet · {amount} available',
     'investor.checkout.insufficient':
@@ -3181,7 +3181,7 @@ const en = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'The terms changed while you were reading. Review them and confirm again.',
     'investor.checkout.processing': 'Confirming…',
-    'investor.checkout.confirm': 'Confirm · {amount}',
+    'investor.checkout.confirm': 'Confirm investment · {amount}',
     'investor.checkout.fine_print':
         'Funds committed instantly · Returns are projected, not guaranteed',
     'investor.checkout.confirmed': 'Investment confirmed',
