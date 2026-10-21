@@ -16,6 +16,7 @@ import {
     PhoneTopBar,
 } from '@/components/investor/deals/deal-top-bar';
 import { canReserve, InvestBar } from '@/components/investor/deals/invest-bar';
+import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -169,9 +170,30 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
               })
             : null;
 
+    /* Like checkout, the cart command is the focused deal's; another card in front waits for it. */
+    const inCart =
+        current !== null &&
+        props.cart !== null &&
+        props.cart.campaign_ids.includes(current.campaign_id);
+    const focused =
+        current !== null && props.focus?.campaign_id === current.campaign_id;
+    const cart: CartToggleState | null =
+        props.cart === null
+            ? null
+            : {
+                  inCart,
+                  action: !focused
+                      ? null
+                      : inCart
+                        ? props.cart.remove
+                        : props.cart.add,
+                  identityRevision: props.identity_context_revision,
+              };
+
     const bar = (size: 'phone' | 'desk') =>
         current !== null && (
             <InvestBar
+                cart={cart}
                 deal={current}
                 quote={quote}
                 units={quoted.units}
@@ -272,6 +294,8 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                     key={props.focus.campaign_id}
                                     deal={props.focus}
                                     serverTime={props.server_time}
+                                    cart={cart}
+                                    units={quoted.units}
                                 />
                             ) : (
                                 <DealPanelLoading />

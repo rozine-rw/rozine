@@ -2928,6 +2928,26 @@ const en = {
     'investor.cart.empty_body':
         'Add notes from Deals, set how much you want in each, and check them all out at once.',
     'investor.cart.browse_deals': 'Browse deals',
+    'investor.cart.add': 'Add to cart',
+    'investor.cart.in_cart_remove': 'In cart · Remove',
+    'investor.cart.update_failed':
+        "We couldn't update your cart. Refresh and try again.",
+    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.total': 'CART TOTAL',
+    'investor.cart.remove': 'Remove {name} from cart',
+    'investor.cart.filled_remove': 'Fully funded · Remove',
+    'investor.cart.filled_note': {
+        one: "{count} note is fully funded and won't be checked out.",
+        other: "{count} notes are fully funded and won't be checked out.",
+    },
+    'investor.cart.target_of': 'of {amount}',
+    'investor.cart.units': { one: 'note', other: 'notes' },
+    'investor.cart.quantity': 'Number of notes in {name}',
+    'investor.cart.checkout': 'Check out',
+    'investor.cart.checkout_note':
+        'Each note checks out on its own for now: open its checkout to reserve and pay.',
+    'investor.cart.before_charge':
+        'Get back is before the charge on earnings. Each checkout shows the exact amount.',
     'investor.common.back': 'Back',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Strong',
@@ -2945,6 +2965,7 @@ const en = {
     'investor.deals.sort.top_interest': 'Top Interest',
     'investor.deals.sort.top_rated': 'Top Rated',
     'investor.deals.sort.top_picks': 'Top Picks',
+    'investor.deals.sort.in_cart': 'In cart',
     'investor.deals.industry_label': 'Filter by industry',
     'investor.deals.industry_all': 'All',
     'investor.deals.audited': 'AUDITED',

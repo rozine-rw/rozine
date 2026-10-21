@@ -56,7 +56,7 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
     expect($props)->toMatchArray(['contract_version' => 'investor-primary-v1', 'identity_context_revision' => 1, 'allowed_actions' => [],
         'gate' => ['status' => 'eligible'], 'unread_notifications' => 1, 'quote' => null])
         ->and($props['wallet'])->toBe(['available' => ['currency' => 'RWF', 'amount' => '10000000'], 'next_payout' => null])
-        ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated', 'top_picks'])
+        ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated', 'top_picks', 'in_cart'])
         ->and($props['sorts'][0])->toBe(['key' => 'all', 'active' => true, 'link' => ['url' => '/investor/deals', 'method' => 'get']])
         ->and($props['industries'][0])->toMatchArray(['industry' => null, 'count' => 1, 'active' => true])
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])

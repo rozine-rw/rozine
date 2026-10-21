@@ -24,6 +24,7 @@ use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorHoldingController;
+use App\Http\Controllers\InvestorMarketController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
@@ -200,6 +201,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
+    Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
+    Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');
+    Route::post('cart/{campaign}/remove', [InvestorMarketController::class, 'removeFromCart'])->whereUlid('campaign')->name('cart_remove');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::get('wallet/statement.{format}', [InvestorWalletController::class, 'statement'])->whereIn('format', ['csv', 'pdf'])->name('wallet.statement');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');

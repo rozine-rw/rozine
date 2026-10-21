@@ -48,7 +48,7 @@ final class GetInvestorCheckout
         $facts = $wallet === null ? ['active_capital' => '0', 'campaign_units' => '0', 'held_reservation_id' => null] : $this->facts->forInvestor($userId, $campaignId);
         $reservationId ??= $facts['held_reservation_id'];
         $reservation = $wallet === null || $reservationId === null ? null : $this->reservation($userId, $context, $campaignId, $reservationId);
-        $capacity = $this->capacity($deal, $facts['campaign_units'], $eligible);
+        $capacity = self::capacity($deal, $facts['campaign_units'], $eligible);
         $max = (int) $capacity['max_units'];
         $chosen = $reservation === null ? max(1, min($units ?? 1, max($max, 1))) : (int) $reservation['units'];
         $quote = [...($reservation === null ? $this->indicative($deal, $chosen, $facts['active_capital']) : $this->reserved($deal, $reservation)), 'capacity' => $capacity];
@@ -88,10 +88,14 @@ final class GetInvestorCheckout
     }
 
     /**
+     * The most units this Party may take in the deal now: what is left to fill while the raise is
+     * live, bounded by the 50% limit less the units it already holds or committed (INV-R01). The
+     * cart (`ManageInvestorCart`, `GetInvestorCart`) bounds its lines by the same rule.
+     *
      * @param  array<string, mixed>  $deal
      * @return array{max_units: string, binding: string, remaining: array{raise: array{currency: string, amount: string}}}
      */
-    private function capacity(array $deal, string $campaignUnits, bool $eligible): array
+    public static function capacity(array $deal, string $campaignUnits, bool $eligible): array
     {
         $open = $deal['lifecycle'] === 'live';
         $available = $open ? BigInteger::of((string) $deal['units']['available']) : BigInteger::zero();
@@ -111,11 +115,23 @@ final class GetInvestorCheckout
     private function indicative(array $deal, int $units, string $activeCapital): array
     {
         $amount = BigInteger::of(UnitRights::UNIT_PRINCIPAL)->multipliedBy($units);
-        $return = $amount->multipliedBy(str_replace('.', '', (string) $deal['rate_pct']))->dividedBy(1000, RoundingMode::HalfUp);
+        $return = self::flatReturn($deal, $amount);
         $fee = EarningsFeeBand::forActiveCapital($amount->plus($activeCapital));
         $payoutFee = $return->multipliedBy($fee['rate_bps'])->dividedBy(10000, RoundingMode::HalfUp);
 
         return self::quote('indicative', $deal, (string) $units, $amount, $return, $payoutFee, $fee, null);
+    }
+
+    /**
+     * The flat return on a principal at the deal's one-decimal rate. On one unit it is a whole
+     * number of RWF (RWF 5,000 at tenths of a percent), so the cart's return grows by exactly this
+     * much per unit.
+     *
+     * @param  array<string, mixed>  $deal
+     */
+    public static function flatReturn(array $deal, BigInteger $amount): BigInteger
+    {
+        return $amount->multipliedBy(str_replace('.', '', (string) $deal['rate_pct']))->dividedBy(1000, RoundingMode::HalfUp);
     }
 
     /**

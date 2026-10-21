@@ -3041,6 +3041,26 @@ const rw: Catalog = {
     'investor.cart.empty_body':
         'Ongeramo noti uvuye mu Mahirwe, uhitemo amafaranga ushaka kuri buri imwe, maze uzishyure zose icyarimwe.',
     'investor.cart.browse_deals': 'Reba amahirwe',
+    'investor.cart.add': 'Shyira mu gitebo',
+    'investor.cart.in_cart_remove': 'Iri mu gitebo · Kuramo',
+    'investor.cart.update_failed':
+        'Ntitwashoboye kuvugurura igitebo cyawe. Ongera ufungure maze wongere ugerageze.',
+    'investor.cart.count': { one: 'Noti {count}', other: 'Noti {count}' },
+    'investor.cart.total': 'IGITERANYO CY’IGITEBO',
+    'investor.cart.remove': 'Kura {name} mu gitebo',
+    'investor.cart.filled_remove': 'Yujujwe · Kuramo',
+    'investor.cart.filled_note': {
+        one: 'Noti {count} yujujwe kandi ntizishyurwa.',
+        other: 'Noti {count} zujujwe kandi ntizishyurwa.',
+    },
+    'investor.cart.target_of': 'kuri {amount}',
+    'investor.cart.units': { one: 'noti', other: 'noti' },
+    'investor.cart.quantity': 'Umubare wa noti muri {name}',
+    'investor.cart.checkout': 'Ishyura',
+    'investor.cart.checkout_note':
+        'Kuri ubu buri noti yishyurwa ukwayo: fungura aho kuyishyura kugira ngo uyifate kandi uyishyure.',
+    'investor.cart.before_charge':
+        'Amafaranga usubizwa ni mbere yo gukuraho igiciro ku nyungu. Buri kwishyura kwerekana amafaranga nyayo.',
     'investor.common.back': 'Subira inyuma',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Ikomeye',
@@ -3058,6 +3078,7 @@ const rw: Catalog = {
     'investor.deals.sort.top_interest': 'Inyungu nyinshi',
     'investor.deals.sort.top_rated': 'Izifite amanota menshi',
     'investor.deals.sort.top_picks': 'Izatoranyijwe',
+    'investor.deals.sort.in_cart': 'Biri mu gitebo',
     'investor.deals.industry_label': 'Shungura ukurikije urwego',
     'investor.deals.industry_all': 'Byose',
     'investor.deals.audited': 'YAGENZUWE',

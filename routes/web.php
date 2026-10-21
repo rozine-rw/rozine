@@ -128,6 +128,9 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('complaints/{complaint}/messages', [InvestorComplaintController::class, 'reply'])->whereUlid('complaint')->name('complaints.reply');
     Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
     Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
+    Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
+    Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');
+    Route::post('cart/{campaign}/remove', [InvestorMarketController::class, 'removeFromCart'])->whereUlid('campaign')->name('cart_remove');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');

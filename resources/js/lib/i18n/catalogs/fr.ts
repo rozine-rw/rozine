@@ -3051,6 +3051,26 @@ const fr: Catalog = {
     'investor.cart.empty_body':
         'Ajoutez des notes depuis les Offres, choisissez le montant de chacune et payez-les toutes en une fois.',
     'investor.cart.browse_deals': 'Parcourir les offres',
+    'investor.cart.add': 'Ajouter au panier',
+    'investor.cart.in_cart_remove': 'Dans le panier · Retirer',
+    'investor.cart.update_failed':
+        "Nous n'avons pas pu mettre à jour votre panier. Actualisez et réessayez.",
+    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.total': 'TOTAL DU PANIER',
+    'investor.cart.remove': 'Retirer {name} du panier',
+    'investor.cart.filled_remove': 'Entièrement financée · Retirer',
+    'investor.cart.filled_note': {
+        one: '{count} note est entièrement financée et ne sera pas payée.',
+        other: '{count} notes sont entièrement financées et ne seront pas payées.',
+    },
+    'investor.cart.target_of': 'sur {amount}',
+    'investor.cart.units': { one: 'note', other: 'notes' },
+    'investor.cart.quantity': 'Nombre de notes dans {name}',
+    'investor.cart.checkout': 'Payer',
+    'investor.cart.checkout_note':
+        'Pour le moment, chaque note se paie séparément : ouvrez son paiement pour la réserver et la payer.',
+    'investor.cart.before_charge':
+        'Le montant récupéré est avant les frais sur les gains. Chaque paiement indique le montant exact.',
     'investor.common.back': 'Retour',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Solide',
@@ -3068,6 +3088,7 @@ const fr: Catalog = {
     'investor.deals.sort.top_interest': 'Meilleur rendement',
     'investor.deals.sort.top_rated': 'Mieux notées',
     'investor.deals.sort.top_picks': 'Sélection',
+    'investor.deals.sort.in_cart': 'Dans le panier',
     'investor.deals.industry_label': 'Filtrer par secteur',
     'investor.deals.industry_all': 'Tous',
     'investor.deals.audited': 'AUDITÉ',

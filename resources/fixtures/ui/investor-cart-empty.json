@@ -1,0 +1,46 @@
+{
+    "component": "investor/cart",
+    "props": {
+        "contract_version": "investor-primary-v1",
+        "identity_context_revision": 3,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
+        "links": {
+            "deals": {
+                "url": "/preview/investor-deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/preview/investor-portfolio",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/investor-market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/preview/investor-cart",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/investor-profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/preview/investor-wallet",
+                "method": "get"
+            },
+            "notifications": {
+                "url": "/preview/investor-notices",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        },
+        "cart": {
+            "lines": []
+        }
+    }
+}

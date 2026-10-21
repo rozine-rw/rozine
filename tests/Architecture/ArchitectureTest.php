@@ -270,6 +270,10 @@ arch('account devices are only accessed by their adapter')
     ->expect('App\Models\AccountDevice')
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity\EloquentAccountDevices', 'App\Models']);
 
+arch('Investor cart lines are only accessed by their adapter')
+    ->expect('App\Models\InvestorCartLine')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary\EloquentInvestorCart', 'App\Models']);
+
 arch('command outcomes are only accessed by the journal adapter')
     ->expect('App\Models\CommandOperation')
     ->toOnlyBeUsedIn(['App\Infrastructure\Operations', 'App\Models', 'Database\Factories']);

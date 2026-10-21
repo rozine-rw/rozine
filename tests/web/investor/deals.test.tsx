@@ -29,7 +29,7 @@ import gatedFixture from '../../../resources/fixtures/ui/investor-deals-gated.js
 import minimalFixture from '../../../resources/fixtures/ui/investor-deals-live-minimal.json';
 import restrictedFixture from '../../../resources/fixtures/ui/investor-deals-restricted.json';
 import dealsFixture from '../../../resources/fixtures/ui/investor-deals.json';
-import { inertia, resetInertia, setWide } from './inertia-mock';
+import { answers, fails, inertia, resetInertia, setWide } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -1296,5 +1296,147 @@ describe('A deck with nothing open to reserve', () => {
         render(<InvestorDeals {...deals(restrictedFixture)} />);
 
         expect(screen.queryByText(line)).not.toBeInTheDocument();
+    });
+});
+
+describe('Add to cart', () => {
+    it('reads In cart · Remove on a phone for a deal already in the cart and takes it out', async () => {
+        inertia.queue.push(
+            answers({ data: { removed: true, in_cart: false } }),
+        );
+        render(<InvestorDeals {...deals()} />);
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Sort deals' }),
+            ).getByRole('link', { name: 'In cart' }),
+        ).toHaveAttribute('href', '/preview/investor-deals');
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+        const toggle = within(bar).getByRole('button', {
+            name: 'In cart · Remove',
+        });
+
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+        await userEvent.click(toggle);
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/investor-cart',
+                method: 'post',
+                body: { identity_context_revision: 5 },
+            },
+        ]);
+        expect(inertia.reload).toHaveBeenCalledWith({
+            only: ['cart', 'deals'],
+            data: { deal: 'cmp_greenleaf' },
+        });
+    });
+
+    it('adds the chosen notes, and says when the cart could not be changed', async () => {
+        const page = deals();
+
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        inertia.queue.push(
+            answers(undefined),
+            answers({ data: { units: 1, in_cart: true } }),
+            fails(409, { code: 'DEAL_FULLY_FUNDED' }),
+        );
+        render(<InvestorDeals {...page} />);
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+        const toggle = within(bar).getByRole('button', {
+            name: 'Add to cart',
+        });
+
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+        await userEvent.click(toggle);
+
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/investor-cart-add',
+            method: 'post',
+            body: { identity_context_revision: 5, units: 1 },
+        });
+        expect(within(bar).getByRole('alert')).toHaveTextContent(
+            "We couldn't update your cart. Refresh and try again.",
+        );
+        expect(inertia.reload).not.toHaveBeenCalled();
+
+        await userEvent.click(toggle);
+
+        expect(within(bar).queryByRole('alert')).not.toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+
+        await userEvent.click(toggle);
+
+        expect(within(bar).getByRole('alert')).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(3);
+    });
+
+    it('cannot add a fully funded deal', () => {
+        const page = deals();
+
+        page.deals[0].units.available = '0';
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        render(<InvestorDeals {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Fully funded' }),
+        ).toBeDisabled();
+        expect(
+            screen.queryByRole('button', { name: 'Add to cart' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('waits for the server’s command and offers no cart where the Investor has none', () => {
+        const page = deals();
+
+        page.cart = { campaign_ids: [], add: null, remove: null };
+        const { unmount } = render(<InvestorDeals {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Add to cart' }),
+        ).toBeDisabled();
+        unmount();
+
+        render(<InvestorDeals {...deals(restrictedFixture)} />);
+
+        expect(
+            screen.queryByRole('button', { name: /cart/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('puts the toggle in the focused deal’s panel on a wide screen', async () => {
+        setWide(true);
+        inertia.queue.push(answers({ data: { removed: true } }));
+        render(<InvestorDeals {...deals()} />);
+
+        const toggles = screen.getAllByRole('button', {
+            name: 'In cart · Remove',
+        });
+
+        expect(toggles).toHaveLength(1);
+
+        await userEvent.click(toggles[0]);
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.reload).toHaveBeenCalledWith({
+            only: ['cart', 'deals'],
+            data: { deal: 'cmp_greenleaf' },
+        });
     });
 });

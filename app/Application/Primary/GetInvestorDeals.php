@@ -6,6 +6,7 @@ namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\Contracts\PartyNotices;
+use App\Application\Primary\Contracts\InvestorCart;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigDecimal;
 
@@ -19,14 +20,15 @@ use Brick\Math\BigDecimal;
  * (BRS FR-100, CR-1), not before reading the deals. Every command still requires the Investor role.
  *
  * @phpstan-type DealsPage array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null,
- *     verification: 'required'|'pending'|null, unread_notifications: int, sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>,
+ *     verification: 'required'|'pending'|null, unread_notifications: int, cart: list<string>|null, sort: string, industry: string|null, industries: list<array{industry: string|null, count: int}>,
  *     deals: list<array<string, mixed>>, focus: array<string, mixed>|null}
  */
 final class GetInvestorDeals
 {
-    public const array SORTS = ['all', 'top_interest', 'top_rated', 'top_picks'];
+    public const array SORTS = ['all', 'top_interest', 'top_rated', 'top_picks', 'in_cart'];
 
-    public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices) {}
+    public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices,
+        private InvestorCart $cart) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -41,7 +43,9 @@ final class GetInvestorDeals
         $names = array_values(array_unique(array_map(fn (array $deal): string => (string) $deal['industry'], $all)));
         sort($names, SORT_STRING);
         $industry = in_array($industry, $names, true) ? $industry : null;
-        $deals = self::sorted(array_values(array_filter($all, fn (array $deal): bool => $industry === null || $deal['industry'] === $industry)), $sort);
+        $cart = $viewer['cart'] ?? [];
+        $deals = self::sorted(array_values(array_filter($all, fn (array $deal): bool => ($industry === null || $deal['industry'] === $industry)
+            && ($sort !== 'in_cart' || in_array($deal['campaign_id'], $cart, true)))), $sort);
         $focusId = $query['deal'] ?? ($deals[0]['campaign_id'] ?? null);
 
         return [...$viewer, 'sort' => $sort, 'industry' => $industry,
@@ -70,7 +74,10 @@ final class GetInvestorDeals
      * A verified Investor's wallet facts or, for a person whose identity is still unverified, no
      * wallet and whether their submission is with Compliance (`GetInvestorViewer`).
      *
-     * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null, unread_notifications: int}
+     * The deals in a verified Investor's cart come with it (BRS v2.0 INV-R02); there is no cart before verification.
+     *
+     * @return array{identity_context_revision: int, restricted: bool, available: array{currency: string, amount: string}|null, verification: 'required'|'pending'|null,
+     *     unread_notifications: int, cart: list<string>|null}
      */
     private function viewer(int $userId, ?int $contextRevision): array
     {
@@ -79,19 +86,21 @@ final class GetInvestorDeals
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'restricted' => $wallet !== null && $wallet['wallet']['status'] === 'restricted',
             'available' => $wallet === null ? null : $wallet['wallet']['breakdown']['available'], 'verification' => $viewer['verification'],
-            'unread_notifications' => $this->notices->unread($userId)];
+            'unread_notifications' => $this->notices->unread($userId),
+            'cart' => $wallet === null ? null : array_column($this->cart->lines($userId, $viewer['identity_context_revision']), 'campaign_id')];
     }
 
     /**
      * Newest first unless asked otherwise: most filled, highest rated, or the design's Top Picks,
-     * the best rating weighted by the interest rate. Ties keep that order.
+     * the best rating weighted by the interest rate. Ties keep that order. In cart keeps the
+     * newest-first order of the deals already filtered to the cart.
      *
      * @param  list<array<string, mixed>>  $deals
      * @return list<array<string, mixed>>
      */
     private static function sorted(array $deals, string $sort): array
     {
-        if ($sort === 'all') {
+        if ($sort === 'all' || $sort === 'in_cart') {
             return $deals;
         }
         $metric = match ($sort) {

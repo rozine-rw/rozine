@@ -86,6 +86,7 @@ use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Application\Primary\Contracts\HoldingSource;
+use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Primary\Contracts\IssuedHoldingEvidence;
@@ -189,6 +190,7 @@ use App\Infrastructure\Operations\PostgresChangeFeed;
 use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Infrastructure\Primary\EloquentCampaignCommitments;
 use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
+use App\Infrastructure\Primary\EloquentInvestorCart;
 use App\Infrastructure\Primary\EloquentInvestorHoldings;
 use App\Infrastructure\Primary\EloquentPrimaryCheckout;
 use App\Infrastructure\Primary\EloquentPrimaryCommitmentView;
@@ -321,6 +323,7 @@ class AppServiceProvider extends ServiceProvider
         // No current-authority admission source exists yet: reserve and confirm fail closed (#96 5968131139).
         $this->app->bind(PrimaryAdmission::class, CurrentPrimaryAdmission::class);
         $this->app->bind(RiskAcknowledgements::class, EloquentRiskAcknowledgements::class);
+        $this->app->bind(InvestorCart::class, EloquentInvestorCart::class);
         $this->app->bind(PartyNotices::class, EloquentPartyNotices::class);
         $this->app->bind(AccountDevices::class, EloquentAccountDevices::class);
         $this->app->bind(ReconciliationStore::class, EloquentReconciliationStore::class);

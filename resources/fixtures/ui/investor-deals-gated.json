@@ -47,6 +47,14 @@
                     "url": "/preview/investor-deals",
                     "method": "get"
                 }
+            },
+            {
+                "key": "in_cart",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
             }
         ],
         "industries": [
@@ -95,6 +103,7 @@
             },
             "deposit": null,
             "checkout": null
-        }
+        },
+        "cart": null
     }
 }

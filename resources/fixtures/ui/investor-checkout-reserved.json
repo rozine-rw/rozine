@@ -1266,7 +1266,8 @@
                     "url": "/preview/investor-checkout",
                     "method": "get"
                 }
-            }
+            },
+            "cart": null
         },
         "links": {
             "deals": {

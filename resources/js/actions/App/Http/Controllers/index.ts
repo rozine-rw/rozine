@@ -11,6 +11,7 @@ import AuditorNoticesController from './AuditorNoticesController'
 import StaffApplicationReleaseController from './StaffApplicationReleaseController'
 import BusinessPublicationController from './BusinessPublicationController'
 import InvestorDealsController from './InvestorDealsController'
+import InvestorMarketController from './InvestorMarketController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorRiskAcknowledgementController from './InvestorRiskAcknowledgementController'
 import InvestorNoticesController from './InvestorNoticesController'
@@ -47,7 +48,6 @@ import AuditorProfileController from './AuditorProfileController'
 import InvestorProfileController from './InvestorProfileController'
 import InvestorPortfolioController from './InvestorPortfolioController'
 import InvestorComplaintController from './InvestorComplaintController'
-import InvestorMarketController from './InvestorMarketController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
@@ -77,6 +77,7 @@ const Controllers = {
     StaffApplicationReleaseController: Object.assign(StaffApplicationReleaseController, StaffApplicationReleaseController),
     BusinessPublicationController: Object.assign(BusinessPublicationController, BusinessPublicationController),
     InvestorDealsController: Object.assign(InvestorDealsController, InvestorDealsController),
+    InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorRiskAcknowledgementController: Object.assign(InvestorRiskAcknowledgementController, InvestorRiskAcknowledgementController),
     InvestorNoticesController: Object.assign(InvestorNoticesController, InvestorNoticesController),
@@ -113,7 +114,6 @@ const Controllers = {
     InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
     InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     InvestorComplaintController: Object.assign(InvestorComplaintController, InvestorComplaintController),
-    InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
