@@ -25,7 +25,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type QueueEntry from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  *
  * @phpstan-type Page array{
- *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, chip: string, search: string,
+ *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, chip: string, search: string,
  *     queue: list<QueueEntry>, partner: Detail|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
  * }
  */
@@ -65,9 +65,9 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'approver'],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'auditor', 'policy' => [],
-            'stats' => [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => $counts['all']]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => $counts['active']]],
+            'stats' => [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => $counts['active']]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => $counts['pending']]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => $page['active_audits']]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => $page['licences_expiring']]]],
             'chips' => array_map(fn (string $chip): array => ['key' => $chip, 'count' => $counts[$chip], 'link' => $link([...$filters, ...($chip === 'all' ? [] : ['chip' => $chip])]),
                 'active' => $chip === $page['chip']], self::CHIPS),
