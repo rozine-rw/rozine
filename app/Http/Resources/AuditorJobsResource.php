@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\AuditReportWindow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -77,7 +76,7 @@ class AuditorJobsResource extends JsonResource
                 'status' => $report['publication_status'], 'variance_pct' => $report['variance_pct'] ?? null, 'proofs' => $report['proofs'] ?? 0,
                 'link' => self::link('auditor.reports.show', ['report' => $report['id']])];
         } else {
-            $due = app(AuditReportWindow::class)->dueAt($period);
+            $due = $report['due_at'] ?? null;
             $sealed = $report['status'] === 'sealed';
             $monthly['reports'][] = ['id' => $report['id'], 'business' => $job['business'], 'sector' => self::sector($record['work']['business']['industry']),
                 'note_title' => $note, 'due_on' => $due, 'status' => $sealed ? 'awaiting_cosign'

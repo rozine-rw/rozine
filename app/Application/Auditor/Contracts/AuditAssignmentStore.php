@@ -14,7 +14,7 @@ use Closure;
  * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'|'closed'}
  * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
  * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}
- * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null, report?: array{id: string, status: string, publication_status: string|null, variance_pct?: string|null, proofs?: int}|null}
+ * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null, report?: array{id: string, status: string, publication_status: string|null, due_at?: string|null, variance_pct?: string|null, proofs?: int}|null}
  * @phpstan-type WorkIdentifiers array{party_id: string, ids: list<string>, next_cursor: string|null}
  * @phpstan-type OperationsCase array{audit_reviews: list<array{report_id: string, status: string, due_at?: string|null, publication_available?: bool, unavailable_reason?: string|null}>, id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}

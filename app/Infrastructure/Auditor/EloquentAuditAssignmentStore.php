@@ -19,6 +19,7 @@ use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorIndependence;
 use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\AuditReadPolicy;
+use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
@@ -218,6 +219,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $profile = $context['business']['profile'];
+                $view = $this->view($record, $candidate);
                 $report = $record->status === 'accepted' ? AuditReport::query()
                     ->leftJoin('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
                     ->where('audit_reports.assignment_id', $record->id)->where('audit_reports.assignment_revision', $record->revision)
@@ -226,11 +228,11 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         ->whereColumn('amendments.amends_id', 'audit_reports.id'))
                     ->first(['audit_reports.id', 'audit_reports.status', 'publications.status as publication_status']) : null;
 
-                return $operation(['assignment' => $this->view($record, $candidate),
+                return $operation(['assignment' => $view,
                     'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
                     'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
                     'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status'),
-                        ...$this->dispute($report->id, $report->getAttribute('publication_status'))]]);
+                        'due_at' => (new AuditReportWindow)->dueAt($view['period']), ...$this->dispute($report->id, $report->getAttribute('publication_status'))]]);
             }, [$partyId]);
     }
 
