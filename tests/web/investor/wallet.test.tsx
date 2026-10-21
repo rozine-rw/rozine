@@ -467,8 +467,18 @@ describe('Wallet (C3)', () => {
         expect(history).toHaveTextContent('Held for GreenLeaf Agro');
         expect(history).toHaveTextContent('Available → Held');
         expect(history).toHaveTextContent('Investment · Kivu Coffee');
+        expect(history).not.toHaveTextContent('Refund · Nyamirambo Bakery');
+
+        fireEvent.click(
+            within(history).getByRole('button', { name: 'Show more' }),
+        );
         expect(history).toHaveTextContent('Hold released · Umucyo Solar');
         expect(history).toHaveTextContent('Refund · Nyamirambo Bakery');
+
+        fireEvent.click(
+            within(history).getByRole('button', { name: 'Show less' }),
+        );
+        expect(history).not.toHaveTextContent('Refund · Nyamirambo Bakery');
     });
 
     it('narrows the history to today, 7 days, 30 days or all, from the server’s links', () => {

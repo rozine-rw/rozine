@@ -379,8 +379,12 @@ function StatementExport({
 /**
  * The wallet history (design L2981–3095), with external cash movements and internal transfers
  * (holds, commitments, refunds) as separate views (H5). Amounts are shown as a magnitude with a
- * direction, never as a sign the client computed. Newest first; older entries page on.
+ * direction, never as a sign the client computed. Newest first; the first three show until
+ * "Show more" opens the rest of the page (design L1071), and older entries page on.
  */
+/** How many entries the history shows before "Show more" (design L1071). */
+const HISTORY_PREVIEW = 3;
+
 export function WalletHistory({
     history,
     exports = null,
@@ -389,6 +393,12 @@ export function WalletHistory({
     exports?: C3InvestorWalletProps['exports'];
 }) {
     const { t, locale } = useTranslation();
+    const [expanded, setExpanded] = useState(false);
+    const collapsible = history.items.length > HISTORY_PREVIEW;
+    const items =
+        collapsible && !expanded
+            ? history.items.slice(0, HISTORY_PREVIEW)
+            : history.items;
 
     return (
         <section aria-label={t('investor.wallet.tx.title')} className="mt-5">
@@ -441,7 +451,7 @@ export function WalletHistory({
                 ))}
             </nav>
             <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
-                {history.items.map((entry) => (
+                {items.map((entry) => (
                     <li
                         key={entry.id}
                         className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider"
@@ -480,17 +490,34 @@ export function WalletHistory({
                         {t('investor.wallet.tx.empty')}
                     </li>
                 )}
-                {history.pagination.next !== null && (
-                    <li>
-                        <Link
-                            href={history.pagination.next}
-                            preserveScroll
+                {collapsible && (
+                    <li className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider">
+                        <button
+                            type="button"
+                            aria-expanded={expanded}
+                            onClick={() => setExpanded(!expanded)}
                             className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
                         >
-                            {t('investor.wallet.c3.older')}
-                        </Link>
+                            {t(
+                                expanded
+                                    ? 'investor.updates.show_less'
+                                    : 'investor.updates.show_more',
+                            )}
+                        </button>
                     </li>
                 )}
+                {(expanded || !collapsible) &&
+                    history.pagination.next !== null && (
+                        <li>
+                            <Link
+                                href={history.pagination.next}
+                                preserveScroll
+                                className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
+                            >
+                                {t('investor.wallet.c3.older')}
+                            </Link>
+                        </li>
+                    )}
             </ul>
         </section>
     );
