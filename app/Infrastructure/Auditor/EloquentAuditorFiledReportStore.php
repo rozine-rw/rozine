@@ -8,12 +8,11 @@ use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Domain\Auditor\AuditReportWindow;
+use App\Domain\Auditor\AuditVariance;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditAssignment;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -36,9 +35,6 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
      * amendment, which is listed in its own right once sealed.
      */
     private const STANDING = ['pending', 'disputed', 'escalated', 'published'];
-
-    /** The findings measured in francs; counted units are not weighed against money. */
-    private const MONEY = ['stock_value', 'cash'];
 
     public function __construct(private IdentityRepository $identities, private AuthorizeActiveRole $roles, private AuditReportWindow $window) {}
 
@@ -79,7 +75,7 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
             $findings = [];
             foreach ($reports as $report) {
                 $filed = $this->report($report, $seals[$report->id], $assignments[$report->assignment_id]);
-                $findings = [...$findings, ...self::findings($seals[$report->id])];
+                $findings = [...$findings, ...$seals[$report->id]->payload['report']['findings'] ?? []];
                 if ($filed['due_at'] !== null) {
                     $timed++;
                     $onTime += $filed['sealed_at'] <= $filed['due_at'] ? 1 : 0;
@@ -92,7 +88,7 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
                 ->whereIn('exits.command', ['audit.assignment.expire', 'audit.assignment.advance'])->count();
 
             return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries,
-                'avg_variance_pct' => self::variance($findings)];
+                'avg_variance_pct' => AuditVariance::weighted($findings)];
         });
     }
 
@@ -107,43 +103,6 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
             'business' => $sealed['business']['profile']['name'], 'district' => $sealed['business']['profile']['district'],
             'sealed_at' => $sealed['sealed_at'], 'published' => $report->getAttribute('publication_status') === 'published',
             'due_at' => $period === null ? ($assignment->state['complete_by'] ?? null) : $this->window->dueAt($period),
-            'variance_pct' => self::variance(self::findings($seal))];
-    }
-
-    /**
-     * The sealed findings measured in francs, with what was reported and what was observed.
-     *
-     * @return list<array{reported: string, observed: string}>
-     */
-    private static function findings(AuditReportSeal $seal): array
-    {
-        /** @var array{report: array{findings?: list<array{measure: string, reported?: string, observed?: mixed}>}} $sealed */
-        $sealed = $seal->payload;
-
-        $money = [];
-        foreach ($sealed['report']['findings'] ?? [] as $finding) {
-            if (in_array($finding['measure'], self::MONEY, true) && isset($finding['reported']) && is_string($finding['observed'] ?? null)) {
-                $money[] = ['reported' => $finding['reported'], 'observed' => $finding['observed']];
-            }
-        }
-
-        return $money;
-    }
-
-    /**
-     * The weighted variance of money findings: the sum of absolute differences over the sum of
-     * reported amounts, as a percentage to one decimal; null with nothing reported to weigh.
-     *
-     * @param  list<array{reported: string, observed: string}>  $findings
-     */
-    private static function variance(array $findings): ?string
-    {
-        $reported = $difference = BigDecimal::zero();
-        foreach ($findings as $finding) {
-            $reported = $reported->plus(BigDecimal::of($finding['reported']));
-            $difference = $difference->plus(BigDecimal::of($finding['observed'])->minus(BigDecimal::of($finding['reported']))->abs());
-        }
-
-        return $reported->isZero() ? null : (string) $difference->multipliedBy(100)->dividedBy($reported, 1, RoundingMode::HalfUp);
+            'variance_pct' => AuditVariance::weighted($seal->payload['report']['findings'] ?? [])];
     }
 }

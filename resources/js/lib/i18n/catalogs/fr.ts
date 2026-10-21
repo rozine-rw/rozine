@@ -1926,6 +1926,53 @@ const fr: Catalog = {
         "ex. MTN confirme l'annulation complète de MM-88213 ; destination revérifiée.",
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
+    'admin.audit_reports.title': "Rapports d'audit",
+    'admin.audit_reports.caption':
+        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+    'admin.audit_reports.filter': "Vues des rapports d'audit",
+    'admin.audit_reports.table': "Rapports d'audit",
+    'admin.audit_reports.empty_title': 'Aucun audit dans cette vue',
+    'admin.audit_reports.empty_body':
+        "Les audits apparaissent ici dès qu'un partenaire d'audit les accepte.",
+    'admin.audit_reports.monthly': 'Audit mensuel · {month}',
+    'admin.audit_reports.flash': 'Audit flash',
+    'admin.audit_reports.due': 'Échéance {date}',
+    'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
+    'admin.audit_reports.remind': 'Relancer',
+    'admin.audit_reports.remind_auditor':
+        "Relancer le partenaire d'audit pour {business}",
+    'admin.audit_reports.remind_business':
+        'Relancer {business} pour cosigner ou contester',
+    'admin.audit_reports.reminded': 'Relancé le {date}',
+    'admin.audit_reports.pdf': 'PDF',
+    'admin.audit_reports.pdf_named':
+        'Télécharger le rapport scellé de {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Audités et publiés',
+    'admin.audit_reports.stats.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.stats.overdue': 'Audits en retard',
+    'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
+    'admin.audit_reports.chip.all': 'Tous',
+    'admin.audit_reports.chip.owed': 'Dus par un partenaire',
+    'admin.audit_reports.chip.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.chip.published': 'Publiés',
+    'admin.audit_reports.chip.disputed': 'Contestés',
+    'admin.audit_reports.col.business': 'Entreprise',
+    'admin.audit_reports.col.due': 'Échéance',
+    'admin.audit_reports.col.partner': "Partenaire d'audit",
+    'admin.audit_reports.col.status': 'Statut',
+    'admin.audit_reports.col.variance': 'Écart',
+    'admin.audit_reports.col.action': 'Action',
+    'admin.audit_reports.status.not_started': 'Non commencé',
+    'admin.audit_reports.status.in_progress': 'En cours',
+    'admin.audit_reports.status.overdue': 'En retard',
+    'admin.audit_reports.status.returned': 'Renvoyé',
+    'admin.audit_reports.status.sealed': 'Scellé',
+    'admin.audit_reports.status.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.status.published': 'Publié',
+    'admin.audit_reports.status.disputed': 'Contesté',
+    'admin.audit_reports.status.escalated': 'Transmis',
+    'admin.audit_reports.status.amended': 'Modifié',
+    'admin.audit_reports.status.withdrawn': 'Retiré',
     'admin.parties.coverage_link': 'Couverture des partenaires',
     'admin.parties.queue.requests.title':
         'Demandes de modification des partenaires',
@@ -5129,6 +5176,12 @@ const fr: Catalog = {
         "Renouvellement de l'accréditation à prévoir",
     'investor.notices.auditor.accreditation_renewal_due.body':
         "La licence {licence} expire le {date}. Téléversez le renouvellement depuis votre profil pour continuer à accepter des missions d'audit.",
+    'investor.notices.auditor.report_reminder.title':
+        "Rappel de rapport d'audit",
+    'investor.notices.auditor.report_reminder.body_monthly':
+        "Rozine vous rappelle que l'audit de {month} pour {business} est attendu au plus tard le {date}.",
+    'investor.notices.auditor.report_reminder.body_flash':
+        "Rozine vous rappelle que l'audit flash pour {business} est attendu au plus tard le {date}.",
     'investor.notices.support.complaint_answered.title':
         'Rozine a répondu à votre réclamation',
     'investor.notices.support.complaint_answered.body':

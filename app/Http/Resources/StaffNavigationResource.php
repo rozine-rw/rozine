@@ -41,6 +41,7 @@ class StaffNavigationResource extends JsonResource
         'notes' => ['permission' => 'primary.view', 'route' => 'staff.notes.index'],
         'payments' => ['permission' => 'payments.view', 'route' => 'staff.payments.index'],
         'coverage' => ['permission' => 'audit.partners.verify', 'route' => 'staff.coverage.index'],
+        'reports' => ['permission' => 'audit.reports.view', 'route' => 'staff.reports.index'],
         'complaints' => ['permission' => 'complaints.answer', 'route' => 'staff.complaints.index'],
         'system_health' => ['permission' => 'health.view', 'route' => 'staff.system-health.index'],
     ];
