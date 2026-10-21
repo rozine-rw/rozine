@@ -1326,6 +1326,8 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     /** A destination with no live route yet is null (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
         deposit: RouteLink | null;
+        /** Absent in previews drawn before the wide bar offered it. */
+        withdraw?: RouteLink | null;
         checkout: RouteLink | null;
     };
 };

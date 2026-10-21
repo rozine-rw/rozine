@@ -389,9 +389,10 @@ describe('Deals on a wide screen', () => {
             'href',
             '/preview/investor-wallet-deposit',
         );
-        expect(
-            screen.queryByRole('link', { name: 'Withdraw' }),
-        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Withdraw' })).toHaveAttribute(
+            'href',
+            '/preview/investor-wallet-withdraw',
+        );
 
         const card = screen.getByRole('article', { name: 'GreenLeaf Agro' });
 
