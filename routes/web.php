@@ -242,7 +242,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     foreach (['escalate', 'resolve'] as $decision) {
         Route::post('{assignment}/reports/{report}/dispute/'.$decision, [AuditDisputeController::class, 'resolve'])->whereUlid(['assignment', 'report'])->defaults('decision_kind', $decision)->name('disputes.'.$decision);
     }
-    Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->name('show');
+    Route::get('{assignment}', [AuditOperationsController::class, 'show'])->where('assignment', '[0-9a-z]{26}')->middleware(RedirectBrowserVisit::class.':staff.dashboard')->name('show');
     foreach (['redispatch', 'close'] as $decision) {
         Route::post('{assignment}/'.$decision, [AuditOperationsController::class, 'resolve'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name($decision);
     }
@@ -277,7 +277,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->whereUuid('request_id')->name('staff.applications.operations.show');
     Route::get('admin/applications', [StaffApplicationReleaseController::class, 'index'])->name('staff.applications.index');
     Route::get('admin/applications/{application}', [StaffApplicationReleaseController::class, 'show'])
-        ->whereUlid('application')->name('staff.applications.show');
+        ->whereUlid('application')->middleware(RedirectBrowserVisit::class.':staff.applications.index,application')->name('staff.applications.show');
     Route::post('admin/applications/{application}/release', [StaffApplicationReleaseController::class, 'release'])
         ->whereUlid('application')->name('staff.applications.release');
     Route::get('business/{business}/applications/{application}/publish', [BusinessPublicationController::class, 'show'])

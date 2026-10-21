@@ -11,17 +11,22 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Sends a browser that opens a data endpoint directly (a typed or bookmarked URL) to the page the
  * data belongs on, instead of showing it raw JSON. The pages' own requests (`useHttp`, Inertia)
- * and API clients ask for JSON or mark themselves as XHR, so they pass through unchanged.
+ * and API clients ask for JSON or mark themselves as XHR, so they pass through unchanged, and so
+ * does a refusal, which already renders its own page.
  */
 class RedirectBrowserVisit
 {
-    /** @param  Closure(Request): (Response)  $next */
-    public function handle(Request $request, Closure $next, string $route): Response
+    /**
+     * @param  Closure(Request): (Response)  $next
+     * @param  string  ...$keep  The route parameters carried to the page (as its own or as its query).
+     */
+    public function handle(Request $request, Closure $next, string $route, string ...$keep): Response
     {
-        if ($request->isMethod('GET') && ! $request->ajax() && ! $request->expectsJson()) {
-            return redirect()->route($route, array_intersect_key((array) $request->route()?->parameters(), ['business' => true]));
+        $response = $next($request);
+        if (! $request->isMethod('GET') || $request->ajax() || $request->expectsJson() || $request->hasHeader('X-Inertia') || ! $response->isSuccessful()) {
+            return $response;
         }
 
-        return $next($request);
+        return redirect()->route($route, array_intersect_key((array) $request->route()?->parameters(), array_flip($keep === [] ? ['business'] : $keep)));
     }
 }
