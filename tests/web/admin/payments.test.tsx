@@ -142,6 +142,24 @@ describe('Payment Center', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('keeps a single day of movement to one bar wide', () => {
+        render(
+            <AdminPayments
+                {...props({
+                    bars: [
+                        {
+                            label: '10-14',
+                            amount: { currency: 'RWF', amount: '1000000' },
+                            height_pct: 100,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByText('10-14').parentElement).toHaveClass('max-w-14');
+    });
+
     it('offers a further page when more payouts are in flight', () => {
         render(
             <AdminPayments

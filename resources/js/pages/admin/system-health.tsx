@@ -72,7 +72,12 @@ function describe(
             return {
                 value: String(signal.facts.pending),
                 detail: t('admin.health.queue.detail'),
-                rec: t(`admin.health.queue.rec.${signal.status}`),
+                /* Healthy only means within tolerance: "clear" is said when nothing waits. */
+                rec: t(
+                    signal.status === 'healthy' && signal.facts.pending > 0
+                        ? 'admin.health.queue.rec.within'
+                        : `admin.health.queue.rec.${signal.status}`,
+                ),
                 action: t('admin.health.queue.action'),
             };
         case 'events':

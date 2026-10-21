@@ -45,6 +45,15 @@ test('Compliance opens the investor identity review queue for compliance officer
         ->assertJsonPath('data.nav.compliance.url', '/api/v1/staff/investor-verifications');
     $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/compliance'));
+    $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'compliance']))
+        ->assertRedirect(route('staff.investor-verifications.index'));
+});
+
+test('the frame shows the same two-letter initials as every other console page', function (): void {
+    $user = sectionStaff(['analyst']);
+    $user->forceFill(['name' => 'Erastus Nkurunziza'])->save();
+    $this->actingAs($user)->get(route('staff.sections.show', ['section' => 'notes']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('viewer.initials', 'EN'));
 });
 
 test('the Business directory, Audit Partner network, Primary Market and Payment Center are live screens, not pending sections', function (): void {

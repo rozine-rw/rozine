@@ -5777,6 +5777,8 @@ const rw: Catalog = {
     'admin.health.queue.rec.watch':
         'Ubusabe buri kwiyongera. Shyiraho umusesenguzi.',
     'admin.health.queue.rec.healthy': 'Umurongo nta busabe burimo.',
+    'admin.health.queue.rec.within':
+        'Biri mu rugero. Nta busabe burimo kwirundanya.',
     'admin.health.queue.action': 'Fungura umurongo',
     'admin.health.events.label': 'Ibikorwa byanditswe',
     'admin.health.events.value': '{count}/isaha',

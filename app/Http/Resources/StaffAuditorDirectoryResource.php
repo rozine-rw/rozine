@@ -57,7 +57,7 @@ class StaffAuditorDirectoryResource extends JsonResource
 
         return ['contract_version' => 'staff-auditor-directory-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'approver'],
+                'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'approver'],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'auditor', 'policy' => [],
             'stats' => [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => $counts['all']]],

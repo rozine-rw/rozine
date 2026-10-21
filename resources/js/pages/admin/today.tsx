@@ -65,11 +65,11 @@ export default function AdminToday(props: AdminTodayProps) {
                 ledger={props.nav.ledger}
             />
 
-            <div className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
                 <CapitalRaisedPanel chart={props.capital_raised} />
                 <PortfolioHealthPanel health={props.portfolio_health} />
             </div>
-            <div className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.5fr_1fr]">
                 <ActivityPanel
                     items={props.activity}
                     ledger={props.nav.ledger}
@@ -77,11 +77,11 @@ export default function AdminToday(props: AdminTodayProps) {
                 />
                 <LifecyclePanel funnel={props.funnel} />
             </div>
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <PendingApplicationsPanel items={props.pending_applications} />
                 <SectorPanel sectors={props.sector_exposure} />
             </div>
-            <div className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
                 <TreasuryPanel treasury={props.treasury} />
                 <CollectionsPanel collections={props.collections} />
             </div>

@@ -42,7 +42,7 @@ class StaffInvestorVerificationsResource extends JsonResource
 
         return ['contract_version' => 'staff-investor-verifications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => $role],
+                'initials' => StaffViewerResource::initials($name), 'role' => $role],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'active_tab' => $page['tab'],

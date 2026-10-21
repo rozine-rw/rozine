@@ -5595,6 +5595,8 @@ const en = {
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
     'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.within':
+        'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',

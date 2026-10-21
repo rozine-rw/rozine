@@ -5804,6 +5804,8 @@ const fr: Catalog = {
     'admin.health.queue.rec.watch':
         'Un retard s’accumule. Affectez un analyste.',
     'admin.health.queue.rec.healthy': 'La file est vide.',
+    'admin.health.queue.rec.within':
+        'Dans la tolérance. Aucun retard ne s’accumule.',
     'admin.health.queue.action': 'Ouvrir la file',
     'admin.health.events.label': 'Débit des événements',
     'admin.health.events.value': '{count}/h',

@@ -150,6 +150,14 @@ describe('Admin frame', () => {
 });
 
 describe('Admin Today', () => {
+    it('lets every panel row shrink to a phone width instead of widening the page', () => {
+        const { container } = render(<AdminToday {...props(todayFixture)} />);
+        const grids = [...container.querySelectorAll('div.grid.gap-4')];
+
+        expect(grids.length).toBeGreaterThan(0);
+        grids.forEach((grid) => expect(grid).toHaveClass('grid-cols-1'));
+    });
+
     it('shows the headline figures without a second score', () => {
         render(<AdminToday {...props(todayFixture)} />);
 

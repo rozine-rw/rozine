@@ -90,7 +90,11 @@ describe('Admin System Health', () => {
         expect(card('Capital in flight')).toHaveTextContent(
             '1 raise filling or awaiting disbursement',
         );
+        /* Two applications still wait, so the queue is within tolerance, not clear. */
         expect(card('Underwriting queue')).toHaveTextContent(
+            'Within tolerance. No backlog is building.',
+        );
+        expect(card('Underwriting queue')).not.toHaveTextContent(
             'The queue is clear.',
         );
         expect(card('Event throughput')).toHaveTextContent('7/h');
@@ -104,6 +108,24 @@ describe('Admin System Health', () => {
         expect(
             screen.queryByRole('link', { name: /Open/ }),
         ).not.toBeInTheDocument();
+    });
+
+    it('says the queue is clear only when nothing waits', () => {
+        render(
+            <AdminSystemHealth
+                {...props({
+                    signals: healthy.map((signal) =>
+                        signal.key === 'queue'
+                            ? { ...signal, facts: { pending: 0 } }
+                            : signal,
+                    ),
+                })}
+            />,
+        );
+
+        expect(card('Underwriting queue')).toHaveTextContent(
+            'The queue is clear.',
+        );
     });
 
     it('leads with a critical ledger and links what needs a look', () => {
