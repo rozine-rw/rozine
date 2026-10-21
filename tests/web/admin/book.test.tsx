@@ -59,7 +59,7 @@ describe('Book', () => {
         );
         expect(rowOf('note_0301')).toHaveTextContent('RWF 9M');
         expect(rowOf('note_0301')).toHaveTextContent('23 Feb 2027');
-        expect(rowOf('note_0301')).toHaveTextContent('RWF 3.5M');
+        expect(rowOf('note_0301')).toHaveTextContent('RWF 3.4M');
         expect(rowOf('note_0301')).toHaveTextContent('—');
         expect(rowOf('note_0301')).toHaveTextContent('Current');
         expect(rowOf('note_0302')).toHaveTextContent('Due today');

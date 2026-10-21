@@ -345,7 +345,7 @@ const fr: Catalog = {
     'business.apply.raise.rate_info': 'Comment ce taux est fixé',
     'business.apply.raise.rate_how': 'Comment votre taux est fixé',
     'business.apply.raise.rate_one_charge':
-        'Un seul coût forfaitaire sur ce que vous empruntez. Il couvre tout — aucuns frais de dossier, de gestion ni prélèvement en plus.',
+        'Un seul coût forfaitaire sur ce que vous empruntez. La seule déduction est la commission de plateforme de 3 %, prélevée sur votre levée lors du versement — aucuns frais de dossier ni prélèvement en plus.',
     'business.apply.raise.rate_yours': 'Votre notation',
     'business.apply.raise.rate_rated': 'Notée {band}',
     'business.apply.raise.rate_best': 'Meilleure notation, 3 mois',
@@ -416,7 +416,7 @@ const fr: Catalog = {
     'business.apply.review.application_fee_when':
         "Unique, facturés à l'approbation.",
     'business.apply.review.fee_note':
-        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne.',
+        'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
@@ -1476,7 +1476,7 @@ const fr: Catalog = {
     'admin.ledger.kind.investment': 'Investissement',
     'admin.ledger.kind.disbursement': 'Décaissement',
     'admin.ledger.kind.repayment': 'Remboursement',
-    'admin.ledger.kind.service_fee': 'Frais de service',
+    'admin.ledger.kind.platform_fee': 'Frais de plateforme',
     'admin.ledger.kind.repayment_fee': 'Frais de remboursement',
     'admin.ledger.kind.auditor_share': "Part du partenaire d'audit",
     'admin.ledger.kind.distribution': 'Versement aux investisseurs',
@@ -1708,22 +1708,9 @@ const fr: Catalog = {
     'admin.review.stage.take.cta': 'Prendre en examen',
     'admin.review.stage.take.placeholder':
         'ex. Je le prends pour la séance de crédit du jour.',
-    'admin.maker_checker.label': 'Approbations',
-    'admin.maker_checker.step': 'Étape {n}',
-    'admin.maker_checker.maker_title': 'Autorisé',
-    'admin.maker_checker.checker_title': 'Seconde approbation',
-    'admin.maker_checker.maker_empty':
-        "Personne n'a encore autorisé ce versement.",
-    'admin.maker_checker.checker_empty':
-        'Un autre approbateur vérifie le versement après son autorisation.',
-    'admin.maker_checker.awaiting': 'En attente du second approbateur',
-    'admin.maker_checker.self_blocked':
-        "Vous avez autorisé ce versement, vous ne pouvez donc pas aussi l'approuver. Un autre approbateur doit le vérifier.",
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Règles de versement en vigueur',
     'admin.disbursements.title': 'Décaissements en attente',
-    'admin.disbursements.awaiting_count':
-        '{count} en attente du second approbateur',
     'admin.disbursements.table': 'Décaissements en attente',
     'admin.disbursements.col.reference': 'Réf. versement',
     'admin.disbursements.col.note': 'Titre',
@@ -1731,7 +1718,7 @@ const fr: Catalog = {
     'admin.disbursements.col.amount': 'Montant',
     'admin.disbursements.col.due': 'Échéance',
     'admin.disbursements.col.actions': 'État · Actions',
-    'admin.disbursements.state.ready': 'Prêt à autoriser',
+    'admin.disbursements.state.ready': 'En attente du paiement automatique',
     'admin.disbursements.state.awaiting_second_approver':
         'En attente du second approbateur',
     'admin.disbursements.state.on_hold': 'En suspens',
@@ -1750,8 +1737,9 @@ const fr: Catalog = {
     'admin.disbursements.empty_title': 'Tous les décaissements sont versés',
     'admin.disbursements.empty_body': "Aucun versement dû pour l'instant.",
     'admin.disbursements.drawer_label': 'Décaissement {reference}',
-    'admin.disbursements.independence.title': 'Déclaration d’indépendance',
     'admin.disbursements.amount': 'Montant',
+    'admin.disbursements.platform_fee':
+        'Commission de plateforme de 3 % : {fee}, dont {share} pour le partenaire d’audit. L’entreprise reçoit {payout}.',
     'admin.disbursements.destination': 'Destination',
     'admin.disbursements.due': 'Échéance',
     'admin.disbursements.rule_dual':
@@ -1765,33 +1753,10 @@ const fr: Catalog = {
     'admin.disbursements.failure_attempts': 'Tentatives',
     'admin.disbursements.failure_inspect':
         "Inspectez avant de réessayer : confirmez auprès du prestataire qu'aucun argent n'est sorti, pour ne jamais envoyer deux fois le même versement.",
-    'admin.disbursements.approvals': 'Approbations',
     'admin.disbursements.trail': 'Historique du versement',
     'admin.disbursements.trail_empty': "Rien d'enregistré pour l'instant.",
-    'admin.disbursements.command.authorize': 'Autoriser le versement',
-    'admin.disbursements.command.approve': 'Approuver le décaissement',
-    'admin.disbursements.command.reject': 'Refuser',
     'admin.disbursements.command.hold': 'Suspendre',
     'admin.disbursements.command.retry': 'Réessayer le versement',
-    'admin.disbursements.stage.authorize.title': 'Autoriser ce versement',
-    'admin.disbursements.stage.authorize.body':
-        "Vous autorisez le paiement de {amount} à {business}. Le contrôle préalable est exécuté ; un autre membre du personnel doit ensuite l'approuver.",
-    'admin.disbursements.stage.authorize.cta': 'Autoriser',
-    'admin.disbursements.stage.authorize.placeholder':
-        'ex. Levée entièrement financée ; destination vérifiée selon le mandat RDB.',
-    'admin.disbursements.stage.approve.title': 'Approuver ce versement',
-    'admin.disbursements.stage.approve.body':
-        "En tant que second membre du personnel, vous approuvez le paiement de {amount} à {business}. Cela enregistre l'intention de paiement ; ce n'est pas un paiement. Le service ne l'envoie qu'après sa propre revérification.",
-    'admin.disbursements.stage.approve.cta':
-        "Approuver et enregistrer l'intention",
-    'admin.disbursements.stage.approve.placeholder':
-        "ex. Total financé et destination conformes à l'offre.",
-    'admin.disbursements.stage.reject.title': 'Refuser ce versement',
-    'admin.disbursements.stage.reject.body':
-        "Cela annule uniquement l'autorisation et enregistre votre motif. La levée n'est pas annulée ; le décaissement revient à l'autorisation.",
-    'admin.disbursements.stage.reject.cta': 'Refuser le versement',
-    'admin.disbursements.stage.reject.placeholder':
-        "ex. Le nom du compte de destination ne correspond pas à l'entreprise.",
     'admin.disbursements.stage.hold.title': 'Suspendre ce versement',
     'admin.disbursements.stage.hold.body':
         "Rien n'est versé pendant la suspension. Dites pourquoi, pour que la personne suivante sache quoi lever.",
@@ -2632,7 +2597,7 @@ const fr: Catalog = {
     'auditor.profile.legal.unavailable': 'Lecture impossible pour le moment',
     'auditor.profile.pending.earnings_title': 'Aucun revenu pour le moment',
     'auditor.profile.pending.earnings_body':
-        'Votre part des frais de service et vos rendements apparaîtront ici dès leur accumulation.',
+        "Votre part de 40 % des frais de plateforme sur les levées que vous avez auditées apparaîtra ici dès qu'elle sera acquise.",
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
@@ -2815,7 +2780,6 @@ const fr: Catalog = {
         'Restreint depuis le {date}. Vous pouvez toujours rembourser.',
     'business.servicing.repay.part.principal': 'Capital',
     'business.servicing.repay.part.return': 'Rendement',
-    'business.servicing.repay.part.service_fee': 'Frais de service',
     'business.servicing.repay.part.late_fees': 'Frais de retard',
     'business.servicing.repay.part.total': 'Total',
     'business.servicing.repay.pay_title': 'Payer depuis votre portefeuille',
@@ -3946,19 +3910,6 @@ const fr: Catalog = {
     'business.apply.review.reduced':
         'Vous avez choisi {principal} sur les {offered} proposés.',
     'business.apply.review.use_full': "Reprendre l'offre complète",
-    'business.apply.raise.instalment_fee': '+ {fee} de frais de service',
-    'business.apply.review.service_fee':
-        'Frais de service ({rate} % de chaque remboursement)',
-    'business.apply.review.projected': 'Prévisionnel',
-    'business.apply.review.total_payable': 'Total à payer (prévisionnel)',
-    'business.apply.review.fee_projection_note':
-        'Frais de service prévisionnels : {rate} % de chaque remboursement, prélevés sur les montants effectivement remboursés (capital et intérêts, hors frais et pénalités). Ces montants supposent que chaque échéance est payée en totalité à la date prévue.',
-    'business.apply.review.fee_note_service_fee':
-        'Aucuns frais sur le montant levé. Facturés une fois la note approuvée, avant sa mise en ligne. Les frais de service sur chaque remboursement figurent avec votre offre ci-dessus.',
-    'business.apply.review.fee_unavailable':
-        'Conditions de frais indisponibles — vous ne pouvez pas encore signer',
-    'business.apply.review.fee_unavailable_body':
-        "Rozine n'a pas encore publié les conditions des frais de service pour cette offre : elle ne peut donc pas encore être acceptée. Votre brouillon et votre offre restent enregistrés.",
 
     'business.apply.recalculating': 'Recalcul…',
     'auditor.capture.unavailable':
@@ -4519,10 +4470,6 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
-    'business.publish.fee_unavailable':
-        'Conditions de frais indisponibles — vous ne pouvez pas encore publier',
-    'business.publish.fee_unavailable_body':
-        "Rozine n'a pas encore publié les conditions des frais de service pour cette levée : elle ne peut donc pas encore être mise en ligne. Rien n'a été publié.",
     'business.campaign.state.live': 'En ligne',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
@@ -4629,12 +4576,9 @@ const fr: Catalog = {
     'admin.disbursements.provider.unknown': 'Inconnu · pas encore confirmé',
     'admin.disbursements.provider.succeeded': 'Réussi · vérifié',
     'admin.disbursements.provider.failed': 'Échoué · vérifié',
-    'admin.disbursements.action.authorize': 'Autoriser',
     'admin.disbursements.older': 'Décaissements plus anciens',
     'admin.disbursements.deadline': 'Échéance',
     'admin.disbursements.deadline_unavailable': 'Aucune échéance établie',
-    'admin.disbursements.rule_two_staff':
-        "Deux membres du personnel différents sont nécessaires : l'un autorise, l'autre approuve. Il n'y a ni seuil de montant ni dérogation. Les rôles ne sont que des libellés : ce que vous pouvez faire dépend de vos permissions.",
     'admin.disbursements.causes': 'Causes',
     'admin.disbursements.receipt.code': 'Reçu',
     'admin.disbursements.receipt.reference': 'Référence',
@@ -4647,28 +4591,6 @@ const fr: Catalog = {
     'admin.disbursements.precheck.title': 'Contrôle préalable',
     'admin.disbursements.checked_at': 'Contrôlé le',
     'admin.disbursements.policy_version': 'Version de la politique',
-    'admin.disbursements.binding.title': "Ce que l'approbation engage",
-    'admin.disbursements.binding.none':
-        'Défini lorsque le décaissement est autorisé.',
-    'admin.disbursements.binding.revision': 'Révision',
-    'admin.disbursements.binding.amount': 'Montant exact',
-    'admin.disbursements.binding.digest': "Empreinte de l'intention",
-    'admin.disbursements.step_up.unavailable':
-        "L'approbation exige une nouvelle confirmation renforcée liée à ces détails. Cette confirmation n'est pas encore disponible : l'approbation ne peut donc pas être donnée ici.",
-    'admin.disbursements.step_up.title': "Confirmez que c'est bien vous",
-    'admin.disbursements.step_up.lead':
-        "Saisissez le code à six chiffres de votre application d'authentification. La confirmation est liée à cette révision, au montant exact, à la destination et à l'empreinte de l'intention, et ne sert qu'une fois.",
-    'admin.disbursements.step_up.code_label':
-        "Code d'authentification à six chiffres",
-    'admin.disbursements.step_up.verify': 'Confirmer le code',
-    'admin.disbursements.step_up.ready':
-        "Confirmé jusqu'à {time}. La confirmation ne sert qu'une fois, pour cette approbation, et exige encore votre motif.",
-    'admin.disbursements.step_up.wrong_code':
-        'Ce code ne correspond pas. Saisissez le code actuel de votre authentificateur.',
-    'admin.disbursements.step_up.lost':
-        "Impossible de joindre Rozine pour vérifier votre code. Rien n'a été approuvé — saisissez un nouveau code pour une nouvelle confirmation.",
-    'admin.disbursements.step_up.changed':
-        'Les détails liés à cette approbation ont changé : votre confirmation a donc été effacée. Vérifiez-les, puis saisissez un nouveau code.',
     'admin.disbursements.intent.title': 'Intention de paiement',
     'admin.disbursements.intent.not_payment':
         "Intention enregistrée — ce n'est pas un paiement. Le service de paiement ne l'envoie qu'après sa propre revérification.",
@@ -4705,9 +4627,7 @@ const fr: Catalog = {
         'Exception · bloqué, non rapproché',
     'admin.disbursements.hold.title': 'Suspension',
     'admin.disbursements.hold.release_note':
-        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il faut un membre du personnel autre que celui qui l'a posée.",
-    'admin.disbursements.hold.self':
-        'Vous avez posé cette suspension : un autre membre du personnel doit la lever.',
+        "Lever la suspension permet au paiement automatique de reprendre. Tout membre du personnel autorisé peut la lever, y compris celui qui l'a posée.",
     'admin.disbursements.issue.title': 'Émission',
     'admin.disbursements.issue.holdings': 'Titres émis',
     'admin.disbursements.issue.issued_at': 'Émis le',
@@ -4716,12 +4636,20 @@ const fr: Catalog = {
     'admin.disbursements.refund.commitments': 'Engagements remboursés',
     'admin.disbursements.refund.total': 'Total remboursé',
     'admin.disbursements.ledger': 'Ouvrir dans le grand livre',
+    'admin.disbursements.attention_count': '{count} à examiner',
+    'admin.disbursements.automation.title': 'Paiement automatique',
+    'admin.disbursements.automation.payout': "L'entreprise reçoit",
+    'admin.disbursements.automation.rule': 'Règle',
+    'admin.disbursements.automation.waiting.verified_payout_destination':
+        "En attente d'une destination de paiement vérifiée. Le paiement démarre automatiquement dès que la destination de l'entreprise est vérifiée.",
+    'admin.disbursements.automation.waiting.next_run':
+        'Le paiement démarre automatiquement au prochain passage.',
     'admin.disbursements.command.release_hold': 'Lever la suspension',
     'admin.disbursements.command.requery':
         'Interroger à nouveau le prestataire',
     'admin.disbursements.stage.release_hold.title': 'Lever cette suspension',
     'admin.disbursements.stage.release_hold.body':
-        "Lever la suspension n'approuve pas ce décaissement et n'envoie aucun paiement. Il revient là où il en était avant la suspension.",
+        'Le paiement automatique reprend une fois la suspension levée. Il revient là où il en était avant la suspension.',
     'admin.disbursements.stage.release_hold.cta': 'Lever la suspension',
     'admin.disbursements.stage.release_hold.placeholder':
         "ex. L'entreprise a confirmé son nouveau numéro MoMo.",
@@ -4957,6 +4885,8 @@ const fr: Catalog = {
     'investor.notices.business.disbursement_sent.title': 'Fonds envoyés',
     'investor.notices.business.disbursement_sent.body':
         '{amount} pour {title} ont été envoyés vers {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} pour {title} ont été envoyés vers {account} : les {principal} levés moins les frais de plateforme de 3 % ({fee}).',
     'investor.notices.primary.report_published.title': 'Rapport mensuel publié',
     'investor.notices.primary.report_published.body':
         '{business} a publié son rapport de {month}, vérifié par {partner}.',
@@ -5331,7 +5261,6 @@ const fr: Catalog = {
     'business.campaign.servicing.next_due': 'Échéance {index} · due le {date}',
     'business.campaign.servicing.principal': 'Capital',
     'business.campaign.servicing.return': 'Rendement',
-    'business.campaign.servicing.service_fee': 'Frais de service',
     'business.campaign.servicing.next_total': 'Total dû',
     'business.campaign.servicing.open': 'Ouvrir les remboursements',
     'business.campaign.servicing.repaid':
@@ -5523,7 +5452,6 @@ const fr: Catalog = {
     'admin.repayments.component.principal': 'Capital',
     'admin.repayments.component.return': 'Rendement',
     'admin.repayments.component.late_fees': 'Pénalités de retard',
-    'admin.repayments.component.service_fee': 'Frais de service',
     'admin.repayments.component.total': 'Restant dû',
     'admin.repayments.allocation.title': 'Répartition',
     'admin.repayments.allocation.pending':
@@ -5539,8 +5467,6 @@ const fr: Catalog = {
     'admin.repayments.allocation.kind.principal': 'Capital',
     'admin.repayments.allocation.kind.return': 'Rendement',
     'admin.repayments.allocation.kind.late_fee': 'Pénalité de retard',
-    'admin.repayments.allocation.kind.service_fee': 'Frais de service',
-    'admin.repayments.allocation.kind.steward_share': 'Part du gestionnaire',
     'admin.repayments.allocation.kind.investor_gross': 'Investisseurs, brut',
     'admin.repayments.allocation.kind.investor_fee': 'Frais investisseur',
     'admin.repayments.allocation.kind.investor_net': 'Investisseurs, net',

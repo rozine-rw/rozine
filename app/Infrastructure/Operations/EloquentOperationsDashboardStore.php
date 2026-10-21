@@ -47,11 +47,11 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             ->whereRaw("(m.terms->>'expires_at' IS NULL OR m.terms->>'expires_at' > ?)", [$now])->count();
         $disbursed = DB::table('disbursements AS d')->join('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
             ->where('closing.kind', 'issued')->sum('d.amount');
-        $awaiting = DB::selectOne("SELECT count(*) AS total FROM disbursements d
-            WHERE (SELECT f_state FROM disbursement_fold(d.id)) = 'awaiting_second_approver'");
+        $waiting = DB::selectOne("SELECT count(*) AS total FROM disbursements d
+            WHERE (SELECT f_state FROM disbursement_fold(d.id)) IN ('ready', 'awaiting_second_approver', 'on_hold')");
 
         return ['capital_raised' => (string) DB::table('primary_holdings')->sum('principal'), 'active_businesses' => $businesses,
-            'awaiting_second_approver' => (int) ($awaiting->total ?? 0), 'disbursed' => (string) $disbursed,
+            'disbursements_waiting' => (int) ($waiting->total ?? 0), 'disbursed' => (string) $disbursed,
             'notes' => ['live' => (int) ($notes->live ?? 0), 'funded' => (int) ($notes->funded ?? 0),
                 'repaying' => (int) ($notes->repaying ?? 0), 'failed' => (int) ($notes->failed ?? 0)]];
     }

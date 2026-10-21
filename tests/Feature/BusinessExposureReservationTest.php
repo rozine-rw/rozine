@@ -150,6 +150,11 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $issuedCompleteness = require database_path('migrations/2026_09_30_234802_require_complete_primary_holdings_for_issued_closings.php');
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
     $issuances = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
+    // The platform fee and automatic disbursement migrations rebind the primary closing authority, so they come off first and go back last.
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    $automaticDisbursement->down();
+    $platformFee->down();
     $issuances->down();
     $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
     $terminalFailures->down();
@@ -211,6 +216,8 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $heldGenerations->up();
     $terminalFailures->up();
     $issuances->up();
+    $platformFee->up();
+    $automaticDisbursement->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);

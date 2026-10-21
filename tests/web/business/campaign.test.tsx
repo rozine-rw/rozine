@@ -1126,15 +1126,15 @@ describe('A repaying campaign (business-campaign-v2)', () => {
         ).toHaveValue(33.3);
         expect(view.getByText('4 instalments left')).toBeInTheDocument();
         expect(view.getByText('Total to repay')).toBeInTheDocument();
-        expect(view.getByText('RWF 20,790,000')).toBeInTheDocument();
+        expect(view.getByText('RWF 20,430,000')).toBeInTheDocument();
 
         const next = view.getByRole('region', { name: 'Next instalment' });
 
         expect(next).toHaveTextContent('Instalment 3 · due 23 Dec 2026');
         expect(next).toHaveTextContent('PrincipalRWF 3,000,000');
         expect(next).toHaveTextContent('ReturnRWF 405,000');
-        expect(next).toHaveTextContent('Service feeRWF 60,000');
-        expect(next).toHaveTextContent('Total dueRWF 3,465,000');
+        expect(next).not.toHaveTextContent('Service fee');
+        expect(next).toHaveTextContent('Total dueRWF 3,405,000');
         expect(
             view.getByRole('link', { name: 'Open repayments' }),
         ).toHaveAttribute('href', '/preview/business-repayments');
@@ -1215,9 +1215,9 @@ describe('A repaying campaign (business-campaign-v2)', () => {
         renderWithUser(<BusinessCampaign {...v2Props(repaidFixture)} />);
         const view = within(campaignSheet());
 
-        expect(view.getByText('RWF 20.8M')).toBeInTheDocument();
+        expect(view.getByText('RWF 20.4M')).toBeInTheDocument();
         expect(view.getByRole('status')).toHaveTextContent(
-            'Every instalment is paid: RWF 20,790,000 repaid by 23 Mar 2027.',
+            'Every instalment is paid: RWF 20,430,000 repaid by 23 Mar 2027.',
         );
         expect(
             view.queryByRole('link', { name: 'Open repayments' }),

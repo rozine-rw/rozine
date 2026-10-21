@@ -20,6 +20,7 @@ use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\AuditStepUp;
+use App\Application\Auditor\Contracts\NoteAuditPartner;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\AcceptedApplicationStore;
@@ -44,7 +45,7 @@ use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
-use App\Application\Disbursement\Contracts\StaffConnections;
+use App\Application\Disbursement\Contracts\PlatformFeeLedger;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
@@ -130,6 +131,7 @@ use App\Infrastructure\Auditor\EloquentAuditReportStore;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Infrastructure\Auditor\EloquentAuditStepUp;
 use App\Infrastructure\Auditor\EloquentBusinessAuditWindows;
+use App\Infrastructure\Auditor\EloquentNoteAuditPartner;
 use App\Infrastructure\Auditor\EloquentOverdueAudits;
 use App\Infrastructure\Auditor\JoseAuditReportCryptography;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
@@ -150,7 +152,6 @@ use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
-use App\Infrastructure\Disbursement\EloquentStaffConnections;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
@@ -204,6 +205,7 @@ use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
+use App\Infrastructure\Wallet\EloquentPlatformFeeLedger;
 use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
 use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
 use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
@@ -361,6 +363,8 @@ class AppServiceProvider extends ServiceProvider
     private function registerDisbursements(): void
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
+        $this->app->bind(PlatformFeeLedger::class, EloquentPlatformFeeLedger::class);
+        $this->app->bind(NoteAuditPartner::class, EloquentNoteAuditPartner::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
         $this->app->bind(FundedPurchaseChanges::class, RetainedFundedPurchaseChanges::class);
@@ -369,7 +373,6 @@ class AppServiceProvider extends ServiceProvider
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
         $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
         $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
-        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : $this->app->make(EloquentStaffConnections::class));
         $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
         $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
         $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
@@ -387,10 +390,6 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),
-        ]);
-        RateLimiter::for('disbursement-step-up', fn (Request $request): array => [
-            Limit::perMinute(5)->by('disbursement-step-up-account:'.$request->user()?->getAuthIdentifier()),
-            Limit::perMinute(20)->by('disbursement-step-up-ip:'.$request->ip()),
         ]);
     }
 

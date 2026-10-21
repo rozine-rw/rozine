@@ -18,6 +18,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\PrimaryIssuanceFixture;
 
 beforeEach(fn () => $this->freezeSecond());
 
@@ -29,8 +30,8 @@ it('feeds real retained facts to the existing observation driver only when expli
     }
     $before = [DB::table('ledger_entries')->count(), DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count()];
     app()->instance(FundedCampaigns::class, app(EloquentFundedCampaigns::class));
-    expect(app(DisbursementStore::class)->openFunded(10))->toBe(['opened' => 1, 'known' => 0])
-        ->and(app(DisbursementStore::class)->openFunded(10))->toBe(['opened' => 0, 'known' => 1]);
+    expect(app(DisbursementStore::class)->openFunded(10))->toBe(['opened' => 1, 'known' => 0, 'queued' => 0, 'failed' => 0])
+        ->and(app(DisbursementStore::class)->openFunded(10))->toBe(['opened' => 0, 'known' => 1, 'queued' => 0, 'failed' => 0]);
     $observation = Disbursement::query()->where('business_campaign_id', $campaign->id)->sole();
     expect($observation->business_id)->toBe($facts->businessId)
         ->and($observation->exposure_reservation_id)->toBe($facts->exposureReservationId)
@@ -38,6 +39,7 @@ it('feeds real retained facts to the existing observation driver only when expli
         ->and($observation->commitments_digest)->toBe($facts->commitmentsDigest())
         ->and($observation->commitment_count)->toBe(count($facts->commitments))
         ->and(DB::table('disbursement_closings')->count())->toBe(0)
+        ->and([DB::table('disbursement_intents')->count(), DB::table('disbursement_events')->count()])->toBe([0, 0])
         ->and([DB::table('ledger_entries')->count(), DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count()])->toBe($before);
 });
 
@@ -127,7 +129,7 @@ it('keeps current admission unavailable and refuses both terminal effects withou
         $id = strtolower((string) Str::ulid());
         expect(fn () => $adapter->issue($facts, new IssueInstruction($id, $id, $id, now()->toIso8601String(), now()->toDateString(), [], now()->toIso8601String())))
             ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_UNAVAILABLE');
-        expect(fn () => $adapter->failClose($facts, new FailedClosing($id, $id, 'approve_recheck', ['restriction'])))
+        expect(fn () => $adapter->failClose($facts, new FailedClosing($id, $id, 'auto_recheck', ['restriction'])))
             ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_UNAVAILABLE');
     });
     expect([DB::table('ledger_entries')->count(), DB::table('primary_holdings')->count(), DB::table('business_campaign_closures')->count()])->toBe($before)
@@ -147,20 +149,18 @@ it('requires a caller transaction for every locking recheck or financial operati
         'campaign' => $adapter->lockFunded($facts->campaignId),
         'recheck' => $adapter->recheck($facts),
         'issue' => $adapter->issue($facts, new IssueInstruction($id, $id, $id, now()->toIso8601String(), now()->toDateString(), [], now()->toIso8601String())),
-        'fail' => $adapter->failClose($facts, new FailedClosing($id, $id, 'approve_recheck', ['restriction'])),
+        'fail' => $adapter->failClose($facts, new FailedClosing($id, $id, 'auto_recheck', ['restriction'])),
         default => throw new InvalidArgumentException('Unknown operation.'),
     })->toThrow(DisbursementViolation::class, 'FUNDING_TRANSACTION_REQUIRED');
 })->with(['business', 'campaign', 'recheck', 'issue', 'fail']);
 
-it('reads the same historical funded campaign after complete Holding and cash issue without enabling admission', function (): void {
-    ['campaign' => $campaign, 'commitments' => $commitments] = PrimaryHoldingFixture::committed();
+it('reads the same historical funded campaign after automatic disbursement, complete Holding and cash issue without enabling admission', function (): void {
+    ['campaign' => $campaign, 'observe' => $observe] = PrimaryIssuanceFixture::approved();
     $adapter = app(EloquentFundedCampaigns::class);
     $before = $adapter->funded(null, 1);
-    $closing = PrimaryHoldingFixture::issuedClosing($campaign);
-    foreach ($commitments as $commitment) {
-        PrimaryHoldingFixture::insert($commitment->id, $closing);
-        PrimaryHoldingFixture::issue($commitment->id, $closing);
-    }
-    PrimaryHoldingFixture::flushDeferredChecks();
-    expect($adapter->funded(null, 1))->toEqual($before);
+    $observe('2026-01-30T22:30:00+00:00');
+    expect(DB::table('primary_holdings')->count())->toBe(count($campaign->commitments))
+        ->and(DB::table('ledger_entries')->where('kind', 'primary_issue')->count())->toBe(count($campaign->commitments))
+        ->and($adapter->funded(null, 1))->toEqual($before)
+        ->and(array_map(fn ($ref): string => $ref->campaignId, $before))->toBe([$campaign->campaignId]);
 });

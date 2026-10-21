@@ -185,7 +185,7 @@
                     "direction": "out",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "note_title": "Fleet Expansion",
                     "instalment_indexes": [2],
@@ -202,7 +202,7 @@
                     "direction": "out",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "note_title": "Fleet Expansion",
                     "instalment_indexes": [1],

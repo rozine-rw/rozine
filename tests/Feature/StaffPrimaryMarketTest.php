@@ -96,7 +96,7 @@ it('measures fill and completion across raises, leaves funded raises out, search
         primaryMarketDeal('01K0000000000000000000CCCC', 'Funded Foods', '5000000', '5000000', 'funded'),
     ]]));
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, ['figures' => [
-        'capital_raised' => '0', 'active_businesses' => 0, 'awaiting_second_approver' => 0, 'disbursed' => '0',
+        'capital_raised' => '0', 'active_businesses' => 0, 'disbursements_waiting' => 0, 'disbursed' => '0',
         'notes' => ['live' => 2, 'funded' => 1, 'repaying' => 2, 'failed' => 1]],
         'committed' => [['label' => '10-15', 'amount' => '250000', 'height_pct' => 100]]]));
     $staff = primaryMarketStaff(['treasury']);

@@ -523,6 +523,30 @@ function body(
                 }),
             });
         case 'business.disbursement_sent':
+            // A payout opened before the BRS v2.0 platform fee carries no fee facts.
+            if (
+                notice.facts.principal !== undefined &&
+                notice.facts.platform_fee !== undefined &&
+                notice.facts.platform_fee !== '0'
+            ) {
+                return t(
+                    'investor.notices.business.disbursement_sent.body_fee',
+                    {
+                        amount: formatRwf(notice.facts),
+                        title: notice.facts.title,
+                        account: notice.facts.account,
+                        principal: formatRwf({
+                            currency: 'RWF',
+                            amount: notice.facts.principal,
+                        }),
+                        fee: formatRwf({
+                            currency: 'RWF',
+                            amount: notice.facts.platform_fee,
+                        }),
+                    },
+                );
+            }
+
             return t('investor.notices.business.disbursement_sent.body', {
                 amount: formatRwf(notice.facts),
                 title: notice.facts.title,

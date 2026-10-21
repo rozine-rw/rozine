@@ -146,7 +146,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -164,7 +164,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "state": "received",
                 "dpd_at_receipt": 0,
@@ -218,7 +218,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -240,7 +240,7 @@
             "source": "wallet",
             "amount": {
                 "currency": "RWF",
-                "amount": "2310000"
+                "amount": "2270000"
             },
             "state": "received",
             "dpd_at_receipt": 0,
@@ -267,13 +267,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "160000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "9240000"
+                        "amount": "9080000"
                     }
                 }
             },
@@ -290,11 +286,11 @@
                 },
                 "expected": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "observed": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "difference": {
                     "currency": "RWF",
@@ -314,7 +310,7 @@
                     "recorded_at": "2027-01-23T09:40:51+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "2310000"
+                        "amount": "2270000"
                     },
                     "units": null,
                     "reference": "RPY-2026-0302",

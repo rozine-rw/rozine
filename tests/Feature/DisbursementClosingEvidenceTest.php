@@ -10,13 +10,17 @@ use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Disbursement\RecordPayoutEvent;
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Disbursement\DisbursementViolation;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
+use App\Models\CommandOperation;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
+use App\Models\DisbursementEvent;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementReconciliation;
+use App\Models\DisbursementStepUpProof;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
@@ -24,6 +28,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
+use Tests\Support\PrimaryHoldingFixture;
 
 /*
  * The read-only closing evidence a funding source issues or fails closing against (#96
@@ -91,33 +96,127 @@ function closingEvidence(string $closingId): ClosingEvidence
     return DB::transaction(fn (): ClosingEvidence => app(DisbursementClosingEvidence::class)->find($closingId));
 }
 
-/** A real closing for one cause, through the store's own flows. */
+/** A real closing for one cause, through the store's own automatic flows. */
 function closingFor(string $cause): DisbursementClosing
 {
-    if ($cause === 'approve_recheck' || $cause === 'worker_recheck') {
+    if ($cause === 'auto_recheck' || $cause === 'worker_recheck') {
         ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
-        $maker = DisbursementFixture::staff(['treasury']);
-        $checker = DisbursementFixture::staff(['approver']);
-        DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-        $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-        if ($cause === 'approve_recheck') {
+        if ($cause === 'auto_recheck') {
             DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['restriction']);
-            DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            DisbursementFixture::release($campaign);
         } else {
-            // The approve recheck passes; the worker's fresh recheck after commit fails.
-            DB::transaction(function () use ($checker, $disbursement, $proof, $campaign): void {
-                DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            // The recheck before the intent passes; the worker's fresh recheck after commit fails.
+            DB::transaction(function () use ($campaign): void {
+                DisbursementFixture::release($campaign);
                 DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['exposure']);
             });
         }
 
         return DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->sole();
     }
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, $cause === 'reconciled_success' ? 'succeeded' : 'failed',
         ['effective_at' => '2028-01-31T08:00:00+00:00']));
 
     return DisbursementClosing::query()->where('intent_id', $intent->id)->sole();
+}
+
+/**
+ * A legacy approve-time failed closing as the retired maker/checker release recorded it, inserted
+ * raw with its completed approve command; its deferred authority check is still pending.
+ */
+function legacyApproveClosing(): DisbursementClosing
+{
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed();
+
+    return DisbursementClosing::query()->findOrFail(PrimaryHoldingFixture::issuedClosing($campaign, kind: 'failed_closing'));
+}
+
+/**
+ * A failed closing the retired maker/checker release recorded at approve, written row by row as
+ * that flow wrote it (the disbursement opened before the platform fee, the maker's authorization,
+ * the checker's consumed step-up proof, the closing with its approve authority, the failed-closing
+ * event and the completed approve command). It commits its deferred checks under the schema before
+ * the platform fee and automatic disbursement migrations, which then run over it. No trigger or
+ * constraint is lifted.
+ */
+function legacyApprovedFailedClosing(): DisbursementClosing
+{
+    $campaign = DisbursementFixture::sources()->fund();
+    $migrations = ['2026_10_16_161905_add_platform_fee_to_disbursements', '2026_10_16_180415_disburse_funded_campaigns_automatically'];
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    foreach (array_reverse($migrations) as $migration) {
+        (require database_path('migrations/'.$migration.'.php'))->down();
+    }
+    // As in the retired flow's own transaction, the operation references are checked at commit.
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    $json = app(CanonicalJson::class);
+    $digest = fn (array $payload): string => hash('sha256', $json->encode($payload));
+    [$maker, $checker] = [User::factory()->create()->id, User::factory()->create()->id];
+    $operation = fn (int $actor, string $command, array $facts = []): CommandOperation => CommandOperation::factory()->create([...['actor_key' => 'staff:'.$actor,
+        'actor_user_id' => $actor, 'command' => $command, 'target_type' => 'disbursement'], ...$facts]);
+
+    $opened = ['campaign_id' => $campaign->campaignId, 'business_id' => $campaign->businessId, 'business_name' => $campaign->businessName,
+        'title' => $campaign->title, 'exposure_reservation_id' => $campaign->exposureReservationId, 'principal' => $campaign->principal,
+        'funded_at' => $campaign->fundedAt, 'term_months' => $campaign->termMonths, 'commitments_digest' => $campaign->commitmentsDigest(),
+        'commitment_ids' => array_map(fn ($commitment): string => $commitment->id, $campaign->commitments)];
+    $disbursement = new Disbursement;
+    $disbursement->forceFill(['business_campaign_id' => $campaign->campaignId, 'business_id' => $campaign->businessId,
+        'exposure_reservation_id' => $campaign->exposureReservationId, 'amount' => $campaign->principal, 'currency' => 'RWF',
+        'commitments_digest' => $campaign->commitmentsDigest(), 'commitment_count' => count($campaign->commitments), 'term_months' => $campaign->termMonths,
+        'funded_at' => $campaign->fundedAt, 'environment' => app(EnvironmentIsolation::class)->profile(), 'payload' => $opened, 'sha256' => $digest($opened),
+        'created_at' => now('UTC')])->save();
+
+    $event = function (int $revision, string $kind, int $actor, string $operationId, string $requestId, array $facts, ?string $destination = null) use ($disbursement, $digest): void {
+        $record = new DisbursementEvent;
+        $record->id = strtolower((string) Str::ulid());
+        $payload = [...$facts, 'event_id' => $record->id, 'disbursement_id' => $disbursement->id, 'revision' => $revision, 'kind' => $kind,
+            'actor_user_id' => $actor, 'operation_id' => $operationId, 'request_id' => $requestId, 'recorded_at' => now('UTC')->toIso8601String()];
+        $binding = $destination === null ? null : $digest(['campaign_id' => $disbursement->business_campaign_id,
+            'exposure_reservation_id' => $disbursement->exposure_reservation_id, 'amount' => $disbursement->amount, 'currency' => 'RWF',
+            'destination_sha256' => $destination, 'commitments_digest' => $disbursement->commitments_digest]);
+        $record->forceFill(['disbursement_id' => $disbursement->id, 'revision' => $revision, 'kind' => $kind, 'actor_user_id' => $actor,
+            'operation_id' => $operationId, 'request_id' => $requestId, 'binding_sha256' => $binding, 'destination_sha256' => $destination,
+            'payload' => $payload, 'sha256' => $digest($payload), 'created_at' => now('UTC')])->save();
+    };
+    $authorize = $operation($maker, 'disbursement.authorize', ['target_id' => $disbursement->id]);
+    $destination = str_repeat('d', 64);
+    $event(1, 'authorized', $maker, $authorize->id, $authorize->request_id, ['reason' => 'Checked against the funded campaign.',
+        'precheck' => ['state' => 'passed', 'checked_at' => now('UTC')->toIso8601String(), 'policy_version' => 'synthetic', 'causes' => []],
+        'destination' => ['id' => 'dest-1', 'revision' => 1, 'masked' => '****0001']], $destination);
+
+    $closingId = strtolower((string) Str::ulid());
+    $requestId = (string) Str::uuid();
+    $approveId = strtolower((string) Str::ulid());
+    $proof = new DisbursementStepUpProof;
+    $proof->forceFill(['purpose' => 'disbursement.approve', 'actor_user_id' => $checker, 'disbursement_id' => $disbursement->id,
+        'revision' => 1, 'amount' => $disbursement->amount, 'destination_sha256' => $destination, 'intent_digest' => str_repeat('i', 64),
+        'credential_binding' => str_repeat('c', 64), 'proof_sha256' => hash('sha256', Str::random(64)), 'expires_at' => now('UTC')->addMinutes(5)->startOfSecond(),
+        'created_at' => now('UTC')])->save();
+    $proof->forceFill(['consumed_at' => now('UTC'), 'consumed_operation_id' => $approveId])->save();
+    $recorded = now('UTC')->startOfSecond()->toImmutable();
+    $closed = ['closing_id' => $closingId, 'disbursement_id' => $disbursement->id, 'kind' => 'failed_closing', 'cause' => 'approve_recheck',
+        'causes' => ['restriction'], 'intent_id' => null, 'reconciliation_id' => null, 'provider_event_id' => null, 'operation_id' => $approveId,
+        'command' => 'disbursement.approve', 'actor_user_id' => $checker, 'request_id' => $requestId, 'effective_at' => null, 'effective_date' => null,
+        'due_dates' => null, 'refund' => ['commitments' => $disbursement->commitment_count, 'amount' => $disbursement->amount, 'fee' => '0'],
+        'recorded_at' => $recorded->toIso8601String()];
+    $closing = new DisbursementClosing;
+    $closing->id = $closingId;
+    $closing->forceFill(['disbursement_id' => $disbursement->id, 'intent_id' => null, 'reconciliation_id' => null, 'kind' => 'failed_closing',
+        'cause' => 'approve_recheck', 'causes' => ['restriction'], 'operation_id' => $approveId, 'actor_user_id' => $checker, 'request_id' => $requestId,
+        'effective_at' => null, 'effective_date' => null, 'due_dates' => null, 'payload' => $closed, 'sha256' => $digest($closed), 'created_at' => $recorded])->save();
+    $event(2, 'failed_closing', $checker, $approveId, $requestId, ['reason' => 'Checked against the funded campaign.', 'closing_id' => $closingId,
+        'causes' => ['restriction'], 'policy_version' => 'synthetic']);
+    // The journal records the approve only after its effect returns, naming the closing in its receipt.
+    $operation($checker, 'disbursement.approve', ['id' => $approveId, 'request_id' => $requestId, 'target_id' => $disbursement->id,
+        'result' => ['status' => 'completed', 'code' => 'CAMPAIGN_FAILED_CLOSING', 'data' => ['receipt' => ['receipt_id' => $closingId]]]]);
+    PrimaryHoldingFixture::flushDeferredChecks();
+
+    foreach ($migrations as $migration) {
+        (require database_path('migrations/'.$migration.'.php'))->up();
+    }
+
+    return DisbursementClosing::query()->findOrFail($closingId);
 }
 
 /**
@@ -189,7 +288,7 @@ function observedAs(DisbursementReconciliation $reconciliation, array $columns, 
     compared($reconciliation, 'observed', $observed);
 }
 
-/** Makes the recorded approve command disagree with the closing's retained authority in one respect. */
+/** Makes a legacy closing's recorded approve command disagree with its retained authority in one respect. */
 function mismatchedOperation(string $operationId, string $case, bool $flushDeferred): void
 {
     $change = match ($case) {
@@ -219,7 +318,7 @@ it('authenticates every cause inside the closing call and afterwards, with the r
 
     expect($seen)->toHaveCount(1)->and($inside)->toEqual($evidence)
         ->and([$evidence->closingId, $evidence->kind, $evidence->cause, $evidence->causes])->toBe([$closing->id, $issued ? 'issued' : 'failed_closing', $cause,
-            ['approve_recheck' => ['restriction'], 'worker_recheck' => ['exposure']][$cause] ?? []])
+            ['auto_recheck' => ['restriction'], 'worker_recheck' => ['exposure']][$cause] ?? []])
         ->and([$evidence->disbursementId, $evidence->campaignId, $evidence->businessId, $evidence->exposureReservationId, $evidence->amount, $evidence->currency,
             $evidence->commitmentsDigest, $evidence->commitmentCount, $evidence->termMonths, $evidence->disbursementSha256])
         ->toBe([$disbursement->id, $disbursement->business_campaign_id, $disbursement->business_id, $disbursement->exposure_reservation_id, $disbursement->amount,
@@ -231,11 +330,14 @@ it('authenticates every cause inside the closing call and afterwards, with the r
         ->and($instruction->closingId)->toBe($closing->id)
         ->and($closing->payload['provider_event_id'])->toBe($closing->reconciliation_id === null ? null
             : DisbursementReconciliation::query()->findOrFail($closing->reconciliation_id)->provider_event_id);
-    $operation = DB::table('command_operations')->where('id', $closing->operation_id)->first(['actor_user_id', 'request_id']);
-    expect([$closing->payload['command'], $closing->payload['actor_user_id'], $closing->payload['request_id'], $closing->actor_user_id, $closing->request_id])
-        ->toBe($operation === null ? [null, null, null, null, null]
-            : ['disbursement.approve', (int) $operation->actor_user_id, $operation->request_id, (int) $operation->actor_user_id, $operation->request_id])
-        ->and($operation === null)->toBe($cause !== 'approve_recheck');
+    // No closing carries staff authority: the system recorded the intent, or closed before any existed.
+    expect([$closing->operation_id, $closing->payload['operation_id'], $closing->payload['command'], $closing->payload['actor_user_id'],
+        $closing->payload['request_id'], $closing->actor_user_id, $closing->request_id])->toBe([null, null, null, null, null, null, null])
+        ->and($intent === null)->toBe($cause === 'auto_recheck');
+    if ($intent !== null) {
+        expect([$intent->maker_user_id, $intent->checker_user_id, $intent->rule_version])->toBe([null, null, 'brs-2.0-svc-r01'])
+            ->and(DB::table('command_operations')->where('id', $evidence->intentOperationId)->exists())->toBeFalse();
+    }
     expect($instruction instanceof IssueInstruction)->toBe($issued);
     if ($instruction instanceof IssueInstruction) {
         expect([$evidence->effectiveAt, $evidence->effectiveDate, $evidence->dueDates])
@@ -249,7 +351,7 @@ it('authenticates every cause inside the closing call and afterwards, with the r
             ->and([$evidence->effectiveAt, $evidence->effectiveDate, $evidence->dueDates])->toBe([null, null, null])
             ->and($closing->payload['effective_at'])->toBeNull();
     }
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure', 'reconciled_success']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure', 'reconciled_success']);
 
 it('refuses outside a transaction the caller opened', function (): void {
     $closing = closingFor('reconciled_failure');
@@ -270,7 +372,7 @@ it('reads with plain SELECTs only: no row locks and no writes', function (string
     expect($reads)->not->toBeEmpty()
         ->and(array_filter($reads, fn (string $sql): bool => ! str_starts_with($sql, 'select ') || preg_match('/\bfor (update|share|no key update|key share)\b/', $sql) === 1))
         ->toBe([]);
-})->with(['approve_recheck', 'reconciled_success']);
+})->with(['auto_recheck', 'reconciled_success']);
 
 it('is unavailable for an unknown closing or an unreadable retained payload', function (string $case): void {
     $closing = closingFor('reconciled_success');
@@ -381,8 +483,32 @@ it('refuses an intent whose destination falls outside its recomputed intent dige
     expect(fn () => closingEvidence($closing->id))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED');
 });
 
-it('authenticates the approve command authority of an approve-time failed closing on reread', function (string $case, string $reason): void {
-    $closing = closingFor('approve_recheck');
+it('refuses an automatic closing that claims staff authority', function (): void {
+    $closing = closingFor('auto_recheck');
+    $actor = User::factory()->create()->id;
+    $request = (string) Str::uuid();
+    withoutConstraint('disbursement_closings', 'disbursement_closing_authority');
+    rewritten($closing, 'disbursement_closings_protected', ['actor_user_id' => $actor, 'request_id' => $request],
+        ['actor_user_id' => $actor, 'request_id' => $request]);
+
+    expect(fn () => closingEvidence($closing->id))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED');
+});
+
+it('keeps a genuine legacy approve-time failed closing verifiable across the fee and automatic payment migrations', function (): void {
+    $closing = legacyApprovedFailedClosing();
+    $evidence = closingEvidence($closing->id);
+
+    expect($evidence->cause)->toBe('approve_recheck')
+        ->and($evidence->kind)->toBe('failed_closing')
+        ->and($evidence->causes)->toBe(['restriction'])
+        ->and($evidence->operationId)->toBe($closing->operation_id)
+        ->and($evidence->intentId)->toBeNull()
+        ->and(Disbursement::query()->findOrFail($closing->disbursement_id)->fee_version)->toBeNull()
+        ->and(closingEvidence($closing->id))->toEqual($evidence);
+});
+
+it('authenticates the approve command authority of a legacy approve-time failed closing', function (string $case, string $reason): void {
+    $closing = legacyApprovedFailedClosing();
     match ($case) {
         'proof released from the operation' => withTriggerLifted('disbursement_step_up_proofs', 'disbursement_step_up_proofs_protected',
             fn () => DB::table('disbursement_step_up_proofs')->where('consumed_operation_id', $closing->operation_id)->update(['consumed_operation_id' => null, 'consumed_at' => null])),
@@ -406,8 +532,20 @@ it('authenticates the approve command authority of an approve-time failed closin
     'operation receipt of another closing' => ['operation receipt of another closing', 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED'],
 ]);
 
-it('lets an approve-time closing commit only with its own recorded approve command', function (string $case): void {
-    $closing = closingFor('approve_recheck');
+it('refuses an automatic closing rewritten as a legacy approve-time closing on a disbursement opened under the fee', function (): void {
+    $closing = closingFor('auto_recheck');
+    $checker = User::factory()->create()->id;
+    $approve = CommandOperation::factory()->create(['actor_key' => 'staff:'.$checker, 'actor_user_id' => $checker, 'command' => 'disbursement.approve',
+        'target_type' => 'disbursement', 'target_id' => $closing->disbursement_id,
+        'result' => ['status' => 'completed', 'code' => 'CAMPAIGN_FAILED_CLOSING', 'data' => ['receipt' => ['receipt_id' => $closing->id]]]]);
+    $authority = ['cause' => 'approve_recheck', 'operation_id' => $approve->id, 'actor_user_id' => $checker, 'request_id' => $approve->request_id];
+    rewritten($closing, 'disbursement_closings_protected', $authority, [...$authority, 'command' => 'disbursement.approve']);
+
+    expect(fn () => closingEvidence($closing->id))->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_INTEGRITY_FAILED');
+});
+
+it('lets a legacy approve-time closing commit only with its own recorded approve command', function (string $case): void {
+    $closing = legacyApproveClosing();
     if ($case !== 'its own command') {
         // Changed before the deferred check runs, as if the journal had recorded another command.
         mismatchedOperation((string) $closing->operation_id, $case, false);
@@ -419,8 +557,8 @@ it('lets an approve-time closing commit only with its own recorded approve comma
 })->with(['its own command', 'operation of another command', 'operation on another target', 'operation by another actor', 'operation of another request',
     'operation with another outcome', 'operation receipt of another closing']);
 
-it('refuses an approve-time closing without its command authority', function (): void {
-    $closing = closingFor('approve_recheck');
+it('refuses a legacy approve-time closing without its command authority', function (): void {
+    $closing = legacyApproveClosing();
 
     expect(fn () => withTriggerLifted('disbursement_closings', 'disbursement_closings_protected',
         fn () => DB::transaction(fn () => DB::table('disbursement_closings')->where('id', $closing->id)->update(['request_id' => null]))))

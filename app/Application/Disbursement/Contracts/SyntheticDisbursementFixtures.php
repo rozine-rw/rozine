@@ -7,7 +7,7 @@ namespace App\Application\Disbursement\Contracts;
 use App\Application\Disbursement\FundedCampaign;
 
 /**
- * Local and testing control of the synthetic funding source, destination, connection and payout
+ * Local and testing control of the synthetic funding source, destination and payout
  * provider fixtures, behind the synthetic guard. None of it is production funding authority,
  * verification or joint acceptance; demo, UAT and production never reach it.
  */
@@ -30,13 +30,6 @@ interface SyntheticDisbursementFixtures
 
     /** @param 'verified'|'revoked'|'expired'|'rotated' $state */
     public function setDestination(string $businessId, string $state): void;
-
-    /**
-     * One staff member's connection, or with no user the whole source: `unavailable` or `available`.
-     *
-     * @param  'connected'|'unconnected'|'unavailable'|'available'  $state
-     */
-    public function setConnection(?int $userId, string $state): void;
 
     /**
      * The funding effects the synthetic source recorded for a campaign.

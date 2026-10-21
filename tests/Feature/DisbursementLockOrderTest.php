@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
-use App\Application\Disbursement\Contracts\StaffConnections;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\ManageDisbursements;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
@@ -20,14 +20,13 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 /*
  * Lock order at the adapter boundary (#96 5874488658). Within each outermost transaction, no
- * source that may lock Business, User or Party rows (funding, staff connections, destinations) is
- * called while a disbursement row is locked without the Business lock taken first, and the
- * connection and destination sources are never called under a disbursement lock at all.
+ * source that may lock Business, User or Party rows (funding, destinations) is called while a
+ * disbursement row is locked without the Business lock taken first, and the destination source is
+ * never called under a disbursement lock at all.
  */
 
 final class LockOrderProbe
@@ -54,7 +53,7 @@ final class LockOrderProbe
         if ($this->disbursement && ! $this->business) {
             $this->violations[] = $name.' under a disbursement lock without the Business lock';
         }
-        if ($this->disbursement && in_array($name, ['connection', 'verified'], true)) {
+        if ($this->disbursement && $name === 'verified') {
             $this->violations[] = $name.' under a disbursement lock';
         }
         $this->business = $this->business || $locksBusiness;
@@ -108,17 +107,6 @@ function lockOrderProbe(): LockOrderProbe
             $this->inner->failClose($campaign, $closing);
         }
     });
-    app()->instance(StaffConnections::class, new class($sources, $probe) implements StaffConnections
-    {
-        public function __construct(private StaffConnections $inner, private LockOrderProbe $probe) {}
-
-        public function connection(int $staffUserId, string $disbursementId, string $operationId, string $businessId, array $partyIds): string
-        {
-            $this->probe->call('connection');
-
-            return $this->inner->connection($staffUserId, $disbursementId, $operationId, $businessId, $partyIds);
-        }
-    });
     app()->instance(PayoutDestinations::class, new class($sources, $probe) implements PayoutDestinations
     {
         public function __construct(private PayoutDestinations $inner, private LockOrderProbe $probe) {}
@@ -147,23 +135,25 @@ function lockOrderProbe(): LockOrderProbe
 
 it('never calls a Business-locking source under a disbursement lock on any path', function (): void {
     $probe = lockOrderProbe();
-    ['disbursement' => $disbursement, 'intent' => $intent, 'checker' => $checker] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
-    DisbursementFixture::command($treasury, $disbursement, 'requery', 3);
+    DisbursementFixture::command($treasury, $disbursement, 'requery', 2);
     app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'pending'));
     DisbursementFixture::provider()->scriptQuery($intent->id, 'succeeded');
     app(ReconcileDisbursements::class)->handle();
-    app(ManageDisbursements::class)->page($checker->id, $disbursement->id, null, 25);
+    app(ManageDisbursements::class)->page($treasury->id, $disbursement->id, null, 25);
 
-    ['disbursement' => $failing, 'campaign' => $campaign] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    DisbursementFixture::command($maker, $failing, 'authorize', 0);
-    DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['mandate']);
-    $second = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($second, $failing, 'approve', 1, DisbursementFixture::stepUp($second, $failing)['proof']);
+    ['disbursement' => $waiting] = DisbursementFixture::funded();
+    $compliance = DisbursementFixture::staff(['compliance']);
+    DisbursementFixture::command($compliance, $waiting, 'hold', 0);
+    DisbursementFixture::command($compliance, $waiting, 'release_hold', 1);
+
+    $failing = DisbursementFixture::sources()->fund();
+    DisbursementFixture::sources()->scriptRecheck($failing->campaignId, 'failed', ['mandate']);
+    expect(app(OpenFundedDisbursements::class)->handle()['failed'])->toBe(1);
 
     expect($probe->violations)->toBe([])
-        ->and($probe->calls)->toContain('lockBusiness', 'lockFunded', 'connection', 'verified', 'recheck', 'issue', 'failClose');
+        ->and($probe->calls)->toContain('funded', 'lockBusiness', 'lockFunded', 'verified', 'recheck', 'issue', 'failClose');
 });
 
 it('detects a source called under a disbursement lock, so its silence means something', function (): void {
@@ -171,13 +161,13 @@ it('detects a source called under a disbursement lock, so its silence means some
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
     DB::transaction(function () use ($disbursement): void {
         Disbursement::query()->whereKey($disbursement->id)->lockForUpdate()->sole();
-        app(StaffConnections::class)->connection(1, $disbursement->id, strtolower((string) Str::ulid()), $disbursement->business_id, []);
+        app(PayoutDestinations::class)->verified($disbursement->business_id, $disbursement->environment);
     });
-    expect($probe->violations)->toBe(['connection under a disbursement lock without the Business lock', 'connection under a disbursement lock']);
+    expect($probe->violations)->toBe(['verified under a disbursement lock without the Business lock', 'verified under a disbursement lock']);
 });
 
 it('takes the one provider event identity lock before the identity lookup on every observation path', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     $key = EloquentDisbursementStore::providerEventLockKey('synthetic', 'observed-everywhere');
     $trace = [];
@@ -199,7 +189,7 @@ it('takes the one provider event identity lock before the identity lookup on eve
             })(),
             default => (function () use ($intent, $treasury, $disbursement): void {
                 DisbursementFixture::provider()->scriptQuery($intent->id, 'pending', ['event_id' => 'observed-everywhere', 'observed_at' => '2026-09-28T10:02:00+00:00']);
-                DisbursementFixture::command($treasury, $disbursement, 'requery', 3);
+                DisbursementFixture::command($treasury, $disbursement, 'requery', 2);
             })(),
         };
 

@@ -343,7 +343,7 @@ const rw: Catalog = {
     'business.apply.raise.rate_info': 'Uko iki gipimo gishyirwaho',
     'business.apply.raise.rate_how': 'Uko igipimo cyawe gishyirwaho',
     'business.apply.raise.rate_one_charge':
-        "Ikiguzi kimwe ku byo uguza. Kirimo byose — nta yandi mafaranga y'inyongera.",
+        "Ikiguzi kimwe ku byo uguza. Igikurwamo cyonyine ni amafaranga ya platifomu ya 3%, akurwa ku mafaranga wakusanyije igihe akoherejwe — nta yandi mafaranga y'inyongera.",
     'business.apply.raise.rate_yours': 'Amanota yawe',
     'business.apply.raise.rate_rated': 'Ku rwego rwa {band}',
     'business.apply.raise.rate_best': 'Amanota yo hejuru, amezi 3',
@@ -413,7 +413,7 @@ const rw: Catalog = {
     'business.apply.review.application_fee_when':
         'Rimwe gusa, yishyurwa nibyemezwa.',
     'business.apply.review.fee_note':
-        'Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.',
+        'Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',
@@ -1468,7 +1468,7 @@ const rw: Catalog = {
     'admin.ledger.kind.investment': 'Ishoramari',
     'admin.ledger.kind.disbursement': 'Kwishyura ikigo',
     'admin.ledger.kind.repayment': 'Kwishyura inguzanyo',
-    'admin.ledger.kind.service_fee': 'Amafaranga ya serivisi',
+    'admin.ledger.kind.platform_fee': 'Amafaranga ya platifomu',
     'admin.ledger.kind.repayment_fee': 'Amafaranga yo kwishyura',
     'admin.ledger.kind.auditor_share': "Umugabane w'umugenzuzi",
     'admin.ledger.kind.distribution': 'Kwishyura abashoramari',
@@ -1702,21 +1702,9 @@ const rw: Catalog = {
     'admin.review.stage.take.cta': 'Fata usuzume',
     'admin.review.stage.take.placeholder':
         "urugero: Ndabufata mu nama y'inguzanyo y'uyu munsi.",
-    'admin.maker_checker.label': 'Ibyemezo',
-    'admin.maker_checker.step': 'Intambwe {n}',
-    'admin.maker_checker.maker_title': 'Byemerewe',
-    'admin.maker_checker.checker_title': 'Kwemeza kwa kabiri',
-    'admin.maker_checker.maker_empty': 'Nta muntu uremera uku kwishyura.',
-    'admin.maker_checker.checker_empty':
-        'Undi wemeza agenzura uku kwishyura kumaze kwemererwa.',
-    'admin.maker_checker.awaiting': 'Bitegereje uwemeza wa kabiri',
-    'admin.maker_checker.self_blocked':
-        'Ni wowe wemereye uku kwishyura, ntushobora no kukwemeza. Undi wemeza agomba kukugenzura.',
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Amabwiriza yo kwishyura akurikizwa',
     'admin.disbursements.title': 'Kwishyura bitegereje',
-    'admin.disbursements.awaiting_count':
-        '{count} bitegereje uwemeza wa kabiri',
     'admin.disbursements.table': 'Kwishyura bitegereje',
     'admin.disbursements.col.reference': 'Indango yo kwishyura',
     'admin.disbursements.col.note': 'Inyandiko',
@@ -1724,7 +1712,7 @@ const rw: Catalog = {
     'admin.disbursements.col.amount': 'Amafaranga',
     'admin.disbursements.col.due': 'Igihe',
     'admin.disbursements.col.actions': 'Imiterere · Ibikorwa',
-    'admin.disbursements.state.ready': 'Biteguye kwemererwa',
+    'admin.disbursements.state.ready': 'Bitegereje kwishyurwa byikora',
     'admin.disbursements.state.awaiting_second_approver':
         'Bitegereje uwemeza wa kabiri',
     'admin.disbursements.state.on_hold': 'Byahagaritswe',
@@ -1743,8 +1731,9 @@ const rw: Catalog = {
     'admin.disbursements.empty_title': 'Kwishyura kose kwarangiye',
     'admin.disbursements.empty_body': 'Nta kwishyura gutegerejwe ubu.',
     'admin.disbursements.drawer_label': 'Kwishyura {reference}',
-    'admin.disbursements.independence.title': 'Itangazo ry’ubwigenge',
     'admin.disbursements.amount': 'Amafaranga',
+    'admin.disbursements.platform_fee':
+        'Amafaranga ya platifomu ya 3%: {fee}, muri yo {share} ajya ku mugenzuzi. Ikigo cyakira {payout}.',
     'admin.disbursements.destination': 'Aho yoherezwa',
     'admin.disbursements.due': 'Igihe',
     'admin.disbursements.rule_dual':
@@ -1758,32 +1747,10 @@ const rw: Catalog = {
     'admin.disbursements.failure_attempts': 'Inshuro zagerageje',
     'admin.disbursements.failure_inspect':
         'Suzuma mbere yo kongera kugerageza: emeza ku utanga serivisi ko nta mafaranga yasohotse, kugira ngo kwishyura kumwe kutoherezwa kabiri.',
-    'admin.disbursements.approvals': 'Ibyemezo',
     'admin.disbursements.trail': 'Amateka yo kwishyura',
     'admin.disbursements.trail_empty': 'Nta kiranditswe.',
-    'admin.disbursements.command.authorize': 'Emerera kwishyura',
-    'admin.disbursements.command.approve': 'Emeza kwishyura',
-    'admin.disbursements.command.reject': 'Anga',
     'admin.disbursements.command.hold': 'Hagarika',
     'admin.disbursements.command.retry': 'Ongera ugerageze kwishyura',
-    'admin.disbursements.stage.authorize.title': 'Emerera uku kwishyura',
-    'admin.disbursements.stage.authorize.body':
-        'Uremerera kwishyura {amount} kuri {business}. Ibi bikora igenzura ribanza; undi mukozi agomba kubyemeza nyuma.',
-    'admin.disbursements.stage.authorize.cta': 'Emerera',
-    'admin.disbursements.stage.authorize.placeholder':
-        'urugero: Amafaranga yose yakusanyijwe; aho yoherezwa hemejwe hakurikijwe manda ya RDB.',
-    'admin.disbursements.stage.approve.title': 'Emeza uku kwishyura',
-    'admin.disbursements.stage.approve.body':
-        "Nk'umukozi wa kabiri, wemeje kwishyura {amount} kuri {business}. Ibi byandika icyifuzo cyo kwishyura; si ukwishyura. Serivisi iracyohereza gusa nyuma yo kongera kugenzura.",
-    'admin.disbursements.stage.approve.cta': 'Emeza wandike icyifuzo',
-    'admin.disbursements.stage.approve.placeholder':
-        "urugero: Nagenzuye ko amafaranga yakusanyijwe n'aho yoherezwa bihuye n'itangwa.",
-    'admin.disbursements.stage.reject.title': 'Anga uku kwishyura',
-    'admin.disbursements.stage.reject.body':
-        'Ibi bikuraho kwemerera gusa kandi byandika impamvu yawe. Ubukusanye ntibuhagarikwa; kwishyura gusubira gutegereza kwemererwa.',
-    'admin.disbursements.stage.reject.cta': 'Anga kwishyura',
-    'admin.disbursements.stage.reject.placeholder':
-        "urugero: Izina rya konti ntirihura n'ikigo.",
     'admin.disbursements.stage.hold.title': 'Hagarika uku kwishyura',
     'admin.disbursements.stage.hold.body':
         'Nta kwishyura mu gihe bihagaritswe. Vuga impamvu, kugira ngo ukurikira amenye icyo akuraho.',
@@ -2621,7 +2588,7 @@ const rw: Catalog = {
     'auditor.profile.legal.unavailable': 'Ntibishoboka gusomwa ubu',
     'auditor.profile.pending.earnings_title': 'Nta byo winjije biraboneka',
     'auditor.profile.pending.earnings_body':
-        "Umugabane wawe w'amafaranga ya serivisi n'inyungu bizagaragara hano nibimara kuboneka.",
+        "Umugabane wawe wa 40% w'amafaranga ya platform ku nkunga wagenzuye uzagaragara hano numara kuboneka.",
     'auditor.profile.pending.payout_title':
         'Nta konti yo kwishyurirwaho iracyahari',
     'auditor.profile.pending.payout_body':
@@ -2800,7 +2767,6 @@ const rw: Catalog = {
         'Byabujijwe kuva ku wa {date}. Uracyashobora kwishyura.',
     'business.servicing.repay.part.principal': 'Igishoro',
     'business.servicing.repay.part.return': 'Inyungu',
-    'business.servicing.repay.part.service_fee': 'Amafaranga ya serivisi',
     'business.servicing.repay.part.late_fees': "Amafaranga y'ubukererwe",
     'business.servicing.repay.part.total': 'Igiteranyo',
     'business.servicing.repay.pay_title': 'Ishyura uvuye mu gikapu',
@@ -3925,20 +3891,6 @@ const rw: Catalog = {
     'business.apply.review.reduced':
         'Wahisemo {principal} kuri {offered} wahawe.',
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
-    'business.apply.raise.instalment_fee': "+ {fee} y'amafaranga ya serivisi",
-    'business.apply.review.service_fee':
-        'Amafaranga ya serivisi ({rate}% bya buri bwishyu)',
-    'business.apply.review.projected': 'Biteganyijwe',
-    'business.apply.review.total_payable':
-        'Igiteranyo cyo kwishyura (biteganyijwe)',
-    'business.apply.review.fee_projection_note':
-        "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
-    'business.apply.review.fee_note_service_fee':
-        "Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
-    'business.apply.review.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
-    'business.apply.review.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iki cyifuzo, bityo ntikiremerwa. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
 
     'business.apply.recalculating': 'Turimo kubara…',
     'auditor.capture.unavailable':
@@ -4497,10 +4449,6 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
-    'business.publish.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gutangaza ubu",
-    'business.publish.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iyi nkunga, bityo ntirashobora gutangazwa. Nta kintu cyatangajwe.",
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
@@ -4606,12 +4554,9 @@ const rw: Catalog = {
     'admin.disbursements.provider.unknown': 'Ntibizwi · ntibiremezwa',
     'admin.disbursements.provider.succeeded': 'Byagenze neza · byagenzuwe',
     'admin.disbursements.provider.failed': 'Byananiranye · byagenzuwe',
-    'admin.disbursements.action.authorize': 'Emerera',
     'admin.disbursements.older': 'Kwishyura kwa kera',
     'admin.disbursements.deadline': 'Itariki ntarengwa',
     'admin.disbursements.deadline_unavailable': 'Nta tariki ntarengwa yemejwe',
-    'admin.disbursements.rule_two_staff':
-        "Hakenewe abakozi babiri batandukanye: umwe aremerera, undi akemeza. Nta rugero rw'amafaranga cyangwa uburenganzira bwo kubirengaho. Inshingano ni amazina gusa: ibyo ushobora gukora biva ku burenganzira bwawe.",
     'admin.disbursements.causes': 'Impamvu',
     'admin.disbursements.receipt.code': 'Inyemezabwishyu',
     'admin.disbursements.receipt.reference': 'Indango',
@@ -4624,27 +4569,6 @@ const rw: Catalog = {
     'admin.disbursements.precheck.title': 'Igenzura ribanza',
     'admin.disbursements.checked_at': 'Byagenzuwe ku',
     'admin.disbursements.policy_version': "Verisiyo y'amabwiriza",
-    'admin.disbursements.binding.title': 'Ibyo kwemeza bihuza',
-    'admin.disbursements.binding.none': 'Bishyirwaho iyo kwishyura byemerewe.',
-    'admin.disbursements.binding.revision': 'Ivugurura',
-    'admin.disbursements.binding.amount': 'Amafaranga nyayo',
-    'admin.disbursements.binding.digest': "Igikumwe cy'icyifuzo",
-    'admin.disbursements.step_up.unavailable':
-        "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru. Uko kwemeza ntikuraboneka, bityo ntushobora kwemeza hano.",
-    'admin.disbursements.step_up.title': 'Emeza ko ari wowe',
-    'admin.disbursements.step_up.lead':
-        "Andika kode y'imibare itandatu iri muri porogaramu yawe y'umutekano. Iri yemeza rihujwe n'iri vugurura, amafaranga nyayo, aho yoherezwa n'incamake y'icyifuzo, kandi rikoreshwa rimwe gusa.",
-    'admin.disbursements.step_up.code_label':
-        "Kode y'umutekano y'imibare itandatu",
-    'admin.disbursements.step_up.verify': 'Emeza kode',
-    'admin.disbursements.step_up.ready':
-        'Byemejwe kugeza {time}. Rikoreshwa rimwe gusa, kuri uku kwemeza, kandi riracyasaba impamvu yawe.',
-    'admin.disbursements.step_up.wrong_code':
-        "Iyo kode ntihuye. Andika kode iriho ubu muri porogaramu yawe y'umutekano.",
-    'admin.disbursements.step_up.lost':
-        'Ntibyashobotse kugera kuri Rozine ngo igenzure kode yawe. Nta cyemejwe — andika kode nshya kugira ngo wemeze bundi bushya.',
-    'admin.disbursements.step_up.changed':
-        'Amakuru uku kwemeza guhujwe na yo yahindutse, bityo iyemeza ryawe ryasibwe. Yagenzure, hanyuma wandike kode nshya.',
     'admin.disbursements.intent.title': 'Icyifuzo cyo kwishyura',
     'admin.disbursements.intent.not_payment':
         'Icyifuzo cyanditswe — si ukwishyura. Serivisi yishyura iracyohereza gusa nyuma yo kongera kugenzura.',
@@ -4681,9 +4605,7 @@ const rw: Catalog = {
         'Ikibazo · byahagaritswe, ntibyahujwe',
     'admin.disbursements.hold.title': 'Ihagarikwa',
     'admin.disbursements.hold.release_note':
-        'Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisaba umukozi utari uwarishyizeho.',
-    'admin.disbursements.hold.self':
-        'Ni wowe washyizeho iri hagarikwa, bityo undi mukozi ni we ugomba kurikuraho.',
+        "Gukuraho ihagarikwa bituma kwishyura byikora byongera gukora. Umukozi wese ubifitiye uburenganzira ashobora kurikuraho, harimo n'uwarishyizeho.",
     'admin.disbursements.issue.title': 'Isohora',
     'admin.disbursements.issue.holdings': 'Imigabane yasohowe',
     'admin.disbursements.issue.issued_at': 'Byasohowe ku',
@@ -4692,11 +4614,19 @@ const rw: Catalog = {
     'admin.disbursements.refund.commitments': 'Ibyiyemejwe byasubijwe',
     'admin.disbursements.refund.total': 'Igiteranyo cyasubijwe',
     'admin.disbursements.ledger': "Fungura mu gitabo cy'ibaruramari",
+    'admin.disbursements.attention_count': '{count} bikeneye kurebwa',
+    'admin.disbursements.automation.title': 'Kwishyura byikora',
+    'admin.disbursements.automation.payout': 'Ikigo kirahabwa',
+    'admin.disbursements.automation.rule': 'Itegeko',
+    'admin.disbursements.automation.waiting.verified_payout_destination':
+        'Bitegereje aho kwishyurira hemejwe. Kwishyura bitangira byikora iyo aho ikigo cyishyurirwa hamaze kwemezwa.',
+    'admin.disbursements.automation.waiting.next_run':
+        'Kwishyura bitangira byikora ubutaha bikora.',
     'admin.disbursements.command.release_hold': 'Kuraho ihagarikwa',
     'admin.disbursements.command.requery': 'Ongera ubaze utanga serivisi',
     'admin.disbursements.stage.release_hold.title': 'Kuraho iri hagarikwa',
     'admin.disbursements.stage.release_hold.body':
-        "Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisubira aho byari biri mbere y'ihagarikwa.",
+        "Kwishyura byikora byongera gukora iyo ihagarikwa rikuweho. Bisubira aho byari biri mbere y'ihagarikwa.",
     'admin.disbursements.stage.release_hold.cta': 'Kuraho ihagarikwa',
     'admin.disbursements.stage.release_hold.placeholder':
         'urugero: Ikigo cyemeje nimero yacyo nshya ya MoMo.',
@@ -4928,6 +4858,8 @@ const rw: Catalog = {
     'investor.notices.business.disbursement_sent.title': 'Amafaranga yoherejwe',
     'investor.notices.business.disbursement_sent.body':
         '{amount} ya {title} yoherejwe kuri {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} ya {title} yoherejwe kuri {account}: ni {principal} zakusanyijwe havuyemo amafaranga ya serivisi ya 3% angana na {fee}.',
     'investor.notices.primary.report_published.title':
         'Raporo y’ukwezi yasohotse',
     'investor.notices.primary.report_published.body':
@@ -5297,7 +5229,6 @@ const rw: Catalog = {
         'Igice {index} · kigomba kwishyurwa ku wa {date}',
     'business.campaign.servicing.principal': 'Igishoro',
     'business.campaign.servicing.return': 'Inyungu',
-    'business.campaign.servicing.service_fee': 'Amafaranga ya serivisi',
     'business.campaign.servicing.next_total': 'Igiteranyo kigomba kwishyurwa',
     'business.campaign.servicing.open': 'Fungura ibyo kwishyura',
     'business.campaign.servicing.repaid':
@@ -5489,7 +5420,6 @@ const rw: Catalog = {
     'admin.repayments.component.principal': 'Igishoro',
     'admin.repayments.component.return': 'Inyungu',
     'admin.repayments.component.late_fees': "Amande z'ubukererwe",
-    'admin.repayments.component.service_fee': 'Amafaranga ya serivisi',
     'admin.repayments.component.total': 'Ibisigaye',
     'admin.repayments.allocation.title': 'Igabanya',
     'admin.repayments.allocation.pending':
@@ -5505,8 +5435,6 @@ const rw: Catalog = {
     'admin.repayments.allocation.kind.principal': 'Igishoro',
     'admin.repayments.allocation.kind.return': 'Inyungu',
     'admin.repayments.allocation.kind.late_fee': "Amande y'ubukererwe",
-    'admin.repayments.allocation.kind.service_fee': 'Amafaranga ya serivisi',
-    'admin.repayments.allocation.kind.steward_share': "Umugabane w'umugenzuzi",
     'admin.repayments.allocation.kind.investor_gross': 'Abashoramari, mbumbe',
     'admin.repayments.allocation.kind.investor_fee':
         "Amafaranga y'abashoramari",

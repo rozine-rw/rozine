@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Models\BusinessCampaign;
-use App\Models\CommandOperation;
+use App\Models\DisbursementIntent;
 use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
 use App\Models\User;
@@ -139,7 +139,8 @@ it('opens a Holding with its issue as recorded, its maturity value and its next 
         ->and($issue['terms'])->toEqual(['rate_pct' => $holding->terms['rate_pct'], 'term_months' => 6, 'total_return' => $holding->rights['total_return'],
             'earnings_fee' => $holding->terms['earnings_fee'], 'policy_version' => $holding->terms['policy_version'], 'disclosure_version' => $holding->terms['disclosure_version']])
         ->and($issue['issue_receipt'])->toMatchArray(['receipt_id' => $holding->receipt_id, 'operation_id' => $receipt['operation_id'], 'code' => 'HOLDING_ISSUED',
-            'request_id' => CommandOperation::query()->whereKey($receipt['operation_id'])->value('request_id'),
+            /* Paid automatically (SVC-R01): the request is the system intent's own, never a staff command's. */
+            'request_id' => DisbursementIntent::query()->where('operation_id', $receipt['operation_id'])->value('request_id'),
             'reference' => 'RZH-'.strtoupper(substr($holding->receipt_id, -10)), 'link' => ['url' => '/investor/holdings/'.$holding->id, 'method' => 'get']])
         ->and($issue['source'])->toBe(['commitment_id' => $holding->commitment_id, 'disbursement_operation_id' => $receipt['operation_id']])
         ->and($props['links']['back'])->toBe(['url' => '/investor/portfolio', 'method' => 'get']);

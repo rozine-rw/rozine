@@ -120,9 +120,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('/', [StaffDisbursementController::class, 'index'])->name('index');
     Route::get('operations/{request_id}', [StaffDisbursementController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
     Route::get('{disbursement}', [StaffDisbursementController::class, 'show'])->whereUlid('disbursement')->name('show');
-    Route::post('{disbursement}/step-up', [StaffDisbursementController::class, 'stepUp'])->whereUlid('disbursement')
-        ->middleware('throttle:disbursement-step-up')->name('step-up');
-    foreach (['authorize' => 'authorize', 'approve' => 'approve', 'reject' => 'reject', 'hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
+    foreach (['hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
         Route::post('{disbursement}/'.$path, [StaffDisbursementController::class, 'command'])->whereUlid('disbursement')->defaults('command', $command)->name($path);
     }
 });

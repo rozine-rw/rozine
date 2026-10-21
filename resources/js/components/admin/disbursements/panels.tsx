@@ -7,12 +7,6 @@ import { cn } from '@/lib/utils';
 import type { C3DisbursementDetail, Tone } from '@/types/admin';
 import type { Receipt } from '@/types/settlement';
 
-/** The id the step-up explanation carries, so a withheld Approve can point at it. */
-export const STEP_UP_NOTE = 'disbursement-step-up';
-
-/** The id the hold-placer explanation carries, for a withheld Release hold. */
-export const HOLD_SELF_NOTE = 'disbursement-hold-self';
-
 const HEADING =
     'mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted';
 
@@ -37,18 +31,12 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
 
 function Note({
     tone,
-    id,
     children,
 }: {
     tone: keyof typeof NOTE_TONE;
-    id?: string;
     children: ReactNode;
 }) {
-    return (
-        <p id={id} className={cn(NOTE, NOTE_TONE[tone])}>
-            {children}
-        </p>
-    );
+    return <p className={cn(NOTE, NOTE_TONE[tone])}>{children}</p>;
 }
 
 /** A term and its value, or a dash when the server has none. */
@@ -154,7 +142,7 @@ const CHECK_TONE: Record<'not_run' | 'passed' | 'failed', Tone> = {
     failed: 'red',
 };
 
-/** The precheck the maker's authorization runs, and the policy it ran under. */
+/** The precheck automatic payment ran before recording the intent, and the policy it ran under. */
 export function PrecheckPanel({
     precheck,
 }: {
@@ -186,56 +174,42 @@ export function PrecheckPanel({
 }
 
 /**
- * What an approval binds, and the fresh step-up it needs (H11, #96 answer 5). The step-up has its
- * own staff route and proof exchange: while the props list no route, approval is not available
- * here, and the note says so.
+ * Automatic payment (BRS v2.0 SVC-R01): nobody approves it. The rule it runs under, what the
+ * Business receives after the platform fee, and, while it is still `ready`, what it waits for.
  */
-export function BindingPanel({
-    disbursement,
+export function AutomationPanel({
+    automation,
 }: {
-    disbursement: C3DisbursementDetail;
+    automation: C3DisbursementDetail['automation'];
 }) {
     const { t } = useTranslation();
-    const binding = disbursement.approval_binding;
 
     return (
-        <Block title={t('admin.disbursements.binding.title')}>
+        <Block title={t('admin.disbursements.automation.title')}>
             <div className={BOX}>
-                {binding === null ? (
-                    <p className={cn('text-[12.5px] leading-[1.5]', EXPLAIN)}>
-                        {t('admin.disbursements.binding.none')}
-                    </p>
-                ) : (
-                    <Facts>
-                        <Fact
-                            label={t('admin.disbursements.binding.revision')}
-                            value={String(binding.revision)}
-                        />
-                        <Fact
-                            label={t('admin.disbursements.binding.amount')}
-                            value={formatRwf(binding.amount)}
-                        />
-                        <Fact
-                            label={t('admin.disbursements.destination')}
-                            value={binding.destination}
-                        />
-                        <Fact
-                            label={t('admin.disbursements.binding.digest')}
-                            value={binding.intent_digest}
-                            mono
-                        />
-                    </Facts>
-                )}
+                <Facts>
+                    <Fact
+                        label={t('admin.disbursements.automation.payout')}
+                        value={formatRwf(automation.payout)}
+                    />
+                    <Fact
+                        label={t('admin.disbursements.automation.rule')}
+                        value={automation.rule_version}
+                        mono
+                    />
+                </Facts>
             </div>
-            {disbursement.step_up.route === null &&
-                (disbursement.state === 'awaiting_second_approver' ||
-                    disbursement.allowed_actions.includes(
-                        'disbursement.approve',
-                    )) && (
-                    <Note tone="warn" id={STEP_UP_NOTE}>
-                        {t('admin.disbursements.step_up.unavailable')}
-                    </Note>
-                )}
+            {automation.waiting_for !== null && (
+                <Note
+                    tone={
+                        automation.waiting_for === 'next_run' ? 'info' : 'warn'
+                    }
+                >
+                    {t(
+                        `admin.disbursements.automation.waiting.${automation.waiting_for}`,
+                    )}
+                </Note>
+            )}
         </Block>
     );
 }
@@ -404,14 +378,9 @@ export function ProviderPanel({
     );
 }
 
-/** A hold: who placed it and why. Releasing it neither approves nor pays. */
-export function HoldPanel({
-    disbursement,
-}: {
-    disbursement: C3DisbursementDetail;
-}) {
+/** A hold: who placed it and why. Releasing it lets automatic payment run again. */
+export function HoldPanel({ hold }: { hold: C3DisbursementDetail['hold'] }) {
     const { t } = useTranslation();
-    const hold = disbursement.hold;
 
     if (hold === null) {
         return null;
@@ -433,11 +402,6 @@ export function HoldPanel({
             <Note tone="info">
                 {t('admin.disbursements.hold.release_note')}
             </Note>
-            {disbursement.viewer_placed_hold && (
-                <Note tone="warn" id={HOLD_SELF_NOTE}>
-                    {t('admin.disbursements.hold.self')}
-                </Note>
-            )}
         </Block>
     );
 }

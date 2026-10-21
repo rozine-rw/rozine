@@ -600,12 +600,6 @@ function Repaying({ progress }: { progress: Phase<'repaying'> }) {
                             value={formatRwf(servicing.next.amounts.return)}
                         />
                         <Row
-                            label={t('business.campaign.servicing.service_fee')}
-                            value={formatRwf(
-                                servicing.next.amounts.service_fee,
-                            )}
-                        />
-                        <Row
                             label={t('business.campaign.servicing.next_total')}
                             value={formatRwf(servicing.next.amounts.total)}
                         />

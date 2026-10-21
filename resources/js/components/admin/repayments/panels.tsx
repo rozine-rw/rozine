@@ -146,10 +146,6 @@ export function ServicingPanel({
                         value={formatRwf(snapshot.outstanding.late_fees)}
                     />
                     <Fact
-                        label={t('admin.repayments.component.service_fee')}
-                        value={formatRwf(snapshot.outstanding.service_fee)}
-                    />
-                    <Fact
                         label={t('admin.repayments.component.total')}
                         value={formatRwf(snapshot.outstanding.total)}
                     />

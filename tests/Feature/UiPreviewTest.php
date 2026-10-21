@@ -164,7 +164,7 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
         'investor-commitment-visibility-lost', 'investor-portfolio-awaiting-issue', 'investor-holding-issued',
         'investor-wallet-deposit-pending', 'investor-wallet-deposit-unknown', 'investor-wallet-policy-missing',
         'investor-wallet-internal', 'investor-wallet-paged',
-        'admin-disbursements-ready', 'admin-disbursements-awaiting-second', 'admin-disbursements-self',
+        'admin-disbursements-ready', 'admin-disbursements-awaiting-second',
         'admin-disbursements-on-hold', 'admin-disbursements-queued', 'admin-disbursements-dispatched-pending',
         'admin-disbursements-dispatched-unknown', 'admin-disbursements-verified-failure-unreconciled',
         'admin-disbursements-exception', 'admin-disbursements-failed-closing', 'admin-disbursements-succeeded',

@@ -22,7 +22,7 @@ class DisbursementFactory extends Factory
     {
         return ['id' => strtolower((string) Str::ulid()), 'business_campaign_id' => strtolower((string) Str::ulid()),
             'business_id' => strtolower((string) Str::ulid()), 'exposure_reservation_id' => strtolower((string) Str::ulid()),
-            'amount' => '3000000', 'currency' => 'RWF', 'commitments_digest' => hash('sha256', Str::random(16)), 'commitment_count' => 2,
+            'amount' => '3000000', 'platform_fee' => '0', 'audit_partner_fee' => '0', 'fee_version' => null, 'currency' => 'RWF', 'commitments_digest' => hash('sha256', Str::random(16)), 'commitment_count' => 2,
             'term_months' => 12, 'funded_at' => now('UTC')->startOfSecond(), 'environment' => 'testing',
             'payload' => ['source' => 'synthetic-schema-fixture'],
             'sha256' => fn (array $a): string => hash('sha256', app(CanonicalJson::class)->encode($a['payload']))];

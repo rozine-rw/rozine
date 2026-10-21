@@ -11,8 +11,9 @@ use App\Domain\Operations\CommandRejection;
 use Illuminate\Console\Command;
 
 /**
- * The scheduled disbursement reconciler. It opens a disbursement for each newly funded campaign,
- * then queries every dispatched payout's same operation and reconciles it; it never sends. Where
+ * The scheduled disbursement reconciler. It opens a disbursement for each newly funded campaign and
+ * records its automatic payout when nothing blocks it (the payout is dispatched after commit), then
+ * queries every dispatched payout's same operation and reconciles it; it never resends. Where
  * no payout provider or funding source exists it reports that and does nothing.
  */
 class ReconcileDisbursementPayouts extends Command
@@ -36,7 +37,8 @@ class ReconcileDisbursementPayouts extends Command
         }
         try {
             $opened = $open->handle($limit);
-            $this->line('Opened '.$opened['opened'].' funded disbursements ('.$opened['known'].' already open).');
+            $this->line('Opened '.$opened['opened'].' funded disbursements ('.$opened['known'].' already open); queued '.$opened['queued']
+                .' automatic payouts, failed-closed '.$opened['failed'].'.');
         } catch (CommandRejection $rejection) {
             $this->line('Funding source: '.$rejection->reason);
         }

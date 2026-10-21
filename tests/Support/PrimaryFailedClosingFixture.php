@@ -25,7 +25,7 @@ final class PrimaryFailedClosingFixture
      * @param  array<int, string>  $buyers
      * @return array{campaign: FundedCampaign, instruction: FailedClosing}
      */
-    public static function close(string $cause = 'approve_recheck', bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
+    public static function close(string $cause = 'auto_recheck', bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
     {
         ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: $units, requoted: [0], buyers: $buyers);
         $adapter = new class(app(EloquentFundedCampaigns::class), app(SyntheticDisbursementSources::class), $settle) implements FundedCampaigns
@@ -72,22 +72,19 @@ final class PrimaryFailedClosingFixture
         };
         app()->instance(FundedCampaigns::class, $adapter);
         DisbursementFixture::sources()->setDestination($publication->business_id, 'verified');
-        app(DisbursementStore::class)->openFunded(1);
-        $disbursement = Disbursement::query()->where('business_campaign_id', $publication->id)->sole();
-        $maker = DisbursementFixture::staff(['treasury']);
-        $checker = DisbursementFixture::staff(['approver']);
-        DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-        $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-        if ($cause === 'approve_recheck') {
+        if ($cause === 'auto_recheck') {
             DisbursementFixture::sources()->scriptRecheck($publication->id, 'failed', ['restriction']);
-            DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            app(DisbursementStore::class)->openFunded(1);
         } elseif ($cause === 'worker_recheck') {
-            DB::transaction(function () use ($checker, $disbursement, $proof, $publication): void {
-                DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            DB::transaction(function () use ($publication): void {
+                app(DisbursementStore::class)->openFunded(1);
                 DisbursementFixture::sources()->scriptRecheck($publication->id, 'failed', ['exposure']);
             });
         } else {
-            DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            app(DisbursementStore::class)->openFunded(1);
+        }
+        $disbursement = Disbursement::query()->where('business_campaign_id', $publication->id)->sole();
+        if (! in_array($cause, ['auto_recheck', 'worker_recheck'], true)) {
             $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
             app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, in_array($cause, ['pending', 'unknown', 'succeeded'], true) ? $cause : 'failed'));
         }

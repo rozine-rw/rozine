@@ -28,8 +28,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $provider_reference_sha256
  * @property string $environment
  * @property bool $idempotent_sends
- * @property int $maker_user_id
- * @property int $checker_user_id
+ * @property int|null $maker_user_id null on an automatic intent
+ * @property int|null $checker_user_id null on an automatic intent
+ * @property string|null $rule_version the rule an automatic intent was recorded under; null on a staff-approved one
  * @property string $sha256
  * @property array<string, mixed> $payload
  * @property CarbonImmutable $created_at

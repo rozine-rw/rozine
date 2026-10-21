@@ -10,8 +10,8 @@ use LogicException;
 use Throwable;
 
 /**
- * The staff disbursement console (C3 v2 §2e): queue and detail reads, the maker/checker commands,
- * the dedicated step-up exchange, the operation lookup and requery. Requery asks the provider
+ * The staff disbursement console (C3 v2 §2e): queue and detail reads, the one-person hold and
+ * release (BRS v2.0 ADM-R02), the operation lookup and requery. Requery asks the provider
  * about the SAME durable operation outside every transaction and never sends; its observation
  * then feeds the ordinary reconciliation transaction.
  */
@@ -26,19 +26,13 @@ final class ManageDisbursements
     }
 
     /** @return array<string, mixed> */
-    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId, ?string $stepUpProof = null, bool $independenceDeclared = false): array
+    public function command(int $userId, string $disbursementId, string $command, int $expectedRevision, string $reason, string $requestId): array
     {
         if ($command === 'requery') {
             return $this->requery($userId, $disbursementId, $expectedRevision, $reason, $requestId);
         }
 
-        return $this->store->command($userId, $disbursementId, $command, $expectedRevision, $reason, $requestId, $stepUpProof, $independenceDeclared);
-    }
-
-    /** @return array{proof: string, expires_at: string} */
-    public function stepUp(int $userId, string $disbursementId, int $expectedRevision, string $intentDigest, string $code): array
-    {
-        return $this->store->stepUp($userId, $disbursementId, $expectedRevision, $intentDigest, $code);
+        return $this->store->command($userId, $disbursementId, $command, $expectedRevision, $reason, $requestId);
     }
 
     /** @return array<string, mixed> */

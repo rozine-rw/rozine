@@ -9,7 +9,7 @@ use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\FundedCommitment;
 use App\Application\Disbursement\IssueInstruction;
-use App\Application\Disbursement\ManageDisbursements;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\PayoutInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Disbursement\ReconcileDisbursements;
@@ -89,42 +89,47 @@ function longerTerm(FundedCampaign $campaign): FundedCampaign
         $campaign->principal, $campaign->fundedAt, $campaign->termMonths + 1, $campaign->commitments);
 }
 
-it('refuses a command when the maker changes between the unlocked read and the locks', function (string $path): void {
+/**
+ * Inserts a staff event as if another console session recorded it, bypassing the application.
+ */
+function racedEvent(string $disbursementId, int $revision, string $kind, int $actorUserId): void
+{
+    DB::table('disbursement_events')->insert(['id' => strtolower((string) Str::ulid()), 'disbursement_id' => $disbursementId, 'revision' => $revision,
+        'kind' => $kind, 'actor_user_id' => $actorUserId, 'operation_id' => strtolower((string) Str::ulid()), 'request_id' => (string) Str::uuid(),
+        'payload' => encrypt(json_encode(['reason' => 'x']), false), 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+}
+
+it('refuses a hold or a release when the state changes between the unlocked read and the locks', function (string $command): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
+    $staff = DisbursementFixture::staff(['compliance']);
     $other = DisbursementFixture::staff(['treasury']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $digest = DisbursementFixture::detail($checker, $disbursement)['approval_binding']['intent_digest'];
-    $proof = $path === 'approve' ? DisbursementFixture::stepUp($checker, $disbursement)['proof'] : null;
-    $this->travel(11)->minutes();
+    $expected = 0;
+    if ($command === 'release_hold') {
+        DisbursementFixture::command($staff, $disbursement, 'hold', 0);
+        $expected = 1;
+    }
     $fired = false;
-    app()->instance(FundedCampaigns::class, disturbedFunding(function () use (&$fired, $disbursement, $other): void {
+    app()->instance(FundedCampaigns::class, disturbedFunding(function () use (&$fired, $disbursement, $other, $command): void {
         if (! $fired) {
             $fired = true;
-            DB::table('disbursement_events')->insert(['id' => strtolower((string) Str::ulid()), 'disbursement_id' => $disbursement->id, 'revision' => 2,
-                'kind' => 'authorized', 'actor_user_id' => $other->id, 'operation_id' => strtolower((string) Str::ulid()), 'request_id' => (string) Str::uuid(),
-                'binding_sha256' => str_repeat('b', 64), 'destination_sha256' => str_repeat('d', 64), 'payload' => encrypt(json_encode(['reason' => 'x']), false),
-                'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+            $kinds = $command === 'hold' ? ['held', 'hold_released'] : ['hold_released', 'held'];
+            racedEvent($disbursement->id, $command === 'hold' ? 1 : 2, $kinds[0], $other->id);
+            racedEvent($disbursement->id, $command === 'hold' ? 2 : 3, $kinds[1], $other->id);
         }
     }));
-    if ($path === 'step-up') {
-        expect(fn () => app(ManageDisbursements::class)->stepUp($checker->id, $disbursement->id, 1, $digest, DisbursementFixture::code($checker)))
-            ->toThrow(CommandRejection::class, 'VERSION_CONFLICT');
+    expect(DisbursementFixture::command($staff, $disbursement, $command, $expected)['code'])->toBe('VERSION_CONFLICT');
+})->with(['hold', 'release_hold']);
 
-        return;
-    }
-    expect(DisbursementFixture::command($checker, $disbursement, 'approve', 2, $proof)['code'])->toBe('VERSION_CONFLICT');
-})->with(['step-up', 'approve']);
-
-it('refuses as stale when the funding facts no longer match the opened disbursement, and never issues over them', function (): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
+it('waits instead of paying when the funding facts no longer match the opened disbursement, and never issues over them', function (): void {
+    ['disbursement' => $disbursement, 'campaign' => $campaign] = DisbursementFixture::funded();
     app()->instance(FundedCampaigns::class, disturbedFunding(null, longerTerm(...)));
-    expect(DisbursementFixture::command($maker, $disbursement, 'authorize', 0)['code'])->toBe('DIGEST_STALE');
-
+    DisbursementFixture::release($campaign);
+    expect(DisbursementIntent::query()->count())->toBe(0)->and(DisbursementClosing::query()->count())->toBe(0)
+        ->and(DisbursementFixture::detail(DisbursementFixture::staff(['treasury']), $disbursement)['state'])->toBe('ready');
     app()->forgetInstance(FundedCampaigns::class);
-    ['intent' => $intent] = DisbursementFixture::approved();
+    expect(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 0, 'known' => 1, 'queued' => 1, 'failed' => 0]);
+
+    ['intent' => $intent] = DisbursementFixture::paid();
     app()->instance(FundedCampaigns::class, disturbedFunding(null, longerTerm(...)));
     expect(app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'succeeded')))
         ->toBe(['disposition' => 'applied', 'decision' => 'exception'])
@@ -134,31 +139,27 @@ it('refuses as stale when the funding facts no longer match the opened disbursem
 
 it('maps exhausted serialization retries to retryable contention and rethrows other database errors', function (string $code, string $expected): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
+    $staff = DisbursementFixture::staff(['treasury']);
     app()->instance(FundedCampaigns::class, disturbedFunding(function () use ($code): void {
         $previous = new class('synthetic '.$code) extends PDOException {};
         (fn () => $this->code = $code)->call($previous);
         throw new QueryException('pgsql', 'select 1', [], $previous);
     }));
-    expect(fn () => DisbursementFixture::command($maker, $disbursement, 'authorize', 0))->toThrow($expected === 'contention' ? CommandRejection::class : QueryException::class,
+    expect(fn () => DisbursementFixture::command($staff, $disbursement, 'hold', 0))->toThrow($expected === 'contention' ? CommandRejection::class : QueryException::class,
         $expected === 'contention' ? 'RETRYABLE_CONTENTION' : 'synthetic');
 })->with(['deadlock' => ['40P01', 'contention'], 'serialization' => ['40001', 'contention'], 'other' => ['42P01', 'other']]);
 
-it('keeps an approved intent queued when the funding source or the dispatcher is unavailable after commit', function (string $case): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    DB::transaction(function () use ($checker, $disbursement, $proof, $case): void {
-        expect(DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof)['code'])->toBe('DISBURSEMENT_INTENT_RECORDED');
+it('keeps an automatic intent queued when the funding source or the dispatcher is unavailable after commit', function (string $case): void {
+    DisbursementFixture::sources()->fund();
+    DB::transaction(function () use ($case): void {
+        expect(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 1, 'known' => 0, 'queued' => 1, 'failed' => 0]);
         $case === 'funding' ? app()->instance(FundedCampaigns::class, new UnavailableFundedCampaigns) : config(['isolation.live_money_enabled' => true]);
     });
     expect(DisbursementDispatch::query()->pluck('phase')->all())->toBe(['queued']);
 })->with(['funding', 'dispatcher']);
 
 it('treats a provider that throws on query as no answer, and records a repeated dispatch outcome once', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     app()->instance(PayoutProvider::class, new class implements PayoutProvider
     {
@@ -187,27 +188,27 @@ it('treats a provider that throws on query as no answer, and records a repeated 
             throw new LogicException('Not used.');
         }
     });
-    expect(DisbursementFixture::command($treasury, $disbursement, 'requery', 3)['data']['observation'])->toBeNull()
+    expect(DisbursementFixture::command($treasury, $disbursement, 'requery', 2)['data']['observation'])->toBeNull()
         ->and(app(ReconcileDisbursements::class)->handle())->toBe(['queried' => 1, 'observed' => 0, 'decisions' => ['open' => 1]]);
     app(DisbursementStore::class)->recordDispatch($intent->id, false);
     expect(DisbursementDispatch::query()->where('intent_id', $intent->id)->orderBy('id')->pluck('phase')->all())->toBe(['queued', 'claimed', 'sent']);
 });
 
 it('refuses a requery key reused for another disbursement and an invalid key', function (): void {
-    ['disbursement' => $first] = DisbursementFixture::approved();
-    ['disbursement' => $second] = DisbursementFixture::approved();
+    ['disbursement' => $first] = DisbursementFixture::paid();
+    ['disbursement' => $second] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     $key = (string) Str::uuid();
-    DisbursementFixture::command($treasury, $first, 'requery', 3, null, $key);
-    expect(fn () => DisbursementFixture::command($treasury, $second, 'requery', 3, null, $key))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
-        ->and(fn () => DisbursementFixture::command($treasury, $second, 'requery', 3, null, 'not-a-uuid'))->toThrow(CommandRejection::class, 'OPERATION_INPUT_INVALID');
+    DisbursementFixture::command($treasury, $first, 'requery', 2, $key);
+    expect(fn () => DisbursementFixture::command($treasury, $second, 'requery', 2, $key))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT')
+        ->and(fn () => DisbursementFixture::command($treasury, $second, 'requery', 2, 'not-a-uuid'))->toThrow(CommandRejection::class, 'OPERATION_INPUT_INVALID');
 });
 
 it('records an unencodable reason as a validation refusal without storing it', function (): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $refused = DisbursementFixture::command($maker, $disbursement, 'authorize', 0, null, null, "bad \xC3\x28 bytes");
-    expect($refused['code'])->toBe('VALIDATION_FAILED');
+    $staff = DisbursementFixture::staff(['compliance']);
+    $refused = DisbursementFixture::command($staff, $disbursement, 'hold', 0, null, "bad \xC3\x28 bytes");
+    expect($refused['code'])->toBe('VALIDATION_FAILED')->and(DisbursementFixture::detail($staff, $disbursement)['state'])->toBe('ready');
 });
 
 it('reports an unavailable funding source from the scheduled reconciler', function (): void {
@@ -246,7 +247,7 @@ it('keeps the funding port invariants and its synthetic source exclusive and tra
 });
 
 it('never offers a provider call inside a transaction from the synthetic provider', function (): void {
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     $instruction = new PayoutInstruction($intent->id, $intent->operation_id, $intent->provider_reference, $intent->amount, 'RWF', $intent->destination_id,
         $intent->destination_sha256, $intent->environment);
     expect(fn () => DB::transaction(fn () => app(PayoutProvider::class)->send($instruction)))->toThrow(LogicException::class, 'DISBURSEMENT_PROVIDER_TRANSACTION_OPEN')

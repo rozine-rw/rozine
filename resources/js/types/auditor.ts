@@ -405,7 +405,7 @@ export type AuditorHomeProps = AuditorPageContract &
         auditor: AuditorProfileIdentity;
         /** The published partner-quality score out of 100; null until the quality policy is live. */
         quality_score: number | null;
-        /** Accrued service-fee share this month (C-23), or null before anything accrues. */
+        /** The partner's accrued 40% platform-fee share this month (FEE-R02), or null before anything accrues. */
         earned_this_month: Money | null;
         /** Deals the partner is active on, or null while the server cannot state it. */
         active_deals: number | null;

@@ -286,6 +286,57 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             "Withdrawal returnedThe payout of RWF 50,000 to Bank of Kigali ···· 4417 didn't go through. It's back in your wallet.",
         );
     });
+    it('words a funds-sent notice with the platform fee taken, and one sent before the fee without it', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'fee',
+                kind: 'business.disbursement_sent',
+                facts: {
+                    amount: '11640000',
+                    currency: 'RWF',
+                    title: 'Bakery ovens',
+                    account: 'Bank of Kigali ···· 4417',
+                    principal: '12000000',
+                    platform_fee: '360000',
+                },
+            },
+            {
+                ...first,
+                id: 'before-fee',
+                kind: 'business.disbursement_sent',
+                facts: {
+                    amount: '3000000',
+                    currency: 'RWF',
+                    title: 'Cold room',
+                    account: 'Bank of Kigali ···· 4417',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Funds sent/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Funds sentRWF 11,640,000 for Bakery ovens was sent to Bank of Kigali ···· 4417: the RWF 12,000,000 raised less the 3% platform fee of RWF 360,000.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Funds sentRWF 3,000,000 for Cold room was sent to Bank of Kigali ···· 4417.',
+        );
+    });
+
     it('words a linked and an unlinked payout account as security notices', async () => {
         const user = userEvent.setup();
         const inbox = notices();

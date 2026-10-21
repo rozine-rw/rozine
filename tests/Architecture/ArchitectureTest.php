@@ -470,11 +470,11 @@ arch('the named wallet testers are reached only by the deposit admission, the st
         'App\Console\Commands\PrepareStagingWallet']);
 
 it('has concrete targets for the disbursement boundary', function (): void {
-    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\PrimaryHolding',
         'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
-        'App\Application\Disbursement\Contracts\PayoutDestinations', 'App\Application\Disbursement\Contracts\StaffConnections',
+        'App\Application\Disbursement\Contracts\PayoutDestinations',
         'App\Application\Disbursement\Contracts\PayoutProvider', 'App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures',
         'App\Application\Disbursement\Contracts\SyntheticPayoutScripts', 'App\Application\Disbursement\Contracts\DisbursementClosingEvidence'] as $target) {
         expect(class_exists($target) || interface_exists($target))->toBeTrue($target);
@@ -482,9 +482,9 @@ it('has concrete targets for the disbursement boundary', function (): void {
 })->group('arch');
 
 arch('disbursement records are only accessed by the disbursement adapters')
-    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof', 'App\Models\DisbursementStepUpMarker',
+    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
-        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\DisbursementIndependenceDeclaration'])
+        'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);
 
 arch('Holdings are written and read only by their named Primary issuance collaborators and the Investor\'s read-only Holdings reader')
@@ -534,9 +534,8 @@ arch('funding sources are reached only through the disbursement and named Primar
     ->expect('App\Application\Disbursement\Contracts\FundedCampaigns')
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Infrastructure\Primary\EloquentFundedCampaigns', 'App\Providers\AppServiceProvider']);
 
-arch('destination and staff connection sources are reached only through the disbursement adapter')
-    ->expect(['App\Application\Disbursement\Contracts\PayoutDestinations',
-        'App\Application\Disbursement\Contracts\StaffConnections'])
+arch('the destination source is reached only through the disbursement adapter')
+    ->expect(['App\Application\Disbursement\Contracts\PayoutDestinations'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
 
 arch('the payout provider is reached only through the disbursement actions and adapters')

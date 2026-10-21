@@ -1507,7 +1507,12 @@ export type InvestorNotice = {
       }
     | {
           kind: 'business.disbursement_sent';
-          facts: Money & { title: string; account: string };
+          facts: Money & {
+              title: string;
+              account: string;
+              principal?: string;
+              platform_fee?: string;
+          };
       }
     | {
           kind: 'business.raise_expired';

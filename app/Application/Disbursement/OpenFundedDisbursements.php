@@ -7,14 +7,15 @@ namespace App\Application\Disbursement;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 
 /**
- * Records one disbursement for each fully funded campaign the funding source lists, once. Under
- * the unavailable funding source nothing is listed and nothing is opened.
+ * Records one disbursement for each fully funded campaign the funding source lists, once, and pays
+ * it automatically as soon as nothing blocks it (BRS v2.0 SVC-R01). Under the unavailable funding
+ * source nothing is listed, opened or paid.
  */
 final class OpenFundedDisbursements
 {
     public function __construct(private DisbursementStore $store) {}
 
-    /** @return array{opened: int, known: int} */
+    /** @return array{opened: int, known: int, queued: int, failed: int} */
     public function handle(int $limit = 50): array
     {
         return $this->store->openFunded($limit);

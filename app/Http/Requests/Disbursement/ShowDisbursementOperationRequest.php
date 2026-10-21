@@ -9,8 +9,7 @@ use Illuminate\Validation\Rule;
 
 class ShowDisbursementOperationRequest extends FormRequest
 {
-    public const array COMMANDS = ['disbursement.authorize', 'disbursement.approve', 'disbursement.reject', 'disbursement.hold',
-        'disbursement.release_hold', 'disbursement.requery'];
+    public const array COMMANDS = ['disbursement.hold', 'disbursement.release_hold', 'disbursement.requery'];
 
     public function authorize(): bool
     {

@@ -44,7 +44,10 @@ function closureMigrationSchemaFingerprint(): array
 beforeEach(function (): void {
     $this->closureDependenciesRemoved = false;
     $this->closureCurrentSchema = closureMigrationSchemaFingerprint();
+    // The platform fee and automatic disbursement migrations rebind the primary closing authority, so they come off first and go back last.
     $this->closureDependants = [
+        require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php'),
+        require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php'),
         require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php'),
         require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php'),
     ];
