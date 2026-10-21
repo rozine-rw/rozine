@@ -299,7 +299,7 @@ describe('Cart with notes', () => {
         ).toHaveAttribute('href', '/preview/investor-deal');
         expect(greenleaf.getByText('Agriculture · Gasabo')).toBeInTheDocument();
         expect(greenleaf.getByText('RWF 32,800,000')).toBeInTheDocument();
-        expect(greenleaf.getByText('of RWF 42,000,000')).toBeInTheDocument();
+        expect(greenleaf.getByText('of RWF 42M')).toBeInTheDocument();
         expect(greenleaf.getByText('RWF 32,000,000')).toBeInTheDocument();
         expect(greenleaf.getByText('RWF 9,200,000')).toBeInTheDocument();
         expect(greenleaf.getByText('6,560')).toBeInTheDocument();

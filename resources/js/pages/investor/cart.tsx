@@ -6,7 +6,12 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
 import { useWide } from '@/lib/investor/use-wide';
-import { formatAmount, formatCount, formatRwf } from '@/lib/rozine/format';
+import {
+    formatAmount,
+    formatCount,
+    formatRwf,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { Money } from '@/types';
 import type { C3InvestorCartProps, InvestorCartLine } from '@/types/investor';
@@ -143,7 +148,7 @@ function CartCard({
                     </dd>
                     <dd className="mt-px text-[11px] whitespace-nowrap text-rz-secondary">
                         {t('investor.cart.target_of', {
-                            amount: formatRwf(deal.target),
+                            amount: formatRwfShort(deal.target),
                         })}
                     </dd>
                 </div>
@@ -513,9 +518,7 @@ export default function InvestorCart({
                         empty
                     ) : (
                         <>
-                            <div className="sticky top-0 z-10 bg-rz-page px-4 pt-3 pb-2">
-                                {summary}
-                            </div>
+                            <div className="px-4 pt-3 pb-2">{summary}</div>
                             <div className="px-4 pt-1">{list}</div>
                         </>
                     )}
