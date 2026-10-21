@@ -67,10 +67,30 @@ it('lists a live publication as a live note, agreeing with the dashboard', funct
 });
 
 it('counts every tab, filters by state and search, and pages', function (): void {
-    app()->instance(InvestorDealCatalogue::class, Mockery::mock(InvestorDealCatalogue::class, ['card' => null])
-        ->shouldReceive('card')->andReturnUsing(fn (string $id): array => notesCard($id, match ($id) {
-            '01K0000000000000000000AAAA' => 'Ubuki Crafts', '01K0000000000000000000BBBB' => 'GreenLeaf Agro', default => 'Kivu Fisheries',
-        }))->getMock());
+    app()->instance(InvestorDealCatalogue::class, new class implements InvestorDealCatalogue
+    {
+        public function deals(): array
+        {
+            return [];
+        }
+
+        public function deal(string $campaignId): ?array
+        {
+            return null;
+        }
+
+        public function card(string $campaignId): array
+        {
+            return notesCard($campaignId, match ($campaignId) {
+                '01K0000000000000000000AAAA' => 'Ubuki Crafts', '01K0000000000000000000BBBB' => 'GreenLeaf Agro', default => 'Kivu Fisheries',
+            });
+        }
+
+        public function updates(string $campaignId): array
+        {
+            return [];
+        }
+    });
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, [
         'noteStates' => [['campaign_id' => '01K0000000000000000000AAAA', 'state' => 'live', 'live_at' => '2026-10-15T08:00:00+00:00'],
             ['campaign_id' => '01K0000000000000000000BBBB', 'state' => 'repaying', 'live_at' => '2026-10-01T08:00:00+00:00'],
@@ -87,7 +107,7 @@ it('counts every tab, filters by state and search, and pages', function (): void
 
     $repaying = ($this->page)($staff, ['tab' => 'repaying']);
     expect(array_column($repaying['notes'], 'business'))->toBe(['GreenLeaf Agro'])
-        ->and(collect($repaying['tabs'])->firstWhere('active', true)['key'])->toBe('repaying')
+        ->and(array_values(array_filter($repaying['tabs'], fn (array $tab): bool => $tab['active']))[0]['key'])->toBe('repaying')
         ->and(array_column(($this->page)($staff, ['q' => 'kivu'])['notes'], 'business'))->toBe(['Kivu Fisheries'])
         ->and(($this->page)($staff, ['limit' => 1])['pagination']['next'])->toBe(['url' => '/admin/notes?limit=500', 'method' => 'get']);
 });

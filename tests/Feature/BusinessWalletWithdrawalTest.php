@@ -361,7 +361,7 @@ it('downloads the Business wallet statement with its deposit and paid withdrawal
         ->and($response->getContent())->toBe("\u{FEFF}".implode("\r\n", ['"Date","Description","Type","Amount (RWF)","Direction","Reference"', $withdrawalRow, $depositRow])."\r\n");
 
     $since = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'from' => $day($payout->created_at)]))->getContent();
-    $until = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'to' => $day($credit->created_at)]))->getContent();
+    $until = (string) $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'to' => $day($credit->getAttribute('created_at'))]))->getContent();
     expect($since)->toContain($withdrawalRow)->not->toContain($depositRow)
         ->and($until)->toContain($depositRow)->not->toContain($withdrawalRow);
     $this->get(route('business.wallet.statement', ['business' => $business, 'format' => 'csv', 'from' => '2026-02-02', 'to' => '2026-02-01']))->assertSessionHasErrors('to');
@@ -376,9 +376,9 @@ it('downloads the Business wallet statement with its deposit and paid withdrawal
             'base' => ['url' => '/business/'.$business.'/wallet?movement=external', 'method' => 'get']])
         ->and($page['history']['filters'][1]['link']['url'])->toBe('/business/'.$business.'/wallet?movement=internal&from='.$day($payout->created_at))
         ->and($page['exports']['csv']['url'])->toBe('/business/'.$business.'/wallet/statement.csv?from='.$day($payout->created_at));
-    $page = $this->get(route('business.wallet.show', ['business' => $business, 'to' => $day($credit->created_at)]))->viewData('page')['props'];
+    $page = $this->get(route('business.wallet.show', ['business' => $business, 'to' => $day($credit->getAttribute('created_at'))]))->viewData('page')['props'];
     expect(array_column($page['history']['items'], 'id'))->toBe([$credit->id])
-        ->and($page['exports']['pdf']['url'])->toBe('/business/'.$business.'/wallet/statement.pdf?to='.$day($credit->created_at));
+        ->and($page['exports']['pdf']['url'])->toBe('/business/'.$business.'/wallet/statement.pdf?to='.$day($credit->getAttribute('created_at')));
 });
 
 it('serves the Business wallet statement only to the Business\'s own mandate holders, and to API tokens that may read it', function (): void {
