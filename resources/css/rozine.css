@@ -118,8 +118,8 @@
     --rz-shadow-resting: 0 3px 10px -4px rgba(20, 45, 95, 0.14);
     --rz-shadow-lifted: 0 14px 34px -14px rgba(20, 45, 95, 0.32);
 
-    /* Widest the desktop apps grow before extra space becomes page background */
-    --rz-desktop-max: 1440px;
+    /* The desktop apps' frame: the design's 1113px canvas, centred, with the page background around it */
+    --rz-desktop-max: 1113px;
 }
 
 .dark {

@@ -342,8 +342,8 @@ type AdminFrameProps = AdminFrameShellProps & {
 /**
  * The Admin console frame (design T87–182): a 216px grouped sidebar on its soft gradient, a 54px
  * glass top bar with the section title, its ⓘ, the page search and the operator menu, and the
- * content column that anchors every drawer. It fills the window up to the desktop cap and matches
- * the design's 1113×750 frame at that size. On a phone the sidebar becomes a menu sheet.
+ * content column that anchors every drawer. It is centred at the design's 1113px frame width and
+ * keeps the window's height. On a phone the sidebar becomes a menu sheet.
  */
 export function AdminFrame({
     section,
