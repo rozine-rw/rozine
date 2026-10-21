@@ -201,14 +201,7 @@ export function DepositIntents({
                                     </span>
                                 </span>
                             </span>
-                            <span
-                                className={cn(
-                                    'text-[12.5px] font-semibold whitespace-nowrap',
-                                    deposit.credit_receipt === null
-                                        ? 'text-rz-secondary'
-                                        : POSITIVE_TEXT,
-                                )}
-                            >
+                            <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-secondary">
                                 {formatRwf(deposit.amount)}
                             </span>
                         </Link>
