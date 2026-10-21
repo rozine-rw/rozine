@@ -50,13 +50,13 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             'target_dscr' => '1.50×', 'rate_band' => '10–15%', 'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000',
             'tenors' => '3–6', 'first_issue_months' => '36', 'repeat_issue_months' => '12', 'minimum_age' => '18',
             'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
-        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits'])
+        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'investor', 'kyc', 'penalties', 'limits'])
         ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
             'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'concentration' => '50%', 'resale_listing_days' => '7',
-            'resale_reservation_minutes' => '5', 'cpa_radius' => '30 km', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000'])
+            'resale_reservation_minutes' => '5', 'cpa_radius' => '30 km', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000', 'risk_statements' => '5'])
         ->and(array_column(array_filter($rules, fn (array $rule): bool => isset($rule['term'])), 'term', 'key'))->toBe([
             'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'rdb_certificate' => 'required',
-            'max_notes' => 'not_set', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
+            'max_notes' => 'not_set', 'residency' => 'resident_rwanda', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
             'default_at' => 'day_31', 'auto_freeze' => 'not_set'])
         ->and(array_column($rules, 'version', 'key'))->toMatchArray(['min_revenue' => 'brs-2.0-uw-r01', 'max_notes' => 'brs-2.0-od-20',
             'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null]);
