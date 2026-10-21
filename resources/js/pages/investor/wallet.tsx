@@ -77,9 +77,11 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
                         aria-current={kind === option ? 'true' : undefined}
                         className={cn(
                             'flex flex-1 items-center justify-center gap-[7px] rounded-2xl border py-[13px] text-[13px] font-semibold shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]',
-                            kind === option
-                                ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
-                                : 'border-rz-border bg-rz-surface text-rz-ink',
+                            kind !== option
+                                ? 'border-rz-border bg-rz-surface text-rz-ink'
+                                : option === 'deposit'
+                                  ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
+                                  : 'border-[#8a4a14] bg-[#8a4a14] text-white',
                         )}
                     >
                         <svg
