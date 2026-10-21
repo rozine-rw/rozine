@@ -618,6 +618,8 @@ const en = {
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
+    'business.reports.empty_body':
+        'Each monthly report appears here once your Audit Partner seals it.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} of {of}',
     'business.reports.sheet.live': 'Live to your investors',
@@ -1966,6 +1968,7 @@ const en = {
     'business.wallet.back': 'Back to Home',
     'business.wallet.available': 'Available balance',
     'business.wallet.brand': 'Rozine Wallet',
+    'business.wallet.caption': 'Fees, payouts & disbursements settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
@@ -1977,7 +1980,6 @@ const en = {
     'business.servicing.wallet.status.restricted': 'Restricted',
     'business.servicing.wallet.restricted':
         'Restricted since {date}. Deposits and repayments still go through.',
-    'business.servicing.wallet.no_pending': 'No deposits waiting',
     'business.servicing.wallet.pending': '{amount} waiting to be confirmed',
     'business.servicing.wallet.to_repayments': 'Go to repayments',
     'business.servicing.wallet.movement': 'Movement type',

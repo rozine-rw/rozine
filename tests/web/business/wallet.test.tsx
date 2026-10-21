@@ -63,7 +63,9 @@ describe('Business wallet (business-servicing-v1)', () => {
 
         expect(balance).toHaveTextContent('RWF 4,200,000');
         expect(balance).toHaveTextContent('Active');
-        expect(balance).toHaveTextContent('No deposits waiting');
+        expect(balance).toHaveTextContent(
+            'Fees, payouts & disbursements settle here',
+        );
         expect(
             within(balance).getByRole('link', { name: 'RWF 4,200,000' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');

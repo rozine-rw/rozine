@@ -636,6 +636,8 @@ const rw: Catalog = {
     'business.reports.row.annual': "Incamake y'umwaka wose",
     'business.reports.annual': "Raporo y'umwaka {year}",
     'business.reports.empty': 'Nta raporo irahari.',
+    'business.reports.empty_body':
+        'Raporo ya buri kwezi igaragara hano iyo umugenzuzi wawe amaze kuyifunga.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} kuri {of}',
     'business.reports.sheet.live': 'Abashoramari bawe barayibona',
@@ -2049,6 +2051,8 @@ const rw: Catalog = {
     'business.wallet.back': 'Subira ku Ahabanza',
     'business.wallet.available': 'Amafaranga ahari',
     'business.wallet.brand': 'Ikofi ya Rozine',
+    'business.wallet.caption':
+        'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
     'business.wallet.withdraw.button': 'Bikuza',
     'business.wallet.processing': 'Birimo gukorwa…',
@@ -2061,7 +2065,6 @@ const rw: Catalog = {
     'business.servicing.wallet.status.restricted': 'Byabujijwe',
     'business.servicing.wallet.restricted':
         'Byabujijwe kuva ku wa {date}. Kubitsa no kwishyura biracyakunda.',
-    'business.servicing.wallet.no_pending': 'Nta mafaranga ategereje kwemezwa',
     'business.servicing.wallet.pending': '{amount} bitegereje kwemezwa',
     'business.servicing.wallet.to_repayments': 'Jya ku kwishyura',
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",

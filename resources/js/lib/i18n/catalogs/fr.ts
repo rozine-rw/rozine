@@ -637,6 +637,8 @@ const fr: Catalog = {
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
+    'business.reports.empty_body':
+        "Chaque rapport mensuel apparaît ici dès que votre partenaire d'audit l'a scellé.",
     'business.reports.percent': '{value} %',
     'business.reports.count_of': '{count} sur {of}',
     'business.reports.sheet.live': 'Visible par vos investisseurs',
@@ -2055,6 +2057,8 @@ const fr: Catalog = {
     'business.wallet.back': "Retour à l'accueil",
     'business.wallet.available': 'Solde disponible',
     'business.wallet.brand': 'Portefeuille Rozine',
+    'business.wallet.caption':
+        'Frais, versements et décaissements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -2067,7 +2071,6 @@ const fr: Catalog = {
     'business.servicing.wallet.status.restricted': 'Restreint',
     'business.servicing.wallet.restricted':
         'Restreint depuis le {date}. Les dépôts et les remboursements restent possibles.',
-    'business.servicing.wallet.no_pending': 'Aucun dépôt en attente',
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',

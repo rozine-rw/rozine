@@ -159,6 +159,11 @@ describe('Business Reports', () => {
         render(<BusinessReports {...props(emptyFixture)} />);
 
         expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Each monthly report appears here once your Audit Partner seals it.',
+            ),
+        ).toBeInTheDocument();
 
         await user.click(
             screen.getByRole('button', { name: 'How monthly audits work' }),

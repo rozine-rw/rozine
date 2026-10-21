@@ -185,9 +185,20 @@ export default function BusinessReports({
                             })}
                         </ul>
                         {reports[tab].length === 0 && (
-                            <p className="mt-6 text-center text-[13px] text-rz-secondary">
-                                {t('business.reports.empty')}
-                            </p>
+                            <div className="mt-3 flex flex-col items-center rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-10 text-center dark:border-rz-border">
+                                <span
+                                    aria-hidden
+                                    className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]"
+                                >
+                                    <Icon name={ROW_STYLE[tab].icon} />
+                                </span>
+                                <p className="mt-4 text-[15px] font-semibold text-rz-ink">
+                                    {t('business.reports.empty')}
+                                </p>
+                                <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
+                                    {t('business.reports.empty_body')}
+                                </p>
+                            </div>
                         )}
                     </div>
                     {report !== null && (
