@@ -8,6 +8,7 @@ use App\Domain\Disbursement\PlatformFee;
 use App\Domain\Identity\Complaint;
 use App\Domain\Identity\InvestorVerificationCase;
 use App\Domain\Primary\EarningsFeeBand;
+use App\Domain\Primary\RiskStatements;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Secondary\SecondaryTerms;
 use App\Domain\Underwriting\FlatReturnPricing;
@@ -26,7 +27,7 @@ use Brick\Math\BigRational;
  * while deferred.
  *
  * A worded value travels as a `term` the console translates, with `value` empty: `every_deal`,
- * `required`, `not_set`, `none`, `late_from_due`, `day_31` and `late_schedule`.
+ * `required`, `not_set`, `none`, `late_from_due`, `day_31`, `late_schedule` and `resident_rwanda`.
  *
  * The values are code, not versioned policy data yet, so the console only reads them: a change goes
  * through a release under ADM-R05 rather than an Edit form.
@@ -161,15 +162,17 @@ final class PlatformPolicies
                 ['key' => 'first_issue_months', 'value' => (string) UnderwritingObservationWindow::FIRST_ISSUE_MONTHS],
                 ['key' => 'repeat_issue_months', 'value' => (string) UnderwritingObservationWindow::REPEAT_ISSUE_MONTHS],
                 self::brs($business[2], 'KYC-R03'), self::brs($business[3], 'OD-20')]),
+            ...self::tab('investor', null, [['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
+                self::brs(['key' => 'concentration', 'value' => self::CONCENTRATION_PERCENT.'%'], 'INV-R01'),
+                self::brs(self::term('residency', 'resident_rwanda'), 'KYC-R02'),
+                ['key' => 'risk_statements', 'value' => (string) count(RiskStatements::STATEMENTS)]]),
             ...self::tab('kyc', null, [['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
                 ['key' => 'identity_evidence', 'value' => (string) count(InvestorVerificationCase::SLOTS)], self::brs($compliance[2], 'KYC-R04')]),
             ...self::tab('penalties', null, [self::brs(self::term('late_charge', 'late_schedule'), 'COL-R02'), self::brs($compliance[0], 'COL-R02'),
                 self::brs($compliance[1], 'COL-R06'), self::brs($compliance[3], 'COL-R06'),
                 ['key' => 'complaint_acknowledge', 'value' => Complaint::ACKNOWLEDGE_HOURS.' h'],
                 ['key' => 'complaint_resolve', 'value' => Complaint::RESOLVE_HOURS.' h']]),
-            ...self::tab('limits', null, [['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
-                self::brs(['key' => 'concentration', 'value' => self::CONCENTRATION_PERCENT.'%'], 'INV-R01'),
-                self::brs(['key' => 'raise_days', 'value' => (string) self::RAISE_DAYS], 'NOTE-R03')]),
+            ...self::tab('limits', null, [self::brs(['key' => 'raise_days', 'value' => (string) self::RAISE_DAYS], 'NOTE-R03')]),
             ...self::tab('limits', WithdrawalTerms::VERSION, [['key' => 'withdrawal_min', 'value' => self::rwf(WithdrawalTerms::MINIMUM)],
                 ['key' => 'withdrawal_max', 'value' => self::rwf(WithdrawalTerms::MAXIMUM)]]),
             ...self::tab('limits', null, [['key' => 'resale_listing_days', 'value' => (string) intdiv(SecondaryTerms::LISTING_SECONDS, 86400)],
