@@ -4213,6 +4213,7 @@ const en = {
         'Verify your email and turn on two-factor authentication to continue.',
     'settlement.refusal.MFA_REQUIRED': 'Two-factor authentication is required.',
     'settlement.refusal.NOT_FOUND': 'You can no longer view this record.',
+    'investor.wallet.c3.available_balance': 'Available balance',
     'investor.wallet.c3.total': 'Wallet total',
     'investor.wallet.c3.bucket.available': 'Available',
     'investor.wallet.c3.bucket.held': 'Held',

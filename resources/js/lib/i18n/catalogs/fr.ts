@@ -4433,6 +4433,7 @@ const fr: Catalog = {
         "L'authentification à deux facteurs est requise.",
     'settlement.refusal.NOT_FOUND':
         'Vous ne pouvez plus consulter cet enregistrement.',
+    'investor.wallet.c3.available_balance': 'Solde disponible',
     'investor.wallet.c3.total': 'Total du portefeuille',
     'investor.wallet.c3.bucket.available': 'Disponible',
     'investor.wallet.c3.bucket.held': 'Réservé',

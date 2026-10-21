@@ -4409,6 +4409,7 @@ const rw: Catalog = {
         'Emeza imeyili yawe kandi ukoreshe kwemeza mu ntambwe ebyiri kugira ngo ukomeze.',
     'settlement.refusal.MFA_REQUIRED': 'Kwemeza mu ntambwe ebyiri birakenewe.',
     'settlement.refusal.NOT_FOUND': 'Ntushobora kongera kureba iyi nyandiko.',
+    'investor.wallet.c3.available_balance': 'Amafaranga aboneka',
     'investor.wallet.c3.total': "Igiteranyo cy'ikofi",
     'investor.wallet.c3.bucket.available': 'Aboneka',
     'investor.wallet.c3.bucket.held': 'Afashwe',
