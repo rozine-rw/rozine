@@ -397,6 +397,39 @@ describe('Engines and Ratings', () => {
     });
 });
 
+describe('The rating book', () => {
+    it('lists every rated Business under All, counts them, and keeps band changes empty', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    counts: { rated: 1 },
+                    book: [
+                        {
+                            key: 'b-1',
+                            business: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.6' },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            screen.getByRole('region', { name: 'Ratings' }),
+        ).toHaveTextContent('Businesses rated1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'The rating book' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('GreenLeaf AgroAgricultureStrong · 4.6——');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Band changed' }));
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);

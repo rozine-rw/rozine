@@ -6,6 +6,8 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Controllers\StaffSectionController;
+use App\Models\BusinessCampaign;
+use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Str;
@@ -82,6 +84,20 @@ test('Engines and Ratings show underwriters the engine settings and the scorecar
             'positive_months' => '10% · 50%–100%', 'history_depth' => '5% · 6–18', 'conduct' => '15%', 'adverse_conduct_cap' => '2.9',
             'default_cap' => '1.9', 'strong' => '≥ 4.0', 'stable' => '≥ 3.0', 'weak' => '≥ 2.0', 'distressed' => '< 2.0'])
         ->and(array_values(array_unique(array_column(EngineSettings::scorecard(), 'tab'))))->toBe(['weights', 'bands']);
+});
+
+test('Ratings lists every rated Business and counts them for whoever may view Businesses', function (): void {
+    $rated = BusinessCampaign::factory()->create(['payload' => ['title' => 'Seed stock', 'public_evidence' => ['rating' => ['band' => 'stable', 'score' => '3.1']]]]);
+    BusinessCampaign::factory()->create(['payload' => ['title' => 'Unrated']]);
+    $profile = BusinessProfile::query()->whereKey($rated->business_id)->sole();
+    $profile->forceFill(['profile' => [...$profile->profile, 'name' => 'Isoko Farms', 'industry' => 'Agriculture']])->save();
+
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/ratings')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'ratings')->where('counts', ['rated' => 1])
+            ->where('book', [['key' => $rated->business_id, 'business' => 'Isoko Farms', 'sector' => 'Agriculture',
+                'rating' => ['band' => 'stable', 'score' => '3.1']]])->where('engine', []));
+    $this->actingAs(sectionStaff(['treasury']))->get('/admin/risk')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->missing('book')->missing('counts'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

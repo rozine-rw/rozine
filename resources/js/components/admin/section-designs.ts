@@ -232,9 +232,9 @@ export const SECTION_DESIGNS: Record<
             ratings.kpi('pinned'),
         ],
         tabs: [
+            ratings.tab('all'),
             ratings.tab('changed'),
             ratings.tab('trending_down'),
-            ratings.tab('all'),
         ],
         blocks: [
             ratings.block('book', {

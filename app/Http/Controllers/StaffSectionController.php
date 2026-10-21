@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
 use App\Application\Operations\EngineSettings;
@@ -20,8 +21,8 @@ use Inertia\Response;
  * it, and it renders the console frame with the section's title and an empty state. Nothing is
  * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
- * whoever may read the ledger, and Engines and Ratings show underwriters the engine's settings and
- * the rating scorecard.
+ * whoever may read the ledger, Engines and Ratings show underwriters the engine's settings and the
+ * rating scorecard, and Ratings lists every rated Business to whoever may view Businesses.
  */
 class StaffSectionController extends Controller
 {
@@ -33,11 +34,14 @@ class StaffSectionController extends Controller
         'policies' => 'policies',
     ];
 
+    /** The most Businesses the rating book reads at once. */
+    private const BOOK_LIMIT = 500;
+
     /** The role the frame names, most privileged first. */
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
 
     /** Compliance has one dashboard: whoever may review investor identities is sent to that live queue. */
-    public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, string $section): Response|RedirectResponse
+    public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, string $section): Response|RedirectResponse
     {
         $staff = $access->handle((int) $request->user()?->getAuthIdentifier(), true);
         /** @var list<string> $roles */
@@ -50,19 +54,40 @@ class StaffSectionController extends Controller
         $name = (string) $request->user()?->name;
         $finance = $section === 'finance' && in_array('ledger.view', $permissions, true) ? self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier())) : [];
         $underwriter = in_array('applications.review', $permissions, true);
+        $book = $section === 'ratings' && in_array('businesses.view', $permissions, true)
+            ? self::book($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'name', '', '', self::BOOK_LIMIT)['rows']) : [];
 
         return Inertia::render('admin/section', ['server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance,
+            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance, ...$book,
             'engine' => match (true) {
                 ! $underwriter => [],
                 $section === 'engines' => EngineSettings::engines(),
                 $section === 'ratings' => EngineSettings::scorecard(),
                 default => [],
             }]);
+    }
+
+    /**
+     * The rating book: every Business with a published rating, by name, and how many there are. No
+     * rating history is kept yet, so a band change, its trend and its reason are not read.
+     *
+     * @param  list<array{business_id: string, name: string, sector: string, rating: array{band: string, score: string}|null}>  $rows
+     * @return array{counts: array{rated: int}, book: list<array{key: string, business: string, sector: string, rating: array{band: string, score: string}}>}
+     */
+    private static function book(array $rows): array
+    {
+        $book = [];
+        foreach ($rows as $row) {
+            if ($row['rating'] !== null) {
+                $book[] = ['key' => $row['business_id'], 'business' => $row['name'], 'sector' => $row['sector'], 'rating' => $row['rating']];
+            }
+        }
+
+        return ['counts' => ['rated' => count($book)], 'book' => $book];
     }
 
     /**

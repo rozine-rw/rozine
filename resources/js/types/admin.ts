@@ -105,6 +105,18 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     streams?: FinanceStream[];
     /** Engines and Ratings, for underwriters: the engine's settings and the rating scorecard. */
     engine?: EngineRow[];
+    /** A KPI tile's count by its design key, where the server reads one (Ratings). */
+    counts?: Partial<Record<string, number>>;
+    /** Ratings only, for whoever may view Businesses: every Business with a published rating. */
+    book?: RatingBookRow[];
+};
+
+/** One rated Business in the rating book. */
+export type RatingBookRow = {
+    key: string;
+    business: string;
+    sector: string;
+    rating: Rating;
 };
 
 /** One engine setting under its design tab, with the rule set version it comes from. */

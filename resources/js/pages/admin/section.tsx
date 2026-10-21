@@ -15,13 +15,14 @@ import {
     TableCard,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatRwf, formatRwfShort } from '@/lib/rozine/format';
+import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
-    FinanceStream,
     EngineRow,
+    FinanceStream,
     PolicyRule,
+    RatingBookRow,
 } from '@/types/admin';
 
 /** A figure the server has not stated: the tile keeps its place and says nothing. */
@@ -66,7 +67,7 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                                 key={kpi.label}
                                 index={index}
                                 label={t(kpi.label)}
-                                value={figureOf(props.figures, kpi.label)}
+                                value={figureOf(props, kpi.label)}
                                 sub={
                                     kpi.sub === undefined
                                         ? undefined
@@ -120,12 +121,15 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
     );
 }
 
-/** A tile's figure by its design key (the label code's last part), or the blank mark. */
-function figureOf(
-    figures: AdminPendingSectionProps['figures'],
-    label: string,
-): string {
-    const figure = figures?.[label.slice(label.lastIndexOf('.') + 1)];
+/** A tile's count or money figure by its design key (the label code's last part), or the blank mark. */
+function figureOf(props: AdminPendingSectionProps, label: string): string {
+    const key = label.slice(label.lastIndexOf('.') + 1);
+    const count = props.counts?.[key];
+    const figure = props.figures?.[key];
+
+    if (count !== undefined) {
+        return formatCount(count);
+    }
 
     return figure === undefined ? NO_FIGURE : formatRwfShort(figure);
 }
@@ -164,6 +168,22 @@ function rowsOf(
                 key: row.key,
                 cells: [t(`admin.engine.${row.key}`), row.value, row.source],
             }));
+    }
+
+    /* No rating history is kept, so only All lists the book; band changes and trends stay empty. */
+    if (block.key === 'book') {
+        return (tab === 'all' ? (props.book ?? []) : []).map(
+            (row: RatingBookRow) => ({
+                key: row.key,
+                cells: [
+                    row.business,
+                    row.sector,
+                    `${t(`admin.rating.band.${row.rating.band}`)} · ${row.rating.score}`,
+                    NO_FIGURE,
+                    NO_FIGURE,
+                ],
+            }),
+        );
     }
 
     if (block.key === 'streams') {
