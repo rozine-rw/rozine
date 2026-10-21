@@ -135,7 +135,7 @@ function figureOf(props: AdminPendingSectionProps, label: string): string {
 }
 
 /** The blocks that list engine settings: Engines' tabs and the Ratings scorecard. */
-const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands']);
+const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands', 'movers']);
 
 /**
  * The rows the server read for a block, as cell text: Policies' rules under the selected tab,

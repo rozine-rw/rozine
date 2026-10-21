@@ -49,8 +49,8 @@ final class EngineSettings
     }
 
     /**
-     * The rating scorecard: each component's weight and the range it is scaled over, the conduct
-     * caps, and the lowest rating of each band.
+     * The rating scorecard: each component's weight and the range it is scaled over, the lowest
+     * rating of each band, and what moves conduct and caps a rating.
      *
      * @return list<EngineRow>
      */
@@ -67,8 +67,11 @@ final class EngineSettings
             $rows[] = $row('weights', $component, $weight.'%'.($range === null || $format === null ? '' : ' · '.$format($range[0]).'–'.$format($range[1])));
         }
         $rating = fn (int $score): string => (string) BigRational::of($score)->dividedBy(20)->toScale(1);
-        $rows[] = $row('weights', 'adverse_conduct_cap', $rating(EngineScorecard::ADVERSE_CONDUCT_CAP));
-        $rows[] = $row('weights', 'default_cap', $rating(EngineScorecard::DEFAULT_CAP));
+        $rows[] = $row('movers', 'new_issuer_conduct', (string) EngineScorecard::NEW_ISSUER_CONDUCT);
+        $rows[] = $row('movers', 'instalment_conduct', $percent(EngineScorecard::INSTALMENT_CONDUCT_WEIGHT));
+        $rows[] = $row('movers', 'report_conduct', $percent(EngineScorecard::REPORT_CONDUCT_WEIGHT));
+        $rows[] = $row('movers', 'adverse_conduct_cap', $rating(EngineScorecard::ADVERSE_CONDUCT_CAP));
+        $rows[] = $row('movers', 'default_cap', $rating(EngineScorecard::DEFAULT_CAP));
         foreach (EngineScorecard::BANDS as $band => $floor) {
             $rows[] = $row('bands', strtolower($band), '≥ '.BigRational::of($floor)->toScale(1));
         }

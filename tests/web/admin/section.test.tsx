@@ -373,6 +373,12 @@ describe('Engines and Ratings', () => {
                             source: 'scorecard-v1',
                         },
                         {
+                            tab: 'movers',
+                            key: 'default_cap',
+                            value: '1.9',
+                            source: 'scorecard-v1',
+                        },
+                        {
                             tab: 'bands',
                             key: 'distressed',
                             value: '< 2.0',
@@ -393,6 +399,11 @@ describe('Engines and Ratings', () => {
                 'row',
             )[1],
         ).toHaveTextContent('Distressed< 2.0scorecard-v1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'What moves a rating' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Rating cap · default1.9scorecard-v1');
         expect(screen.getByText('No ratings to show yet.')).toBeVisible();
     });
 });

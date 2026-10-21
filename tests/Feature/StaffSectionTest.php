@@ -81,9 +81,9 @@ test('Engines and Ratings show underwriters the engine settings and the scorecar
         'first_issue_months' => '36', 'repeat_issue_months' => '12', 'tenors' => '3–6', 'rate_band' => '10–15%',
         'platform_fee' => '3%', 'cpa_share' => '40%'])
         ->and($scorecard)->toBe(['coverage' => '30% · 1.00×–1.50×', 'cfads_margin' => '20% · 5%–25%', 'nocf_stability' => '20% · 10%–60%',
-            'positive_months' => '10% · 50%–100%', 'history_depth' => '5% · 6–18', 'conduct' => '15%', 'adverse_conduct_cap' => '2.9',
+            'positive_months' => '10% · 50%–100%', 'history_depth' => '5% · 6–18', 'conduct' => '15%', 'new_issuer_conduct' => '50', 'instalment_conduct' => '70%', 'report_conduct' => '30%', 'adverse_conduct_cap' => '2.9',
             'default_cap' => '1.9', 'strong' => '≥ 4.0', 'stable' => '≥ 3.0', 'weak' => '≥ 2.0', 'distressed' => '< 2.0'])
-        ->and(array_values(array_unique(array_column(EngineSettings::scorecard(), 'tab'))))->toBe(['weights', 'bands']);
+        ->and(array_values(array_unique(array_column(EngineSettings::scorecard(), 'tab'))))->toBe(['weights', 'movers', 'bands']);
 });
 
 test('Ratings lists every rated Business and counts them for whoever may view Businesses', function (): void {

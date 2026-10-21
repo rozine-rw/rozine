@@ -245,6 +245,10 @@ export const SECTION_DESIGNS: Record<
                 columns: ENGINE_COLUMNS,
             }),
             ratings.block('bands', { columns: ENGINE_COLUMNS }),
+            ratings.block('movers', {
+                sub: ratings.sub('movers'),
+                columns: ENGINE_COLUMNS,
+            }),
         ],
     },
     deferrals: {
@@ -378,7 +382,11 @@ export const SECTION_DESIGNS: Record<
             engines.tab('loss'),
         ],
         blocks: [
-            engines.block('sizing', { tab: 'sizing', columns: ENGINE_COLUMNS }),
+            engines.block('sizing', {
+                tab: 'sizing',
+                sub: engines.sub('sizing'),
+                columns: ENGINE_COLUMNS,
+            }),
             engines.block('refinance', {
                 tab: 'refinance',
                 columns: ENGINE_COLUMNS,

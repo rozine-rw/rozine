@@ -1499,6 +1499,19 @@ const fr: Catalog = {
     'admin.engine.stable': 'Stable',
     'admin.engine.weak': 'Faible',
     'admin.engine.distressed': 'En difficulté',
+    'admin.design.engines.sizing.sub':
+        "Les quatre limites s'appliquent et la plus basse l'emporte : capacité au DSCR cible, montant demandé, levée maximale et marge d'exposition restante. Une levée sous le minimum est refusée. Le montant est ensuite réduit jusqu'à tenir le DSCR cible, puis arrondi à l'unité d'émission.",
+    'admin.design.ratings.movers.title': 'Ce qui fait bouger une note',
+    'admin.design.ratings.movers.sub':
+        "Chaque relevé vérifié recalcule les critères financiers : la hausse ou la baisse des revenus et de la trésorerie fait bouger la note. Les remboursements et les rapports mensuels font bouger la conduite, et les plafonds maintiennent la note basse tant qu'un retard, un manquement de reporting ou un défaut persiste. Aucune dérogation du personnel n'existe.",
+    'admin.design.ratings.movers.empty':
+        'Seuls les analystes crédit voient ce qui fait bouger une note.',
+    'admin.engine.new_issuer_conduct':
+        'Conduite avant tout remboursement · sur 100',
+    'admin.engine.instalment_conduct':
+        'Échéances payées à temps · part de la conduite',
+    'admin.engine.report_conduct':
+        'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",

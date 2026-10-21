@@ -1492,6 +1492,19 @@ const rw: Catalog = {
     'admin.engine.stable': 'Bihamye',
     'admin.engine.weak': 'Bidakomeye',
     'admin.engine.distressed': 'Mu bibazo',
+    'admin.design.engines.sizing.sub':
+        "Imipaka ine yose irakurikizwa, iya hasi ni yo ikurikizwa: ubushobozi kuri DSCR igamijwe, amafaranga yasabwe, ubusabe bunini n'umwanya usigaye. Ubusabe buri munsi y'ubuto bwemewe buranga. Nyuma amafaranga aragabanywa kugeza DSCR igamijwe yubahirijwe, akazengurutswa ku rugero rwo gutanga.",
+    'admin.design.ratings.movers.title': 'Ibihindura amanota',
+    'admin.design.ratings.movers.sub':
+        "Buri raporo y'imari yemejwe isubiramo ibipimo by'imari, bityo kuzamuka cyangwa kugabanuka kw'amafaranga yinjiye bihindura amanota. Kwishyura na raporo za buri kwezi bihindura imyitwarire, kandi imipaka igumisha amanota hasi igihe hari ibirarane, kutubahiriza raporo cyangwa kunanirwa kwishyura. Nta mukozi ushobora kubihindura.",
+    'admin.design.ratings.movers.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona ibihindura amanota.",
+    'admin.engine.new_issuer_conduct':
+        'Imyitwarire mbere yo kwishyura · kuri 100',
+    'admin.engine.instalment_conduct':
+        "Ibyishyuwe ku gihe · umugabane w'imyitwarire",
+    'admin.engine.report_conduct':
+        "Raporo za buri kwezi ku gihe · umugabane w'imyitwarire",
     'admin.policy.eyebrow': 'Byashyizweho mu mabwiriza',
     'admin.policy.target_dscr': 'DSCR igamijwe',
     'admin.policy.listing_audit': 'Igenzura ryo gushyirwa ku isoko',

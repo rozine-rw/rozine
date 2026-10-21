@@ -1418,6 +1418,18 @@ const en = {
     'admin.engine.stable': 'Stable',
     'admin.engine.weak': 'Weak',
     'admin.engine.distressed': 'Distressed',
+    'admin.design.engines.sizing.sub':
+        'All four limits apply and the lowest binds: capacity at the target DSCR, the amount asked, the largest raise and the exposure room left. A raise below the smallest is refused. The result is then stepped down until DSCR holds at the target, and rounded down to the issuance unit.',
+    'admin.design.ratings.movers.title': 'What moves a rating',
+    'admin.design.ratings.movers.sub':
+        'Each verified statement recomputes the financial inputs, so revenue and cash moving up or down move the rating. Repayments and monthly reports move conduct, and the caps hold a rating down while arrears, a reporting breach or a default stand. No staff override exists.',
+    'admin.design.ratings.movers.empty':
+        'Only underwriters can see what moves a rating.',
+    'admin.engine.new_issuer_conduct':
+        'Conduct before any repayment · out of 100',
+    'admin.engine.instalment_conduct':
+        'Instalments paid on time · share of conduct',
+    'admin.engine.report_conduct': 'Monthly reports on time · share of conduct',
     'admin.policy.eyebrow': 'Set in Policies',
     'admin.policy.target_dscr': 'Target DSCR',
     'admin.policy.listing_audit': 'Listing audit',
