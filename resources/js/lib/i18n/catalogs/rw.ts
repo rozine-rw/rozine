@@ -5909,8 +5909,7 @@ const rw: Catalog = {
     'admin.primary.lifecycle.inventory_unavailable': 'Ntibiboneka',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Byashize',
     'admin.primary.lifecycle.closing_pending_settlement': 'Birarangira',
-    'admin.primary.trend.caption':
-        'Amafaranga yashowe mu bukusanyamari buri munsi, mu minsi 14 ishize.',
+    'admin.primary.trend.last_14': 'Iminsi 14 ishize',
     'admin.primary.more': 'Ubundi bukusanyamari buri gukorwa',
     'admin.primary.empty_title': 'Nta bukusanyamari buri gukorwa',
     'admin.primary.empty_body':
