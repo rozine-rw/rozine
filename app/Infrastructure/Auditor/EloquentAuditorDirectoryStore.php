@@ -58,7 +58,8 @@ final class EloquentAuditorDirectoryStore implements AuditorDirectoryStore
         }
         $matches = $chip === 'all' ? $rows : array_values(array_filter($rows, fn (array $row): bool => $row['standing'] === $chip));
 
-        return ['rows' => array_slice($matches, 0, $limit), 'matching' => count($matches), 'counts' => $counts, 'licences_expiring' => $expiring, 'queue' => $queue];
+        return ['rows' => array_slice($matches, 0, $limit), 'matching' => count($matches), 'counts' => $counts, 'licences_expiring' => $expiring,
+            'active_audits' => array_sum(array_column($rows, 'active_engagements')), 'queue' => $queue];
     }
 
     /** @return Detail|null */

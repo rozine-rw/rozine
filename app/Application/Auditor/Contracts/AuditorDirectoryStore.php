@@ -19,7 +19,7 @@ namespace App\Application\Auditor\Contracts;
  * }
  * @phpstan-type Counts array{all: int, active: int, pending: int, licence_expired: int, suspended: int}
  * @phpstan-type QueueEntry array{party_id: string, name: string, licence: string, expires_on: string, submitted_at: string, renewal: bool}
- * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, queue: list<QueueEntry>}
+ * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, queue: list<QueueEntry>}
  * @phpstan-type Licence array{
  *     licence: string, expires_on: string, state: 'verified'|'pending'|'expired', revision: int, submission_id: string|null
  * }
