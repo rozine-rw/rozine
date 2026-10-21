@@ -275,7 +275,7 @@ describe('Policies', () => {
             within(screen.getByRole('table', { name: 'Rules' })).getAllByRole(
                 'row',
             )[1],
-        ).toHaveTextContent('Minimum investor age18—');
+        ).toHaveTextContent('Minimum age18—');
 
         fireEvent.click(
             screen.getByRole('tab', { name: 'Investor eligibility' }),
