@@ -215,10 +215,9 @@ describe('authentication pages', () => {
             screen.queryByRole('link', { name: 'Forgot your password?' }),
         ).not.toBeInTheDocument();
         expect(screen.queryByText('Password reset.')).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute(
-            'href',
-            '/register',
-        );
+        expect(
+            screen.getByRole('link', { name: 'Create account' }),
+        ).toHaveAttribute('href', '/register');
     });
 
     it('renders register processing, password rules, and all errors', () => {
@@ -300,9 +299,8 @@ describe('authentication pages', () => {
         render(<TwoFactorChallenge />);
 
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
-            title: 'Authentication code',
-            description:
-                'Enter the authentication code provided by your authenticator application.',
+            title: 'auth.two_factor_challenge.code_title',
+            description: 'auth.two_factor_challenge.code_description',
         });
         expect(screen.getByLabelText('One-time code')).toBeDisabled();
         expect(screen.getByText('Code invalid.')).toBeInTheDocument();
@@ -322,9 +320,8 @@ describe('authentication pages', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('Recovery code invalid.')).toBeInTheDocument();
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
-            title: 'Recovery code',
-            description:
-                'Please confirm access to your account by entering one of your emergency recovery codes.',
+            title: 'auth.two_factor_challenge.recovery_title',
+            description: 'auth.two_factor_challenge.recovery_description',
         });
         expect(inertia.forms.at(-1)?.resetOnSuccess).toBe(false);
 

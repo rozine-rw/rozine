@@ -199,6 +199,23 @@ describe('authentication layouts', () => {
             screen.getByRole('heading', { name: 'Welcome back' }),
         ).toBeInTheDocument();
         expect(screen.getByText('Sign in to continue')).toBeInTheDocument();
+
+        rerender(
+            <AuthLayout
+                title="auth.register.layout_title"
+                description="auth.register.layout_description"
+            >
+                Register form
+            </AuthLayout>,
+        );
+        expect(
+            screen.getByRole('heading', { name: 'Create your account' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Enter your details below to create your account.',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('renders simple, card, and split auth presentations', () => {

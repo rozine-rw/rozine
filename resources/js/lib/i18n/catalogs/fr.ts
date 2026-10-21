@@ -57,16 +57,15 @@ const fr: Catalog = {
     'common.action.sign_up': "S'inscrire",
 
     'auth.login.head_title': 'Connexion',
-    'auth.login.layout_title': 'Connectez-vous à votre compte',
-    'auth.login.layout_description':
-        'Saisissez votre e-mail et votre mot de passe pour vous connecter',
+    'auth.login.layout_title': 'Bon retour',
+    'auth.login.layout_description': 'Connectez-vous à votre compte Rozine.',
     'auth.login.email_label': 'Adresse e-mail',
     'auth.login.email_placeholder': 'email@exemple.com',
     'auth.login.password_label': 'Mot de passe',
     'auth.login.password_placeholder': 'Mot de passe',
     'auth.login.forgot_password': 'Mot de passe oublié ?',
     'auth.login.remember_me': 'Se souvenir de moi',
-    'auth.login.no_account': 'Vous n’avez pas de compte ?',
+    'auth.login.no_account': 'Nouveau sur Rozine ?',
 
     'auth.forgot_password.head_title': 'Mot de passe oublié',
     'auth.forgot_password.layout_title': 'Mot de passe oublié',
@@ -77,6 +76,66 @@ const fr: Catalog = {
     'auth.forgot_password.submit': 'Envoyer le lien de réinitialisation',
     'auth.forgot_password.return_prefix': 'Ou revenez à',
     'auth.forgot_password.return_link': 'la connexion',
+    'auth.login.create_account': 'Créer un compte',
+    'auth.register.head_title': 'Inscription',
+    'auth.register.layout_title': 'Créez votre compte',
+    'auth.register.layout_description':
+        'Saisissez vos informations pour créer votre compte.',
+    'auth.register.name_label': 'Nom',
+    'auth.register.name_placeholder': 'Nom complet',
+    'auth.register.email_label': 'Adresse e-mail',
+    'auth.register.email_placeholder': 'vous@exemple.rw',
+    'auth.register.password_label': 'Mot de passe',
+    'auth.register.password_placeholder': 'Mot de passe',
+    'auth.register.confirm_label': 'Confirmez le mot de passe',
+    'auth.register.confirm_placeholder': 'Confirmez le mot de passe',
+    'auth.register.submit': 'Créer un compte',
+    'auth.register.have_account': 'Vous avez déjà un compte ?',
+    'auth.register.log_in': 'Se connecter',
+    'auth.reset_password.head_title': 'Réinitialiser le mot de passe',
+    'auth.reset_password.layout_title': 'Réinitialiser le mot de passe',
+    'auth.reset_password.layout_description':
+        'Choisissez un nouveau mot de passe pour votre compte.',
+    'auth.reset_password.email_label': 'E-mail',
+    'auth.reset_password.password_label': 'Mot de passe',
+    'auth.reset_password.password_placeholder': 'Mot de passe',
+    'auth.reset_password.confirm_label': 'Confirmez le mot de passe',
+    'auth.reset_password.confirm_placeholder': 'Confirmez le mot de passe',
+    'auth.reset_password.submit': 'Réinitialiser le mot de passe',
+    'auth.verify_email.head_title': 'Vérification de l’e-mail',
+    'auth.verify_email.layout_title': 'Vérifiez votre e-mail',
+    'auth.verify_email.layout_description':
+        'Saisissez le code à 6 chiffres que nous vous avons envoyé par e-mail. Il expire dans 10 minutes.',
+    'auth.verify_email.resent':
+        'Un nouveau code a été envoyé à l’adresse e-mail de votre inscription. Les codes précédents ne fonctionnent plus.',
+    'auth.verify_email.submit': 'Vérifier l’e-mail',
+    'auth.verify_email.resend': 'Envoyer un nouveau code',
+    'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.head_title': 'Confirmer le mot de passe',
+    'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
+    'auth.confirm_password.layout_description':
+        'Cette zone est sécurisée. Confirmez votre mot de passe pour continuer.',
+    'auth.confirm_password.passkey': 'Confirmer avec une clé d’accès',
+    'auth.confirm_password.passkey_loading': 'Confirmation…',
+    'auth.confirm_password.separator': 'Ou confirmez avec le mot de passe',
+    'auth.confirm_password.password_label': 'Mot de passe',
+    'auth.confirm_password.password_placeholder': 'Mot de passe',
+    'auth.confirm_password.submit': 'Confirmer le mot de passe',
+    'auth.two_factor_challenge.head_title': 'Authentification à deux facteurs',
+    'auth.two_factor_challenge.code_title': 'Code d’authentification',
+    'auth.two_factor_challenge.code_description':
+        'Saisissez le code fourni par votre application d’authentification.',
+    'auth.two_factor_challenge.recovery_title': 'Code de récupération',
+    'auth.two_factor_challenge.recovery_description':
+        'Confirmez l’accès à votre compte en saisissant l’un de vos codes de récupération d’urgence.',
+    'auth.two_factor_challenge.recovery_placeholder':
+        'Saisissez le code de récupération',
+    'auth.two_factor_challenge.submit': 'Continuer',
+    'auth.two_factor_challenge.toggle_prefix': 'ou vous pouvez',
+    'auth.two_factor_challenge.use_recovery':
+        'vous connecter avec un code de récupération',
+    'auth.two_factor_challenge.use_code':
+        'vous connecter avec un code d’authentification',
 
     'suite.head_title': 'Vos applications',
     'suite.tagline':
