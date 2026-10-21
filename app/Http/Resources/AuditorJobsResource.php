@@ -45,7 +45,7 @@ class AuditorJobsResource extends JsonResource
 
         return [...self::envelope($page['identity_context_revision']), 'radius_km' => 30, 'flash_hours' => 24,
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
-            'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => $monthly,
+            'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => array_merge(...array_values($monthly)) === [] ? null : $monthly,
             'decline_options' => self::declineOptions(), 'outcome' => null, 'links' => self::links($request),
             'pagination' => self::pagination($request, 'jobs.index', $page['next_cursor'], $page['limit'])];
     }
