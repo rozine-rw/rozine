@@ -1670,9 +1670,10 @@ const fr: Catalog = {
     'admin.policy.sandbox_investors': 'Limite du bac à sable · investisseurs',
     'admin.policy.sandbox_principal':
         'Limite du bac à sable · capital restant dû',
-    'admin.policy.residency': "Résidence",
-    'admin.policy.risk_statements': "Déclarations de risque avant un premier investissement",
-    'admin.policy.term.resident_rwanda': "Résident au Rwanda",
+    'admin.policy.residency': 'Résidence',
+    'admin.policy.risk_statements':
+        'Déclarations de risque avant un premier investissement',
+    'admin.policy.term.resident_rwanda': 'Résident au Rwanda',
     'admin.policy.term.every_deal': 'Exigé pour chaque levée',
     'admin.policy.term.required': 'Exigé',
     'admin.policy.term.not_set': 'Non défini',

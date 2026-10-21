@@ -385,8 +385,9 @@ export function PolicyPeek({
                             className="min-w-0 bg-rz-surface px-[13px] py-[9px]"
                         >
                             <dt
+                                title={t(`admin.policy.${item.key}`)}
                                 className={cn(
-                                    'truncate text-[10px] font-semibold',
+                                    'line-clamp-2 text-[10px] leading-[1.3] font-semibold',
                                     CAPTION,
                                 )}
                             >
