@@ -1664,6 +1664,7 @@ const en = {
     'admin.today.sectors.tip':
         'Outstanding capital by industry. Red means at least one note on watch or in distress.',
     'admin.today.sectors.notes': '{count} notes',
+    'admin.today.sectors.empty': 'No notes have issued yet.',
     'admin.today.treasury.title': 'Treasury snapshot',
     'admin.today.treasury.invested': 'Capital invested (primary)',
     'admin.today.treasury.disbursed': 'Disbursed to businesses',

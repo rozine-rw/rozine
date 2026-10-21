@@ -481,6 +481,9 @@ export function SectorPanel({
                 </InfoTip>
             </div>
             {sectors === null && <Untracked />}
+            {sectors?.length === 0 && (
+                <p className={QUIET}>{t('admin.today.sectors.empty')}</p>
+            )}
             <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {sectors?.map((sector) => (
                     <div

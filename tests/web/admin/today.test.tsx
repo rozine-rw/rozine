@@ -464,6 +464,17 @@ describe('Admin Today, live', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('says no notes have issued when the platform holds no sector exposure yet', () => {
+        render(<AdminToday {...live()} sector_exposure={[]} />);
+
+        expect(
+            screen.getByText('No notes have issued yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByText('Not tracked in the console yet.'),
+        ).toHaveLength(3);
+    });
+
     it("offers the design's quick commands that open a page, in its order, and only those the server links", () => {
         const base = live();
 
