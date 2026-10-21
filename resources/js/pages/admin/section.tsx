@@ -24,6 +24,7 @@ import type {
     FinanceStream,
     PolicyRule,
     RatingBookRow,
+    SandboxUsage,
 } from '@/types/admin';
 
 /** A figure the server has not stated: the tile keeps its place and says nothing. */
@@ -140,8 +141,8 @@ const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands', 'movers']);
 
 /**
  * The rows the server read for a block, as cell text: Policies' rules under the selected tab,
- * Finance's fee streams, and the engine settings Engines and Ratings list for underwriters. Every
- * other block has none and keeps its empty state.
+ * Finance's fee streams, App Control's sandbox limits, and the engine settings Engines and Ratings
+ * list for underwriters. Every other block has none and keeps its empty state.
  */
 function rowsOf(
     block: DesignBlock,
@@ -185,6 +186,25 @@ function rowsOf(
                 ],
             }),
         );
+    }
+
+    if (block.key === 'sandbox') {
+        return (props.sandbox ?? []).map((usage: SandboxUsage) => {
+            const figure = (amount: string): string =>
+                usage.key === 'principal'
+                    ? formatRwf({ currency: 'RWF', amount })
+                    : formatCount(Number(amount));
+
+            return {
+                key: usage.key,
+                cells: [
+                    t(`admin.design.app_control.sandbox.${usage.key}`),
+                    figure(usage.used),
+                    figure(usage.cap),
+                    `${usage.used_pct}%`,
+                ],
+            };
+        });
     }
 
     if (block.key === 'streams') {

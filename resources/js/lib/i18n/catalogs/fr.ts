@@ -1093,6 +1093,10 @@ const fr: Catalog = {
     'admin.design.col.bands': 'Bandes',
     'admin.design.col.filled_mtd': 'Exécuté ce mois',
     'admin.design.col.stream': 'Source',
+    'admin.design.col.limit': 'Limite',
+    'admin.design.col.used': 'Utilisé',
+    'admin.design.col.cap': 'Plafond',
+    'admin.design.col.share': 'Part utilisée',
     'admin.design.col.rate': 'Taux',
     'admin.design.col.paid_by': 'Payé par',
     'admin.design.col.collected': 'Perçu',
@@ -1322,6 +1326,15 @@ const fr: Catalog = {
         'Les applications Investisseur, Entreprise et Auditeur et leurs fonctionnalités.',
     'admin.design.app_control.apps.empty':
         "Aucun réglage d'application à afficher pour le moment.",
+    'admin.design.app_control.sandbox.title': 'Limites du bac à sable',
+    'admin.design.app_control.sandbox.sub':
+        'Part utilisée de chaque limite du bac à sable de la CMA. Rien n’est accepté au-delà d’une limite.',
+    'admin.design.app_control.sandbox.empty':
+        'Aucune utilisation à afficher pour l’instant.',
+    'admin.design.app_control.sandbox.businesses':
+        'Entreprises au mandat actif',
+    'admin.design.app_control.sandbox.investors': 'Investisseurs vérifiés',
+    'admin.design.app_control.sandbox.principal': 'Capital restant dû',
     'admin.design.app_control.content.title': 'Contenu',
     'admin.design.app_control.content.sub':
         'Les éléments des applications Investisseur, Entreprise et Auditeur.',

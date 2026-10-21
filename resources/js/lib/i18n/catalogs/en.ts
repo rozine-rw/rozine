@@ -1043,6 +1043,10 @@ const en = {
     'admin.design.col.bands': 'Bands',
     'admin.design.col.filled_mtd': 'Filled MTD',
     'admin.design.col.stream': 'Stream',
+    'admin.design.col.limit': 'Limit',
+    'admin.design.col.used': 'Used',
+    'admin.design.col.cap': 'Cap',
+    'admin.design.col.share': 'Share used',
     'admin.design.col.rate': 'Rate',
     'admin.design.col.paid_by': 'Paid by',
     'admin.design.col.collected': 'Collected',
@@ -1247,6 +1251,14 @@ const en = {
     'admin.design.app_control.apps.sub':
         'The Investor, Business and Auditor apps and their features.',
     'admin.design.app_control.apps.empty': 'No app settings to show yet.',
+    'admin.design.app_control.sandbox.title': 'Sandbox limits',
+    'admin.design.app_control.sandbox.sub':
+        'How much of each CMA sandbox hard limit is used now. Nothing beyond a limit is accepted.',
+    'admin.design.app_control.sandbox.empty': 'No sandbox usage to show yet.',
+    'admin.design.app_control.sandbox.businesses':
+        'Businesses with an active mandate',
+    'admin.design.app_control.sandbox.investors': 'Verified investors',
+    'admin.design.app_control.sandbox.principal': 'Principal outstanding',
     'admin.design.app_control.content.title': 'Content',
     'admin.design.app_control.content.sub':
         'Items across the Investor, Business and Auditor apps.',
