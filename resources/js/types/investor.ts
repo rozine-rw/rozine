@@ -384,6 +384,9 @@ export type InvestorCheckoutProps = {
 /* ------------------------------------------------------------------------------------------ */
 
 /** Crosswalk SCR-04-ST-02 / SCR-05-ST-01..03: arrears, matured, frozen and defaulted show at once. */
+/** The wallet history's range chips (design "activityRanges"). */
+export type WalletPeriod = 'today' | '7d' | '30d' | 'all';
+
 export type HoldingHealth =
     | 'healthy'
     | 'watch'
@@ -1127,7 +1130,10 @@ export type C3InvestorWalletProps = InvestorPageContract & {
     withdrawals: WalletWithdrawal[];
     history: {
         movement: WalletMovement;
+        /** The history's range, from a Kigali midnight; `all` is the default. */
+        period: WalletPeriod;
         filters: { key: WalletMovement; active: boolean; link: RouteLink }[];
+        periods: { key: WalletPeriod; active: boolean; link: RouteLink }[];
         items: WalletEntry[];
         pagination: Pagination;
     };

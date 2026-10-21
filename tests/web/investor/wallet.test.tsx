@@ -471,6 +471,41 @@ describe('Wallet (C3)', () => {
         expect(history).toHaveTextContent('Refund · Nyamirambo Bakery');
     });
 
+    it('narrows the history to today, 7 days, 30 days or all, from the server’s links', () => {
+        const page = wallet();
+
+        page.history.period = '7d';
+        page.history.periods = page.history.periods.map((period) => ({
+            ...period,
+            active: period.key === '7d',
+            link: {
+                url: `/investor/wallet?movement=external&period=${period.key}`,
+                method: 'get',
+            },
+        }));
+        render(<InvestorWallet {...page} />);
+
+        const ranges = screen.getByRole('navigation', { name: 'Time range' });
+
+        expect(
+            within(ranges)
+                .getAllByRole('link')
+                .map((link) => link.textContent),
+        ).toEqual(['Today', '7 days', '30 days', 'All']);
+        expect(
+            within(ranges).getByRole('link', { name: '7 days' }),
+        ).toHaveAttribute('aria-current', 'true');
+        expect(
+            within(ranges).getByRole('link', { name: '30 days' }),
+        ).toHaveAttribute(
+            'href',
+            '/investor/wallet?movement=external&period=30d',
+        );
+        expect(
+            within(ranges).getByRole('link', { name: 'All' }),
+        ).not.toHaveAttribute('aria-current');
+    });
+
     it('opens an internal transfer’s receipt', () => {
         render(<InvestorWallet {...wallet(internalReceiptFixture)} />);
 

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "080083aa4200f3ea136bcdd906653f2e40cde7388386a3857058b73d1e4d0559",
-    "coverageSetSha256": "463f7b131bb0ca309d0325f3aa76a184a09f48fc3f2425e1762cdabfc496cb32",
+    "sourceManifestSha256": "a1c05eba36a2e5a30bd40c97a463538e1bc79b67a10460a966c6ef310263c045",
+    "coverageSetSha256": "b2e93f1888c6c8c22ad78f51bd22ed5b98d4dc9d078694fe6cd1fae9c98dd830",
     "thresholds": {
         "critical": {
             "global": {
@@ -66,6 +66,7 @@
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
+        "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
@@ -129,6 +130,7 @@
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
+        "resources/js/components/auditor/profile/earnings-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
         "resources/js/components/auditor/refresh.ts",
         "resources/js/components/auditor/sheets/bottom-sheet.tsx",
@@ -380,6 +382,7 @@
         "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/messaging.tsx",
+        "resources/js/pages/admin/notes.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/payments.tsx",
         "resources/js/pages/admin/primary-market.tsx",

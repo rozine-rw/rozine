@@ -426,6 +426,27 @@ export function WalletHistory({
                     </Link>
                 ))}
             </nav>
+            <nav
+                aria-label={t('investor.wallet.c3.period')}
+                className="mt-2 flex shrink-0 gap-[7px]"
+            >
+                {history.periods.map((period) => (
+                    <Link
+                        key={period.key}
+                        href={period.link}
+                        preserveScroll
+                        aria-current={period.active ? 'true' : undefined}
+                        className={cn(
+                            'shrink-0 rounded-[10px] border px-[11px] py-[5px] text-[11.5px] font-semibold whitespace-nowrap',
+                            period.active
+                                ? 'border-[#d6e4ff] bg-rz-accent-fill text-white dark:border-rz-investor'
+                                : 'border-rz-border bg-rz-surface text-rz-slate',
+                        )}
+                    >
+                        {t(`investor.wallet.c3.range.${period.key}`)}
+                    </Link>
+                ))}
+            </nav>
             <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
                 {history.items.map((entry) => (
                     <li
