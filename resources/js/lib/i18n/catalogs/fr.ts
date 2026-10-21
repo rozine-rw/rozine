@@ -1777,9 +1777,11 @@ const fr: Catalog = {
     'admin.applications.older': 'Demandes plus anciennes',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
-    'admin.decision.reason_code.DSCR_BELOW_CUTOFF': "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
-    'admin.decision.reason_code.RESTRICTION_ACTIVE': "Une restriction de crédit active bloque tout nouvel emprunt.",
-    'admin.applications.term_only': "{term} mois",
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        'Une restriction de crédit active bloque tout nouvel emprunt.',
+    'admin.applications.term_only': '{term} mois',
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",
@@ -2079,18 +2081,21 @@ const fr: Catalog = {
     'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choisir qui reçoit les e-mails en préproduction.',
-    'admin.permission.staff.manage': "Gérer les opérateurs",
-    'admin.permission_detail.staff.manage': "Suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+    'admin.permission.staff.manage': 'Gérer les opérateurs',
+    'admin.permission_detail.staff.manage':
+        "Suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
     'admin.action_log.title': "Journal des actions d'administration",
-    'admin.action_log.info': "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
-    'admin.action_log.empty': "Aucune action d'administration enregistrée pour l'instant.",
-    'admin.action_log.col.action': "Action",
-    'admin.action_log.col.by': "Par",
-    'admin.action_log.col.target': "Cible",
-    'admin.action_log.col.reason': "Motif",
-    'admin.action_log.col.when': "Quand",
-    'admin.action_log.action.staff_suspended': "Accès suspendu",
-    'admin.action_log.action.staff_enabled': "Accès activé",
+    'admin.action_log.info':
+        "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
+    'admin.action_log.empty':
+        "Aucune action d'administration enregistrée pour l'instant.",
+    'admin.action_log.col.action': 'Action',
+    'admin.action_log.col.by': 'Par',
+    'admin.action_log.col.target': 'Cible',
+    'admin.action_log.col.reason': 'Motif',
+    'admin.action_log.col.when': 'Quand',
+    'admin.action_log.action.staff_suspended': 'Accès suspendu',
+    'admin.action_log.action.staff_enabled': 'Accès activé',
     'admin.permission.reconciliation.view': 'Voir le rapprochement',
     'admin.permission_detail.reconciliation.view':
         'Comparer le grand livre aux relevés des prestataires.',

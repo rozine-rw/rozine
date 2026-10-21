@@ -871,4 +871,3 @@ describe('Engine refusals', () => {
         expect(within(row).queryByRole('link')).not.toBeInTheDocument();
     });
 });
-
