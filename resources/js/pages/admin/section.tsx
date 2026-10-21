@@ -15,16 +15,22 @@ import {
     TableCard,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AdminPendingSectionProps, PolicyRule } from '@/types/admin';
+import type {
+    AdminPendingSectionProps,
+    FinanceStream,
+    PolicyRule,
+} from '@/types/admin';
 
 /** A figure the server has not stated: the tile keeps its place and says nothing. */
 const NO_FIGURE = '—';
 
 /**
  * A design section whose live reads are not wired yet: the console frame with the design's KPI
- * tiles, tabs and tables, every figure blank and every table at its empty state. Nothing is
- * invented and no action is offered, because no server read or command backs them yet. A section
+ * tiles, tabs and tables, every figure blank and every table at its empty state unless the server
+ * sends it (Policies' rules, Finance's fee revenue). Nothing is invented and no action is offered,
+ * because no server read or command backs them yet. A section
  * the design layout does not cover keeps the plain empty state.
  */
 export default function AdminPendingSection(props: AdminPendingSectionProps) {
@@ -59,7 +65,7 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                                 key={kpi.label}
                                 index={index}
                                 label={t(kpi.label)}
-                                value={NO_FIGURE}
+                                value={figureOf(props.figures, kpi.label)}
                                 sub={
                                     kpi.sub === undefined
                                         ? undefined
@@ -104,9 +110,7 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                             <Block
                                 key={block.key}
                                 block={block}
-                                rules={(props.rules ?? []).filter(
-                                    (rule) => rule.tab === tab,
-                                )}
+                                rows={rowsOf(block, tab, props, t)}
                             />
                         ))}
                 </div>
@@ -115,11 +119,61 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
     );
 }
 
+/** A tile's figure by its design key (the label code's last part), or the blank mark. */
+function figureOf(
+    figures: AdminPendingSectionProps['figures'],
+    label: string,
+): string {
+    const figure = figures?.[label.slice(label.lastIndexOf('.') + 1)];
+
+    return figure === undefined ? NO_FIGURE : formatRwfShort(figure);
+}
+
 /**
- * One designed panel: its title and caption over a chart's or a table's empty state. Policies'
- * table lists the rules the server says are in effect under the selected tab.
+ * The rows the server read for a block, as cell text: Policies' rules under the selected tab and
+ * Finance's fee streams. Every other block has none and keeps its empty state.
  */
-function Block({ block, rules }: { block: DesignBlock; rules: PolicyRule[] }) {
+function rowsOf(
+    block: DesignBlock,
+    tab: string | undefined,
+    props: AdminPendingSectionProps,
+    t: ReturnType<typeof useTranslation>['t'],
+): { key: string; cells: string[] }[] {
+    if (block.key === 'rules') {
+        return (props.rules ?? [])
+            .filter((rule: PolicyRule) => rule.tab === tab)
+            .map((rule) => ({
+                key: rule.key,
+                cells: [
+                    t(`admin.policy.${rule.key}`),
+                    rule.value,
+                    rule.version ?? NO_FIGURE,
+                ],
+            }));
+    }
+
+    if (block.key === 'streams') {
+        return (props.streams ?? []).map((stream: FinanceStream) => ({
+            key: stream.key,
+            cells: [
+                t(`admin.finance.stream.${stream.key}`),
+                t(`admin.finance.paid_by.${stream.paid_by}`),
+                formatRwf(stream.collected),
+            ],
+        }));
+    }
+
+    return [];
+}
+
+/** One designed panel: its title and caption over a chart's or a table's rows or empty state. */
+function Block({
+    block,
+    rows,
+}: {
+    block: DesignBlock;
+    rows: { key: string; cells: string[] }[];
+}) {
     const { t } = useTranslation();
     const title = t(block.title);
     const columns = block.columns ?? [];
@@ -149,7 +203,7 @@ function Block({ block, rules }: { block: DesignBlock; rules: PolicyRule[] }) {
                 <TableCard
                     label={title}
                     minWidth="min-w-[720px]"
-                    empty={rules.length === 0 ? empty : undefined}
+                    empty={rows.length === 0 ? empty : undefined}
                 >
                     <div
                         role="row"
@@ -162,9 +216,9 @@ function Block({ block, rules }: { block: DesignBlock; rules: PolicyRule[] }) {
                             </HeadCell>
                         ))}
                     </div>
-                    {rules.map((rule) => (
+                    {rows.map((row) => (
                         <div
-                            key={rule.key}
+                            key={row.key}
                             role="row"
                             className={cn(
                                 'grid items-center gap-3 px-5 py-3.5',
@@ -172,24 +226,20 @@ function Block({ block, rules }: { block: DesignBlock; rules: PolicyRule[] }) {
                             )}
                             style={grid}
                         >
-                            <span
-                                role="cell"
-                                className="min-w-0 text-[13px] font-semibold text-rz-ink"
-                            >
-                                {t(`admin.policy.${rule.key}`)}
-                            </span>
-                            <span
-                                role="cell"
-                                className="min-w-0 text-[13px] font-bold text-rz-ink"
-                            >
-                                {rule.value}
-                            </span>
-                            <span
-                                role="cell"
-                                className="min-w-0 truncate font-mono text-[12px] text-rz-muted"
-                            >
-                                {rule.version ?? NO_FIGURE}
-                            </span>
+                            {row.cells.map((cell, index) => (
+                                <span
+                                    key={index}
+                                    role="cell"
+                                    className={cn(
+                                        'min-w-0 text-[13px] text-rz-ink',
+                                        index === 0
+                                            ? 'font-semibold'
+                                            : 'font-medium',
+                                    )}
+                                >
+                                    {cell}
+                                </span>
+                            ))}
                         </div>
                     ))}
                 </TableCard>

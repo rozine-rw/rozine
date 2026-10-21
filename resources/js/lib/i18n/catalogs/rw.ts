@@ -1478,6 +1478,13 @@ const rw: Catalog = {
     'admin.policy.repeat_issue_months': 'Amezi yagenzuwe · gusubiramo',
     'admin.policy.withdrawal_min': 'Kubikuza guto',
     'admin.policy.withdrawal_max': 'Kubikuza kunini',
+    'admin.finance.stream.platform_fee':
+        'Amafaranga ya platform · umugabane wa Rozine',
+    'admin.finance.stream.audit_partner_share':
+        "Amafaranga ya platform · umugabane w'Audit Partner (ugomba kwishyurwa)",
+    'admin.finance.stream.deposit_fees': 'Amafaranga yo kubitsa',
+    'admin.finance.paid_by.business': 'Ibigo',
+    'admin.finance.paid_by.investor': 'Abashoramari',
     'admin.policy.dual_control_threshold': 'Abemeza babiri guhera kuri',
     'admin.time.now': 'ubu nyine',
     'admin.time.minutes': 'hashize iminota {count}',

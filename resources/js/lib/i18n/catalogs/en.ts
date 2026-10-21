@@ -1406,6 +1406,12 @@ const en = {
     'admin.policy.repeat_issue_months': 'Audited months · repeat issue',
     'admin.policy.withdrawal_min': 'Smallest withdrawal',
     'admin.policy.withdrawal_max': 'Largest withdrawal',
+    'admin.finance.stream.platform_fee': 'Platform fee · Rozine share',
+    'admin.finance.stream.audit_partner_share':
+        'Platform fee · Audit Partner share (payable)',
+    'admin.finance.stream.deposit_fees': 'Deposit fees',
+    'admin.finance.paid_by.business': 'Businesses',
+    'admin.finance.paid_by.investor': 'Investors',
     'admin.policy.dual_control_threshold': 'Two approvers from',
     'admin.time.now': 'just now',
     'admin.time.minutes': '{count}m ago',

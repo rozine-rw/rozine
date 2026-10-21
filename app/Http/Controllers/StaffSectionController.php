@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Operations\BrowseLedger;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffPolicyRulesResource;
 use App\Http\Resources\StaffViewerResource;
@@ -16,8 +17,9 @@ use Inertia\Response;
 /**
  * A console section the design shows but whose screen is not wired yet: any staff member may open
  * it, and it renders the console frame with the section's title and an empty state. Nothing is
- * read beyond the viewer's own access, so nothing can be invented. Policies also lists the rules the
- * domain enforces.
+ * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
+ * read: Policies lists the rules the domain enforces, and Finance shows the ledger's fee revenue to
+ * whoever may read the ledger.
  */
 class StaffSectionController extends Controller
 {
@@ -33,7 +35,7 @@ class StaffSectionController extends Controller
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
 
     /** Compliance has one dashboard: whoever may review investor identities is sent to that live queue. */
-    public function show(Request $request, GetStaffAccess $access, string $section): Response|RedirectResponse
+    public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, string $section): Response|RedirectResponse
     {
         $staff = $access->handle((int) $request->user()?->getAuthIdentifier(), true);
         /** @var list<string> $roles */
@@ -44,12 +46,32 @@ class StaffSectionController extends Controller
             return to_route('staff.investor-verifications.index');
         }
         $name = (string) $request->user()?->name;
+        $finance = $section === 'finance' && in_array('ledger.view', $permissions, true) ? self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier())) : [];
 
         return Inertia::render('admin/section', ['server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? StaffPolicyRulesResource::rows() : []]);
+            'rules' => $section === 'policies' ? StaffPolicyRulesResource::rows() : [], ...$finance]);
+    }
+
+    /**
+     * Finance's figures for whoever may read the ledger: all fee revenue and the primary market's
+     * part of it, and one row per stream with who pays it. Investor and secondary-market fees are not
+     * charged yet, so their tiles stay blank.
+     *
+     * @param  array{platform_fee: string, audit_partner_share: string, deposit_fees: string}  $revenue
+     * @return array{figures: array<string, array{currency: string, amount: string}>, streams: list<array{key: string, paid_by: string, collected: array{currency: string, amount: string}}>}
+     */
+    private static function finance(array $revenue): array
+    {
+        $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+
+        return ['figures' => ['revenue' => $money((string) ((int) $revenue['platform_fee'] + (int) $revenue['deposit_fees'])),
+            'primary' => $money($revenue['platform_fee'])],
+            'streams' => [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money($revenue['platform_fee'])],
+                ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money($revenue['audit_partner_share'])],
+                ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money($revenue['deposit_fees'])]]];
     }
 }

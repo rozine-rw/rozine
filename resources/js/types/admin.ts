@@ -99,6 +99,16 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
         | 'events';
     /** Policies only: each rule the platform enforces, under its design tab. */
     rules?: PolicyRule[];
+    /** A KPI tile's figure by its design key, where the server reads one (Finance). */
+    figures?: Partial<Record<string, Money>>;
+    /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
+    streams?: FinanceStream[];
+};
+
+export type FinanceStream = {
+    key: 'platform_fee' | 'audit_partner_share' | 'deposit_fees';
+    paid_by: 'business' | 'investor';
+    collected: Money;
 };
 
 /** One rule in effect, with the policy version it comes from when the rule carries one. */

@@ -44,6 +44,21 @@ final readonly class BrowseLedger
     }
 
     /**
+     * The fee revenue the ledger holds, for the Finance section: Rozine's share of platform fees,
+     * the Audit Partners' share still payable and the deposit fees, each in whole RWF.
+     *
+     * @return array{platform_fee: string, audit_partner_share: string, deposit_fees: string}
+     */
+    public function revenue(int $actorId): array
+    {
+        $this->staff->check($actorId, 'ledger.view');
+        $credits = $this->journal->credits(['platform_fee_revenue', 'audit_partner_fee_payable', 'deposit_fee_revenue']);
+
+        return ['platform_fee' => $credits['platform_fee_revenue'] ?? '0', 'audit_partner_share' => $credits['audit_partner_fee_payable'] ?? '0',
+            'deposit_fees' => $credits['deposit_fee_revenue'] ?? '0'];
+    }
+
+    /**
      * The newest postings, for the Operations Center's activity feed.
      *
      * @return list<Entry>

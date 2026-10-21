@@ -272,6 +272,49 @@ describe('Policies', () => {
     });
 });
 
+describe('Finance', () => {
+    it('shows the fee revenue the ledger holds, stream by stream, and leaves uncharged fees blank', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    figures: {
+                        revenue: { currency: 'RWF', amount: '1950000' },
+                        primary: { currency: 'RWF', amount: '1800000' },
+                    },
+                    streams: [
+                        {
+                            key: 'platform_fee',
+                            paid_by: 'business',
+                            collected: { currency: 'RWF', amount: '1800000' },
+                        },
+                        {
+                            key: 'deposit_fees',
+                            paid_by: 'investor',
+                            collected: { currency: 'RWF', amount: '150000' },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const region = screen.getByRole('region', {
+            name: 'Finance Dashboard',
+        });
+        expect(within(region).getAllByText('—')).toHaveLength(2);
+        expect(region).toHaveTextContent('All revenueRWF 2M');
+        expect(region).toHaveTextContent('Primary marketRWF 1.8M');
+
+        const streams = screen.getByRole('table', { name: 'Revenue streams' });
+        expect(within(streams).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · Rozine shareBusinessesRWF 1,800,000',
+        );
+        expect(within(streams).getAllByRole('row')[2]).toHaveTextContent(
+            'Deposit feesInvestorsRWF 150,000',
+        );
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);

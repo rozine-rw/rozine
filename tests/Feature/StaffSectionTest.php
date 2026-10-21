@@ -9,6 +9,7 @@ use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\PrimaryIssuanceFixture;
 
 /** @param  list<string>  $roles */
 function sectionStaff(array $roles): User
@@ -44,6 +45,20 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
         ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rules', []));
+});
+
+test('Finance shows the fee revenue the ledger holds to whoever may read the ledger, and nothing to anyone else', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+
+    $this->actingAs(sectionStaff(['treasury']))->get('/admin/finance')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')
+            ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400')])
+            ->where('streams', [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money('194400')],
+                ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money('129600')],
+                ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money('0')]]));
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/finance')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'finance')->missing('figures')->missing('streams'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

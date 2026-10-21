@@ -1485,6 +1485,12 @@ const fr: Catalog = {
     'admin.policy.repeat_issue_months': 'Mois audités · émission répétée',
     'admin.policy.withdrawal_min': 'Retrait minimal',
     'admin.policy.withdrawal_max': 'Retrait maximal',
+    'admin.finance.stream.platform_fee': 'Frais de plateforme · part Rozine',
+    'admin.finance.stream.audit_partner_share':
+        'Frais de plateforme · part Audit Partner (à payer)',
+    'admin.finance.stream.deposit_fees': 'Frais de dépôt',
+    'admin.finance.paid_by.business': 'Entreprises',
+    'admin.finance.paid_by.investor': 'Investisseurs',
     'admin.policy.dual_control_threshold': 'Deux approbateurs à partir de',
     'admin.time.now': "à l'instant",
     'admin.time.minutes': 'il y a {count} min',
