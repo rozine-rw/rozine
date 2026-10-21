@@ -307,7 +307,7 @@ export const SECTION_DESIGNS: Record<
         blocks: [
             finance.block('streams', {
                 tab: 'streams',
-                columns: ['stream', 'paid_by', 'collected'],
+                columns: ['stream', 'rate', 'paid_by', 'collected'],
             }),
             finance.block('ledger', {
                 tab: 'ledger',

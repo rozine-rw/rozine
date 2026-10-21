@@ -13,6 +13,7 @@ import {
     ROW_RULE,
     TABLE_HEAD,
     TableCard,
+    policyValue,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
@@ -155,7 +156,7 @@ function rowsOf(
                 key: rule.key,
                 cells: [
                     t(`admin.policy.${rule.key}`),
-                    rule.value,
+                    policyValue(rule, t),
                     rule.version ?? NO_FIGURE,
                 ],
             }));
@@ -191,8 +192,13 @@ function rowsOf(
             key: stream.key,
             cells: [
                 t(`admin.finance.stream.${stream.key}`),
-                t(`admin.finance.paid_by.${stream.paid_by}`),
-                formatRwf(stream.collected),
+                stream.rate === null ? NO_FIGURE : policyValue(stream.rate, t),
+                stream.paid_by === null
+                    ? NO_FIGURE
+                    : t(`admin.finance.paid_by.${stream.paid_by}`),
+                stream.collected === null
+                    ? NO_FIGURE
+                    : formatRwf(stream.collected),
             ],
         }));
     }

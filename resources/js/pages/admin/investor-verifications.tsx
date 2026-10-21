@@ -61,6 +61,7 @@ export default function AdminInvestorVerifications(
             <PolicyPeek
                 title={t('admin.kyc.policy_title')}
                 items={props.policy}
+                link={props.nav.policies}
             />
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <p className={cn('max-w-[720px] text-[13px]', EXPLAIN)}>

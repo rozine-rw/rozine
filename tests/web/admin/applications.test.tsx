@@ -120,6 +120,12 @@ describe('Applications queue', () => {
 
         expect(within(policy).getByText('1.50×')).toBeInTheDocument();
         expect(within(policy).getByText('10–15%')).toBeInTheDocument();
+        expect(
+            within(policy).getByText('Required on every deal'),
+        ).toBeInTheDocument();
+        expect(
+            within(policy).getByRole('link', { name: 'Policies' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
         const tabs = screen.getByRole('navigation', {
             name: 'Application states',
         });

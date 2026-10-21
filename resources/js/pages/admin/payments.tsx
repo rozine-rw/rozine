@@ -138,6 +138,7 @@ export default function AdminPayments(props: AdminPaymentsProps) {
             <PolicyPeek
                 title={t('admin.payments.policy_title')}
                 items={props.policy}
+                link={props.nav.policies}
             />
             <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {props.stats.map((stat) => (

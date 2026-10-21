@@ -51,7 +51,9 @@ test('every staff role may open the Business directory; participants and guests 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/parties')->where('kind', 'business')->where('viewer.role', 'analyst')
             ->where('contract_version', 'staff-business-directory-v1')->where('nav.businesses.url', '/admin/businesses')
-            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [['key' => 'min_statement_years', 'value' => '3']])->where('party', null));
+            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [['key' => 'min_revenue', 'value' => 'RWF 30,000,000'],
+                ['key' => 'min_statement_years', 'value' => '3'], ['key' => 'rdb_certificate', 'value' => '', 'term' => 'required'],
+                ['key' => 'max_notes', 'value' => '', 'term' => 'not_set']])->where('party', null));
     $this->actingAs(businessDirectoryStaff(['superadmin']))->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')->where('nav.auditors.url', '/admin/auditors'));
     $this->actingAs(businessDirectoryStaff(['treasury']))->get(route('staff.businesses.index'))->assertOk()
