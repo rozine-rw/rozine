@@ -114,7 +114,7 @@ describe('Payment Center', () => {
         expect(
             screen.getByRole('region', { name: 'Fee schedule in effect' }),
         ).toHaveTextContent(
-            'Platform fee · at disbursement3%Audit Partner share of the fee40%',
+            'Platform fee · at disbursement3%CPA share — Kigali40%',
         );
 
         const movement = screen.getByRole('region', {

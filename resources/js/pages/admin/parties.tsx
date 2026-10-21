@@ -50,6 +50,7 @@ export default function AdminParties(props: AdminPartiesProps) {
                 <PolicyPeek
                     title={t('admin.parties.policy_title')}
                     items={props.policy}
+                    link={props.nav.policies}
                 />
             )}
             {props.stats.length > 0 && (

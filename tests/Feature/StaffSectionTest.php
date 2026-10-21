@@ -45,7 +45,16 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             'target_dscr' => '1.50×', 'rate_band' => '10–15%', 'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000',
             'tenors' => '3–6', 'first_issue_months' => '36', 'repeat_issue_months' => '12', 'minimum_age' => '18',
             'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
-        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits']);
+        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits'])
+        ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
+            'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'concentration' => '50%', 'resale_listing_days' => '7',
+            'resale_reservation_minutes' => '5', 'cpa_radius' => '30 km', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000'])
+        ->and(array_column(array_filter($rules, fn (array $rule): bool => isset($rule['term'])), 'term', 'key'))->toBe([
+            'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'rdb_certificate' => 'required',
+            'max_notes' => 'not_set', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
+            'default_at' => 'day_31', 'auto_freeze' => 'not_set'])
+        ->and(array_column($rules, 'version', 'key'))->toMatchArray(['min_revenue' => 'brs-2.0-uw-r01', 'max_notes' => 'brs-2.0-od-20',
+            'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null]);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rules', []));
 });
@@ -57,9 +66,13 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')
             ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400')])
-            ->where('streams', [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money('194400')],
-                ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money('129600')],
-                ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money('0')]]));
+            ->where('streams', [['key' => 'platform_fee', 'rate' => ['key' => 'platform_fee', 'value' => '3%'], 'paid_by' => 'business', 'collected' => $money('194400')],
+                ['key' => 'audit_partner_share', 'rate' => ['key' => 'cpa_share', 'value' => '40%'], 'paid_by' => 'business', 'collected' => $money('129600')],
+                ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money('0')],
+                ['key' => 'earnings_fee', 'rate' => ['key' => 'earnings_fee', 'value' => '15% · 12% · 10% · 9% · 8%'], 'paid_by' => 'investor', 'collected' => null],
+                ['key' => 'resale_fee', 'rate' => ['key' => 'resale_fee', 'value' => '2%'], 'paid_by' => 'seller', 'collected' => null],
+                ['key' => 'withdrawal_fee', 'rate' => ['key' => 'withdrawal_fee', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null],
+                ['key' => 'loss_reserve', 'rate' => ['key' => 'loss_reserve', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null]]));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('section', 'finance')->missing('figures')->missing('streams'));
 });

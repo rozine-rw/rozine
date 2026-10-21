@@ -155,9 +155,20 @@ export type EngineRow = {
 };
 
 export type FinanceStream = {
-    key: 'platform_fee' | 'audit_partner_share' | 'deposit_fees';
-    paid_by: 'business' | 'investor';
-    collected: Money;
+    key:
+        | 'platform_fee'
+        | 'audit_partner_share'
+        | 'deposit_fees'
+        | 'earnings_fee'
+        | 'resale_fee'
+        | 'withdrawal_fee'
+        | 'loss_reserve';
+    /** The rule that sets it, as Policies shows it; null when no rate applies. */
+    rate: PolicyItem | null;
+    /** Null when nobody pays it: the fee or reserve does not exist. */
+    paid_by: 'business' | 'investor' | 'seller' | null;
+    /** Null when no ledger account takes it yet. */
+    collected: Money | null;
 };
 
 /** One rule in effect, with the policy version it comes from when the rule carries one. */
@@ -243,9 +254,44 @@ export type PolicyItem = {
         | 'first_issue_months'
         | 'repeat_issue_months'
         | 'withdrawal_min'
-        | 'withdrawal_max';
+        | 'withdrawal_max'
+        | 'cpa_share_upcountry'
+        | 'resale_fee'
+        | 'earnings_fee'
+        | 'cpa_earnings_share'
+        | 'application_fee'
+        | 'withdrawal_fee'
+        | 'loss_reserve'
+        | 'min_rating'
+        | 'revenue_cap'
+        | 'kyc_reverify'
+        | 'late_charge'
+        | 'miss_grace'
+        | 'default_at'
+        | 'auto_freeze'
+        | 'min_investment'
+        | 'concentration'
+        | 'raise_days'
+        | 'resale_listing_days'
+        | 'resale_reservation_minutes'
+        | 'cpa_radius'
+        | 'sandbox_businesses'
+        | 'sandbox_investors'
+        | 'sandbox_principal';
+    /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
+    term?: PolicyTerm;
 };
+
+/** A worded policy value, translated by the console. */
+export type PolicyTerm =
+    | 'every_deal'
+    | 'required'
+    | 'not_set'
+    | 'none'
+    | 'late_from_due'
+    | 'day_31'
+    | 'late_schedule';
 
 /** One entry in a record's trail: an action taken on it, by whom and when. */
 export type TrailEntry = {
