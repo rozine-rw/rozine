@@ -179,7 +179,7 @@ describe('Primary Market Monitor', () => {
             />,
         );
 
-        expect(screen.getByText('10-14').parentElement).toHaveClass('max-w-14');
+        expect(screen.getByTestId('chart-bar')).toHaveClass('max-w-14');
     });
 
     it('shows one day left in the singular and offers a further page', () => {

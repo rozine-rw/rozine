@@ -157,7 +157,7 @@ describe('Payment Center', () => {
             />,
         );
 
-        expect(screen.getByText('10-14').parentElement).toHaveClass('max-w-14');
+        expect(screen.getByTestId('chart-bar')).toHaveClass('max-w-14');
     });
 
     it('offers a further page when more payouts are in flight', () => {

@@ -141,6 +141,7 @@ export function CapitalRaisedPanel({
                 {chart.bars.map((bar) => (
                     <div
                         key={bar.label}
+                        data-testid="chart-bar"
                         className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
