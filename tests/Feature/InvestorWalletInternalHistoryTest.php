@@ -118,3 +118,35 @@ it('lists the live checkout holds newest first, each opening its held checkout',
     $this->travel(1)->days();
     expect(internalWalletPage($this->actingAs($this->investor['user'])->get(route('investor.wallet')))['holds'])->toBe([]);
 });
+
+it('narrows history to today, the last 7 or 30 Kigali days, keeping the period on every history link', function (): void {
+    ($this->reserve)('1', (string) Str::uuid());
+    $this->travel(8)->days();
+    ($this->reserve)('2', (string) Str::uuid());
+    $this->actingAs($this->investor['user']);
+    $kinds = fn (array $query): array => array_column(internalWalletPage($this->get(route('investor.wallet', $query)))['history']['items'], 'amount');
+
+    expect($kinds(['movement' => 'internal']))->toHaveCount(2)
+        ->and($kinds(['movement' => 'internal', 'period' => '30d']))->toHaveCount(2)
+        ->and($kinds(['movement' => 'internal', 'period' => '7d']))->toBe([['currency' => 'RWF', 'amount' => '10000']])
+        ->and($kinds(['movement' => 'internal', 'period' => 'today']))->toBe([['currency' => 'RWF', 'amount' => '10000']])
+        ->and($kinds(['period' => 'today']))->toBe([]);
+
+    $history = internalWalletPage($this->get(route('investor.wallet', ['movement' => 'internal', 'period' => '7d'])))['history'];
+    expect($history['period'])->toBe('7d')
+        ->and(array_map(fn (array $period): array => [$period['key'], $period['active'], $period['link']['url']], $history['periods']))->toBe([
+            ['today', false, '/investor/wallet?movement=internal&period=today'], ['7d', true, '/investor/wallet?movement=internal&period=7d'],
+            ['30d', false, '/investor/wallet?movement=internal&period=30d'], ['all', false, '/investor/wallet?movement=internal']])
+        ->and($history['filters'][0]['link']['url'])->toBe('/investor/wallet?movement=external&period=7d')
+        ->and(internalWalletPage($this->get(route('investor.wallet')))['history']['filters'][1]['link']['url'])->toBe('/investor/wallet?movement=internal');
+    $this->get(route('investor.wallet', ['period' => 'year']))->assertSessionHasErrors('period');
+});
+
+it('keeps the period on the next page of history', function (): void {
+    foreach (range(1, 21) as $index) {
+        ($this->reserve)('1', (string) Str::uuid());
+    }
+
+    $next = internalWalletPage($this->actingAs($this->investor['user'])->get(route('investor.wallet', ['movement' => 'internal', 'period' => '30d'])))['history']['pagination']['next'];
+    expect($next['url'])->toStartWith('/investor/wallet?movement=internal&before=')->toEndWith('&period=30d');
+});

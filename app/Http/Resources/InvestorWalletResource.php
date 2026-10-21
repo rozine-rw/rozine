@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Application\Wallet\Contracts\WalletStore;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,6 +25,9 @@ class InvestorWalletResource extends JsonResource
         $wallet = fn (array $query = []): array => self::link($request, 'investor.wallet', $query);
         $page = fn (string $name): ?array => $request->routeIs('api.*') ? null : self::link($request, $name);
         $movement = $data['history']['movement'];
+        $period = $data['history']['period'];
+        // "all" is the default, so its links carry no period.
+        $kept = fn (array $query): array => $period === 'all' ? $query : [...$query, 'period' => $period];
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => $data['allowed_actions'], 'wallet' => $data['wallet'],
@@ -33,10 +37,12 @@ class InvestorWalletResource extends JsonResource
             'funding' => $data['funding'],
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $context, $deposit), $data['deposits']),
             'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $context, $withdrawal), $data['withdrawals']),
-            'history' => ['movement' => $movement,
-                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key])], ['external', 'internal']),
+            'history' => ['movement' => $movement, 'period' => $period,
+                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet($kept(['movement' => $key]))], ['external', 'internal']),
+                'periods' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $period,
+                    'link' => $wallet($key === 'all' ? ['movement' => $movement] : ['movement' => $movement, 'period' => $key])], WalletStore::HISTORY_PERIODS),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
-                'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, 'before' => $data['history']['next_before']])]],
+                'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet($kept(['movement' => $movement, 'before' => $data['history']['next_before']]))]],
             'receipt' => self::receipt($request, $context, $data['receipt']), 'earnings' => null,
             'exports' => ['csv' => self::link($request, 'investor.wallet.statement', ['format' => 'csv']), 'pdf' => self::link($request, 'investor.wallet.statement', ['format' => 'pdf'])],
             'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),

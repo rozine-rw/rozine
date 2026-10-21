@@ -16,12 +16,15 @@ use Closure;
  */
 interface WalletStore
 {
+    /** The wallet history periods, each from a Kigali midnight: today, the last 7 or 30 days, or all. */
+    public const array HISTORY_PERIODS = ['today', '7d', '30d', 'all'];
+
     /**
      * The caller's wallet facts: ledger-derived buckets, the applicable policy and verified methods,
      * the quote for `amount` under the chosen `kind`, recent deposits and withdrawals with their
      * receipts, history and an opened receipt.
      *
-     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, period?: string|null, before?: string|null, receipt?: string|null}  $query
      * @return array<string, mixed>
      */
     public function page(int $userId, ?int $contextRevision, array $query): array;
