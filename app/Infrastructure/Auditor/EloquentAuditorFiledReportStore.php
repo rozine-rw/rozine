@@ -120,8 +120,14 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
         /** @var array{report: array{findings?: list<array{measure: string, reported?: string, observed?: mixed}>}} $sealed */
         $sealed = $seal->payload;
 
-        return array_values(array_map(fn (array $finding): array => ['reported' => (string) $finding['reported'], 'observed' => (string) $finding['observed']],
-            array_filter($sealed['report']['findings'] ?? [], fn (array $finding): bool => in_array($finding['measure'], self::MONEY, true))));
+        $money = [];
+        foreach ($sealed['report']['findings'] ?? [] as $finding) {
+            if (in_array($finding['measure'], self::MONEY, true) && isset($finding['reported']) && is_string($finding['observed'] ?? null)) {
+                $money[] = ['reported' => $finding['reported'], 'observed' => $finding['observed']];
+            }
+        }
+
+        return $money;
     }
 
     /**

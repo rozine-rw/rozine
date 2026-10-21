@@ -13,6 +13,7 @@ use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\ProjectAuditAssignmentOperation;
 use App\Application\Auditor\RespondToAuditAssignment;
 use App\Application\Business\GetAuditApplication;
+use App\Application\Evidence\GetAuditStatements;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Auditor\ListAuditJobsRequest;
 use App\Http\Requests\Auditor\RespondToAssignmentRequest;
@@ -39,16 +40,18 @@ class AuditorJobsController extends Controller
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/jobs', $resource->resolve($request));
     }
 
-    public function show(Request $request, GetAuditApplication $application, ListAuditJobs $jobs, GetAssignmentAuditReport $reports): Response|AuditorFileResource
+    public function show(Request $request, GetAuditApplication $application, ListAuditJobs $jobs, GetAssignmentAuditReport $reports, GetAuditStatements $statements): Response|AuditorFileResource
     {
         [$userId, $revision] = $this->reader($request);
         $background = $jobs->handle($userId, $revision);
         $record = $application->handle($userId, $revision, (string) $request->route('assignment'));
         $engagement = $this->engagements->handle($userId, $revision);
-        $canStart = $record['work']['assignment']['status'] === 'accepted' && $engagement['status'] === 'current'
-            && ($record['application']['status'] ?? null) === 'submitted';
+        $working = $record['work']['assignment']['status'] === 'accepted' && $engagement['status'] === 'current';
+        $canStart = $working && ($record['application']['status'] ?? null) === 'submitted';
         $report = $canStart ? $reports->handle($userId, $revision, $record['work']['assignment']['id']) : null;
-        $resource = new AuditorFileResource(['record' => $record, 'report' => $report, 'can_start' => $canStart && $report === null,
+        // The statements on file open to the partner once the work is theirs; an offer shows none of them.
+        $documents = $working ? $statements->handle($userId, $revision, $record['work']['assignment']['id'])['evidence']['documents'] : null;
+        $resource = new AuditorFileResource(['record' => $record, 'report' => $report, 'can_start' => $canStart && $report === null, 'documents' => $documents,
             'jobs' => [...$background, 'identity_context_revision' => $revision, 'limit' => 25, 'engagement' => $engagement]]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/file', $resource->resolve($request));
