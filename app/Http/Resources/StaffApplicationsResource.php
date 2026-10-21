@@ -37,11 +37,12 @@ class StaffApplicationsResource extends JsonResource
                 'initials' => StaffViewerResource::initials($name), 'role' => in_array('superadmin', $roles, true) ? 'superadmin' : 'approver'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => $page['policy'],
-            'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved']),
+            'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved', 'rejected']),
             'applications' => array_map(function (array $entry) use ($link, $position): array {
                 unset($entry['capacity'], $entry['use_of_funds']);
 
-                return [...$entry, 'link' => $link([...$position, 'application' => $entry['id']]), 'approve_link' => null];
+                // An engine refusal is a draft the business may still change: it opens no staff review.
+                return [...$entry, 'link' => $entry['state'] === 'rejected' ? null : $link([...$position, 'application' => $entry['id']]), 'approve_link' => null];
             }, $page['entries']), 'review' => $review, 'stage' => null,
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'links' => ['operation' => StaffApplicationReleaseResource::lookup($request), 'changes' => $request->routeIs('api.*') ? null

@@ -834,3 +834,41 @@ describe('The live staff applications index (#147)', () => {
         expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
     });
 });
+
+describe('Engine refusals', () => {
+    it('lists a refused draft with its reason and no review or approve control', () => {
+        const fixture = props(liveFixture);
+        const [first] = fixture.applications;
+
+        fixture.applications = [
+            {
+                ...first,
+                id: 'app_refused',
+                business: 'Kivu Fisheries',
+                state: 'rejected',
+                rate_pct: null,
+                term_months: 6,
+                link: null,
+                approve_link: null,
+                decision: {
+                    code: 'reject',
+                    reason: '',
+                    reason_code: 'RESTRICTION_ACTIVE',
+                },
+            },
+        ];
+        render(<AdminApplications {...fixture} />);
+
+        const row = screen.getByRole('row', { name: /Kivu Fisheries/ });
+
+        expect(within(row).getByText('Rejected')).toBeInTheDocument();
+        expect(within(row).getByText('6mo')).toBeInTheDocument();
+        expect(
+            within(row).getByText(
+                'An active credit restriction blocks new borrowing.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(row).queryByRole('link')).not.toBeInTheDocument();
+    });
+});
+

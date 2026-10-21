@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +16,9 @@ use RuntimeException;
 
 final class EloquentStaffApplicationQueue implements StaffApplicationQueue
 {
+    /** Engine outcomes that refuse an application outright (UW-R03), as opposed to evidence still missing. */
+    private const REJECTIONS = ['DSCR_BELOW_CUTOFF', 'RESTRICTION_ACTIVE'];
+
     public function __construct(private CanonicalJson $json, private RetainedStaffUnderwritingBasis $underwriting) {}
 
     /** @return array<string, mixed> */
@@ -27,7 +31,15 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         }
         $released = BusinessApplicationRelease::query()->selectRaw('1')
             ->whereColumn('business_application_id', 'business_applications.id')->whereColumn('business_id', 'business_applications.business_id');
-        $counts = ['pending' => (clone $base)->whereNotExists($released)->count(), 'approved' => (clone $base)->whereExists($released)->count()];
+        $rejected = $this->rejected($search);
+        $counts = ['pending' => (clone $base)->whereNotExists($released)->count(), 'approved' => (clone $base)->whereExists($released)->count(),
+            'rejected' => count($rejected)];
+        if ($tab === 'rejected') {
+            $rows = array_values(array_filter($rejected, fn (array $row): bool => $before === null || $row['id'] < $before));
+
+            return ['entries' => array_slice($rows, 0, $limit), 'selected' => null, 'underwriting_basis' => null, 'counts' => $counts,
+                'next_cursor' => count($rows) > $limit ? $rows[$limit - 1]['id'] : null, 'tab' => $tab, 'search' => $search, 'before' => $before, 'limit' => $limit];
+        }
         $query = $tab === 'approved' ? (clone $base)->whereExists($released) : (clone $base)->whereNotExists($released);
         if ($before !== null) {
             $query->where('id', '<', $before);
@@ -61,6 +73,39 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         return ['entries' => $records->map(fn (BusinessApplication $application): array => $rows[$application->id])->values()->all(),
             'selected' => $applicationId === null ? null : $rows[$applicationId], 'underwriting_basis' => $underwritingBasis, 'counts' => $counts,
             'next_cursor' => $more ? $records->last()?->id : null, 'tab' => $tab, 'search' => $search, 'before' => $before, 'limit' => $limit];
+    }
+
+    /**
+     * Drafts whose current quote the engine refused (UW-R03), newest first, each with the reason that
+     * failed. A business holds at most one draft, so this reads every draft once.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function rejected(string $search): array
+    {
+        $drafts = BusinessApplication::query()->where('status', 'draft')->whereNotNull('current_quote_id')
+            ->join('business_profiles', 'business_profiles.id', '=', 'business_applications.business_id')
+            ->orderByDesc('business_applications.id')
+            ->get(['business_applications.*', 'business_profiles.profile->name AS business_name', 'business_profiles.profile->industry AS business_sector']);
+        $quotes = BusinessApplicationQuote::query()->whereKey($drafts->pluck('current_quote_id'))->get()->keyBy('id');
+        $rows = [];
+        foreach ($drafts as $application) {
+            $quote = $quotes->get($application->current_quote_id);
+            $result = $quote?->payload['result'] ?? [];
+            $title = (string) ($quote?->payload['draft']['title'] ?? '');
+            if (($result['eligible'] ?? true) || ! in_array($result['code'] ?? null, self::REJECTIONS, true)
+                || ($search !== '' && ! str_contains(mb_strtolower($title), mb_strtolower($search)) && $application->id !== strtolower($search))) {
+                continue;
+            }
+            $draft = $quote->payload['draft'];
+            $rows[] = ['id' => $application->id, 'business' => (string) $application->getAttribute('business_name'),
+                'sector' => (string) $application->getAttribute('business_sector'), 'note_title' => $title,
+                'requested' => ['amount' => (string) $draft['target'], 'currency' => 'RWF'], 'term_months' => (int) $draft['term_months'],
+                'rate_pct' => null, 'capacity_used_pct' => null, 'rating' => null, 'submitted_at' => (string) $quote->payload['evaluated_at'],
+                'state' => 'rejected', 'decision' => ['code' => 'reject', 'reason' => '', 'reason_code' => (string) $result['code']]];
+        }
+
+        return $rows;
     }
 
     /** @return array<string, mixed> */
