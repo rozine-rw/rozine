@@ -117,7 +117,9 @@ export default function BusinessRating({
                                     ],
                                     [
                                         'ebitda',
-                                        formatRwfShort(financials.net_cash_month),
+                                        formatRwfShort(
+                                            financials.net_cash_month,
+                                        ),
                                     ],
                                     [
                                         'margin',
