@@ -31,8 +31,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * - Live activity: the six newest ledger postings, each opening its ledger entry, for whoever may
  *   view the ledger; anyone else sees it as not tracked.
  *
+ * - Sector exposure: issued principal per Business industry with its note count. No note health is
+ *   recorded yet, so no sector is marked at risk.
+ *
  * The platform does not record a treasury position, default rate, secondary volume, note health,
- * late or at-risk notes, frozen accounts, sector exposure or collections yet, so
+ * late or at-risk notes, frozen accounts or collections yet, so
  * those are sent as null and the console shows them as not tracked.
  *
  * @phpstan-import-type OpenBreak from \App\Application\Operations\BrowseReconciliation
@@ -43,6 +46,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
  *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
+ *     sectors: list<array{sector: string, principal: string, notes: int}>,
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
  * }
  * @phpstan-type Page array{dashboard: Dashboard, breaks: list<OpenBreak>|null, activity: list<Entry>|null, roles: list<string>, permissions: list<string>}
@@ -100,7 +104,8 @@ class StaffDashboardResource extends JsonResource
                 'requested' => $entry['requested'], 'rating' => $entry['rating'],
                 'link' => $reviews ? ['url' => route($prefix.'staff.applications.index', ['application' => $entry['id']], false), 'method' => 'get'] : null],
                 $board['pending']),
-            'sector_exposure' => null,
+            'sector_exposure' => array_map(fn (array $sector): array => ['sector' => $sector['sector'], 'outstanding' => $money($sector['principal']),
+                'notes' => $sector['notes'], 'at_risk' => false], $board['sectors']),
             'treasury' => ['invested' => $money($figures['capital_raised']), 'disbursed' => $money($figures['disbursed']),
                 'platform_net' => null, 'paid_to_investors' => null],
             'collections' => null];

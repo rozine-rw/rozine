@@ -9,6 +9,7 @@ use App\Application\Identity\UploadInvestorVerificationDocument;
 use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -84,7 +85,7 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
                 ['key' => 'frozen_accounts', 'count' => null, 'link' => null]])
-            ->where('breaks', null)->where('portfolio_health', null)->where('activity', null)->where('sector_exposure', null)->where('collections', null)
+            ->where('breaks', null)->where('portfolio_health', null)->where('activity', null)->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
@@ -130,7 +131,9 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
                 'bars' => [['label' => '2027', 'amount' => ['currency' => 'RWF', 'amount' => $total], 'height_pct' => 100]]])
             ->where('attention.1.link', ['url' => '/admin/investors?chip=pending', 'method' => 'get'])
             ->where('attention.0.link', ['url' => '/admin/applications', 'method' => 'get'])
-            ->where('badges', ['applications' => 0, 'disbursements' => 0]));
+            ->where('badges', ['applications' => 0, 'disbursements' => 0])
+            ->where('sector_exposure', [['sector' => (string) DB::table('business_profiles')->value(DB::raw("profile->>'industry'")),
+                'outstanding' => ['currency' => 'RWF', 'amount' => $total], 'notes' => 1, 'at_risk' => false]]));
 
     // Kigali is UTC+2: 22:30 UTC on 1 March is already 2 March there.
     $window = fn (string $from, ?string $to = null): array => $this->actingAs($viewer)->get(route('staff.dashboard', array_filter(['from' => $from, 'to' => $to])))

@@ -21,10 +21,11 @@ use Carbon\CarbonImmutable;
  *
  * @phpstan-import-type Figures from OperationsDashboardStore
  * @phpstan-import-type Bar from OperationsDashboardStore
+ * @phpstan-import-type Sector from OperationsDashboardStore
  *
  * @phpstan-type Dashboard array{
  *     figures: Figures, verified_investors: int, kyc_awaiting: int, applications_pending: int|null,
- *     pending: list<array<string, mixed>>,
+ *     pending: list<array<string, mixed>>, sectors: list<Sector>,
  *     capital: array{from: string|null, to: string|null, grain: 'year'|'month'|'day'|'hour', bars: list<Bar>}
  * }
  */
@@ -58,7 +59,7 @@ final class BrowseOperationsDashboard
 
         return ['figures' => $this->store->figures(), 'verified_investors' => $investors['counts']['verified'], 'kyc_awaiting' => $investors['awaiting_review'],
             'applications_pending' => $queue === null ? null : (int) $queue['counts']['pending'], 'pending' => $pending,
-            'capital' => ['from' => $start?->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain,
+            'sectors' => $this->store->sectorExposure(), 'capital' => ['from' => $start?->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain,
                 'bars' => $this->store->capitalRaised($grain, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String())]];
     }
 

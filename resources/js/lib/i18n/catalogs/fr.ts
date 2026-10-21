@@ -1752,6 +1752,7 @@ const fr: Catalog = {
     'admin.today.sectors.tip':
         'Capital en cours par secteur. Le rouge signale au moins un titre sous surveillance ou en difficulté.',
     'admin.today.sectors.notes': '{count} titres',
+    'admin.today.sectors.empty': 'Aucun titre n’a encore été émis.',
     'admin.today.treasury.title': 'Aperçu de la trésorerie',
     'admin.today.treasury.invested': 'Capital investi (primaire)',
     'admin.today.treasury.disbursed': 'Versé aux entreprises',

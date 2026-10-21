@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-import-type Bar from OperationsDashboardStore
  * @phpstan-import-type Movements from OperationsDashboardStore
  * @phpstan-import-type Payout from OperationsDashboardStore
+ * @phpstan-import-type Sector from OperationsDashboardStore
  */
 final class EloquentOperationsDashboardStore implements OperationsDashboardStore
 {
@@ -133,6 +134,17 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             'account' => (string) $row->account, 'state' => $row->state === 'unknown' ? 'unknown' : 'pending',
             'requested_at' => CarbonImmutable::parse((string) $row->created_at)->utc()->toIso8601String()],
             DB::query()->fromSub($investor->unionAll($business), 'payouts')->orderBy('created_at')->orderBy('id')->get()->all()));
+    }
+
+    /** @return list<Sector> */
+    public function sectorExposure(): array
+    {
+        return array_values(array_map(fn (object $row): array => ['sector' => (string) $row->sector, 'principal' => (string) $row->principal,
+            'notes' => (int) $row->notes], DB::table('primary_holdings AS h')
+                ->join('business_campaigns AS c', 'c.id', '=', 'h.business_campaign_id')
+                ->join('business_profiles AS b', 'b.id', '=', 'c.business_id')
+                ->selectRaw("b.profile->>'industry' AS sector, sum(h.principal) AS principal, count(DISTINCT c.id) AS notes")
+                ->groupBy('sector')->orderByDesc('principal')->orderBy('sector')->get()->all()));
     }
 
     /**
