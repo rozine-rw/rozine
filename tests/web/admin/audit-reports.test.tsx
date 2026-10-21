@@ -33,9 +33,15 @@ describe('Audit reports register', () => {
 
         const published = rowOf('Kigali Fresh Foods Ltd');
         expect(published).toHaveTextContent('Published');
-        expect(published).toHaveTextContent('9f3c2a71be04');
+        expect(published).toHaveTextContent('sha256:9f3c2a71');
         expect(published).toHaveTextContent('0.0%');
         expect(published).toHaveTextContent('ICPAR-2024-0117');
+
+        expect(
+            screen.getByText(
+                '✓ Audited on site by Eric Kamanzi · ICPAR-2024-0117',
+            ),
+        ).toBeInTheDocument();
 
         const disputed = rowOf('Rubavu Fish Market Co.');
         expect(disputed).toHaveTextContent('Flash Audit');
@@ -72,6 +78,6 @@ describe('Audit reports register', () => {
         render(<AdminAuditReports {...props()} rows={[]} />);
 
         expect(screen.queryAllByRole('row')).toHaveLength(1);
-        expect(screen.getByText('No audits in this view')).toBeInTheDocument();
+        expect(screen.getByText('Nothing in this view.')).toBeInTheDocument();
     });
 });

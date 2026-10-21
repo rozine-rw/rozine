@@ -55,23 +55,30 @@ function Row({ row }: { row: AuditRegisterRow }) {
                     {row.business}
                 </span>
                 <span className="mt-0.5 block text-[11px] text-rz-muted">
-                    {row.kind === 'monthly' && row.period !== null
-                        ? t('admin.audit_reports.monthly', {
-                              month: formatMonthYearLong(row.period, locale),
-                          })
-                        : t('admin.audit_reports.flash')}
+                    {t(
+                        row.kind === 'monthly'
+                            ? 'admin.audit_reports.monthly'
+                            : 'admin.audit_reports.flash',
+                    )}
                 </span>
             </span>
-            <span role="cell" className="text-[12px] text-rz-body">
-                {row.cosign_by !== null
-                    ? t('admin.audit_reports.cosign_by', {
-                          date: formatDateTime(row.cosign_by, locale),
-                      })
-                    : row.due_at === null
-                      ? '—'
-                      : t('admin.audit_reports.due', {
-                            date: formatDate(row.due_at, locale),
-                        })}
+            <span role="cell" className="min-w-0">
+                <span className="block text-[12.5px] font-semibold text-rz-ink">
+                    {row.period === null
+                        ? '—'
+                        : formatMonthYearLong(row.period, locale)}
+                </span>
+                <span className="mt-0.5 block text-[11px] text-rz-muted">
+                    {row.cosign_by !== null
+                        ? t('admin.audit_reports.cosign_by', {
+                              date: formatDateTime(row.cosign_by, locale),
+                          })
+                        : row.due_at === null
+                          ? '—'
+                          : t('admin.audit_reports.due', {
+                                date: formatDate(row.due_at, locale),
+                            })}
+                </span>
             </span>
             <span role="cell" className="min-w-0">
                 <span className="block truncate text-[12.5px] text-rz-body">
@@ -89,7 +96,7 @@ function Row({ row }: { row: AuditRegisterRow }) {
                 </Chip>
                 {row.sealed_at !== null && (
                     <span className="mt-1 block font-mono text-[10.5px] text-rz-muted">
-                        {row.digest}
+                        sha256:{row.digest?.slice(0, 8)}
                     </span>
                 )}
             </span>
@@ -155,8 +162,11 @@ function Row({ row }: { row: AuditRegisterRow }) {
  * the Business while it owes a co-sign or dispute. The server decides who may remind, and when.
  */
 export default function AdminAuditReports(props: AdminAuditReportsProps) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const format = useStatFormatter();
+    const published = props.rows
+        .filter((row) => row.status === 'published')
+        .slice(0, 12);
 
     return (
         <AdminFrame section="reports" {...props}>
@@ -199,7 +209,7 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
                     <HeadCell>{t('admin.audit_reports.col.business')}</HeadCell>
-                    <HeadCell>{t('admin.audit_reports.col.due')}</HeadCell>
+                    <HeadCell>{t('admin.audit_reports.col.period')}</HeadCell>
                     <HeadCell>{t('admin.audit_reports.col.partner')}</HeadCell>
                     <HeadCell>{t('admin.audit_reports.col.status')}</HeadCell>
                     <HeadCell>{t('admin.audit_reports.col.variance')}</HeadCell>
@@ -211,6 +221,39 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
                     <Row key={row.id} row={row} />
                 ))}
             </TableCard>
+            <div className="mt-6 mb-3">
+                <CardTitle>{t('admin.audit_reports.feed.title')}</CardTitle>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+                {published.map((row) => (
+                    <div
+                        key={row.id}
+                        className="rounded-2xl border border-rz-hairline bg-rz-surface p-4"
+                    >
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <span className="text-[13.5px] font-bold text-rz-ink">
+                                {row.business}
+                            </span>
+                            <span className="text-[11.5px] text-rz-muted">
+                                {row.period === null
+                                    ? t('admin.audit_reports.flash')
+                                    : formatMonthYearLong(row.period, locale)}
+                            </span>
+                        </div>
+                        <p className="mt-1.5 text-[12px] text-rz-positive">
+                            {t('admin.audit_reports.feed.audited', {
+                                auditor: row.auditor ?? '—',
+                                licence: row.licence ?? '—',
+                            })}
+                        </p>
+                    </div>
+                ))}
+                {published.length === 0 && (
+                    <p className="text-[12.5px] text-rz-muted">
+                        {t('admin.audit_reports.feed.empty')}
+                    </p>
+                )}
+            </div>
         </AdminFrame>
     );
 }
