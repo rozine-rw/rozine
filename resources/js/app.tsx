@@ -42,8 +42,10 @@ function start(): void {
                     (page.props.status === 404 ||
                         Number(page.props.status) >= 500):
                     return PublicLayout;
-                // The Suite launcher and the role apps draw their own shells.
+                // The Suite launcher, the error page's refusals and the role apps draw their own
+                // branded shells.
                 case name === 'dashboard':
+                case name === 'identity/access-denied':
                 case /^(investor|business|auditor|admin)\//.test(name):
                     return undefined;
                 case name.startsWith('auth/'):

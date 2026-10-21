@@ -34,6 +34,7 @@ const fr: Catalog = {
         'Vérification d’identité requise',
     'identity.denied.verification_required.body':
         'Votre identité doit être vérifiée avant de pouvoir ouvrir cette page. Choisissez une application pour continuer.',
+    'identity.denied.verification_required.action': 'Vérifier votre identité',
     'identity.denied.expired_offer.title': 'Cette offre est close',
     'identity.denied.expired_offer.body':
         'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
@@ -107,8 +108,7 @@ const fr: Catalog = {
         "Votre identité n'est pas encore configurée",
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Votre connexion n'est liée à aucune identité vérifiée ; aucune application ne peut encore s'ouvrir.",
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Votre identité est en cours de vérification',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Prêt à investir ?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Un pouvoir de signature est requis',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':

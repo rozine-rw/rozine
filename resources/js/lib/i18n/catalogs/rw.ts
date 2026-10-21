@@ -36,6 +36,7 @@ const rw: Catalog = {
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':
         'Umwirondoro wawe ugomba kugenzurwa mbere yo gufungura uru rupapuro. Hitamo porogaramu kugira ngo ukomeze.',
+    'identity.denied.verification_required.action': 'Emeza umwirondoro wawe',
     'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
     'identity.denied.expired_offer.body':
         'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
@@ -110,7 +111,7 @@ const rw: Catalog = {
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Umwirondoro wawe uri kugenzurwa',
+        'Witeguye gushora imari?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Hakenewe ububasha bwo gusinya',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':

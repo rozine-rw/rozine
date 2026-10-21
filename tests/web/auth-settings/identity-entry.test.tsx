@@ -167,3 +167,24 @@ it('keeps unknown support codes private and on the generic recovery path', () =>
         '/dashboard',
     );
 });
+
+it('sends a verification refusal to identity verification inside the branded page', () => {
+    render(<AccessDenied code="IDENTITY_VERIFICATION_REQUIRED" status={403} />);
+    expect(screen.getByRole('img', { name: 'Rozine' })).toBeInTheDocument();
+    expect(
+        screen.getByRole('link', { name: 'Verify your identity' }),
+    ).toHaveAttribute('href', '/investor/verification');
+    expect(screen.getByRole('link', { name: 'Choose an app' })).toHaveAttribute(
+        'href',
+        '/dashboard',
+    );
+});
+
+it('offers only the way back to the apps for other refusals', () => {
+    render(<AccessDenied code="ROLE_MEMBERSHIP_REQUIRED" status={403} />);
+    expect(screen.getAllByRole('link')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Choose an app' })).toHaveAttribute(
+        'href',
+        '/dashboard',
+    );
+});

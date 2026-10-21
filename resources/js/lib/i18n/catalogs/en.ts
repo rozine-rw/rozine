@@ -34,6 +34,7 @@ const en = {
         'Identity verification required',
     'identity.denied.verification_required.body':
         'Your identity needs to be verified before you can open this page. Choose an app to continue.',
+    'identity.denied.verification_required.action': 'Verify your identity',
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
@@ -106,8 +107,7 @@ const en = {
         'Your identity is not set up yet',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Your identity is being verified',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Ready to invest?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
