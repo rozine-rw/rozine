@@ -22,7 +22,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * }
  * @phpstan-type Page array{
  *     tab: string, search: string, limit: int, before: string|null, entries: list<Entry>, next_cursor: string|null,
- *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>,
+ *     counts: array{submitted: int, decided: int},
+ *     stats: array{completion_pct: string|null, verified: int, total: int, turnaround_hours: string|null, approved_30d: int, rejected_30d: int}, review: Review|null, roles: list<string>, permissions: list<string>,
  *     policy: list<array{key: string, value: string}>
  * }
  */
@@ -50,6 +51,7 @@ class StaffInvestorVerificationsResource extends JsonResource
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['submitted', 'decided']),
             'entries' => array_map(fn (array $entry): array => [...$entry, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),
+            'stats' => $page['stats'],
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
     }
