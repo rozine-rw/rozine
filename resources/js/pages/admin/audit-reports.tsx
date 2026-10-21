@@ -28,7 +28,7 @@ import type {
 } from '@/types/admin-audit';
 
 const GRID =
-    'grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_minmax(0,.7fr)_minmax(150px,1.1fr)] gap-3 px-5';
+    'grid grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_minmax(0,.7fr)_minmax(220px,1.3fr)] gap-3 px-5';
 
 const STATUS_TONE: Record<AuditRegisterStatus, Tone> = {
     not_started: 'grey',
@@ -197,7 +197,7 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
             </div>
             <TableCard
                 label={t('admin.audit_reports.table')}
-                minWidth="min-w-[900px]"
+                minWidth="min-w-[980px]"
                 empty={
                     props.rows.length === 0 && (
                         <EmptyState
