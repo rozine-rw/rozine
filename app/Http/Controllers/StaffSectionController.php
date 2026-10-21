@@ -93,20 +93,29 @@ class StaffSectionController extends Controller
 
     /**
      * Finance's figures for whoever may read the ledger: all fee revenue and the primary market's
-     * part of it, and one row per stream with who pays it. Investor and secondary-market fees are not
-     * charged yet, so their tiles stay blank.
+     * part of it, and one row per stream with its rate, who pays it and what the ledger holds for
+     * it. Investor and secondary-market fees are not charged yet, so their tiles stay blank and the
+     * earnings and resale fees show their BRS rate with nothing collected (no ledger account takes
+     * them yet). A withdrawal fee and a loss reserve do not exist (LED-R04, GEN-R01), so they show
+     * as none.
      *
      * @param  array{platform_fee: string, audit_partner_share: string, deposit_fees: string}  $revenue
-     * @return array{figures: array<string, array{currency: string, amount: string}>, streams: list<array{key: string, paid_by: string, collected: array{currency: string, amount: string}}>}
+     * @return array{figures: array<string, array{currency: string, amount: string}>, streams: list<array{key: string, rate: array{key: string, value: string, term?: string}|null, paid_by: string|null, collected: array{currency: string, amount: string}|null}>}
      */
     private static function finance(array $revenue): array
     {
         $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+        $rules = array_column(PlatformPolicies::rules(), null, 'key');
+        $rate = fn (string $key): array => array_intersect_key($rules[$key], array_flip(['key', 'value', 'term']));
 
         return ['figures' => ['revenue' => $money((string) BigInteger::of($revenue['platform_fee'])->plus($revenue['deposit_fees'])),
             'primary' => $money($revenue['platform_fee'])],
-            'streams' => [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money($revenue['platform_fee'])],
-                ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money($revenue['audit_partner_share'])],
-                ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money($revenue['deposit_fees'])]]];
+            'streams' => [['key' => 'platform_fee', 'rate' => $rate('platform_fee'), 'paid_by' => 'business', 'collected' => $money($revenue['platform_fee'])],
+                ['key' => 'audit_partner_share', 'rate' => $rate('cpa_share'), 'paid_by' => 'business', 'collected' => $money($revenue['audit_partner_share'])],
+                ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money($revenue['deposit_fees'])],
+                ['key' => 'earnings_fee', 'rate' => $rate('earnings_fee'), 'paid_by' => 'investor', 'collected' => null],
+                ['key' => 'resale_fee', 'rate' => $rate('resale_fee'), 'paid_by' => 'seller', 'collected' => null],
+                ['key' => 'withdrawal_fee', 'rate' => $rate('withdrawal_fee'), 'paid_by' => null, 'collected' => null],
+                ['key' => 'loss_reserve', 'rate' => $rate('loss_reserve'), 'paid_by' => null, 'collected' => null]]];
     }
 }

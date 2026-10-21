@@ -241,6 +241,13 @@ describe('Policies', () => {
                             version: 'brs-2.0-fee-r01',
                         },
                         {
+                            tab: 'fees',
+                            key: 'loss_reserve',
+                            value: '',
+                            term: 'none',
+                            version: 'brs-2.0-gen-r01',
+                        },
+                        {
                             tab: 'kyc',
                             key: 'minimum_age',
                             value: '18',
@@ -252,9 +259,12 @@ describe('Policies', () => {
         );
 
         const rules = screen.getByRole('table', { name: 'Rules' });
-        expect(within(rules).getAllByRole('row')).toHaveLength(2);
+        expect(within(rules).getAllByRole('row')).toHaveLength(3);
         expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
             'Platform fee · at disbursement3%brs-2.0-fee-r01',
+        );
+        expect(within(rules).getAllByRole('row')[2]).toHaveTextContent(
+            'Loss reserveNonebrs-2.0-gen-r01',
         );
         expect(
             screen.queryByText('No rules to show yet.'),
@@ -287,13 +297,31 @@ describe('Finance', () => {
                     streams: [
                         {
                             key: 'platform_fee',
+                            rate: { key: 'platform_fee', value: '3%' },
                             paid_by: 'business',
                             collected: { currency: 'RWF', amount: '1800000' },
                         },
                         {
                             key: 'deposit_fees',
+                            rate: null,
                             paid_by: 'investor',
                             collected: { currency: 'RWF', amount: '150000' },
+                        },
+                        {
+                            key: 'resale_fee',
+                            rate: { key: 'resale_fee', value: '2%' },
+                            paid_by: 'seller',
+                            collected: null,
+                        },
+                        {
+                            key: 'loss_reserve',
+                            rate: {
+                                key: 'loss_reserve',
+                                value: '',
+                                term: 'none',
+                            },
+                            paid_by: null,
+                            collected: null,
                         },
                     ],
                 })}
@@ -303,16 +331,22 @@ describe('Finance', () => {
         const region = screen.getByRole('region', {
             name: 'Finance Dashboard',
         });
-        expect(within(region).getAllByText('—')).toHaveLength(2);
+        expect(within(region).getAllByText('—')).toHaveLength(6);
         expect(region).toHaveTextContent('All revenueRWF 2M');
         expect(region).toHaveTextContent('Primary marketRWF 1.8M');
 
         const streams = screen.getByRole('table', { name: 'Revenue streams' });
         expect(within(streams).getAllByRole('row')[1]).toHaveTextContent(
-            'Platform fee · Rozine shareBusinessesRWF 1,800,000',
+            'Platform fee · Rozine share3%BusinessesRWF 1,800,000',
         );
         expect(within(streams).getAllByRole('row')[2]).toHaveTextContent(
-            'Deposit feesInvestorsRWF 150,000',
+            'Deposit fees—InvestorsRWF 150,000',
+        );
+        expect(within(streams).getAllByRole('row')[3]).toHaveTextContent(
+            'Resale fee2%Seller—',
+        );
+        expect(within(streams).getAllByRole('row')[4]).toHaveTextContent(
+            'Loss reserveNone——',
         );
     });
 });

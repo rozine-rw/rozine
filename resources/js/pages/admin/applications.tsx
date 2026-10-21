@@ -249,6 +249,7 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
             <PolicyPeek
                 title={t('admin.applications.policy_title')}
                 items={props.policy}
+                link={props.nav.policies}
             />
             <PillTabs
                 label={t('admin.applications.tabs')}
