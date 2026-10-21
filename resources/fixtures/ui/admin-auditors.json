@@ -132,13 +132,6 @@
         "policy": [],
         "stats": [
             {
-                "key": "partners",
-                "value": {
-                    "kind": "count",
-                    "value": 14
-                }
-            },
-            {
                 "key": "active_partners",
                 "value": {
                     "kind": "count",
@@ -150,6 +143,13 @@
                 "value": {
                     "kind": "count",
                     "value": 2
+                }
+            },
+            {
+                "key": "active_audits",
+                "value": {
+                    "kind": "count",
+                    "value": 4
                 }
             },
             {

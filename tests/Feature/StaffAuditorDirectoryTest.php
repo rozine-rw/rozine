@@ -70,9 +70,9 @@ test('staff who verify Audit Partners see the designed network; other staff and 
 test('an empty network shows the design with zero figures and no rows', function (): void {
     $this->actingAs($this->officer)->get(route('staff.auditors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('stats', [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => 0]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 0]],
+            ->where('stats', [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => 0]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => 0]]])
             ->where('chips.0', ['key' => 'all', 'count' => 0, 'link' => ['url' => '/admin/auditors', 'method' => 'get'], 'active' => true])
             ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 0, 'active' => 0, 'pending' => 0, 'licence_expired' => 0])
@@ -96,9 +96,9 @@ test('rows carry real standing, licences and engagements, and the chips and sear
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('stats', [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => 6]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 2]],
+            ->where('stats', [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 2]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => 2]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => 1]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => 1]]])
             ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 6, 'active' => 2, 'pending' => 2, 'licence_expired' => 1])
             ->where('shown', 6)->where('total', 6)
@@ -114,7 +114,7 @@ test('rows carry real standing, licences and engagements, and the chips and sear
             }));
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['chip' => 'pending', 'q' => 'bosco']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('search', 'bosco')->where('stats.0.value.value', 1)
+        ->assertInertia(fn (Assert $page) => $page->where('search', 'bosco')->where('stats.1.value.value', 1)
             ->where('chips.2', ['key' => 'pending', 'count' => 1, 'link' => ['url' => '/admin/auditors?q=bosco&chip=pending', 'method' => 'get'], 'active' => true])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Bosco Habimana')
             ->where('directory.rows.0.link.url', '/admin/auditors?q=bosco&chip=pending&auditor='.$waiting['party']->id));
@@ -237,6 +237,7 @@ test('licences waiting for review queue as the verification desk and change requ
     $first = auditorDirectoryPartner('Bosco Habimana');
     $submittedAt = now('UTC')->format('Y-m-d\TH:i:s\Z');
     $submission = AuditorFixture::submit($first['user'])['data']['submission_id'];
+    $expiresOn = now()->addYear()->format('Y-m-d');
     $this->travel(1)->hours();
     $renewing = auditorDirectoryStanding('Diane Uwase', 'active', now('Africa/Kigali')->addDays(10)->format('Y-m-d'));
     $state = $renewing->state;
@@ -249,7 +250,7 @@ test('licences waiting for review queue as the verification desk and change requ
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['chip' => 'pending']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('desk', [['id' => $id, 'name' => 'Bosco Habimana', 'licence' => 'SYNTHETIC-CPA', 'expires_on' => now()->addYear()->format('Y-m-d'),
+            ->where('desk', [['id' => $id, 'name' => 'Bosco Habimana', 'licence' => 'SYNTHETIC-CPA', 'expires_on' => $expiresOn,
                 'submitted_at' => $submittedAt,
                 'links' => ['review' => $open($id), 'approve' => $open($id, 'approve'), 'reject' => $open($id, 'reject')]]])
             ->where('requests', [['id' => $renewing->party_id, 'name' => 'Diane Uwase', 'licence' => 'PPC-RENEWED', 'expires_on' => $state['submission']['expires_on'],
