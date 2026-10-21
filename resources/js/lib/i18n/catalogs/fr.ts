@@ -2156,6 +2156,14 @@ const fr: Catalog = {
     'admin.permission_detail.staff.manage':
         "Suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
     'admin.action_log.title': "Journal des actions d'administration",
+    'admin.staff.invite.open': '+ Inviter un opérateur',
+    'admin.staff.invite.title': 'Inviter un opérateur',
+    'admin.staff.invite.body':
+        'Donnez à un compte existant l’accès à la console avec un rôle. L’opérateur crée d’abord son propre compte dédié et active la connexion à deux facteurs. Le changement est consigné avec votre nom et votre motif.',
+    'admin.staff.invite.email': 'E-mail du compte',
+    'admin.staff.invite.role': 'Rôle',
+    'admin.staff.invite.cancel': 'Annuler',
+    'admin.staff.invite.submit': 'Donner l’accès',
     'admin.action_log.info':
         "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
     'admin.action_log.empty':

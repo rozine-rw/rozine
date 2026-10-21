@@ -2147,6 +2147,14 @@ const rw: Catalog = {
     'admin.permission_detail.staff.manage':
         "Guhagarika cyangwa gusubizaho uburenganzira bw'undi mukozi, hatanzwe impamvu.",
     'admin.action_log.title': "Igitabo cy'ibikorwa by'ubuyobozi",
+    'admin.staff.invite.open': '+ Tumira umukozi',
+    'admin.staff.invite.title': 'Tumira umukozi',
+    'admin.staff.invite.body':
+        "Ha konti isanzweho uburenganzira bwo kwinjira muri console n'uruhare rumwe. Umukozi abanza kwiyandikisha kuri konti ye yihariye no gufungura kwinjira mu ntambwe ebyiri. Impinduka yandikwa n'izina ryawe n'impamvu.",
+    'admin.staff.invite.email': 'Imeli ya konti',
+    'admin.staff.invite.role': 'Uruhare',
+    'admin.staff.invite.cancel': 'Hagarika',
+    'admin.staff.invite.submit': 'Tanga uburenganzira',
     'admin.action_log.info':
         "Impinduka ziheruka ku burenganzira bw'abakozi, izigezweho mbere: uwazikoze, uwo zahinduriye uburenganzira n'impamvu.",
     'admin.action_log.empty': "Nta gikorwa cy'ubuyobozi kiranditswe.",

@@ -314,6 +314,59 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    it('lets a superadmin invite an operator with one role and a reason', () => {
+        inertia.succeed = true;
+        render(
+            <AdminParties
+                {...{
+                    ...props(staffFixture),
+                    grant: { url: '/admin/staff', method: 'post' },
+                }}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Invite operator' }),
+        );
+        const form = screen.getByRole('form', { name: 'Invite an operator' });
+        const submit = within(form).getByRole('button', {
+            name: 'Give access',
+        });
+
+        expect(submit).toBeDisabled();
+        fireEvent.change(within(form).getByLabelText('Account email'), {
+            target: { value: 'eric.kamanzi@example.test' },
+        });
+        fireEvent.change(within(form).getByLabelText('Role'), {
+            target: { value: 'treasury' },
+        });
+        fireEvent.change(within(form).getByLabelText('Reason for the record'), {
+            target: { value: 'Joins the treasury desk.' },
+        });
+        fireEvent.click(submit);
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/staff',
+                data: expect.objectContaining({
+                    email: 'eric.kamanzi@example.test',
+                    role: 'treasury',
+                    reason: 'Joins the treasury desk.',
+                }),
+            },
+        ]);
+        expect(
+            screen.getByRole('button', { name: '+ Invite operator' }),
+        ).toBeInTheDocument();
+    });
+
+    it('hides the invite for operators who cannot manage staff', () => {
+        render(<AdminParties {...props(staffFixture)} />);
+        expect(
+            screen.queryByRole('button', { name: '+ Invite operator' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows every role an operator holds and what each role may do', () => {
         render(<AdminParties {...props(staffFixture)} />);
 

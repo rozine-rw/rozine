@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
+import { InviteOperator } from '@/components/admin/parties/invite-operator';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
 import { SearchEmpty } from '@/components/admin/search-empty';
@@ -110,6 +111,9 @@ export default function AdminParties(props: AdminPartiesProps) {
                     >
                         {t('admin.parties.coverage_link')}
                     </Link>
+                )}
+                {props.kind === 'staff' && props.grant && (
+                    <InviteOperator action={props.grant} />
                 )}
             </div>
             <p className="mb-2.5 text-[12px] font-semibold text-rz-muted">

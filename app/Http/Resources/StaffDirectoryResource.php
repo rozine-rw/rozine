@@ -12,9 +12,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * three figures, the chips with their counts, every operator with their most privileged role and
  * all their roles, what each role may do (the permission matrix), and one operator's 360. A disabled staff account reads as frozen, attributed to the identity audit
  * entry that disabled it; its enable and disable entries are its freezes and releases. Sign-ins
- * are not recorded, so the 360 shows no last sign-in. A viewer with `staff.manage` may suspend or
- * reactivate any other operator from the 360; the admin action log lists the latest staff access
- * changes across every operator.
+ * are not recorded, so the 360 shows no last sign-in. A viewer with `staff.manage` may add an
+ * operator (`grant`) and suspend or reactivate any other operator from the 360; the admin action log
+ * lists the latest staff access changes across every operator.
  *
  * @phpstan-type StaffRow array{user_id: int, name: string, email: string, roles: list<string>, enabled: bool}
  * @phpstan-type Counts array{all: int, active: int, frozen: int, approvers: int}
@@ -65,6 +65,7 @@ class StaffDirectoryResource extends JsonResource
             'party' => $page['member'] === null ? null : self::member($page['member'], $link($position),
                 in_array('staff.manage', $page['permissions'], true) && (string) $page['member']['row']['user_id'] !== $viewer && $prefix === ''),
             'permission_matrix' => $page['matrix'],
+            'grant' => in_array('staff.manage', $page['permissions'], true) && $prefix === '' ? ['url' => route('staff.staff.grant', [], false), 'method' => 'post'] : null,
             'action_log' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'] ?? 'Server console',
                 'target' => $entry['target'], 'action' => $entry['enabled'] ? 'staff_enabled' : 'staff_suspended', 'reason' => $entry['reason']], $page['log'])];
     }
