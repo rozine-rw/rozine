@@ -887,6 +887,8 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     action_log?: StaffActionLogEntry[];
     /** Staff only, for a viewer who may manage staff: adds an operator by email with one role. */
     grant?: RouteAction | null;
+    /** Staff only: how many of the capabilities a role can hold the viewer holds. */
+    access?: { granted: number; total: number };
 };
 
 export type StaffActionLogEntry = {
@@ -1773,9 +1775,13 @@ export type InvestorVerificationEntry = {
     name: string;
     email: string;
     id_type: KycIdType;
+    /** The automated checks the case passed before it could be submitted. */
+    checks: KycCheck[];
     selected: boolean;
     link: RouteLink;
 };
+
+export type KycCheck = 'age' | 'id_number' | 'documents' | 'selfie';
 
 /** A private upload: read only through its link, never inlined in the props. */
 export type InvestorVerificationDocument = {
@@ -1845,6 +1851,9 @@ export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
         turnaround_hours: string | null;
         approved_30d: number;
         rejected_30d: number;
+        /** Null until AML and sanctions screening (KYC-R04) is connected. */
+        aml_alerts: number | null;
+        sanctions_hits: number | null;
     };
     pagination: { next: RouteLink | null };
     review: InvestorVerificationReview | null;

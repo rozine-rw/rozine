@@ -107,9 +107,9 @@ export default function AdminInvestorVerifications(
                     }
                 >
                     <div role="row" className={cn(GRID, TABLE_HEAD)}>
-                        <HeadCell>{t('admin.kyc.col.person')}</HeadCell>
+                        <HeadCell>{t('admin.kyc.col.applicant')}</HeadCell>
                         <HeadCell>{t('admin.kyc.col.document')}</HeadCell>
-                        <HeadCell>{t('admin.kyc.col.submitted')}</HeadCell>
+                        <HeadCell>{t('admin.kyc.col.checks')}</HeadCell>
                         <HeadCell>{t('admin.kyc.col.status')}</HeadCell>
                         <HeadCell end>{t('admin.kyc.col.decision')}</HeadCell>
                     </div>
@@ -151,19 +151,32 @@ export default function AdminInvestorVerifications(
                                     </div>
                                 </div>
                             </div>
-                            <div
-                                role="cell"
-                                className="text-[12.5px] text-rz-body"
-                            >
-                                {t(`admin.kyc.id_type.${entry.id_type}`)}
+                            <div role="cell" className="min-w-0">
+                                <div className="truncate text-[12.5px] text-rz-body">
+                                    {t(`admin.kyc.id_type.${entry.id_type}`)}
+                                </div>
+                                <div className="truncate text-[11px] text-rz-faint tabular-nums">
+                                    {t('admin.kyc.submitted_ago', {
+                                        ago: ago(entry.submitted_at),
+                                    })}
+                                </div>
                             </div>
-                            <div
-                                role="cell"
-                                className="text-[12px] text-rz-muted tabular-nums"
-                            >
-                                <time dateTime={entry.submitted_at}>
-                                    {ago(entry.submitted_at)}
-                                </time>
+                            <div role="cell" className="min-w-0">
+                                <div className="truncate text-[12px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                    {t('admin.kyc.checks.passed', {
+                                        count: entry.checks.length,
+                                    })}
+                                </div>
+                                <div
+                                    className="truncate text-[11px] text-rz-faint"
+                                    title={entry.checks
+                                        .map((check) =>
+                                            t(`admin.kyc.check.${check}`),
+                                        )
+                                        .join(' · ')}
+                                >
+                                    {t('admin.kyc.checks.screening')}
+                                </div>
                             </div>
                             <div role="cell">
                                 <Chip tone={KYC_STATUS_TONE[entry.status]}>
@@ -207,7 +220,10 @@ export default function AdminInvestorVerifications(
     );
 }
 
-/** The design's four compliance figures, from every case the server holds. */
+/**
+ * The design's four compliance figures, from every case the server holds. AML alerts and sanctions
+ * hits read "Not connected" until screening (KYC-R04) is built; no count is shown for them.
+ */
 function KycStats({
     stats,
     pending,
@@ -232,6 +248,24 @@ function KycStats({
             }),
         },
         {
+            key: 'aml',
+            label: t('admin.kyc.stats.aml'),
+            value:
+                stats.aml_alerts === null
+                    ? t('admin.kyc.stats.not_connected')
+                    : String(stats.aml_alerts),
+            sub: t('admin.kyc.stats.screening_sub'),
+        },
+        {
+            key: 'sanctions',
+            label: t('admin.kyc.stats.sanctions'),
+            value:
+                stats.sanctions_hits === null
+                    ? t('admin.kyc.stats.not_connected')
+                    : String(stats.sanctions_hits),
+            sub: t('admin.kyc.stats.screening_sub'),
+        },
+        {
             key: 'pending',
             label: t('admin.kyc.stats.pending'),
             value: String(pending),
@@ -241,18 +275,6 @@ function KycStats({
                     : t('admin.kyc.stats.turnaround', {
                           hours: stats.turnaround_hours,
                       }),
-        },
-        {
-            key: 'approved',
-            label: t('admin.kyc.stats.approved'),
-            value: String(stats.approved_30d),
-            sub: t('admin.kyc.stats.last_30_days'),
-        },
-        {
-            key: 'rejected',
-            label: t('admin.kyc.stats.rejected'),
-            value: String(stats.rejected_30d),
-            sub: t('admin.kyc.stats.last_30_days'),
         },
     ];
 
