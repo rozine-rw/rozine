@@ -2499,6 +2499,12 @@ const fr: Catalog = {
     'auditor.desk_review.status.escalated': 'Escaladé',
     'auditor.desk_review.note':
         "L'entreprise a contesté ce rapport. Il reste en lecture seule jusqu'à ce que la revue documentaire de Rozine enregistre une décision.",
+    'auditor.desk_review.proofs': 'Contre-preuves déposées',
+    'auditor.desk_review.proofs_value': {
+        one: '{count} pièce',
+        other: '{count} pièces',
+    },
+    'auditor.desk_review.variance': 'Votre écart pondéré',
     'auditor.desk_review.view': 'Voir le rapport →',
     'auditor.monthly.open': "Ouvrir l'audit",
     'auditor.monthly.show_all': 'Afficher les {count} fenêtres ouvertes',

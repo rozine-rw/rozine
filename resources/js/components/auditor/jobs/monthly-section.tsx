@@ -170,6 +170,34 @@ function DeskReviewCard({ review }: { review: DeskReview }) {
                     {t(`auditor.desk_review.status.${review.status}`)}
                 </StatusPill>
             </span>
+            <span className="mt-3 grid grid-cols-2 gap-2">
+                {[
+                    [
+                        t('auditor.desk_review.proofs'),
+                        t('auditor.desk_review.proofs_value', {
+                            count: review.proofs,
+                        }),
+                    ],
+                    [
+                        t('auditor.desk_review.variance'),
+                        review.variance_pct === null
+                            ? '—'
+                            : `${review.variance_pct}%`,
+                    ],
+                ].map(([label, value]) => (
+                    <span
+                        key={label}
+                        className="rounded-[10px] bg-rz-page px-2.5 py-2 dark:bg-rz-surface-muted"
+                    >
+                        <span className="block text-[10.5px] text-rz-slate">
+                            {label}
+                        </span>
+                        <span className="mt-0.5 block text-[13px] font-bold text-rz-ink">
+                            {value}
+                        </span>
+                    </span>
+                ))}
+            </span>
             <span className="mt-2.5 block text-[11.5px] leading-[1.5] text-rz-secondary">
                 {t('auditor.desk_review.note')}
             </span>

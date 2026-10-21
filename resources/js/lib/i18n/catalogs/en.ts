@@ -2391,6 +2391,12 @@ const en = {
     'auditor.desk_review.status.escalated': 'Escalated',
     'auditor.desk_review.note':
         'The business disputed this report. It stays read-only until Rozine’s desk review records a decision.',
+    'auditor.desk_review.proofs': 'Counter-proof filed',
+    'auditor.desk_review.proofs_value': {
+        one: '{count} item',
+        other: '{count} items',
+    },
+    'auditor.desk_review.variance': 'Your weighted variance',
     'auditor.desk_review.view': 'View the report →',
     'auditor.monthly.open': 'Open the audit',
     'auditor.monthly.show_all': 'Show all {count} open windows',

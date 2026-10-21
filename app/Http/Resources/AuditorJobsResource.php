@@ -74,7 +74,8 @@ class AuditorJobsResource extends JsonResource
                 'month' => $month, 'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']])];
         } elseif (in_array($report['publication_status'], ['disputed', 'escalated'], true)) {
             $monthly['desk_reviews'][] = ['id' => $report['id'], 'business' => $job['business'], 'month' => $month,
-                'status' => $report['publication_status'], 'link' => self::link('auditor.reports.show', ['report' => $report['id']])];
+                'status' => $report['publication_status'], 'variance_pct' => $report['variance_pct'] ?? null, 'proofs' => $report['proofs'] ?? 0,
+                'link' => self::link('auditor.reports.show', ['report' => $report['id']])];
         } else {
             $due = app(AuditReportWindow::class)->dueAt($period);
             $sealed = $report['status'] === 'sealed';
