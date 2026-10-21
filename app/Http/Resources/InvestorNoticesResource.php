@@ -44,6 +44,9 @@ class InvestorNoticesResource extends JsonResource
     /** The route names of the bell's read actions. */
     protected const string NOTICES = 'investor.notices';
 
+    /** Kinds that open somewhere else in this app than in the Investor app, by route name and parameters. */
+    protected const array OWN_DESTINATIONS = [];
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -53,12 +56,18 @@ class InvestorNoticesResource extends JsonResource
 
         return ['unread' => $inbox['unread'],
             'notices' => array_map(fn (array $notice): array => [...$notice,
-                'link' => $this->link($prefix, self::DESTINATIONS[$notice['kind']][0],
+                'link' => $this->link($prefix, $this->destination($notice['kind'])[0],
                     array_map(fn (string $value): string => str_starts_with($value, ':') ? (string) $notice['facts'][substr($value, 1)] : $value,
-                        self::DESTINATIONS[$notice['kind']][1])),
+                        $this->destination($notice['kind'])[1])),
                 'read_action' => $notice['read'] ? null : ['url' => route($prefix.static::NOTICES.'.read', ['notice' => $notice['id']], false), 'method' => 'post'],
             ], $inbox['notices']),
             'actions' => ['read_all' => $inbox['unread'] === 0 ? null : ['url' => route($prefix.static::NOTICES.'.read_all', [], false), 'method' => 'post']]];
+    }
+
+    /** @return array{0: string, 1: array<string, string>} */
+    private function destination(string $kind): array
+    {
+        return static::OWN_DESTINATIONS[$kind] ?? self::DESTINATIONS[$kind];
     }
 
     /**

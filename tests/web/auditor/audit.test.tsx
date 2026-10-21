@@ -1619,6 +1619,17 @@ describe('Audit procedure — after the seal', () => {
         ).not.toBeInTheDocument();
     });
 
+    it.each([sealed, sealedPublished])(
+        'shows no countdown once the report is sealed',
+        (fixture) => {
+            render(<AuditorAudit {...props(fixture)} />);
+
+            expect(
+                within(sheet()).queryByRole('timer'),
+            ).not.toBeInTheDocument();
+        },
+    );
+
     it('links the public seal check the server sends with the sealed report', () => {
         render(
             <AuditorAudit
