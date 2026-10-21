@@ -1215,14 +1215,59 @@ const fr: Catalog = {
     'admin.messaging.category.audits': 'Audits',
     'admin.messaging.category.support': 'Assistance',
     'admin.messaging.category.general': 'Général',
+    'admin.messaging.audience.investor': 'Investisseurs',
+    'admin.messaging.audience.business': 'Entreprises',
+    'admin.messaging.audience.auditor': 'Partenaires d’audit',
+    'admin.messaging.audience.everyone': 'Tous les titulaires de compte',
+    'admin.messaging.timing': 'Dès l’événement · {channels}',
+    'admin.messaging.state.live': 'Active',
+    'admin.messaging.automations.sub':
+        'Chaque avis part de lui-même lorsque son événement est enregistré. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.templates.sub':
+        'Les e-mails transactionnels envoyés par Rozine. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.template.account.new_device_sign_in':
+        'Connexion depuis un nouvel appareil',
+    'admin.messaging.template.account.one_time_code': 'Code à usage unique',
+    'admin.messaging.template.account.reset_password':
+        'Réinitialisation du mot de passe',
+    'admin.messaging.template.account.verify_email':
+        'Vérification de l’adresse e-mail',
+    'admin.messaging.template.auditor.accreditation_decided':
+        'Décision d’accréditation',
+    'admin.messaging.template.auditor.job_offered': 'Mission d’audit proposée',
+    'admin.messaging.template.business.application_decided':
+        'Décision sur la demande',
+    'admin.messaging.template.business.disbursement_sent':
+        'Décaissement envoyé',
+    'admin.messaging.template.business.raise_expired': 'Levée expirée',
+    'admin.messaging.template.business.repayment_reminder':
+        'Rappel de remboursement',
+    'admin.messaging.template.business.reporting_window_open':
+        'Période de rapport ouverte',
+    'admin.messaging.template.investor.investment_confirmed':
+        'Investissement confirmé',
+    'admin.messaging.template.investor.payment_delayed': 'Paiement retardé',
+    'admin.messaging.template.investor.payout_received': 'Versement reçu',
+    'admin.messaging.template.investor.raise_expired': 'Levée expirée',
+    'admin.messaging.template.investor.report_published': 'Rapport publié',
+    'admin.messaging.template.investor.verification_decided':
+        'Décision de vérification',
+    'admin.messaging.template.investor.wallet_transfer_completed':
+        'Transfert du portefeuille effectué',
     'admin.messaging.no_match':
         'Aucun message ne correspond à votre recherche.',
     'admin.messaging.older': 'Messages plus anciens',
     'admin.messaging.newest': 'Messages les plus récents',
     'admin.design.academies.kpi.completed': 'Leçons terminées',
     'admin.design.academies.kpi.live': 'Leçons en ligne',
-    'admin.design.academies.kpi.quiz': 'Score moyen aux quiz',
-    'admin.design.academies.kpi.points': 'Passif en points',
+    'admin.design.col.track': 'Parcours',
+    'admin.design.col.topics': 'Thèmes',
+    'admin.design.academies.kpi.tracks': 'Parcours',
+    'admin.design.academies.kpi.checks': 'Vérifications rapides',
+    'admin.design.academies.kpi.completed.sub':
+        'Conservé sur l’appareil de chaque apprenant',
+    'admin.design.academies.lessons.sub':
+        'Chaque thème se termine par une vérification rapide. La progression reste sur l’appareil de l’apprenant : les leçons terminées et les scores ne sont donc pas indiqués ici.',
     'admin.design.academies.tab.investor': 'Académie Investisseurs',
     'admin.design.academies.tab.business': 'Académie Entreprises',
     'admin.design.academies.tab.auditor': 'Académie Auditeurs',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Identity\PartyNoticeKind;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,6 +14,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * the same catalog the participant saw) and category, the automation that sent it, the channel
  * and whether it arrived. Every notice today comes from a recorded event, so each went out by
  * automation. `older` opens the next page of receipts; `newest` returns to the first.
+ *
+ * `automations` lists every notice kind the platform sends as it happens, with its audience and
+ * channels; `templates` lists the transactional email templates under resources/views/mail.
+ * Neither can be edited from the console yet.
  *
  * @phpstan-import-type FiledDelivery from \App\Application\Identity\BrowseMessageHistory
  *
@@ -39,7 +44,29 @@ class StaffMessagingResource extends JsonResource
                 'recipient_kind' => $delivery['recipient_kind'], 'kind' => $delivery['kind'],
                 'category' => $delivery['category'], 'source' => 'automation',
                 'channel' => $delivery['channel'], 'status' => $delivery['status'], 'at' => $delivery['delivered_at']], $page['deliveries']),
+            'automations' => array_map(fn (PartyNoticeKind $kind): array => ['kind' => $kind->value, 'category' => $kind->category(),
+                'audience' => $kind->audience(), 'channels' => $kind->mailed() ? ['in_app', 'mail'] : ['in_app']], PartyNoticeKind::cases()),
+            'templates' => self::templates(),
             'older' => $page['older'] === null ? null : $link([...$query, 'before' => $page['older']]),
             'newest' => $page['paged'] ? $link($query) : null];
+    }
+
+    /**
+     * The email templates by folder and name, e.g. `investor.payout_received`; the account folder's
+     * mails reach anyone with an account.
+     *
+     * @return list<array{key: string, audience: string}>
+     */
+    public static function templates(): array
+    {
+        $files = glob(resource_path('views/mail/*/*.blade.php')) ?: [];
+        sort($files);
+
+        return array_map(function (string $file): array {
+            $folder = basename(dirname($file));
+
+            return ['key' => $folder.'.'.str_replace('-', '_', basename($file, '.blade.php')),
+                'audience' => $folder === 'account' ? 'everyone' : $folder];
+        }, $files);
     }
 }

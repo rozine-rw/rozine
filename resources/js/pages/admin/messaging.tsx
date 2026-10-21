@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import type { DesignColumn } from '@/components/admin/section-designs';
 import {
+    CAPTION,
     Chip,
     EmptyState,
     HeadCell,
@@ -13,7 +14,11 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { AdminMessagingProps, MessageHistoryRow } from '@/types/admin';
+import type {
+    AdminMessagingProps,
+    MessageHistoryRow,
+    MessageTemplate,
+} from '@/types/admin';
 
 const GRID =
     'grid grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,.7fr)_minmax(0,.9fr)] gap-3 px-5';
@@ -22,10 +27,10 @@ const TABS = ['automations', 'templates', 'campaigns', 'history'] as const;
 
 type Tab = (typeof TABS)[number];
 
-/** The design's columns for the tabs that are not wired yet. */
-const PENDING_COLUMNS: Record<Exclude<Tab, 'history'>, DesignColumn[]> = {
-    automations: ['rule', 'fires_when', 'timing', 'state'],
-    templates: ['template', 'channel', 'updated'],
+/** Each catalogue tab's columns; Campaigns has no read yet and keeps its empty state. */
+const COLUMNS: Record<Exclude<Tab, 'history'>, DesignColumn[]> = {
+    automations: ['rule', 'audience', 'timing', 'state'],
+    templates: ['template', 'audience', 'channel'],
     campaigns: ['campaign', 'audience', 'sent'],
 };
 
@@ -80,8 +85,9 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
 /**
  * Messaging & Automations (design T2327–2462). History lists every notice that went out, newest
  * first: who it reached, the message, its category, the automation behind it and whether it
- * arrived, the channel and when. Automations, templates and campaigns cannot be edited yet, so
- * those tabs keep their empty state and offer nothing.
+ * arrived, the channel and when. Automations lists every notice the platform sends as its event
+ * happens, and Templates every transactional email; neither can be edited yet, so nothing is
+ * offered. Campaigns are not sent yet, so that tab keeps its empty state.
  */
 export default function AdminMessaging(props: AdminMessagingProps) {
     const { t } = useTranslation();
@@ -167,30 +173,127 @@ export default function AdminMessaging(props: AdminMessagingProps) {
                     ))}
                 </TableCard>
             ) : (
-                <TableCard
-                    label={t(`admin.design.messaging.${tab}.title`)}
-                    minWidth="min-w-[720px]"
-                    empty={
+                <CatalogueTable tab={tab} rows={catalogueRows(tab, props, t)} />
+            )}
+        </AdminFrame>
+    );
+}
+
+type Translate = ReturnType<typeof useTranslation>['t'];
+
+/** A catalogue tab's rows as cell text; the last cell of an automation is its state chip. */
+function catalogueRows(
+    tab: Exclude<Tab, 'history'>,
+    props: AdminMessagingProps,
+    t: Translate,
+): { key: string; cells: string[] }[] {
+    if (tab === 'automations') {
+        return props.automations.map((automation) => ({
+            key: automation.kind,
+            cells: [
+                t(`investor.notices.${automation.kind}.title`),
+                t(`admin.messaging.audience.${automation.audience}`),
+                t('admin.messaging.timing', {
+                    channels: automation.channels
+                        .map((channel) =>
+                            t(`admin.messaging.channel.${channel}`),
+                        )
+                        .join(', '),
+                }),
+                t('admin.messaging.state.live'),
+            ],
+        }));
+    }
+
+    if (tab === 'templates') {
+        return props.templates.map((template: MessageTemplate) => ({
+            key: template.key,
+            cells: [
+                t(`admin.messaging.template.${template.key}`),
+                t(`admin.messaging.audience.${template.audience}`),
+                t('admin.messaging.channel.mail'),
+            ],
+        }));
+    }
+
+    return [];
+}
+
+/** Automations, Templates or Campaigns: the design's columns over the server's catalogue. */
+function CatalogueTable({
+    tab,
+    rows,
+}: {
+    tab: Exclude<Tab, 'history'>;
+    rows: { key: string; cells: string[] }[];
+}) {
+    const { t } = useTranslation();
+    const grid = {
+        gridTemplateColumns: `minmax(0, 1.6fr) repeat(${COLUMNS[tab].length - 1}, minmax(0, 1fr))`,
+    };
+
+    return (
+        <div>
+            {tab !== 'campaigns' && (
+                <p className={cn('mb-3 text-[12.5px]', CAPTION)}>
+                    {t(`admin.messaging.${tab}.sub`)}
+                </p>
+            )}
+            <TableCard
+                label={t(`admin.design.messaging.${tab}.title`)}
+                minWidth="min-w-[720px]"
+                empty={
+                    rows.length === 0 && (
                         <EmptyState
                             title={t(`admin.design.messaging.${tab}.empty`)}
                         />
-                    }
+                    )
+                }
+            >
+                <div
+                    role="row"
+                    className={cn('grid gap-3 px-5 py-[13px]', TABLE_HEAD)}
+                    style={grid}
                 >
+                    {COLUMNS[tab].map((column) => (
+                        <HeadCell key={column}>
+                            {t(`admin.design.col.${column}`)}
+                        </HeadCell>
+                    ))}
+                </div>
+                {rows.map((row) => (
                     <div
+                        key={row.key}
                         role="row"
-                        className={cn('grid gap-3 px-5 py-[13px]', TABLE_HEAD)}
-                        style={{
-                            gridTemplateColumns: `repeat(${PENDING_COLUMNS[tab].length}, minmax(0, 1fr))`,
-                        }}
+                        className={cn(
+                            'grid items-center gap-3 px-5 py-3',
+                            ROW_RULE,
+                        )}
+                        style={grid}
                     >
-                        {PENDING_COLUMNS[tab].map((column) => (
-                            <HeadCell key={column}>
-                                {t(`admin.design.col.${column}`)}
-                            </HeadCell>
-                        ))}
+                        {row.cells.map((cell, index) =>
+                            tab === 'automations' && index === 3 ? (
+                                <span role="cell" key={index}>
+                                    <Chip tone="green">{cell}</Chip>
+                                </span>
+                            ) : (
+                                <span
+                                    role="cell"
+                                    key={index}
+                                    className={cn(
+                                        'min-w-0 truncate text-[12.5px]',
+                                        index === 0
+                                            ? 'font-semibold text-rz-ink'
+                                            : 'text-rz-muted',
+                                    )}
+                                >
+                                    {cell}
+                                </span>
+                            ),
+                        )}
                     </div>
-                </TableCard>
-            )}
-        </AdminFrame>
+                ))}
+            </TableCard>
+        </div>
     );
 }

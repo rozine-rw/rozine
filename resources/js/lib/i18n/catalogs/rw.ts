@@ -1206,13 +1206,59 @@ const rw: Catalog = {
     'admin.messaging.category.audits': 'Igenzura',
     'admin.messaging.category.support': 'Ubufasha',
     'admin.messaging.category.general': 'Rusange',
+    'admin.messaging.audience.investor': 'Abashoramari',
+    'admin.messaging.audience.business': 'Ibigo',
+    'admin.messaging.audience.auditor': 'Abafatanyabikorwa mu igenzura',
+    'admin.messaging.audience.everyone': 'Abafite konti bose',
+    'admin.messaging.timing': 'Ako kanya · {channels}',
+    'admin.messaging.state.live': 'Irakora',
+    'admin.messaging.automations.sub':
+        'Buri butumwa bwoherezwa ubwabwo iyo igikorwa cyabwo cyanditswe. Ntibirahindurwa muri konsole.',
+    'admin.messaging.templates.sub':
+        'Imeyili Rozine yohereza. Ntizirahindurwa muri konsole.',
+    'admin.messaging.template.account.new_device_sign_in':
+        'Kwinjira hakoreshejwe igikoresho gishya',
+    'admin.messaging.template.account.one_time_code': 'Kode y’igihe kimwe',
+    'admin.messaging.template.account.reset_password':
+        'Guhindura ijambo ry’ibanga',
+    'admin.messaging.template.account.verify_email':
+        'Kwemeza aderesi ya imeyili',
+    'admin.messaging.template.auditor.accreditation_decided':
+        'Icyemezo ku kwemererwa',
+    'admin.messaging.template.auditor.job_offered': 'Akazi k’igenzura katanzwe',
+    'admin.messaging.template.business.application_decided':
+        'Icyemezo ku busabe',
+    'admin.messaging.template.business.disbursement_sent':
+        'Amafaranga yoherejwe',
+    'admin.messaging.template.business.raise_expired':
+        'Igihe cyo gukusanya cyarangiye',
+    'admin.messaging.template.business.repayment_reminder':
+        'Kwibutsa kwishyura',
+    'admin.messaging.template.business.reporting_window_open':
+        'Igihe cyo gutanga raporo cyafunguwe',
+    'admin.messaging.template.investor.investment_confirmed':
+        'Ishoramari ryemejwe',
+    'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',
+    'admin.messaging.template.investor.payout_received': 'Amafaranga yakiriwe',
+    'admin.messaging.template.investor.raise_expired':
+        'Igihe cyo gukusanya cyarangiye',
+    'admin.messaging.template.investor.report_published': 'Raporo yasohotse',
+    'admin.messaging.template.investor.verification_decided':
+        'Icyemezo ku igenzura ry’umwirondoro',
+    'admin.messaging.template.investor.wallet_transfer_completed':
+        'Kohereza mu ikofi byarangiye',
     'admin.messaging.no_match': 'Nta butumwa buhuye n’ibyo washakishije.',
     'admin.messaging.older': 'Ubutumwa bwa kera',
     'admin.messaging.newest': 'Ubutumwa bushya',
     'admin.design.academies.kpi.completed': 'Amasomo yarangiye',
     'admin.design.academies.kpi.live': 'Amasomo ari ku murongo',
-    'admin.design.academies.kpi.quiz': "Ikigereranyo cy'amanota y'ibizamini",
-    'admin.design.academies.kpi.points': 'Amanota atarakoreshwa',
+    'admin.design.col.track': 'Icyiciro',
+    'admin.design.col.topics': 'Ingingo',
+    'admin.design.academies.kpi.tracks': 'Ibyiciro',
+    'admin.design.academies.kpi.checks': 'Ibibazo byihuse',
+    'admin.design.academies.kpi.completed.sub': 'Bibikwa ku gikoresho cy’uwiga',
+    'admin.design.academies.lessons.sub':
+        'Buri ngingo irangizwa n’ikibazo kimwe cyihuse. Aho umuntu ageze bibikwa ku gikoresho cye, bityo amasomo yarangiye n’amanota ntibigaragara hano.',
     'admin.design.academies.tab.investor': "Ishuri ry'abashoramari",
     'admin.design.academies.tab.business': "Ishuri ry'ibigo",
     'admin.design.academies.tab.auditor': "Ishuri ry'abagenzuzi",

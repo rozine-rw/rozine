@@ -41,7 +41,6 @@ describe('A designed section that is not wired yet', () => {
             'plus',
             'finance',
             'messaging',
-            'academies',
             'app_control',
             'engines',
             'policies',

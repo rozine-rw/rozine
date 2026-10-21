@@ -1149,13 +1149,53 @@ const en = {
     'admin.messaging.category.audits': 'Audits',
     'admin.messaging.category.support': 'Support',
     'admin.messaging.category.general': 'General',
+    'admin.messaging.audience.investor': 'Investors',
+    'admin.messaging.audience.business': 'Businesses',
+    'admin.messaging.audience.auditor': 'Audit Partners',
+    'admin.messaging.audience.everyone': 'Everyone with an account',
+    'admin.messaging.timing': 'As it happens · {channels}',
+    'admin.messaging.state.live': 'Live',
+    'admin.messaging.automations.sub':
+        'Each notice goes out by itself when its event is recorded. They cannot be edited from the console yet.',
+    'admin.messaging.templates.sub':
+        'The transactional emails Rozine sends. They cannot be edited from the console yet.',
+    'admin.messaging.template.account.new_device_sign_in': 'New device sign-in',
+    'admin.messaging.template.account.one_time_code': 'One-time code',
+    'admin.messaging.template.account.reset_password': 'Reset password',
+    'admin.messaging.template.account.verify_email': 'Verify email address',
+    'admin.messaging.template.auditor.accreditation_decided':
+        'Accreditation decision',
+    'admin.messaging.template.auditor.job_offered': 'Audit job offered',
+    'admin.messaging.template.business.application_decided':
+        'Application decision',
+    'admin.messaging.template.business.disbursement_sent': 'Disbursement sent',
+    'admin.messaging.template.business.raise_expired': 'Raise expired',
+    'admin.messaging.template.business.repayment_reminder':
+        'Repayment reminder',
+    'admin.messaging.template.business.reporting_window_open':
+        'Reporting window open',
+    'admin.messaging.template.investor.investment_confirmed':
+        'Investment confirmed',
+    'admin.messaging.template.investor.payment_delayed': 'Payment delayed',
+    'admin.messaging.template.investor.payout_received': 'Payout received',
+    'admin.messaging.template.investor.raise_expired': 'Raise expired',
+    'admin.messaging.template.investor.report_published': 'Report published',
+    'admin.messaging.template.investor.verification_decided':
+        'Verification decision',
+    'admin.messaging.template.investor.wallet_transfer_completed':
+        'Wallet transfer completed',
     'admin.messaging.no_match': 'No messages match your search.',
     'admin.messaging.older': 'Older messages',
     'admin.messaging.newest': 'Newest messages',
     'admin.design.academies.kpi.completed': 'Lessons completed',
     'admin.design.academies.kpi.live': 'Lessons live',
-    'admin.design.academies.kpi.quiz': 'Avg quiz score',
-    'admin.design.academies.kpi.points': 'Points liability',
+    'admin.design.col.track': 'Track',
+    'admin.design.col.topics': 'Topics',
+    'admin.design.academies.kpi.tracks': 'Tracks',
+    'admin.design.academies.kpi.checks': 'Quick checks',
+    'admin.design.academies.kpi.completed.sub': 'Kept on each learner’s device',
+    'admin.design.academies.lessons.sub':
+        'Each topic ends in one quick check. Progress stays on the learner’s device, so completions and scores are not reported here.',
     'admin.design.academies.tab.investor': 'Investor Academy',
     'admin.design.academies.tab.business': 'Business Academy',
     'admin.design.academies.tab.auditor': 'Auditor Academy',

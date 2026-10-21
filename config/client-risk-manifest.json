@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "bb4b96baf7afa2d716cc0e89f0e5f95f4f0069017afca8e1a6b4f07ac501b440",
-    "coverageSetSha256": "6185f2f3f848624043f4941ccb1badebfed0cc939e91d2540cf4b28bd9eadb19",
+    "sourceManifestSha256": "ebd4a18fcef515c8d2b4aedbc2582c2f4b815e91288178f354e5473f90ae8453",
+    "coverageSetSha256": "63fd7c84e6b79b38d4122740d587db55233388882b55b9686250adf12f0281cc",
     "thresholds": {
         "critical": {
             "global": {
@@ -49,6 +49,7 @@
     },
     "criticalPaths": [
         "resources/js/app.tsx",
+        "resources/js/components/admin/academies.tsx",
         "resources/js/components/admin/admin-frame.tsx",
         "resources/js/components/admin/applications/application-status.tsx",
         "resources/js/components/admin/applications/release-panel.tsx",
