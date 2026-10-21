@@ -11,6 +11,11 @@ final class FlatReturnPricing
 {
     public const POLICY_VERSION = 'engineering-2026-09-23.4';
 
+    /** The flat, all-in return is kept within this band, in percent. */
+    public const int MINIMUM_RETURN_PERCENT = 10;
+
+    public const int MAXIMUM_RETURN_PERCENT = 15;
+
     public static function validateTenor(int $tenor): void
     {
         if (! in_array($tenor, [3, 4, 5, 6], true)) {
@@ -27,7 +32,7 @@ final class FlatReturnPricing
         }
         $premium = BigRational::ofFraction($tenor - 3, 6);
         $raw = BigRational::of(5)->minus($publishedRating)->multipliedBy('8/5')->plus(10)->plus($premium);
-        $clamped = BigRational::min(15, BigRational::max(10, $raw));
+        $clamped = BigRational::min(self::MAXIMUM_RETURN_PERCENT, BigRational::max(self::MINIMUM_RETURN_PERCENT, $raw));
         $percent = $clamped->toScale(1, RoundingMode::HalfUp);
 
         return [

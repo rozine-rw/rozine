@@ -12,6 +12,12 @@ final class LoanCapacity
 {
     public const CALCULATOR_VERSION = 'underwriting-1';
 
+    /** The coverage every offer is sized to (DSCR 1.50). */
+    public const string TARGET_COVERAGE = '3/2';
+
+    /** Below this coverage (DSCR 1.25) an application is rejected. */
+    public const string MINIMUM_COVERAGE = '5/4';
+
     /**
      * @param  list<BigRational>  $repeatMonthlyCfads  The authorized corresponding-month projection, or [] for first-time.
      * @return array<string, mixed>
@@ -47,11 +53,11 @@ final class LoanCapacity
             'repeat_monthly_dscr' => [],
             'reason_codes' => [],
         ];
-        if ($initialDscr->isLessThan('5/4')) {
+        if ($initialDscr->isLessThan(self::MINIMUM_COVERAGE)) {
             return $result;
         }
 
-        $rawCapacity = $cfads->dividedBy('3/2')->multipliedBy($tenor)->dividedBy($rate->plus(1));
+        $rawCapacity = $cfads->dividedBy(self::TARGET_COVERAGE)->multipliedBy($tenor)->dividedBy($rate->plus(1));
         $result['raw_capacity'] = ExactFinancialValue::ratio($rawCapacity);
         if (BigRational::min($rawCapacity, $remainingRoom, $requestedPrincipal)->isLessThan(3000000)) {
             $result['code'] = 'CAPACITY_BELOW_MINIMUM';
@@ -65,7 +71,7 @@ final class LoanCapacity
         );
         $result['rounded_candidate'] = ExactFinancialValue::money($candidate);
         $schedule = LoanSchedule::build((string) $candidate, $tenor, $rate);
-        while ($schedule->dscr($cfads)->isLessThan('3/2')) {
+        while ($schedule->dscr($cfads)->isLessThan(self::TARGET_COVERAGE)) {
             $candidate = $candidate->minus(1);
             $schedule = LoanSchedule::build((string) $candidate, $tenor, $rate);
         }

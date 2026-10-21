@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Underwriting\UnderwritingObservationWindow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -62,7 +63,7 @@ class StaffBusinessDirectoryResource extends JsonResource
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'business', 'policy' => [],
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'business', 'policy' => [['key' => 'min_statement_years', 'value' => (string) intdiv(UnderwritingObservationWindow::FIRST_ISSUE_MONTHS, 12)]],
             'stats' => [['key' => 'total_businesses', 'value' => ['kind' => 'count', 'value' => $counts['all']]],
                 ['key' => 'avg_rating', 'value' => ['kind' => 'text', 'value' => $page['average_score'] === null ? '—' : $page['average_score'].' / 5']],
                 ['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $page['active_notes']]],
