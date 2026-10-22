@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { AUDITOR_ACADEMY } from '@/components/auditor/profile/academy-section';
+import {
+    AUDITOR_ACADEMY,
+    AcademySection,
+} from '@/components/auditor/profile/academy-section';
 import { lessonsOf } from '@/components/rozine/academy';
 import en from '@/lib/i18n/catalogs/en';
 import AuditorProfile from '@/pages/auditor/profile';
@@ -109,7 +112,7 @@ describe('Auditor Academy', () => {
             STORAGE_KEY,
             JSON.stringify({ role: 2, independence: 2 }),
         );
-        render(<AuditorProfile {...props()} />);
+        render(<AcademySection />);
 
         expect(
             screen.getByRole('region', { name: 'Auditor Academy' }),

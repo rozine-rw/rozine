@@ -40,6 +40,7 @@ enum PartyNoticeKind: string
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';
     case AuditorAccreditationRenewalDue = 'auditor.accreditation_renewal_due';
+    case AuditorReportReminder = 'auditor.report_reminder';
     case ComplaintAnswered = 'support.complaint_answered';
     case ComplaintResolved = 'support.complaint_resolved';
 
@@ -86,7 +87,7 @@ enum PartyNoticeKind: string
             self::BusinessApplicationApproved => 'underwriting',
             self::BusinessDisbursementSent => 'payments',
             self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
-            self::AuditorAccreditationRenewalDue => 'audits',
+            self::AuditorAccreditationRenewalDue, self::AuditorReportReminder => 'audits',
             self::ComplaintAnswered, self::ComplaintResolved => 'support',
         };
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,15 +14,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * licence, engagements and accreditation history. Fields the platform does not record yet are not
  * invented: no firm, ICPAR member ID or district is captured, no on-time record is kept and no audit
  * fee has been paid, so those read null; no partner can be frozen. A licence waiting for review
- * carries verify and reject, which run the accreditation review that already exists.
+ * carries verify and reject, which run the accreditation review that already exists. Every licence
+ * waiting for review is also queued above the directory, as the design's ICPAR verification desk
+ * (a first licence) and partner change requests (a renewal): approving or rejecting one opens that
+ * partner's 360 on the decision's reason stage, since every decision carries a reason.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Auditor\Contracts\AuditorDirectoryStore
+ * @phpstan-import-type QueueEntry from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  *
  * @phpstan-type Page array{
- *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, chip: string, search: string,
- *     partner: Detail|null, roles: list<string>, permissions: list<string>
+ *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, chip: string, search: string,
+ *     queue: list<QueueEntry>, partner: Detail|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffAuditorDirectoryResource extends JsonResource
@@ -60,9 +65,9 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'approver'],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'auditor', 'policy' => [],
-            'stats' => [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => $counts['all']]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => $counts['active']]],
+            'stats' => [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => $counts['active']]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => $counts['pending']]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => $page['active_audits']]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => $page['licences_expiring']]]],
             'chips' => array_map(fn (string $chip): array => ['key' => $chip, 'count' => $counts[$chip], 'link' => $link([...$filters, ...($chip === 'all' ? [] : ['chip' => $chip])]),
                 'active' => $chip === $page['chip']], self::CHIPS),
@@ -71,21 +76,42 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'firm' => null, 'licence' => $row['licence'], 'district' => null, 'active_engagements' => $row['active_engagements'],
                 'on_time_pct' => null, 'share_mtd' => null, 'standing' => $row['standing'], 'frozen' => false,
                 'link' => $link([...$position, 'auditor' => $row['party_id']])], $page['rows'])],
-            'party' => $page['partner'] === null ? null : self::partner($page['partner'], $link($position), $verify ? $prefix : null)];
+            'desk' => self::queue(array_filter($page['queue'], fn (array $entry): bool => ! $entry['renewal']), $link, $position, $verify),
+            'requests' => self::queue(array_filter($page['queue'], fn (array $entry): bool => $entry['renewal']), $link, $position, $verify),
+            'party' => $page['partner'] === null ? null : self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide'])];
+    }
+
+    /**
+     * The licences waiting for review, oldest first, each opening its partner's 360 and, for a viewer
+     * who may decide, that 360's approve or reject reason stage.
+     *
+     * @param  array<int, QueueEntry>  $entries
+     * @param  Closure(array<string, string>): array{url: string, method: string}  $link
+     * @param  array<string, string>  $position
+     * @return list<array<string, mixed>>
+     */
+    private static function queue(array $entries, Closure $link, array $position, bool $verify): array
+    {
+        return array_values(array_map(fn (array $entry): array => ['id' => $entry['party_id'], 'name' => $entry['name'], 'licence' => $entry['licence'],
+            'expires_on' => $entry['expires_on'], 'submitted_at' => $entry['submitted_at'],
+            'links' => ['review' => $link([...$position, 'auditor' => $entry['party_id']]),
+                ...($verify ? ['approve' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'approve']),
+                    'reject' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'reject'])] : [])]], $entries));
     }
 
     /**
      * @param  Detail  $partner
      * @param  array{url: string, method: string}  $close
      * @param  string|null  $prefix  the route prefix for licence decisions, or null when the viewer may not decide
+     * @param  'approve'|'reject'|null  $decide  the decision the queue opened the 360 on, if any
      * @return array<string, mixed>
      */
-    private static function partner(array $partner, array $close, ?string $prefix): array
+    private static function partner(array $partner, array $close, ?string $prefix, ?string $decide): array
     {
         $row = $partner['row'];
         $licence = $partner['licence'];
         $waiting = $prefix !== null && $licence !== null && $licence['submission_id'] !== null;
-        $decide = fn (string $decision): array => ['url' => route((string) $prefix.'staff.auditors.licence.'.$decision, ['party' => $row['party_id']], false), 'method' => 'post'];
+        $decision = fn (string $decision): array => ['url' => route((string) $prefix.'staff.auditors.licence.'.$decision, ['party' => $row['party_id']], false), 'method' => 'post'];
 
         return ['id' => $row['party_id'], 'kind' => 'auditor', 'name' => $row['name'], 'subtitle' => $row['email'],
             'health' => self::HEALTH[$row['standing']],
@@ -100,6 +126,7 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'district' => null, 'state' => $licence['state'],
                 'review' => $licence['submission_id'] === null ? null : ['revision' => $licence['revision'], 'submission_id' => $licence['submission_id']]],
             'freeze' => null, 'release_blocked' => null, 'restrictions' => [], 'links' => ['close' => $close],
-            'actions' => $waiting ? ['verify_licence' => $decide('approve'), 'reject_licence' => $decide('reject')] : (object) []];
+            'actions' => $waiting ? ['verify_licence' => $decision('approve'), 'reject_licence' => $decision('reject')] : (object) [],
+            'stage' => $waiting && $decide !== null ? ($decide === 'approve' ? 'verify_licence' : 'reject_licence') : null];
     }
 }

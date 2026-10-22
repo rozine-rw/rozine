@@ -271,20 +271,33 @@ const PENDING_ICON: Record<'payout' | 'legal', IconName> = {
 export function PendingSection({ kind }: { kind: 'payout' | 'legal' }) {
     const { t } = useTranslation();
 
+    const heading =
+        kind === 'legal'
+            ? t('auditor.profile.legal.title')
+            : t(`auditor.profile.section.${kind}`);
+
     return (
-        <div className="flex flex-col items-center px-[22px] py-14 text-center">
-            <span
-                aria-hidden
-                className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]"
+        <>
+            <Heading label={heading} />
+            <div
+                className={cn(
+                    CARD,
+                    'flex flex-col items-center px-[22px] py-7 text-center',
+                )}
             >
-                <Icon name={PENDING_ICON[kind]} tone="amber" />
-            </span>
-            <p className="mt-4 text-[17px] font-semibold text-rz-ink">
-                {t(`auditor.profile.pending.${kind}_title`)}
-            </p>
-            <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
-                {t(`auditor.profile.pending.${kind}_body`)}
-            </p>
-        </div>
+                <span
+                    aria-hidden
+                    className="flex size-[52px] items-center justify-center rounded-[16px] bg-rz-accent-soft text-[22px]"
+                >
+                    <Icon name={PENDING_ICON[kind]} tone="amber" />
+                </span>
+                <p className="mt-3 text-[15px] font-semibold text-rz-ink">
+                    {t(`auditor.profile.pending.${kind}_title`)}
+                </p>
+                <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
+                    {t(`auditor.profile.pending.${kind}_body`)}
+                </p>
+            </div>
+        </>
     );
 }

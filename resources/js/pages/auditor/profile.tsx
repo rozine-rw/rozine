@@ -24,6 +24,7 @@ import { DIVIDER } from '@/components/auditor/ui';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
+import { useWide } from '@/lib/investor/use-wide';
 import { cn } from '@/lib/utils';
 import type { AuditorProfileProps, ProfileSection } from '@/types/auditor';
 
@@ -40,13 +41,27 @@ const SECTIONS: { key: ProfileSection; icon: IconName }[] = [
     { key: 'legal', icon: 'document' },
 ];
 
+/** The order the design stacks the sections on a phone, where it shows no menu (L593–1013). */
+const PHONE_ORDER: ProfileSection[] = [
+    'earnings',
+    'contact',
+    'accreditation',
+    'payout',
+    'availability',
+    'telemetry',
+    'learn',
+    'security',
+    'legal',
+];
+
 /**
- * Profile (design L593–1013) with the design's nine sections. The menu sits under the identity
- * card, beside the chosen section on a wide screen and above it on a phone. A section with nothing
- * to read yet shows its empty state.
+ * Profile (design L593–1013) with the design's nine sections. On a wide screen the menu sits under
+ * the identity card, beside the chosen section; on a phone the design shows no menu and stacks every
+ * section under the card. A section with nothing to read yet shows its empty state.
  */
 export default function AuditorProfile(props: AuditorProfileProps) {
     const { t } = useTranslation();
+    const wide = useWide();
     const center = useAuditorCommandCenter({
         page: props,
         lookup: props.links.operation,
@@ -117,56 +132,58 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                                 jobsDone={props.jobs_done}
                             />
                         </div>
-                        <nav
-                            aria-label={t('auditor.profile.menu')}
-                            className="mt-3.5 lg:mt-0 lg:min-h-0 lg:flex-auto lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface lg:px-[18px] lg:pt-[18px] lg:pb-4"
-                        >
-                            <div className="overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
-                                {SECTIONS.map(({ key, icon }) => {
-                                    const on = key === props.section;
+                        {wide && (
+                            <nav
+                                aria-label={t('auditor.profile.menu')}
+                                className="mt-3.5 lg:mt-0 lg:min-h-0 lg:flex-auto lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-rz-border lg:bg-rz-surface lg:px-[18px] lg:pt-[18px] lg:pb-4"
+                            >
+                                <div className="overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+                                    {SECTIONS.map(({ key, icon }) => {
+                                        const on = key === props.section;
 
-                                    return (
-                                        <Link
-                                            key={key}
-                                            href={props.links.sections[key]}
-                                            aria-current={
-                                                on ? 'page' : undefined
-                                            }
-                                            className={cn(
-                                                'flex w-full items-center gap-[13px] border-b p-[15px] last:border-b-0',
-                                                DIVIDER,
-                                                on && 'bg-rz-accent-soft',
-                                            )}
-                                        >
-                                            <span
+                                        return (
+                                            <Link
+                                                key={key}
+                                                href={props.links.sections[key]}
+                                                aria-current={
+                                                    on ? 'page' : undefined
+                                                }
                                                 className={cn(
-                                                    'flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px]',
-                                                    on
-                                                        ? 'bg-rz-accent-soft'
-                                                        : 'bg-rz-page dark:bg-rz-surface-muted',
+                                                    'flex w-full items-center gap-[13px] border-b p-[15px] last:border-b-0',
+                                                    DIVIDER,
+                                                    on && 'bg-rz-accent-soft',
                                                 )}
                                             >
-                                                <Icon
-                                                    name={icon}
-                                                    tone="amber"
-                                                />
-                                            </span>
-                                            <span className="flex-1 text-left text-[14.5px] font-semibold text-rz-ink">
-                                                {t(
-                                                    `auditor.profile.section.${key}`,
-                                                )}
-                                            </span>
-                                            <span
-                                                aria-hidden
-                                                className="text-rz-secondary"
-                                            >
-                                                ›
-                                            </span>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        </nav>
+                                                <span
+                                                    className={cn(
+                                                        'flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px]',
+                                                        on
+                                                            ? 'bg-rz-accent-soft'
+                                                            : 'bg-rz-page dark:bg-rz-surface-muted',
+                                                    )}
+                                                >
+                                                    <Icon
+                                                        name={icon}
+                                                        tone="amber"
+                                                    />
+                                                </span>
+                                                <span className="flex-1 text-left text-[14.5px] font-semibold text-rz-ink">
+                                                    {t(
+                                                        `auditor.profile.section.${key}`,
+                                                    )}
+                                                </span>
+                                                <span
+                                                    aria-hidden
+                                                    className="text-rz-secondary"
+                                                >
+                                                    ›
+                                                </span>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </nav>
+                        )}
                     </div>
                     <div className={COLUMN}>
                         <div className="rz-scroll px-5 lg:flex-1 lg:overflow-y-auto lg:px-[18px] lg:pt-[18px]">
@@ -175,9 +192,17 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                                 shown={['licence', 'expires_on', 'certificate']}
                                 className="mt-4 lg:mt-0 lg:mb-4"
                             />
-                            <div className="mt-4 lg:mt-0">
-                                {sections[props.section]}
-                            </div>
+                            {wide ? (
+                                <div className="mt-0">
+                                    {sections[props.section]}
+                                </div>
+                            ) : (
+                                PHONE_ORDER.map((key) => (
+                                    <div key={key} className="mt-4">
+                                        {sections[key]}
+                                    </div>
+                                ))
+                            )}
                             <div className="h-4" />
                         </div>
                     </div>

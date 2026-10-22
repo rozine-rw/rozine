@@ -107,15 +107,15 @@ it('refuses an expired or already used step-up proof without sealing, then seals
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base.'/auditor/reports/'.$report->id).');
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             '.$substitute($expired).'
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("alert").filter({hasText:"Your confirmation expired before the seal went through. Enter a new code."}).waitFor();
             await page.unrouteAll({behavior:"wait"});
             if (await page.getByRole("heading", {name:"Sealed and filed"}).count() !== 0) throw new Error("Sealed on an expired proof");
             if (await page.getByLabel("Six-digit authenticator code", {exact:true}).inputValue() !== "") throw new Error("The spent code was kept");
-            if (!(await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).isDisabled())) throw new Error("Seal offered without a new code");
+            if (!(await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).isDisabled())) throw new Error("Seal offered without a new code");
             await noOverflow();
             await shot('.$journey->shot('expired-phone').');
             return answers;');
@@ -128,7 +128,7 @@ it('refuses an expired or already used step-up proof without sealing, then seals
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             '.$substitute($used).'
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("alert").filter({hasText:"That confirmation didn\'t go through. Enter a new code from your authenticator."}).waitFor();
             await page.unrouteAll({behavior:"wait"});
             if (await page.getByRole("heading", {name:"Sealed and filed"}).count() !== 0) throw new Error("Sealed on a spent proof");
@@ -142,7 +142,7 @@ it('refuses an expired or already used step-up proof without sealing, then seals
         $journey->code('ud1a', '
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await noOverflow();
             await shot('.$journey->shot('fresh-sealed-phone').');');
@@ -166,7 +166,7 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
             await page.goto('.json_encode($journey->base.'/auditor/reports/'.$report->id).');
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
             const digest = await page.locator("[aria-labelledby=auditor-findings-title]").getByText(/^[0-9a-f]{64}$/).textContent();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).waitFor();
             return digest;');
         expect($first)->toBe($fixture['fields']['digest']);
@@ -182,7 +182,7 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
         $refusal = $journey->code('ud2a', '
             const answer = page.waitForResponse((response) => response.url().endsWith("/step-up") && response.request().method() === "POST");
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             const response = await answer;
             const refused = {status: response.status(), code: (await response.json()).code};
             await page.locator("[aria-labelledby=auditor-findings-title]").waitFor({state:"detached"});
@@ -220,9 +220,9 @@ it('refuses a seal after the sources change under the preview, re-reads and lead
             if (await page.getByText("A source changed", {exact:false}).count() !== 0) throw new Error("The re-reviewed report still reports a changed source");
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
             const digest = await page.locator("[aria-labelledby=auditor-findings-title]").getByText(/^[0-9a-f]{64}$/).textContent();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await shot('.$journey->shot('resealed-desktop').');
             return digest;');
@@ -250,9 +250,9 @@ it('refuses a lost seal retried after another session moved the report on, and s
                 held = route.request().postDataJSON().request_id;
                 return route.abort("failed");
             }, {times: 1});
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByText("Rozine has no record of your last action.", {exact:false}).waitFor();
             await shot('.$journey->shot('not-recorded-desktop').');
             return {digest, held};');
@@ -287,9 +287,9 @@ it('refuses a lost seal retried after another session moved the report on, and s
         $fresh = $journey->code('ud2b', '
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
             const digest = await page.locator("[aria-labelledby=auditor-findings-title]").getByText(/^[0-9a-f]{64}$/).textContent();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await noOverflow();
             await shot('.$journey->shot('resealed-phone').');
@@ -370,7 +370,7 @@ it('denies a replaced Auditor the report and its seal, with no stale action left
             await page.setViewportSize('.BrowserJourney::PHONE.');
             await page.goto('.json_encode($journey->base).' + '.$url.');
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).waitFor();');
 
         /* Another session declares a conflict; the job goes to an independent partner who accepts it. */
@@ -382,7 +382,7 @@ it('denies a replaced Auditor the report and its seal, with no stale action left
         $answers = $journey->code('ud4a', '
             const answer = page.waitForResponse((response) => response.url().endsWith("/step-up") && response.request().method() === "POST");
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             const stepUp = await answer;
             const stepUpRefused = {status: stepUp.status(), code: (await stepUp.json()).code};
             await page.getByRole("alert").first().waitFor();
@@ -390,7 +390,7 @@ it('denies a replaced Auditor the report and its seal, with no stale action left
             await shot('.$journey->shot('stale-seal-phone').');
             const cold = await page.reload();
             await page.getByRole("heading", {name:"We couldn\'t find that page", exact:true}).waitFor();
-            for (const name of ["Preview findings", "Confirm with your authenticator", "Seal & submit to Rozine", "Save note"]) {
+            for (const name of ["Preview findings", "Re-authenticate to seal", "Apply ICPAR licence seal", "Save note"]) {
                 if (await page.getByRole("button", {name}).count() !== 0) throw new Error("Stale action offered: " + name);
             }
             await noOverflow();
@@ -531,9 +531,9 @@ it('recovers a lost note save and seal answer through the same request ID with e
         $sealed = $journey->code('ud6a', '
             '.udDropAnswer('**/auditor/reports/*/seal').'
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($journey->otp(UD_SECRET)).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await shot('.$journey->shot('seal-recovered-desktop').');
             await page.setViewportSize('.BrowserJourney::PHONE.');

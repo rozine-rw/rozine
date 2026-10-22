@@ -1,0 +1,379 @@
+{
+    "component": "admin/audit-reports",
+    "synthetic": true,
+    "props": {
+        "viewer": {
+            "id": "stf_01",
+            "name": "A. Diane",
+            "email": "ops@rozine.rw",
+            "initials": "AD",
+            "role": "approver"
+        },
+        "nav": {
+            "today": {
+                "url": "/preview/admin-today",
+                "method": "get"
+            },
+            "applications": {
+                "url": "/preview/admin-applications",
+                "method": "get"
+            },
+            "disbursements": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            },
+            "repayments": {
+                "url": "/preview/admin-repayments",
+                "method": "get"
+            },
+            "businesses": {
+                "url": "/preview/admin-businesses",
+                "method": "get"
+            },
+            "investors": {
+                "url": "/preview/admin-investors",
+                "method": "get"
+            },
+            "auditors": {
+                "url": "/preview/admin-auditors",
+                "method": "get"
+            },
+            "staff": {
+                "url": "/preview/admin-staff",
+                "method": "get"
+            },
+            "ledger": {
+                "url": "/preview/admin-ledger",
+                "method": "get"
+            },
+            "events": {
+                "url": "/preview/admin-events",
+                "method": "get"
+            },
+            "book": {
+                "url": "/preview/admin-book",
+                "method": "get"
+            },
+            "exceptions": {
+                "url": "/preview/admin-exceptions",
+                "method": "get"
+            },
+            "reconciliation": {
+                "url": "/preview/admin-reconciliation",
+                "method": "get"
+            },
+            "coverage": {
+                "url": "/preview/admin-coverage",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/admin-reports",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "notes": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "primary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "secondary_market": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "risk": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "compliance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "ratings": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "deferrals": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "plus": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "finance": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "messaging": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "academies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "app_control": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "engines": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "policies": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "system_health": {
+                "url": "/preview/admin-section",
+                "method": "get"
+            },
+            "payments": {
+                "url": "/preview/admin-disbursements",
+                "method": "get"
+            }
+        },
+        "badges": {
+            "applications": 6,
+            "disbursements": 2
+        },
+        "search": "",
+        "server_time": "2027-01-23T10:00:00+02:00",
+        "staff_access_version": "staff-access-v1",
+        "contract_version": "staff-audit-report-register-v1",
+        "allowed_actions": [],
+        "stats": [
+            {
+                "key": "published",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            },
+            {
+                "key": "awaiting_cosign",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            },
+            {
+                "key": "overdue",
+                "value": {
+                    "kind": "count",
+                    "value": 1
+                }
+            },
+            {
+                "key": "on_time",
+                "value": {
+                    "kind": "percent",
+                    "value": "67"
+                }
+            }
+        ],
+        "chips": [
+            {
+                "key": "all",
+                "count": 4,
+                "link": {
+                    "url": "/preview/admin-audit-reports",
+                    "method": "get"
+                },
+                "active": true
+            },
+            {
+                "key": "owed",
+                "count": 2,
+                "link": {
+                    "url": "/preview/admin-audit-reports",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "awaiting_cosign",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-audit-reports",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "published",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-audit-reports",
+                    "method": "get"
+                },
+                "active": false
+            },
+            {
+                "key": "disputed",
+                "count": 1,
+                "link": {
+                    "url": "/preview/admin-audit-reports",
+                    "method": "get"
+                },
+                "active": false
+            }
+        ],
+        "rows": [
+            {
+                "id": "asg_01",
+                "business": "Kigali Fresh Foods Ltd",
+                "kind": "monthly",
+                "period": "2026-12-01",
+                "auditor": "Eric Kamanzi",
+                "licence": "ICPAR-2024-0117",
+                "status": "published",
+                "due_at": "2027-01-07T21:59:59Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-05T09:12:00Z",
+                "digest": "9f3c2a71be04",
+                "variance_pct": "0.0",
+                "variance_flagged": false,
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                }
+            },
+            {
+                "id": "asg_02",
+                "business": "Musanze Agro Traders",
+                "kind": "monthly",
+                "period": "2026-12-01",
+                "auditor": "Grace Kalisa",
+                "licence": "ICPAR-2023-0342",
+                "status": "awaiting_cosign",
+                "due_at": "2027-01-07T21:59:59Z",
+                "cosign_by": "2027-01-24T08:30:00Z",
+                "sealed_at": "2027-01-23T08:30:00Z",
+                "digest": "41aa07c9d2e8",
+                "variance_pct": "4.2",
+                "variance_flagged": true,
+                "owes": "business",
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    }
+                }
+            },
+            {
+                "id": "asg_03",
+                "business": "Huye Hardware Supplies",
+                "kind": "monthly",
+                "period": "2026-12-01",
+                "auditor": "Diane Uwase",
+                "licence": null,
+                "status": "overdue",
+                "due_at": "2027-01-07T21:59:59Z",
+                "cosign_by": null,
+                "sealed_at": null,
+                "digest": null,
+                "variance_pct": null,
+                "variance_flagged": false,
+                "owes": "auditor",
+                "reminded_at": "2027-01-23T07:45:00Z",
+                "links": {
+                    "pdf": null,
+                    "remind": null
+                }
+            },
+            {
+                "id": "asg_04",
+                "business": "Rubavu Fish Market Co.",
+                "kind": "flash",
+                "period": null,
+                "auditor": "Eric Ndoli",
+                "licence": "ICPAR-2025-0021",
+                "status": "disputed",
+                "due_at": "2027-01-20T10:00:00Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-19T15:02:00Z",
+                "digest": "c7d5e3b1a908",
+                "variance_pct": "12.5",
+                "variance_flagged": true,
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                }
+            }
+        ],
+        "field": [
+            {
+                "id": "asg_04",
+                "business": "Rubavu Fish Market Co.",
+                "kind": "flash",
+                "period": null,
+                "auditor": "Eric Ndoli",
+                "licence": "ICPAR-2025-0021",
+                "status": "disputed",
+                "due_at": "2027-01-20T10:00:00Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-19T15:02:00Z",
+                "digest": "c7d5e3b1a908",
+                "variance_pct": "12.5",
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                },
+                "variance_flagged": true
+            }
+        ],
+        "published": [
+            {
+                "id": "asg_01",
+                "business": "Kigali Fresh Foods Ltd",
+                "kind": "monthly",
+                "period": "2026-12-01",
+                "auditor": "Eric Kamanzi",
+                "licence": "ICPAR-2024-0117",
+                "status": "published",
+                "due_at": "2027-01-07T21:59:59Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-05T09:12:00Z",
+                "digest": "9f3c2a71be04",
+                "variance_pct": "0.0",
+                "variance_flagged": false,
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                }
+            }
+        ]
+    }
+}

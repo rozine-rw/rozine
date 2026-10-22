@@ -435,34 +435,123 @@ describe('Auditor Jobs', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('opens monthly windows and expands the waiting list', async () => {
+    it('links monthly windows to their file and expands the waiting list', async () => {
         const { user } = renderWithUser(<AuditorJobs {...props()} />);
 
         expect(screen.getByText('4 waiting')).toBeInTheDocument();
         expect(
-            screen.getAllByRole('button', { name: 'Open the audit' }),
+            screen.getAllByRole('link', { name: 'Open the audit' }),
         ).toHaveLength(3);
 
         await user.click(
             screen.getByRole('button', { name: 'Show all 4 open windows' }),
         );
         expect(
-            screen.getAllByRole('button', { name: 'Open the audit' }),
+            screen.getAllByRole('link', { name: 'Open the audit' }),
         ).toHaveLength(4);
         await user.click(
             screen.getByRole('button', { name: 'Show fewer · 3 of 4' }),
         );
         expect(
-            screen.getAllByRole('button', { name: 'Open the audit' }),
+            screen.getAllByRole('link', { name: 'Open the audit' }),
         ).toHaveLength(3);
 
-        await user.click(
-            screen.getAllByRole('button', { name: 'Open the audit' })[0],
-        );
-        expect(inertia.posts[0].url).toBe('/preview/auditor-audit-statements');
+        expect(
+            screen.getAllByRole('link', { name: 'Open the audit' })[0],
+        ).toHaveAttribute('href', '/preview/auditor-audit-statements');
         expect(
             screen.getAllByText('September 2026 · audit file not opened yet'),
         ).toHaveLength(3);
+    });
+
+    it('shows a live window without a month or note reference, and a report without figures', () => {
+        const base = props();
+        const window = base.monthly!.windows[0];
+        const report = base.monthly!.reports[0];
+
+        render(
+            <AuditorJobs
+                {...base}
+                monthly={{
+                    windows: [{ ...window, month: null, note_id: null }],
+                    reports: [
+                        {
+                            ...report,
+                            sector: null,
+                            due_on: null,
+                            inflow: null,
+                            outflow: null,
+                            cover: null,
+                        },
+                    ],
+                    desk_reviews: [],
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByText('Audit file not opened yet'),
+        ).toBeInTheDocument();
+        expect(screen.getByText(window.business)).toBeInTheDocument();
+        expect(screen.getByText(report.note_title)).toBeInTheDocument();
+        expect(screen.getAllByText('—')).toHaveLength(3);
+    });
+
+    it('shows disputed reports under desk review, read-only and linked to the report', () => {
+        const base = props();
+
+        render(
+            <AuditorJobs
+                {...base}
+                monthly={{
+                    windows: [],
+                    reports: [],
+                    desk_reviews: [
+                        {
+                            id: 'r1',
+                            business: 'GreenLeaf Agro',
+                            month: '2026-09-01',
+                            status: 'disputed',
+                            variance_pct: '4.2',
+                            proofs: 3,
+                            link: { url: '/auditor/reports/r1', method: 'get' },
+                        },
+                        {
+                            id: 'r2',
+                            business: 'Isoko Energy',
+                            month: null,
+                            status: 'escalated',
+                            variance_pct: null,
+                            proofs: 1,
+                            link: { url: '/auditor/reports/r2', method: 'get' },
+                        },
+                    ],
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByText('Desk review · September 2026'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Desk review')).toBeInTheDocument();
+        expect(screen.getByText('Under desk review')).toBeInTheDocument();
+        expect(screen.getByText('Escalated')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveTextContent(
+            'Counter-proof filed3 itemsYour weighted variance4.2%',
+        );
+        expect(
+            screen.getByRole('link', { name: /Isoko Energy/u }),
+        ).toHaveTextContent('Counter-proof filed1 itemYour weighted variance—');
+        expect(
+            screen.getByRole('link', { name: /GreenLeaf Agro/u }),
+        ).toHaveAttribute('href', '/auditor/reports/r1');
+        expect(
+            screen.getByText(
+                'No monthly reports awaiting your audit right now.',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('labels every monthly report state and its statement figures', () => {
@@ -475,7 +564,12 @@ describe('Auditor Jobs', () => {
             { ...report, id: 'd', status: 'awaiting_cosign' },
         ];
 
-        render(<AuditorJobs {...base} monthly={{ windows: [], reports }} />);
+        render(
+            <AuditorJobs
+                {...base}
+                monthly={{ windows: [], reports, desk_reviews: [] }}
+            />,
+        );
 
         expect(screen.getByText('In progress')).toBeInTheDocument();
         expect(screen.getByText('Overdue')).toBeInTheDocument();
@@ -515,6 +609,38 @@ describe('Auditor Jobs', () => {
         expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
     });
 
+    it('keeps monthly visits out of the assigned list once the monthly section shows them', () => {
+        const page = props();
+        const [job] = props(overdueFixture).assigned;
+
+        render(
+            <AuditorJobs
+                {...page}
+                assigned={[
+                    {
+                        ...job,
+                        id: 'flash',
+                        business: 'Flash Traders',
+                        kind: 'flash',
+                    },
+                    {
+                        ...job,
+                        id: 'monthly',
+                        business: 'Monthly Traders',
+                        kind: 'monthly',
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: /Flash Traders/u }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: /Monthly Traders/u }),
+        ).not.toBeInTheDocument();
+    });
+
     it('says which kind each job is, and stops the clock on work awaiting co-signature', () => {
         const page = props();
         const [job] = props(overdueFixture).assigned;
@@ -523,6 +649,7 @@ describe('Auditor Jobs', () => {
             <AuditorJobs
                 {...page}
                 eligible={page.eligible.slice(0, 1)}
+                monthly={null}
                 assigned={[
                     {
                         ...job,

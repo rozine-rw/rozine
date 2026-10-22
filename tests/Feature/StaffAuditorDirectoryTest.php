@@ -70,9 +70,9 @@ test('staff who verify Audit Partners see the designed network; other staff and 
 test('an empty network shows the design with zero figures and no rows', function (): void {
     $this->actingAs($this->officer)->get(route('staff.auditors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('stats', [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => 0]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 0]],
+            ->where('stats', [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => 0]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => 0]]])
             ->where('chips.0', ['key' => 'all', 'count' => 0, 'link' => ['url' => '/admin/auditors', 'method' => 'get'], 'active' => true])
             ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 0, 'active' => 0, 'pending' => 0, 'licence_expired' => 0])
@@ -96,9 +96,9 @@ test('rows carry real standing, licences and engagements, and the chips and sear
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('stats', [['key' => 'partners', 'value' => ['kind' => 'count', 'value' => 6]],
-                ['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 2]],
+            ->where('stats', [['key' => 'active_partners', 'value' => ['kind' => 'count', 'value' => 2]],
                 ['key' => 'pending_partners', 'value' => ['kind' => 'count', 'value' => 2]],
+                ['key' => 'active_audits', 'value' => ['kind' => 'count', 'value' => 1]],
                 ['key' => 'licences_expiring', 'value' => ['kind' => 'count', 'value' => 1]]])
             ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all() === ['all' => 6, 'active' => 2, 'pending' => 2, 'licence_expired' => 1])
             ->where('shown', 6)->where('total', 6)
@@ -114,7 +114,7 @@ test('rows carry real standing, licences and engagements, and the chips and sear
             }));
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['chip' => 'pending', 'q' => 'bosco']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('search', 'bosco')->where('stats.0.value.value', 1)
+        ->assertInertia(fn (Assert $page) => $page->where('search', 'bosco')->where('stats.1.value.value', 1)
             ->where('chips.2', ['key' => 'pending', 'count' => 1, 'link' => ['url' => '/admin/auditors?q=bosco&chip=pending', 'method' => 'get'], 'active' => true])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Bosco Habimana')
             ->where('directory.rows.0.link.url', '/admin/auditors?q=bosco&chip=pending&auditor='.$waiting['party']->id));
@@ -230,4 +230,47 @@ test('the network answers over the API with the read ability, and decisions need
 
     Sanctum::actingAs($this->officer, ['staff:businesses:read']);
     $this->getJson('/api/v1/staff/auditors')->assertForbidden();
+});
+
+test('licences waiting for review queue as the verification desk and change requests, each opening its decision', function (): void {
+    $this->freezeSecond();
+    $first = auditorDirectoryPartner('Bosco Habimana');
+    $submittedAt = now('UTC')->format('Y-m-d\TH:i:s\Z');
+    $submission = AuditorFixture::submit($first['user'])['data']['submission_id'];
+    $expiresOn = now()->addYear()->format('Y-m-d');
+    $this->travel(1)->hours();
+    $renewing = auditorDirectoryStanding('Diane Uwase', 'active', now('Africa/Kigali')->addDays(10)->format('Y-m-d'));
+    $state = $renewing->state;
+    $state['submission'] = ['status' => 'pending', 'id' => strtolower((string) Str::ulid()), 'licence' => 'PPC-RENEWED',
+        'expires_on' => now('Africa/Kigali')->addYear()->format('Y-m-d'), 'submitted_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
+    $renewing->forceFill(['state' => $state])->save();
+    auditorDirectoryStanding('Eric Nkusi', 'active', now('Africa/Kigali')->addYear()->format('Y-m-d'));
+    $id = $first['party']->id;
+    $open = fn (string $party, string $decide = ''): array => ['url' => '/admin/auditors?chip=pending&auditor='.$party.($decide === '' ? '' : '&decide='.$decide), 'method' => 'get'];
+
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['chip' => 'pending']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('desk', [['id' => $id, 'name' => 'Bosco Habimana', 'licence' => 'SYNTHETIC-CPA', 'expires_on' => $expiresOn,
+                'submitted_at' => $submittedAt,
+                'links' => ['review' => $open($id), 'approve' => $open($id, 'approve'), 'reject' => $open($id, 'reject')]]])
+            ->where('requests', [['id' => $renewing->party_id, 'name' => 'Diane Uwase', 'licence' => 'PPC-RENEWED', 'expires_on' => $state['submission']['expires_on'],
+                'submitted_at' => $state['submission']['submitted_at'], 'links' => ['review' => $open($renewing->party_id),
+                    'approve' => $open($renewing->party_id, 'approve'), 'reject' => $open($renewing->party_id, 'reject')]]]));
+
+    // The queue's approve opens the 360 on the approve reason stage; a decided licence opens on none.
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $id, 'decide' => 'approve']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.stage', 'verify_licence'));
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $id, 'decide' => 'reject']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.stage', 'reject_licence'));
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.stage', null));
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['decide' => 'later']))->assertSessionHasErrors('decide');
+    AuditorFixture::review($first['staff'], $id, 1, 'approve', $submission);
+    $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $id, 'decide' => 'approve']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.stage', null)->where('desk', []));
+
+    // A token without the verify ability may read the queue but is offered no decision.
+    Sanctum::actingAs($this->officer, ['staff:auditors:read']);
+    $this->getJson('/api/v1/staff/auditors')->assertOk()
+        ->assertJsonPath('data.requests.0.links', ['review' => ['url' => '/api/v1/staff/auditors?auditor='.$renewing->party_id, 'method' => 'get']]);
 });

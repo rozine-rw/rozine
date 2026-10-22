@@ -866,6 +866,8 @@ export type PartyDetail = {
         verify_licence?: RouteAction;
         reject_licence?: RouteAction;
     };
+    /** The licence decision the review queue opened this 360 on, if any. */
+    stage?: 'verify_licence' | 'reject_licence' | null;
 };
 
 export type DirectoryChipKey =
@@ -891,9 +893,9 @@ export type DirectoryStatKey =
     | 'kyc_verified'
     | 'awaiting_kyc'
     | 'total_aum'
-    | 'partners'
     | 'active_partners'
     | 'pending_partners'
+    | 'active_audits'
     | 'licences_expiring'
     | 'operators'
     | 'approvers'

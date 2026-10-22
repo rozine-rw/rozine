@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminParties from '@/pages/admin/parties';
 import type { AdminPartiesProps, PartyDetail } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 import licenceFixture from '../../../resources/fixtures/ui/admin-auditors-licence.json';
 import auditorsFixture from '../../../resources/fixtures/ui/admin-auditors.json';
 import frozenFixture from '../../../resources/fixtures/ui/admin-businesses-frozen.json';
@@ -10,12 +11,13 @@ import overdueFixture from '../../../resources/fixtures/ui/admin-investors-kyc-o
 import investorsFixture from '../../../resources/fixtures/ui/admin-investors.json';
 import staffFixture from '../../../resources/fixtures/ui/admin-staff.json';
 import { renderWithUser } from '../helpers/render-with-user';
+import { textContrastOnSurface } from '../helpers/text-contrast';
 import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as AdminPartiesProps;
+    structuredClone(fixture.props) as AdminPartiesProps & LicenceQueues;
 
 const party = (fixture: { props: unknown }): PartyDetail => {
     const detail = props(fixture).party;
@@ -30,6 +32,30 @@ const party = (fixture: { props: unknown }): PartyDetail => {
 beforeEach(resetInertia);
 
 describe('Party directories', () => {
+    it.each(['light', 'dark'] as const)(
+        'keeps the rendered licence queue buttons and translucent chips readable in %s mode',
+        (theme) => {
+            render(<AdminParties {...props(auditorsFixture)} />);
+            const surface = theme === 'light' ? '#ffffff' : '#101a2e';
+
+            for (const [name, chip] of [
+                ['Partner change requests', 'RENEWAL'],
+                ['ICPAR verification desk', 'PENDING VERIFICATION'],
+            ]) {
+                const queue = within(screen.getByRole('region', { name }));
+
+                for (const control of [
+                    queue.getByRole('link', { name: 'Approve' }),
+                    queue.getByText(chip),
+                ]) {
+                    expect(
+                        textContrastOnSurface(control, theme, surface),
+                    ).toBeGreaterThanOrEqual(4.5);
+                }
+            }
+        },
+    );
+
     it('lists businesses with their state badges, filters and eligibility policy', () => {
         render(<AdminParties {...props(businessesFixture)} />);
 
@@ -162,6 +188,109 @@ describe('Party directories', () => {
         );
         expect(screen.getAllByText('Active').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(0);
+    });
+
+    it('queues renewals and first licences above the Audit Partner directory, each opening its decision', () => {
+        render(<AdminParties {...props(auditorsFixture)} />);
+
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(
+            screen.getByRole('heading', { name: 'CPA registry' }),
+        ).toBeInTheDocument();
+
+        expect(
+            within(requests).getByText('Jean Habimana, CPA'),
+        ).toBeInTheDocument();
+        expect(within(requests).getByText('RENEWAL')).toBeInTheDocument();
+        expect(within(requests).getByText('PPC-0388-R')).toBeInTheDocument();
+        expect(
+            within(desk).getByText('Claude Mukamana, CPA'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(within(desk).getByText('1 Oct 2026')).toBeInTheDocument();
+        expect(within(desk).getByText('30 Jun 2027')).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(
+            within(desk).getByRole('link', { name: 'Reject' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(within(desk).getByRole('link', { name: 'Reject' })).toHaveClass(
+            'bg-rz-surface',
+            'text-[#b3352a]',
+            'dark:text-[#ff6b6f]',
+        );
+        expect(within(desk).getByText('Licence')).toHaveClass(
+            'text-[#7a5d33]',
+            'dark:text-[#f0a060]',
+        );
+    });
+
+    it('keeps a licence awaiting a name identifiable and reviewable', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = fixture.desk?.map((entry) => ({ ...entry, name: ' ' }));
+        render(<AdminParties {...fixture} />);
+
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(within(desk).getByText('Name pending')).toBeInTheDocument();
+        expect(within(desk).getByText('?')).toHaveAttribute(
+            'aria-hidden',
+            'true',
+        );
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+    });
+
+    it('offers only Review to a viewer who may not decide, and says when a queue is empty', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = [];
+        fixture.requests = fixture.requests?.map((entry) => ({
+            ...entry,
+            links: { review: entry.links.review },
+        }));
+        render(<AdminParties {...fixture} />);
+
+        expect(
+            screen.getByText('No auditor applications awaiting verification.'),
+        ).toBeInTheDocument();
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+
+        expect(
+            within(requests).getByRole('link', { name: 'Review' }),
+        ).toBeInTheDocument();
+        expect(
+            within(requests).queryByRole('link', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows no licence queues outside the Audit Partner network', () => {
+        render(<AdminParties {...props(businessesFixture)} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'ICPAR verification desk' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'CPA registry' }),
+        ).not.toBeInTheDocument();
     });
 
     it('opens Partner coverage from the Audit Partner directory for staff who may see it', () => {
@@ -814,6 +943,31 @@ describe('Party 360', () => {
         await user.click(screen.getByRole('button', { name: 'Cancel' }));
         await user.click(
             within(licence).getByRole('button', { name: 'Reject' }),
+        );
+        expect(
+            screen.getByRole('form', {
+                name: 'Reject licence for Claude Mukamana, CPA',
+            }),
+        ).toBeInTheDocument();
+    });
+
+    it('opens on the decision the review queue chose, with its reason stage ready', () => {
+        const fixture = props(licenceFixture);
+        const detail = party(licenceFixture);
+
+        fixture.party = {
+            ...detail,
+            licence: detail.licence && {
+                ...detail.licence,
+                review: { revision: 3, submission_id: 'sub-a' },
+            },
+            stage: 'reject_licence',
+        };
+        render(<AdminParties {...fixture} />);
+
+        expect(screen.getByRole('tab', { name: 'Controls' })).toHaveAttribute(
+            'aria-selected',
+            'true',
         );
         expect(
             screen.getByRole('form', {

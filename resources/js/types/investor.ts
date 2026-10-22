@@ -1523,6 +1523,17 @@ export type InvestorNotice = {
           facts: { licence: string; expires_on: string };
       }
     | {
+          kind: 'auditor.report_reminder';
+          facts: {
+              business: string;
+              kind: 'flash' | 'monthly';
+              /** The audited month as YYYY-MM; empty for a Flash Audit. */
+              period: string;
+              due_at: string;
+              assignment_id: string;
+          };
+      }
+    | {
           kind: 'support.complaint_answered' | 'support.complaint_resolved';
           facts: { reference: string };
       }

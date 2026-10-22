@@ -1299,6 +1299,8 @@ const en = {
     'admin.messaging.trigger.auditor.accreditation_rejected':
         'Accreditation is declined',
     'admin.messaging.trigger.auditor.job_offered': 'An audit job is offered',
+    'admin.messaging.trigger.auditor.report_reminder':
+        'Staff reminds the Audit Partner about a report',
     'admin.messaging.trigger.auditor.accreditation_renewal_due':
         'The licence renewal falls due',
     'admin.messaging.trigger.support.complaint_answered':
@@ -2173,7 +2175,84 @@ const en = {
         'e.g. MTN confirmed reference MM-88213 reversed in full; destination re-verified.',
     'admin.parties.policy_title': 'Business eligibility rules',
     'admin.parties.filter': 'Filter by status',
+    'admin.audit_reports.title': 'Monthly audit compliance tracker',
+    'admin.audit_reports.caption':
+        'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to co-sign or dispute.',
+    'admin.audit_reports.field.title': 'Field Flash Audit operations',
+    'admin.audit_reports.field.caption':
+        'Each field audit shows its CPA and licence, report state and weighted variance, with the retained seal digest and report PDF when available.',
+    'admin.audit_reports.field.table': 'Field Flash Audits',
+    'admin.audit_reports.field.empty': 'No ISRS 4400 engagements recorded yet.',
+    'admin.audit_reports.feed.title': 'Recently audited & published',
+    'admin.audit_reports.feed.audited':
+        '✓ Audited on site by {auditor} · {licence}',
+    'admin.audit_reports.feed.empty': 'No monthly reports audited yet.',
+    'admin.audit_reports.filter': 'Audit report views',
+    'admin.audit_reports.table': 'Audit reports',
+    'admin.audit_reports.empty_title': 'Nothing in this view.',
+    'admin.audit_reports.empty_body':
+        'Audits appear here once an Audit Partner accepts them.',
+    'admin.audit_reports.monthly': 'Monthly audit',
+    'admin.audit_reports.flash': 'Flash Audit',
+    'admin.audit_reports.due': 'Due {date}',
+    'admin.audit_reports.cosign_by': 'Co-sign by {date}',
+    'admin.audit_reports.remind': 'Remind',
+    'admin.audit_reports.remind_auditor':
+        'Remind the Audit Partner about {business}',
+    'admin.audit_reports.remind_business':
+        'Remind {business} to co-sign or dispute',
+    'admin.audit_reports.reminded': 'Reminded {date}',
+    'admin.audit_reports.pdf': 'Generate PDF',
+    'admin.audit_reports.pdf_named':
+        'Download the sealed report for {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Audited & published',
+    'admin.audit_reports.stats.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.stats.overdue': 'SLA breached',
+    'admin.audit_reports.stats.on_time': 'On-time audit rate',
+    'admin.audit_reports.chip.all': 'All',
+    'admin.audit_reports.chip.owed': 'Owed by a partner',
+    'admin.audit_reports.chip.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.chip.published': 'Published',
+    'admin.audit_reports.chip.disputed': 'In dispute',
+    'admin.audit_reports.col.business': 'Business',
+    'admin.audit_reports.col.period': 'Period',
+    'admin.audit_reports.col.partner': 'Audit Partner',
+    'admin.audit_reports.col.status': 'Status',
+    'admin.audit_reports.col.variance': 'Variance',
+    'admin.audit_reports.col.action': 'Action',
+    'admin.audit_reports.status.not_started': 'Audit not opened',
+    'admin.audit_reports.status.in_progress': 'In progress',
+    'admin.audit_reports.status.overdue': 'Overdue',
+    'admin.audit_reports.status.returned': 'Returned',
+    'admin.audit_reports.status.sealed': 'Sealed',
+    'admin.audit_reports.status.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.status.published': 'Published',
+    'admin.audit_reports.status.disputed': 'Disputed',
+    'admin.audit_reports.status.escalated': 'Escalated',
+    'admin.audit_reports.status.amended': 'Amended',
+    'admin.audit_reports.status.withdrawn': 'Withdrawn',
     'admin.parties.coverage_link': 'Partner coverage',
+    'admin.parties.registry.title': 'CPA registry',
+    'admin.parties.registry.caption':
+        'Every licensed CPA, with their licence, standing and active audits. Open a row for the full profile.',
+    'admin.parties.queue.requests.title': 'Partner change requests',
+    'admin.parties.queue.requests.caption':
+        'Licence renewals waiting for review. The partner sees theirs as pending until you decide.',
+    'admin.parties.queue.requests.empty':
+        'No partner requests waiting. Licence renewals from the Auditor app land here.',
+    'admin.parties.queue.requests.chip': 'RENEWAL',
+    'admin.parties.queue.desk.title': 'ICPAR verification desk',
+    'admin.parties.queue.desk.caption':
+        'Confirm the licence on the ICPAR register, then approve so the partner can take audits.',
+    'admin.parties.queue.desk.empty':
+        'No auditor applications awaiting verification.',
+    'admin.parties.queue.desk.chip': 'PENDING VERIFICATION',
+    'admin.parties.queue.approve': 'Approve',
+    'admin.parties.queue.reject': 'Reject',
+    'admin.parties.queue.review': 'Review',
+    'admin.parties.queue.field.licence': 'Licence',
+    'admin.parties.queue.field.expires_on': 'Licence expires',
+    'admin.parties.queue.field.submitted_at': 'Submitted',
     'admin.parties.chip.all': 'All',
     'admin.parties.chip.healthy': 'Healthy',
     'admin.parties.chip.watch': 'Watch',
@@ -2197,9 +2276,9 @@ const en = {
     'admin.parties.stats.kyc_verified': 'KYC Verified',
     'admin.parties.stats.awaiting_kyc': 'Awaiting KYC',
     'admin.parties.stats.total_aum': 'Total AUM',
-    'admin.parties.stats.partners': 'Audit Partners',
-    'admin.parties.stats.active_partners': 'Active',
-    'admin.parties.stats.pending_partners': 'Pending verification',
+    'admin.parties.stats.active_audits': 'Active audits',
+    'admin.parties.stats.active_partners': 'Active partners',
+    'admin.parties.stats.pending_partners': 'Pending ICPAR',
     'admin.parties.stats.licences_expiring': 'Licences expiring ≤30d',
     'admin.parties.stats.operators': 'Operators',
     'admin.parties.stats.approvers': 'Approvers',
@@ -2631,7 +2710,7 @@ const en = {
     'auditor.time.hours_ago': '{count}h ago',
     'auditor.time.days_ago': '{count}d ago',
     'auditor.home.head_title': 'Home',
-    'auditor.home.wallet_balance': 'Wallet balance',
+    'auditor.home.wallet_owed': 'Owed to you',
     'auditor.home.withdraw': 'Withdraw',
     'auditor.home.statement': 'Statement',
     'auditor.home.notifications': 'Notifications',
@@ -2720,6 +2799,20 @@ const en = {
     'auditor.monthly.to_open': 'Audits to open',
     'auditor.monthly.waiting': '{count} waiting',
     'auditor.monthly.not_opened': '{month} · audit file not opened yet',
+    'auditor.monthly.not_opened_undated': 'Audit file not opened yet',
+    'auditor.desk_review.eyebrow': 'Desk review · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Desk review',
+    'auditor.desk_review.status.disputed': 'Under desk review',
+    'auditor.desk_review.status.escalated': 'Escalated',
+    'auditor.desk_review.note':
+        'Read-only until Rozine Admin resolves the ticket. Direct contact with this merchant is disabled.',
+    'auditor.desk_review.proofs': 'Counter-proof filed',
+    'auditor.desk_review.proofs_value': {
+        one: '{count} item',
+        other: '{count} items',
+    },
+    'auditor.desk_review.variance': 'Your weighted variance',
+    'auditor.desk_review.view': 'View the report →',
     'auditor.monthly.open': 'Open the audit',
     'auditor.monthly.show_all': 'Show all {count} open windows',
     'auditor.monthly.show_fewer': 'Show fewer · {shown} of {count}',
@@ -2798,14 +2891,39 @@ const en = {
     'auditor.file.no_documents':
         'No submitted documents are on record for this file yet.',
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Verified',
     'auditor.file.doc_status.present': '✓ Present',
-    'auditor.file.doc_status.missing': 'Missing',
     'auditor.file.prescreen': 'Automated pre-screen',
     'auditor.file.no_prescreen':
         'No automated pre-screen result has been published for this file yet.',
     'auditor.file.check.met': 'Met',
     'auditor.file.check.flag': 'Flag',
+    'auditor.file.document.pdf': 'Statement (PDF)',
+    'auditor.file.document.csv': 'Statement (CSV)',
+    'auditor.file.document.received': 'Received {date}',
+    'auditor.file.document.received_records': {
+        one: 'Received {date} · {count} record',
+        other: 'Received {date} · {count} records',
+    },
+    'auditor.file.brief.flash.reason':
+        'No note can list until an Audit Partner has visited the business and sealed a baseline report. Rozine checked the submitted statements remotely; your visit confirms on site that the business, its stock and its ledgers are real before any principal is issued.',
+    'auditor.file.brief.flash.step_1':
+        'Check in at the business premises; your live location is logged with the audit.',
+    'auditor.file.brief.flash.step_2':
+        'Take the required photos with the in-app camera inside the premises geofence. Gallery uploads are blocked.',
+    'auditor.file.brief.flash.step_3':
+        'Count the stock on site and record its value. Any difference from the declared figure must be explained before you can seal.',
+    'auditor.file.brief.flash.step_4':
+        'Reconcile the paper ledgers and receipts with the verified statements, following the ISRS 4400 agreed-upon procedures.',
+    'auditor.file.brief.monthly.reason':
+        'Every month while a note is outstanding, an Audit Partner checks the business’s records in person. In the current app, seal the audited month’s report by the end of the 7th of the following month (Kigali time). The business then has 24 hours to approve or dispute.',
+    'auditor.file.brief.monthly.step_1':
+        "Review the month's statements the business uploaded.",
+    'auditor.file.brief.monthly.step_2':
+        'Count cash and stock units on site. Any difference must be explained before you can seal.',
+    'auditor.file.brief.monthly.step_3':
+        'Take the required photos with the in-app camera inside the premises geofence.',
+    'auditor.file.brief.monthly.step_4':
+        'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
     'auditor.file.why': 'Why a field audit is required',
     'auditor.file.mandate': 'What you must clear on site',
     'auditor.file.history': 'File history',
@@ -2968,8 +3086,8 @@ const en = {
     'auditor.seal.digest': 'Pending digest',
     'auditor.seal.digest_note':
         'Finalised when your ICPAR seal is applied. The signed PDF is compiled by Rozine and released to holders after the business approves.',
-    'auditor.seal.apply': 'Confirm with your authenticator',
-    'auditor.seal.submit': 'Seal & submit to Rozine',
+    'auditor.seal.apply': 'Re-authenticate to seal',
+    'auditor.seal.submit': 'Apply ICPAR licence seal',
     'auditor.sealed.title': 'Sealed and filed',
     'auditor.sealed.body':
         'The report is sealed and can no longer be edited. {party} co-signs by {date}; it publishes to holders after that.',
@@ -3002,6 +3120,24 @@ const en = {
     'auditor.portfolio.yield.empty':
         'Yield-share payouts appear here once they are paid.',
     'auditor.portfolio.managed.title': 'Managed deals',
+    'auditor.portfolio.managed.groups': 'Managed deal groups',
+    'auditor.portfolio.managed.group.active': 'Active portfolio',
+    'auditor.portfolio.managed.group.raising': 'Raising',
+    'auditor.portfolio.managed.filter': 'Raise status',
+    'auditor.portfolio.managed.chip.all': 'All',
+    'auditor.portfolio.managed.chip.live': 'Live',
+    'auditor.portfolio.managed.chip.failed': 'Failed',
+    'auditor.portfolio.managed.raising_empty':
+        'No raises from the businesses you audited in this view.',
+    'auditor.portfolio.managed.raised': 'Raised',
+    'auditor.portfolio.managed.target': 'Target',
+    'auditor.portfolio.managed.investors': 'Investors',
+    'auditor.portfolio.managed.count': '{count} total',
+    'auditor.portfolio.managed.sub': '{district} · credited {date}',
+    'auditor.portfolio.managed.funded': 'Funded',
+    'auditor.portfolio.managed.raise': 'Raise',
+    'auditor.portfolio.managed.fee': 'Platform fee',
+    'auditor.portfolio.managed.share': 'Your 40%',
     'auditor.portfolio.managed.empty':
         "No managed deals yet. Pass a Flash Audit to become a business's account manager.",
     'auditor.calendar.title': 'Audit calendar',
@@ -5517,6 +5653,11 @@ const en = {
         'Accreditation renewal due',
     'investor.notices.auditor.accreditation_renewal_due.body':
         'Licence {licence} expires on {date}. Upload the renewal from your profile to keep taking audit jobs.',
+    'investor.notices.auditor.report_reminder.title': 'Audit report reminder',
+    'investor.notices.auditor.report_reminder.body_monthly':
+        'Rozine reminds you that the {month} audit for {business} is due by {date}.',
+    'investor.notices.auditor.report_reminder.body_flash':
+        'Rozine reminds you that the Flash Audit for {business} is due by {date}.',
     'investor.notices.support.complaint_answered.title':
         'Rozine answered your complaint',
     'investor.notices.support.complaint_answered.body':

@@ -1377,6 +1377,8 @@ const fr: Catalog = {
         'L’accréditation est refusée',
     'admin.messaging.trigger.auditor.job_offered':
         'Une mission d’audit est proposée',
+    'admin.messaging.trigger.auditor.report_reminder':
+        'L’équipe rappelle un rapport au partenaire d’audit',
     'admin.messaging.trigger.auditor.accreditation_renewal_due':
         'Le renouvellement de la licence arrive à échéance',
     'admin.messaging.trigger.support.complaint_answered':
@@ -2295,7 +2297,88 @@ const fr: Catalog = {
         "ex. MTN confirme l'annulation complète de MM-88213 ; destination revérifiée.",
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
+    'admin.audit_reports.title': 'Suivi de conformité des audits mensuels',
+    'admin.audit_reports.caption':
+        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+    'admin.audit_reports.field.title':
+        "Opérations d'audit flash sur le terrain",
+    'admin.audit_reports.field.caption':
+        'Chaque audit de terrain présente son CPA et sa licence, l’état du rapport et l’écart pondéré, avec l’empreinte du sceau conservé et le rapport PDF lorsqu’ils sont disponibles.',
+    'admin.audit_reports.field.table': 'Audits flash sur le terrain',
+    'admin.audit_reports.field.empty':
+        "Aucune mission ISRS 4400 enregistrée pour l'instant.",
+    'admin.audit_reports.feed.title': 'Récemment audités et publiés',
+    'admin.audit_reports.feed.audited':
+        '✓ Audité sur place par {auditor} · {licence}',
+    'admin.audit_reports.feed.empty':
+        'Aucun rapport mensuel audité pour le moment.',
+    'admin.audit_reports.filter': "Vues des rapports d'audit",
+    'admin.audit_reports.table': "Rapports d'audit",
+    'admin.audit_reports.empty_title': 'Rien dans cette vue.',
+    'admin.audit_reports.empty_body':
+        "Les audits apparaissent ici dès qu'un partenaire d'audit les accepte.",
+    'admin.audit_reports.monthly': 'Audit mensuel',
+    'admin.audit_reports.flash': 'Audit flash',
+    'admin.audit_reports.due': 'Échéance {date}',
+    'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
+    'admin.audit_reports.remind': 'Relancer',
+    'admin.audit_reports.remind_auditor':
+        "Relancer le partenaire d'audit pour {business}",
+    'admin.audit_reports.remind_business':
+        'Relancer {business} pour cosigner ou contester',
+    'admin.audit_reports.reminded': 'Relancé le {date}',
+    'admin.audit_reports.pdf': 'Générer le PDF',
+    'admin.audit_reports.pdf_named':
+        'Télécharger le rapport scellé de {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Audités et publiés',
+    'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.stats.overdue': 'SLA dépassé',
+    'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
+    'admin.audit_reports.chip.all': 'Tous',
+    'admin.audit_reports.chip.owed': 'Dus par un partenaire',
+    'admin.audit_reports.chip.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.chip.published': 'Publiés',
+    'admin.audit_reports.chip.disputed': 'Contestés',
+    'admin.audit_reports.col.business': 'Entreprise',
+    'admin.audit_reports.col.period': 'Période',
+    'admin.audit_reports.col.partner': "Partenaire d'audit",
+    'admin.audit_reports.col.status': 'Statut',
+    'admin.audit_reports.col.variance': 'Écart',
+    'admin.audit_reports.col.action': 'Action',
+    'admin.audit_reports.status.not_started': 'Audit non ouvert',
+    'admin.audit_reports.status.in_progress': 'En cours',
+    'admin.audit_reports.status.overdue': 'En retard',
+    'admin.audit_reports.status.returned': 'Renvoyé',
+    'admin.audit_reports.status.sealed': 'Scellé',
+    'admin.audit_reports.status.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.status.published': 'Publié',
+    'admin.audit_reports.status.disputed': 'Contesté',
+    'admin.audit_reports.status.escalated': 'Transmis',
+    'admin.audit_reports.status.amended': 'Modifié',
+    'admin.audit_reports.status.withdrawn': 'Retiré',
     'admin.parties.coverage_link': 'Couverture des partenaires',
+    'admin.parties.registry.title': 'Registre des CPA',
+    'admin.parties.registry.caption':
+        'Chaque CPA agréé, avec sa licence, son statut et ses audits en cours. Ouvrez une ligne pour le profil complet.',
+    'admin.parties.queue.requests.title':
+        'Demandes de modification des partenaires',
+    'admin.parties.queue.requests.caption':
+        "Renouvellements de licence en attente d'examen. Le partenaire voit sa demande en attente jusqu'à votre décision.",
+    'admin.parties.queue.requests.empty':
+        "Aucune demande de partenaire en attente. Les renouvellements de licence de l'app Auditeur arrivent ici.",
+    'admin.parties.queue.requests.chip': 'RENOUVELLEMENT',
+    'admin.parties.queue.desk.title': 'Bureau de vérification ICPAR',
+    'admin.parties.queue.desk.caption':
+        "Confirmez la licence au registre de l'ICPAR, puis approuvez pour que le partenaire puisse prendre des audits.",
+    'admin.parties.queue.desk.empty':
+        "Aucune demande d'auditeur en attente de vérification.",
+    'admin.parties.queue.desk.chip': 'VÉRIFICATION EN ATTENTE',
+    'admin.parties.queue.approve': 'Approuver',
+    'admin.parties.queue.reject': 'Rejeter',
+    'admin.parties.queue.review': 'Examiner',
+    'admin.parties.queue.field.licence': 'Licence',
+    'admin.parties.queue.field.expires_on': 'Licence expire le',
+    'admin.parties.queue.field.submitted_at': 'Soumise le',
     'admin.parties.chip.all': 'Tous',
     'admin.parties.chip.healthy': 'Sains',
     'admin.parties.chip.watch': 'Sous surveillance',
@@ -2319,9 +2402,9 @@ const fr: Catalog = {
     'admin.parties.stats.kyc_verified': 'KYC vérifié',
     'admin.parties.stats.awaiting_kyc': 'KYC en attente',
     'admin.parties.stats.total_aum': 'Encours total',
-    'admin.parties.stats.partners': "Partenaires d'audit",
-    'admin.parties.stats.active_partners': 'Actifs',
-    'admin.parties.stats.pending_partners': 'Vérification en attente',
+    'admin.parties.stats.active_audits': 'Audits en cours',
+    'admin.parties.stats.active_partners': 'Partenaires actifs',
+    'admin.parties.stats.pending_partners': 'ICPAR en attente',
     'admin.parties.stats.licences_expiring': 'Licences expirant ≤30 j',
     'admin.parties.stats.operators': 'Opérateurs',
     'admin.parties.stats.approvers': 'Approbateurs',
@@ -2768,7 +2851,7 @@ const fr: Catalog = {
     'auditor.time.hours_ago': 'il y a {count} h',
     'auditor.time.days_ago': 'il y a {count} j',
     'auditor.home.head_title': 'Accueil',
-    'auditor.home.wallet_balance': 'Solde du portefeuille',
+    'auditor.home.wallet_owed': 'Montant dû',
     'auditor.home.withdraw': 'Retirer',
     'auditor.home.statement': 'Relevé',
     'auditor.home.notifications': 'Notifications',
@@ -2858,6 +2941,20 @@ const fr: Catalog = {
     'auditor.monthly.to_open': 'Audits à ouvrir',
     'auditor.monthly.waiting': '{count} en attente',
     'auditor.monthly.not_opened': "{month} · dossier d'audit pas encore ouvert",
+    'auditor.monthly.not_opened_undated': "Dossier d'audit pas encore ouvert",
+    'auditor.desk_review.eyebrow': 'Revue documentaire · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Revue documentaire',
+    'auditor.desk_review.status.disputed': 'En revue documentaire',
+    'auditor.desk_review.status.escalated': 'Escaladé',
+    'auditor.desk_review.note':
+        "En lecture seule jusqu'à ce que l'administration Rozine traite le dossier. Le contact direct avec ce commerçant est désactivé.",
+    'auditor.desk_review.proofs': 'Contre-preuves déposées',
+    'auditor.desk_review.proofs_value': {
+        one: '{count} pièce',
+        other: '{count} pièces',
+    },
+    'auditor.desk_review.variance': 'Votre écart pondéré',
+    'auditor.desk_review.view': 'Voir le rapport →',
     'auditor.monthly.open': "Ouvrir l'audit",
     'auditor.monthly.show_all': 'Afficher les {count} fenêtres ouvertes',
     'auditor.monthly.show_fewer': 'Afficher moins · {shown} sur {count}',
@@ -2940,14 +3037,39 @@ const fr: Catalog = {
     'auditor.file.no_documents':
         "Aucun document soumis n'est encore enregistré pour ce dossier.",
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Vérifié',
     'auditor.file.doc_status.present': '✓ Présent',
-    'auditor.file.doc_status.missing': 'Manquant',
     'auditor.file.prescreen': 'Présélection automatique',
     'auditor.file.no_prescreen':
         "Aucun résultat de présélection automatique n'a encore été publié pour ce dossier.",
     'auditor.file.check.met': 'Atteint',
     'auditor.file.check.flag': 'Signalé',
+    'auditor.file.document.pdf': 'Relevé (PDF)',
+    'auditor.file.document.csv': 'Relevé (CSV)',
+    'auditor.file.document.received': 'Reçu le {date}',
+    'auditor.file.document.received_records': {
+        one: 'Reçu le {date} · {count} enregistrement',
+        other: 'Reçu le {date} · {count} enregistrements',
+    },
+    'auditor.file.brief.flash.reason':
+        "Aucune note ne peut être listée avant qu'un Audit Partner ait visité l'entreprise et scellé un rapport de référence. Rozine a vérifié à distance les relevés soumis ; votre visite confirme sur place que l'entreprise, son stock et ses registres sont réels avant tout versement du principal.",
+    'auditor.file.brief.flash.step_1':
+        "Enregistrez votre arrivée dans les locaux de l'entreprise ; votre position en direct est consignée avec l'audit.",
+    'auditor.file.brief.flash.step_2':
+        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux. Les imports depuis la galerie sont bloqués.",
+    'auditor.file.brief.flash.step_3':
+        'Comptez le stock sur place et notez sa valeur. Tout écart avec le chiffre déclaré doit être expliqué avant de pouvoir sceller.',
+    'auditor.file.brief.flash.step_4':
+        'Rapprochez les registres papier et les reçus des relevés vérifiés, selon les procédures convenues de la norme ISRS 4400.',
+    'auditor.file.brief.monthly.reason':
+        'Chaque mois tant qu’une note est en cours, un Audit Partner contrôle sur place les registres de l’entreprise. Dans l’application actuelle, scellez le rapport du mois audité au plus tard à la fin du 7 du mois suivant (heure de Kigali). L’entreprise dispose ensuite de 24 heures pour approuver ou contester.',
+    'auditor.file.brief.monthly.step_1':
+        "Examinez les relevés du mois téléversés par l'entreprise.",
+    'auditor.file.brief.monthly.step_2':
+        'Comptez la trésorerie et les unités de stock sur place. Tout écart doit être expliqué avant de pouvoir sceller.',
+    'auditor.file.brief.monthly.step_3':
+        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux.",
+    'auditor.file.brief.monthly.step_4':
+        'Scellez avant l’échéance du rapport : la fin du 7 du mois suivant (heure de Kigali) dans l’application actuelle.',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
     'auditor.file.mandate': 'Ce que vous devez lever sur site',
     'auditor.file.history': 'Historique du dossier',
@@ -3110,8 +3232,8 @@ const fr: Catalog = {
     'auditor.seal.digest': 'Empreinte en attente',
     'auditor.seal.digest_note':
         "Finalisée lors de l'apposition de votre sceau ICPAR. Le PDF signé est compilé par Rozine et publié aux porteurs après l'accord de l'entreprise.",
-    'auditor.seal.apply': 'Confirmer avec votre authentificateur',
-    'auditor.seal.submit': 'Sceller et soumettre à Rozine',
+    'auditor.seal.apply': 'Se réauthentifier pour sceller',
+    'auditor.seal.submit': 'Apposer le sceau de licence ICPAR',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
         "Le rapport est scellé et ne peut plus être modifié. {party} cosigne d'ici le {date} ; il est ensuite publié aux porteurs.",
@@ -3144,6 +3266,24 @@ const fr: Catalog = {
     'auditor.portfolio.yield.empty':
         'Les versements de part du rendement apparaissent ici une fois payés.',
     'auditor.portfolio.managed.title': 'Opérations gérées',
+    'auditor.portfolio.managed.groups': 'Groupes de dossiers gérés',
+    'auditor.portfolio.managed.group.active': 'Portefeuille actif',
+    'auditor.portfolio.managed.group.raising': 'En levée',
+    'auditor.portfolio.managed.filter': 'Statut de la levée',
+    'auditor.portfolio.managed.chip.all': 'Tous',
+    'auditor.portfolio.managed.chip.live': 'En cours',
+    'auditor.portfolio.managed.chip.failed': 'Échouée',
+    'auditor.portfolio.managed.raising_empty':
+        'Aucune levée des entreprises que vous avez auditées dans cette vue.',
+    'auditor.portfolio.managed.raised': 'Levé',
+    'auditor.portfolio.managed.target': 'Objectif',
+    'auditor.portfolio.managed.investors': 'Investisseurs',
+    'auditor.portfolio.managed.count': '{count} au total',
+    'auditor.portfolio.managed.sub': '{district} · crédité le {date}',
+    'auditor.portfolio.managed.funded': 'Financé',
+    'auditor.portfolio.managed.raise': 'Levée',
+    'auditor.portfolio.managed.fee': 'Frais de plateforme',
+    'auditor.portfolio.managed.share': 'Vos 40 %',
     'auditor.portfolio.managed.empty':
         "Aucune opération gérée pour l'instant. Réussissez un audit flash pour devenir gestionnaire de compte d'une entreprise.",
     'auditor.calendar.title': "Calendrier d'audit",
@@ -5803,6 +5943,12 @@ const fr: Catalog = {
         "Renouvellement de l'accréditation à prévoir",
     'investor.notices.auditor.accreditation_renewal_due.body':
         "La licence {licence} expire le {date}. Téléversez le renouvellement depuis votre profil pour continuer à accepter des missions d'audit.",
+    'investor.notices.auditor.report_reminder.title':
+        "Rappel de rapport d'audit",
+    'investor.notices.auditor.report_reminder.body_monthly':
+        "Rozine vous rappelle que l'audit de {month} pour {business} est attendu au plus tard le {date}.",
+    'investor.notices.auditor.report_reminder.body_flash':
+        "Rozine vous rappelle que l'audit flash pour {business} est attendu au plus tard le {date}.",
     'investor.notices.support.complaint_answered.title':
         'Rozine a répondu à votre réclamation',
     'investor.notices.support.complaint_answered.body':

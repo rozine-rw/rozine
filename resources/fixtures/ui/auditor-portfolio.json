@@ -222,8 +222,79 @@
                     },
                     "credited_at": "2026-10-01T07:40:00+00:00"
                 }
+            ],
+            "deals": 2,
+            "managed": [
+                {
+                    "id": "01JA0EARNING00000000000002",
+                    "business": "Kigali Fresh Foods",
+                    "district": "Gasabo",
+                    "raise": {
+                        "currency": "RWF",
+                        "amount": "10800000"
+                    },
+                    "platform_fee": {
+                        "currency": "RWF",
+                        "amount": "324000"
+                    },
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "129600"
+                    },
+                    "credited_at": "2026-10-02T09:15:00+00:00"
+                },
+                {
+                    "id": "01JA0EARNING00000000000001",
+                    "business": "Nyamirambo Tailors",
+                    "district": "Nyarugenge",
+                    "raise": {
+                        "currency": "RWF",
+                        "amount": "10800000"
+                    },
+                    "platform_fee": {
+                        "currency": "RWF",
+                        "amount": "324000"
+                    },
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "129600"
+                    },
+                    "credited_at": "2026-10-01T07:40:00+00:00"
+                }
             ]
         },
+        "raising": [
+            {
+                "campaign_id": "01JAUDRAISE0000000000000001",
+                "business": "Kivu Coffee Roasters",
+                "title": "Roastery Expansion",
+                "status": "live",
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "18400000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "32000000"
+                },
+                "investors": 46
+            },
+            {
+                "campaign_id": "01JAUDRAISE0000000000000002",
+                "business": "Isoko Energy",
+                "title": "Solar Kiosk Rollout",
+                "status": "failed",
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "6100000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "24000000"
+                },
+                "investors": 12
+            }
+        ],
         "owed": [
             {
                 "id": "mr_greenleaf",

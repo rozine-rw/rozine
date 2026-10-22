@@ -18,7 +18,8 @@ namespace App\Application\Auditor\Contracts;
  *     party_id: string, name: string, email: string, licence: string|null, standing: Standing, active_engagements: int
  * }
  * @phpstan-type Counts array{all: int, active: int, pending: int, licence_expired: int, suspended: int}
- * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int}
+ * @phpstan-type QueueEntry array{party_id: string, name: string, licence: string, expires_on: string, submitted_at: string, renewal: bool}
+ * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, queue: list<QueueEntry>}
  * @phpstan-type Licence array{
  *     licence: string, expires_on: string, state: 'verified'|'pending'|'expired', revision: int, submission_id: string|null
  * }
@@ -34,6 +35,8 @@ interface AuditorDirectoryStore
     /**
      * One page of the network under a chip and a name or email search. The figures and chip counts
      * cover every match of the search; licences expiring are active ones lapsing within thirty days.
+     * The queue is every licence submission among those matches still waiting for review, oldest
+     * first: a renewal when the partner already held a reviewed licence, else a first verification.
      *
      * @param  'all'|'active'|'pending'|'licence_expired'  $chip
      * @return Directory

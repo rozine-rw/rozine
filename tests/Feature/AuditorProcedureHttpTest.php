@@ -62,6 +62,9 @@ it('starts, reads, saves and recovers through matching web and API routes', func
     } else {
         $page->assertInertia(fn (Assert $inertia): Assert => $inertia->component('auditor/audit')->where('stage.step', 'review')->where('can_continue', true)->missing('sources'));
     }
+    // The review step lists the statements on file, as the job file does.
+    $documents = $api ? $page->json('data.stage.file.documents') : $page->viewData('page')['props']['stage']['file']['documents'];
+    expect($documents)->not->toBeEmpty()->and(array_column($documents, 'kind'))->each->toBe('statement');
     $this->assertDatabaseCount('audit_report_versions', 1);
     $request = (string) Str::uuid();
     $body = ['request_id' => $request, 'identity_context_revision' => 1, 'expected_revision' => 1, 'audit_id' => $id, 'step' => 'review'];

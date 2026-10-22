@@ -35,9 +35,9 @@ export const openOffers = (jobs: AuditorJobsProps): number =>
 /**
  * Jobs (MVP-AUDITOR-SCR-01, design L205–323): the Flash Audits dispatch offers this partner, with
  * the radius map, and any work already on the clock; beside them, the monthly reports for the notes
- * they steward. While the server sends no monthly section, a wide screen puts the work on the clock
- * in the right column instead, so neither column stands empty; a phone keeps one flow, assigned
- * above the offers. The desk-review cards (disputes) are Phase 2 and are left out. The offers end
+ * they steward, with any disputed report under desk review above them. While the server sends no
+ * monthly section, a wide screen puts the work on the clock in the right column instead, so neither
+ * column stands empty; a phone keeps one flow, assigned above the offers. The offers end
  * in "Show more" whenever the server names a next page, even after an empty page, which is never
  * read as the end of the history.
  */
@@ -52,9 +52,14 @@ export function JobsBody({
     const wide = useWide();
     /* The assigned list takes the right column only on a wide screen with no monthly section. */
     const assignedBeside = wide && props.monthly === null;
+    /* With a monthly section, monthly visits show there; the assigned list keeps Flash Audits. */
+    const assigned =
+        props.monthly === null
+            ? props.assigned
+            : props.assigned.filter((job) => job.kind === 'flash');
     const assignedCards = (
         <div className="mt-2.5 flex flex-col gap-[11px]">
-            {props.assigned.map((job) => (
+            {assigned.map((job) => (
                 <AssignedJobCard
                     key={job.id}
                     job={job}
@@ -71,6 +76,7 @@ export function JobsBody({
                 <MonthlySection
                     windows={props.monthly.windows}
                     reports={props.monthly.reports}
+                    deskReviews={props.monthly.desk_reviews}
                 />
             </ColumnPad>
         );
@@ -118,7 +124,7 @@ export function JobsBody({
                         jobs={props.eligible}
                         paged={props.pagination !== undefined}
                     />
-                    {!assignedBeside && props.assigned.length > 0 && (
+                    {!assignedBeside && assigned.length > 0 && (
                         <section>
                             <Eyebrow as="h2" className="mt-5">
                                 {t('auditor.jobs.assigned')}
@@ -144,7 +150,7 @@ export function JobsBody({
                             })}
                         </EmptyState>
                     ) : (
-                        (assignedBeside || props.assigned.length === 0) && (
+                        (assignedBeside || assigned.length === 0) && (
                             <p className="mt-3.5 text-center text-[12px] text-rz-secondary">
                                 {t('auditor.jobs.page_empty')}
                             </p>

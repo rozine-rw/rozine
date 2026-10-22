@@ -70,9 +70,9 @@
                     "note_id": "RNP-2026-0118",
                     "business": "GreenLeaf Agro",
                     "month": "2026-09-01",
-                    "open": {
+                    "link": {
                         "url": "/preview/auditor-audit-statements",
-                        "method": "post"
+                        "method": "get"
                     }
                 },
                 {
@@ -81,9 +81,9 @@
                     "note_id": "RNP-2026-0042",
                     "business": "GreenLeaf Agro",
                     "month": "2026-09-01",
-                    "open": {
+                    "link": {
                         "url": "/preview/auditor-audit-statements",
-                        "method": "post"
+                        "method": "get"
                     }
                 },
                 {
@@ -92,9 +92,9 @@
                     "note_id": "RNP-2026-0077",
                     "business": "Musanze Traders",
                     "month": "2026-09-01",
-                    "open": {
+                    "link": {
                         "url": "/preview/auditor-audit-statements",
-                        "method": "post"
+                        "method": "get"
                     }
                 },
                 {
@@ -103,9 +103,9 @@
                     "note_id": "RNP-2026-0091",
                     "business": "Isoko Energy",
                     "month": "2026-09-01",
-                    "open": {
+                    "link": {
                         "url": "/preview/auditor-audit-statements",
-                        "method": "post"
+                        "method": "get"
                     }
                 }
             ],
@@ -152,7 +152,8 @@
                         "method": "get"
                     }
                 }
-            ]
+            ],
+            "desk_reviews": []
         },
         "outcome": null,
         "links": {

@@ -6,6 +6,10 @@ import { InviteOperator } from '@/components/admin/parties/invite-operator';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PendingStaffApprovals } from '@/components/admin/parties/pending-staff-approvals';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
+import {
+    LicenceQueue,
+    RegistryHeading,
+} from '@/components/admin/parties/review-queue';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
@@ -15,6 +19,7 @@ import {
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AdminPartiesProps, AdminSection, PartyKind } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 
 const SECTION: Record<PartyKind, AdminSection> = {
     business: 'businesses',
@@ -27,9 +32,10 @@ const SECTION: Record<PartyKind, AdminSection> = {
  * Parties (MVP-ADMIN-SCR-08): the four party types — businesses, investors, Audit Partners and
  * staff — each in its design directory (Business T419–502, Investor T504–564, CPA registry
  * T708–736, Operators T766–791), opening the party 360 with its history and reasoned controls.
+ * Audit Partners also see the licences waiting for review, queued above their directory.
  * Filtering and sorting are server queries; the page never re-sorts or re-counts rows itself.
  */
-export default function AdminParties(props: AdminPartiesProps) {
+export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
     const { t } = useTranslation();
     const format = useStatFormatter();
     const section = SECTION[props.kind];
@@ -67,6 +73,11 @@ export default function AdminParties(props: AdminPartiesProps) {
                     ))}
                 </div>
             )}
+            {props.requests && (
+                <LicenceQueue kind="requests" entries={props.requests} />
+            )}
+            {props.desk && <LicenceQueue kind="desk" entries={props.desk} />}
+            {props.kind === 'auditor' && <RegistryHeading />}
             <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
                 <SegmentedChips
                     label={t('admin.parties.filter')}
