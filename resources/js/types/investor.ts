@@ -1559,6 +1559,10 @@ export type InvestorNotice = {
           facts: { due_at: string };
       }
     | {
+          kind: 'business.reporting_window_open';
+          facts: { period: string; closes_at: string };
+      }
+    | {
           kind: 'business.raise_funded';
           facts: {
               currency: 'RWF';

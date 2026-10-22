@@ -57,7 +57,7 @@ describe('Business Home', () => {
             name: /RWF|audit report/u,
         });
 
-        expect(items).toHaveLength(10);
+        expect(items).toHaveLength(11);
         expect(items[0]).toHaveTextContent(
             'Raise closed without full fundingSolar Dryer Expansion closed at its deadline with RWF 7,450,000 of RWF 12,000,000 committed. Investors were refunded and no fee was charged.',
         );
@@ -87,6 +87,9 @@ describe('Business Home', () => {
         );
         expect(items[9]).toHaveTextContent(
             'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
+        );
+        expect(items[10]).toHaveTextContent(
+            "Monthly audit openYour September 2026 audit has started. Upload the month's statements and records so your Audit Partner can verify them and seal the audit report by",
         );
 
         await user.click(

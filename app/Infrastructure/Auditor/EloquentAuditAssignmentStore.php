@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\Contracts\AuditReportLifecycle;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
+use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -75,6 +76,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private AuditReportLifecycle $reports,
         private AuditEngagementStore $engagements,
         private PartyNotices $notices,
+        private BusinessNoticeAudience $audience,
+        private AuditReportWindow $window,
     ) {}
 
     /** @return array<string, mixed> */
@@ -539,7 +542,12 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $record = new AuditAssignment;
             $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
             $state = $this->offer($this->states->start('routine', now()->toDateTimeImmutable()), $context, $candidates);
-            $this->persist($record, $state, null, 'audit.assignment.schedule', 'Monthly audit for '.$month->subMonth()->format('Y-m').'.', $candidates, $context);
+            $period = $month->subMonth()->format('Y-m');
+            $this->persist($record, $state, null, 'audit.assignment.schedule', 'Monthly audit for '.$period.'.', $candidates, $context);
+            $this->notices->record($context['business']['entity_party_id'], PartyNoticeKind::BusinessReportingWindowOpen, [
+                'business' => (string) $context['business']['profile']['name'], 'business_id' => $businessId, 'period' => $period,
+                'closes_at' => (string) $this->window->dueAt($period),
+            ], 'business-reporting-window:'.$businessId.':'.$period, $this->audience->recipients($businessId));
 
             return $record->id;
         });

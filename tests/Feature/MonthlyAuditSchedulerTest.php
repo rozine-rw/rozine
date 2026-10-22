@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\MonthlyAuditBusinesses;
 use App\Application\Auditor\RequestMonthlyAudits;
+use App\Application\Business\Contracts\BusinessNoticeAudience;
+use App\Domain\Auditor\AuditReportWindow;
 use App\Infrastructure\Auditor\EloquentMonthlyAuditBusinesses;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
+use App\Models\PartyNotice;
+use App\Models\User;
+use App\Notifications\Business\ReportingWindowOpen;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Tests\Support\AuditSealingFixture as Fixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
+    Notification::fake();
 });
 
 /** @param list<string> $businessIds */
@@ -53,6 +60,16 @@ it('dispatches each funded business its monthly audit once, in the report window
         ->and($version->command)->toBe('audit.assignment.schedule')->and($version->actor_user_id)->toBeNull()
         ->and($version->reason)->toBe('Monthly audit for '.now('Africa/Kigali')->subMonthNoOverflow()->format('Y-m').'.')
         ->and(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0);
+    $period = now('Africa/Kigali')->subMonthNoOverflow()->format('Y-m');
+    $notice = PartyNotice::query()->where('kind', 'business.reporting_window_open')->sole();
+    expect($notice->facts)->toMatchArray(['business_id' => $business, 'period' => $period, 'closes_at' => app(AuditReportWindow::class)->dueAt($period)]);
+    expect(app(BusinessNoticeAudience::class)->recipients($business))->not->toBeEmpty();
+    Notification::assertSentTo(User::query()->whereIn('id', app(BusinessNoticeAudience::class)->recipients($business))->get(), ReportingWindowOpen::class,
+        fn (ReportingWindowOpen $mail): bool => $mail->period === CarbonImmutable::parse($period.'-01')->format('F Y')
+            && $mail->url === route('business.audit-prep', ['business' => $business]));
+    $this->actingAs($fixture['audit']['authority']['users'][0])->getJson(route('business.notices.index', $business))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'business.reporting_window_open')
+        ->assertJsonPath('data.notices.0.link', ['url' => "/business/{$business}/audit-prep", 'method' => 'get']);
 
     $this->travelTo(now('Africa/Kigali')->startOfMonth()->addDays(8));
     expect(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0);

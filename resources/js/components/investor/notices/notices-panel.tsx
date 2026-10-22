@@ -181,6 +181,23 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'business.reporting_window_open': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect
+                    x="4.5"
+                    y="5.5"
+                    width="15"
+                    height="14"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="M4.5 10h15M9 3.5v4M15 3.5v4" {...stroke} />
+            </>
+        ),
+    },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -673,6 +690,14 @@ function body(
         case 'business.report_review_closing':
             return t('investor.notices.business.report_review_closing.body', {
                 time: formatDateTime(notice.facts.due_at, locale),
+            });
+        case 'business.reporting_window_open':
+            return t('investor.notices.business.reporting_window_open.body', {
+                month: formatMonthYearLong(
+                    `${notice.facts.period}-01T00:00:00+02:00`,
+                    locale,
+                ),
+                date: formatDate(notice.facts.closes_at, locale),
             });
         case 'auditor.accreditation_approved':
             return t('investor.notices.auditor.accreditation_approved.body', {
