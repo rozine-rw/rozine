@@ -132,7 +132,7 @@ describe('Wallet (C3)', () => {
         ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
-            name: 'Transaction history',
+            name: 'Transactions',
         });
 
         expect(
@@ -456,7 +456,7 @@ describe('Wallet (C3)', () => {
         render(<InvestorWallet {...wallet(internalFixture)} />);
 
         const history = screen.getByRole('region', {
-            name: 'Transaction history',
+            name: 'Transactions',
         });
 
         expect(
@@ -501,7 +501,7 @@ describe('Wallet (C3)', () => {
             within(ranges)
                 .getAllByRole('link')
                 .map((link) => link.textContent),
-        ).toEqual(['Today', '7 days', '30 days', 'All time']);
+        ).toEqual(['Today', '7 days', '30 days', 'All']);
         expect(
             within(ranges).getByRole('link', { name: '7 days' }),
         ).toHaveAttribute('aria-current', 'true');
@@ -512,7 +512,7 @@ describe('Wallet (C3)', () => {
             '/investor/wallet?movement=external&period=30d',
         );
         expect(
-            within(ranges).getByRole('link', { name: 'All time' }),
+            within(ranges).getByRole('link', { name: 'All' }),
         ).not.toHaveAttribute('aria-current');
     });
 

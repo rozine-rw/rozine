@@ -401,10 +401,13 @@ export function WalletHistory({
             : history.items;
 
     return (
-        <section aria-label={t('investor.wallet.tx.title')} className="mt-5">
+        <section
+            aria-label={t('investor.wallet.tx.title_short')}
+            className="mt-5"
+        >
             <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold text-rz-ink">
-                    {t('investor.wallet.tx.title')}
+                    {t('investor.wallet.tx.title_short')}
                 </h2>
                 {exports !== null && <StatementExport exports={exports} />}
             </div>
