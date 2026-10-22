@@ -6,7 +6,7 @@ import type { MessageCode } from '@/lib/i18n/types';
 import AdminPendingSection from '@/pages/admin/section';
 import type { AdminPendingSectionProps } from '@/types/admin';
 import sectionFixture from '../../../resources/fixtures/ui/admin-section.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -394,6 +394,144 @@ describe('Finance', () => {
         );
         expect(within(residual).getAllByRole('row')[2]).toHaveTextContent(
             'Loss reserveNone——',
+        );
+    });
+
+    it('filters every figure by a window of Kigali dates, from a quick window or two dates', () => {
+        const { rerender } = render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByText('Showing')).toBeVisible();
+        expect(
+            screen.getByText('Filters every figure on this page'),
+        ).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'All time' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Every stream, all time')).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: '7 days' }));
+        fireEvent.click(screen.getByRole('button', { name: '1 year' }));
+        fireEvent.change(screen.getByLabelText('From date'), {
+            target: { value: '2026-09-01' },
+        });
+        expect(inertia.reload.map((options) => options.data)).toEqual([
+            { from: '2026-09-17', to: '2026-09-23' },
+            { from: '2025-09-24', to: '2026-09-23' },
+            { from: '2026-09-01', to: null },
+        ]);
+        expect(inertia.reload[0].only).toEqual([
+            'figures',
+            'streams',
+            'period',
+            'errors',
+        ]);
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-17', to: '2026-09-23' },
+                })}
+            />,
+        );
+        expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getByText('Every stream, this period')).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+        fireEvent.change(screen.getByLabelText('From date'), {
+            target: { value: '' },
+        });
+        expect(inertia.reload.slice(-2).map((options) => options.data)).toEqual(
+            [
+                { from: null, to: null },
+                { from: null, to: '2026-09-23' },
+            ],
+        );
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-01', to: null },
+                })}
+            />,
+        );
+        expect(screen.getByText(/^Since /)).toBeVisible();
+        fireEvent.change(screen.getByLabelText('To date'), {
+            target: { value: '2026-09-10' },
+        });
+        expect(inertia.reload.at(-1)?.data).toEqual({
+            from: '2026-09-01',
+            to: '2026-09-10',
+        });
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: '2026-09-10' },
+                })}
+            />,
+        );
+        expect(screen.getByText(/^Until /)).toBeVisible();
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-01', to: '2026-09-10' },
+                })}
+            />,
+        );
+        expect(screen.getByText(/ → /)).toBeVisible();
+    });
+
+    it('says when the server refused a reversed window', () => {
+        inertia.errors = {
+            to: 'The to field must be a date after or equal to from.',
+        };
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+        expect(screen.getByLabelText('From date')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+    });
+
+    it('says the same when the server refused the From date alone', () => {
+        inertia.errors = {
+            from: 'The from field must match the format Y-m-d.',
+        };
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
         );
     });
 });

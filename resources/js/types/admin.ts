@@ -103,6 +103,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     figures?: Partial<Record<string, Money>>;
     /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
     streams?: FinanceStream[];
+    /** Finance only: the window of Kigali dates `Y-m-d` every figure covers; null ends are open. */
+    period?: { from: string | null; to: string | null };
     /** Engines and Ratings, for underwriters: the engine's settings and the rating scorecard. */
     engine?: EngineRow[];
     /** A KPI tile's count by its design key, where the server reads one (Ratings). */
@@ -328,7 +330,10 @@ export type PolicyItem = {
         | 'kyc_investor_selfie'
         | 'kyc_investor_dob'
         | 'kyc_investor_address'
-        | 'kyc_business_rdb';
+        | 'kyc_business_rdb'
+        | 'bank_signatories'
+        | 'recovery_rate'
+        | 'withdrawal_daily_cap';
     /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
     term?: PolicyTerm;
@@ -343,6 +348,7 @@ export type PolicyTerm =
     | 'late_from_due'
     | 'day_31'
     | 'late_schedule'
+    | 'pro_rata'
     | 'resident_rwanda'
     | 'rwanda'
     | 'not_collected';

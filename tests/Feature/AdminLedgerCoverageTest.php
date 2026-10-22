@@ -50,7 +50,7 @@ beforeEach(function (): void {
                 return $id === $this->entry['id'] ? $this->entry : null;
             }
 
-            public function credits(array $kinds): array
+            public function credits(array $kinds, ?string $from = null, ?string $before = null): array
             {
                 return array_fill_keys($kinds, '0');
             }

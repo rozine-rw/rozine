@@ -33,10 +33,11 @@ interface LedgerJournal
 
     /**
      * Each named platform account's balance in whole RWF: its credits less its debits, so revenue
-     * and payables read positive. An account with no posting reads "0".
+     * and payables read positive. An account with no posting reads "0". Given a window, only the
+     * entries posted from `$from` and before `$before` (UTC ISO 8601) count.
      *
      * @param  list<string>  $kinds
      * @return array<string, string>
      */
-    public function credits(array $kinds): array;
+    public function credits(array $kinds, ?string $from = null, ?string $before = null): array;
 }

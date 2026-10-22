@@ -80,9 +80,12 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
         return $this->shape($this->select(DB::table('ledger_entries')->where('ledger_entries.id', $id))->get()->all())[0] ?? null;
     }
 
-    public function credits(array $kinds): array
+    public function credits(array $kinds, ?string $from = null, ?string $before = null): array
     {
         $sums = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->when($from !== null || $before !== null, fn (Builder $query): Builder => $query->join('ledger_entries', 'ledger_entries.id', '=', 'ledger_lines.entry_id')
+                ->when($from !== null, fn (Builder $query): Builder => $query->where('ledger_entries.created_at', '>=', $from))
+                ->when($before !== null, fn (Builder $query): Builder => $query->where('ledger_entries.created_at', '<', $before)))
             ->whereNull('ledger_accounts.wallet_id')->whereIn('ledger_accounts.kind', $kinds)->groupBy('ledger_accounts.kind')
             ->selectRaw("ledger_accounts.kind, SUM(CASE WHEN ledger_lines.direction = 'credit' THEN ledger_lines.amount ELSE -ledger_lines.amount END)::text AS balance")
             ->pluck('balance', 'kind')->all();
