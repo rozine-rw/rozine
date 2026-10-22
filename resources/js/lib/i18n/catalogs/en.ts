@@ -92,6 +92,22 @@ const en = {
     'auth.register.submit': 'Create account',
     'auth.register.have_account': 'Already have an account?',
     'auth.register.log_in': 'Log in',
+    'auth.brand.business.eyebrow': 'For business',
+    'auth.brand.business.login_description': 'Log in to your issuer dashboard.',
+    'auth.brand.business.email_label': 'Work email',
+    'auth.brand.business.email_placeholder': 'you@company.rw',
+    'auth.brand.business.register_cta': 'Register a business',
+    'auth.brand.business.register_title': 'Register your business',
+    'auth.brand.business.register_description':
+        'Create the account your business will apply and raise with.',
+    'auth.brand.investor.login_description': 'Log in to manage your portfolio.',
+    'auth.brand.investor.register_cta': 'Create one',
+    'auth.brand.investor.register_description':
+        'Start investing in verified businesses across Rwanda.',
+    'auth.brand.auditor.eyebrow': 'For audit partners',
+    'auth.brand.auditor.login_description': 'Log in to your audit desk.',
+    'auth.brand.auditor.register_description':
+        'Create the account you will take audit jobs with.',
     'auth.reset_password.head_title': 'Reset password',
     'auth.reset_password.layout_title': 'Reset password',
     'auth.reset_password.layout_description':

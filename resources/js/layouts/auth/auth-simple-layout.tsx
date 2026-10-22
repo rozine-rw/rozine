@@ -21,16 +21,19 @@ const FORM_SKIN = [
  * The signed-out surface every shared auth page sits in (log in, register, password reset, email
  * verification, two-factor and password confirmation): the Rozine star centred over the title and
  * its line, then the form. A phone fills the screen; a wide screen centres the same column as a
- * card on the console frame.
+ * card on the console frame. A branded entry names its app above the title and takes that app's
+ * accent.
  */
 export default function AuthSimpleLayout({
     children,
     title,
     description,
+    eyebrow = '',
+    audience = null,
 }: AuthLayoutProps) {
     return (
         <div
-            data-audience="investor"
+            data-audience={audience ?? 'investor'}
             className="rz-surface flex min-h-svh flex-col bg-rz-surface lg:items-center lg:justify-center lg:bg-rz-frame lg:p-10"
         >
             <IconGradients />
@@ -40,6 +43,11 @@ export default function AuthSimpleLayout({
                         <LogoMark className="h-[56px] w-[54px] text-rz-accent-fill" />
                         <span className="sr-only">{title}</span>
                     </Link>
+                    {eyebrow !== '' && (
+                        <p className="mt-2 text-[11px] font-semibold tracking-[.08em] text-rz-secondary uppercase">
+                            {eyebrow}
+                        </p>
+                    )}
                     <h1 className="mt-3.5 text-[22px] font-semibold text-rz-ink">
                         {title}
                     </h1>

@@ -92,6 +92,25 @@ const fr: Catalog = {
     'auth.register.submit': 'Créer un compte',
     'auth.register.have_account': 'Vous avez déjà un compte ?',
     'auth.register.log_in': 'Se connecter',
+    'auth.brand.business.eyebrow': 'Pour les entreprises',
+    'auth.brand.business.login_description':
+        'Connectez-vous à votre tableau de bord émetteur.',
+    'auth.brand.business.email_label': 'E-mail professionnel',
+    'auth.brand.business.email_placeholder': 'vous@entreprise.rw',
+    'auth.brand.business.register_cta': 'Enregistrer une entreprise',
+    'auth.brand.business.register_title': 'Enregistrez votre entreprise',
+    'auth.brand.business.register_description':
+        'Créez le compte avec lequel votre entreprise fera sa demande et sa levée.',
+    'auth.brand.investor.login_description':
+        'Connectez-vous pour gérer votre portefeuille.',
+    'auth.brand.investor.register_cta': 'En créer un',
+    'auth.brand.investor.register_description':
+        'Commencez à investir dans des entreprises vérifiées partout au Rwanda.',
+    'auth.brand.auditor.eyebrow': 'Pour les partenaires d’audit',
+    'auth.brand.auditor.login_description':
+        'Connectez-vous à votre bureau d’audit.',
+    'auth.brand.auditor.register_description':
+        'Créez le compte avec lequel vous accepterez des missions d’audit.',
     'auth.reset_password.head_title': 'Réinitialiser le mot de passe',
     'auth.reset_password.layout_title': 'Réinitialiser le mot de passe',
     'auth.reset_password.layout_description':
