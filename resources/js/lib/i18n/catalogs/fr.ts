@@ -1710,11 +1710,11 @@ const fr: Catalog = {
     'admin.policy.min_rating': 'Note minimale pour lever',
     'admin.policy.revenue_cap': "Levée maximale · part du chiffre d'affaires",
     'admin.policy.kyc_reverify': 'Nouvelle vérification KYC',
-    'admin.policy.late_charge': 'Pénalités de retard',
+    'admin.policy.late_charge': 'Frais de retard de paiement',
     'admin.policy.miss_grace': 'Délai de grâce',
     'admin.policy.default_at': 'Défaut',
     'admin.policy.auto_freeze': 'Gel automatique en cas de défaut',
-    'admin.policy.min_investment': 'Investissement minimal · une part',
+    'admin.policy.min_investment': 'Investissement minimal',
     'admin.policy.concentration': "Part maximale d'une levée par investisseur",
     'admin.policy.raise_days': 'Durée de la levée · jours',
     'admin.policy.resale_listing_days':

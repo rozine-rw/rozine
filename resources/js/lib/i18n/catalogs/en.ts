@@ -1617,12 +1617,12 @@ const en = {
     'admin.policy.min_rating': 'Minimum rating to raise',
     'admin.policy.revenue_cap': 'Largest raise · share of revenue',
     'admin.policy.kyc_reverify': 'KYC re-verify',
-    'admin.policy.late_charge': 'Late charges',
-    'admin.policy.miss_grace': 'Miss grace period',
+    'admin.policy.late_charge': 'Late payment fee',
+    'admin.policy.miss_grace': 'Grace period',
     'admin.policy.default_at': 'Default',
     'admin.policy.auto_freeze': 'Auto-freeze on default',
-    'admin.policy.min_investment': 'Minimum investment · one unit',
-    'admin.policy.concentration': 'Max investment / note · share of the raise',
+    'admin.policy.min_investment': 'Minimum investment',
+    'admin.policy.concentration': 'Max investment / note',
     'admin.policy.raise_days': 'Raise window · days',
     'admin.policy.resale_listing_days': 'Resale listing life · days',
     'admin.policy.resale_reservation_minutes': 'Resale reservation · minutes',
@@ -1652,7 +1652,7 @@ const en = {
     'admin.policy.hint.loss_reserve':
         'Share of fees set aside against defaults.',
     'admin.policy.hint.target_dscr':
-        'Max raise is capped so cash flow covers repayments at this ratio.',
+        'Max raise is capped so cash-flow covers repayments at this ratio.',
     'admin.policy.hint.listing_audit':
         'A CPA audits every raise before it lists.',
     'admin.policy.hint.audit_routing':
@@ -1670,7 +1670,7 @@ const en = {
     'admin.policy.hint.registration_countries':
         'Where a business must be registered.',
     'admin.policy.hint.min_statement_years':
-        'Years of bank or MoMo statements required.',
+        'Consecutive years of bank/MoMo statements required.',
     'admin.policy.hint.min_revenue':
         'Minimum revenue over the trailing 12 months to qualify.',
     'admin.policy.hint.first_issue_months':
@@ -1685,7 +1685,7 @@ const en = {
     'admin.policy.hint.minimum_age': 'Youngest an investor may be.',
     'admin.policy.hint.min_investment': 'Smallest single investment allowed.',
     'admin.policy.hint.concentration':
-        'Most one investor may hold of a single raise.',
+        'Cap one investor can place in a single note, as a share of the raise.',
     'admin.policy.hint.risk_statements':
         'Statements an investor accepts before a first investment.',
     'admin.policy.hint.kyc_investor_id': 'Front and back of the document.',
