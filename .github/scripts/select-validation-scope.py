@@ -58,18 +58,24 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
-def rate_limit_diagnostic(deadline):
-    try:
-        timeout = 5 if deadline is None else min(5, deadline - time.monotonic())
-        if timeout <= 0:
-            return
-        response = json.loads(subprocess.check_output(("gh", "api", "rate_limit"), text=True, stderr=subprocess.PIPE, timeout=timeout))
-        core = {key: response["resources"]["core"][key] for key in ("limit", "remaining", "reset")}
-        if any(type(value) is not int or not 0 <= value < 2 ** 63 for value in core.values()):
-            return
-        diagnostic("gh_api_core_quota " + json.dumps(core, sort_keys=True))
-    except Exception:
-        pass
+def api_failure_headers(detail):
+    headers, awaiting_response, reading_headers = {}, False, False
+    for line in detail.splitlines():
+        if line.startswith("* Request to "):
+            headers, awaiting_response, reading_headers = {}, True, False
+        elif awaiting_response and re.fullmatch(r"< HTTP/\S+ [1-5][0-9]{2}(?: .*)?", line):
+            awaiting_response, reading_headers = False, True
+        elif reading_headers:
+            if not line.startswith("< "):
+                reading_headers = False
+                continue
+            number = re.fullmatch(r"< (x-ratelimit-(?:limit|remaining|reset)|retry-after): ([0-9]{1,19})", line, re.IGNORECASE)
+            resource = re.fullmatch(r"< x-ratelimit-resource: (core|search|graphql|code_search|integration_manifest)", line, re.IGNORECASE)
+            if number and int(number[2]) < 2 ** 63:
+                headers[number[1].lower()] = int(number[2])
+            elif resource:
+                headers["x-ratelimit-resource"] = resource[1].lower()
+    return headers
 
 
 def command(*args, timeout=45):
@@ -79,8 +85,9 @@ def command(*args, timeout=45):
         if remaining <= 0:
             raise CoordinationRefusal("follower_decision_publication_timeout")
         timeout = min(timeout, remaining)
+    options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
     try:
-        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
+        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout, **options).strip()
     except subprocess.CalledProcessError as error:
         if args[:2] == ("gh", "api"):
             detail = error.stderr if isinstance(error.stderr, str) else ""
@@ -96,10 +103,11 @@ def command(*args, timeout=45):
                     "classification": classification,
                     "http_status": int(status[1]) if status else None, "returncode": error.returncode,
                 }, sort_keys=True))
+                headers = api_failure_headers(detail)
+                if headers:
+                    diagnostic("gh_api_response_quota " + json.dumps(headers, sort_keys=True))
             except (OSError, ValueError):
                 pass
-            if classification in ("rate_limit", "secondary_rate_limit"):
-                rate_limit_diagnostic(deadline)
         raise
     except subprocess.TimeoutExpired:
         if deadline is not None and time.monotonic() >= deadline:
