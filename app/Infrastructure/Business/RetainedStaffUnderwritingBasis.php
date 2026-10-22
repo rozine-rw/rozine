@@ -6,6 +6,7 @@ namespace App\Infrastructure\Business;
 
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Underwriting\BusinessScoreView;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSubmission;
@@ -13,13 +14,41 @@ use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Arr;
 use RuntimeException;
 
-/** Original underwriting evidence for an authorized staff read, never current release authority. */
+/**
+ * Original underwriting evidence for an authorized staff read, or for the Business's own read of
+ * the application its published rating came from; never current release authority.
+ *
+ * @phpstan-import-type Ratio from BusinessScoreView
+ */
 final class RetainedStaffUnderwritingBasis
 {
     public function __construct(private CanonicalJson $json) {}
 
     /** @return array<string, mixed> */
     public function project(BusinessApplication $application, BusinessApplicationSubmission $submission): array
+    {
+        return $this->verified($application, $submission)[0];
+    }
+
+    /**
+     * The verified scorecard, cash-flow facts, pricing and maximum sizing of an application's
+     * current submission, for its own Business.
+     *
+     * @return array{components: array<string, Ratio>, cash_flow: array{cfads: Ratio, exposure_limit: Ratio, committed_exposure: Ratio, remaining_room: Ratio,
+     *     repeat_projections: list<array{cfads: Ratio}>}, pricing: array{percent: string, fraction: Ratio}, raw_capacity: Ratio, term_months: int}
+     */
+    public function forBusiness(BusinessApplication $application): array
+    {
+        $submission = BusinessApplicationSubmission::query()->whereKey($application->current_submission_id)->first()
+            ?? throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
+        [$basis, $result, $draft] = $this->verified($application, $submission);
+
+        return ['components' => $basis['scorecard']['components'], 'cash_flow' => $result['cash_flow'], 'pricing' => $result['pricing'],
+            'raw_capacity' => $this->ratio(Arr::get($result, 'maximum_capacity.raw_capacity')), 'term_months' => $draft['term_months']];
+    }
+
+    /** @return array{0: array<string, mixed>, 1: array<string, mixed>, 2: array<string, mixed>} */
+    private function verified(BusinessApplication $application, BusinessApplicationSubmission $submission): array
     {
         $payload = $this->authenticated($submission, 'APPLICATION_SUBMISSION_INTEGRITY_FAILED');
         $agreement = $payload['agreement'] ?? null;
@@ -81,14 +110,14 @@ final class RetainedStaffUnderwritingBasis
             }
         }
 
-        return ['contract_version' => 'retained-underwriting-basis-v1',
+        return [['contract_version' => 'retained-underwriting-basis-v1',
             'application' => ['id' => $application->id, 'business_id' => $application->business_id, 'revision' => $submission->revision],
             'submission' => ['id' => $submission->id, 'revision' => $submission->revision, 'sha256' => $submission->sha256,
                 'binding_sha256' => $submission->binding_sha256],
             'quote' => ['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256,
                 'application_revision' => $original['application_revision'], 'evaluated_at' => $original['evaluated_at']],
             'pricing_policy_version' => $original['policy_version'], 'calculation_version' => $original['calculation_version'],
-            'acceptance_policy_version' => $agreement['policy_version'], 'scorecard' => $scorecard];
+            'acceptance_policy_version' => $agreement['policy_version'], 'scorecard' => $scorecard], $result, $original['draft']];
     }
 
     /** @return array<string, mixed> */

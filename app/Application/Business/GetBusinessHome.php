@@ -13,8 +13,9 @@ use App\Application\Wallet\GetBusinessWallet;
  * Business Home for a current mandate holder. Each read runs under current Business authority:
  * the landing entry and verified profile, the Business's own raises from retained publication,
  * closure and funding facts, the wallet figures, the bell's unread notices and the next monthly audit its open routine
- * assignment states, read once the landing entry has passed that authority. Nothing here computes a rating, headroom or
- * a due repayment that no retained source holds.
+ * assignment states, read once the landing entry has passed that authority. Its score breakdown and headroom come from
+ * the retained quote its rating was underwritten on; nothing here computes a rating or a due repayment that no retained
+ * source holds.
  */
 final class GetBusinessHome
 {

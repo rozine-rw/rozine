@@ -510,6 +510,87 @@
         },
         "actions": {
             "cancel": null
+        },
+        "investors": {
+            "raised": {
+                "currency": "RWF",
+                "amount": "18000000"
+            },
+            "holders": 7,
+            "average": {
+                "currency": "RWF",
+                "amount": "2571429"
+            },
+            "mix": [
+                {
+                    "kind": "person",
+                    "holders": 5,
+                    "percent": "58"
+                },
+                {
+                    "kind": "organization",
+                    "holders": 2,
+                    "percent": "42"
+                }
+            ],
+            "list": [
+                {
+                    "kind": "organization",
+                    "units": "1000",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000000"
+                    }
+                },
+                {
+                    "kind": "person",
+                    "units": "840",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "4200000"
+                    }
+                },
+                {
+                    "kind": "organization",
+                    "units": "500",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "2500000"
+                    }
+                },
+                {
+                    "kind": "person",
+                    "units": "400",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "2000000"
+                    }
+                },
+                {
+                    "kind": "person",
+                    "units": "300",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "1500000"
+                    }
+                },
+                {
+                    "kind": "person",
+                    "units": "300",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "1500000"
+                    }
+                },
+                {
+                    "kind": "person",
+                    "units": "260",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "1300000"
+                    }
+                }
+            ]
         }
     }
 }

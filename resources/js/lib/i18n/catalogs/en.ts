@@ -3200,46 +3200,30 @@ const en = {
     'business.rating.factor.financial_health': 'Financial health',
     'business.rating.factor.repayment_history': 'Repayment history',
     'business.rating.factor.statement_consistency': 'Statement consistency',
-    'business.rating.factor.growth_outlook': 'Growth & outlook',
+    'business.rating.factor.track_record': 'Track record',
     'business.rating.sizing.title': 'How your capacity is sized',
-    'business.rating.sizing.cash': 'Cash a month',
+    'business.rating.sizing.cash': 'Cash you keep a month',
     'business.rating.sizing.cash_note':
-        'net {margin}% margin + {depreciation}% depreciation added back',
-    'business.rating.sizing.multiplier': '× Your multiplier',
-    'business.rating.sizing.tier.none': 'No verified stock cover on file yet',
-    'business.rating.sizing.tier.cover1x':
-        'Your CPA verified stock covering at least 1× the raise',
-    'business.rating.sizing.tier.cover2x':
-        'Your CPA verified stock covering at least 2× the raise',
-    'business.rating.sizing.carry': 'Monthly payment you can carry',
+        'After owner drawings and the debts you already pay',
+    'business.rating.sizing.cover': 'Cover kept',
+    'business.rating.sizing.cover_note':
+        'Every monthly payment must be covered {cover} times by that cash',
+    'business.rating.sizing.cover_value': '{cover}×',
+    'business.rating.sizing.term': 'Term and rate sized on',
+    'business.rating.sizing.term_value': '{months} months · {rate}% flat',
     'business.rating.sizing.explainer':
-        'Your capacity is the cash your business actually generates each month, multiplied by what your verified stock cover allows, then capped by the lowest of the five limits above. Nobody at Rozine sets this number by hand. Applications above capacity are rejected automatically.',
-    'business.rating.stock.title': 'Stock on file',
-    'business.rating.stock.verified': '{value} counted on site by your CPA',
-    'business.rating.stock.indicative':
-        '{value} is normal for your sector — but only a CPA count earns a higher multiplier',
-    'business.rating.stock.none': 'No stock position on file',
-    'business.rating.stock.why':
-        'A loan that buys stock is repaid by selling the stock, so verified cover raises what you can carry.',
-    'business.rating.limits': 'Five limits · the lowest one applies',
-    'business.rating.limit.capacity': 'Cash capacity',
-    'business.rating.limit.capacity_detail':
-        'EBITDA {ebitda}/mo × M {multiplier}',
-    'business.rating.limit.capacity_lift':
-        'Raise EBITDA, or have your CPA verify stock cover',
-    'business.rating.limit.revenue_share': 'Share of revenue',
-    'business.rating.limit.revenue_share_detail':
-        '{percent}% of {revenue} audited annual revenue',
-    'business.rating.limit.revenue_share_lift': 'Grow audited annual revenue',
-    'business.rating.limit.book_share': 'Share of book',
-    'business.rating.limit.book_share_detail':
-        '{percent}% of the {book} outstanding book',
-    'business.rating.limit.book_share_lift':
-        'Lifts on its own as the platform book grows',
-    'business.rating.limit.phase_cap': '{phase} phase cap',
-    'business.rating.limit.phase_cap_detail':
-        'Platform cap while the book is under {book}',
-    'business.rating.limit.phase_cap_lift': 'Lifts at the next phase',
+        'Your capacity is what the cash your business keeps each month can repay with that margin of safety, capped by the lowest of the three limits above. Nobody at Rozine sets this number by hand. Headroom is that capacity less your funded notes; every new application is sized again on fresh statements.',
+    'business.rating.limits': 'Three limits · the lowest one applies',
+    'business.rating.limit.cash_flow': 'What your cash carries',
+    'business.rating.limit.cash_flow_detail':
+        'Repaid at {cover}× cover over {months} months',
+    'business.rating.limit.cash_flow_lift':
+        'Keep more cash each month, or choose a longer term',
+    'business.rating.limit.exposure': 'Exposure limit',
+    'business.rating.limit.exposure_detail':
+        '{limit} (35% of a year’s revenue) less {committed} you already owe',
+    'business.rating.limit.exposure_lift':
+        'Grow your revenue, or repay what you owe',
     'business.rating.limit.policy_max': 'Policy maximum',
     'business.rating.limit.policy_max_detail':
         'Hard ceiling on any single raise',
@@ -3251,12 +3235,6 @@ const en = {
     'business.rating.headroom': 'Headroom available',
     'business.rating.headroom_note': 'You can raise this much more now.',
     'business.rating.raise': 'Raise',
-    'business.rating.tiers.title': 'What a higher multiplier would allow',
-    'business.rating.tiers.applied': 'Applied',
-    'business.rating.tiers.not_yet': 'Not yet',
-    'business.rating.tiers.no_cover': 'No stock cover needed at this level',
-    'business.rating.tiers.needs':
-        'Needs {need}× cover · your stock gives {yours}×',
     'business.rating.financials': 'Verified financials',
     'business.rating.sources': 'Bank · MoMo',
     'business.rating.financial.revenue': 'Avg monthly rev.',
@@ -5150,6 +5128,24 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
+    'business.campaign.investors.title': 'Investors',
+    'business.campaign.investors.all': 'View all {count} ›',
+    'business.campaign.investors.fewer': 'Show fewer',
+    'business.campaign.investors.raised': 'Total raised',
+    'business.campaign.investors.holders': 'Holders',
+    'business.campaign.investors.average': 'Avg ticket',
+    'business.campaign.investors.mix': 'Holder mix',
+    'business.campaign.investors.by_capital': 'by capital',
+    'business.campaign.investors.kinds.person': 'Individuals',
+    'business.campaign.investors.kinds.organization': 'Institutions',
+    'business.campaign.investors.kind.person': 'Individual investor',
+    'business.campaign.investors.kind.organization': 'Institutional investor',
+    'business.campaign.investors.notes': {
+        one: '{count} note',
+        other: '{count} notes',
+    },
+    'business.campaign.investors.privacy':
+        "Investors are not named here: their identities are protected under Rozine's privacy terms.",
     'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',

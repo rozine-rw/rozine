@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { BusinessShell } from '@/components/business/business-shell';
+import { CampaignInvestors } from '@/components/business/campaign/campaign-investors';
 import { CampaignProgress } from '@/components/business/campaign/campaign-progress';
 import { CancelSheet } from '@/components/business/campaign/cancel-sheet';
 import { DetailSheet } from '@/components/business/detail-sheet';
@@ -37,8 +38,8 @@ const POLLED = [
 
 /**
  * A published campaign's progress (C3 v2 §2f, `business.campaigns.show`), opened from the live
- * raise or Your notes. Only aggregate progress is shown: no Investor names, identity kinds or
- * per-Investor amounts, and no investor list (H16). While raising, and only while the server lists
+ * raise or Your notes. Once funded, the business sees who holds its notes by kind and amount, but
+ * never an Investor's name (Privacy Note §5). While raising, and only while the server lists
  * `campaign.cancel`, the business may cancel; an in-flight closing is polled within bounds. A
  * `business-campaign-v2` page adds the repaying and repaid phases once the notes are issued (C4 v1).
  */
@@ -50,6 +51,7 @@ export default function BusinessCampaign({
     actions,
     allowed_actions,
     campaign,
+    investors,
     identity_context_revision,
     server_time,
     preview_outcome,
@@ -155,6 +157,7 @@ export default function BusinessCampaign({
                             : t('business.campaign.cancel.open')}
                     </button>
                 )}
+                {investors && <CampaignInvestors investors={investors} />}
                 <PhotoStrip photos={note.photos} />
                 {note.performance !== null && (
                     <PerformanceTrend

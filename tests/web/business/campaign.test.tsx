@@ -1243,3 +1243,52 @@ describe('A repaying campaign (business-campaign-v2)', () => {
         expect(view.queryAllByRole('button')).toEqual([]);
     });
 });
+
+describe('A funded campaign’s investors', () => {
+    it('lists who holds the notes by kind and amount only, largest first', () => {
+        renderWithUser(<BusinessCampaign {...props(disbursedFixture)} />);
+        const section = within(
+            within(campaignSheet()).getByRole('region', { name: 'Investors' }),
+        );
+
+        expect(section.getByText('RWF 18M')).toBeInTheDocument();
+        expect(section.getByText('7')).toBeInTheDocument();
+        expect(section.getByText('RWF 2.6M')).toBeInTheDocument();
+        expect(section.getByText('Individuals')).toBeInTheDocument();
+        expect(section.getByText('58%')).toBeInTheDocument();
+        expect(section.getByText('42%')).toBeInTheDocument();
+        expect(section.getAllByRole('listitem')).toHaveLength(2 + 5);
+        expect(section.getByText('1000 notes')).toBeInTheDocument();
+        expect(section.getByText('RWF 5,000,000')).toBeInTheDocument();
+        expect(section.getAllByText('Institutional investor')).toHaveLength(2);
+        expect(
+            section.getByText(/their identities are protected/),
+        ).toBeInTheDocument();
+    });
+
+    it('opens every holding and folds it again', async () => {
+        const { user } = renderWithUser(
+            <BusinessCampaign {...props(disbursedFixture)} />,
+        );
+        const section = within(
+            within(campaignSheet()).getByRole('region', { name: 'Investors' }),
+        );
+
+        await user.click(section.getByRole('button', { name: 'View all 7 ›' }));
+        expect(section.getByText('RWF 1,300,000')).toBeInTheDocument();
+        expect(section.getAllByText('RWF 1,500,000')).toHaveLength(2);
+
+        await user.click(section.getByRole('button', { name: 'Show fewer' }));
+        expect(section.queryByText('RWF 1,300,000')).not.toBeInTheDocument();
+    });
+
+    it('draws no investor section before the raise is funded', () => {
+        renderWithUser(<BusinessCampaign {...props(liveFixture)} />);
+
+        expect(
+            within(campaignSheet()).queryByRole('region', {
+                name: 'Investors',
+            }),
+        ).not.toBeInTheDocument();
+    });
+});

@@ -55,39 +55,35 @@ describe('Financial health', () => {
 
         expect(sheet.getByText('RWF 9,800,000')).toBeInTheDocument();
         expect(
-            sheet.getByText('net 18.4% margin + 3.1% depreciation added back'),
-        ).toBeInTheDocument();
-        expect(
             sheet.getByText(
-                'Your CPA verified stock covering at least 1× the raise',
+                'Every monthly payment must be covered 1.50 times by that cash',
             ),
         ).toBeInTheDocument();
+        expect(sheet.getByText('1.50×')).toBeInTheDocument();
+        expect(sheet.getByText('6 months · 13.0% flat')).toBeInTheDocument();
         expect(
-            sheet.getByText('RWF 21,000,000 counted on site by your CPA'),
+            sheet.getByText('Three limits · the lowest one applies'),
         ).toBeInTheDocument();
         expect(
-            sheet.getByText(/A loan that buys stock is repaid/),
-        ).toBeInTheDocument();
+            sheet.getAllByText('Repaid at 1.50× cover over 6 months'),
+        ).toHaveLength(2);
         expect(
-            sheet.getByText('EBITDA RWF 9,800,000/mo × M 1.6'),
+            sheet.getByText(
+                'RWF 100,000,000 (35% of a year’s revenue) less RWF 28,483,269 you already owe',
+            ),
         ).toBeInTheDocument();
-        expect(
-            sheet.getByText('35% of RWF 336,000,000 audited annual revenue'),
-        ).toBeInTheDocument();
-        expect(
-            sheet.getByText('2.5% of the RWF 3,700,000,000 outstanding book'),
-        ).toBeInTheDocument();
-        expect(sheet.getByText('Launch phase cap')).toBeInTheDocument();
         expect(sheet.getByText('This is your limit')).toBeInTheDocument();
         expect(
             sheet.getByText('Hard ceiling on any single raise'),
         ).toBeInTheDocument();
-        expect(sheet.getAllByText('RWF 80,000,000')).toHaveLength(2);
+        expect(sheet.getByText('RWF 34,690,000')).toBeInTheDocument();
         expect(
-            sheet.getByText('What is limiting you: Launch phase cap'),
+            sheet.getByText('What is limiting you: What your cash carries'),
         ).toBeInTheDocument();
         expect(
-            sheet.getByText('To raise it — Lifts at the next phase'),
+            sheet.getByText(
+                'To raise it — Keep more cash each month, or choose a longer term',
+            ),
         ).toBeInTheDocument();
         expect(sheet.getByText('RWF 33,916,731')).toBeInTheDocument();
         expect(sheet.getByRole('link', { name: 'Raise' })).toHaveAttribute(
@@ -95,30 +91,20 @@ describe('Financial health', () => {
             '/preview/business-apply-business',
         );
         expect(
-            sheet.getByText('No stock cover needed at this level'),
-        ).toBeInTheDocument();
-        expect(
-            sheet.getByText('Needs 2.0× cover · your stock gives 1.34×'),
-        ).toBeInTheDocument();
-        expect(sheet.getAllByText('Applied')).toHaveLength(2);
-        expect(sheet.getByText('Not yet')).toBeInTheDocument();
+            sheet.getByRole('progressbar', { name: 'Track record' }),
+        ).toHaveValue(87);
         expect(sheet.getByText('RWF 28M')).toBeInTheDocument();
         expect(sheet.getByText('18.4%')).toBeInTheDocument();
         expect(sheet.getByText('RWF 46.1M')).toBeInTheDocument();
     });
 
-    it('explains the other stock states and limits without a raise link', () => {
+    it('names the exposure limit when it binds, without a raise link', () => {
         const page = props(ratingFixture);
         const sizing = page.sizing as CapacitySizing;
 
-        sizing.cover_tier = 'none';
-        sizing.stock = {
-            state: 'indicative',
-            value: { currency: 'RWF', amount: '18000000' },
-        };
         sizing.limits = sizing.limits.map((limit) => ({
             ...limit,
-            binding: limit.key === 'capacity',
+            binding: limit.key === 'exposure',
         }));
         page.links.raise = null;
         render(<BusinessRating {...page} />);
@@ -126,47 +112,44 @@ describe('Financial health', () => {
         const sheet = within(healthSheet());
 
         expect(
-            sheet.getByText('No verified stock cover on file yet'),
+            sheet.getByText('What is limiting you: Exposure limit'),
         ).toBeInTheDocument();
         expect(
-            sheet.getByText(/RWF 18,000,000 is normal for your sector/),
-        ).toBeInTheDocument();
-        expect(
-            sheet.getByText('What is limiting you: Cash capacity'),
+            sheet.getByText(
+                'To raise it — Grow your revenue, or repay what you owe',
+            ),
         ).toBeInTheDocument();
         expect(
             sheet.queryByRole('link', { name: 'Raise' }),
         ).not.toBeInTheDocument();
     });
 
-    it('names the first limit when none is marked and shows no stock', () => {
+    it('names the first limit when none is marked, and the policy maximum when it binds', () => {
         const page = props(ratingFixture);
         const sizing = page.sizing as CapacitySizing;
 
-        sizing.cover_tier = 'cover2x';
-        sizing.stock = { state: 'none', value: null };
         sizing.limits = sizing.limits.map((limit) => ({
             ...limit,
             binding: false,
         }));
-        render(<BusinessRating {...page} />);
-
-        const sheet = within(healthSheet());
+        const { unmount } = render(<BusinessRating {...page} />);
 
         expect(
-            sheet.getByText(
-                'Your CPA verified stock covering at least 2× the raise',
+            within(healthSheet()).getByText(
+                'What is limiting you: What your cash carries',
             ),
         ).toBeInTheDocument();
+        unmount();
+
+        sizing.limits = sizing.limits.map((limit) => ({
+            ...limit,
+            binding: limit.key === 'policy_max',
+        }));
+        render(<BusinessRating {...page} />);
+
         expect(
-            sheet.getByText('No stock position on file'),
-        ).toBeInTheDocument();
-        expect(
-            sheet.getByText('What is limiting you: Cash capacity'),
-        ).toBeInTheDocument();
-        expect(
-            sheet.getByText(
-                'To raise it — Raise EBITDA, or have your CPA verify stock cover',
+            within(healthSheet()).getByText(
+                'To raise it — None — this is absolute',
             ),
         ).toBeInTheDocument();
     });
