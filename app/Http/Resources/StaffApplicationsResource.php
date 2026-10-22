@@ -19,18 +19,21 @@ class StaffApplicationsResource extends JsonResource
         $position = array_filter([...$filters, 'before' => $page['before']], fn (mixed $value): bool => $value !== null);
         $link = fn (array $query): array => ['url' => route($route, $query, false), 'method' => 'get'];
         $review = null;
+        /** @var list<string> $permissions */
+        $permissions = $page['permissions'];
         if ($page['selected'] !== null) {
+            $businessId = $page['release_page']['application']['business_id'] ?? null;
+            $business = is_string($businessId) && in_array('businesses.view', $permissions, true)
+                ? ['url' => route(($request->routeIs('api.*') ? 'api.v1.' : '').'staff.businesses.index', ['business' => $businessId], false), 'method' => 'get'] : null;
             $release = (new StaffApplicationReleaseResource($page['release_page']))->resolve($request)['release'];
             $review = [...$page['selected'], 'state' => $release['state'] === 'released' ? 'approved' : 'submitted',
                 'underwriting_basis' => $page['underwriting_basis'],
                 'factors' => [], 'audit' => ['state' => null, 'sealed_at' => null], 'reviewer' => null, 'trail' => [],
-                'links' => ['close' => $link($position), 'business' => null], 'actions' => (object) [], 'release' => $release];
+                'links' => ['close' => $link($position), 'business' => $business], 'actions' => (object) [], 'release' => $release];
         }
         $name = $request->user()->name;
         /** @var list<string> $roles */
         $roles = $page['roles'];
-        /** @var list<string> $permissions */
-        $permissions = $page['permissions'];
 
         return ['contract_version' => 'staff-applications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()->getAuthIdentifier(), 'name' => $name, 'email' => $request->user()->email,
