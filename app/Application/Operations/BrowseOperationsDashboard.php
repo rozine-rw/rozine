@@ -83,8 +83,10 @@ final class BrowseOperationsDashboard
      */
     private function health(): array
     {
-        $issued = array_column(array_filter($this->store->noteStates(), fn (array $note): bool => $note['state'] === 'repaying'), 'campaign_id');
-        $watch = array_values(array_filter($issued, fn (string $campaign): bool => ($this->deals->updates($campaign)[0]['status'] ?? null) === 'watch'));
+        $issued = array_column(array_filter($this->store->noteStates(), fn (array $note): bool => $note['state'] === 'repaying'), 'business_id', 'campaign_id');
+        // Reports belong to the Business, so each Business's newest report is read once, whatever number of notes it issued.
+        $watched = array_filter(array_flip($issued), fn (string $campaign): bool => ($this->deals->updates($campaign)[0]['status'] ?? null) === 'watch');
+        $watch = array_keys(array_filter($issued, fn (string $business): bool => array_key_exists($business, $watched)));
 
         return ['sectors' => array_map(fn (array $sector): array => [...$sector, 'at_risk' => array_intersect($sector['campaigns'], $watch) !== []],
             $this->store->sectorExposure()),
