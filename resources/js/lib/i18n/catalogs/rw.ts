@@ -6329,7 +6329,16 @@ const rw: Catalog = {
     'admin.health.treasury.label': 'Uko isanduku ihagaze',
     'admin.health.treasury.detail': 'Nta mafaranga y’isanduku arandikwa',
     'admin.health.frozen.label': 'Konti zahagaritswe',
-    'admin.health.frozen.detail': 'Guhagarika konti ntibiraboneka',
+    'admin.health.frozen.detail': 'konti zahagaritswe kwinjira',
+    'admin.health.frozen.rec.healthy': {
+        one: 'Nta konti yahagaritswe.',
+        other: 'Nta konti yahagaritswe.',
+    },
+    'admin.health.frozen.rec.watch': {
+        one: "Konti {count} y'umukozi yahagaritswe. Yisuzume muri Abakozi n'inshingano.",
+        other: "Konti {count} z'abakozi zahagaritswe. Zisuzume muri Abakozi n'inshingano.",
+    },
+    'admin.health.frozen.action': "Fungura Abakozi n'inshingano",
     'admin.complaints.title': 'Ibirego',
     'admin.complaints.caption':
         'Emeza ko cyakiriwe mu masaha 4 ugikemure mu masaha 48, cyangwa ubwire umukiriya impamvu n’igihe (BRS CMP-R03).',

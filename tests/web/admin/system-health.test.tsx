@@ -8,7 +8,7 @@ import { resetInertia } from './inertia-mock';
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const untracked = (
-    key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury' | 'frozen',
+    key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury',
 ): HealthSignal => ({ key, status: 'untracked', facts: [], action: null });
 
 const healthy: HealthSignal[] = [
@@ -35,7 +35,7 @@ const healthy: HealthSignal[] = [
     untracked('arrears'),
     untracked('outstanding'),
     untracked('treasury'),
-    untracked('frozen'),
+    { key: 'frozen', status: 'healthy', facts: { accounts: 0 }, action: null },
 ];
 
 const props = (
@@ -101,6 +101,12 @@ describe('Admin System Health', () => {
         expect(card('Event throughput')).toHaveTextContent(
             '90 actions recorded in total',
         );
+        expect(card('Frozen accounts')).toHaveTextContent(
+            '0accounts with access paused',
+        );
+        expect(card('Frozen accounts')).toHaveTextContent(
+            'No accounts are frozen.',
+        );
         expect(card('Treasury position')).toHaveTextContent('Not tracked yet');
         expect(card('Treasury position')).toHaveTextContent(
             'No treasury balance is recorded yet',
@@ -158,11 +164,25 @@ describe('Admin System Health', () => {
                             facts: { last_hour: 0, total: 1 },
                             action: null,
                         },
+                        {
+                            key: 'frozen',
+                            status: 'watch',
+                            facts: { accounts: 2 },
+                            action: { url: '/admin/staff', method: 'get' },
+                        },
                     ],
                 })}
             />,
         );
 
+        expect(card('Frozen accounts')).toHaveTextContent(
+            '2 operator accounts are frozen. Review them in Staff & Roles.',
+        );
+        expect(
+            within(card('Frozen accounts')).getByRole('link', {
+                name: /Open Staff & Roles/,
+            }),
+        ).toHaveAttribute('href', '/admin/staff');
         expect(screen.getByRole('status')).toHaveTextContent(
             'Attention required',
         );
@@ -219,7 +239,7 @@ describe('Admin System Health', () => {
             <AdminSystemHealth {...props({ search: 'not tracked' })} />,
         );
 
-        expect(screen.getAllByRole('article')).toHaveLength(5);
+        expect(screen.getAllByRole('article')).toHaveLength(4);
 
         rerender(<AdminSystemHealth {...props({ search: 'zzz' })} />);
 
