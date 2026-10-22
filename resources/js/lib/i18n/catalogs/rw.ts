@@ -5239,6 +5239,31 @@ const rw: Catalog = {
         "Raporo y'igenzura ryo gushyira ku isoko",
     'admin.applications.release.gate_state.passed': 'Byatsinze',
     'admin.applications.release.gate_state.failed': 'Byahagaritswe',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "Ibisabwa by'inguzanyo bya moteri y'amanota ntibyujujwe.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Ububasha bwo gusinya bw'ikigo bwahindutse nyuma yo gusinya.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        'Uburenganzira bwo gusinyira ikigo ntiburemezwa.',
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Raporo y'igenzura ntikiri iy'ubu.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Ntabwo abasinya bose basabwa basinye ku Isuzuma.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "Iyemezwa ryanditswe ntirigihuye n'ibyo ikigo cyasinye.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Amasezerano yahindutse nyuma y'uko ikigo gisinye.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "Itangazo ry'amafaranga yo gushyira ku isoko ryahindutse.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Igiciro cyatanzwe ntikiri icy'ubu.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'Iki kigo gifite imbogamizi.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Iri genzura ntiryashoboye kurangira.',
+    'admin.applications.release.cause.other': 'Iri genzura ntiryatsinze.',
     'admin.applications.release.blocked':
         'Igenzura rimwe ryananiranye, bityo iyi dosiye ntishobora kurekurwa. Kurekura ntibirenga igenzura ryananiranye.',
     'admin.applications.release.receipt': 'Inyemezabwishyu yo kurekura',

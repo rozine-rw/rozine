@@ -5263,6 +5263,32 @@ const fr: Catalog = {
         "Rapport d'audit de mise en ligne",
     'admin.applications.release.gate_state.passed': 'Réussi',
     'admin.applications.release.gate_state.failed': 'Bloqué',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        'Les critères de crédit du moteur de notation ne sont pas remplis.',
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Le pouvoir de signature de l'entreprise a changé après sa signature.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise n'est pas vérifié.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Le rapport d'audit n'est plus à jour.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "La validation enregistrée ne correspond plus à ce que l'entreprise a signé.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Les conditions ont changé après la signature de l'entreprise.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de cotation a changé.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Le devis n'est plus à jour.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        "Une restriction s'applique à cette entreprise.",
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Cette vérification n'a pas pu être effectuée.",
+    'admin.applications.release.cause.other':
+        "Cette vérification n'a pas réussi.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',

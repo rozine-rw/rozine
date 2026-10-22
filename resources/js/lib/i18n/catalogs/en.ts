@@ -5002,6 +5002,31 @@ const en = {
     'admin.applications.release.gate.report': 'Listing audit report',
     'admin.applications.release.gate_state.passed': 'Passed',
     'admin.applications.release.gate_state.failed': 'Blocked',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "The rating engine's credit gates don't pass.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "The company's signing authority changed after it signed.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "The business's signing mandate isn't verified.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        'The audit report is no longer current.',
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        'No borrowing reservation is on record for this application.',
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Not every required signatory has signed at Review.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        'The release on record no longer matches what the business signed.',
+    'admin.applications.release.cause.TERMS_CHANGED':
+        'The terms changed after the business signed.',
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        'The listing fee disclosure changed.',
+    'admin.applications.release.cause.QUOTE_STALE':
+        'The quote is no longer current.',
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'A restriction applies to this business.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "This check couldn't be completed.",
+    'admin.applications.release.cause.other': "This check didn't pass.",
     'admin.applications.release.blocked':
         "A check failed, so this application can't be released. Release never overrides a failed check.",
     'admin.applications.release.receipt': 'Release receipt',
