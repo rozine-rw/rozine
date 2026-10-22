@@ -111,6 +111,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     book?: RatingBookRow[];
     /** App Control only: how much of each sandbox hard limit is used now (SBX-R01). */
     sandbox?: SandboxUsage[];
+    /** App Control only: each app, online, with whether each of its features is built. */
+    apps?: AppStatus[];
 };
 
 /** One rated Business in the rating book. */
@@ -154,6 +156,22 @@ export type EngineRow = {
         | 'distressed';
     value: string;
     source: string;
+};
+
+export type AppStatus = {
+    key: 'investor' | 'business' | 'auditor';
+    features: {
+        key:
+            | 'sign_ups'
+            | 'secondary_market'
+            | 'academy'
+            | 'note_creation'
+            | 'monthly_reports'
+            | 'auditor_sign_ups'
+            | 'auto_dispatch'
+            | 'flash_audits';
+        state: 'live' | 'not_built';
+    }[];
 };
 
 /** Whole numbers as strings: a count, or RWF for `principal`. */

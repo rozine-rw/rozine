@@ -127,9 +127,12 @@ test('App Control shows how much of the sandbox limits the platform uses, and no
         ->assertInertia(fn (Assert $page) => $page->where('section', 'app_control')->where('sandbox', [
             ['key' => 'businesses', 'used' => '1', 'cap' => '100', 'used_pct' => 1],
             ['key' => 'investors', 'used' => '2', 'cap' => '10000', 'used_pct' => 0],
-            ['key' => 'principal', 'used' => $principal, 'cap' => '5000000000', 'used_pct' => intdiv((int) $principal * 100, 5000000000)]]));
+            ['key' => 'principal', 'used' => $principal, 'cap' => '5000000000', 'used_pct' => intdiv((int) $principal * 100, 5000000000)]])
+            ->where('apps.0', ['key' => 'investor', 'features' => [['key' => 'sign_ups', 'state' => 'live'],
+                ['key' => 'secondary_market', 'state' => 'not_built'], ['key' => 'academy', 'state' => 'not_built']]])
+            ->where('apps.2.key', 'auditor'));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/engines')->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->missing('sandbox'));
+        ->assertInertia(fn (Assert $page) => $page->missing('sandbox')->missing('apps'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

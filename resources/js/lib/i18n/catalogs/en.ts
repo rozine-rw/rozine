@@ -1268,6 +1268,20 @@ const en = {
     'admin.design.app_control.apps.sub':
         'The Investor, Business and Auditor apps and their features.',
     'admin.design.app_control.apps.empty': 'No app settings to show yet.',
+    'admin.design.app_control.app.investor': 'Investor App',
+    'admin.design.app_control.app.business': 'Business App',
+    'admin.design.app_control.app.auditor': 'Auditor App',
+    'admin.design.app_control.online': 'Online',
+    'admin.design.app_control.feature.sign_ups': 'New sign-ups',
+    'admin.design.app_control.feature.secondary_market': 'Secondary Market',
+    'admin.design.app_control.feature.academy': 'Investor Academy',
+    'admin.design.app_control.feature.note_creation': 'RNP creation',
+    'admin.design.app_control.feature.monthly_reports': 'Monthly reports',
+    'admin.design.app_control.feature.auditor_sign_ups': 'Auditor sign-ups',
+    'admin.design.app_control.feature.auto_dispatch': '30km auto-dispatch',
+    'admin.design.app_control.feature.flash_audits': 'Flash Audits (24h)',
+    'admin.design.app_control.state.live': 'Live',
+    'admin.design.app_control.state.not_built': 'Not built yet',
     'admin.design.app_control.sandbox.title': 'Sandbox limits',
     'admin.design.app_control.sandbox.sub':
         'How much of each CMA sandbox hard limit is used now. Nothing beyond a limit is accepted.',
@@ -6146,8 +6160,8 @@ const en = {
     'admin.health.frozen.label': 'Frozen accounts',
     'admin.health.frozen.detail': 'accounts with access paused',
     'admin.health.frozen.rec.healthy': {
-        one: 'No accounts are frozen.',
-        other: 'No accounts are frozen.',
+        one: 'No accounts are currently restricted.',
+        other: 'No accounts are currently restricted.',
     },
     'admin.health.frozen.rec.watch': {
         one: '{count} operator account is frozen. Review it in Staff & Roles.',

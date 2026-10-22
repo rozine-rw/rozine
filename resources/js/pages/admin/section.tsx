@@ -23,6 +23,7 @@ import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
+    AppStatus,
     EngineRow,
     FinanceStream,
     PolicyRule,
@@ -225,6 +226,22 @@ function rowsOf(
                 ],
             };
         });
+    }
+
+    if (block.key === 'apps') {
+        return (props.apps ?? []).map((app: AppStatus) => ({
+            key: app.key,
+            cells: [
+                t(`admin.design.app_control.app.${app.key}`),
+                t('admin.design.app_control.online'),
+                app.features
+                    .map(
+                        (feature) =>
+                            `${t(`admin.design.app_control.feature.${feature.key}`)} · ${t(`admin.design.app_control.state.${feature.state}`)}`,
+                    )
+                    .join(', '),
+            ],
+        }));
     }
 
     if (props.section === 'finance' && block.tab === 'streams') {

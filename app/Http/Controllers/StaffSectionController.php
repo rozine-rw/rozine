@@ -25,7 +25,7 @@ use Inertia\Response;
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
  * whoever may read the ledger, Engines and Ratings show underwriters the engine's settings and the
  * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, and App
- * Control shows how much of the sandbox's limits is used.
+ * Control shows how much of the sandbox's limits is used and which app features are built.
  */
 class StaffSectionController extends Controller
 {
@@ -35,6 +35,19 @@ class StaffSectionController extends Controller
         'compliance' => 'compliance', 'ratings' => 'ratings', 'deferrals' => 'deferrals', 'plus' => 'plus',
         'finance' => 'finance', 'messaging' => 'messaging', 'academies' => 'academies', 'app-control' => 'app_control', 'engines' => 'engines',
         'policies' => 'policies',
+    ];
+
+    /**
+     * App Control's apps: each is served by this deployment, so it is online, with whether each of
+     * the design's features is built in this release. Nothing here can be switched off from the console.
+     */
+    public const APPS = [
+        ['key' => 'investor', 'features' => [['key' => 'sign_ups', 'state' => 'live'], ['key' => 'secondary_market', 'state' => 'not_built'],
+            ['key' => 'academy', 'state' => 'not_built']]],
+        ['key' => 'business', 'features' => [['key' => 'sign_ups', 'state' => 'live'], ['key' => 'note_creation', 'state' => 'live'],
+            ['key' => 'monthly_reports', 'state' => 'live']]],
+        ['key' => 'auditor', 'features' => [['key' => 'auditor_sign_ups', 'state' => 'live'], ['key' => 'auto_dispatch', 'state' => 'live'],
+            ['key' => 'flash_audits', 'state' => 'live']]],
     ];
 
     /** The most Businesses the rating book reads at once. */
@@ -67,7 +80,7 @@ class StaffSectionController extends Controller
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
             'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance, ...$book,
-            ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier())] : []),
+            ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier()), 'apps' => self::APPS] : []),
             'engine' => match (true) {
                 ! $underwriter => [],
                 $section === 'engines' => EngineSettings::engines(),
