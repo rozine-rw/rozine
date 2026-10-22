@@ -75,7 +75,7 @@ class StaffNavigationResource extends JsonResource
             ? ['url' => route('staff.staging-mail-testers.index', [], false), 'method' => 'get'] : null;
 
         return [...$links, ...array_diff_key($pending, $links),
-            'payments' => $links['payments'] ?? $links['disbursements'] ?? null, 'finance' => $links['reconciliation'] ?? $pendingPage('finance'),
+            'payments' => $links['payments'] ?? $links['disbursements'] ?? null, 'finance' => $pendingPage('finance'),
             'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),

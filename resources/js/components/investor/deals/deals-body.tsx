@@ -125,8 +125,15 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             (deal) => deal.campaign_id === props.focus?.campaign_id,
         ),
     );
-    const [index, setIndex] = useState(start);
-    const current = props.deals.length > 0 ? props.deals[index] : null;
+    const [selected, setSelected] = useState(
+        props.deals[start]?.campaign_id ?? null,
+    );
+    // A cart removal can shorten or reorder the deck while this component stays mounted.
+    const index = Math.max(
+        0,
+        props.deals.findIndex((deal) => deal.campaign_id === selected),
+    );
+    const current = props.deals[index] ?? null;
     /* Only read beside a deck: an empty list has its own "no deals open" state. */
     const allClosed = !props.deals.some(
         (deal) => deal.lifecycle === 'live' && deal.restriction === null,
@@ -145,11 +152,19 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const move = (next: number) => {
         const at = wrapIndex(next, props.deals.length);
 
-        setIndex(at);
+        const target = props.deals[at];
+        const destination =
+            props.sorts.find((sort) => sort.active)?.link ??
+            target.links.detail;
+
+        setSelected(target.campaign_id);
         quoted.resetUnits();
-        router.reload({
-            only: ['focus', 'quote'],
-            data: { deal: props.deals[at].campaign_id },
+        // The deck route honors ?deal; a detail or checkout route is bound to its path campaign.
+        // Refresh the complete contract together, including campaign-bound cart and checkout URLs.
+        router.visit(withQuery(destination, { deal: target.campaign_id }), {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
         });
     };
 

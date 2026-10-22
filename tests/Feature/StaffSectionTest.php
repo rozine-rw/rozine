@@ -14,6 +14,10 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 /** @param  list<string>  $roles */
 function sectionStaff(array $roles): User
 {
@@ -55,7 +59,7 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
     $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
 
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/finance')->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')
+        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')->where('nav.finance.url', '/admin/finance')
             ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400')])
             ->where('streams', [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money('194400')],
                 ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money('129600')],
