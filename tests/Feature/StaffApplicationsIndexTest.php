@@ -47,7 +47,7 @@ it('projects the same retained queue and current release gates through web and A
             ->where('applications.0.approve_link', null)->where('tabs.0.count', 1)->where('tabs.1.count', 0)
             ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'listing_audit', 'value' => '', 'term' => 'every_deal'], ['key' => 'audit_routing', 'value' => '≥ 1.25×'], ['key' => 'rate_band', 'value' => '10–15%']])
             ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', null)
-            ->where('review.links.business', null)->where('review.audit.state', null)->where('review.factors', [])
+            ->where('review.links.business', ['url' => '/admin/businesses?business='.$fixture['application']->business_id, 'method' => 'get'])->where('review.audit.state', null)->where('review.factors', [])
             ->missing('review.acceptance')->missing('review.actor_user_id')->missing('review.application.draft')->missing('roles'));
     $props = $web->inertiaPage()['props'];
     $this->get(route('staff.applications.index'), ['X-Inertia' => 'true', 'X-Inertia-Version' => $web->inertiaPage()['version']])
