@@ -2578,14 +2578,39 @@ const rw: Catalog = {
     'auditor.file.no_documents':
         'Nta nyandiko zatanzwe ziranditswe kuri iyi dosiye.',
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Byemejwe',
     'auditor.file.doc_status.present': '✓ Birahari',
-    'auditor.file.doc_status.missing': 'Ntibirimo',
     'auditor.file.prescreen': "Isuzuma ry'ibanze ryikora",
     'auditor.file.no_prescreen':
         "Nta gisubizo cy'isuzuma ry'ibanze ryikora kiratangazwa kuri iyi dosiye.",
     'auditor.file.check.met': 'Byujujwe',
     'auditor.file.check.flag': 'Ikimenyetso',
+    'auditor.file.document.pdf': 'Raporo ya konti (PDF)',
+    'auditor.file.document.csv': 'Raporo ya konti (CSV)',
+    'auditor.file.document.received': 'Yakiriwe {date}',
+    'auditor.file.document.received_records': {
+        one: 'Yakiriwe {date} · inyandiko {count}',
+        other: 'Yakiriwe {date} · inyandiko {count}',
+    },
+    'auditor.file.brief.flash.reason':
+        "Nta noti ishobora gushyirwa ku isoko mbere y'uko Umugenzuzi asura ubucuruzi agafunga raporo y'ibanze. Rozine yagenzuye kure raporo za konti zatanzwe; uruzinduko rwawe rwemeza ku kibanza ko ubucuruzi, ububiko bwabwo n'ibitabo byabwo ari ukuri mbere y'uko amafaranga atangwa.",
+    'auditor.file.brief.flash.step_1':
+        "Iyandikishe ugeze aho ubucuruzi bukorera; aho uri ako kanya handikwa hamwe n'igenzura.",
+    'auditor.file.brief.flash.step_2':
+        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera. Gushyiraho amafoto ari muri telefoni ntibyemewe.",
+    'auditor.file.brief.flash.step_3':
+        "Bara ububiko ku kibanza wandike agaciro kabwo. Ikinyuranyo cyose n'umubare watangajwe kigomba gusobanurwa mbere yo gufunga.",
+    'auditor.file.brief.flash.step_4':
+        "Huza ibitabo by'impapuro n'inyemezabwishyu na raporo za konti zagenzuwe, ukurikije uburyo bwemeranyijweho bwa ISRS 4400.",
+    'auditor.file.brief.monthly.reason':
+        "Buri kwezi igihe noti itararangira, Umugenzuzi agenzura ku kibanza inyandiko z'ubucuruzi agafunga raporo abafite noti bakira mbere y'umunsi wo kwishyura. Funga mbere ya D−3; ubucuruzi buhabwa amasaha 24 yo kwemeza cyangwa kujuririra.",
+    'auditor.file.brief.monthly.step_1':
+        "Suzuma raporo za konti z'ukwezi ubucuruzi bwashyizeho.",
+    'auditor.file.brief.monthly.step_2':
+        "Bara amafaranga n'ibicuruzwa biri mu bubiko ku kibanza. Ikinyuranyo cyose kigomba gusobanurwa mbere yo gufunga.",
+    'auditor.file.brief.monthly.step_3':
+        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera.",
+    'auditor.file.brief.monthly.step_4':
+        "Funga raporo mbere ya D−3 kugira ngo abafite noti bayakire mbere y'umunsi wo kwishyura.",
     'auditor.file.why': 'Impamvu igenzura ryo ku kibanza rikenewe',
     'auditor.file.mandate': 'Ibyo ugomba kugenzura ku kibanza',
     'auditor.file.history': 'Amateka ya dosiye',
