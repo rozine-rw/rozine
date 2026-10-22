@@ -257,4 +257,6 @@ it('lists drafts the engine refused under Rejected with the reason, without a st
         ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 1));
     $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'limit' => 1, 'before' => $refused['application']->id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 0));
+    $this->actingAs($user)->get(route('staff.applications.index'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('active_tab', 'pending')->where('tabs.2.count', null));
 });
