@@ -93,7 +93,7 @@ export const FINANCE_GROUPS = [
     'residual',
 ] as const;
 
-/** Policies' tabs: each lists its rules under the tab's title and what the rules decide. */
+/** Policies' groups, in the design's order: each lists its rules under its title and what the rules decide. */
 const POLICY_TABS = [
     'fees',
     'underwriting',
@@ -423,8 +423,8 @@ export const SECTION_DESIGNS: Record<
             engines.block('loss', { tab: 'loss', columns: ENGINE_COLUMNS }),
         ],
     },
+    // The design lists every policy group on one page, each titled with what its rules decide.
     policies: {
-        tabs: POLICY_TABS.map((key) => policies.tab(key)),
         blocks: POLICY_TABS.map((key) => ({
             key,
             tab: key,

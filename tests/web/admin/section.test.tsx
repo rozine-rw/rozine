@@ -92,7 +92,11 @@ describe('A designed section that is not wired yet', () => {
             const first = design.tabs?.[0]?.key;
 
             for (const block of design.blocks) {
-                if (block.tab !== undefined && block.tab !== first) {
+                if (
+                    design.tabs !== undefined &&
+                    block.tab !== undefined &&
+                    block.tab !== first
+                ) {
                     expect(
                         within(region).queryByRole('heading', {
                             name: text(block.title),
@@ -107,8 +111,9 @@ describe('A designed section that is not wired yet', () => {
                         name: text(block.title),
                     }),
                 ).toBeInTheDocument();
+                // Groups shown together may share one empty message.
                 expect(
-                    within(region).getByText(text(block.empty)),
+                    within(region).getAllByText(text(block.empty))[0],
                 ).toBeVisible();
 
                 if (block.sub !== undefined) {
@@ -230,7 +235,7 @@ describe('The title ⓘ', () => {
 });
 
 describe('Policies', () => {
-    it("lists the rules in effect under the selected tab, with each rule's version", () => {
+    it("lists every group's rules on one page, in the design's order, with each rule's version", () => {
         render(
             <AdminPendingSection
                 {...props({
@@ -273,21 +278,27 @@ describe('Policies', () => {
         expect(within(rules).getAllByRole('row')[2]).toHaveTextContent(
             'Loss reserveShare of fees set aside against defaults.Nonebrs-2.0-gen-r01',
         );
+        expect(screen.queryByRole('tab')).not.toBeInTheDocument();
         expect(
-            screen.queryByText('No rules to show yet.'),
-        ).not.toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent),
+        ).toEqual([
+            'Fees',
+            'Underwriting',
+            'Business eligibility',
+            'Investor eligibility',
+            'KYC requirements',
+            'Compliance & penalties',
+            'Limits',
+        ]);
         expect(
             within(
                 screen.getByRole('table', { name: 'KYC requirements' }),
             ).getAllByRole('row')[1],
         ).toHaveTextContent('Minimum ageYoungest an investor may be.18—');
-
-        fireEvent.click(
-            screen.getByRole('tab', { name: 'Investor eligibility' }),
-        );
-        expect(screen.getByText('No rules to show yet.')).toBeVisible();
+        // Five groups have no rule in this fixture, so each shows its empty state.
+        expect(screen.getAllByText('No rules to show yet.')).toHaveLength(5);
     });
 });
 
