@@ -3501,7 +3501,7 @@ const fr: Catalog = {
     'business.rating.sizing.term': 'Durée et taux retenus',
     'business.rating.sizing.term_value': '{months} mois · {rate} % forfaitaire',
     'business.rating.sizing.explainer':
-        'Votre capacité est ce que la trésorerie conservée chaque mois peut rembourser avec cette marge de sécurité, plafonnée par la plus basse des trois limites ci-dessus. Personne chez Rozine ne fixe ce montant à la main. La marge disponible est cette capacité moins vos titres financés ; chaque nouvelle demande est recalculée sur des relevés récents.',
+        'Votre capacité est ce que la trésorerie conservée chaque mois peut rembourser avec cette marge de sécurité, plafonnée par la plus basse des trois limites ci-dessus. Personne chez Rozine ne fixe ce montant à la main. La marge disponible est cette capacité moins les levées signées depuis ce calcul ; chaque nouvelle demande est recalculée sur des relevés récents.',
     'business.rating.limits': 'Trois limites · la plus basse s’applique',
     'business.rating.limit.cash_flow': 'Ce que votre trésorerie supporte',
     'business.rating.limit.cash_flow_detail':

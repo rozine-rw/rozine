@@ -3348,7 +3348,7 @@ const en = {
     'business.rating.sizing.term': 'Term and rate sized on',
     'business.rating.sizing.term_value': '{months} months · {rate}% flat',
     'business.rating.sizing.explainer':
-        'Your capacity is what the cash your business keeps each month can repay with that margin of safety, capped by the lowest of the three limits above. Nobody at Rozine sets this number by hand. Headroom is that capacity less your funded notes; every new application is sized again on fresh statements.',
+        'Your capacity is what the cash your business keeps each month can repay with that margin of safety, capped by the lowest of the three limits above. Nobody at Rozine sets this number by hand. Headroom is that capacity less the raises you have signed since it was sized; every new application is sized again on fresh statements.',
     'business.rating.limits': 'Three limits · the lowest one applies',
     'business.rating.limit.cash_flow': 'What your cash carries',
     'business.rating.limit.cash_flow_detail':

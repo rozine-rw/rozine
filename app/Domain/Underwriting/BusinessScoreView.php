@@ -14,6 +14,8 @@ use Brick\Math\RoundingMode;
  * underwritten on; capacity is the engine's own sizing rerun without the amount that application
  * asked for, so it reads as what the Business could raise on those facts, never a new decision.
  *
+ * @phpstan-import-type Commitment from AcceptedExposure
+ *
  * @phpstan-type Ratio array{numerator: string, denominator: string}
  * @phpstan-type Money array{currency: string, amount: string}
  */
@@ -51,14 +53,19 @@ final class BusinessScoreView
     /**
      * The three limits on one note are what the cash flow carries at the target cover, the room
      * left under the exposure limit, and the policy maximum; the smallest binds. Capacity is the
-     * engine's offer at that amount, and headroom is what remains of it beside funded notes.
+     * engine's offer at that amount. The quote already counted the commitments accepted before it
+     * in its committed exposure, so headroom deducts only those accepted since: its own raise and
+     * any later one. A quoted commitment released since is not given back, so headroom never
+     * overstates what a new quote would offer.
      *
      * @param  array{cfads: Ratio, exposure_limit: Ratio, committed_exposure: Ratio, remaining_room: Ratio, repeat_projections: list<array{cfads: Ratio}>}  $cashFlow
      * @param  array{percent: string, fraction: Ratio}  $pricing
      * @param  Ratio  $rawCapacity
+     * @param  list<Commitment>  $quoted  the commitments the quote counted
+     * @param  list<Commitment>  $current  the Business's commitments now
      * @return array<string, mixed>
      */
-    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, BigInteger $outstanding): array
+    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, array $quoted, array $current): array
     {
         $cfads = self::rational($cashFlow['cfads']);
         $room = self::rational($cashFlow['remaining_room']);
@@ -72,7 +79,9 @@ final class BusinessScoreView
                 array_map(fn (array $month): BigRational => self::rational($month['cfads']), $cashFlow['repeat_projections']))['offer'];
             $approved = BigInteger::of($offer['principal']['amount'] ?? '0');
         }
-        $headroom = BigInteger::max(0, $approved->minus($outstanding))->quotient(LoanCapacity::ISSUANCE_UNIT)->multipliedBy(LoanCapacity::ISSUANCE_UNIT);
+        $counted = array_column($quoted, 'principal', 'id');
+        $since = BigInteger::sum(0, ...array_column(array_filter($current, fn (array $commitment): bool => ! array_key_exists($commitment['id'], $counted)), 'principal'));
+        $headroom = BigInteger::max(0, $approved->minus($since))->quotient(LoanCapacity::ISSUANCE_UNIT)->multipliedBy(LoanCapacity::ISSUANCE_UNIT);
 
         return ['cash_per_month' => ExactFinancialValue::money(ExactFinancialValue::halfUp($cfads)),
             'target_cover' => (string) BigRational::of(LoanCapacity::TARGET_COVERAGE)->toScale(2), 'term_months' => $termMonths, 'rate_percent' => $pricing['percent'],

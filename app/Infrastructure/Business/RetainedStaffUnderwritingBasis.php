@@ -19,6 +19,7 @@ use RuntimeException;
  * the application its published rating came from; never current release authority.
  *
  * @phpstan-import-type Ratio from BusinessScoreView
+ * @phpstan-import-type Commitment from \App\Domain\Underwriting\AcceptedExposure
  */
 final class RetainedStaffUnderwritingBasis
 {
@@ -32,22 +33,24 @@ final class RetainedStaffUnderwritingBasis
 
     /**
      * The verified scorecard, cash-flow facts, pricing and maximum sizing of an application's
-     * current submission, for its own Business.
+     * current submission, for its own Business, with the accepted commitments that quote counted.
      *
      * @return array{components: array<string, Ratio>, cash_flow: array{cfads: Ratio, exposure_limit: Ratio, committed_exposure: Ratio, remaining_room: Ratio,
-     *     repeat_projections: list<array{cfads: Ratio}>}, pricing: array{percent: string, fraction: Ratio}, raw_capacity: Ratio, term_months: int}
+     *     repeat_projections: list<array{cfads: Ratio}>}, pricing: array{percent: string, fraction: Ratio}, raw_capacity: Ratio, term_months: int,
+     *     accepted_commitments: list<Commitment>}
      */
     public function forBusiness(BusinessApplication $application): array
     {
         $submission = BusinessApplicationSubmission::query()->whereKey($application->current_submission_id)->first()
             ?? throw new RuntimeException('APPLICATION_SUBMISSION_INTEGRITY_FAILED');
-        [$basis, $result, $draft] = $this->verified($application, $submission);
+        [$basis, $result, $draft, $commitments] = $this->verified($application, $submission);
 
         return ['components' => $basis['scorecard']['components'], 'cash_flow' => $result['cash_flow'], 'pricing' => $result['pricing'],
-            'raw_capacity' => $this->ratio(Arr::get($result, 'maximum_capacity.raw_capacity')), 'term_months' => $draft['term_months']];
+            'raw_capacity' => $this->ratio(Arr::get($result, 'maximum_capacity.raw_capacity')), 'term_months' => $draft['term_months'],
+            'accepted_commitments' => $commitments];
     }
 
-    /** @return array{0: array<string, mixed>, 1: array<string, mixed>, 2: array<string, mixed>} */
+    /** @return array{0: array<string, mixed>, 1: array<string, mixed>, 2: array<string, mixed>, 3: list<Commitment>} */
     private function verified(BusinessApplication $application, BusinessApplicationSubmission $submission): array
     {
         $payload = $this->authenticated($submission, 'APPLICATION_SUBMISSION_INTEGRITY_FAILED');
@@ -117,7 +120,7 @@ final class RetainedStaffUnderwritingBasis
             'quote' => ['id' => $quote->id, 'revision' => $quote->revision, 'sha256' => $quote->sha256,
                 'application_revision' => $original['application_revision'], 'evaluated_at' => $original['evaluated_at']],
             'pricing_policy_version' => $original['policy_version'], 'calculation_version' => $original['calculation_version'],
-            'acceptance_policy_version' => $agreement['policy_version'], 'scorecard' => $scorecard], $result, $original['draft']];
+            'acceptance_policy_version' => $agreement['policy_version'], 'scorecard' => $scorecard], $result, $original['draft'], $original['accepted_commitments'] ?? []];
     }
 
     /** @return array<string, mixed> */

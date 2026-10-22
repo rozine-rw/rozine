@@ -306,7 +306,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
                 'financials' => self::financials($evidence, $raised),
                 'factors' => $basis === null ? null : BusinessScoreView::factors($basis['components']),
-                'sizing' => $basis === null ? null : $this->scores->sizing($basis['cash_flow'], $basis['pricing'], $basis['raw_capacity'], $basis['term_months'], $raised),
+                'sizing' => $basis === null ? null : $this->scores->sizing($basis['cash_flow'], $basis['pricing'], $basis['raw_capacity'], $basis['term_months'],
+                    $basis['accepted_commitments'], $this->exposures->current($businessId)),
                 'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
                 'capital' => ['raised' => ['currency' => 'RWF', 'amount' => (string) $raised], 'investors' => count(array_unique($investors)),
                     'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))]];

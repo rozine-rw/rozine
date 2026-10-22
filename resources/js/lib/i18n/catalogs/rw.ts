@@ -3486,7 +3486,7 @@ const rw: Catalog = {
     'business.rating.sizing.term_value':
         'Amezi {months} · {rate}% ku giciro kimwe',
     'business.rating.sizing.explainer':
-        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo inyandiko zawe zatewe inkunga; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
+        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo ibyo wasabye ugasinya kuva bwabarwa; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
     'business.rating.limits': 'Imbibi eshatu · ntoya ni yo ikurikizwa',
     'business.rating.limit.cash_flow': 'Ibyo amafaranga yawe yishyura',
     'business.rating.limit.cash_flow_detail':

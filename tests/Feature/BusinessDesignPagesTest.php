@@ -192,10 +192,10 @@ it('opens Rating over the real Home: pending before a published rating, then the
         ->and(array_map(fn (array $limit): string => $limit['value']['amount'], $sizing['limits']))->toBe([(string) $cashCarries, (string) $room, '100000000'])
         ->and(array_column(array_filter($sizing['limits'], fn (array $limit): bool => $limit['binding']), 'value'))->toBe([['currency' => 'RWF', 'amount' => (string) $ceiling]])
         ->and($sizing['limits'][1]['limit']['amount'])->toBe((string) $ratio($result['cash_flow']['exposure_limit'])->toScale(0, RoundingMode::Floor))
-        // The engine's own offer at that ceiling, in whole issuance units; nothing is funded, so all of it is headroom.
+        // The engine's own offer at that ceiling, in whole issuance units; the quote never counted its own raise, so headroom is what that leaves.
         ->and(BigInteger::of($sizing['approved']['amount'])->isLessThanOrEqualTo($ceiling))->toBeTrue()
         ->and(BigInteger::of($sizing['approved']['amount'])->isGreaterThan($ceiling->minus(5000)))->toBeTrue()
-        ->and($sizing['headroom'])->toBe($sizing['approved'])
+        ->and($sizing['headroom']['amount'])->toBe((string) BigInteger::max(0, BigInteger::of($sizing['approved']['amount'])->minus($result['capacity']['offer']['principal']['amount'])))
         ->and($published['home']['headroom'])->toBe($sizing['headroom']);
 });
 

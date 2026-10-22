@@ -7,6 +7,7 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessExposureReservation;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
@@ -55,9 +56,11 @@ it('offers a released application for publication before anything is listed', fu
     $rating = BusinessApplicationSubmission::query()->whereKey($application->refresh()->current_submission_id)->sole()->payload['public_evidence']['rating'];
     expect($rating)->toBeArray()->and($props['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
     // The sealed report awaiting the Business and the approved application are its two unread notices.
-    // With nothing funded yet, its headroom is all the capacity the engine sized on that application.
+    // Its own accepted raise is the one commitment its quote never counted, so headroom is the capacity it leaves.
     $sizing = $this->actingAs($user)->get(route('business.rating', ['business' => $business]))->assertOk()->viewData('page')['props']['sizing'];
-    expect($props['headroom'])->toBe($sizing['headroom'])->and($sizing['headroom'])->toBe($sizing['approved']);
+    $principal = BusinessExposureReservation::query()->where('business_application_id', $application->id)->sole()->principal;
+    expect($props['headroom'])->toBe($sizing['headroom'])
+        ->and($sizing['headroom']['amount'])->toBe((string) max(0, intdiv((int) $sizing['approved']['amount'] - (int) $principal, 5000) * 5000));
     expect($props)->toMatchArray(['live_raise' => null, 'notes' => [], 'unread_notifications' => 2,
         'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'create_application' => null,
         'today' => [['kind' => 'application_approved', 'title' => $application->refresh()->draft['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],

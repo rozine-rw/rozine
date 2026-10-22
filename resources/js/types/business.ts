@@ -1166,7 +1166,7 @@ export type CapacityLimit = { value: Money; binding: boolean } & (
 /**
  * How the engine sized this business's capacity on the quote its rating came from: the cash it
  * keeps each month, the cover every instalment needs, and the three limits on one note (BRS §4).
- * Headroom is that capacity less its funded notes.
+ * Headroom is that capacity less the raises signed since it was sized.
  */
 export type CapacitySizing = {
     cash_per_month: Money;
