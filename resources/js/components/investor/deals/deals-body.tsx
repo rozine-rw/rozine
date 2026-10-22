@@ -15,7 +15,11 @@ import {
     DeskTopBar,
     PhoneTopBar,
 } from '@/components/investor/deals/deal-top-bar';
-import { canReserve, InvestBar } from '@/components/investor/deals/invest-bar';
+import {
+    canReserve,
+    CartToggle,
+    InvestBar,
+} from '@/components/investor/deals/invest-bar';
 import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { Icon } from '@/components/rozine/icon';
@@ -193,7 +197,6 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const bar = (size: 'phone' | 'desk') =>
         current !== null && (
             <InvestBar
-                cart={cart}
                 deal={current}
                 quote={quote}
                 units={quoted.units}
@@ -229,6 +232,16 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                             index={index}
                             serverTime={props.server_time}
                             onMove={move}
+                            cart={
+                                cart !== null && (
+                                    <CartToggle
+                                        deal={current}
+                                        cart={cart}
+                                        units={quoted.units}
+                                        size="card"
+                                    />
+                                )
+                            }
                         />
                         <IndustryTabs
                             industries={props.industries}

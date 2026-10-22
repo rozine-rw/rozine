@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { DeskCard } from '@/components/investor/deals/desk-card';
 import { SwipeCard } from '@/components/investor/deals/swipe-card';
 import { useTranslation } from '@/hooks/use-translation';
@@ -11,6 +11,11 @@ type DeckProps = {
     index: number;
     serverTime: string;
     onMove: (index: number) => void;
+};
+
+type PhoneDeckProps = DeckProps & {
+    /** The front card's Add to cart, or null where the Investor has no cart. */
+    cart?: ReactNode;
 };
 
 /** Wrap an index into the deck, which loops as the design's does. */
@@ -65,7 +70,13 @@ function NavButton({
  * horizontal drag browses; a tap opens the deal. Save/pass swipes, the feed refresh and the
  * interleaved update cards are engagement extras outside the MVP.
  */
-export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
+export function PhoneDeck({
+    deals,
+    index,
+    serverTime,
+    onMove,
+    cart = null,
+}: PhoneDeckProps) {
     const [drag, setDrag] = useState(0);
     const start = useRef<number | null>(null);
     const moved = useRef(false);
@@ -155,6 +166,7 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
                                 deal={deal}
                                 serverTime={serverTime}
                                 front={front}
+                                cart={front ? cart : null}
                             />
                         </div>
                     );

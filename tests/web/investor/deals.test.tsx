@@ -1301,7 +1301,7 @@ describe('A deck with nothing open to reserve', () => {
 });
 
 describe('Add to cart', () => {
-    it('reads In cart · Remove on a phone for a deal already in the cart and takes it out', async () => {
+    it('reads In cart · Remove on the phone card for a deal already in the cart and takes it out', async () => {
         inertia.queue.push(
             answers({ data: { removed: true, in_cart: false } }),
         );
@@ -1313,9 +1313,7 @@ describe('Add to cart', () => {
             ).getByRole('link', { name: 'In cart' }),
         ).toHaveAttribute('href', '/preview/investor-deals');
 
-        const bar = screen.getByRole('region', {
-            name: 'Invest in GreenLeaf Agro',
-        });
+        const bar = screen.getByRole('article', { name: 'GreenLeaf Agro' });
         const toggle = within(bar).getByRole('button', {
             name: 'In cart · Remove',
         });
@@ -1354,9 +1352,7 @@ describe('Add to cart', () => {
         );
         render(<InvestorDeals {...page} />);
 
-        const bar = screen.getByRole('region', {
-            name: 'Invest in GreenLeaf Agro',
-        });
+        const bar = screen.getByRole('article', { name: 'GreenLeaf Agro' });
         const toggle = within(bar).getByRole('button', {
             name: 'Add to cart',
         });
