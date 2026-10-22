@@ -58,6 +58,20 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
+def rate_limit_diagnostic(deadline):
+    try:
+        timeout = 5 if deadline is None else min(5, deadline - time.monotonic())
+        if timeout <= 0:
+            return
+        response = json.loads(subprocess.check_output(("gh", "api", "rate_limit"), text=True, stderr=subprocess.PIPE, timeout=timeout))
+        core = {key: response["resources"]["core"][key] for key in ("limit", "remaining", "reset")}
+        if any(type(value) is not int or not 0 <= value < 2 ** 63 for value in core.values()):
+            return
+        diagnostic("gh_api_core_quota " + json.dumps(core, sort_keys=True))
+    except Exception:
+        pass
+
+
 def command(*args, timeout=45):
     deadline = _follower_read_deadline.get()
     if deadline is not None:
@@ -84,6 +98,8 @@ def command(*args, timeout=45):
                 }, sort_keys=True))
             except (OSError, ValueError):
                 pass
+            if classification in ("rate_limit", "secondary_rate_limit"):
+                rate_limit_diagnostic(deadline)
         raise
     except subprocess.TimeoutExpired:
         if deadline is not None and time.monotonic() >= deadline:

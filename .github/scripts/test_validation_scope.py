@@ -46,7 +46,7 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
                 policy.command("gh", "api", "private-endpoint")
             self.assertIs(caught.exception, error)
             self.assertEqual(caught.exception.returncode, 7)
-            call.assert_called_once()
+            self.assertEqual(call.call_count, 2 if classification in ("rate_limit", "secondary_rate_limit") else 1)
             self.assertEqual(output.getvalue(), "CI coordination: gh_api_failed " + json.dumps({
                 "classification": classification, "http_status": status, "returncode": 7,
             }, sort_keys=True) + "\n")
@@ -76,6 +76,57 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
                 with self.subTest(stderr=stderr, failure=failure), patch.object(policy.subprocess, "check_output", side_effect=error), patch.object(policy, "diagnostic", side_effect=failure), self.assertRaises(subprocess.CalledProcessError) as caught:
                     policy.command("gh", "api", "private-endpoint")
                 self.assertIs(caught.exception, error)
+
+    def test_rate_limit_observer_whitelists_numeric_core_quota_without_retrying_validation(self):
+        core = {"limit": 5000, "remaining": 0, "reset": 1792648800, "secret": "private-token"}
+        response = json.dumps({"resources": {"core": core}, "secret": "private-token", "headers": {"Authorization": "private-token"}})
+        for message in ("API rate limit exceeded", "secondary rate limit"):
+            error = subprocess.CalledProcessError(1, ["gh", "api", "private-endpoint"], stderr=message + " (HTTP 403)")
+            output, stdout = io.StringIO(), io.StringIO()
+            with self.subTest(message=message), patch.object(policy.subprocess, "check_output", side_effect=[error, response]) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 1)
+            self.assertEqual(call.call_count, 2)
+            self.assertEqual(call.call_args_list[0].args, (("gh", "api", "private-endpoint"),))
+            self.assertEqual(call.call_args_list[1].args, (("gh", "api", "rate_limit"),))
+            self.assertEqual(call.call_args_list[1].kwargs, {"text": True, "stderr": subprocess.PIPE, "timeout": 5})
+            self.assertEqual(output.getvalue().splitlines()[-1], "CI coordination: gh_api_core_quota " + json.dumps({key: core[key] for key in ("limit", "remaining", "reset")}, sort_keys=True))
+            self.assertNotIn("private-token", output.getvalue())
+            self.assertNotIn("private-endpoint", output.getvalue())
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_failed_or_malformed_quota_observer_retains_original_validation_failure(self):
+        cases = [subprocess.CalledProcessError(9, "gh", stderr="private-token"),
+                 subprocess.TimeoutExpired("gh", 5, output="private-token"), "{", "[]", "{}"]
+        cases += [json.dumps({"resources": {"core": {"limit": 5000, "remaining": 0, "reset": value}}})
+                  for value in ("private-token", True, 1.5, -1, 2 ** 63)]
+        for response in cases:
+            error = subprocess.CalledProcessError(7, "gh", stderr="API rate limit exceeded (HTTP 403)")
+            output = io.StringIO()
+            with self.subTest(response=response), patch.object(policy.subprocess, "check_output", side_effect=[error, response]) as call, contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 7)
+            self.assertEqual(call.call_count, 2)
+            self.assertEqual(len(output.getvalue().splitlines()), 1)
+            self.assertNotIn("private-token", output.getvalue())
+
+    def test_quota_observer_never_extends_or_restarts_follower_deadline(self):
+        for observer_now, expected_timeout in ((8, 2), (10, None), (11, None)):
+            token = policy._follower_read_deadline.set(10)
+            try:
+                error = subprocess.CalledProcessError(1, "gh", stderr="API rate limit exceeded (HTTP 403)")
+                with self.subTest(observer_now=observer_now), patch.object(policy.time, "monotonic", side_effect=[7, observer_now]), patch.object(policy.subprocess, "check_output", side_effect=[error, "{}"]) as call, contextlib.redirect_stderr(io.StringIO()), self.assertRaises(subprocess.CalledProcessError) as caught:
+                    policy.command("gh", "api", "private-endpoint")
+                self.assertIs(caught.exception, error)
+                self.assertEqual(call.call_args_list[0].kwargs["timeout"], 3)
+                self.assertEqual(call.call_count, 1 if expected_timeout is None else 2)
+                if expected_timeout is not None:
+                    self.assertEqual(call.call_args_list[1].kwargs["timeout"], expected_timeout)
+                self.assertEqual(policy._follower_read_deadline.get(), 10)
+            finally:
+                policy._follower_read_deadline.reset(token)
 
 
 class ScopeTests(unittest.TestCase):
