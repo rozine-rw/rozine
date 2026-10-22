@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Application\Auditor\DecideAuditReport;
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Auditor\AuditReportWindow;
+use App\Domain\Identity\PartyNoticeKind;
+use App\Models\AuditAssignment;
 use App\Models\AuditReportSeal;
 use App\Models\PartyNotice;
 use App\Models\User;
@@ -170,3 +173,64 @@ it('reminds the partner of a report returned to them', function (): void {
     actingAs($fixture['audit']['staff'])->post($row['links']['remind']['url'])->assertRedirect();
     expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->count())->toBe(1);
 });
+
+it('lists the replacement partner\'s unopened work instead of the withdrawn predecessor report', function (): void {
+    $fixture = AuditSealingFixture::ready(kind: 'monthly');
+    $assignment = AuditAssignment::query()->whereKey($fixture['report']->assignment_id)->firstOrFail();
+    $replacement = AuditAssignmentFixture::make(1)['partners'][0];
+    AuditAssignmentFixture::independence($fixture['audit']['staff'], $fixture['audit']['business'], $replacement['party']->id);
+
+    AuditAssignmentFixture::respond($fixture['user'], $assignment, 'conflict', 'New family relationship.', 'family_or_business');
+    expect($fixture['report']->refresh()->status)->toBe('withdrawn')
+        ->and($assignment->refresh()->party_id)->toBe($replacement['party']->id);
+    AuditAssignmentFixture::respond($replacement['user'], $assignment);
+
+    $row = auditRegister($fixture['audit']['staff'], ['chip' => 'owed'])['rows'][0];
+    expect($row)->toMatchArray(['id' => $assignment->id, 'auditor' => $replacement['user']->name,
+        'status' => 'not_started', 'owes' => 'auditor', 'sealed_at' => null, 'digest' => null, 'licence' => null])
+        ->and($row['links']['pdf'])->toBeNull()->and($row['links']['remind'])->not->toBeNull();
+    actingAs($fixture['audit']['staff'])->post($row['links']['remind']['url'])->assertRedirect();
+    expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->sole()->party_id)->toBe($replacement['party']->id);
+});
+
+it('remembers legacy reminders for their actual recipient and can remind a replacement on the same day', function (): void {
+    $fixture = AuditAssignmentFixture::make(2);
+    $assignment = AuditAssignmentFixture::request($fixture, 'routine');
+    $original = AuditAssignmentFixture::recipient($fixture, $assignment);
+    AuditAssignmentFixture::respond($original['user'], $assignment);
+    $url = route('staff.reports.remind', $assignment->id);
+    $row = auditRegister($fixture['staff'])['rows'][0];
+    app(PartyNotices::class)->record($original['party']->id, PartyNoticeKind::AuditorReportReminder,
+        ['business' => $row['business'], 'kind' => $row['kind'], 'period' => $row['period'], 'due_at' => $row['due_at'], 'assignment_id' => $assignment->id],
+        'staff-audit-reminder:'.$assignment->id.':auditor:'.now('Africa/Kigali')->format('Y-m-d'));
+    expect(auditRegister($fixture['staff'])['rows'][0]['links']['remind'])->toBeNull();
+    actingAs($fixture['staff'])->post($url)->assertRedirect();
+    expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->count())->toBe(1);
+
+    AuditAssignmentFixture::respond($original['user'], $assignment->refresh(), 'conflict', 'New financial interest.', 'financial_interest');
+    $replacement = AuditAssignmentFixture::recipient($fixture, $assignment->refresh());
+    expect($replacement['party']->id)->not->toBe($original['party']->id);
+    AuditAssignmentFixture::respond($replacement['user'], $assignment);
+    $row = auditRegister($fixture['staff'])['rows'][0];
+    expect($row['reminded_at'])->toBeNull()->and($row['links']['remind'])->not->toBeNull();
+
+    actingAs($fixture['staff'])->post($url)->assertRedirect();
+    actingAs($fixture['staff'])->post($url)->assertRedirect();
+    expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->orderBy('id')->pluck('party_id')->all())
+        ->toBe([$original['party']->id, $replacement['party']->id]);
+});
+
+it('refuses a Business reminder once its pending review window has closed', function (int $secondsAfter): void {
+    $fixture = AuditSealingFixture::ready(kind: 'monthly');
+    AuditSealingFixture::seal($fixture);
+    $staff = $fixture['audit']['staff'];
+    $row = auditRegister($staff)['rows'][0];
+    expect($row['owes'])->toBe('business')->and($row['links']['remind'])->not->toBeNull();
+
+    $this->travelTo(now()->parse($row['cosign_by'])->addSeconds($secondsAfter));
+    $closed = auditRegister($staff)['rows'][0];
+    expect($closed)->toMatchArray(['status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => $row['cosign_by']])
+        ->and($closed['links']['remind'])->toBeNull();
+    actingAs($staff)->postJson(route('staff.reports.remind', $fixture['report']->assignment_id))->assertConflict();
+    expect(PartyNotice::query()->where('kind', 'business.report_review_closing')->count())->toBe(0);
+})->with([0, 1]);

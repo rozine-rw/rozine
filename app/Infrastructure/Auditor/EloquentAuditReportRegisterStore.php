@@ -7,12 +7,14 @@ namespace App\Infrastructure\Auditor;
 use App\Application\Auditor\Contracts\AuditReportRegisterStore;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
+use App\Domain\Auditor\MonthlyReportReview;
 use App\Models\AuditAssignment;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -33,7 +35,7 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
     private const array PUBLICATION = ['pending' => 'awaiting_cosign', 'published' => 'published',
         'disputed' => 'disputed', 'escalated' => 'escalated', 'amended' => 'amended'];
 
-    public function __construct(private AuditReportWindow $window) {}
+    public function __construct(private AuditReportWindow $window, private MonthlyReportReview $review) {}
 
     /** @return list<RegisterRow> */
     public function register(DateTimeImmutable $now): array
@@ -74,18 +76,22 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
      */
     private function rows(Collection $assignments, DateTimeImmutable $now): array
     {
-        $reports = AuditReport::query()->whereIn('assignment_id', $assignments->modelKeys())->orderBy('created_at')->orderBy('id')
-            ->get(['id', 'assignment_id', 'status', 'kind'])->keyBy('assignment_id');
+        $reports = AuditReport::query()->join('audit_assignments as current_assignment', fn (JoinClause $join): JoinClause => $join
+            ->on('current_assignment.id', '=', 'audit_reports.assignment_id')
+            ->on('current_assignment.revision', '=', 'audit_reports.assignment_revision')
+            ->on('current_assignment.party_id', '=', 'audit_reports.author_party_id'))
+            ->whereIn('audit_reports.assignment_id', $assignments->modelKeys())->orderBy('audit_reports.created_at')->orderBy('audit_reports.id')
+            ->get(['audit_reports.id', 'audit_reports.assignment_id', 'audit_reports.status', 'audit_reports.kind'])->keyBy('assignment_id');
         $seals = AuditReportSeal::query()->whereIn('audit_report_id', $reports->pluck('id')->all())->get()->keyBy('audit_report_id');
         $publications = DB::table('audit_report_publications')->whereIn('audit_report_id', $reports->pluck('id')->all())
             ->get(['audit_report_id', 'status', 'due_at'])->keyBy('audit_report_id');
         $businesses = DB::table('business_profiles')->whereIn('id', $assignments->pluck('business_id')->all())
-            ->selectRaw("id, profile->>'name' AS name")->pluck('name', 'id');
+            ->selectRaw("id, entity_party_id, profile->>'name' AS name")->get()->keyBy('id');
         $partners = DB::table('users')->whereIn('party_id', $assignments->pluck('party_id')->all())->orderBy('id')
             ->get(['party_id', 'name'])->unique('party_id')->pluck('name', 'party_id');
         $reminders = DB::table('party_notices')->where('event_key', 'like', 'staff-audit-reminder:%')
             ->whereIn(DB::raw("split_part(event_key, ':', 2)"), $assignments->modelKeys())
-            ->selectRaw("split_part(event_key, ':', 2) || ':' || split_part(event_key, ':', 3) AS recipient, max(created_at) AS at")->groupBy('recipient')->pluck('at', 'recipient');
+            ->selectRaw("split_part(event_key, ':', 2) || ':' || split_part(event_key, ':', 3) || ':' || party_id AS recipient, max(created_at) AS at")->groupBy('recipient')->pluck('at', 'recipient');
         $rows = [];
         foreach ($assignments as $assignment) {
             $state = $assignment->state;
@@ -96,16 +102,18 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
             $seal = $report === null ? null : $seals->get($report->id);
             /** @var array{business: array{profile: array{name: string}}, sealed_at: string, report: array{licence: string, findings?: list<array<string, mixed>>}}|null $payload */
             $payload = $seal?->payload;
+            $business = $businesses->get($assignment->business_id);
             $publication = $report === null ? null : $publications->get($report->id);
             $status = self::status($report?->status, $publication?->status, $due, $now);
             $owes = match ($status) {
                 'not_started', 'in_progress', 'overdue', 'returned' => 'auditor',
-                'awaiting_cosign' => $publication?->due_at === null ? null : 'business',
+                'awaiting_cosign' => $publication?->due_at !== null && $this->review->isOpen($publication->status, $publication->due_at, $now) ? 'business' : null,
                 default => null,
             };
-            $reminded = $owes === null ? null : ($reminders[$assignment->id.':'.$owes] ?? null);
+            $recipient = $owes === 'auditor' ? $assignment->party_id : $business?->entity_party_id;
+            $reminded = $owes === null ? null : ($reminders[$assignment->id.':'.$owes.':'.$recipient] ?? null);
             $rows[] = ['assignment_id' => $assignment->id, 'report_id' => $report?->id, 'business_id' => $assignment->business_id,
-                'business' => $payload['business']['profile']['name'] ?? (string) ($businesses[$assignment->business_id] ?? ''),
+                'business' => $payload['business']['profile']['name'] ?? (string) ($business->name ?? ''),
                 'kind' => $state['kind'] === 'routine' ? 'monthly' : 'flash', 'period' => $period,
                 'auditor' => $assignment->party_id === null ? null : (string) ($partners[$assignment->party_id] ?? ''), 'auditor_party_id' => $assignment->party_id,
                 'licence' => $payload['report']['licence'] ?? null, 'status' => $status,

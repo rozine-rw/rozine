@@ -2603,7 +2603,7 @@ const rw: Catalog = {
     'auditor.file.brief.flash.step_4':
         "Huza ibitabo by'impapuro n'inyemezabwishyu na raporo za konti zagenzuwe, ukurikije uburyo bwemeranyijweho bwa ISRS 4400.",
     'auditor.file.brief.monthly.reason':
-        "Buri kwezi igihe noti itararangira, Umugenzuzi agenzura ku kibanza inyandiko z'ubucuruzi agafunga raporo abafite noti bakira mbere y'umunsi wo kwishyura. Funga mbere ya D−3; ubucuruzi buhabwa amasaha 24 yo kwemeza cyangwa kujuririra.",
+        'Buri kwezi igihe noti itararangira, Umugenzuzi agenzura ku kibanza inyandiko z’ubucuruzi. Muri porogaramu ikoreshwa ubu, funga raporo y’ukwezi kwagenzuwe bitarenze impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali). Ubucuruzi buhabwa amasaha 24 yo kwemeza cyangwa kujuririra.',
     'auditor.file.brief.monthly.step_1':
         "Suzuma raporo za konti z'ukwezi ubucuruzi bwashyizeho.",
     'auditor.file.brief.monthly.step_2':
@@ -2611,7 +2611,7 @@ const rw: Catalog = {
     'auditor.file.brief.monthly.step_3':
         "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera.",
     'auditor.file.brief.monthly.step_4':
-        "Funga raporo mbere ya D−3 kugira ngo abafite noti bayakire mbere y'umunsi wo kwishyura.",
+        'Funga bitarenze itariki ntarengwa iri kuri raporo: impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali) muri porogaramu ikoreshwa ubu.',
     'auditor.file.why': 'Impamvu igenzura ryo ku kibanza rikenewe',
     'auditor.file.mandate': 'Ibyo ugomba kugenzura ku kibanza',
     'auditor.file.history': 'Amateka ya dosiye',

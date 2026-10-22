@@ -455,6 +455,12 @@ describe('Auditor business file on the live S-C projection', () => {
                 "Review the month's statements the business uploaded.",
             ),
         ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
+            ),
+        ).toBeInTheDocument();
+        expect(sheet).not.toHaveTextContent('D−3');
     });
 
     it('leaves the brief out when the server names none', () => {

@@ -2618,7 +2618,7 @@ const fr: Catalog = {
     'auditor.file.brief.flash.step_4':
         'Rapprochez les registres papier et les reçus des relevés vérifiés, selon les procédures convenues de la norme ISRS 4400.',
     'auditor.file.brief.monthly.reason':
-        "Chaque mois tant qu'une note est en cours, un Audit Partner contrôle sur place les registres de l'entreprise et scelle un rapport que les détenteurs reçoivent avant le jour de paiement. Scellez avant J−3 ; l'entreprise dispose ensuite de 24 heures pour approuver ou contester.",
+        'Chaque mois tant qu’une note est en cours, un Audit Partner contrôle sur place les registres de l’entreprise. Dans l’application actuelle, scellez le rapport du mois audité au plus tard à la fin du 7 du mois suivant (heure de Kigali). L’entreprise dispose ensuite de 24 heures pour approuver ou contester.',
     'auditor.file.brief.monthly.step_1':
         "Examinez les relevés du mois téléversés par l'entreprise.",
     'auditor.file.brief.monthly.step_2':
@@ -2626,7 +2626,7 @@ const fr: Catalog = {
     'auditor.file.brief.monthly.step_3':
         "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux.",
     'auditor.file.brief.monthly.step_4':
-        'Scellez le rapport avant J−3 pour que les détenteurs le reçoivent avant le jour de paiement.',
+        'Scellez avant l’échéance du rapport : la fin du 7 du mois suivant (heure de Kigali) dans l’application actuelle.',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
     'auditor.file.mandate': 'Ce que vous devez lever sur site',
     'auditor.file.history': 'Historique du dossier',

@@ -2506,7 +2506,7 @@ const en = {
     'auditor.file.brief.flash.step_4':
         'Reconcile the paper ledgers and receipts with the verified statements, following the ISRS 4400 agreed-upon procedures.',
     'auditor.file.brief.monthly.reason':
-        "Every month while a note is outstanding, an Audit Partner checks the business's records in person and seals a report that holders receive before payment day. Seal by D−3; the business then has 24 hours to approve or dispute.",
+        'Every month while a note is outstanding, an Audit Partner checks the business’s records in person. In the current app, seal the audited month’s report by the end of the 7th of the following month (Kigali time). The business then has 24 hours to approve or dispute.',
     'auditor.file.brief.monthly.step_1':
         "Review the month's statements the business uploaded.",
     'auditor.file.brief.monthly.step_2':
@@ -2514,7 +2514,7 @@ const en = {
     'auditor.file.brief.monthly.step_3':
         'Take the required photos with the in-app camera inside the premises geofence.',
     'auditor.file.brief.monthly.step_4':
-        'Seal the report by D−3 so holders receive it before payment day.',
+        'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
     'auditor.file.why': 'Why a field audit is required',
     'auditor.file.mandate': 'What you must clear on site',
     'auditor.file.history': 'File history',
