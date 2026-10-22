@@ -9,7 +9,10 @@ import { formatRwf } from '@/lib/rozine/format';
 import type { Money, RouteLink } from '@/types';
 
 type TopRowProps = {
-    /** Null when the server cannot state the balance: it reads "Unavailable", never a guess. */
+    /**
+     * What is still owed to the partner from their FEE-R02 credits; null when the server cannot
+     * state it, which reads "Unavailable", never a guess.
+     */
     available: Money | null;
     unread: number;
     /** A destination that does not exist yet hides its control. */
@@ -89,7 +92,7 @@ export function TopRow({ available, unread, links }: TopRowProps) {
                 </span>
                 <Balance
                     href={links.statement}
-                    label={t('auditor.home.wallet_balance')}
+                    label={t('auditor.home.wallet_owed')}
                     value={
                         available === null
                             ? t('auditor.home.unavailable')

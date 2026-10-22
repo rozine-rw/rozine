@@ -100,7 +100,7 @@ it('takes the seeded draft through application submission, auditor sealing and B
             await page.getByRole("checkbox", {name:/Secondary paper ledgers/}).click();
             await page.getByRole("button", {name:"Review & seal", exact:true}).click();
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).waitFor();
         }']);
         $deadline = microtime(true) + 35;
@@ -110,7 +110,7 @@ it('takes the seeded draft through application submission, auditor sealing and B
         expect($sealCode)->not->toBe($loginCode);
         $run('auditor', ['run-code', 'async (page) => {
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($sealCode).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             await page.screenshot({path:"audit-sealed-phone.png", fullPage:true});
         }']);

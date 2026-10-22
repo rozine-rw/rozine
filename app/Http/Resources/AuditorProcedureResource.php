@@ -16,7 +16,8 @@ class AuditorProcedureResource extends JsonResource
         /** @var array<string, mixed> $page */
         $page = $this->resource;
         $report = $page['report'];
-        $file = (new AuditorFileResource(['record' => $page['file'], 'jobs' => $page['jobs']]))->resolve($request);
+        // The review step lists the statements on file, as the job file does once the work is the partner's.
+        $file = (new AuditorFileResource(['record' => $page['file'], 'jobs' => $page['jobs'], 'documents' => $page['sources']['documents'] ?? null]))->resolve($request);
         $job = $file['job'];
         $prefix = $request->routeIs('api.*') ? 'api.v1.auditor.' : 'auditor.';
         $placeholder = '00000000-0000-0000-0000-000000000000';

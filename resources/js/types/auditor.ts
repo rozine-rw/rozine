@@ -502,11 +502,13 @@ export type EligibleJob = {
 export type MonthlyWindow = {
     id: string;
     note_title: string;
-    note_id: string;
+    /** A short note reference, or null when none is published: no raw record ID is shown. */
+    note_id: string | null;
     business: string;
-    /** First day of the audited month, ISO 8601. */
-    month: string;
-    open: RouteAction;
+    /** First day of the audited month, ISO 8601; null when the server cannot state it. */
+    month: string | null;
+    /** The job file, where the audit is opened. */
+    link: RouteLink;
 };
 
 export type MonthlyReportStatus =
@@ -518,14 +520,31 @@ export type MonthlyReportStatus =
 export type MonthlyReportCard = {
     id: string;
     business: string;
-    sector: SectorCode;
+    /** Null when the Business industry matches no sector. */
+    sector: SectorCode | null;
     note_title: string;
-    due_on: string;
+    /** When the report must be sealed; null when the server cannot state it. */
+    due_on: string | null;
     status: MonthlyReportStatus;
-    inflow: Money;
-    outflow: Money;
+    /** Null while the server does not state the month's cash flow on this card. */
+    inflow: Money | null;
+    outflow: Money | null;
     /** Liquidity cover from the statements, formatted: "1.3". */
     cover: string | null;
+    link: RouteLink;
+};
+
+/** A sealed monthly report the Business disputed, read-only until Rozine resolves it. */
+export type DeskReview = {
+    id: string;
+    business: string;
+    /** First day of the audited month, ISO 8601; null when the server cannot state it. */
+    month: string | null;
+    status: 'disputed' | 'escalated';
+    /** The weighted variance the seal recorded, percent to one decimal; null with nothing to weigh. */
+    variance_pct: string | null;
+    /** How many proof originals the Business filed with its dispute. */
+    proofs: number;
     link: RouteLink;
 };
 
@@ -593,6 +612,8 @@ export type AuditorJobsProps = AuditorPageContract &
         monthly: {
             windows: MonthlyWindow[];
             reports: MonthlyReportCard[];
+            /** Disputed reports, read-only under Rozine's desk review (BRS AUD-R06). */
+            desk_reviews: DeskReview[];
         } | null;
         /**
          * The server's labelled reasons for declining an offer. The page shows each `label` as sent and
@@ -614,11 +635,13 @@ export type AuditorJobsProps = AuditorPageContract &
 /* Business file (MVP-AUDITOR-SCR-02, design step 0 L1038–1093)                                 */
 /* ------------------------------------------------------------------------------------------ */
 
+/** A statement the business submitted: its format, the Kigali day it arrived and, once its text was extracted, how many records it held. */
 export type FileDocument = {
-    name: string;
-    detail: string;
-    status: 'parsed' | 'verified' | 'present' | 'missing';
-    kind: 'statement' | 'registry' | 'identity' | 'pitch' | 'photos';
+    kind: 'statement';
+    format: 'pdf' | 'csv';
+    status: 'parsed' | 'present';
+    received_on: string;
+    records: number | null;
 };
 
 /**
@@ -642,10 +665,11 @@ export type BusinessFile = {
      * pre-screen result is published.
      */
     prescreen: { label: string; detail: string; result: 'met' | 'flag' }[];
-    /** Why the engine sent this case to the field; null until a public reason is persisted. */
-    reason: string | null;
-    /** The procedure version's agreed steps for the visit, in order; empty until published (S-D). */
-    mandate: string[];
+    /**
+     * Which rules the visit answers (BRS v2.0 AUD-R03/R07 for a Flash Audit, AUD-R04 for a monthly
+     * visit): the app states why it is needed and what it must clear. Null shows neither.
+     */
+    brief: 'flash' | 'monthly' | null;
     history: {
         last_audit: {
             on: string;
@@ -1180,11 +1204,26 @@ export type EarningLine = {
  * `month` (its first day) and ever, and that month's credits, newest first. The 25% share of the
  * earnings fee arrives with Investor payouts, which no read serves yet.
  */
+/** A raise the partner audited that has not funded: live while it takes commitments, failed once it closed unfunded. */
+export type ManagedRaise = {
+    campaign_id: string;
+    business: string;
+    title: string;
+    status: 'live' | 'failed';
+    raised: Money;
+    target: Money;
+    investors: number;
+};
+
 export type AuditorEarnings = {
     month: string;
     this_month: Money;
     total: Money;
     lines: EarningLine[];
+    /** How many funded raises have credited the partner; none has closed while repayment is unrecorded. */
+    deals: number;
+    /** Every credit, newest first: the raises the partner manages. */
+    managed: EarningLine[];
 };
 
 /**
@@ -1224,6 +1263,8 @@ export type AuditorPortfolioProps = AuditorPageContract & {
         declare: RouteAction;
     };
     earnings: AuditorEarnings;
+    /** Unfunded raises on applications whose Flash Audit the partner sealed, newest first. */
+    raising: ManagedRaise[];
     outcome: AuditorOutcome | null;
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;

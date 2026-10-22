@@ -196,7 +196,7 @@ describe('Seal — findings and preview', () => {
 
         await user.click(
             within(sheet).getByRole('button', {
-                name: 'Confirm with your authenticator',
+                name: 'Re-authenticate to seal',
             }),
         );
         expect(
@@ -420,13 +420,13 @@ describe('Seal — the note is saved before the preview', () => {
         );
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm with your authenticator',
+                name: 'Re-authenticate to seal',
             }),
         );
         await user.click(codeField());
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         await waitFor(() => expect(inertia.calls).toHaveLength(3));
@@ -485,7 +485,7 @@ describe('Seal — the note is saved before the preview', () => {
         );
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm with your authenticator',
+                name: 'Re-authenticate to seal',
             }),
         );
         expect(codeField()).toHaveValue('');
@@ -503,7 +503,7 @@ describe('Seal — the note is saved before the preview', () => {
         );
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm with your authenticator',
+                name: 'Re-authenticate to seal',
             }),
         );
         expect(within(findings()).getByRole('timer')).toBeInTheDocument();
@@ -632,7 +632,7 @@ describe('Seal — a source changed after the preview', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         await waitFor(() =>
@@ -677,7 +677,7 @@ describe('Seal — authenticator step-up', () => {
         ).toBeInTheDocument();
 
         const submit = within(sheet).getByRole('button', {
-            name: 'Seal & submit to Rozine',
+            name: 'Apply ICPAR licence seal',
         });
 
         expect(submit).toBeDisabled();
@@ -752,7 +752,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('111111');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -764,7 +764,7 @@ describe('Seal — authenticator step-up', () => {
         await user.click(codeField());
         await user.paste('222222');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
         /* A 422 that does not name the code is not a wrong code. */
         await waitFor(() =>
@@ -785,7 +785,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -806,7 +806,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         await waitFor(() =>
@@ -838,7 +838,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         await waitFor(() => expect(inertia.reloads).toEqual([undefined]));
@@ -881,7 +881,9 @@ describe('Seal — authenticator step-up', () => {
 
             await user.paste('123456');
             await user.click(
-                screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+                screen.getByRole('button', {
+                    name: 'Apply ICPAR licence seal',
+                }),
             );
 
             expect(await screen.findByRole('alert')).toHaveTextContent(text);
@@ -901,7 +903,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(
@@ -925,7 +927,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -943,7 +945,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(await within(findings()).findByRole('timer')).toHaveTextContent(
@@ -966,7 +968,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(await within(findings()).findByRole('timer')).toHaveTextContent(
@@ -983,7 +985,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         /* Beside the note, and in the open sheet, which covers the note. */
@@ -1008,7 +1010,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(
@@ -1022,7 +1024,7 @@ describe('Seal — authenticator step-up', () => {
 
         await user.paste('123456');
         await user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
 
         expect(
@@ -1035,7 +1037,7 @@ describe('Seal — authenticator step-up', () => {
         );
         expect(inertia.calls[2].body).toEqual({ command: 'audit.seal' });
         expect(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         ).toBeDisabled();
     });
 });
@@ -1053,13 +1055,13 @@ describe('Seal — a confirmation withdrawn while its code is checked', () => {
         );
         await view.user.click(
             screen.getByRole('button', {
-                name: 'Confirm with your authenticator',
+                name: 'Re-authenticate to seal',
             }),
         );
         await view.user.click(codeField());
         await view.user.paste('123456');
         await view.user.click(
-            screen.getByRole('button', { name: 'Seal & submit to Rozine' }),
+            screen.getByRole('button', { name: 'Apply ICPAR licence seal' }),
         );
         await waitFor(() => expect(inertia.calls).toHaveLength(1));
 

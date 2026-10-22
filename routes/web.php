@@ -46,6 +46,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffActivityController;
 use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
+use App\Http\Controllers\StaffAuditReportController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
 use App\Http\Controllers\StaffComplaintController;
 use App\Http\Controllers\StaffCoverageController;
@@ -296,6 +297,12 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
 
 Route::get('admin/notes', StaffNotesController::class)
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.notes.index');
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/reports')->name('staff.reports.')->group(function (): void {
+    Route::get('/', [StaffAuditReportController::class, 'index'])->name('index');
+    Route::post('{assignment}/remind', [StaffAuditReportController::class, 'remind'])->whereUlid('assignment')->name('remind');
+    Route::get('{report}/pdf', [StaffAuditReportController::class, 'pdf'])->whereUlid('report')->name('pdf');
+});
 
 Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn('section', array_keys(StaffSectionController::SECTIONS))
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.sections.show');

@@ -58,6 +58,26 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
+def api_failure_headers(detail):
+    headers, awaiting_response, reading_headers = {}, False, False
+    for line in detail.splitlines():
+        if line.startswith("* Request to "):
+            headers, awaiting_response, reading_headers = {}, True, False
+        elif awaiting_response and re.fullmatch(r"< HTTP/\S+ [1-5][0-9]{2}(?: .*)?", line):
+            awaiting_response, reading_headers = False, True
+        elif reading_headers:
+            if not line.startswith("< "):
+                reading_headers = False
+                continue
+            number = re.fullmatch(r"< (x-ratelimit-(?:limit|remaining|reset)|retry-after): ([0-9]{1,19})", line, re.IGNORECASE)
+            resource = re.fullmatch(r"< x-ratelimit-resource: (core|search|graphql|code_search|integration_manifest)", line, re.IGNORECASE)
+            if number and int(number[2]) < 2 ** 63:
+                headers[number[1].lower()] = int(number[2])
+            elif resource:
+                headers["x-ratelimit-resource"] = resource[1].lower()
+    return headers
+
+
 def command(*args, timeout=45):
     deadline = _follower_read_deadline.get()
     if deadline is not None:
@@ -65,8 +85,30 @@ def command(*args, timeout=45):
         if remaining <= 0:
             raise CoordinationRefusal("follower_decision_publication_timeout")
         timeout = min(timeout, remaining)
+    options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
     try:
-        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
+        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout, **options).strip()
+    except subprocess.CalledProcessError as error:
+        if args[:2] == ("gh", "api"):
+            detail = error.stderr if isinstance(error.stderr, str) else ""
+            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
+            classification = next((label for phrase, label in (
+                ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
+                ("bad credentials", "bad_credentials"),
+                ("resource not accessible by integration", "integration_access_denied"),
+                ("personal access token", "personal_token_access_denied"),
+            ) if phrase in detail.lower()), "http_error" if status else "unclassified")
+            try:
+                diagnostic("gh_api_failed " + json.dumps({
+                    "classification": classification,
+                    "http_status": int(status[1]) if status else None, "returncode": error.returncode,
+                }, sort_keys=True))
+                headers = api_failure_headers(detail)
+                if headers:
+                    diagnostic("gh_api_response_quota " + json.dumps(headers, sort_keys=True))
+            except (OSError, ValueError):
+                pass
+        raise
     except subprocess.TimeoutExpired:
         if deadline is not None and time.monotonic() >= deadline:
             raise CoordinationRefusal("follower_decision_publication_timeout") from None
