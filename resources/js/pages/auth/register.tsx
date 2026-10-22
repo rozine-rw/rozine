@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTranslation } from '@/hooks/use-translation';
-import { audienceQuery, authBranding } from '@/lib/rozine/auth-branding';
+import { audienceQuery, authBranding } from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { AuthAudience } from '@/types';
