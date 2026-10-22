@@ -29,7 +29,7 @@ class StaffInvestorDirectoryController extends Controller
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all'|'verified'|'pending'|'kyc_overdue'|'frozen'|'restricted' $chip */
         $chip = (string) $request->validated('chip', 'all');
-        /** @var 'portfolio'|'name' $sort */
+        /** @var 'portfolio'|'holdings'|'wallet'|'name' $sort */
         $sort = (string) $request->validated('sort', 'portfolio');
         $search = trim((string) $request->validated('q', ''));
         $verification = $request->validated('verification');

@@ -123,6 +123,13 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
             ->where('chips.2', ['key' => 'pending', 'count' => 1, 'link' => ['url' => '/admin/investors?q=aline&sort=name&chip=pending', 'method' => 'get'], 'active' => true])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Aline Uwase')
             ->where('directory.rows.0.link.url', '/admin/investors?q=aline&sort=name&chip=pending&investor='.$waiting->party_id));
+    foreach (['holdings', 'wallet'] as $sort) {
+        $this->actingAs($this->officer)->get(route('staff.investors.index', ['sort' => $sort]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('filters.0.value', $sort)
+                ->where('filters.0.options', fn (Collection $options): bool => $options->pluck('value')->all() === ['portfolio', 'holdings', 'wallet', 'name']));
+    }
+    $this->actingAs($this->officer)->get(route('staff.investors.index', ['sort' => 'holdings']))
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.id', $holder->party_id));
     foreach (['verified' => 2, 'restricted' => 1, 'kyc_overdue' => 0, 'frozen' => 0] as $chip => $count) {
         $this->actingAs($this->officer)->get(route('staff.investors.index', ['chip' => $chip]))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('total', $count));

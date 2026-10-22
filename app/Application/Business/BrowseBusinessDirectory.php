@@ -21,7 +21,7 @@ final class BrowseBusinessDirectory
 
     /**
      * @param  'all'  $chip
-     * @param  'raised'|'name'  $sort
+     * @param  'raised'|'active_notes'|'investors'|'name'  $sort
      * @return Directory
      */
     public function directory(int $actorId, string $chip, string $sort, string $sector, string $search, int $limit): array
