@@ -38,7 +38,7 @@ function registerStaff(array $roles): User
 
 /**
  * @param  array<string, string>  $query
- * @return array{stats: list<array{key: string, value: mixed}>, chips: list<array{key: string, count: int, link: mixed}>, rows: list<array<string, mixed>>} the register page's props
+ * @return array{stats: list<array{key: string, value: mixed}>, chips: list<array{key: string, count: int, link: mixed}>, rows: list<array<string, mixed>>, published: list<array<string, mixed>>} the register page's props
  */
 function auditRegister(User $user, array $query = []): array
 {
