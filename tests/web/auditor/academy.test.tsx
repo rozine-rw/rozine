@@ -128,6 +128,40 @@ describe('Auditor Academy', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
+    it('teaches the current calendar deadline and accepts its date in the quick check', () => {
+        render(<AuditorProfile {...props()} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Browse all lessons' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: /The monthly cycle/u }),
+        );
+
+        const lesson = screen.getByRole('region', {
+            name: 'The monthly cycle',
+        });
+        expect(lesson).toHaveTextContent(
+            'by the end of the 7th of the following month (Kigali time)',
+        );
+        expect(lesson).not.toHaveTextContent('D−3');
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        expect(lesson).toHaveTextContent('September’s monthly audit');
+        fireEvent.click(screen.getByRole('button', { name: '7 October' }));
+        expect(screen.getByRole('status')).toHaveTextContent('Correct');
+
+        fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+        expect(lesson).toHaveTextContent(
+            'uses the same deadline for your on-time record',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'The audit is overdue and a later seal counts as late',
+            }),
+        );
+        expect(screen.getByRole('status')).toHaveTextContent('Correct');
+    });
+
     it('teaches the BRS figures, not the older design copy', () => {
         const copy = LESSONS.flatMap((lesson) =>
             [1, 2].flatMap((topic) =>

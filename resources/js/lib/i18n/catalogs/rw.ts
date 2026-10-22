@@ -6599,25 +6599,27 @@ const rw: Catalog = {
     'auditor.academy.lesson.numbers.topic2.option2': '1.50',
     'auditor.academy.lesson.numbers.topic2.option3': '1.25',
     'auditor.academy.lesson.cycle.title': 'Uruziga rwa buri kwezi',
-    'auditor.academy.lesson.cycle.sub': 'Kuva ku munsi D−10 kugeza kuri raporo',
-    'auditor.academy.lesson.cycle.topic1.title': 'D−10 kugeza D−3',
+    'auditor.academy.lesson.cycle.sub': 'Igihe porogaramu ikoresha ubu',
+    'auditor.academy.lesson.cycle.topic1.title':
+        'Bitarenze ku ya 7, ku isaha ya Kigali',
     'auditor.academy.lesson.cycle.topic1.body':
-        'Bibarwa uhereye ku munsi wo kwishyura D wa buri nyandiko: ubucuruzi bwohereza inyandiko zabwo bitarenze D−10, ukagenzura imbonankubone ugafunga raporo hagati ya D−10 na D−3, maze bitarenze D−1 raporo ifunze ikagera kuri buri wese uyifite.',
+        'Muri porogaramu ikoreshwa ubu, funga raporo ya buri kwezi kwagenzuwe bitarenze impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali). Kurikiza itariki ntarengwa iri kuri raporo; ntihindukana n’umunsi wo kwishyura inyandiko y’umwenda.',
     'auditor.academy.lesson.cycle.topic1.q':
-        'Inyandiko y’umwenda yishyurwa ku itariki ya 18. Ugomba gufunga raporo bitarenze ryari?',
-    'auditor.academy.lesson.cycle.topic1.option1': 'Ku ya 15',
-    'auditor.academy.lesson.cycle.topic1.option2': 'Ku ya 17',
-    'auditor.academy.lesson.cycle.topic1.option3': 'Ku ya 18',
-    'auditor.academy.lesson.cycle.topic2.title': 'Inyandiko n’ifunga byatinze',
+        'Muri porogaramu ikoreshwa ubu, raporo y’igenzura rya Nzeri igomba gufungwa bitarenze iyihe tariki?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Ku ya 7 Ukwakira',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Ku ya 15 Ukwakira',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Ku ya 18 Ukwakira',
+    'auditor.academy.lesson.cycle.topic2.title': 'Igihe igenzura ryatinze',
     'auditor.academy.lesson.cycle.topic2.body':
-        'Iyo inyandiko zitoherejwe bitarenze D−10, ubucuruzi bwibutswa buri munsi kandi nawe ukamenyeshwa. Gufunga nyuma ya D−3 byandikwa nk’ibyatinze kandi bikamenyeshwa CMA. Raporo itabonetse ubwayo ntiba ukunanirwa kwishyura.',
+        'Porogaramu ikoreshwa ubu igaragaza ko igenzura rya buri kwezi ritarafungwa ryatinze iyo igihe cyagenwe kirangiye. Iyo tariki ni na yo ikoreshwa mu kubara uko urangiza ku gihe. Raporo ibuze yonyine ntituma inyandiko y’umwenda ifatwa nk’iyananiwe kwishyurwa.',
     'auditor.academy.lesson.cycle.topic2.q':
-        'Ubucuruzi ntibwohereje inyandiko bitarenze D−10. Bigenda bite?',
+        'Igihe ntarengwa cyo gufunga raporo y’ukwezi kirangiye utarayifunga. Ni iki gihinduka?',
     'auditor.academy.lesson.cycle.topic2.option1':
-        'Inyandiko ifatwa nk’itarishyuwe',
+        'Inyandiko ihita ifatwa nk’iyananiwe kwishyurwa',
     'auditor.academy.lesson.cycle.topic2.option2':
-        'Kwibutswa buri munsi, nawe ukamenyeshwa',
-    'auditor.academy.lesson.cycle.topic2.option3': 'Ufunga raporo nta nyandiko',
+        'Igenzura riratinze kandi gufunga nyuma yaho bibarwa nk’ubukererwe',
+    'auditor.academy.lesson.cycle.topic2.option3':
+        'Itariki ntarengwa ikurikira umunsi wo kwishyura',
     'auditor.academy.lesson.disputes.title': 'Kwemeza no kujurira',
     'auditor.academy.lesson.disputes.sub': 'Ibikurikira nyuma yo gufunga',
     'auditor.academy.lesson.disputes.topic1.title': 'Amasaha 24 yo gusubiza',

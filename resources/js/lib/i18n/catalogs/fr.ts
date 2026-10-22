@@ -6637,26 +6637,27 @@ const fr: Catalog = {
     'auditor.academy.lesson.numbers.topic2.option2': '1,50',
     'auditor.academy.lesson.numbers.topic2.option3': '1,25',
     'auditor.academy.lesson.cycle.title': 'Le cycle mensuel',
-    'auditor.academy.lesson.cycle.sub': 'De J−10 au rapport',
-    'auditor.academy.lesson.cycle.topic1.title': 'J−10 à J−3',
+    'auditor.academy.lesson.cycle.sub': 'La fenêtre calendaire actuelle',
+    'auditor.academy.lesson.cycle.topic1.title':
+        'Au plus tard le 7, heure de Kigali',
     'auditor.academy.lesson.cycle.topic1.body':
-        'À partir de l’échéance J de chaque note : l’entreprise dépose ses registres avant J−10, vous vérifiez sur place et scellez entre J−10 et J−3, et à J−1 le rapport scellé parvient à chaque détenteur.',
+        'Dans l’application actuelle, scellez le rapport de chaque mois audité au plus tard à la fin du 7 du mois suivant (heure de Kigali). Suivez l’échéance affichée sur le rapport ; elle ne se déplace pas avec le jour de paiement d’une note.',
     'auditor.academy.lesson.cycle.topic1.q':
-        'Une note est due le 18. Avant quand devez-vous sceller ?',
-    'auditor.academy.lesson.cycle.topic1.option1': 'Le 15',
-    'auditor.academy.lesson.cycle.topic1.option2': 'Le 17',
-    'auditor.academy.lesson.cycle.topic1.option3': 'Le 18',
-    'auditor.academy.lesson.cycle.topic2.title':
-        'Registres et scellements en retard',
+        'Dans l’application actuelle, avant quelle date faut-il sceller l’audit mensuel de septembre ?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Le 7 octobre',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Le 15 octobre',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Le 18 octobre',
+    'auditor.academy.lesson.cycle.topic2.title': 'Quand un audit est en retard',
     'auditor.academy.lesson.cycle.topic2.body':
-        'Si les registres ne sont pas déposés avant J−10, l’entreprise reçoit des rappels quotidiens et vous êtes prévenu. Un scellement après J−3 est enregistré en retard et alerte la CMA. Un rapport manquant n’est jamais à lui seul un défaut.',
+        'L’application actuelle marque un audit mensuel non scellé en retard après la fermeture de cette fenêtre et utilise la même échéance pour votre taux de ponctualité. Un rapport manquant ne met pas à lui seul la note en défaut.',
     'auditor.academy.lesson.cycle.topic2.q':
-        'L’entreprise n’a rien déposé à J−10. Que se passe-t-il ?',
-    'auditor.academy.lesson.cycle.topic2.option1': 'La note est en défaut',
+        'L’échéance mensuelle de scellement passe avant que vous scelliez. Qu’est-ce qui change ?',
+    'auditor.academy.lesson.cycle.topic2.option1':
+        'La note est automatiquement en défaut',
     'auditor.academy.lesson.cycle.topic2.option2':
-        'Des rappels quotidiens, et vous êtes prévenu',
+        'L’audit est en retard et un scellement ultérieur compte comme tardif',
     'auditor.academy.lesson.cycle.topic2.option3':
-        'Vous scellez sans les registres',
+        'L’échéance suit plutôt le jour du paiement',
     'auditor.academy.lesson.disputes.title': 'Approbations et contestations',
     'auditor.academy.lesson.disputes.sub': 'Ce qui suit le scellement',
     'auditor.academy.lesson.disputes.topic1.title': '24 heures pour répondre',

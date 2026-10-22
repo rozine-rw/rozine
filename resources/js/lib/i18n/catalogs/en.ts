@@ -6380,25 +6380,26 @@ const en = {
     'auditor.academy.lesson.numbers.topic2.option2': '1.50',
     'auditor.academy.lesson.numbers.topic2.option3': '1.25',
     'auditor.academy.lesson.cycle.title': 'The monthly cycle',
-    'auditor.academy.lesson.cycle.sub': 'From D−10 to the report',
-    'auditor.academy.lesson.cycle.topic1.title': 'D−10 to D−3',
+    'auditor.academy.lesson.cycle.sub': 'The current calendar window',
+    'auditor.academy.lesson.cycle.topic1.title': 'By the 7th, in Kigali time',
     'auditor.academy.lesson.cycle.topic1.body':
-        'Counted from each note’s due date D: the business uploads its records by D−10, you verify in person and seal between D−10 and D−3, and by D−1 the sealed report reaches every holder.',
+        'In the current app, seal each audited month’s report by the end of the 7th of the following month (Kigali time). Use the due date shown on the report; it does not move with a note’s payment day.',
     'auditor.academy.lesson.cycle.topic1.q':
-        'A note is due on the 18th. By when must you seal?',
-    'auditor.academy.lesson.cycle.topic1.option1': 'The 15th',
-    'auditor.academy.lesson.cycle.topic1.option2': 'The 17th',
-    'auditor.academy.lesson.cycle.topic1.option3': 'The 18th',
-    'auditor.academy.lesson.cycle.topic2.title': 'Late records, late seals',
+        'In the current app, September’s monthly audit must be sealed by which date?',
+    'auditor.academy.lesson.cycle.topic1.option1': '7 October',
+    'auditor.academy.lesson.cycle.topic1.option2': '15 October',
+    'auditor.academy.lesson.cycle.topic1.option3': '18 October',
+    'auditor.academy.lesson.cycle.topic2.title': 'When an audit is late',
     'auditor.academy.lesson.cycle.topic2.body':
-        'If records are not uploaded by D−10, the business gets daily reminders and you are notified. A seal after D−3 is logged as late and alerts the CMA. A missing report is never a default on its own.',
+        'The current app marks an unsealed monthly audit overdue after that window closes and uses the same deadline for your on-time record. A missing report does not by itself make the note default.',
     'auditor.academy.lesson.cycle.topic2.q':
-        'The business has not uploaded by D−10. What happens?',
-    'auditor.academy.lesson.cycle.topic2.option1': 'The note defaults',
+        'The monthly seal deadline passes before you seal. What changes?',
+    'auditor.academy.lesson.cycle.topic2.option1':
+        'The note automatically defaults',
     'auditor.academy.lesson.cycle.topic2.option2':
-        'Daily reminders, and you are notified',
+        'The audit is overdue and a later seal counts as late',
     'auditor.academy.lesson.cycle.topic2.option3':
-        'You seal without the records',
+        'The deadline follows payment day instead',
     'auditor.academy.lesson.disputes.title': 'Approvals and disputes',
     'auditor.academy.lesson.disputes.sub': 'What happens after you seal',
     'auditor.academy.lesson.disputes.topic1.title': '24 hours to respond',
