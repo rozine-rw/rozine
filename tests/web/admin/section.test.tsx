@@ -625,4 +625,48 @@ describe('App Control', () => {
             'Auditor AppOnlineFlash Audits (24h) · Live',
         );
     });
+
+    it('lists the businesses that raised most, rated or not, with nothing to edit', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    content: [
+                        {
+                            key: 'b1',
+                            type: 'business',
+                            name: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.2' },
+                            state: 'active',
+                        },
+                        {
+                            key: 'b2',
+                            type: 'business',
+                            name: 'Sebeya Logistics',
+                            sector: 'Logistics',
+                            rating: null,
+                            state: 'pending',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Content' }),
+        ).getAllByRole('row');
+
+        expect(rows[1]).toHaveTextContent(
+            'BusinessGreenLeaf Agro · Agriculture · Strong 4.2Active',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'BusinessSebeya Logistics · Logistics · Not rated yetPending verification',
+        );
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Content' }),
+            ).queryAllByRole('button'),
+        ).toEqual([]);
+    });
 });

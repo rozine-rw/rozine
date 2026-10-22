@@ -1294,6 +1294,10 @@ const en = {
     'admin.design.app_control.content.sub':
         'Items across the Investor, Business and Auditor apps.',
     'admin.design.app_control.content.empty': 'No content to show yet.',
+    'admin.design.app_control.type.business': 'Business',
+    'admin.design.app_control.unrated': 'Not rated yet',
+    'admin.design.app_control.content_state.active': 'Active',
+    'admin.design.app_control.content_state.pending': 'Pending verification',
     'admin.design.engines.tab.sizing': 'Sizing',
     'admin.design.engines.tab.refinance': 'Refinance',
     'admin.design.engines.tab.queue': 'The queue',
