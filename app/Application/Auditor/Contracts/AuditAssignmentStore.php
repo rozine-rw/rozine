@@ -62,6 +62,18 @@ interface AuditAssignmentStore
     public function withAccepted(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed;
 
     /**
+     * Read-only authority over the partner's own accepted or completed assignment. A completed
+     * assignment is held at the revision it was accepted under, so the reports bound to it still
+     * resolve. Commands keep withAccepted.
+     *
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment): TResult  $operation
+     * @return TResult
+     */
+    public function withAssigned(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed;
+
+    /**
      * Source validity only; does not grant access. The caller holds current Business authority.
      *
      * @param  AcceptedAssignment  $assignment
