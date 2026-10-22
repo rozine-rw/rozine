@@ -163,6 +163,16 @@ describe('Investor Academy', () => {
         ).toHaveTextContent('Done ✓');
     });
 
+    it('opens the Academy straight away when the deck’s nudge links here', () => {
+        window.location.hash = '#academy';
+        render(<InvestorProfile {...profile()} />);
+        window.location.hash = '';
+
+        expect(
+            screen.getByRole('heading', { name: 'Investor Academy' }),
+        ).toBeInTheDocument();
+    });
+
     it('keeps each signed-in account on its own progress on a shared device', async () => {
         const user = userEvent.setup();
 

@@ -41,7 +41,10 @@ export default function InvestorProfile(props: InvestorProfileProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const [supportRequest, setSupportRequest] = useState(0);
-    const [academy, setAcademy] = useState(false);
+    /* The deck's Academy nudge links here with #academy, which opens the Academy. */
+    const [academy, setAcademy] = useState(
+        () => window.location.hash === '#academy',
+    );
     const [progress, setProgress] = useAcademyProgress();
     const sub =
         props.section === 'overview'

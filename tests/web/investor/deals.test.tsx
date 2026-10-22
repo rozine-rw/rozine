@@ -8,6 +8,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { ACADEMY } from '@/components/investor/profile/academy';
 import InvestorDeal from '@/pages/investor/deal';
 import InvestorDeals from '@/pages/investor/deals';
 import type {
@@ -352,6 +353,123 @@ describe('Deals on a phone', () => {
         expect(screen.getByText('Closing')).toBeInTheDocument();
         expect(screen.getByText('21 days')).toBeInTheDocument();
         expect(screen.getByText('JUST LISTED')).toBeInTheDocument();
+    });
+});
+
+describe('The Academy nudge in the phone deck', () => {
+    const ACADEMY_KEY = 'rozine.investor.academy.v1';
+
+    beforeEach(() => window.localStorage.clear());
+    afterEach(() => window.localStorage.clear());
+
+    it('deals the nudge after the first deal while the Academy is under way, and puts it away for Later', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        render(<InvestorDeals {...deals()} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Invest in GreenLeaf Agro' }),
+        ).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        const nudge = screen.getByRole('region', {
+            name: 'Continue Investor Academy',
+        });
+
+        expect(nudge).toHaveTextContent('Keep learning');
+        expect(nudge).toHaveTextContent(
+            '0 of 8 lessons done. Pick up where you left off.',
+        );
+        expect(
+            within(nudge).getByRole('link', { name: 'Continue' }),
+        ).toHaveAttribute('href', '/preview/investor-profile#academy');
+        // A press on Continue is not the start of a swipe.
+        fireEvent.pointerDown(
+            within(nudge).getByRole('link', { name: 'Continue' }),
+            { clientX: 100 },
+        );
+        fireEvent.pointerUp(nudge);
+        expect(inertia.reload).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('region', { name: /^Invest in/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('navigation', { name: 'Filter by industry' }),
+        ).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+        expect(inertia.reload).toHaveBeenLastCalledWith({
+            only: ['focus', 'quote'],
+            data: { deal: 'cmp_sebeya' },
+        });
+
+        await user.click(screen.getByRole('button', { name: 'Previous deal' }));
+        await user.click(
+            within(
+                screen.getByRole('region', {
+                    name: 'Continue Investor Academy',
+                }),
+            ).getByRole('button', { name: 'Later' }),
+        );
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Invest in Sebeya Logistics' }),
+        ).toBeInTheDocument();
+    });
+
+    it('wraps past the nudge to the last deal, and deals none once every lesson is done', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        const { unmount } = render(<InvestorDeals {...deals()} />);
+
+        await user.click(screen.getByRole('button', { name: 'Previous deal' }));
+        expect(inertia.reload).toHaveBeenLastCalledWith({
+            only: ['focus', 'quote'],
+            data: { deal: 'cmp_inzovu' },
+        });
+        unmount();
+
+        window.localStorage.setItem(
+            ACADEMY_KEY,
+            JSON.stringify(
+                Object.fromEntries(
+                    ACADEMY.flatMap((group) => group.lessons).map((lesson) => [
+                        lesson.key,
+                        lesson.topics.length,
+                    ]),
+                ),
+            ),
+        );
+        render(<InvestorDeals {...deals()} />);
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenLastCalledWith({
+            only: ['focus', 'quote'],
+            data: { deal: 'cmp_sebeya' },
+        });
+    });
+
+    it('deals no nudge without a profile to continue in', async () => {
+        const user = userEvent.setup();
+        const page = deals();
+
+        page.links.profile = null;
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        render(<InvestorDeals {...page} />);
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
     });
 });
 

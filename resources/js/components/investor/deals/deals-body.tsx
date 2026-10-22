@@ -2,7 +2,9 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
+    AcademyNudge,
     DeskDeck,
+    EXTRA_AT,
     PhoneDeck,
     wrapIndex,
 } from '@/components/investor/deals/deal-deck';
@@ -22,6 +24,7 @@ import {
 } from '@/components/investor/deals/invest-bar';
 import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
+import { useAcademyNudge } from '@/components/investor/profile/academy';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
@@ -130,6 +133,9 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
         ),
     );
     const [index, setIndex] = useState(start);
+    const academy = useAcademyNudge();
+    const [nudgeFront, setNudgeFront] = useState(false);
+    const [nudgeLater, setNudgeLater] = useState(false);
     const current = props.deals.length > 0 ? props.deals[index] : null;
     /* Only read beside a deck: an empty list has its own "no deals open" state. */
     const allClosed = !props.deals.some(
@@ -156,6 +162,36 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             data: { deal: props.deals[at].campaign_id },
         });
     };
+
+    /* The phone deck deals the Academy nudge after the first deal while the Academy is under way. */
+    const nudge =
+        !wide && academy !== null && !nudgeLater && props.links.profile !== null
+            ? {
+                  ...academy,
+                  href: {
+                      ...props.links.profile,
+                      url: `${props.links.profile.url}#academy`,
+                  },
+              }
+            : null;
+    const position = nudgeFront
+        ? EXTRA_AT
+        : nudge !== null && index >= EXTRA_AT
+          ? index + 1
+          : index;
+    const moveDeck = (next: number) => {
+        const at = wrapIndex(
+            next,
+            props.deals.length + (nudge === null ? 0 : 1),
+        );
+
+        setNudgeFront(nudge !== null && at === EXTRA_AT);
+
+        if (nudge === null || at !== EXTRA_AT) {
+            move(nudge !== null && at > EXTRA_AT ? at - 1 : at);
+        }
+    };
+    const dealInFront = !(nudge !== null && nudgeFront);
 
     /* The checkout link is the focused deal's, so another card in front waits for its focus. */
     const checkout =
@@ -229,9 +265,22 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         )}
                         <PhoneDeck
                             deals={props.deals}
-                            index={index}
+                            index={position}
                             serverTime={props.server_time}
-                            onMove={move}
+                            onMove={moveDeck}
+                            extra={
+                                nudge === null ? null : (
+                                    <AcademyNudge
+                                        done={nudge.done}
+                                        total={nudge.total}
+                                        href={nudge.href}
+                                        onLater={() => {
+                                            setNudgeLater(true);
+                                            setNudgeFront(false);
+                                        }}
+                                    />
+                                )
+                            }
                             cart={
                                 cart !== null && (
                                     <CartToggle
@@ -243,14 +292,16 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                 )
                             }
                         />
-                        <IndustryTabs
-                            industries={props.industries}
-                            className="shrink-0 gap-4 px-[22px] pt-[26px] pb-px"
-                        />
+                        {dealInFront && (
+                            <IndustryTabs
+                                industries={props.industries}
+                                className="shrink-0 gap-4 px-[22px] pt-[26px] pb-px"
+                            />
+                        )}
                     </>
                 )}
                 <div className="min-h-3 flex-auto" />
-                {bar('phone')}
+                {dealInFront && bar('phone')}
                 {overlay}
             </div>
         );

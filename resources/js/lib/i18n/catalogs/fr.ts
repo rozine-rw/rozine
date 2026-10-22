@@ -4080,6 +4080,11 @@ const fr: Catalog = {
     'support.help.still_body':
         'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
     'support.help.still_action': 'Écrire au support',
+    'investor.deals.nudge.tag': 'Continuez à apprendre',
+    'investor.deals.nudge.title': 'Reprendre l’Académie de l’investisseur',
+    'investor.deals.nudge.body': '{done} leçons terminées sur {total}. Reprenez là où vous vous êtes arrêté.',
+    'investor.deals.nudge.later': 'Plus tard',
+    'investor.deals.nudge.continue': 'Continuer',
     'investor.academy.title': 'Académie de l’investisseur',
     'investor.academy.learning': 'Apprendre',
     'investor.academy.summary_start':

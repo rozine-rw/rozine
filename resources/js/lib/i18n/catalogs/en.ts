@@ -3929,6 +3929,11 @@ const en = {
     'support.help.still_body':
         'Message us. We acknowledge every message within 4 hours.',
     'support.help.still_action': 'Message support',
+    'investor.deals.nudge.tag': 'Keep learning',
+    'investor.deals.nudge.title': 'Continue Investor Academy',
+    'investor.deals.nudge.body': '{done} of {total} lessons done. Pick up where you left off.',
+    'investor.deals.nudge.later': 'Later',
+    'investor.deals.nudge.continue': 'Continue',
     'investor.academy.title': 'Investor Academy',
     'investor.academy.learning': 'Learning',
     'investor.academy.summary_start': 'Learn how Rozine notes work',
