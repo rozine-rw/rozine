@@ -327,6 +327,7 @@ describe('Party directories', () => {
                 actor: 'A. Diane',
                 target: 'Jean-Paul M.',
                 action: 'staff_suspended',
+                role: null,
                 reason: 'On leave until November.',
             },
             {
@@ -335,7 +336,17 @@ describe('Party directories', () => {
                 actor: 'Server console',
                 target: 'Eric Ndoli',
                 action: 'staff_enabled',
+                role: null,
                 reason: 'Joined operations.',
+            },
+            {
+                id: 'log-3',
+                at: fixture.server_time,
+                actor: 'A. Diane',
+                target: 'Eric Kamanzi',
+                action: 'staff_granted',
+                role: 'treasury',
+                reason: 'Joins the treasury desk.',
             },
         ];
         const { unmount } = render(<AdminParties {...fixture} />);
@@ -347,6 +358,7 @@ describe('Party directories', () => {
         expect(rows[1]).toHaveTextContent('Jean-Paul M.');
         expect(rows[1]).toHaveTextContent('On leave until November.');
         expect(rows[2]).toHaveTextContent('Enabled access');
+        expect(rows[3]).toHaveTextContent('Added as Treasury');
         unmount();
 
         render(<AdminParties {...{ ...fixture, action_log: [] }} />);

@@ -2360,6 +2360,7 @@ const fr: Catalog = {
     'admin.action_log.col.when': 'Quand',
     'admin.action_log.action.staff_suspended': 'Accès suspendu',
     'admin.action_log.action.staff_enabled': 'Accès activé',
+    'admin.action_log.action.staff_granted': 'Ajouté comme {role}',
     'admin.permission.reconciliation.view': 'Voir le rapprochement',
     'admin.permission_detail.reconciliation.view':
         'Comparer le grand livre aux relevés des prestataires.',

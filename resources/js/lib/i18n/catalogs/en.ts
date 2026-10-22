@@ -2240,6 +2240,7 @@ const en = {
     'admin.action_log.col.when': 'When',
     'admin.action_log.action.staff_suspended': 'Suspended access',
     'admin.action_log.action.staff_enabled': 'Enabled access',
+    'admin.action_log.action.staff_granted': 'Added as {role}',
     'admin.permission.reconciliation.view': 'View reconciliation',
     'admin.permission_detail.reconciliation.view':
         'Compare the ledger with provider statements.',

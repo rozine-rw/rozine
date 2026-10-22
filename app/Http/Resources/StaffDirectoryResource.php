@@ -23,7 +23,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     id: string, at: string, actor: string|null, action: string, reason: string, before: array<string, mixed>, after: array<string, mixed>
  * }
  * @phpstan-type Member array{row: StaffRow, history: list<HistoryEntry>}
- * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, reason: string}
+ * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, granted: bool, roles: list<string>, reason: string}
  * @phpstan-type Page array{
  *     rows: list<StaffRow>, matching: int, counts: Counts, chip: string, search: string, member: Member|null,
  *     matrix: list<array{key: string, roles: list<string>, withheld?: string}>, roles: list<string>, permissions: list<string>, log: list<LogEntry>
@@ -70,7 +70,8 @@ class StaffDirectoryResource extends JsonResource
             'access' => ['granted' => count(array_filter($held, fn (array $row): bool => in_array($row['key'], $page['permissions'], true))), 'total' => count($held)],
             'grant' => in_array('staff.manage', $page['permissions'], true) && $prefix === '' ? ['url' => route('staff.staff.grant', [], false), 'method' => 'post'] : null,
             'action_log' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'] ?? 'Server console',
-                'target' => $entry['target'], 'action' => $entry['enabled'] ? 'staff_enabled' : 'staff_suspended', 'reason' => $entry['reason']], $page['log'])];
+                'target' => $entry['target'], 'action' => $entry['granted'] ? 'staff_granted' : ($entry['enabled'] ? 'staff_enabled' : 'staff_suspended'),
+                'role' => $entry['granted'] ? StaffViewerResource::role($entry['roles']) : null, 'reason' => $entry['reason']], $page['log'])];
     }
 
     /**
