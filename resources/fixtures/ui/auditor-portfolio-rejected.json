@@ -125,6 +125,7 @@
             "deals": 0,
             "managed": []
         },
+        "raising": [],
         "owed": [
             {
                 "id": "mr_greenleaf",

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditorEarningsStore;
+use App\Application\Business\Contracts\AuditedRaises;
 use App\Application\Disbursement\Contracts\DisbursementFeeFacts;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditPartnerCredit;
+use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -32,7 +34,8 @@ final class EloquentAuditorEarningsStore implements AuditorEarningsStore
     /** The most deals the Portfolio lists; `deals` still counts them all. */
     private const int MANAGED = 50;
 
-    public function __construct(private IdentityRepository $identities, private AuthorizeActiveRole $roles, private DisbursementFeeFacts $fees) {}
+    public function __construct(private IdentityRepository $identities, private AuthorizeActiveRole $roles, private DisbursementFeeFacts $fees,
+        private AuditedRaises $raises) {}
 
     /** @return Earnings */
     public function statement(int $userId, int $contextRevision, DateTimeImmutable $now): array
@@ -48,7 +51,9 @@ final class EloquentAuditorEarningsStore implements AuditorEarningsStore
 
             return ['month' => $local->format('Y-m'), 'this_month' => self::sum(array_column($lines, 'amount')), 'total' => $total,
                 'owed' => $total, 'deals' => AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->count(),
-                'lines' => $lines, 'managed' => $this->lines(AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->limit(self::MANAGED))];
+                'lines' => $lines, 'managed' => $this->lines(AuditPartnerCredit::query()->where('auditor_party_id', $partyId)->limit(self::MANAGED)),
+                'raising' => $this->raises->unfunded(array_values(AuditReport::query()->where('author_party_id', $partyId)->where('kind', 'flash')
+                    ->whereIn('id', AuditReportSeal::query()->select('audit_report_id'))->pluck('application_id')->all()), self::MANAGED)];
         });
     }
 

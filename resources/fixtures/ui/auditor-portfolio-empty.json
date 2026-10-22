@@ -71,6 +71,7 @@
             "deals": 0,
             "managed": []
         },
+        "raising": [],
         "owed": [],
         "owed_complete": true,
         "reports_complete": true,

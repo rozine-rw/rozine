@@ -1204,6 +1204,17 @@ export type EarningLine = {
  * `month` (its first day) and ever, and that month's credits, newest first. The 25% share of the
  * earnings fee arrives with Investor payouts, which no read serves yet.
  */
+/** A raise the partner audited that has not funded: live while it takes commitments, failed once it closed unfunded. */
+export type ManagedRaise = {
+    campaign_id: string;
+    business: string;
+    title: string;
+    status: 'live' | 'failed';
+    raised: Money;
+    target: Money;
+    investors: number;
+};
+
 export type AuditorEarnings = {
     month: string;
     this_month: Money;
@@ -1252,6 +1263,8 @@ export type AuditorPortfolioProps = AuditorPageContract & {
         declare: RouteAction;
     };
     earnings: AuditorEarnings;
+    /** Unfunded raises on applications whose Flash Audit the partner sealed, newest first. */
+    raising: ManagedRaise[];
     outcome: AuditorOutcome | null;
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;
