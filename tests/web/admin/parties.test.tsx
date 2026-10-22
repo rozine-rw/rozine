@@ -107,6 +107,44 @@ describe('Party directories', () => {
         ).toBeGreaterThan(0);
     });
 
+    it("lists an investor's holdings by Business, with the principal and notes held", () => {
+        render(
+            <AdminParties
+                {...props(investorsFixture)}
+                party={{
+                    ...party(overdueFixture),
+                    list: {
+                        key: 'holdings',
+                        rows: [
+                            {
+                                id: 'bp_1',
+                                title: 'GreenLeaf Agro',
+                                tone: 'green',
+                                detail: {
+                                    kind: 'holding',
+                                    value: {
+                                        currency: 'RWF',
+                                        amount: '800000',
+                                    },
+                                    notes: 2,
+                                },
+                            },
+                        ],
+                    },
+                }}
+            />,
+        );
+
+        const drawer = screen.getByRole('dialog');
+        expect(
+            within(drawer).getByRole('heading', { name: 'Holdings' }),
+        ).toBeInTheDocument();
+        expect(within(drawer).getByText('GreenLeaf Agro')).toBeInTheDocument();
+        expect(
+            within(drawer).getByText('RWF 800,000 · 2 notes'),
+        ).toBeInTheDocument();
+    });
+
     it('lists Audit Partners with their standing', () => {
         render(<AdminParties {...props(auditorsFixture)} />);
 
