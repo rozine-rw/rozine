@@ -675,12 +675,32 @@ describe('Staff release', () => {
 
         expect(within(panel).getByText('Blocked')).toBeInTheDocument();
         expect(
-            within(panel).getByText('MANDATE_UNVERIFIED'),
-        ).toBeInTheDocument();
+            within(panel).getByText(
+                "The business's signing mandate isn't verified.",
+            ),
+        ).toHaveAttribute('title', 'MANDATE_UNVERIFIED');
         expect(within(panel).getByRole('status')).toHaveTextContent(
             'Release never overrides a failed check.',
         );
         expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('reads a cause it has no words for as a failed check, keeping the code on hover', () => {
+        const fixture = props(releaseBlockedFixture);
+        const gate = releaseOf(fixture).gates.find(
+            (entry) => entry.cause !== null,
+        );
+
+        if (gate === undefined) {
+            throw new Error('the fixture carries a failed gate');
+        }
+        gate.cause = 'SOMETHING_NEW';
+        render(<AdminApplications {...fixture} />);
+
+        expect(screen.getByText("This check didn't pass.")).toHaveAttribute(
+            'title',
+            'SOMETHING_NEW',
+        );
     });
 
     it('never offers release over a failed gate, whatever the actions say', () => {
