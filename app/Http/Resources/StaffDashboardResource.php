@@ -38,7 +38,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *   its whole-percent share (watch takes the rounding). Distress is not recorded yet, so it is null.
  *
  * The platform does not record a treasury position, default rate, secondary volume, note health,
- * late or at-risk notes, frozen accounts or collections yet, so
+ * late or at-risk notes or collections yet, so
  * those are sent as null and the console shows them as not tracked.
  *
  * @phpstan-import-type OpenBreak from \App\Application\Operations\BrowseReconciliation
@@ -48,7 +48,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Dashboard array{
  *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
- *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
+ *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int, pending: list<array<string, mixed>>,
  *     sectors: list<array{sector: string, principal: string, notes: int, campaigns: list<string>, at_risk: bool}>,
  *     health: array{total: int, healthy: int, watch: int, distressed: null},
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
@@ -91,7 +91,7 @@ class StaffDashboardResource extends JsonResource
                 ['key' => 'kyc_awaiting', 'count' => $board['kyc_awaiting'], 'link' => $nav['investors'] === null ? null
                     : ['url' => route($prefix.'staff.investors.index', ['chip' => 'pending'], false), 'method' => 'get']],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
-                ['key' => 'frozen_accounts', 'count' => null, 'link' => null]],
+                ['key' => 'frozen_accounts', 'count' => $board['frozen_accounts'], 'link' => $board['frozen_accounts'] > 0 ? $nav['staff'] : null]],
             'breaks' => $page['breaks'] === null ? null : array_map(fn (array $break): array => ['id' => $break['id'], 'reference' => $break['reference'],
                 'description' => StaffReconciliationResource::describe($break), 'gap' => $money($break['amount']), 'opened_at' => $break['opened_at'],
                 'age_days' => $break['age_days'], 'owner' => null, 'actions' => (object) []], $page['breaks']),
