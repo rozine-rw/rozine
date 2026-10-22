@@ -36,7 +36,7 @@ final class EloquentAuditorEarningsStore implements AuditorEarningsStore
 
         return $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, function () use ($partyId, $local, $start): array {
             $credits = AuditPartnerCredit::query()->where('auditor_party_id', $partyId)
-                ->where('created_at', '>=', $start)->orderByDesc('created_at')->orderByDesc('id')->get();
+                ->where('created_at', '>=', $start->setTimezone(new DateTimeZone('UTC')))->orderByDesc('created_at')->orderByDesc('id')->get();
             $seals = AuditReportSeal::query()->whereIn('audit_report_id', $credits->pluck('audit_report_id')->all())->get()->keyBy('audit_report_id');
             $fees = $this->fees->forDisbursements(array_values($credits->pluck('disbursement_id')->all()));
             $lines = [];

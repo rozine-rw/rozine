@@ -94,6 +94,23 @@ const rw: Catalog = {
     'auth.register.submit': 'Fungura konti',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
+    'auth.brand.business.eyebrow': 'Ku bigo by’ubucuruzi',
+    'auth.brand.business.login_description':
+        'Injira mu mbonerahamwe y’ikigo cyawe.',
+    'auth.brand.business.email_label': 'Imeyili y’akazi',
+    'auth.brand.business.email_placeholder': 'wowe@ikigo.rw',
+    'auth.brand.business.register_cta': 'Andikisha ikigo',
+    'auth.brand.business.register_title': 'Andikisha ikigo cyawe',
+    'auth.brand.business.register_description':
+        'Fungura konti ikigo cyawe kizakoresha gusaba no gukusanya amafaranga.',
+    'auth.brand.investor.login_description': 'Injira ucunge ishoramari ryawe.',
+    'auth.brand.investor.register_cta': 'Fungura konti',
+    'auth.brand.investor.register_description':
+        'Tangira gushora imari mu bigo byagenzuwe mu Rwanda hose.',
+    'auth.brand.auditor.eyebrow': 'Ku bafatanyabikorwa b’igenzura',
+    'auth.brand.auditor.login_description': 'Injira mu biro byawe by’igenzura.',
+    'auth.brand.auditor.register_description':
+        'Fungura konti uzakoresha wakira imirimo y’igenzura.',
     'auth.reset_password.head_title': 'Hindura ijambobanga',
     'auth.reset_password.layout_title': 'Hindura ijambobanga',
     'auth.reset_password.layout_description':
@@ -2923,7 +2940,10 @@ const rw: Catalog = {
     'auditor.profile.earnings.earnings_fee_rule':
         "25% by'amafaranga ku nyungu kuri buri bwishyu bwa buri kwezi bw'abashoramari. Bitangirana n'ubwishyu bwa mbere.",
     'auditor.profile.earnings.lines': "Imirongo yose y'uku kwezi",
-    'auditor.profile.earnings.line_count': 'Imirongo {count}',
+    'auditor.profile.earnings.line_count': {
+        one: 'Umurongo {count}',
+        other: 'Imirongo {count}',
+    },
     'auditor.profile.earnings.empty':
         'Nta cyo urinjiza uku kwezi. Umurongo ugaragara ako kanya inkunga wagenzuye yishyuwe.',
     'auditor.profile.earnings.basis':

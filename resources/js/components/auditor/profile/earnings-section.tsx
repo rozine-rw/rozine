@@ -98,7 +98,7 @@ export function EarningsSection({ earnings }: { earnings: AuditorEarnings }) {
                 <h3 className={LABEL}>{t('auditor.profile.earnings.lines')}</h3>
                 <span className="text-[11px] font-semibold text-rz-secondary">
                     {t('auditor.profile.earnings.line_count', {
-                        count: String(earnings.lines.length),
+                        count: earnings.lines.length,
                     })}
                 </span>
             </div>

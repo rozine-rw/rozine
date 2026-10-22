@@ -78,7 +78,7 @@ describe('Investor tabs', () => {
             .getAllByRole('link')
             .filter((link) => link.textContent.includes('Cart'));
         expect(tabs.map((link) => link.textContent)).toEqual([
-            '3Cart',
+            '3Cart (3)',
             '3Cart (3)',
         ]);
         unmount();

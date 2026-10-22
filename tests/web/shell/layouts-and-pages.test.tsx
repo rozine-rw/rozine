@@ -216,6 +216,29 @@ describe('authentication layouts', () => {
                 'Enter your details below to create your account.',
             ),
         ).toBeInTheDocument();
+        expect(
+            // eslint-disable-next-line testing-library/no-node-access -- the audience frame has no role.
+            screen.getByText('Register form').closest('[data-audience]'),
+        ).toHaveAttribute('data-audience', 'investor');
+
+        rerender(
+            <AuthLayout
+                title="auth.login.layout_title"
+                description="auth.brand.business.login_description"
+                eyebrow="auth.brand.business.eyebrow"
+                audience="business"
+            >
+                Business form
+            </AuthLayout>,
+        );
+        expect(screen.getByText('For business')).toBeInTheDocument();
+        expect(
+            screen.getByText('Log in to your issuer dashboard.'),
+        ).toBeInTheDocument();
+        expect(
+            // eslint-disable-next-line testing-library/no-node-access -- the audience frame has no role.
+            screen.getByText('Business form').closest('[data-audience]'),
+        ).toHaveAttribute('data-audience', 'business');
     });
 
     it('renders simple, card, and split auth presentations', () => {

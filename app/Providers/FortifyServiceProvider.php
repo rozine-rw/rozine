@@ -58,6 +58,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'status' => $request->session()->get('status'),
+            'audience' => self::audience($request),
         ]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/reset-password', [
@@ -74,13 +75,36 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/register', [
+        Fortify::registerView(fn (Request $request) => Inertia::render('auth/register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'audience' => self::audience($request),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+    }
+
+    /**
+     * The app a visitor is signing in to, which only brands the shared log in and register pages:
+     * the entry link's `for` query, else the app of the page they were sent away from. The form,
+     * fields and account are the same for every app.
+     *
+     * @return 'business'|'investor'|'auditor'|null
+     */
+    private static function audience(Request $request): ?string
+    {
+        $audiences = ['business', 'investor', 'auditor'];
+        $chosen = $request->query('for');
+
+        if (is_string($chosen) && in_array($chosen, $audiences, true)) {
+            return $chosen;
+        }
+
+        $intended = $request->session()->get('url.intended');
+        $segment = is_string($intended) ? explode('/', trim((string) parse_url($intended, PHP_URL_PATH), '/'))[0] : '';
+
+        return in_array($segment, $audiences, true) ? $segment : null;
     }
 
     /**

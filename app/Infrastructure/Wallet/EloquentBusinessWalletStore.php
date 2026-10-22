@@ -478,10 +478,11 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
      */
     private function recordedBetween(Builder $query, ?string $from, ?string $to): Builder
     {
-        $zone = (string) config('app.timezone');
+        // A range names Kigali days; its bounds are sent in UTC, the database session's zone.
+        $zone = 'Africa/Kigali';
 
-        return $query->when($from !== null, fn (Builder $query) => $query->where('created_at', '>=', CarbonImmutable::parse((string) $from, $zone)->startOfDay()))
-            ->when($to !== null, fn (Builder $query) => $query->where('created_at', '<', CarbonImmutable::parse((string) $to, $zone)->addDay()->startOfDay()));
+        return $query->when($from !== null, fn (Builder $query) => $query->where('created_at', '>=', CarbonImmutable::parse((string) $from, $zone)->startOfDay()->utc()))
+            ->when($to !== null, fn (Builder $query) => $query->where('created_at', '<', CarbonImmutable::parse((string) $to, $zone)->addDay()->startOfDay()->utc()));
     }
 
     /** @return array<string, mixed> */

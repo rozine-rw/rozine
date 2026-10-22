@@ -13,9 +13,14 @@ export type FlashToast = {
     message: string;
 };
 
+/** The app a shared log in or register page is branded for; `null` keeps the generic copy. */
+export type AuthAudience = 'business' | 'investor' | 'auditor' | null;
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;
     title?: string;
     description?: string;
+    eyebrow?: string;
+    audience?: AuthAudience;
 };

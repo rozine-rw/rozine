@@ -94,7 +94,7 @@ export type CartToggleState = {
 };
 
 /** A deal is fully funded for the cart once its raise is no longer live or no note is left. */
-export const fullyFunded = (deal: Pick<C3DealCard, 'lifecycle' | 'units'>) =>
+const fullyFunded = (deal: Pick<C3DealCard, 'lifecycle' | 'units'>) =>
     deal.lifecycle !== 'live' || Number(deal.units.available) <= 0;
 
 /**
@@ -137,20 +137,22 @@ export function CartToggle({
                 : { identity_context_revision: cart.identityRevision, units },
         );
 
+        /* The toggle stays busy until the reload brings the new cart state, so a second tap cannot repeat the change. */
         try {
             const answer = await http.submit(target, {});
 
             if (answer === undefined) {
                 setFailed(true);
+                setBusy(false);
             } else {
                 router.reload({
                     only: ['cart', 'deals'],
                     data: { deal: deal.campaign_id },
+                    onFinish: () => setBusy(false),
                 });
             }
         } catch {
             setFailed(true);
-        } finally {
             setBusy(false);
         }
     };

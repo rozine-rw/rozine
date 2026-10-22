@@ -135,7 +135,15 @@ export function AppFrame({
                                 >
                                     <Glyph item={item} />
                                 </span>
-                                <span className="flex-1">{item.label}</span>
+                                <span className="flex-1">
+                                    {item.label}
+                                    {item.badge !== undefined &&
+                                        item.badge > 0 && (
+                                            <span className="sr-only">
+                                                {` (${item.badge})`}
+                                            </span>
+                                        )}
+                                </span>
                             </Link>
                         ))}
                     </nav>

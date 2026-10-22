@@ -1,5 +1,5 @@
 import { Link, router, useHttp } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RANGE_CLASS } from '@/components/investor/deals/invest-bar';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
@@ -321,8 +321,18 @@ export default function InvestorCart({
     const [failed, setFailed] = useState(false);
     const timers = useRef<Record<string, number>>({});
     const lines = cart?.lines ?? [];
+
+    useEffect(() => {
+        const pending = timers.current;
+
+        return () => Object.values(pending).forEach(window.clearTimeout);
+    }, []);
+    /* A choice made before a reload never exceeds what the line can still take. */
     const units = (line: InvestorCartLine) =>
-        chosen[line.campaign_id] ?? savedUnits(line);
+        Math.min(
+            chosen[line.campaign_id] ?? savedUnits(line),
+            Number(line.max_units),
+        );
     const live = lines.filter(buyable);
     const filled = lines.filter((line) => line.filled).length;
     const total = live.reduce(

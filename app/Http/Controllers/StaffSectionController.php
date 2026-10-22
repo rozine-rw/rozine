@@ -11,6 +11,7 @@ use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffViewerResource;
+use Brick\Math\BigInteger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -102,7 +103,7 @@ class StaffSectionController extends Controller
     {
         $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
 
-        return ['figures' => ['revenue' => $money((string) ((int) $revenue['platform_fee'] + (int) $revenue['deposit_fees'])),
+        return ['figures' => ['revenue' => $money((string) BigInteger::of($revenue['platform_fee'])->plus($revenue['deposit_fees'])),
             'primary' => $money($revenue['platform_fee'])],
             'streams' => [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money($revenue['platform_fee'])],
                 ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money($revenue['audit_partner_share'])],

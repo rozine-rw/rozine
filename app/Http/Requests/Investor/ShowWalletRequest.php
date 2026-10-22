@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Investor;
 
+use App\Application\Wallet\Contracts\WalletStore;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShowWalletRequest extends FormRequest
 {
     /** The windows the wallet history narrows to, newest first; `all` leaves it whole. */
-    public const array PERIODS = ['today', '7d', '30d', 'all'];
+    public const array PERIODS = WalletStore::HISTORY_PERIODS;
 
     public function authorize(): bool
     {

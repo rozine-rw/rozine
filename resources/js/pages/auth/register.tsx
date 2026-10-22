@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -7,15 +7,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTranslation } from '@/hooks/use-translation';
+import { audienceQuery, authBranding } from '@/lib/rozine/auth-branding';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
+import type { AuthAudience } from '@/types';
 
 type Props = {
     passwordRules: string;
+    audience?: AuthAudience;
 };
 
-export default function Register({ passwordRules }: Props) {
+export default function Register({ passwordRules, audience = null }: Props) {
     const { t } = useTranslation();
+    const brand = authBranding(audience, 'register');
+
+    setLayoutProps({
+        title: brand.title,
+        description: brand.description,
+        eyebrow: brand.eyebrow ?? '',
+        audience,
+    });
 
     return (
         <>
@@ -53,7 +64,7 @@ export default function Register({ passwordRules }: Props) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="email">
-                                    {t('auth.register.email_label')}
+                                    {t(brand.emailLabel)}
                                 </Label>
                                 <Input
                                     id="email"
@@ -62,9 +73,7 @@ export default function Register({ passwordRules }: Props) {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    placeholder={t(
-                                        'auth.register.email_placeholder',
-                                    )}
+                                    placeholder={t(brand.emailPlaceholder)}
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -120,8 +129,11 @@ export default function Register({ passwordRules }: Props) {
 
                         <div className="text-center text-sm text-muted-foreground">
                             {t('auth.register.have_account')}{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                {t('auth.register.log_in')}
+                            <TextLink
+                                href={login(audienceQuery(audience))}
+                                tabIndex={6}
+                            >
+                                {t(brand.switchCta)}
                             </TextLink>
                         </div>
                     </>
