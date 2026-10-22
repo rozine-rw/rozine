@@ -1,9 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminNotes from '@/pages/admin/notes';
 import type { AdminNotesProps, NoteRegisterRow } from '@/types/admin';
 import shellFixture from '../../../resources/fixtures/ui/admin-exceptions-empty.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -81,6 +81,7 @@ const props = (overrides: Partial<AdminNotesProps> = {}): AdminNotesProps => {
             }),
         ],
         pagination: { next: null },
+        sort: 'newest',
         ...overrides,
     } as AdminNotesProps;
 };
@@ -114,6 +115,32 @@ describe('Admin Notes', () => {
         rows.forEach((row) =>
             expect(within(row).queryByRole('button')).not.toBeInTheDocument(),
         );
+    });
+
+    it("sorts by the design's orders and drops the sort for newest first", () => {
+        render(<AdminNotes {...props({ sort: 'funded' })} />);
+
+        const sort = screen.getByRole('combobox', { name: 'Sort notes' });
+        expect(sort).toHaveValue('funded');
+        expect(
+            within(sort)
+                .getAllByRole('option')
+                .map((option) => option.textContent),
+        ).toEqual([
+            'Sort: Newest',
+            'Sort: Capital raised',
+            'Sort: Yield',
+            'Sort: % funded',
+            'Sort: Investors',
+            'Sort: Term',
+        ]);
+
+        fireEvent.change(sort, { target: { value: 'yield' } });
+        fireEvent.change(sort, { target: { value: 'newest' } });
+        expect(inertia.reload).toEqual([
+            { data: { sort: 'yield' } },
+            { data: { sort: undefined } },
+        ]);
     });
 
     it('says when there are no notes yet, and offers the rest of a long list', () => {

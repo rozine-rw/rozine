@@ -18,6 +18,7 @@ class ListNotesRequest extends FormRequest
     public function rules(): array
     {
         return ['tab' => ['sometimes', 'string', 'in:all,live,repaying,matured,failed'], 'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'sort' => ['sometimes', 'string', 'in:newest,raised,yield,funded,investors,term'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:500']];
     }
 }
