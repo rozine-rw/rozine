@@ -7,6 +7,7 @@ use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Application\Operations\Contracts\OperationsDashboardStore;
 use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\User;
@@ -212,6 +213,27 @@ test('the queues count applications waiting, submissions awaiting review and dis
     $this->actingAs(boardStaff(['compliance']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('badges.disbursements', 1)->where('attention.1.link.url', '/admin/investors?chip=pending')
             ->where('nav.events.url', '/admin/activity'));
+});
+
+test('portfolio health reads each Business\'s newest report once, and puts every note it issued on watch with it', function (): void {
+    $note = fn (string $campaign, string $business): array => ['campaign_id' => $campaign, 'business_id' => $business, 'state' => 'repaying',
+        'live_at' => '2026-10-01T08:00:00+00:00'];
+    app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, [
+        'noteStates' => [$note('01K000000000000000000000N1', '01K000000000000000000000B1'), $note('01K000000000000000000000N2', '01K000000000000000000000B1'),
+            $note('01K000000000000000000000N3', '01K000000000000000000000B2')],
+        'figures' => ['capital_raised' => '0', 'active_businesses' => 2, 'disbursements_waiting' => 0, 'disbursed' => '0',
+            'notes' => ['live' => 0, 'funded' => 0, 'repaying' => 3, 'failed' => 0]],
+        'sectorExposure' => [['sector' => 'Agriculture', 'principal' => '0', 'notes' => 2, 'campaigns' => ['01K000000000000000000000N1', '01K000000000000000000000N2']],
+            ['sector' => 'Retail', 'principal' => '0', 'notes' => 1, 'campaigns' => ['01K000000000000000000000N3']]],
+        'capitalRaised' => []]));
+    $deals = $this->createMock(InvestorDealCatalogue::class);
+    $deals->expects($this->exactly(2))->method('updates')
+        ->willReturnCallback(fn (string $campaign): array => [['status' => $campaign === '01K000000000000000000000N3' ? 'healthy' : 'watch']]);
+    app()->instance(InvestorDealCatalogue::class, $deals);
+
+    $this->actingAs(boardStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('sector_exposure.0.at_risk', true)->where('sector_exposure.1.at_risk', false)
+            ->where('portfolio_health', ['total' => 3, 'healthy' => ['count' => 1, 'pct' => 33], 'watch' => ['count' => 2, 'pct' => 67], 'distressed' => null]));
 });
 
 test('the Payments badge counts ready, held and legacy awaiting disbursements, never one already queued', function (): void {
