@@ -268,10 +268,10 @@ describe('Policies', () => {
         ).toBeInTheDocument();
         expect(within(rules).getAllByRole('row')).toHaveLength(3);
         expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
-            'Platform fee · at disbursement3%brs-2.0-fee-r01',
+            'Platform fee · at disbursementTaken from the raise when it is disbursed to the business.3%brs-2.0-fee-r01',
         );
         expect(within(rules).getAllByRole('row')[2]).toHaveTextContent(
-            'Loss reserveNonebrs-2.0-gen-r01',
+            'Loss reserveShare of fees set aside against defaults.Nonebrs-2.0-gen-r01',
         );
         expect(
             screen.queryByText('No rules to show yet.'),
@@ -282,7 +282,7 @@ describe('Policies', () => {
             within(
                 screen.getByRole('table', { name: 'KYC requirements' }),
             ).getAllByRole('row')[1],
-        ).toHaveTextContent('Minimum age18—');
+        ).toHaveTextContent('Minimum ageYoungest an investor may be.18—');
 
         fireEvent.click(
             screen.getByRole('tab', { name: 'Investor eligibility' }),
