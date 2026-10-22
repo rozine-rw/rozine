@@ -1258,6 +1258,18 @@ const fr: Catalog = {
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
     'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.revenue.sub_period':
+        'Tous les flux, sur cette période',
+    'admin.finance.period.showing': 'Affichage',
+    'admin.finance.period.hint': 'Filtre chaque chiffre de cette page',
+    'admin.finance.period.days': {
+        one: '{count} jour',
+        other: '{count} jours',
+    },
+    'admin.finance.period.year': '1 an',
+    'admin.finance.period.to': 'au',
+    'admin.finance.period.since': 'Depuis le {from}',
+    'admin.finance.period.until': 'Jusqu’au {to}',
     'admin.design.finance.kpi.primary.sub':
         'Frais de plateforme, part de Rozine',
     'admin.design.finance.kpi.investor_fees.sub':
@@ -1356,13 +1368,13 @@ const fr: Catalog = {
     'admin.messaging.trigger.business.deposit_received':
         'Le prestataire confirme un dépôt de l’entreprise',
     'admin.messaging.trigger.business.application_approved':
-        'La demande de financement est approuvée',
+        'Une demande de note est approuvée',
     'admin.messaging.trigger.business.raise_expired':
         'La levée se clôt sans atteindre son objectif',
     'admin.messaging.trigger.business.raise_funded':
-        'La levée est entièrement financée',
+        'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
-        'Les fonds levés sont versés',
+        'Les fonds sont versés sur le portefeuille de l’entreprise',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -1371,6 +1383,8 @@ const fr: Catalog = {
         'Le partenaire d’audit scelle le rapport mensuel',
     'admin.messaging.trigger.business.report_review_closing':
         'Le délai pour cosigner ou contester un rapport se termine',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -1847,6 +1861,16 @@ const fr: Catalog = {
     'admin.policy.residency': 'Résidence',
     'admin.policy.risk_statements':
         'Déclarations de risque avant un premier investissement',
+    'admin.policy.bank_signatories': 'Signataires bancaires minimum',
+    'admin.policy.recovery_rate': 'Taux de recouvrement en cas de défaut',
+    'admin.policy.withdrawal_daily_cap': 'Plafond de retrait journalier',
+    'admin.policy.hint.bank_signatories':
+        'Un seul représentant officiel agit pour l’entreprise. Un second signataire n’est jamais exigé.',
+    'admin.policy.hint.recovery_rate':
+        'Ce qui est recouvré après un défaut revient aux détenteurs. Rozine n’en garde rien et ne couvre pas les pertes.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Aucun plafond journalier. Chaque retrait est limité, comme indiqué ci-dessus.',
+    'admin.policy.term.pro_rata': 'La totalité, au prorata des détenteurs',
     'admin.policy.hint.platform_fee':
         "Prélevés sur la levée lors du versement à l'entreprise.",
     'admin.policy.hint.cpa_share':
@@ -5983,6 +6007,10 @@ const fr: Catalog = {
         'Fin du délai de revue',
     'investor.notices.business.report_review_closing.body':
         "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
+    'investor.notices.business.reporting_window_open.title':
+        'Audit mensuel ouvert',
+    'investor.notices.business.reporting_window_open.body':
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

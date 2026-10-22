@@ -1246,6 +1246,17 @@ const rw: Catalog = {
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
     'admin.design.finance.kpi.revenue.sub': 'Inzira zose, kuva mu ntangiriro',
+    'admin.design.finance.kpi.revenue.sub_period': 'Inzira zose, muri iki gihe',
+    'admin.finance.period.showing': 'Birerekana',
+    'admin.finance.period.hint': 'Bihindura imibare yose iri kuri uru rupapuro',
+    'admin.finance.period.days': {
+        one: 'Umunsi {count}',
+        other: 'Iminsi {count}',
+    },
+    'admin.finance.period.year': 'Umwaka 1',
+    'admin.finance.period.to': 'kugeza',
+    'admin.finance.period.since': 'Kuva {from}',
+    'admin.finance.period.until': 'Kugeza {to}',
     'admin.design.finance.kpi.primary.sub':
         "Amafaranga y'urubuga, umugabane wa Rozine",
     'admin.design.finance.kpi.investor_fees.sub':
@@ -1345,12 +1356,13 @@ const rw: Catalog = {
     'admin.messaging.trigger.business.deposit_received':
         'Utanga serivisi yemeje kubitsa kw’ikigo',
     'admin.messaging.trigger.business.application_approved':
-        'Ubusabe bw’inkunga bwemejwe',
+        'Ubusabe bw’inoti bwemejwe',
     'admin.messaging.trigger.business.raise_expired':
         'Ikusanya rirangiye ritageze ku ntego',
-    'admin.messaging.trigger.business.raise_funded': 'Ikusanya ryuzuye',
+    'admin.messaging.trigger.business.raise_funded':
+        'Ikusanya rigeze ku ntego yaryo',
     'admin.messaging.trigger.business.disbursement_sent':
-        'Amafaranga yakusanyijwe yoherejwe',
+        'Amafaranga yoherejwe mu ikofi y’ikigo',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Amafaranga ikigo cyabikuje yoherejwe',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -1359,6 +1371,8 @@ const rw: Catalog = {
         'Umugenzuzi afunze raporo y’ukwezi',
     'admin.messaging.trigger.business.report_review_closing':
         'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'Igenzura ry’ukwezi ritangiye ku kigo gifite inoti ikora',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Uruhushya rwemejwe',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -1837,6 +1851,18 @@ const rw: Catalog = {
     'admin.policy.residency': 'Aho atuye',
     'admin.policy.risk_statements':
         "Amatangazo y'ingaruka mbere y'ishoramari rya mbere",
+    'admin.policy.bank_signatories': 'Umubare muto w’abasinya kuri konti',
+    'admin.policy.recovery_rate': 'Igipimo cy’ibigaruzwa iyo umwenda utishyuwe',
+    'admin.policy.withdrawal_daily_cap':
+        'Igipimo ntarengwa cyo kubikuza ku munsi',
+    'admin.policy.hint.bank_signatories':
+        'Uhagarariye ikigo umwe ni we ugikorera. Nta wundi usinya usabwa.',
+    'admin.policy.hint.recovery_rate':
+        'Ibigaruzwe nyuma y’umwenda utishyuwe bihabwa abafite inoti. Rozine nta cyo igumana kandi ntiyishyura igihombo.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Nta gipimo cya buri munsi. Buri kubikuza gifite imbibi, nk’uko byavuzwe haruguru.',
+    'admin.policy.term.pro_rata':
+        'Byose, bigabanywa abafite inoti ku kigereranyo',
     'admin.policy.hint.platform_fee':
         'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
     'admin.policy.hint.cpa_share':
@@ -5947,6 +5973,10 @@ const rw: Catalog = {
         'Igihe cyo gusuzuma kirarangiye vuba',
     'investor.notices.business.report_review_closing.body':
         "Igihe cyo gusinya cyangwa kujurira raporo y'igenzura kirangira saa {time}. Nutagira icyo ukora, izatangazwa uko yashyizweho kashe.",
+    'investor.notices.business.reporting_window_open.title':
+        "Igenzura ry'ukwezi ryatangiye",
+    'investor.notices.business.reporting_window_open.body':
+        "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

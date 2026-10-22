@@ -271,13 +271,15 @@ test('an overdue reminder shows the late penalty built up over the days overdue,
             ->toMail(rozineMailRecipient()))->toThrow(InvalidArgumentException::class);
 });
 
-test('the reporting window lists what to submit and when it closes', function () {
+test('the reporting window explains the audit flow and when the report is sealed', function () {
     [$mail, , $text] = rozineMail(new ReportingWindowOpen('Karongi Freight Ltd', 'September 2026', kigali('2026-10-07'), 'https://rozine.test/business'));
 
-    expect($mail->subject)->toBe('Your September 2026 report is due by 7 Oct 2026')
-        ->and($text)->toContain('Add a short note, up to 100 characters.')
-        ->and($text)->toContain('Add up to five photographs.')
-        ->and($text)->toContain("Submit it for your Audit Partner's co-signature.");
+    expect($mail->subject)->toBe('Your September 2026 audit has started and is sealed by 7 Oct 2026')
+        ->and($text)->toContain('Your Audit Partner seals the report by 7 Oct 2026.')
+        ->and($text)->toContain("Check the audit prep list and have the month's statements and records ready.")
+        ->and($text)->toContain('Review the sealed report, then co-sign it or raise a dispute.')
+        ->and($text)->toContain('Open audit prep')
+        ->and($text)->not->toContain('photograph')->and($text)->not->toContain('100 characters');
 });
 
 test('an expired raise tells the Business investors were refunded and no fee applies', function () {

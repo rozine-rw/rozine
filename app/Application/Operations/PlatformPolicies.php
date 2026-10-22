@@ -27,7 +27,7 @@ use Brick\Math\BigRational;
  * while deferred.
  *
  * A worded value travels as a `term` the console translates, with `value` empty: `every_deal`,
- * `required`, `not_set`, `none`, `late_from_due`, `day_31`, `late_schedule`, `resident_rwanda`,
+ * `required`, `not_set`, `none`, `late_from_due`, `day_31`, `late_schedule`, `pro_rata`, `resident_rwanda`,
  * `rwanda` and `not_collected`.
  *
  * The values are code, not versioned policy data yet, so the console only reads them: a change goes
@@ -165,7 +165,7 @@ final class PlatformPolicies
                 ['key' => 'min_statement_years', 'value' => $business[1]['value']], self::brs($business[0], 'UW-R01'),
                 ['key' => 'first_issue_months', 'value' => (string) UnderwritingObservationWindow::FIRST_ISSUE_MONTHS],
                 ['key' => 'repeat_issue_months', 'value' => (string) UnderwritingObservationWindow::REPEAT_ISSUE_MONTHS],
-                self::brs($business[2], 'KYC-R03'), self::brs($business[3], 'OD-20')]),
+                self::brs($business[2], 'KYC-R03'), self::brs(['key' => 'bank_signatories', 'value' => '1'], 'KYC-R03'), self::brs($business[3], 'OD-20')]),
             ...self::tab('investor', null, [self::brs(self::term('residency', 'resident_rwanda'), 'KYC-R02'),
                 ['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
                 ['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
@@ -175,12 +175,13 @@ final class PlatformPolicies
                 self::term('kyc_investor_dob', 'required'), self::term('kyc_investor_address', 'not_collected'), self::term('kyc_business_rdb', 'required'),
                 ['key' => 'identity_evidence', 'value' => (string) count(InvestorVerificationCase::SLOTS)], self::brs($compliance[2], 'KYC-R04')]),
             ...self::tab('penalties', null, [self::brs(self::term('late_charge', 'late_schedule'), 'COL-R02'), self::brs($compliance[0], 'COL-R02'),
-                self::brs($compliance[1], 'COL-R06'), self::brs($compliance[3], 'COL-R06'),
+                self::brs($compliance[1], 'COL-R06'), self::brs(self::term('recovery_rate', 'pro_rata'), 'COL-R06'), self::brs($compliance[3], 'COL-R06'),
                 ['key' => 'complaint_acknowledge', 'value' => Complaint::ACKNOWLEDGE_HOURS.' h'],
                 ['key' => 'complaint_resolve', 'value' => Complaint::RESOLVE_HOURS.' h']]),
             ...self::tab('limits', null, [self::brs(['key' => 'raise_days', 'value' => (string) self::RAISE_DAYS], 'NOTE-R03')]),
             ...self::tab('limits', WithdrawalTerms::VERSION, [['key' => 'withdrawal_min', 'value' => self::rwf(WithdrawalTerms::MINIMUM)],
                 ['key' => 'withdrawal_max', 'value' => self::rwf(WithdrawalTerms::MAXIMUM)]]),
+            ...self::tab('limits', null, [self::brs(self::term('withdrawal_daily_cap', 'none'), 'LED-R04')]),
             ...self::tab('limits', null, [['key' => 'resale_listing_days', 'value' => (string) intdiv(SecondaryTerms::LISTING_SECONDS, 86400)],
                 ['key' => 'resale_reservation_minutes', 'value' => (string) intdiv(SecondaryTerms::RESERVATION_SECONDS, 60)],
                 self::brs(['key' => 'cpa_radius', 'value' => self::CPA_RADIUS_KM.' km'], 'AUD-R02'),

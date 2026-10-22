@@ -1032,7 +1032,12 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
 
     private function pendingApplication(string $businessId, ?string $exceptApplicationId = null): ?BusinessApplication
     {
-        $query = BusinessApplication::query()->where('business_id', $businessId)->where('status', 'submitted');
+        $query = BusinessApplication::query()->where('business_id', $businessId)->where('status', 'submitted')
+            ->whereNotIn('id', BusinessCampaign::query()->select('business_application_id')->where('business_id', $businessId)
+                ->where(fn (Builder $ended): Builder => $ended->whereExists(fn ($funding) => $funding->selectRaw('1')->from('primary_campaign_fundings')
+                    ->whereColumn('primary_campaign_fundings.business_campaign_id', 'business_campaigns.id'))
+                    ->orWhereExists(fn ($closure) => $closure->selectRaw('1')->from('business_campaign_closures')
+                        ->whereColumn('business_campaign_closures.business_campaign_id', 'business_campaigns.id'))));
         if ($exceptApplicationId !== null) {
             $query->where('id', '!=', $exceptApplicationId);
         }

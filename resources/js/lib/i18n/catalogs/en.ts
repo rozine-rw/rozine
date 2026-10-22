@@ -1192,6 +1192,14 @@ const en = {
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
     'admin.design.finance.kpi.revenue.sub': 'Every stream, all time',
+    'admin.design.finance.kpi.revenue.sub_period': 'Every stream, this period',
+    'admin.finance.period.showing': 'Showing',
+    'admin.finance.period.hint': 'Filters every figure on this page',
+    'admin.finance.period.days': { one: '{count} day', other: '{count} days' },
+    'admin.finance.period.year': '1 year',
+    'admin.finance.period.to': 'to',
+    'admin.finance.period.since': 'Since {from}',
+    'admin.finance.period.until': 'Until {to}',
     'admin.design.finance.kpi.primary.sub': 'Platform fee, Rozine share',
     'admin.design.finance.kpi.investor_fees.sub': 'Earnings fee bands',
     'admin.design.finance.kpi.secondary.sub': 'Resale fee',
@@ -1279,13 +1287,13 @@ const en = {
     'admin.messaging.trigger.business.deposit_received':
         'The provider confirms a business deposit',
     'admin.messaging.trigger.business.application_approved':
-        'The funding application is approved',
+        'A note application is approved',
     'admin.messaging.trigger.business.raise_expired':
         'The raise closes without reaching its target',
     'admin.messaging.trigger.business.raise_funded':
-        'The raise is fully funded',
+        'A raise reaches its target',
     'admin.messaging.trigger.business.disbursement_sent':
-        'The raised funds are disbursed',
+        'Funds are released to the business wallet',
     'admin.messaging.trigger.business.withdrawal_sent':
         'A business withdrawal is paid out',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -1294,6 +1302,8 @@ const en = {
         'The Audit Partner seals the monthly report',
     'admin.messaging.trigger.business.report_review_closing':
         'The window to co-sign or dispute a report is closing',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'A monthly audit opens for a business with a live note',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -1700,7 +1710,7 @@ const en = {
     'admin.policy.min_revenue': 'Min annual revenue',
     'admin.policy.min_statement_years': 'Min years of statements',
     'admin.policy.rdb_certificate': 'RDB certificate',
-    'admin.policy.max_notes': 'Max notes / business',
+    'admin.policy.max_notes': 'Max active notes / business',
     'admin.policy.platform_fee': 'Platform fee · at disbursement',
     'admin.policy.cpa_share': 'CPA share — Kigali',
     'admin.policy.listing_fee': 'Listing fee',
@@ -1726,7 +1736,7 @@ const en = {
     'admin.policy.loss_reserve': 'Loss reserve',
     'admin.policy.min_rating': 'Minimum rating to raise',
     'admin.policy.revenue_cap': 'Largest raise · share of revenue',
-    'admin.policy.kyc_reverify': 'KYC re-verify',
+    'admin.policy.kyc_reverify': 'KYC re-verification',
     'admin.policy.late_charge': 'Late charges',
     'admin.policy.miss_grace': 'Miss grace period',
     'admin.policy.default_at': 'Default',
@@ -1742,6 +1752,16 @@ const en = {
     'admin.policy.sandbox_principal': 'Sandbox limit · principal outstanding',
     'admin.policy.residency': 'Allowed countries of residence',
     'admin.policy.risk_statements': 'Risk statements before a first investment',
+    'admin.policy.bank_signatories': 'Min bank signatories',
+    'admin.policy.recovery_rate': 'Default recovery rate',
+    'admin.policy.withdrawal_daily_cap': 'Daily withdrawal cap',
+    'admin.policy.hint.bank_signatories':
+        'One official representative acts for the business. A second signatory is never required.',
+    'admin.policy.hint.recovery_rate':
+        'What is recovered on a default goes to holders. Rozine keeps none and does not cover shortfalls.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'No daily cap. Each withdrawal is limited instead, as set above.',
+    'admin.policy.term.pro_rata': 'All of it, pro rata to holders',
     'admin.policy.hint.platform_fee':
         'Taken from the raise when it is disbursed to the business.',
     'admin.policy.hint.cpa_share':
@@ -5696,6 +5716,10 @@ const en = {
         'Review window closing',
     'investor.notices.business.report_review_closing.body':
         'Your window to co-sign or dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
+    'investor.notices.business.reporting_window_open.title':
+        'Monthly audit open',
+    'investor.notices.business.reporting_window_open.body':
+        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

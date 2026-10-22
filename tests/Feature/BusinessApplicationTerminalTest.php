@@ -70,7 +70,7 @@ it('enforces one unresolved submitted application per Business at the database b
     $quote = BusinessApplicationQuote::factory()->create(['business_application_id' => $another->id]);
     $submission = BusinessApplicationSubmission::factory()->create(['business_application_id' => $another->id, 'business_application_quote_id' => $quote->id]);
     expect(fn () => DB::transaction(fn (): bool => $another->forceFill(['status' => 'submitted', 'step' => 'submitted',
-        'current_quote_id' => $quote->id, 'current_submission_id' => $submission->id])->save()))->toThrow(QueryException::class, 'business_applications_one_pending');
+        'current_quote_id' => $quote->id, 'current_submission_id' => $submission->id])->save()))->toThrow(QueryException::class, 'A business may have only one pending application');
     expect($another->refresh()->status)->toBe('draft')->and(BusinessApplication::query()->where('status', 'submitted')->count())->toBe(1);
 });
 
@@ -91,10 +91,13 @@ it('allows unused protection to be reversed and reapplied without changing draft
     $migration = require database_path('migrations/2026_09_25_042503_protect_submitted_business_applications.php');
     $guard = fn (): bool => DB::table('pg_trigger')->where('tgname', 'business_application_submitted_immutable')
         ->whereRaw('tgrelid = ?::regclass', ['business_applications'])->exists();
+    $repeat = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
     expect($guard())->toBeTrue();
+    $repeat->down();
     $migration->down();
     expect($guard())->toBeFalse()->and($fixture['application']->refresh()->getRawOriginal())->toBe($before);
     $migration->up();
+    $repeat->up();
     expect($guard())->toBeTrue()->and($fixture['application']->refresh()->getRawOriginal())->toBe($before)
         ->and(BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SUBMITTED');
 });

@@ -16,6 +16,7 @@ use App\Notifications\Auditor\JobOffered;
 use App\Notifications\Business\ApplicationDecided;
 use App\Notifications\Business\ApplicationOutcome;
 use App\Notifications\Business\RaiseExpired as BusinessRaiseExpired;
+use App\Notifications\Business\ReportingWindowOpen;
 use App\Notifications\Investor\InvestmentConfirmed;
 use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\ReportPublished;
@@ -186,6 +187,8 @@ final readonly class EloquentPartyNotices implements PartyNotices
                 route('investor.holdings.show', ['holding' => $facts['holding_id']])),
             PartyNoticeKind::BusinessRaiseExpired => new BusinessRaiseExpired($facts['business'], $facts['target'], $facts['committed'],
                 route('business.campaigns.show', ['business' => $facts['business_id'], 'campaign' => $facts['campaign_id']])),
+            PartyNoticeKind::BusinessReportingWindowOpen => new ReportingWindowOpen($facts['business'], CarbonImmutable::parse($facts['period'].'-01')->format('F Y'),
+                CarbonImmutable::parse($facts['closes_at'])->setTimezone('Africa/Kigali'), route('business.audit-prep', ['business' => $facts['business_id']])),
             PartyNoticeKind::BusinessApplicationApproved => new ApplicationDecided(ApplicationOutcome::Approved, $facts['business'], $facts['amount'],
                 (int) $facts['term_months'], route('business.applications.publish.show', ['business' => $facts['business_id'], 'application' => $facts['application_id']])),
             PartyNoticeKind::WithdrawalSent => new WalletTransferCompleted(WalletTransfer::Withdrawal, $facts['received'], $facts['account'],
