@@ -18,11 +18,13 @@ import {
 import { ACCENT_FILL, POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice, useRefusalText } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
+import { LogoMark } from '@/components/rozine/logo';
 import { useC3Command } from '@/hooks/use-c3-command';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompactBare } from '@/lib/investor/format';
 import { useServerNow } from '@/lib/investor/server-clock';
+import { useWide } from '@/lib/investor/use-wide';
 import { formatAmount, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
@@ -126,6 +128,7 @@ export function CheckoutSheet({
     variant,
 }: CheckoutSheetProps) {
     const { t } = useTranslation();
+    const wide = useWide();
     const refusalText = useRefusalText();
     const clock = useTimeLeft(deal.clock.expires_at, serverTime);
     const quoted = useQuotedUnits(Number(quote.units), {}, [
@@ -229,7 +232,10 @@ export function CheckoutSheet({
         return shell(
             t('investor.checkout.c3.committed'),
             <>
-                <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-4">
+                <div
+                    tabIndex={0}
+                    className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-4"
+                >
                     <p
                         role="status"
                         className="mb-3 rounded-xl bg-rz-accent-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-rz-accent-app-text"
@@ -351,7 +357,7 @@ export function CheckoutSheet({
             <span className="text-xs">
                 <Icon name="warning" tone="red" />
             </span>
-            <span className="flex-1 text-[11.5px] leading-[1.4] text-[#c0464b] dark:text-rz-danger-text">
+            <span className="flex-1 text-[11.5px] leading-[1.4] text-[#b3352a] dark:text-rz-danger-text">
                 {t('investor.checkout.insufficient')}
             </span>
             <Link
@@ -424,7 +430,10 @@ export function CheckoutSheet({
         return shell(
             t('investor.checkout.c3.reserved_title'),
             <form onSubmit={confirm} className="flex min-h-0 flex-1 flex-col">
-                <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
+                <div
+                    tabIndex={0}
+                    className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1"
+                >
                     <C3Notice command={command} />
                     {dealLine}
                     <div className="mt-[11px]">
@@ -549,7 +558,10 @@ export function CheckoutSheet({
     return shell(
         t('investor.checkout.title'),
         <div className="flex min-h-0 flex-1 flex-col">
-            <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
+            <div
+                tabIndex={0}
+                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1"
+            >
                 <C3Notice command={command} />
                 <DealStatusNotice deal={deal} className="mb-[11px]" />
                 {risks?.action && (
@@ -640,11 +652,62 @@ export function CheckoutSheet({
                     {t('investor.checkout.c3.indicative')}
                 </p>
                 {quoteRows}
-                <p className="mt-[7px] text-center text-[11px] text-rz-secondary">
-                    {t('investor.checkout.wallet_detail', {
-                        amount: formatRwf(wallet.available),
-                    })}
-                </p>
+                {wide ? (
+                    <>
+                        <p className={cn(LABEL, 'mt-3.5')}>
+                            {t('investor.checkout.pay_with')}
+                        </p>
+                        <div className="mt-[7px] grid grid-cols-4 gap-1.5">
+                            <span className="relative flex flex-col items-center gap-1.5 rounded-xl border-[1.5px] border-rz-accent-fill bg-rz-accent-soft px-1 py-2.5">
+                                <span className="flex size-[30px] items-center justify-center rounded-lg bg-rz-surface">
+                                    <LogoMark className="size-4 text-rz-accent-fill" />
+                                </span>
+                                <span className="text-[11px] font-semibold text-rz-accent-app-text">
+                                    {t('investor.checkout.wallet')}
+                                </span>
+                                <span
+                                    aria-hidden
+                                    className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-rz-accent-fill text-[9px] text-white"
+                                >
+                                    ✓
+                                </span>
+                            </span>
+                        </div>
+                        <p className="mt-2 text-center text-[11.5px] text-rz-slate">
+                            {t('investor.checkout.wallet_line', {
+                                wallet: t('investor.wallet.rozine_wallet'),
+                                amount: formatRwf(wallet.available),
+                            })}
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <p className={cn(LABEL, 'mt-3.5')}>
+                            {t('investor.checkout.funding_source')}
+                        </p>
+                        <div className="mt-[7px] flex items-center gap-3 rounded-2xl border border-rz-accent-fill bg-rz-surface px-3.5 py-3">
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft">
+                                <LogoMark className="size-[18px] text-rz-accent-fill" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[13.5px] font-semibold text-rz-ink">
+                                    {t('investor.wallet.rozine_wallet')}
+                                </span>
+                                <span className="mt-px block text-xs text-rz-slate">
+                                    {t('investor.checkout.wallet_available', {
+                                        amount: formatRwf(wallet.available),
+                                    })}
+                                </span>
+                            </span>
+                            <span
+                                aria-hidden
+                                className="flex size-5 shrink-0 items-center justify-center rounded-full bg-rz-accent-fill text-xs text-white"
+                            >
+                                ✓
+                            </span>
+                        </div>
+                    </>
+                )}
                 {shortWallet}
                 {pageRefusal}
             </div>
@@ -674,7 +737,11 @@ export function CheckoutSheet({
                             role="status"
                             className="text-center text-[12px] text-rz-secondary"
                         >
-                            {t('investor.checkout.c3.reserve_unavailable')}
+                            {t(
+                                risks?.acknowledged === false
+                                    ? 'investor.checkout.c3.reserve_after_risks'
+                                    : 'investor.checkout.c3.reserve_unavailable',
+                            )}
                         </p>
                     )}
                     <p className="mt-2 text-center text-[10px] leading-[1.4] text-rz-secondary">

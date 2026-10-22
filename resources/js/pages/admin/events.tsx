@@ -87,7 +87,7 @@ function EventLine({ row }: { row: EventRow }) {
                     {row.changes.length > 0 ? (
                         <table className="mt-2.5 w-full max-w-[640px] text-left text-[12px]">
                             <thead>
-                                <tr className="text-[10.5px] font-semibold text-[#7b8699] uppercase dark:text-rz-muted">
+                                <tr className="text-[10.5px] font-semibold text-[#636e86] uppercase dark:text-rz-muted">
                                     <th className="py-1 pr-3 font-semibold">
                                         {t('admin.events.field')}
                                     </th>
@@ -108,10 +108,10 @@ function EventLine({ row }: { row: EventRow }) {
                                         <td className="py-1.5 pr-3 font-semibold text-rz-ink">
                                             {change.field}
                                         </td>
-                                        <td className="py-1.5 pr-3 text-[#e5484d] line-through decoration-1 dark:text-[#ff6b6f]">
+                                        <td className="py-1.5 pr-3 text-[#b3352a] line-through decoration-1 dark:text-[#ff6b6f]">
                                             {change.before ?? '—'}
                                         </td>
-                                        <td className="py-1.5 font-semibold text-[#1d9e75] dark:text-[#3fcda0]">
+                                        <td className="py-1.5 font-semibold text-[#157357] dark:text-[#3fcda0]">
                                             {change.after ?? '—'}
                                         </td>
                                     </tr>
@@ -196,7 +196,7 @@ export default function AdminEvents(props: AdminEventsProps) {
                         strokeWidth="1.7"
                     />
                 </svg>
-                <span className="text-[13px] text-[#5f6fc8] dark:text-[#99a3ff]">
+                <span className="text-[13px] text-[#4f5fb8] dark:text-[#99a3ff]">
                     {t('admin.events.immutable')}
                 </span>
             </div>
@@ -205,6 +205,28 @@ export default function AdminEvents(props: AdminEventsProps) {
                 label={t('admin.events.table')}
                 minWidth="min-w-[760px]"
                 className="shadow-[0_1px_2px_rgba(16,32,58,.04),0_14px_30px_-24px_rgba(16,32,58,.28)]"
+                empty={
+                    props.events.length === 0 && (
+                        <div className="p-10 text-center">
+                            <div className="text-[14px] font-semibold text-rz-ink">
+                                {t(
+                                    active
+                                        ? 'admin.events.filtered_empty'
+                                        : 'admin.events.empty',
+                                )}
+                            </div>
+                            {active && (
+                                <button
+                                    type="button"
+                                    onClick={clear}
+                                    className="mt-3 rounded-[9px] bg-[#eef3fb] px-3.5 py-2 text-[12px] font-bold text-rz-accent-app-text dark:bg-rz-surface-muted"
+                                >
+                                    {t('admin.events.clear_filters')}
+                                </button>
+                            )}
+                        </div>
+                    )
+                }
                 footer={
                     props.more && (
                         <ShowMoreLink link={props.more}>
@@ -214,166 +236,170 @@ export default function AdminEvents(props: AdminEventsProps) {
                         </ShowMoreLink>
                     )
                 }
-            >
-                <div className="border-b border-[#e3e9f4] bg-[#f8fafd] px-5 pt-4 pb-3.5 dark:border-rz-border dark:bg-rz-surface-sunken">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <CardTitle>{t('admin.events.title')}</CardTitle>
-                        <div className="flex flex-wrap items-center gap-2.5">
-                            <span className="text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
-                                {t('admin.events.count', {
-                                    count: formatCount(props.total),
-                                })}
-                            </span>
-                            {props.export.state === 'running' && (
-                                <span
-                                    role="status"
-                                    className="flex items-center gap-1.5 rounded-lg bg-[rgba(30,58,255,.1)] px-2.5 py-1 text-[11.5px] font-semibold text-rz-accent-app-text"
-                                >
-                                    <span className="size-2 animate-pulse rounded-full bg-rz-accent-fill" />
-                                    {t('admin.events.export_running', {
-                                        actor: props.export.requested.actor,
-                                        at: formatTimestamp(
-                                            props.export.requested.at,
-                                        ),
+                header={
+                    <div className="border-b border-[#e3e9f4] bg-[#f8fafd] px-5 pt-4 pb-3.5 dark:border-rz-border dark:bg-rz-surface-sunken">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <CardTitle>{t('admin.events.title')}</CardTitle>
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                <span className="text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
+                                    {t('admin.events.count', {
+                                        count: formatCount(props.total),
                                     })}
                                 </span>
-                            )}
-                            {props.export.state === 'ready' && (
-                                <Link
-                                    href={props.export.download}
-                                    className="rounded-lg bg-[#1d9e75] px-3 py-1.5 text-[11.5px] font-semibold text-white"
-                                >
-                                    {t('admin.events.export_download')}
-                                </Link>
-                            )}
-                            {exportAction &&
-                                props.export.state !== 'running' &&
-                                !exporting && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setExporting(true)}
-                                        className="h-[30px] rounded-lg border border-rz-hairline bg-rz-surface px-3 text-[12px] font-bold text-rz-slate"
+                                {props.export.state === 'running' && (
+                                    <span
+                                        role="status"
+                                        className="flex items-center gap-1.5 rounded-lg bg-[rgba(30,58,255,.1)] px-2.5 py-1 text-[11.5px] font-semibold text-rz-accent-app-text"
                                     >
-                                        {t('admin.events.export')}
-                                    </button>
+                                        <span className="size-2 animate-pulse rounded-full bg-rz-accent-fill" />
+                                        {t('admin.events.export_running', {
+                                            actor: props.export.requested.actor,
+                                            at: formatTimestamp(
+                                                props.export.requested.at,
+                                            ),
+                                        })}
+                                    </span>
                                 )}
+                                {props.export.state === 'ready' && (
+                                    <Link
+                                        href={props.export.download}
+                                        className="rounded-lg bg-[#157357] px-3 py-1.5 text-[11.5px] font-semibold text-white"
+                                    >
+                                        {t('admin.events.export_download')}
+                                    </Link>
+                                )}
+                                {exportAction &&
+                                    props.export.state !== 'running' &&
+                                    !exporting && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setExporting(true)}
+                                            className="h-[30px] rounded-lg border border-rz-hairline bg-rz-surface px-3 text-[12px] font-bold text-rz-slate"
+                                        >
+                                            {t('admin.events.export')}
+                                        </button>
+                                    )}
+                            </div>
+                        </div>
+                        {exporting && exportAction && (
+                            <ReasonStage
+                                title={t('admin.events.export_title')}
+                                body={t('admin.events.export_body')}
+                                cta={t('admin.events.export_cta')}
+                                placeholder={t(
+                                    'admin.events.export_placeholder',
+                                )}
+                                tone="blue"
+                                action={exportAction}
+                                viewer={props.viewer}
+                                onCancel={() => setExporting(false)}
+                                payload={{
+                                    q: filters.q,
+                                    preset: filters.preset ?? '',
+                                    from: filters.from ?? '',
+                                    to: filters.to ?? '',
+                                }}
+                            />
+                        )}
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <form
+                                onSubmit={search}
+                                role="search"
+                                className="flex h-[34px] min-w-[190px] flex-1 items-center gap-[7px] rounded-[9px] border border-[#dbe3f0] bg-rz-surface px-[11px] dark:border-rz-border"
+                            >
+                                <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    aria-hidden
+                                >
+                                    <circle
+                                        cx="11"
+                                        cy="11"
+                                        r="7"
+                                        stroke="#9aa3b5"
+                                        strokeWidth="1.8"
+                                    />
+                                    <path
+                                        d="m20 20-3.2-3.2"
+                                        stroke="#9aa3b5"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <input
+                                    type="search"
+                                    name="q"
+                                    defaultValue={filters.q}
+                                    aria-label={t('admin.events.search_label')}
+                                    placeholder={t(
+                                        'admin.events.search_placeholder',
+                                    )}
+                                    className="min-w-0 flex-1 border-none bg-transparent text-[12.5px] text-rz-ink outline-none placeholder:text-rz-muted"
+                                />
+                            </form>
+                            {(['today', '7d', '30d'] as const).map((preset) => (
+                                <button
+                                    key={preset}
+                                    type="button"
+                                    aria-pressed={filters.preset === preset}
+                                    onClick={() =>
+                                        apply({ preset, from: null, to: null })
+                                    }
+                                    className={cn(
+                                        FILTER_BUTTON,
+                                        filters.preset === preset
+                                            ? 'bg-[#eef3fb] text-rz-accent-app-text dark:bg-rz-surface-muted'
+                                            : 'bg-rz-surface text-rz-slate',
+                                    )}
+                                >
+                                    {t(`admin.events.preset.${preset}`)}
+                                </button>
+                            ))}
+                            <input
+                                type="date"
+                                aria-label={t('admin.events.from')}
+                                value={filters.from ?? ''}
+                                onChange={(event) =>
+                                    apply({
+                                        preset: null,
+                                        from: event.target.value || null,
+                                    })
+                                }
+                                className={DATE_INPUT}
+                            />
+                            <span className="text-[11px] text-rz-faint">
+                                {t('admin.events.to_word')}
+                            </span>
+                            <input
+                                type="date"
+                                aria-label={t('admin.events.to')}
+                                value={filters.to ?? ''}
+                                onChange={(event) =>
+                                    apply({
+                                        preset: null,
+                                        to: event.target.value || null,
+                                    })
+                                }
+                                className={DATE_INPUT}
+                            />
+                            {active && (
+                                <button
+                                    type="button"
+                                    onClick={clear}
+                                    className={cn(
+                                        FILTER_BUTTON,
+                                        'bg-[#eef3fb] text-rz-accent-app-text dark:bg-rz-surface-muted',
+                                    )}
+                                >
+                                    {t('admin.events.clear')}
+                                </button>
+                            )}
                         </div>
                     </div>
-                    {exporting && exportAction && (
-                        <ReasonStage
-                            title={t('admin.events.export_title')}
-                            body={t('admin.events.export_body')}
-                            cta={t('admin.events.export_cta')}
-                            placeholder={t('admin.events.export_placeholder')}
-                            tone="blue"
-                            action={exportAction}
-                            viewer={props.viewer}
-                            onCancel={() => setExporting(false)}
-                            payload={{
-                                q: filters.q,
-                                preset: filters.preset ?? '',
-                                from: filters.from ?? '',
-                                to: filters.to ?? '',
-                            }}
-                        />
-                    )}
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <form
-                            onSubmit={search}
-                            role="search"
-                            className="flex h-[34px] min-w-[190px] flex-1 items-center gap-[7px] rounded-[9px] border border-[#dbe3f0] bg-rz-surface px-[11px] dark:border-rz-border"
-                        >
-                            <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                aria-hidden
-                            >
-                                <circle
-                                    cx="11"
-                                    cy="11"
-                                    r="7"
-                                    stroke="#9aa3b5"
-                                    strokeWidth="1.8"
-                                />
-                                <path
-                                    d="m20 20-3.2-3.2"
-                                    stroke="#9aa3b5"
-                                    strokeWidth="1.8"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <input
-                                type="search"
-                                name="q"
-                                defaultValue={filters.q}
-                                aria-label={t('admin.events.search_label')}
-                                placeholder={t(
-                                    'admin.events.search_placeholder',
-                                )}
-                                className="min-w-0 flex-1 border-none bg-transparent text-[12.5px] text-rz-ink outline-none placeholder:text-rz-muted"
-                            />
-                        </form>
-                        {(['today', '7d', '30d'] as const).map((preset) => (
-                            <button
-                                key={preset}
-                                type="button"
-                                aria-pressed={filters.preset === preset}
-                                onClick={() =>
-                                    apply({ preset, from: null, to: null })
-                                }
-                                className={cn(
-                                    FILTER_BUTTON,
-                                    filters.preset === preset
-                                        ? 'bg-[#eef3fb] text-rz-accent-app-text dark:bg-rz-surface-muted'
-                                        : 'bg-rz-surface text-rz-slate',
-                                )}
-                            >
-                                {t(`admin.events.preset.${preset}`)}
-                            </button>
-                        ))}
-                        <input
-                            type="date"
-                            aria-label={t('admin.events.from')}
-                            value={filters.from ?? ''}
-                            onChange={(event) =>
-                                apply({
-                                    preset: null,
-                                    from: event.target.value || null,
-                                })
-                            }
-                            className={DATE_INPUT}
-                        />
-                        <span className="text-[11px] text-rz-faint">
-                            {t('admin.events.to_word')}
-                        </span>
-                        <input
-                            type="date"
-                            aria-label={t('admin.events.to')}
-                            value={filters.to ?? ''}
-                            onChange={(event) =>
-                                apply({
-                                    preset: null,
-                                    to: event.target.value || null,
-                                })
-                            }
-                            className={DATE_INPUT}
-                        />
-                        {active && (
-                            <button
-                                type="button"
-                                onClick={clear}
-                                className={cn(
-                                    FILTER_BUTTON,
-                                    'bg-[#eef3fb] text-rz-accent-app-text dark:bg-rz-surface-muted',
-                                )}
-                            >
-                                {t('admin.events.clear')}
-                            </button>
-                        )}
-                    </div>
-                </div>
+                }
+            >
                 <div
                     role="row"
                     className={cn(
@@ -390,26 +416,6 @@ export default function AdminEvents(props: AdminEventsProps) {
                 {props.events.map((row) => (
                     <EventLine key={row.id} row={row} />
                 ))}
-                {props.events.length === 0 && (
-                    <div className="p-10 text-center">
-                        <div className="text-[14px] font-semibold text-rz-ink">
-                            {t(
-                                active
-                                    ? 'admin.events.filtered_empty'
-                                    : 'admin.events.empty',
-                            )}
-                        </div>
-                        {active && (
-                            <button
-                                type="button"
-                                onClick={clear}
-                                className="mt-3 rounded-[9px] bg-[#eef3fb] px-3.5 py-2 text-[12px] font-bold text-rz-accent-app-text dark:bg-rz-surface-muted"
-                            >
-                                {t('admin.events.clear_filters')}
-                            </button>
-                        )}
-                    </div>
-                )}
             </TableCard>
         </AdminFrame>
     );

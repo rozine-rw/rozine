@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\ReviewInvestorVerifications;
+use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Staff\DecideInvestorVerificationRequest;
 use App\Http\Requests\Staff\ListInvestorVerificationsRequest;
 use App\Http\Resources\OperationResource;
@@ -47,7 +48,7 @@ class StaffInvestorVerificationController extends Controller
         $selected = $request->validated('verification');
         $staff = $access->handle($actorId);
 
-        $resource = new StaffInvestorVerificationsResource([...$queue,
+        $resource = new StaffInvestorVerificationsResource([...$queue, 'policy' => PlatformPolicies::compliance(),
             'review' => $selected === null ? null : $this->review->show($actorId, (string) $selected),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 

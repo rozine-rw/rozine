@@ -21,8 +21,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *   applications queue.
  * - Applications pending and the pending list: the staff applications queue's pending tab, read only
  *   for `applications.review`; anyone else sees a dash and no rows.
- * - Disbursed: disbursements that closed with issued notes. The Payments badge counts those
- *   awaiting a second approver, for whoever may view disbursements.
+ * - Disbursed: disbursements that closed with issued notes. The Payments badge counts those that
+ *   automatic payment has not queued yet (held or blocked), for whoever may view disbursements.
  *
  * - Reconciliation breaks: every break open now, oldest first, for whoever may view reconciliation;
  *   anyone else sees them as not tracked. Nothing can be assigned or escalated yet, so no break has
@@ -31,8 +31,14 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * - Live activity: the six newest ledger postings, each opening its ledger entry, for whoever may
  *   view the ledger; anyone else sees it as not tracked.
  *
+ * - Sector exposure: issued principal per Business industry with its note count, at risk while one
+ *   of its notes is on watch.
+ *
+ * - Portfolio health: issued notes by their newest monthly report, healthy or on watch, each with
+ *   its whole-percent share (watch takes the rounding). Distress is not recorded yet, so it is null.
+ *
  * The platform does not record a treasury position, default rate, secondary volume, note health,
- * late or at-risk notes, frozen accounts, sector exposure or collections yet, so
+ * late or at-risk notes or collections yet, so
  * those are sent as null and the console shows them as not tracked.
  *
  * @phpstan-import-type OpenBreak from \App\Application\Operations\BrowseReconciliation
@@ -40,9 +46,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Dashboard array{
- *     figures: array{capital_raised: string, active_businesses: int, awaiting_second_approver: int, disbursed: string,
+ *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
- *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, pending: list<array<string, mixed>>,
+ *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int, pending: list<array<string, mixed>>,
+ *     sectors: list<array{sector: string, principal: string, notes: int, campaigns: list<string>, at_risk: bool}>,
+ *     health: array{total: int, healthy: int, watch: int, distressed: null},
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
  * }
  * @phpstan-type Page array{dashboard: Dashboard, breaks: list<OpenBreak>|null, activity: list<Entry>|null, roles: list<string>, permissions: list<string>}
@@ -62,6 +70,8 @@ class StaffDashboardResource extends JsonResource
         $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
         $count = fn (int $value): array => ['kind' => 'count', 'value' => $value];
         $notes = $figures['notes'];
+        $health = $board['health'];
+        $healthyPct = $health['total'] === 0 ? 0 : intdiv($health['healthy'] * 100, $health['total']);
         $reviews = in_array('applications.review', $permissions, true);
         $funnel = ['submitted' => $board['applications_pending'], 'live' => $notes['live'], 'funded' => $notes['funded'],
             'repaying' => $notes['repaying'], 'matured' => null, 'failed' => $notes['failed']];
@@ -70,7 +80,7 @@ class StaffDashboardResource extends JsonResource
         return ['contract_version' => 'staff-dashboard-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($page['roles']))->resolve($request), 'nav' => $nav,
             'badges' => ['applications' => $reviews ? $board['applications_pending'] : null,
-                'disbursements' => in_array('disbursements.view', $permissions, true) ? $figures['awaiting_second_approver'] : null],
+                'disbursements' => in_array('disbursements.view', $permissions, true) ? $figures['disbursements_waiting'] : null],
             'search' => '',
             'kpis' => [['key' => 'capital_raised', 'value' => ['kind' => 'money', 'value' => $money($figures['capital_raised'])]],
                 ['key' => 'active_businesses', 'value' => $count($figures['active_businesses'])],
@@ -81,13 +91,14 @@ class StaffDashboardResource extends JsonResource
                 ['key' => 'kyc_awaiting', 'count' => $board['kyc_awaiting'], 'link' => $nav['investors'] === null ? null
                     : ['url' => route($prefix.'staff.investors.index', ['chip' => 'pending'], false), 'method' => 'get']],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
-                ['key' => 'frozen_accounts', 'count' => null, 'link' => null]],
+                ['key' => 'frozen_accounts', 'count' => $board['frozen_accounts'], 'link' => $board['frozen_accounts'] > 0 ? $nav['staff'] : null]],
             'breaks' => $page['breaks'] === null ? null : array_map(fn (array $break): array => ['id' => $break['id'], 'reference' => $break['reference'],
                 'description' => StaffReconciliationResource::describe($break), 'gap' => $money($break['amount']), 'opened_at' => $break['opened_at'],
                 'age_days' => $break['age_days'], 'owner' => null, 'actions' => (object) []], $page['breaks']),
             'capital_raised' => [...$board['capital'], 'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'],
                 'amount' => $money($bar['amount']), 'height_pct' => $bar['height_pct']], $board['capital']['bars'])],
-            'portfolio_health' => null,
+            'portfolio_health' => ['total' => $health['total'], 'healthy' => ['count' => $health['healthy'], 'pct' => $healthyPct],
+                'watch' => ['count' => $health['watch'], 'pct' => $health['total'] === 0 ? 0 : 100 - $healthyPct], 'distressed' => null],
             'activity' => $page['activity'] === null ? null : array_map(function (array $entry) use ($prefix): array {
                 $row = StaffLedgerResource::row($entry, ['url' => route($prefix.'staff.ledger.index', ['entry' => $entry['id']], false), 'method' => 'get']);
 
@@ -100,7 +111,8 @@ class StaffDashboardResource extends JsonResource
                 'requested' => $entry['requested'], 'rating' => $entry['rating'],
                 'link' => $reviews ? ['url' => route($prefix.'staff.applications.index', ['application' => $entry['id']], false), 'method' => 'get'] : null],
                 $board['pending']),
-            'sector_exposure' => null,
+            'sector_exposure' => array_map(fn (array $sector): array => ['sector' => $sector['sector'], 'outstanding' => $money($sector['principal']),
+                'notes' => $sector['notes'], 'at_risk' => $sector['at_risk']], $board['sectors']),
             'treasury' => ['invested' => $money($figures['capital_raised']), 'disbursed' => $money($figures['disbursed']),
                 'platform_net' => null, 'paid_to_investors' => null],
             'collections' => null];

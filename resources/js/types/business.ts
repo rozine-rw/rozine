@@ -399,45 +399,12 @@ export type ScheduleInstalment = {
 };
 
 /**
- * The borrower service fee as a server-owned projection (C4 gate 6, agreed shape on
- * rozine-rw/rozine#96). Charged on each amount actually repaid — principal and contractual
- * return, never fees or penalties — so the schedule and total here project the scheduled
- * repayments only. The client never derives any of these figures. PROVISIONAL: the rounding
- * policy is not yet approved, so only synthetic fixtures carry this block today.
- */
-export type ServiceFeeDisclosure = {
-    rate_bps: Bps;
-    basis: 'repaid_principal_and_contractual_return';
-    timing: 'on_repayment';
-    projection_basis: 'scheduled_repayments';
-    /** The selected rounding policy; null while none is approved, which blocks acceptance. */
-    rounding: { rule: string; version: string } | null;
-    /** The projected fee for each scheduled instalment, keyed by the quote's instalment number. */
-    schedule: ScheduleInstalment[];
-    total: Money;
-    policy_version: string;
-};
-
-/**
- * The fee terms a binding surface shows beside its figures. `service_fee` is absent while the
- * server predates gate 6, and null (or a null rounding) when the fee policy is unavailable;
- * `total_payable` is the contractual total plus the projected fee, as the server states it.
- */
-export type ServiceFeeTerms = {
-    service_fee?: ServiceFeeDisclosure | null;
-    total_payable?: Money | null;
-};
-
-/** One instalment the retained signed quote scheduled, by identity only. */
-export type ExpectedInstalment = { instalment: number };
-
-/**
  * The server's immutable quote, created by `application.evaluate` and only read on a page load.
  * Every figure is the engine's; the page shows it, never recomputes it. A refusal carries a
  * stable code and the server's own explanation, and no numeric offer at all.
  */
 export type ApplicationQuote =
-    | ({
+    | {
           status: 'ready';
           quote_id: string;
           quote_revision: number;
@@ -473,7 +440,7 @@ export type ApplicationQuote =
               /** The exact term premium, never a rounded coefficient. */
               term_premium: Ratio;
           };
-      } & ServiceFeeTerms)
+      }
     | {
           status: 'refused';
           code: QuoteDenialCode;
@@ -544,6 +511,8 @@ export type ApplicationSubmission = {
     exposure_reservation_id?: string;
     note_id: string | null;
     timeline: TimelineStage[];
+    /** Once staff approve (release) the application, the page that publishes it; null otherwise. */
+    publish?: RouteLink | null;
 };
 
 export type ApplicationCommandName = 'save' | 'evaluate' | 'submit';
@@ -600,8 +569,8 @@ export type BusinessApplyProps = {
     acceptance: ApplicationAcceptance;
     submission: ApplicationSubmission | null;
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
@@ -622,12 +591,6 @@ export type BusinessApplyProps = {
         submit: RouteAction;
     };
     preview_outcome?: ApplyPreviewOutcome;
-    /**
-     * Supplied only by local/testing synthetic fixture previews: treats an absent `service_fee`
-     * as unavailable, the proposed gate 6 rule awaiting its decision. The server never sends it,
-     * so live acceptance is unchanged until that decision is recorded.
-     */
-    preview_fee_terms_required?: true;
     /**
      * Another submitted application of this business still under review, which blocks this
      * draft's evaluation and submission (one at a time in C2); null otherwise.
@@ -893,11 +856,11 @@ export type BusinessReportsProps = {
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
     /**
-     * Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. Null when
-     * no such day is published (the live monthly review closes a fixed time after delivery): the
-     * guide then names no day.
+     * Audit-cycle policy the guide quotes: the day audits seal by. Null when no such day is
+     * published: the guide then names no day. The co-sign window is always the BRS's 24 hours
+     * after sealing (OD-07), so it is not a policy field.
      */
-    policy: { seal_day: number; cosign_day: number } | null;
+    policy: { seal_day: number } | null;
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -1148,7 +1111,18 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         }[];
         items: BusinessWalletEntry[];
         pagination: Pagination;
+        /**
+         * The inclusive calendar days the history is narrowed to, and the unnarrowed view to apply
+         * a new range to. Null where no range can be chosen (a preview state).
+         */
+        range: {
+            from: string | null;
+            to: string | null;
+            base: RouteLink;
+        } | null;
     };
+    /** The statement downloads for the same range; null where none is served (a preview state). */
+    exports: { pdf: RouteLink; csv: RouteLink } | null;
     /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
     receipt:
         | (BusinessWalletEntry & { receipt: Receipt })
@@ -1184,39 +1158,33 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
 
 /** One of the five limits on a raise; the engine marks the one that binds. */
 export type CapacityLimit = { value: Money; binding: boolean } & (
-    | { key: 'capacity'; ebitda: Money; multiplier: string }
-    | { key: 'revenue_share'; percent: string; revenue: Money }
-    | { key: 'book_share'; percent: string; book: Money }
-    | { key: 'phase_cap'; phase: string; book_under: Money }
+    | { key: 'cash_flow' }
+    | { key: 'exposure'; limit: Money; committed: Money }
     | { key: 'policy_max' }
 );
 
-/** How the engine sized this business's capacity, exactly as it computed it. */
+/**
+ * How the engine sized this business's capacity on the quote its rating came from: the cash it
+ * keeps each month, the cover every instalment needs, and the three limits on one note (BRS §4).
+ * Headroom is that capacity less the raises signed since it was sized.
+ */
 export type CapacitySizing = {
     cash_per_month: Money;
-    net_margin_percent: string;
-    depreciation_percent: string;
-    multiplier: string;
-    cover_tier: 'none' | 'cover1x' | 'cover2x';
-    carry: Money;
-    stock: { state: 'verified' | 'indicative' | 'none'; value: Money | null };
+    /** The cover each instalment needs, already formatted: "1.50". */
+    target_cover: string;
+    term_months: number;
+    rate_percent: string;
     limits: CapacityLimit[];
     approved: Money;
     headroom: Money;
-    tiers: {
-        multiplier: string;
-        principal: Money;
-        applied: boolean;
-        needs_cover: string | null;
-        your_cover: string;
-    }[];
 };
 
+/** The engine measures no growth; the fourth factor is the depth of the verified track record. */
 export type RatingFactorKey =
     | 'financial_health'
     | 'repayment_history'
     | 'statement_consistency'
-    | 'growth_outlook';
+    | 'track_record';
 
 export type BusinessRatingProps = {
     home: BusinessHomeProps;
@@ -1229,13 +1197,14 @@ export type BusinessRatingProps = {
         audited: BusinessRating;
         moves: { reason: string; delta: string }[];
     } | null;
-    /** Published factor scores out of 100, when the engine publishes them. */
+    /** The Business's own factor scores out of 100, from the quote its rating came from. */
     factors: { key: RatingFactorKey; score: number }[] | null;
     sizing: CapacitySizing | null;
     /** Audited financials the rating rests on; null while none is published, and none is shown. */
     financials: {
         avg_monthly_revenue: Money;
-        ebitda_month: Money;
+        /** Net operating cash per month over the statement window; not accounting profit. */
+        net_cash_month: Money;
         net_margin_percent: string;
         outstanding: Money;
     } | null;
@@ -1263,7 +1232,7 @@ export type BusinessLateFeeLine = {
 export type BusinessInstalment = {
     index: number;
     due_on: KigaliDate;
-    /** `late_fees` is "0" here; `service_fee` is whatever the server's fee policy schedules. */
+    /** `late_fees` is "0" here. */
     scheduled: ComponentAmounts;
     paid: ComponentAmounts;
     outstanding: ComponentAmounts;
@@ -1491,26 +1460,14 @@ export type C3BusinessPublishProps = {
         review: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     preview_outcome?: C3PreviewOutcome<'application.publish'>;
-    /**
-     * Supplied only by local/testing synthetic fixture previews: treats an absent `service_fee`
-     * as unavailable, the proposed gate 6 rule awaiting its decision. The server never sends it,
-     * so live acceptance is unchanged until that decision is recorded.
-     */
-    preview_fee_terms_required?: true;
-    /**
-     * PROVISIONAL (proposed on #96 for C4 gate 6): the instalment identities of the retained
-     * signed quote, so Publish can check that the retained fee schedule projects exactly one fee
-     * for each. Without it the fee terms can't be checked and read as unavailable.
-     */
-    expected_schedule?: ExpectedInstalment[] | null;
-} & ServiceFeeTerms;
+};
 
 /** The coarse closing view (H15): no provider or evidence reference. */
 export type BusinessClosing =
@@ -1565,6 +1522,18 @@ export type CampaignProgress =
           closed_at: string;
       };
 
+export type InvestorKind = 'person' | 'organization';
+
+/** A funded raise's holders for its own Business. No Investor is named (Privacy Note §5). */
+export type CampaignInvestors = {
+    raised: Money;
+    holders: number;
+    average: Money;
+    mix: { kind: InvestorKind; holders: number; percent: string }[];
+    /** Largest holding first. */
+    list: { kind: InvestorKind; units: string; principal: Money }[];
+};
+
 export type BusinessCampaignProps = Omit<
     BusinessNoteProps,
     'home' | 'note' | 'links'
@@ -1592,11 +1561,12 @@ export type BusinessCampaignProps = Omit<
         changes?: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home (the
-     * live Business Home is the application directory, not the preview dashboard), in which case
-     * the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
+    /** Who holds the funded notes, by kind and amount only; null until the raise is funded. */
+    investors?: CampaignInvestors | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     actions: { cancel: RouteAction | null };

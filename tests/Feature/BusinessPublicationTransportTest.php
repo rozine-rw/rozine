@@ -45,7 +45,7 @@ it('serves the same authorized release and publication receipts on web and API',
     if ($api) {
         $this->getJson($url)->assertOk()->assertJsonPath('data.allowed_actions', ['application.publish'])->assertJsonPath('data.links.review', null);
     } else {
-        $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component('business/publish')->where('allowed_actions', ['application.publish'])->where('links.review', null)->where('home', null));
+        $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page->component('business/publish')->where('allowed_actions', ['application.publish'])->where('links.review', null)->where('home.links.home.url', route('business.show', ['business' => $parameters['business']], false)));
     }
     $payload = ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'application_id' => $fixture['application']->id,
         'expected_application_revision' => $fixture['application']->refresh()->revision, 'fee_disclosure_version' => 'listing-fee-waiver-1'];
@@ -62,7 +62,7 @@ it('serves the same authorized release and publication receipts on web and API',
             ->assertJsonMissingPath('data.actor_user_id')->assertJsonMissingPath('data.binding');
     } else {
         $campaignPage = $this->get($campaignUrl)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/campaign')
-            ->where('contract_version', 'business-campaign-v1')->where('campaign.lifecycle', 'live')->where('home', null)
+            ->where('contract_version', 'business-campaign-v1')->where('campaign.lifecycle', 'live')->where('home.links.home.url', route('business.show', ['business' => $parameters['business']], false))
             ->where('shell_links.home.url', route('business.show', ['business' => $parameters['business']], false))
             ->where('note.progress.committed.amount', '0')->where('note.progress.remaining.amount', '10800000')
             ->where('allowed_actions', ['campaign.cancel'])->where('actions.cancel.method', 'post')->missing('actor_user_id')->missing('binding'));

@@ -46,6 +46,9 @@ describe('Business Reports', () => {
             screen.getByRole('tabpanel', { name: 'Published' }),
         );
 
+        /* The panel holds a real list, so each report reads as an item of it. */
+        expect(list.getByRole('list')).toBeInTheDocument();
+
         expect(
             list.getByRole('link', {
                 name: /^May 2026/,
@@ -148,7 +151,7 @@ describe('Business Reports', () => {
         expect(guide.getByText('7th')).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you add a recap and co-sign it by the 7th, or raise a dispute/,
+                /you have 24 hours to review it and co-sign it, or raise a dispute.*If you do neither within 24 hours, the report counts as approved/,
             ),
         ).toBeInTheDocument();
     });
@@ -159,6 +162,11 @@ describe('Business Reports', () => {
         render(<BusinessReports {...props(emptyFixture)} />);
 
         expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Each monthly report appears here once your Audit Partner seals it.',
+            ),
+        ).toBeInTheDocument();
 
         await user.click(
             screen.getByRole('button', { name: 'How monthly audits work' }),
@@ -175,7 +183,7 @@ describe('Business Reports', () => {
         ).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you review it and co-sign it within the review window, or raise a dispute/,
+                /you have 24 hours to review it and co-sign it, or raise a dispute/,
             ),
         ).toBeInTheDocument();
         expect(guide.queryByText(/7th/u)).not.toBeInTheDocument();

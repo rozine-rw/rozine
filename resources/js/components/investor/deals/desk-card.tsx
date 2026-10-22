@@ -148,7 +148,11 @@ export function DeskCard({
                         <span className="font-bold text-rz-ink">
                             {formatCount(deal.investors)}
                         </span>{' '}
-                        {t('investor.deals.investors')}
+                        {t(
+                            deal.investors === 1
+                                ? 'investor.deals.investors_one'
+                                : 'investor.deals.investors',
+                        )}
                     </span>
                 </div>
                 <p className="mt-2.5 line-clamp-3 text-[13px] leading-normal text-[#46526b] dark:text-rz-body">

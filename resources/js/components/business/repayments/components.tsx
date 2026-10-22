@@ -3,11 +3,11 @@ import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { ComponentAmounts } from '@/types/settlement';
 
-const PARTS = ['principal', 'return', 'service_fee', 'late_fees'] as const;
+const PARTS = ['principal', 'return', 'late_fees'] as const;
 
 /**
- * The server's split of an amount: principal and return always, a service fee or late fees only
- * when the server sends one above zero, then the server's total. Nothing is summed here.
+ * The server's split of an amount: principal and return always, late fees only when the server
+ * sends them above zero, then the server's total. Nothing is summed here.
  */
 export function ComponentRows({
     amounts,

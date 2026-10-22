@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { LogoMark } from '@/components/rozine/logo';
@@ -49,11 +50,11 @@ export function MethodMark({
     );
 }
 
-const BUCKETS = ['available', 'held', 'committed'] as const;
+const BUCKETS = ['held', 'committed'] as const;
 
 /**
- * The blue balance card (design L2846–2860), in C3's ledger terms (H5): the total, then its
- * breakdown, where only "available" is spendable. Pending deposits are listed beneath and are not
+ * The blue balance card (design L3006–3016), in C3's ledger terms (H5): it leads with the
+ * available balance, the only spendable part, then held, committed and the total. Pending deposits are listed beneath and are not
  * part of the total: nothing is credited before a verified success. A restriction says whether
  * deposits still work from `depositOffered` (the page's `allowed_actions`), never on its own.
  */
@@ -68,14 +69,12 @@ export function BalanceCard({
 
     return (
         <section
-            aria-label={t('investor.wallet.c3.total')}
+            aria-label={t('investor.wallet.c3.available_balance')}
             className="relative mt-3.5 shrink-0 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#2440ff_0%,#1e3aff_58%,#10228a_100%)] p-5"
         >
             <span className="pointer-events-none absolute -top-[42px] -right-8 size-[150px] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,.16),rgba(255,255,255,0)_70%)]" />
-            <div className="relative flex items-center justify-between">
-                <span className="text-[10.5px] font-bold tracking-[.08em] text-white uppercase">
-                    {t('investor.wallet.c3.total')}
-                </span>
+            {/* The status reads first so the label sits right beside the figure it names. */}
+            <div className="relative flex flex-row-reverse items-center justify-between">
                 <span className="inline-flex items-center gap-[5px] rounded-[10px] bg-white/[.14] px-[9px] py-1 text-[10px] font-semibold text-white">
                     <span
                         className={cn(
@@ -87,9 +86,12 @@ export function BalanceCard({
                     />
                     {t(`investor.wallet.status.${wallet.status}`)}
                 </span>
+                <span className="text-[10.5px] font-bold tracking-[.08em] text-white uppercase">
+                    {t('investor.wallet.c3.available_balance')}
+                </span>
             </div>
             <p className="relative mt-2.5 text-[30px] font-bold tracking-[-.6px] text-white">
-                {formatRwf(wallet.total)}
+                {formatRwf(wallet.breakdown.available)}
             </p>
             <dl className="relative mt-3 grid grid-cols-3 gap-2 border-t border-white/[.16] pt-3">
                 {BUCKETS.map((bucket) => (
@@ -97,11 +99,19 @@ export function BalanceCard({
                         <dt className="text-[10px] font-semibold text-white/80">
                             {t(`investor.wallet.c3.bucket.${bucket}`)}
                         </dt>
-                        <dd className="mt-0.5 truncate text-[13px] font-bold text-white">
+                        <dd className="mt-0.5 text-[13px] leading-tight font-bold text-white">
                             {formatRwf(wallet.breakdown[bucket])}
                         </dd>
                     </div>
                 ))}
+                <div className="min-w-0">
+                    <dt className="text-[10px] font-semibold text-white/80">
+                        {t('investor.wallet.c3.total')}
+                    </dt>
+                    <dd className="mt-0.5 text-[13px] leading-tight font-bold text-white">
+                        {formatRwf(wallet.total)}
+                    </dd>
+                </div>
             </dl>
             <p className="relative mt-2 text-[11px] text-white/85">
                 {t('investor.wallet.c3.spendable')}
@@ -427,7 +437,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     <dt className="text-xs text-rz-secondary">
                         {t('investor.wallet.c3.credited_on_success')}
                     </dt>
-                    <dd className="text-xs font-bold text-[#17795a] dark:text-[#3fcda0]">
+                    <dd className="text-xs font-bold text-[#157357] dark:text-[#3fcda0]">
                         {quote === null ? '—' : formatRwf(quote.credited)}
                     </dd>
                 </div>
@@ -479,7 +489,10 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
 }
 
 type WithdrawPanelProps<Name extends string> = {
-    funding: Pick<C3InvestorWalletProps['funding'], 'withdrawal' | 'methods'>;
+    funding: Pick<
+        C3InvestorWalletProps['funding'],
+        'withdrawal' | 'methods' | 'picks'
+    >;
     action: RouteAction;
     available: Money;
     allowed_actions: readonly string[];
@@ -729,6 +742,18 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     className="min-w-0 flex-1 border-0 bg-transparent text-right text-xl font-semibold text-rz-ink outline-none placeholder:text-rz-ink"
                 />
             </div>
+            <div className="mt-2 flex gap-1.5">
+                {funding.picks.map((pick) => (
+                    <button
+                        key={pick.amount}
+                        type="button"
+                        onClick={() => setAmount(pick.amount)}
+                        className="flex-1 rounded-[10px] border border-rz-border bg-[#f3f6fc] py-2 text-[11px] font-semibold text-rz-slate dark:bg-rz-surface-muted"
+                    >
+                        {formatCompactBare(pick)}
+                    </button>
+                ))}
+            </div>
             <p className="mt-1.5 text-[11px] text-rz-secondary">
                 {t('investor.wallet.c3.withdraw_available', {
                     amount: formatRwf(available),
@@ -749,7 +774,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             >
                 <div className="flex justify-between gap-2.5 border-b border-[#eef2f9] py-[9px] dark:border-rz-divider">
                     <dt className="text-xs text-rz-secondary">
-                        {t('investor.wallet.c3.provider_charge')}
+                        {t('investor.wallet.fee')}
                     </dt>
                     <dd className="text-xs font-semibold text-rz-ink">
                         {quote === null ? '—' : formatRwf(quote.charge)}
@@ -759,7 +784,12 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <dt className="text-xs text-rz-secondary">
                         {t('investor.wallet.result.withdraw')}
                     </dt>
-                    <dd className="text-xs font-bold text-rz-ink">
+                    <dd
+                        className={cn(
+                            'text-xs font-bold',
+                            quote === null ? 'text-rz-ink' : POSITIVE_TEXT,
+                        )}
+                    >
                         {quote === null ? '—' : formatRwf(quote.received)}
                     </dd>
                 </div>

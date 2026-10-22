@@ -19,14 +19,33 @@ interface IdentityAccessStore
     public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId, array $roles = []): array;
 
     /** @return array<string, mixed> */
-    public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
+    public function setStaffEnabled(int $actorId, int $userId, bool $enabled, string $reason, string $requestId): array;
 
     /**
-     * Whether a staff member holds this permission now and has held it without a gap since the
-     * given instant: no recorded staff-access change since then removed it, and MFA was not
-     * re-confirmed since then. Optionally locks the account row in the caller's order.
+     * A superadmin adds an operator: the dedicated account with this email, verified and with MFA
+     * confirmed, gets staff access with one role.
+     *
+     * @return array<string, mixed>
      */
-    public function staffPermissionContinuousSince(int $userId, string $permission, string $since, bool $lock = true): bool;
+    public function grantStaff(int $actorId, string $email, string $role, string $reason, string $requestId): array;
+
+    /** Approves the immutable superadmin grant or reactivation request as a second current manager.
+     * @return array<string, mixed>
+     */
+    public function approveStaff(int $actorId, string $proposalId, string $reason, string $requestId): array;
+
+    /** @param list<int> $recipients
+     * @return array<string, mixed>
+     */
+    public function requestStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $kind, array $recipients, string $reason, string $requestId): array;
+
+    /** @param list<int> $expectedRecipients
+     * @return array<string, mixed>
+     */
+    public function approveStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $proposalId, string $payloadSha256, string $reason, string $requestId, string $expectedKind, array $expectedRecipients): array;
+
+    /** @return array<string, mixed> */
+    public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
 
     /**
      * @template TResult

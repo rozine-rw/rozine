@@ -11,31 +11,13 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { BusinessFile, FileDocument } from '@/types/auditor';
+import type { BusinessFile } from '@/types/auditor';
 
-const DOC_STROKE: Record<FileDocument['kind'], string> = {
-    statement: 'text-[#c2661f]',
-    registry: 'text-rz-positive',
-    identity: 'text-rz-ink',
-    pitch: 'text-[#c2661f]',
-    photos: 'text-[#6425c9] dark:text-[#b199fb]',
-};
+/** The visit's agreed steps, in order, under each brief. */
+const MANDATE_STEPS = [1, 2, 3, 4] as const;
 
-const DOC_TILE: Record<FileDocument['kind'], string> = {
-    statement: 'bg-rz-surface',
-    registry: 'bg-[rgba(29,158,117,.1)]',
-    identity: 'bg-rz-surface',
-    pitch: 'bg-rz-surface',
-    photos: 'bg-[rgba(124,58,237,.1)]',
-};
-
-/** The design's document glyphs (L3302–3305). */
-function DocGlyph({ kind }: { kind: FileDocument['kind'] }) {
-    const common = {
-        stroke: 'currentColor',
-        strokeWidth: 1.7,
-    } as const;
-
+/** The design's statement glyph (L3302–3305). */
+function DocGlyph() {
     return (
         <svg
             viewBox="0 0 24 24"
@@ -43,51 +25,18 @@ function DocGlyph({ kind }: { kind: FileDocument['kind'] }) {
             aria-hidden
             className="size-[17px]"
         >
-            {kind === 'identity' ? (
-                <>
-                    <rect
-                        x="3"
-                        y="5"
-                        width="18"
-                        height="14"
-                        rx="2"
-                        {...common}
-                    />
-                    <circle cx="9" cy="11" r="2" {...common} />
-                    <path
-                        d="M14 10h4M14 13h4M6 15.5c.6-1.4 4.4-1.4 5 0"
-                        {...common}
-                        strokeWidth={1.5}
-                        strokeLinecap="round"
-                    />
-                </>
-            ) : kind === 'photos' ? (
-                <>
-                    <rect
-                        x="3"
-                        y="7"
-                        width="18"
-                        height="13"
-                        rx="2.5"
-                        {...common}
-                    />
-                    <circle cx="12" cy="13" r="3" {...common} />
-                    <path d="M8.5 7l1.2-2h4.6l1.2 2" {...common} />
-                </>
-            ) : (
-                <>
-                    <path
-                        d="M6 3h8l4 4v14H6z"
-                        {...common}
-                        strokeLinejoin="round"
-                    />
-                    <path
-                        d="M14 3v4h4M8.5 13h7M8.5 16.5h7"
-                        {...common}
-                        strokeLinecap="round"
-                    />
-                </>
-            )}
+            <path
+                d="M6 3h8l4 4v14H6z"
+                stroke="currentColor"
+                strokeWidth={1.7}
+                strokeLinejoin="round"
+            />
+            <path
+                d="M14 3v4h4M8.5 13h7M8.5 16.5h7"
+                stroke="currentColor"
+                strokeWidth={1.7}
+                strokeLinecap="round"
+            />
         </svg>
     );
 }
@@ -141,8 +90,9 @@ export function FileReview({
 }: FileReviewProps) {
     const { t, locale } = useTranslation();
     const { raise, history } = file;
-    const hasReason = file.reason !== null;
-    const hasMandate = file.mandate.length > 0;
+    const { brief } = file;
+    const hasReason = brief !== null;
+    const hasMandate = brief !== null;
     /*
      * The introduction claims only what is on record: "everything submitted, screened" needs a
      * submitted raise (its figures, not the draft fallback's nulls) and a published pre-screen.
@@ -253,39 +203,44 @@ export function FileReview({
                     </NothingOnRecord>
                 )}
                 <ul>
-                    {file.documents.map((document) => (
+                    {file.documents.map((document, index) => (
                         <li
-                            key={document.name}
+                            key={index}
                             className={cn(
                                 'flex items-center gap-3 border-b px-[15px] py-3',
                                 DIVIDER,
                             )}
                         >
-                            <span
-                                className={cn(
-                                    'flex size-[34px] shrink-0 items-center justify-center rounded-[10px]',
-                                    DOC_TILE[document.kind],
-                                    DOC_STROKE[document.kind],
-                                )}
-                            >
-                                <DocGlyph kind={document.kind} />
+                            <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-rz-surface text-[#a4521a]">
+                                <DocGlyph />
                             </span>
                             <span className="min-w-0 flex-1">
                                 <span className="block text-[13px] font-semibold text-rz-ink">
-                                    {document.name}
+                                    {t(
+                                        `auditor.file.document.${document.format}`,
+                                    )}
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
-                                    {document.detail}
+                                    {document.records === null
+                                        ? t('auditor.file.document.received', {
+                                              date: formatDate(
+                                                  document.received_on,
+                                                  locale,
+                                              ),
+                                          })
+                                        : t(
+                                              'auditor.file.document.received_records',
+                                              {
+                                                  date: formatDate(
+                                                      document.received_on,
+                                                      locale,
+                                                  ),
+                                                  count: document.records,
+                                              },
+                                          )}
                                 </span>
                             </span>
-                            <span
-                                className={cn(
-                                    'shrink-0 rounded-[10px] px-2 py-1 text-[10px] font-bold',
-                                    document.status === 'missing'
-                                        ? 'bg-[rgba(192,57,43,.10)] text-rz-danger-text'
-                                        : 'bg-rz-page text-rz-positive dark:bg-rz-surface-muted',
-                                )}
-                            >
+                            <span className="shrink-0 rounded-[10px] bg-rz-page px-2 py-1 text-[10px] font-bold text-rz-positive dark:bg-rz-surface-muted">
                                 {t(
                                     `auditor.file.doc_status.${document.status}`,
                                 )}
@@ -398,9 +353,7 @@ export function FileReview({
                                 AMBER_TEXT,
                             )}
                         >
-                            {hasReason
-                                ? t('auditor.file.why')
-                                : t('auditor.file.mandate')}
+                            {t('auditor.file.why')}
                         </h3>
                     </div>
                     {hasReason && (
@@ -410,7 +363,7 @@ export function FileReview({
                                 AMBER_TEXT,
                             )}
                         >
-                            {file.reason}
+                            {t(`auditor.file.brief.${brief}.reason`)}
                         </p>
                     )}
                     {hasReason && hasMandate && (
@@ -425,7 +378,7 @@ export function FileReview({
                     )}
                     {hasMandate && (
                         <ol className="mt-[9px] flex flex-col gap-2">
-                            {file.mandate.map((step, index) => (
+                            {MANDATE_STEPS.map((step, index) => (
                                 <li
                                     key={step}
                                     className="flex items-start gap-[9px]"
@@ -439,7 +392,9 @@ export function FileReview({
                                             AMBER_TEXT,
                                         )}
                                     >
-                                        {step}
+                                        {t(
+                                            `auditor.file.brief.${brief}.step_${step}`,
+                                        )}
                                     </span>
                                 </li>
                             ))}
@@ -496,7 +451,7 @@ export function FileReview({
                                 >
                                     <span
                                         aria-hidden
-                                        className="text-[12px] text-[#c2661f]"
+                                        className="text-[12px] text-[#a4521a]"
                                     >
                                         ●
                                     </span>

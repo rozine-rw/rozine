@@ -11,6 +11,7 @@ import AuditorNoticesController from './AuditorNoticesController'
 import StaffApplicationReleaseController from './StaffApplicationReleaseController'
 import BusinessPublicationController from './BusinessPublicationController'
 import InvestorDealsController from './InvestorDealsController'
+import InvestorMarketController from './InvestorMarketController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorRiskAcknowledgementController from './InvestorRiskAcknowledgementController'
 import InvestorNoticesController from './InvestorNoticesController'
@@ -47,7 +48,6 @@ import AuditorProfileController from './AuditorProfileController'
 import InvestorProfileController from './InvestorProfileController'
 import InvestorPortfolioController from './InvestorPortfolioController'
 import InvestorComplaintController from './InvestorComplaintController'
-import InvestorMarketController from './InvestorMarketController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
@@ -59,6 +59,8 @@ import BusinessApplicationController from './BusinessApplicationController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
+import StaffNotesController from './StaffNotesController'
+import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
@@ -76,6 +78,7 @@ const Controllers = {
     StaffApplicationReleaseController: Object.assign(StaffApplicationReleaseController, StaffApplicationReleaseController),
     BusinessPublicationController: Object.assign(BusinessPublicationController, BusinessPublicationController),
     InvestorDealsController: Object.assign(InvestorDealsController, InvestorDealsController),
+    InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorRiskAcknowledgementController: Object.assign(InvestorRiskAcknowledgementController, InvestorRiskAcknowledgementController),
     InvestorNoticesController: Object.assign(InvestorNoticesController, InvestorNoticesController),
@@ -112,7 +115,6 @@ const Controllers = {
     InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
     InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     InvestorComplaintController: Object.assign(InvestorComplaintController, InvestorComplaintController),
-    InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
@@ -124,6 +126,8 @@ const Controllers = {
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
+    StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
+    StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }

@@ -17,6 +17,20 @@
         "quality_score": null,
         "on_time_pct": null,
         "jobs_done": 0,
+        "earnings": {
+            "month": "2026-10-01",
+            "this_month": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "total": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "lines": [],
+            "deals": 0,
+            "managed": []
+        },
         "contact": {
             "email": "diane.uwase@uwaseco.rw",
             "phone": null,

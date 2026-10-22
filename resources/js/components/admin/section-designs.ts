@@ -77,13 +77,31 @@ const deferrals = codes('deferrals');
 const plus = codes('plus');
 const finance = codes('finance');
 const messaging = codes('messaging');
-const academies = codes('academies');
 const appControl = codes('app_control');
 const engines = codes('engines');
 const policies = codes('policies');
 const health = codes('system_health');
 
 const ENGINE_COLUMNS: DesignColumn[] = ['input', 'value', 'source'];
+
+/** Finance's revenue streams, grouped as the design groups them: by who pays and why. */
+export const FINANCE_GROUPS = [
+    'raise',
+    'earnings',
+    'trades',
+    'residual',
+] as const;
+
+/** Policies' groups, in the design's order: each lists its rules under its title and what the rules decide. */
+const POLICY_TABS = [
+    'fees',
+    'underwriting',
+    'business',
+    'investor',
+    'kyc',
+    'penalties',
+    'limits',
+] as const;
 
 export const SECTION_DESIGNS: Record<
     AdminPendingSectionProps['section'],
@@ -232,13 +250,22 @@ export const SECTION_DESIGNS: Record<
             ratings.kpi('pinned'),
         ],
         tabs: [
+            ratings.tab('all'),
             ratings.tab('changed'),
             ratings.tab('trending_down'),
-            ratings.tab('all'),
         ],
         blocks: [
             ratings.block('book', {
                 columns: ['business', 'sector', 'band', 'change', 'reason'],
+            }),
+            ratings.block('weights', {
+                sub: ratings.sub('weights'),
+                columns: ENGINE_COLUMNS,
+            }),
+            ratings.block('bands', { columns: ENGINE_COLUMNS }),
+            ratings.block('movers', {
+                sub: ratings.sub('movers'),
+                columns: ENGINE_COLUMNS,
             }),
         ],
     },
@@ -289,17 +316,20 @@ export const SECTION_DESIGNS: Record<
     },
     finance: {
         kpis: [
-            finance.kpi('revenue'),
-            finance.kpi('primary'),
-            finance.kpi('investor_fees'),
-            finance.kpi('secondary'),
+            finance.captioned('revenue'),
+            finance.captioned('primary'),
+            finance.captioned('investor_fees'),
+            finance.captioned('secondary'),
         ],
         tabs: [finance.tab('streams'), finance.tab('ledger')],
         blocks: [
-            finance.block('streams', {
-                tab: 'streams',
-                columns: ['stream', 'paid_by', 'collected'],
-            }),
+            ...FINANCE_GROUPS.map((key) =>
+                finance.block(key, {
+                    tab: 'streams',
+                    sub: finance.sub(key),
+                    columns: ['stream', 'rate', 'paid_by', 'collected'],
+                }),
+            ),
             finance.block('ledger', {
                 tab: 'ledger',
                 columns: ['entry', 'account', 'debit', 'credit', 'posted'],
@@ -332,27 +362,14 @@ export const SECTION_DESIGNS: Record<
             }),
         ],
     },
-    academies: {
-        kpis: [
-            academies.kpi('completed'),
-            academies.kpi('live'),
-            academies.kpi('quiz'),
-            academies.kpi('points'),
-        ],
-        tabs: [
-            academies.tab('investor'),
-            academies.tab('business'),
-            academies.tab('auditor'),
-            academies.tab('all'),
-        ],
-        blocks: [
-            academies.block('lessons', {
-                columns: ['lesson', 'time', 'done', 'score', 'points'],
-            }),
-        ],
-    },
+    /** Academies has its own screen over the lesson catalogue. */
+    academies: undefined,
     app_control: {
         blocks: [
+            appControl.block('sandbox', {
+                sub: appControl.sub('sandbox'),
+                columns: ['limit', 'used', 'cap', 'share'],
+            }),
             appControl.block('apps', {
                 sub: appControl.sub('apps'),
                 columns: ['app', 'status', 'features'],
@@ -373,7 +390,11 @@ export const SECTION_DESIGNS: Record<
             engines.tab('loss'),
         ],
         blocks: [
-            engines.block('sizing', { tab: 'sizing', columns: ENGINE_COLUMNS }),
+            engines.block('sizing', {
+                tab: 'sizing',
+                sub: engines.sub('sizing'),
+                columns: ENGINE_COLUMNS,
+            }),
             engines.block('refinance', {
                 tab: 'refinance',
                 columns: ENGINE_COLUMNS,
@@ -384,19 +405,16 @@ export const SECTION_DESIGNS: Record<
             engines.block('loss', { tab: 'loss', columns: ENGINE_COLUMNS }),
         ],
     },
+    // The design lists every policy group on one page, each titled with what its rules decide.
     policies: {
-        tabs: [
-            policies.tab('fees'),
-            policies.tab('underwriting'),
-            policies.tab('business'),
-            policies.tab('investor'),
-            policies.tab('kyc'),
-            policies.tab('penalties'),
-            policies.tab('limits'),
-        ],
-        blocks: [
-            policies.block('rules', { columns: ['rule', 'value', 'updated'] }),
-        ],
+        blocks: POLICY_TABS.map((key) => ({
+            key,
+            tab: key,
+            title: policies.tab(key).label,
+            sub: policies.sub(key),
+            empty: 'admin.design.policies.rules.empty',
+            columns: ['rule', 'value', 'updated'],
+        })),
     },
     system_health: {
         blocks: [

@@ -29,6 +29,39 @@ beforeEach(() => {
 });
 
 describe('Notices behind the bell (BRS NTF-R01)', () => {
+    it('counts each notice’s age from the server clock, keeping the exact time on hover', async () => {
+        const user = userEvent.setup();
+        const page = notices();
+        const times = [
+            '2026-10-13T08:59:30+02:00',
+            '2026-10-13T08:42:00+02:00',
+            '2026-10-13T08:00:00+02:00',
+            '2026-10-13T05:00:00+02:00',
+            '2026-10-12T08:00:00+02:00',
+            '2026-10-08T09:00:00+02:00',
+        ];
+
+        page.notices = page.notices
+            .slice(0, times.length)
+            .map((notice, index) => ({ ...notice, created_at: times[index] }));
+        inertia.shared = { server_time: '2026-10-13T09:00:00+02:00' };
+        render(<InvestorDeals {...deals()} />);
+        inertia.queue.push(answers({ data: page }));
+
+        const panel = await openBell(user);
+        const stamps = await within(panel).findAllByText(/ago|Just now/u);
+
+        expect(stamps.map((stamp) => stamp.textContent)).toEqual([
+            'Just now',
+            '18 min ago',
+            '1 hour ago',
+            '4 hours ago',
+            '1 day ago',
+            '5 days ago',
+        ]);
+        expect(stamps[1]).toHaveAttribute('title', '13 Oct 2026 · 08:42');
+    });
+
     it('loads the notices as the bell opens them, newest first, worded by kind', async () => {
         const user = userEvent.setup();
         render(<InvestorDeals {...deals()} />);
@@ -239,6 +272,55 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(await openBell(user)).toBeInTheDocument();
     });
 
+    it('words monthly and Flash Audit reminders with their own business and deadline', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'monthly-reminder',
+                kind: 'auditor.report_reminder',
+                facts: {
+                    business: 'Kigali Fresh Foods Ltd',
+                    kind: 'monthly',
+                    period: '2026-09',
+                    due_at: '2026-10-07T21:59:59Z',
+                    assignment_id: 'monthly-assignment',
+                },
+            },
+            {
+                ...first,
+                id: 'flash-reminder',
+                kind: 'auditor.report_reminder',
+                facts: {
+                    business: 'Huye Motors',
+                    kind: 'flash',
+                    period: '',
+                    due_at: '2026-10-04T14:00:00Z',
+                    assignment_id: 'flash-assignment',
+                },
+            },
+        ];
+        inertia.queue.push(answers({ data: inbox }));
+        render(<InvestorDeals {...deals()} />);
+
+        const panel = await openBell(user);
+        const items = await within(panel).findAllByRole('button', {
+            name: /Audit report reminder/u,
+        });
+
+        expect(items).toHaveLength(2);
+        expect(items[0]).toHaveTextContent(
+            'Audit report reminderRozine reminds you that the September 2026 audit for Kigali Fresh Foods Ltd is due by 7 Oct 2026.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Audit report reminderRozine reminds you that the Flash Audit for Huye Motors is due by 4 Oct 2026.',
+        );
+        expect(items[1]).not.toHaveTextContent('Invalid Date');
+    });
+
     it('words a sent and a returned withdrawal with the account they went to', async () => {
         const user = userEvent.setup();
         const inbox = notices();
@@ -286,6 +368,57 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
             "Withdrawal returnedThe payout of RWF 50,000 to Bank of Kigali ···· 4417 didn't go through. It's back in your wallet.",
         );
     });
+    it('words a funds-sent notice with the platform fee taken, and one sent before the fee without it', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'fee',
+                kind: 'business.disbursement_sent',
+                facts: {
+                    amount: '11640000',
+                    currency: 'RWF',
+                    title: 'Bakery ovens',
+                    account: 'Bank of Kigali ···· 4417',
+                    principal: '12000000',
+                    platform_fee: '360000',
+                },
+            },
+            {
+                ...first,
+                id: 'before-fee',
+                kind: 'business.disbursement_sent',
+                facts: {
+                    amount: '3000000',
+                    currency: 'RWF',
+                    title: 'Cold room',
+                    account: 'Bank of Kigali ···· 4417',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Funds sent/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Funds sentRWF 11,640,000 for Bakery ovens was sent to Bank of Kigali ···· 4417: the RWF 12,000,000 raised less the 3% platform fee of RWF 360,000.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Funds sentRWF 3,000,000 for Cold room was sent to Bank of Kigali ···· 4417.',
+        );
+    });
+
     it('words a linked and an unlinked payout account as security notices', async () => {
         const user = userEvent.setup();
         const inbox = notices();

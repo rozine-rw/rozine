@@ -33,7 +33,7 @@ class InvestorWalletController extends Controller
         $context = $request->validated('identity_context_revision');
         $cursor = $this->changes->cursor((int) $request->user()?->getAuthIdentifier());
         $resource = new InvestorWalletResource([...$this->commandsFor($request, $this->wallet->handle((int) $request->user()?->getAuthIdentifier(),
-            $context === null ? null : (int) $context, $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt']))), 'changes_cursor' => $cursor]);
+            $context === null ? null : (int) $context, $request->safe()->only(['kind', 'amount', 'movement', 'period', 'before', 'receipt']))), 'changes_cursor' => $cursor]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('investor/wallet', $resource->resolve($request));
     }

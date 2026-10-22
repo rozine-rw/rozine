@@ -32,7 +32,7 @@ it('updates an open wallet from another context\'s deposit and credit without a 
         $journey->code('cb1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            await page.getByRole("region", {name:"Wallet total"}).getByText("No deposits waiting").waitFor();
+            await page.getByRole("region", {name:"Available balance"}).getByText("Instantly available to invest").waitFor();
             await page.evaluate(() => { window.__beacon = "same document"; window.__reads = 0; });
             page.on("request", (request) => { if (request.url().includes("/changes?")) page.evaluate(() => window.__reads++).catch(() => {}); });');
 
@@ -52,7 +52,7 @@ it('updates an open wallet from another context\'s deposit and credit without a 
 
         // Context 1 shows it within one beacon interval, in the same document.
         $journey->code('cb1', '
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("RWF 50,000 not yet confirmed — not in the total").waitFor({timeout: 25000});
             await page.getByRole("region", {name:"Deposits"}).getByText("Not yet confirmed", {exact:true}).waitFor();
             if (await page.evaluate(() => window.__beacon) !== "same document") throw new Error("The page was fully reloaded");
@@ -70,13 +70,13 @@ it('updates an open wallet from another context\'s deposit and credit without a 
             await page.waitForTimeout(12000);
             const offlineReads = await page.evaluate(() => window.__reads);
             if (offlineReads !== '.json_encode($reads).') throw new Error("The beacon read while offline");
-            if ((await page.getByRole("region", {name:"Wallet total"}).textContent()).includes("AvailableRWF 50,000")) throw new Error("Updated while offline");
+            if ((await page.getByRole("region", {name:"Available balance"}).textContent()).includes("Available balanceRWF 50,000")) throw new Error("Updated while offline");
             await page.context().setOffline(false);
             await page.evaluate(() => window.dispatchEvent(new Event("online")));
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            await balance.getByText("No deposits waiting").waitFor({timeout: 25000});
+            const balance = page.getByRole("region", {name:"Available balance"});
+            await balance.getByText("Instantly available to invest").waitFor({timeout: 25000});
             const text = await balance.textContent();
-            if (!text.includes("AvailableRWF 50,000")) throw new Error("Not credited: " + text);
+            if (!text.includes("Available balanceRWF 50,000")) throw new Error("Not credited: " + text);
             if (await page.evaluate(() => window.__beacon) !== "same document") throw new Error("The page was fully reloaded");
             await noOverflow();
             await shot('.$journey->shot('credited-after-reconnect').');');

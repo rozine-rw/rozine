@@ -22,6 +22,12 @@ export function Submitted({
         (stage) => stage.state === 'done',
     ).length;
     const fill = Math.max(0, done - 1) / (submission.timeline.length - 1);
+    const publish = submission.publish ?? null;
+    const published = submission.timeline.every(
+        (stage) => stage.state === 'done',
+    );
+    const status =
+        publish !== null ? 'approved' : published ? 'published' : 'submitted';
 
     return (
         <div className="pt-5 text-center">
@@ -44,10 +50,10 @@ export function Submitted({
                 </div>
             </div>
             <h1 className="mt-[22px] text-[23px] font-semibold text-rz-ink">
-                {t('business.apply.submitted.title')}
+                {t(`business.apply.${status}.title`)}
             </h1>
             <p className="mt-2.5 text-sm leading-[1.6] text-rz-secondary">
-                {t('business.apply.submitted.body')}
+                {t(`business.apply.${status}.body`)}
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
                 <p className="inline-flex items-center gap-1.5 rounded-[10px] border border-rz-border bg-rz-surface px-[13px] py-2 text-[12.5px] font-semibold text-rz-slate">
@@ -143,9 +149,22 @@ export function Submitted({
                 </ol>
             </div>
 
+            {publish !== null && (
+                <Link
+                    href={publish}
+                    className="mt-6 flex h-[50px] w-full items-center justify-center rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white"
+                >
+                    {t('business.apply.approved.publish')}
+                </Link>
+            )}
             <Link
                 href={home}
-                className="mt-6 flex h-[50px] w-full items-center justify-center rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white"
+                className={cn(
+                    'flex h-[50px] w-full items-center justify-center rounded-xl text-[14.5px] font-semibold',
+                    publish === null
+                        ? 'mt-6 bg-rz-accent-fill text-white'
+                        : 'mt-2.5 border border-rz-border bg-rz-surface text-rz-ink',
+                )}
             >
                 {t('business.apply.submitted.back_home')}
             </Link>

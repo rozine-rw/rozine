@@ -37,14 +37,15 @@ class StaffLedgerResource extends JsonResource
         'withdrawal_hold' => 'withdrawal', 'withdrawal_payout' => 'withdrawal', 'withdrawal_return' => 'withdrawal',
         'business_withdrawal_hold' => 'withdrawal', 'business_withdrawal_payout' => 'withdrawal', 'business_withdrawal_return' => 'withdrawal',
         'primary_hold' => 'investment', 'primary_commit' => 'investment', 'primary_release' => 'investment', 'primary_refund' => 'investment',
-        'primary_issue' => 'disbursement', 'business_repayment_debit' => 'repayment',
+        'primary_issue' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
     ];
 
     /** Each platform account's name and code. */
     private const SYSTEM = [
         'deposit_clearing' => ['Deposit clearing (provider)', 'DEP-CLR'], 'deposit_fee_revenue' => ['Deposit fee revenue', 'DEP-FEE'],
         'disbursement_settlement' => ['Disbursement settlement', 'DSB-SET'], 'repayment_clearing' => ['Repayment clearing', 'RPY-CLR'],
-        'withdrawal_clearing' => ['Withdrawal clearing (provider)', 'WDR-CLR'],
+        'withdrawal_clearing' => ['Withdrawal clearing (provider)', 'WDR-CLR'], 'platform_fee_revenue' => ['Platform fee revenue', 'PLT-FEE'],
+        'audit_partner_fee_payable' => ['Audit Partner fee payable', 'AUD-PAY'],
     ];
 
     /** Each wallet bucket's name and code. */

@@ -25,6 +25,14 @@
                     "url": "/investor/deals",
                     "method": "get"
                 }
+            },
+            {
+                "key": "in_cart",
+                "active": false,
+                "link": {
+                    "url": "/investor/deals",
+                    "method": "get"
+                }
             }
         ],
         "industries": [
@@ -79,6 +87,11 @@
                 "method": "get"
             },
             "checkout": null
+        },
+        "cart": {
+            "campaign_ids": [],
+            "add": null,
+            "remove": null
         }
     }
 }

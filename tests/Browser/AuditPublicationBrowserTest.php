@@ -76,14 +76,14 @@ it('seals with a current authenticator and publishes after the Business co-signa
             await page.waitForURL("**/auditor/jobs");
             await page.goto('.json_encode($base.'/auditor/reports/'.$fixture['report']->id).');
             await page.getByRole("button", {name:"Preview findings", exact:true}).click();
-            await page.getByRole("button", {name:"Confirm with your authenticator", exact:true}).click();
+            await page.getByRole("button", {name:"Re-authenticate to seal", exact:true}).click();
             await page.getByLabel("Six-digit authenticator code", {exact:true}).waitFor();
             await page.screenshot({path:"confirm-phone.png", fullPage:true, animations:"disabled"});
         }']);
         $run('auditor', ['run-code', 'async (page) => {
             const errors = []; page.on("pageerror", e => errors.push(e.message));
             await page.getByLabel("Six-digit authenticator code", {exact:true}).fill('.json_encode($totp->getCurrentOtp('JBSWY3DPEHPK3PXP')).');
-            await page.getByRole("button", {name:"Seal & submit to Rozine", exact:true}).click();
+            await page.getByRole("button", {name:"Apply ICPAR licence seal", exact:true}).click();
             await page.getByRole("heading", {name:"Sealed and filed", exact:true}).waitFor();
             if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw new Error("Sealed report overflows phone");
             await page.screenshot({path:"sealed-phone.png", fullPage:true, animations:"disabled"});

@@ -14,7 +14,7 @@ const FIELD =
     'w-full rounded-[11px] border border-rz-hairline bg-rz-surface px-3.5 py-3 text-[14px] text-rz-ink outline-none placeholder:text-rz-muted focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)] aria-invalid:border-rz-danger';
 
 const LABEL =
-    'mb-1.5 block text-[12px] font-semibold text-[#7b8699] uppercase dark:text-rz-muted';
+    'mb-1.5 block text-[12px] font-semibold text-[#636e86] uppercase dark:text-rz-muted';
 
 /**
  * The console sign-in (design T62–84): staff only, backed by the shared Fortify login. The
@@ -42,7 +42,7 @@ export default function AdminLogin({ status, links }: AdminLoginProps) {
                     <h1 className="text-[20px] font-semibold text-rz-ink">
                         {t('admin.auth.title')}
                     </h1>
-                    <p className="mt-[5px] text-[13px] text-[#7b8699] dark:text-rz-muted">
+                    <p className="mt-[5px] text-[13px] text-[#636e86] dark:text-rz-muted">
                         {t('admin.auth.subtitle')}
                     </p>
                     <Form {...store.form()} resetOnSuccess={['password']}>
@@ -101,7 +101,7 @@ export default function AdminLogin({ status, links }: AdminLoginProps) {
                                     {failure && (
                                         <div
                                             role="alert"
-                                            className="mt-[13px] flex items-center gap-2 rounded-[10px] border border-[#fdeaea] bg-[rgba(255,77,79,.08)] px-3 py-2.5 text-[12.5px] font-semibold text-[#e5484d] dark:border-[rgba(255,107,111,.25)] dark:text-[#ff8285]"
+                                            className="mt-[13px] flex items-center gap-2 rounded-[10px] border border-[#fdeaea] bg-[rgba(255,77,79,.08)] px-3 py-2.5 text-[12.5px] font-semibold text-[#b3352a] dark:border-[rgba(255,107,111,.25)] dark:text-[#ff8285]"
                                         >
                                             <Icon name="warning" tone="red" />
                                             {failure}

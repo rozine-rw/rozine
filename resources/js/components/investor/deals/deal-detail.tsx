@@ -57,7 +57,8 @@ export function DealDetailPage({
     });
     const rating = RATING_STYLE[deal.rating.band];
     const current = quote;
-    const max = Number(current?.capacity.max_units ?? '1');
+    /* Unquoted, the notes still open bound the choice; the checkout applies the Investor's caps. */
+    const max = Number(current?.capacity.max_units ?? deal.units.available);
     const checkout =
         links.checkout !== null &&
         canReserve({ deal, gate, allowed, quote: current })
@@ -67,6 +68,21 @@ export function DealDetailPage({
               })
             : null;
     const canBuy = checkout !== null;
+    /* The ticket is exact either way: the quote's amount, or open notes at the deal's unit price. */
+    const ticket =
+        current !== null
+            ? { units: Number(current.units), amount: current.amount }
+            : canBuy
+              ? {
+                    units: quoted.units,
+                    amount: {
+                        ...deal.unit_price,
+                        amount: String(
+                            Number(deal.unit_price.amount) * quoted.units,
+                        ),
+                    },
+                }
+              : null;
     const tile =
         'rounded-xl border border-rz-border px-[5px] py-[7px] text-center';
 
@@ -391,24 +407,25 @@ export function DealDetailPage({
                     >
                         <div className="flex items-center justify-between text-xs">
                             <span className="text-rz-slate">
-                                {current === null
+                                {ticket === null
                                     ? '—'
                                     : t(
-                                          current.units === '1'
+                                          ticket.units === 1
                                               ? 'investor.deal.unit_times_one'
                                               : 'investor.deal.unit_times_other',
                                           {
                                               price: formatRwf(
-                                                  current.unit_price,
+                                                  current?.unit_price ??
+                                                      deal.unit_price,
                                               ),
-                                              count: Number(current.units),
+                                              count: ticket.units,
                                           },
                                       )}
                             </span>
                             <span className="font-semibold text-rz-ink tabular-nums">
-                                {current === null
+                                {ticket === null
                                     ? '—'
-                                    : formatRwf(current.amount)}
+                                    : formatRwf(ticket.amount)}
                             </span>
                         </div>
                         <div className="mt-[7px] flex items-center justify-between">
@@ -470,9 +487,9 @@ export function DealDetailPage({
                                     {t('investor.money.rwf')}
                                 </span>
                                 <span className="text-[15px] leading-[1.1] font-semibold whitespace-nowrap text-rz-ink">
-                                    {current === null
+                                    {ticket === null
                                         ? '—'
-                                        : formatAmount(current.amount)}
+                                        : formatAmount(ticket.amount)}
                                 </span>
                             </div>
                             <button

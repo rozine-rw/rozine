@@ -29,6 +29,13 @@ type BusinessHeroProps = {
  * The green business card with its rating band (design L125–148). The ring and disc show the
  * published score only; before the first audit the band reads as pending instead of a number.
  */
+/**
+ * The RDB company code without an "RDB" prefix of its own, since the label already says RDB:
+ * "RDB-2016-196807" reads "2016-196807" after the label, never "RDB RDB-2016-196807".
+ */
+export const bareCompanyCode = (code: string): string =>
+    code.replace(/^RDB[\s/-]*/iu, '') || code;
+
 export function BusinessHero({
     business,
     rating,
@@ -81,7 +88,7 @@ export function BusinessHero({
                     {business.company_code !== null && (
                         <p className="mt-[3px] truncate text-xs text-white">
                             {t('business.home.company_code', {
-                                code: business.company_code,
+                                code: bareCompanyCode(business.company_code),
                             })}
                         </p>
                     )}

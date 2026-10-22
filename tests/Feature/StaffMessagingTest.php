@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Models\BusinessProfile;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\StaffFixture;
 
 /*
  * Admin Messaging History (BRS v2.0 NTF-R01): every notice receipt, newest first, naming who it
@@ -25,7 +25,7 @@ use Laravel\Sanctum\Sanctum;
 function messagingStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Messaging assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Messaging assignment.');
 
     return $user;
 }
@@ -72,6 +72,28 @@ it('lists every receipt newest first with its recipient, kind, category, channel
                 ['Aline Uwase', 'person', 'verification.approved', 'onboarding', 'automation', 'in_app', 'delivered'],
             ])
         ->and($props['history'][0])->toMatchArray(['id' => $this->failed, 'at' => now('UTC')->toIso8601String()]);
+});
+
+it('lists every automation with its audience and channels, and every email template', function (): void {
+    $props = ($this->page)(messagingStaff(['compliance']));
+    $automations = array_column($props['automations'], null, 'kind');
+
+    expect($props['automations'])->toHaveCount(count(PartyNoticeKind::cases()))
+        ->and($automations['verification.approved'])->toBe(['kind' => 'verification.approved', 'category' => 'onboarding',
+            'audience' => 'investor', 'channels' => ['in_app', 'mail']])
+        ->and($automations['business.deposit_received'])->toMatchArray(['audience' => 'business', 'channels' => ['in_app']])
+        ->and($automations['auditor.job_offered'])->toMatchArray(['audience' => 'auditor', 'channels' => ['in_app', 'mail']])
+        ->and($automations['security.password_changed']['audience'])->toBe('everyone')
+        ->and($automations['support.complaint_resolved']['audience'])->toBe('everyone')
+        ->and(array_column($props['templates'], 'audience', 'key'))->toBe([
+            'account.new_device_sign_in' => 'everyone', 'account.one_time_code' => 'everyone', 'account.reset_password' => 'everyone',
+            'account.verify_email' => 'everyone', 'auditor.accreditation_decided' => 'auditor', 'auditor.job_offered' => 'auditor',
+            'business.application_decided' => 'business', 'business.disbursement_sent' => 'business', 'business.raise_expired' => 'business',
+            'business.repayment_reminder' => 'business', 'business.reporting_window_open' => 'business',
+            'investor.investment_confirmed' => 'investor', 'investor.payment_delayed' => 'investor', 'investor.payout_received' => 'investor',
+            'investor.raise_expired' => 'investor', 'investor.report_published' => 'investor', 'investor.verification_decided' => 'investor',
+            'investor.wallet_transfer_completed' => 'investor',
+        ]);
 });
 
 it('searches recipients, kinds and categories, and pages to older receipts and back', function (): void {

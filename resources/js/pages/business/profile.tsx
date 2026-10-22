@@ -74,6 +74,7 @@ export default function BusinessProfile({
                 </div>
                 <section
                     data-rzcol
+                    tabIndex={0}
                     aria-labelledby="profile-section-title"
                     className={cn(
                         COLUMN,

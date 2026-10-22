@@ -674,7 +674,7 @@ export function DueList({
                                         <span className="text-[13px] leading-none font-bold">
                                             {date.getUTCDate()}
                                         </span>
-                                        <span className="text-[10px] font-bold opacity-70">
+                                        <span className="text-[10px] font-bold">
                                             {monthAbbr
                                                 .format(date)
                                                 .replace('.', '')

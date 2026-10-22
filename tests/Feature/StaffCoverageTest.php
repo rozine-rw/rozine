@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\SetAuditorAvailability;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Resources\StaffCoverageResource;
 use App\Models\BusinessProfile;
 use App\Models\User;
@@ -11,6 +10,7 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * Partner coverage (MVP-ADMIN-SCR-07) from live records: each district a Business operates in,
@@ -21,7 +21,7 @@ use Tests\Support\AuditAssignmentFixture;
 function coverageStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Coverage assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Coverage assignment.');
 
     return $user;
 }

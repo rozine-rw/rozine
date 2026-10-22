@@ -17,6 +17,12 @@ final class UnderwritingObservationWindow
 {
     public const string VERSION = 'kigali-observation-window-1';
 
+    /** Months of audited statements a first-time issuer needs. */
+    public const int FIRST_ISSUE_MONTHS = 36;
+
+    /** Months of audited statements an on-time repeat issuer needs. */
+    public const int REPEAT_ISSUE_MONTHS = 12;
+
     /**
      * Select the latest complete audited 36/12-month window. Older observations remain
      * in their immutable source; current and future partial months never enter the calculation.
@@ -41,7 +47,7 @@ final class UnderwritingObservationWindow
         usort($complete, fn (array $left, array $right): int => strcmp($left['month'], $right['month']));
         $lastLabel = $complete === [] ? $local->modify('first day of this month')->modify('-1 month')->format('Y-m') : $complete[count($complete) - 1]['month'];
         $last = new DateTimeImmutable($lastLabel.'-01', new DateTimeZone('Africa/Kigali'));
-        $first = $last->modify($repeat ? '-11 months' : '-35 months')->format('Y-m');
+        $first = $last->modify('-'.(($repeat ? self::REPEAT_ISSUE_MONTHS : self::FIRST_ISSUE_MONTHS) - 1).' months')->format('Y-m');
         $selected = array_values(array_filter($complete, fn (array $month): bool => $month['month'] >= $first));
         $validThrough = $complete === [] ? null : $last->modify('last day of this month')->modify('+45 days')->format('Y-m-d');
 

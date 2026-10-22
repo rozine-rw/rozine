@@ -19,14 +19,21 @@ it('installs Business deposit records behind an in-flight Investor posting witho
     ];
     $installed = $shape();
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
+    // The platform fee and automatic disbursement migrations rebind the ledger kinds, so they come off first and go back last.
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
-    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals): void {
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement): void {
         if (! Schema::hasTable('business_deposit_intents')) {
             $migration->up();
         }
         $businessRepayments->up();
         $businessWithdrawals->up();
+        $platformFee->up();
+        $automaticDisbursement->up();
     };
+    $automaticDisbursement->down();
+    $platformFee->down();
     $businessWithdrawals->down();
     $businessRepayments->down();
     $migration->down();

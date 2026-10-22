@@ -233,3 +233,10 @@ it('refuses unknown staff application identifiers and unlinked receipt actors', 
     expect(fn () => $this->store->staffPage($this->fixture['audit']['staff']->id, (string) Str::ulid()))->toThrow(CommandRejection::class, 'APPLICATION_NOT_FOUND')
         ->and(fn () => $this->store->findPublication(User::factory()->create()->id, 1, (string) Str::uuid()))->toThrow(CommandRejection::class, 'OPERATION_NOT_FOUND');
 });
+
+it('sends a browser that opens an application data URL to the applications queue with it selected', function (): void {
+    $staff = $this->fixture['audit']['staff'];
+    $url = route('staff.applications.show', ['application' => $this->fixture['application']->id]);
+    $this->actingAs($staff)->get($url)->assertRedirect(route('staff.applications.index', ['application' => $this->fixture['application']->id]));
+    $this->getJson($url)->assertOk()->assertJsonPath('data.release.revision', 0);
+});

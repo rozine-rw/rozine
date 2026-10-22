@@ -36,6 +36,7 @@ const rw: Catalog = {
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':
         'Umwirondoro wawe ugomba kugenzurwa mbere yo gufungura uru rupapuro. Hitamo porogaramu kugira ngo ukomeze.',
+    'identity.denied.verification_required.action': 'Emeza umwirondoro wawe',
     'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
     'identity.denied.expired_offer.body':
         'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
@@ -58,16 +59,15 @@ const rw: Catalog = {
     'common.action.sign_up': 'Iyandikishe',
 
     'auth.login.head_title': 'Injira',
-    'auth.login.layout_title': 'Injira muri konti yawe',
-    'auth.login.layout_description':
-        'Andika imeyili n’ijambobanga ryawe kugira ngo winjire',
+    'auth.login.layout_title': 'Murakaza neza nanone',
+    'auth.login.layout_description': 'Injira muri konti yawe ya Rozine.',
     'auth.login.email_label': 'Aderesi imeyili',
     'auth.login.email_placeholder': 'imeyili@urugero.com',
     'auth.login.password_label': 'Ijambobanga',
     'auth.login.password_placeholder': 'Ijambobanga',
     'auth.login.forgot_password': 'Wibagiwe ijambobanga?',
     'auth.login.remember_me': 'Unyibuke',
-    'auth.login.no_account': 'Nta konti ufite?',
+    'auth.login.no_account': 'Uri mushya kuri Rozine?',
 
     'auth.forgot_password.head_title': 'Wibagiwe ijambobanga',
     'auth.forgot_password.layout_title': 'Wibagiwe ijambobanga',
@@ -78,6 +78,83 @@ const rw: Catalog = {
     'auth.forgot_password.submit': 'Ohereza umurongo wo guhindura ijambobanga',
     'auth.forgot_password.return_prefix': 'Cyangwa subira kuri',
     'auth.forgot_password.return_link': 'kwinjira',
+    'auth.login.create_account': 'Fungura konti',
+    'auth.register.head_title': 'Iyandikishe',
+    'auth.register.layout_title': 'Fungura konti yawe',
+    'auth.register.layout_description':
+        'Andika amakuru yawe hepfo kugira ngo ufungure konti.',
+    'auth.register.name_label': 'Amazina',
+    'auth.register.name_placeholder': 'Amazina yose',
+    'auth.register.email_label': 'Aderesi imeyili',
+    'auth.register.email_placeholder': 'wowe@urugero.rw',
+    'auth.register.password_label': 'Ijambobanga',
+    'auth.register.password_placeholder': 'Ijambobanga',
+    'auth.register.confirm_label': 'Emeza ijambobanga',
+    'auth.register.confirm_placeholder': 'Emeza ijambobanga',
+    'auth.register.submit': 'Fungura konti',
+    'auth.register.have_account': 'Usanzwe ufite konti?',
+    'auth.register.log_in': 'Injira',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Bitekanye',
+    'auth.brand.business.have_account': 'Waramaze kwiyandikisha?',
+    'auth.brand.business.eyebrow': 'Ku bigo by’ubucuruzi',
+    'auth.brand.business.login_description':
+        'Injira mu mbonerahamwe y’ikigo cyawe.',
+    'auth.brand.business.email_label': 'Imeyili y’akazi',
+    'auth.brand.business.email_placeholder': 'wowe@ikigo.rw',
+    'auth.brand.business.register_cta': 'Andikisha ikigo',
+    'auth.brand.business.register_title': 'Andikisha ikigo cyawe',
+    'auth.brand.business.register_description':
+        'Fungura konti ikigo cyawe kizakoresha gusaba no gukusanya amafaranga.',
+    'auth.brand.investor.login_description': 'Injira ucunge ishoramari ryawe.',
+    'auth.brand.investor.register_description':
+        'Tangira gushora imari mu bigo byagenzuwe mu Rwanda hose.',
+    'auth.brand.auditor.eyebrow': 'Ku bafatanyabikorwa b’igenzura',
+    'auth.brand.auditor.login_description': 'Injira mu biro byawe by’igenzura.',
+    'auth.brand.auditor.register_description':
+        'Fungura konti uzakoresha wakira imirimo y’igenzura.',
+    'auth.reset_password.head_title': 'Hindura ijambobanga',
+    'auth.reset_password.layout_title': 'Hindura ijambobanga',
+    'auth.reset_password.layout_description':
+        'Hitamo ijambobanga rishya rya konti yawe.',
+    'auth.reset_password.email_label': 'Imeyili',
+    'auth.reset_password.password_label': 'Ijambobanga',
+    'auth.reset_password.password_placeholder': 'Ijambobanga',
+    'auth.reset_password.confirm_label': 'Emeza ijambobanga',
+    'auth.reset_password.confirm_placeholder': 'Emeza ijambobanga',
+    'auth.reset_password.submit': 'Hindura ijambobanga',
+    'auth.verify_email.head_title': 'Kwemeza imeyili',
+    'auth.verify_email.layout_title': 'Emeza imeyili yawe',
+    'auth.verify_email.layout_description':
+        'Andika kode y’imibare 6 twakoherereje kuri imeyili. Irangira mu minota 10.',
+    'auth.verify_email.resent':
+        'Kode nshya yoherejwe kuri imeyili wiyandikishijeho. Kode za mbere ntizigikora.',
+    'auth.verify_email.submit': 'Emeza imeyili',
+    'auth.verify_email.resend': 'Ohereza kode nshya',
+    'auth.verify_email.log_out': 'Sohoka',
+    'auth.confirm_password.head_title': 'Emeza ijambobanga',
+    'auth.confirm_password.layout_title': 'Emeza ijambobanga',
+    'auth.confirm_password.layout_description':
+        'Aha ni ahantu harinzwe. Emeza ijambobanga ryawe mbere yo gukomeza.',
+    'auth.confirm_password.passkey': 'Emeza ukoresheje passkey',
+    'auth.confirm_password.passkey_loading': 'Biremezwa…',
+    'auth.confirm_password.separator': 'Cyangwa wemeze ukoresheje ijambobanga',
+    'auth.confirm_password.password_label': 'Ijambobanga',
+    'auth.confirm_password.password_placeholder': 'Ijambobanga',
+    'auth.confirm_password.submit': 'Emeza ijambobanga',
+    'auth.two_factor_challenge.head_title': 'Kwemeza mu byiciro bibiri',
+    'auth.two_factor_challenge.code_title': 'Kode yo kwemeza',
+    'auth.two_factor_challenge.code_description':
+        'Andika kode yatanzwe na porogaramu yawe yo kwemeza.',
+    'auth.two_factor_challenge.recovery_title': 'Kode yo kugarura',
+    'auth.two_factor_challenge.recovery_description':
+        'Emeza ko ufite uburenganzira kuri konti yawe wandika imwe muri kode zawe zo kugarura.',
+    'auth.two_factor_challenge.recovery_placeholder': 'Andika kode yo kugarura',
+    'auth.two_factor_challenge.submit': 'Komeza',
+    'auth.two_factor_challenge.toggle_prefix': 'cyangwa ushobora',
+    'auth.two_factor_challenge.use_recovery':
+        'kwinjira ukoresheje kode yo kugarura',
+    'auth.two_factor_challenge.use_code': 'kwinjira ukoresheje kode yo kwemeza',
 
     'suite.head_title': 'Porogaramu zawe',
     'suite.tagline':
@@ -110,7 +187,7 @@ const rw: Catalog = {
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Umwirondoro wawe uri kugenzurwa',
+        'Witeguye gushora imari?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Hakenewe ububasha bwo gusinya',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -340,10 +417,10 @@ const rw: Catalog = {
     'business.apply.raise.term': 'Igihe',
     'business.apply.raise.term_months': 'Amezi {months}',
     'business.apply.raise.rate': 'Igipimo',
-    'business.apply.raise.rate_info': 'Uko iki gipimo gishyirwaho',
+    'business.apply.raise.rate_info': 'Uko iyi nyungu ibarwa',
     'business.apply.raise.rate_how': 'Uko igipimo cyawe gishyirwaho',
     'business.apply.raise.rate_one_charge':
-        "Ikiguzi kimwe ku byo uguza. Kirimo byose — nta yandi mafaranga y'inyongera.",
+        "Ikiguzi kimwe ku byo uguza. Igikurwamo cyonyine ni amafaranga ya platifomu ya 3%, akurwa ku mafaranga wakusanyije igihe akoherejwe — nta yandi mafaranga y'inyongera.",
     'business.apply.raise.rate_yours': 'Amanota yawe',
     'business.apply.raise.rate_rated': 'Ku rwego rwa {band}',
     'business.apply.raise.rate_best': 'Amanota yo hejuru, amezi 3',
@@ -361,6 +438,7 @@ const rw: Catalog = {
     'business.apply.raise.interest': '+ Inyungu',
     'business.apply.raise.interest_basis': '({rate}% · amezi {months})',
     'business.apply.raise.you_repay': 'Wishyura',
+    'business.apply.raise.per_month': '{amount} / ukwezi',
     'business.apply.raise.first_payment':
         'Bitangira ukwezi kumwe nyuma yo kubona amafaranga',
     'business.apply.raise.reserve': 'Ikigega cyo kurinda abashoramari',
@@ -413,9 +491,16 @@ const rw: Catalog = {
     'business.apply.review.application_fee_when':
         'Rimwe gusa, yishyurwa nibyemezwa.',
     'business.apply.review.fee_note':
-        'Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa.',
+        'Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Igihe amafaranga wakusanyije akoherejwe, havanwamo amafaranga ya platifomu ya 3%; wishyura amafaranga yose wakusanyije.',
     'business.apply.review.binding':
         "Umukono wawe utegeka ubucuruzi mu mategeko kubahiriza inshingano zatangajwe. Nimero y'ubusabe itangwa iyo bwoherejwe.",
+    'business.apply.approved.title': 'Ubusabe bwawe bwemejwe',
+    'business.apply.approved.body':
+        "Bushyire ku rutonde rw'abashoramari kugira ngo utangire gukusanya. Nta mafaranga yo gushyira ku rutonde.",
+    'business.apply.approved.publish': "Shyira ku rutonde rw'abashoramari",
+    'business.apply.published.title': 'Ikusanya ryawe ryashyizwe ahagaragara',
+    'business.apply.published.body':
+        'Abashoramari barayibona ku rutonde kandi bashobora gushora ubu.',
     'business.apply.submitted.title': 'Ubusabe bwawe bwoherejwe',
     'business.apply.submitted.body':
         'Ubusabe bwawe burimo gusuzumwa. Uzamenyeshwa buri ntambwe.',
@@ -616,11 +701,9 @@ const rw: Catalog = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Shyiraho umukono cyangwa ujurire',
     'business.reports.guide.cosign.body':
-        'Iyo igenzura rifunzwe, wongeraho incamake ugashyiraho umukono bitarenze tariki ya {day}, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
+        'Iyo igenzura rifunzwe, ufite amasaha 24 yo kuyisuzuma no gushyiraho umukono, cyangwa kujurira ufite ibimenyetso. Nutagira icyo ukora mu masaha 24, raporo ifatwa nk’iyemejwe. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.guide.visit.body_undated':
         "CPA wagenewe asura aho ukorera agasuzuma inyandiko, agahuza amafaranga yinjira n'asohoka, hanyuma agafunga raporo.",
-    'business.reports.guide.cosign.body_undated':
-        'Iyo igenzura rifunzwe, urayisuzuma ugashyiraho umukono mu gihe cyagenewe isuzuma, cyangwa ukajurira ufite ibimenyetso. Kubera ko utigera ukora ku mibare, raporo iba yigenga — ari cyo abashoramari bishyurira.',
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',
@@ -638,6 +721,8 @@ const rw: Catalog = {
     'business.reports.row.annual': "Incamake y'umwaka wose",
     'business.reports.annual': "Raporo y'umwaka {year}",
     'business.reports.empty': 'Nta raporo irahari.',
+    'business.reports.empty_body':
+        'Raporo ya buri kwezi igaragara hano iyo umugenzuzi wawe amaze kuyifunga.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} kuri {of}',
     'business.reports.sheet.live': 'Abashoramari bawe barayibona',
@@ -1003,6 +1088,11 @@ const rw: Catalog = {
     'admin.design.col.bands': 'Ibyiciro',
     'admin.design.col.filled_mtd': 'Ibyuzuye uku kwezi',
     'admin.design.col.stream': "Inkomoko y'amafaranga",
+    'admin.design.col.limit': 'Imbibi',
+    'admin.design.col.used': 'Byakoreshejwe',
+    'admin.design.col.cap': 'Igisenge',
+    'admin.design.col.share': 'Igice cyakoreshejwe',
+    'admin.design.col.rate': 'Igipimo',
     'admin.design.col.paid_by': 'Byishyurwa na',
     'admin.design.col.collected': 'Ayakiriwe',
     'admin.design.col.position': 'Umwanya',
@@ -1023,10 +1113,6 @@ const rw: Catalog = {
     'admin.design.col.message': 'Ubutumwa',
     'admin.design.col.recipient': 'Uwakiriye',
     'admin.design.col.lesson': 'Isomo',
-    'admin.design.col.time': 'Igihe',
-    'admin.design.col.done': 'Abarangije',
-    'admin.design.col.score': 'Amanota',
-    'admin.design.col.points': "Amanota y'ishimwe",
     'admin.design.col.app': 'Porogaramu',
     'admin.design.col.status': 'Uko bihagaze',
     'admin.design.col.assigned_cpa': 'CPA wahawe',
@@ -1159,11 +1245,44 @@ const rw: Catalog = {
     'admin.design.finance.kpi.primary': "Isoko ry'ibanze",
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
+    'admin.design.finance.kpi.revenue.sub': 'Inzira zose, kuva mu ntangiriro',
+    'admin.design.finance.kpi.revenue.sub_period': 'Inzira zose, muri iki gihe',
+    'admin.finance.period.showing': 'Birerekana',
+    'admin.finance.period.hint': 'Bihindura imibare yose iri kuri uru rupapuro',
+    'admin.finance.period.days': {
+        one: 'Umunsi {count}',
+        other: 'Iminsi {count}',
+    },
+    'admin.finance.period.year': 'Umwaka 1',
+    'admin.finance.period.to': 'kugeza',
+    'admin.finance.period.since': 'Kuva {from}',
+    'admin.finance.period.until': 'Kugeza {to}',
+    'admin.design.finance.kpi.primary.sub':
+        "Amafaranga y'urubuga, umugabane wa Rozine",
+    'admin.design.finance.kpi.investor_fees.sub':
+        "Ibyiciro by'amafaranga ku nyungu",
+    'admin.design.finance.kpi.secondary.sub': 'Amafaranga yo kongera kugurisha',
     'admin.design.finance.tab.streams': "Inkomoko z'amafaranga",
     'admin.design.finance.tab.ledger': "Igitabo cy'imari n'ubwishyu",
-    'admin.design.finance.streams.title': "Inkomoko z'amafaranga",
-    'admin.design.finance.streams.empty':
-        'Nta mafaranga yinjiye yo kwerekana ubu.',
+    'admin.design.finance.raise.title': "Isoko ry'ibanze",
+    'admin.design.finance.raise.sub':
+        'Icyo ibigo byishyura kugira ngo bishake imari',
+    'admin.design.finance.raise.empty':
+        'Nta mafaranga yo gushaka imari yo kwerekana ubu.',
+    'admin.design.finance.earnings.title': "Amafaranga y'abashoramari",
+    'admin.design.finance.earnings.sub':
+        'Icyo abashoramari bishyura ku nyungu zabo',
+    'admin.design.finance.earnings.empty':
+        'Nta mafaranga ku nyungu yo kwerekana ubu.',
+    'admin.design.finance.trades.title': 'Isoko rya kabiri',
+    'admin.design.finance.trades.sub': "Icyo kuva kare n'ubucuruzi byishyura",
+    'admin.design.finance.trades.empty':
+        "Nta mafaranga y'ubucuruzi yo kwerekana ubu.",
+    'admin.design.finance.residual.title': "Kugaruza ikiguzi n'ibisigaye",
+    'admin.design.finance.residual.sub':
+        'Imirongo mito. Ntugire icyo uteganya kuri yo.',
+    'admin.design.finance.residual.empty':
+        'Nta mirongo isigaye yo kwerekana ubu.',
     'admin.design.finance.ledger.title': "Igitabo cy'imari n'ubwishyu",
     'admin.design.finance.ledger.empty':
         "Nta nyandiko z'ibaruramari zo kwerekana ubu.",
@@ -1205,17 +1324,134 @@ const rw: Catalog = {
     'admin.messaging.category.audits': 'Igenzura',
     'admin.messaging.category.support': 'Ubufasha',
     'admin.messaging.category.general': 'Rusange',
+    'admin.messaging.audience.investor': 'Abashoramari',
+    'admin.messaging.audience.business': 'Ibigo',
+    'admin.messaging.audience.auditor': 'Abafatanyabikorwa mu igenzura',
+    'admin.messaging.audience.everyone': 'Abafite konti bose',
+    'admin.messaging.trigger.verification.approved':
+        'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
+    'admin.messaging.trigger.verification.rejected':
+        'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.wallet.deposit_received':
+        'Utanga serivisi yemeje kubitsa',
+    'admin.messaging.trigger.wallet.withdrawal_sent':
+        'Amafaranga yabikujwe yoherejwe',
+    'admin.messaging.trigger.wallet.withdrawal_returned':
+        'Amafaranga yabikujwe agarutse mu gikapu',
+    'admin.messaging.trigger.primary.refunded':
+        'Ikusanya rirangiye ritageze ku ntego',
+    'admin.messaging.trigger.primary.report_published':
+        'Raporo y’ukwezi y’ikigo ufitemo imigabane ifunzwe',
+    'admin.messaging.trigger.primary.raise_funded':
+        'Ikusanya umushoramari yiyemeje ryuzuye',
+    'admin.messaging.trigger.primary.holding_issued':
+        'Impapuro z’umwenda zihawe umushoramari',
+    'admin.messaging.trigger.security.password_changed':
+        'Ijambo ry’ibanga rihinduwe',
+    'admin.messaging.trigger.security.payout_account_linked':
+        'Konti yo kwakiriraho ihujwe',
+    'admin.messaging.trigger.security.payout_account_unlinked':
+        'Konti yo kwakiriraho ikuweho',
+    'admin.messaging.trigger.security.new_device': 'Igikoresho gishya cyinjiye',
+    'admin.messaging.trigger.business.deposit_received':
+        'Utanga serivisi yemeje kubitsa kw’ikigo',
+    'admin.messaging.trigger.business.application_approved':
+        'Ubusabe bw’inoti bwemejwe',
+    'admin.messaging.trigger.business.raise_expired':
+        'Ikusanya rirangiye ritageze ku ntego',
+    'admin.messaging.trigger.business.raise_funded':
+        'Ikusanya rigeze ku ntego yaryo',
+    'admin.messaging.trigger.business.disbursement_sent':
+        'Amafaranga yoherejwe mu ikofi y’ikigo',
+    'admin.messaging.trigger.business.withdrawal_sent':
+        'Amafaranga ikigo cyabikuje yoherejwe',
+    'admin.messaging.trigger.business.withdrawal_returned':
+        'Amafaranga ikigo cyabikuje agarutse',
+    'admin.messaging.trigger.business.report_sealed':
+        'Umugenzuzi afunze raporo y’ukwezi',
+    'admin.messaging.trigger.business.report_review_closing':
+        'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'Igenzura ry’ukwezi ritangiye ku kigo gifite inoti ikora',
+    'admin.messaging.trigger.auditor.accreditation_approved':
+        'Uruhushya rwemejwe',
+    'admin.messaging.trigger.auditor.accreditation_rejected':
+        'Uruhushya ruhakanywe',
+    'admin.messaging.trigger.auditor.job_offered': 'Akazi k’igenzura gatanzwe',
+    'admin.messaging.trigger.auditor.report_reminder':
+        'Abakozi bibutsa umugenzuzi raporo',
+    'admin.messaging.trigger.auditor.accreditation_renewal_due':
+        'Igihe cyo kuvugurura uruhushya kirageze',
+    'admin.messaging.trigger.support.complaint_answered':
+        'Ubufasha busubije ikirego',
+    'admin.messaging.trigger.support.complaint_resolved': 'Ikirego gikemutse',
+    'admin.messaging.automations.live': 'Automatisation {count} zikora',
+    'admin.messaging.automations.fire':
+        'Buri imwe yikora iyo icyayitera kibaye',
+    'admin.messaging.automations.group': 'Automatisation · {audience}',
+    'admin.design.col.on': 'Irakora',
+    'admin.messaging.timing': 'Ako kanya · {channels}',
+    'admin.messaging.state.live': 'Irakora',
+    'admin.messaging.automations.sub':
+        'Buri butumwa bwoherezwa ubwabwo iyo igikorwa cyabwo cyanditswe. Ntibirahindurwa muri konsole.',
+    'admin.messaging.templates.sub':
+        'Imeyili Rozine yohereza. Ntizirahindurwa muri konsole.',
+    'admin.messaging.rule.funds_disbursed': 'Amafaranga yatanzwe',
+    'admin.messaging.rule.verification_approved': 'Kwemezwa byemejwe',
+    'admin.messaging.rule.raise_fully_funded': 'Ubukusanyamari bwuzuye',
+    'admin.messaging.template.account.new_device_sign_in':
+        'Kwinjira hakoreshejwe igikoresho gishya',
+    'admin.messaging.template.account.one_time_code': 'Kode y’igihe kimwe',
+    'admin.messaging.template.account.reset_password':
+        'Guhindura ijambo ry’ibanga',
+    'admin.messaging.template.account.verify_email':
+        'Kwemeza aderesi ya imeyili',
+    'admin.messaging.template.auditor.accreditation_decided':
+        'Icyemezo ku kwemererwa',
+    'admin.messaging.template.auditor.job_offered': 'Akazi k’igenzura katanzwe',
+    'admin.messaging.template.business.application_decided':
+        'Icyemezo ku busabe',
+    'admin.messaging.template.business.disbursement_sent':
+        'Amafaranga yatanzwe',
+    'admin.messaging.template.business.raise_expired':
+        'Igihe cyo gukusanya cyarangiye',
+    'admin.messaging.template.business.repayment_reminder':
+        'Kwibutsa kwishyura',
+    'admin.messaging.template.business.reporting_window_open':
+        'Kwibutsa raporo y’ukwezi',
+    'admin.messaging.template.investor.investment_confirmed':
+        'Ishoramari ryemejwe',
+    'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',
+    'admin.messaging.template.investor.payout_received': 'Amafaranga yakiriwe',
+    'admin.messaging.template.investor.raise_expired':
+        'Igihe cyo gukusanya cyarangiye',
+    'admin.messaging.template.investor.report_published': 'Raporo yasohotse',
+    'admin.messaging.template.investor.verification_decided':
+        'Icyemezo ku igenzura ry’umwirondoro',
+    'admin.messaging.template.investor.wallet_transfer_completed':
+        'Kohereza mu ikofi byarangiye',
     'admin.messaging.no_match': 'Nta butumwa buhuye n’ibyo washakishije.',
     'admin.messaging.older': 'Ubutumwa bwa kera',
     'admin.messaging.newest': 'Ubutumwa bushya',
     'admin.design.academies.kpi.completed': 'Amasomo yarangiye',
     'admin.design.academies.kpi.live': 'Amasomo ari ku murongo',
-    'admin.design.academies.kpi.quiz': "Ikigereranyo cy'amanota y'ibizamini",
-    'admin.design.academies.kpi.points': 'Amanota atarakoreshwa',
+    'admin.design.col.track': 'Icyiciro',
+    'admin.design.col.topics': 'Ingingo',
+    'admin.design.academies.kpi.tracks': 'Ibyiciro',
+    'admin.design.academies.kpi.checks': 'Ibibazo byihuse',
+    'admin.design.academies.kpi.completed.sub': 'Bibikwa ku gikoresho cy’uwiga',
+    'admin.design.academies.lessons.sub':
+        'Buri ngingo irangizwa n’ikibazo kimwe cyihuse. Aho umuntu ageze bibikwa ku gikoresho cye, bityo amasomo yarangiye n’amanota ntibigaragara hano.',
     'admin.design.academies.tab.investor': "Ishuri ry'abashoramari",
     'admin.design.academies.tab.business': "Ishuri ry'ibigo",
     'admin.design.academies.tab.auditor': "Ishuri ry'abagenzuzi",
     'admin.design.academies.tab.all': 'Byose',
+    'admin.design.academies.lessons.live': '{count} zikora',
+    'admin.design.academies.lessons.live_in': '{count} zikora muri {app}',
+    'admin.design.academies.app.investor': 'porogaramu y’Abashoramari',
+    'admin.design.academies.app.business': 'porogaramu y’Ibigo',
+    'admin.design.academies.app.auditor': 'porogaramu y’Abagenzuzi',
+    'admin.design.academies.state.live': 'Irakora',
     'admin.design.academies.lessons.title': 'Amasomo',
     'admin.design.academies.lessons.empty': 'Nta masomo yo kwerekana ubu.',
     'admin.design.app_control.apps.title': 'Porogaramu',
@@ -1223,11 +1459,39 @@ const rw: Catalog = {
         "Porogaramu z'abashoramari, ibigo n'abagenzuzi n'ibiziranga.",
     'admin.design.app_control.apps.empty':
         'Nta igenamiterere rya porogaramu ryo kwerekana ubu.',
+    'admin.design.app_control.app.investor': "Porogaramu y'Abashoramari",
+    'admin.design.app_control.app.business': "Porogaramu y'Ubucuruzi",
+    'admin.design.app_control.app.auditor': "Porogaramu y'Abagenzuzi",
+    'admin.design.app_control.online': 'Irakora',
+    'admin.design.app_control.feature.sign_ups': 'Kwiyandikisha gushya',
+    'admin.design.app_control.feature.secondary_market': 'Isoko rya kabiri',
+    'admin.design.app_control.feature.academy': "Ishuri ry'Abashoramari",
+    'admin.design.app_control.feature.note_creation': 'Gukora RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Raporo za buri kwezi',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        "Kwiyandikisha kw'abagenzuzi",
+    'admin.design.app_control.feature.auto_dispatch':
+        'Kohereza mu buryo bwikora muri km 30',
+    'admin.design.app_control.feature.flash_audits':
+        'Igenzura ryihuse (amasaha 24)',
+    'admin.design.app_control.state.live': 'Irakora',
+    'admin.design.app_control.state.not_built': 'Ntirarakorwa',
+    'admin.design.app_control.sandbox.title': 'Imbibi za sandbox',
+    'admin.design.app_control.sandbox.sub':
+        'Igice cyakoreshejwe cya buri mbibi za sandbox ya CMA. Nta kirenze imbibi cyemerwa.',
+    'admin.design.app_control.sandbox.empty': 'Nta mikoreshereze irerekanwa.',
+    'admin.design.app_control.sandbox.businesses': 'Ibigo bifite manda ikora',
+    'admin.design.app_control.sandbox.investors': 'Abashoramari bemejwe',
+    'admin.design.app_control.sandbox.principal': 'Igishoro gisigaye',
     'admin.design.app_control.content.title': 'Ibikubiyemo',
     'admin.design.app_control.content.sub':
         "Ibiri muri porogaramu z'abashoramari, ibigo n'abagenzuzi.",
     'admin.design.app_control.content.empty':
         'Nta bikubiyemo byo kwerekana ubu.',
+    'admin.design.app_control.type.business': 'Ubucuruzi',
+    'admin.design.app_control.unrated': 'Ntirahabwa amanota',
+    'admin.design.app_control.content_state.active': 'Irakora',
+    'admin.design.app_control.content_state.pending': 'Bitegereje kwemezwa',
     'admin.design.engines.tab.sizing': 'Ingano',
     'admin.design.engines.tab.refinance': 'Kongera gutera inkunga',
     'admin.design.engines.tab.queue': 'Umurongo',
@@ -1259,7 +1523,20 @@ const rw: Catalog = {
     'admin.design.policies.tab.kyc': 'Ibisabwa bya KYC',
     'admin.design.policies.tab.penalties': "Kubahiriza n'ibihano",
     'admin.design.policies.tab.limits': 'Imbibi',
-    'admin.design.policies.rules.title': 'Amategeko',
+    'admin.design.policies.fees.sub':
+        "Icyo buri ruhande yishyura Rozine, n'umugabane ujya ku mugenzuzi w'ikigo.",
+    'admin.design.policies.underwriting.sub':
+        "Amategeko agena niba ishakishwa ry'imari ryemewe n'ingingo zaryo.",
+    'admin.design.policies.business.sub':
+        'Abemerewe gushaka imari kuri Rozine.',
+    'admin.design.policies.investor.sub':
+        'Abemerewe gushora imari kuri Rozine.',
+    'admin.design.policies.kyc.sub':
+        'Icyo buri ruhande rugomba gutanga. Igisabwa kibuza ibikorwa kugeza gitanzwe; igitakusanywa ntikigeze gisabwa.',
+    'admin.design.policies.penalties.sub':
+        'Uko Rozine ifata ubwishyu bukererewe, kunanirwa kwishyura no kongera kugenzura.',
+    'admin.design.policies.limits.sub':
+        "Imbibi z'ibikorwa muri porogaramu zombi.",
     'admin.design.policies.rules.empty': 'Nta mategeko yo kwerekana ubu.',
     'admin.design.system_health.signals.title': 'Ibimenyetso',
     'admin.design.system_health.signals.empty':
@@ -1343,10 +1620,32 @@ const rw: Catalog = {
     'admin.kyc.tab.submitted': 'Bitegereje gusuzumwa',
     'admin.kyc.tab.decided': 'Byafatiwe icyemezo',
     'admin.kyc.table': 'Ibisabwa byo kugenzura umwirondoro',
-    'admin.kyc.col.person': 'Umuntu',
+    'admin.kyc.queue': "Urutonde rw'isuzuma rya KYC",
     'admin.kyc.col.document': 'Inyandiko',
-    'admin.kyc.col.submitted': 'Byoherejwe',
+    'admin.kyc.col.applicant': 'Usaba',
+    'admin.kyc.col.checks': 'Igenzura ryikora',
+    'admin.kyc.submitted_ago': 'Byoherejwe {ago}',
+    'admin.kyc.checks.passed': 'Igenzura rya KYC ryikora ryose ryatsinze',
+    'admin.kyc.checks.screening':
+        "Imyaka, nimero y'indangamuntu, inyandiko, ifoto · nta isuzuma ry'urutonde",
+    'admin.kyc.check.age': 'Imyaka 18 cyangwa irenga',
+    'admin.kyc.check.id_number': "Imiterere ya nimero y'indangamuntu",
+    'admin.kyc.check.documents': "Amafoto y'inyandiko yoherejwe",
+    'admin.kyc.check.selfie': 'Ifoto yafashwe',
+    'admin.kyc.stats.aml': "Imenyesha ry'iyezandonke",
+    'admin.kyc.stats.sanctions': "Abahuye n'ibihano",
+    'admin.kyc.stats.not_connected': 'Ntibihujwe',
+    'admin.kyc.stats.screening_sub': 'Isuzuma (KYC-R04) ntirirubakwa',
     'admin.kyc.col.status': 'Uko bihagaze',
+    'admin.kyc.col.decision': 'Icyemezo',
+    'admin.kyc.review': 'Gusuzuma',
+    'admin.kyc.review_named': 'Gusuzuma {name}',
+    'admin.kyc.stats.completion': 'KYC yarangiye',
+    'admin.kyc.stats.completion_sub': '{verified} kuri {total} byemejwe',
+    'admin.kyc.stats.percent': '{value}%',
+    'admin.kyc.stats.pending': 'Ibitegereje isuzuma',
+    'admin.kyc.stats.turnaround': 'Igihe kigereranyo amasaha {hours}',
+    'admin.kyc.stats.turnaround_none': 'Nta cyemezo mu minsi 30',
     'admin.kyc.id_type.national_id': 'Indangamuntu',
     'admin.kyc.id_type.passport': 'Pasiporo',
     'admin.kyc.id_type.drivers_license': 'Uruhushya rwo gutwara',
@@ -1451,7 +1750,54 @@ const rw: Catalog = {
     'admin.rating.band.stable': 'Ihamye',
     'admin.rating.band.weak': 'Intege nke',
     'admin.rating.band.distressed': 'Iri mu bibazo',
+    'admin.design.ratings.weights.title': 'Uko amanota abarwa',
+    'admin.design.ratings.weights.sub':
+        "Buri gipimo gishyirwa hagati ya 0 na 100, kigahabwa uburemere, bigateranywa; amanota agabanyijwe na 20 ni amanota kuri 5. Imipaka y'imyitwarire ikurikizwa nyuma.",
+    'admin.design.ratings.weights.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona uru rutonde.",
+    'admin.design.ratings.bands.title': 'Ibyiciro',
+    'admin.design.ratings.bands.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona ibyiciro.",
+    'admin.engine.target_dscr': 'DSCR igamijwe',
+    'admin.engine.minimum_dscr': 'DSCR ntoya',
+    'admin.engine.repeat_monthly_dscr': 'DSCR ya buri kwezi · indi nshuro',
+    'admin.engine.min_principal': 'Ubusabe buto',
+    'admin.engine.max_principal': 'Ubusabe bunini',
+    'admin.engine.issuance_unit': 'Ubusabe buzengurutswa kuri',
+    'admin.engine.first_issue_months': 'Amezi agenzuwe · bwa mbere',
+    'admin.engine.repeat_issue_months': 'Amezi agenzuwe · indi nshuro',
+    'admin.engine.tenors': 'Igihe · amezi',
+    'admin.engine.rate_band': "Urwego rw'inyungu · ihamye",
+    'admin.engine.platform_fee': "Amafaranga y'urubuga · igihe cyo gutanga",
+    'admin.engine.cpa_share': "Umugabane w'umugenzuzi",
+    'admin.engine.coverage': 'Ubushobozi bwo kwishyura umwenda',
+    'admin.engine.cfads_margin': 'Amafaranga aboneka / amafaranga yinjiye',
+    'admin.engine.nocf_stability': "Ugutekana kw'amafaranga y'ibikorwa",
+    'admin.engine.positive_months': 'Amezi afite amafaranga asigaye',
+    'admin.engine.history_depth': "Amezi y'amateka",
+    'admin.engine.conduct': 'Imyitwarire yo kwishyura no gutanga raporo',
+    'admin.engine.adverse_conduct_cap':
+        'Umupaka · raporo zakererewe cyangwa zabuze',
+    'admin.engine.default_cap': 'Umupaka · kunanirwa kwishyura',
+    'admin.engine.strong': 'Bikomeye',
+    'admin.engine.stable': 'Bihamye',
+    'admin.engine.weak': 'Bidakomeye',
+    'admin.engine.distressed': 'Mu bibazo',
+    'admin.design.engines.sizing.sub':
+        "Imipaka ine yose irakurikizwa, iya hasi ni yo ikurikizwa: ubushobozi kuri DSCR igamijwe, amafaranga yasabwe, ubusabe bunini n'umwanya usigaye. Ubusabe buri munsi y'ubuto bwemewe buranga. Nyuma amafaranga aragabanywa kugeza DSCR igamijwe yubahirijwe, akazengurutswa ku rugero rwo gutanga.",
+    'admin.design.ratings.movers.title': 'Ibihindura amanota',
+    'admin.design.ratings.movers.sub':
+        "Buri raporo y'imari yemejwe isubiramo ibipimo by'imari, bityo kuzamuka cyangwa kugabanuka kw'amafaranga yinjiye bihindura amanota. Kwishyura na raporo za buri kwezi bihindura imyitwarire, kandi imipaka igumisha amanota hasi igihe hari ibirarane, kutubahiriza raporo cyangwa kunanirwa kwishyura. Nta mukozi ushobora kubihindura.",
+    'admin.design.ratings.movers.empty':
+        "Abasesenguzi b'inguzanyo bonyine ni bo babona ibihindura amanota.",
+    'admin.engine.new_issuer_conduct':
+        'Imyitwarire mbere yo kwishyura · kuri 100',
+    'admin.engine.instalment_conduct':
+        "Ibyishyuwe ku gihe · umugabane w'imyitwarire",
+    'admin.engine.report_conduct':
+        "Raporo za buri kwezi ku gihe · umugabane w'imyitwarire",
     'admin.policy.eyebrow': 'Byashyizweho mu mabwiriza',
+    'admin.policy.open': 'Politiki',
     'admin.policy.target_dscr': 'DSCR igamijwe',
     'admin.policy.listing_audit': 'Igenzura ryo gushyirwa ku isoko',
     'admin.policy.audit_routing': 'Urugero rwo kohereza mu igenzura',
@@ -1460,6 +1806,204 @@ const rw: Catalog = {
     'admin.policy.min_statement_years': "Imyaka mike y'inyandiko z'imari",
     'admin.policy.rdb_certificate': 'Icyemezo cya RDB',
     'admin.policy.max_notes': 'Inyandiko nyinshi / ikigo',
+    'admin.policy.platform_fee': 'Amafaranga ya platform · igihe cyo kwishyura',
+    'admin.policy.cpa_share': 'Umugabane wa CPA — Kigali',
+    'admin.policy.listing_fee': 'Amafaranga yo gushyira ku isoko',
+    'admin.policy.repayment_fee': 'Amafaranga yo kwishyura',
+    'admin.payments.policy_title': 'Ibiciro bikurikizwa',
+    'admin.policy.minimum_age': "Imyaka mike y'umushoramari",
+    'admin.policy.identity_evidence': "Inyandiko z'umwirondoro kuri dosiye",
+    'admin.policy.complaint_acknowledge': 'Ikirego cyakirwa mu',
+    'admin.policy.complaint_resolve': 'Ikirego gikemurwa mu',
+    'admin.kyc.policy_title': 'Amategeko yo kubahiriza akurikizwa',
+    'admin.policy.min_principal': 'Ubusabe buto',
+    'admin.policy.max_principal': 'Ubusabe bunini',
+    'admin.policy.first_issue_months': 'Amezi yagenzuwe · bwa mbere',
+    'admin.policy.repeat_issue_months': 'Amezi yagenzuwe · gusubiramo',
+    'admin.policy.withdrawal_min': 'Kubikuza guto',
+    'admin.policy.withdrawal_max': 'Kubikuza kunini',
+    'admin.policy.cpa_share_upcountry': 'Umugabane wa CPA — mu ntara',
+    'admin.policy.resale_fee': 'Amafaranga yo kugurisha · ugurisha',
+    'admin.policy.earnings_fee': "Ibyiciro by'amafaranga ku nyungu",
+    'admin.policy.cpa_earnings_share':
+        'Umugabane wa CPA ku mafaranga ku nyungu',
+    'admin.policy.application_fee': 'Amafaranga yo gusaba · sandbox',
+    'admin.policy.withdrawal_fee': 'Amafaranga yo kubikuza',
+    'admin.policy.loss_reserve': "Ikigega cy'igihombo",
+    'admin.policy.min_rating': 'Amanota make yo gukusanya',
+    'admin.policy.revenue_cap': 'Ubukusanyamari bunini · ku byinjira',
+    'admin.policy.kyc_reverify': 'Kongera kugenzura KYC',
+    'admin.policy.late_charge': "Amande y'ubukererwe",
+    'admin.policy.miss_grace': "Igihe cy'imbabazi",
+    'admin.policy.default_at': 'Kunanirwa kwishyura',
+    'admin.policy.auto_freeze': 'Guhagarika byikora iyo hananiwe',
+    'admin.policy.min_investment': 'Ishoramari rito · igice kimwe',
+    'admin.policy.concentration':
+        "Igice kinini cy'ubukusanyamari ku mushoramari",
+    'admin.policy.raise_days': 'Igihe cyo gukusanya · iminsi',
+    'admin.policy.resale_listing_days':
+        'Igihe itangazo ryo kugurisha rimara · iminsi',
+    'admin.policy.resale_reservation_minutes': 'Gufatira igicuruzwa · iminota',
+    'admin.policy.cpa_radius': 'Intera yo kohereza CPA',
+    'admin.policy.sandbox_businesses': 'Imbibi za sandbox · ibigo',
+    'admin.policy.sandbox_investors': 'Imbibi za sandbox · abashoramari',
+    'admin.policy.sandbox_principal': 'Imbibi za sandbox · igishoro gisigaye',
+    'admin.policy.residency': 'Aho atuye',
+    'admin.policy.risk_statements':
+        "Amatangazo y'ingaruka mbere y'ishoramari rya mbere",
+    'admin.policy.bank_signatories': 'Umubare muto w’abasinya kuri konti',
+    'admin.policy.recovery_rate': 'Igipimo cy’ibigaruzwa iyo umwenda utishyuwe',
+    'admin.policy.withdrawal_daily_cap':
+        'Igipimo ntarengwa cyo kubikuza ku munsi',
+    'admin.policy.hint.bank_signatories':
+        'Uhagarariye ikigo umwe ni we ugikorera. Nta wundi usinya usabwa.',
+    'admin.policy.hint.recovery_rate':
+        'Ibigaruzwe nyuma y’umwenda utishyuwe bihabwa abafite inoti. Rozine nta cyo igumana kandi ntiyishyura igihombo.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Nta gipimo cya buri munsi. Buri kubikuza gifite imbibi, nk’uko byavuzwe haruguru.',
+    'admin.policy.term.pro_rata':
+        'Byose, bigabanywa abafite inoti ku kigereranyo',
+    'admin.policy.hint.platform_fee':
+        'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
+    'admin.policy.hint.cpa_share':
+        "Umugabane w'amafaranga y'urubuga uhabwa umugenzuzi ku masezerano y'i Kigali.",
+    'admin.policy.hint.cpa_share_upcountry':
+        'Umugabane umwe ku masezerano yo hanze ya Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Bikurwa ku nyungu z'umushoramari. Urwego rukurikira icyiciro cye.",
+    'admin.policy.hint.cpa_earnings_share':
+        "Umugabane w'amafaranga ku nyungu uhabwa umugenzuzi.",
+    'admin.policy.hint.resale_fee':
+        "Yishyurwa n'ugurisha iyo inyandiko igurishijwe mbere y'igihe cyayo.",
+    'admin.policy.hint.listing_fee':
+        "Yishyurwa n'ikigo kugira ngo gishyire ahagaragara ishakishwa ry'imari.",
+    'admin.policy.hint.repayment_fee':
+        'Yishyurwa kuri buri bwishyu bwa buri kwezi.',
+    'admin.policy.hint.application_fee':
+        'Yishyurwa ku busabe igihe Rozine iri mu igerageza.',
+    'admin.policy.hint.withdrawal_fee': 'Ashyirwa ku kubikuza mu gikapu.',
+    'admin.policy.hint.loss_reserve':
+        "Umugabane w'amafaranga ubikwa mu gihe cyo kunanirwa kwishyura.",
+    'admin.policy.hint.target_dscr':
+        'Ishakishwa rinini rigarukira aho amafaranga yinjira yishyura ku kigero iki.',
+    'admin.policy.hint.listing_audit':
+        "Umugenzuzi agenzura buri shakishwa ry'imari mbere y'uko rijya ahagaragara.",
+    'admin.policy.hint.audit_routing':
+        'DSCR ntoya yemewe. Munsi yayo, ubusabe buranswe.',
+    'admin.policy.hint.min_rate':
+        'Inyungu ihamye ntoya inyandiko ishobora kugira, byose hamwe.',
+    'admin.policy.hint.max_rate':
+        'Inyungu ihamye nini inyandiko ishobora kugira, byose hamwe.',
+    'admin.policy.hint.note_unit_price': "Igiciro cy'inyandiko imwe ya Rozine.",
+    'admin.policy.hint.min_term': "Igihe gito cyemewe cy'inyandiko.",
+    'admin.policy.hint.max_term': "Igihe kinini cyemewe cy'inyandiko.",
+    'admin.policy.hint.min_principal':
+        'Ishakishwa rito ikigo gishobora gusaba.',
+    'admin.policy.hint.max_principal':
+        'Ishakishwa rinini ikigo gishobora gusaba.',
+    'admin.policy.hint.min_rating':
+        'Amanota ya Rozine make yemerera gushaka imari.',
+    'admin.policy.hint.revenue_cap':
+        "Ishakishwa rinini, nk'umugabane w'amafaranga ikigo cyinjiza.",
+    'admin.policy.hint.registration_countries':
+        'Aho ikigo kigomba kuba cyanditswe.',
+    'admin.policy.hint.min_statement_years':
+        "Imyaka y'inyandiko za banki cyangwa MoMo isabwa.",
+    'admin.policy.hint.min_revenue':
+        'Amafaranga make yinjiye mu mezi 12 ashize kugira ngo cyemererwe.',
+    'admin.policy.hint.first_issue_months':
+        "Amezi y'inyandiko agenzurwa mbere y'ishakishwa rya mbere.",
+    'admin.policy.hint.repeat_issue_months':
+        'Amezi agenzurwa mbere ya buri shakishwa rikurikiraho.',
+    'admin.policy.hint.rdb_certificate':
+        'Ikigo kigomba gushyiraho icyemezo cya RDB gifite agaciro.',
+    'admin.policy.hint.max_notes':
+        'Inyandiko zikora cyangwa zishyurwa ikigo gishobora kugira icyarimwe.',
+    'admin.policy.hint.residency': 'Aho umushoramari agomba gutura.',
+    'admin.policy.hint.minimum_age':
+        'Imyaka mike umushoramari ashobora kugira.',
+    'admin.policy.hint.min_investment': 'Ishoramari rito ryemewe.',
+    'admin.policy.hint.concentration':
+        'Umugabane munini umushoramari umwe ashobora kugira mu ishakishwa rimwe.',
+    'admin.policy.hint.risk_statements':
+        "Amatangazo umushoramari yemera mbere y'ishoramari rya mbere.",
+    'admin.policy.hint.kyc_investor_id': "Imbere n'inyuma by'inyandiko.",
+    'admin.policy.hint.kyc_investor_selfie':
+        "Ifoto ifashwe ako kanya igereranywa n'inyandiko.",
+    'admin.policy.hint.kyc_investor_dob':
+        'Bigaragaza ko umushoramari afite imyaka isabwa.',
+    'admin.policy.hint.kyc_investor_address': 'Kwiyandikisha ntibibisaba.',
+    'admin.policy.hint.kyc_business_rdb':
+        "Bigenzurwa mbere y'uko ikigo gisaba.",
+    'admin.policy.hint.identity_evidence':
+        'Amafoto muri buri dosiye: imbere, inyuma na selfie.',
+    'admin.policy.hint.kyc_reverify':
+        'Inshuro umukoresha agomba kongera kugenzura umwirondoro.',
+    'admin.policy.hint.late_charge': 'Yongerwa ku bwishyu bwakererewe.',
+    'admin.policy.hint.miss_grace':
+        "Igihe ubwishyu butatanzwe bufatwa nk'ubukererewe.",
+    'admin.policy.hint.default_at':
+        'Igihe ubwishyu butatanzwe buhinduka kunanirwa kwishyura.',
+    'admin.policy.hint.auto_freeze':
+        'Guhagarika ikigo mu buryo bwikora iyo kinaniwe kwishyura.',
+    'admin.policy.hint.complaint_acknowledge':
+        'Igihe cyo kwemeza ko ikirego cyakiriwe.',
+    'admin.policy.hint.complaint_resolve': 'Igihe cyo gukemura ikirego.',
+    'admin.policy.hint.raise_days':
+        "Igihe ishakishwa ry'imari rimara rifunguye.",
+    'admin.policy.hint.withdrawal_min': 'Kubikuza guto mu gikapu.',
+    'admin.policy.hint.withdrawal_max': 'Kubikuza kunini kwemewe.',
+    'admin.policy.hint.resale_listing_days':
+        'Igihe itangazo ryo kongera kugurisha rimara.',
+    'admin.policy.hint.resale_reservation_minutes':
+        'Igihe umuguzi afata igice mbere yo kwishyura.',
+    'admin.policy.hint.cpa_radius': 'Intera nini umugenzuzi yoherezwa.',
+    'admin.policy.hint.sandbox_businesses':
+        "Umubare ntarengwa w'ibigo bikora mu igerageza rya CMA.",
+    'admin.policy.hint.sandbox_investors':
+        "Umubare ntarengwa w'abashoramari bemejwe mu igerageza.",
+    'admin.policy.hint.sandbox_principal':
+        "Igiteranyo ntarengwa cy'imari yakusanyijwe mu igerageza.",
+    'admin.policy.hint.rate_band':
+        "Urugero rw'inyungu ihamye y'inyandiko, byose hamwe.",
+    'admin.policy.hint.dual_control_threshold':
+        'Guhera kuri aya mafaranga, hakenewe undi wemeza.',
+    'admin.policy.min_rate': 'Inyungu nto · ihamye',
+    'admin.policy.max_rate': 'Inyungu nini · ihamye',
+    'admin.policy.note_unit_price': "Igiciro cy'igice cy'inyandiko",
+    'admin.policy.min_term': 'Igihe gito · amezi',
+    'admin.policy.max_term': 'Igihe kinini · amezi',
+    'admin.policy.registration_countries': 'Ibihugu byemewe byo kwandikwamo',
+    'admin.policy.kyc_investor_id': 'Umushoramari · Indangamuntu / pasiporo',
+    'admin.policy.kyc_investor_selfie':
+        'Umushoramari · Ifoto yo kwemeza ko ari muzima',
+    'admin.policy.kyc_investor_dob': "Umushoramari · Itariki y'amavuko",
+    'admin.policy.kyc_investor_address': "Umushoramari · Icyemezo cy'aho atuye",
+    'admin.policy.kyc_business_rdb': 'Ikigo · Icyemezo cya RDB',
+    'admin.policy.term.rwanda': 'u Rwanda',
+    'admin.policy.term.not_collected': 'Ntibikusanywa',
+    'admin.policy.term.resident_rwanda': 'Utuye mu Rwanda',
+    'admin.policy.term.every_deal': 'Bisabwa kuri buri bukusanyamari',
+    'admin.policy.term.required': 'Birasabwa',
+    'admin.policy.term.not_set': 'Ntibirashyirwaho',
+    'admin.policy.term.none': 'Nta na kimwe',
+    'admin.policy.term.late_from_due':
+        'Nta na kimwe · bikererwa guhera ku itariki',
+    'admin.policy.term.day_31': 'Umunsi wa 31 utishyuwe',
+    'admin.policy.term.late_schedule':
+        "5% kuri D, umunsi wa 7 n'uwa 30 · ntirenga 15%",
+    'admin.finance.stream.platform_fee':
+        'Amafaranga ya platform · umugabane wa Rozine',
+    'admin.finance.stream.audit_partner_share':
+        "Amafaranga ya platform · umugabane w'Audit Partner (ugomba kwishyurwa)",
+    'admin.finance.stream.deposit_fees': 'Amafaranga yo kubitsa',
+    'admin.finance.paid_by.business': 'Ibigo',
+    'admin.finance.paid_by.investor': 'Abashoramari',
+    'admin.finance.paid_by.seller': 'Ugurisha',
+    'admin.finance.stream.earnings_fee': 'Amafaranga ku nyungu',
+    'admin.finance.stream.resale_fee': 'Amafaranga yo kugurisha',
+    'admin.finance.stream.withdrawal_fee': 'Amafaranga yo kubikuza',
+    'admin.finance.stream.loss_reserve': "Ikigega cy'igihombo",
     'admin.policy.dual_control_threshold': 'Abemeza babiri guhera kuri',
     'admin.time.now': 'ubu nyine',
     'admin.time.minutes': 'hashize iminota {count}',
@@ -1468,7 +2012,7 @@ const rw: Catalog = {
     'admin.ledger.kind.investment': 'Ishoramari',
     'admin.ledger.kind.disbursement': 'Kwishyura ikigo',
     'admin.ledger.kind.repayment': 'Kwishyura inguzanyo',
-    'admin.ledger.kind.service_fee': 'Amafaranga ya serivisi',
+    'admin.ledger.kind.platform_fee': 'Amafaranga ya platifomu',
     'admin.ledger.kind.repayment_fee': 'Amafaranga yo kwishyura',
     'admin.ledger.kind.auditor_share': "Umugabane w'umugenzuzi",
     'admin.ledger.kind.distribution': 'Kwishyura abashoramari',
@@ -1540,6 +2084,8 @@ const rw: Catalog = {
     'admin.today.capital.to_date': 'Itariki yo kurangiza',
     'admin.today.capital.to_time': 'Isaha yo kurangiza',
     'admin.today.capital.clear': 'Siba',
+    'admin.trend.refused':
+        "Hitamo itariki yo kurangiza ingana cyangwa iri nyuma y'itariki yo gutangira.",
     'admin.today.capital.all_time': 'Ibihe byose',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · bishyizwe hamwe ku {grain}',
@@ -1549,12 +2095,13 @@ const rw: Catalog = {
     'admin.today.capital.grain.hour': 'saha',
     'admin.today.health.title': 'Uko inyandiko zimeze',
     'admin.today.health.caption':
-        'Inyandiko {count} ziri ku isoko, zikusanya, zishyurwa cyangwa zafunzwe',
+        "Inyandiko {count} zasohotse, hakurikijwe raporo y'ukwezi iheruka",
     'admin.today.health.donut': "{pct}% by'inyandiko bimeze neza",
     'admin.today.health.healthy_caption': 'bimeze neza',
     'admin.today.health.healthy': 'Bimeze neza',
     'admin.today.health.watch': 'Bikurikiranwa',
     'admin.today.health.distressed': 'Biri mu bibazo',
+    'admin.today.health.untracked': 'Ntibirakurikiranwa',
     'admin.today.activity.title': 'Ibikorwa biri kuba',
     'admin.today.activity.caption': 'Mu rusobe rwose',
     'admin.today.activity.empty': 'Nta mafaranga arahinduranya.',
@@ -1578,6 +2125,7 @@ const rw: Catalog = {
     'admin.today.sectors.tip':
         'Imari itararangira muri buri rwego. Umutuku bivuze ko hari nibura inyandiko imwe ikurikiranwa cyangwa iri mu bibazo.',
     'admin.today.sectors.notes': 'Inyandiko {count}',
+    'admin.today.sectors.empty': 'Nta nyandiko irasohoka.',
     'admin.today.treasury.title': "Incamake y'ububiko bw'imari",
     'admin.today.treasury.invested': 'Imari yashowe (isoko rya mbere)',
     'admin.today.treasury.disbursed': 'Yishyuwe ibigo',
@@ -1613,6 +2161,11 @@ const rw: Catalog = {
     'admin.applications.older': 'Ubusabe bwa kera',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Hakenewe isuzuma ryo kurekura riri gukorwa: igiciro cyabitswe si icyemezo kiriho. Reba amagenzura yo kurekura ari hepfo.',
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        'Ubwishingizi buri munsi ya 1,25: amafaranga yinjira ntashobora kwishyura igice.',
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        "Inzitizi y'inguzanyo iriho ibuza kongera kuguza.",
+    'admin.applications.term_only': 'Amezi {term}',
     'admin.applications.decision.approve': 'Kwemeza byikora',
     'admin.applications.decision.reject': 'Ikimenyetso: kwanga',
     'admin.applications.decision.audit': 'Ohereza mu igenzura',
@@ -1702,21 +2255,9 @@ const rw: Catalog = {
     'admin.review.stage.take.cta': 'Fata usuzume',
     'admin.review.stage.take.placeholder':
         "urugero: Ndabufata mu nama y'inguzanyo y'uyu munsi.",
-    'admin.maker_checker.label': 'Ibyemezo',
-    'admin.maker_checker.step': 'Intambwe {n}',
-    'admin.maker_checker.maker_title': 'Byemerewe',
-    'admin.maker_checker.checker_title': 'Kwemeza kwa kabiri',
-    'admin.maker_checker.maker_empty': 'Nta muntu uremera uku kwishyura.',
-    'admin.maker_checker.checker_empty':
-        'Undi wemeza agenzura uku kwishyura kumaze kwemererwa.',
-    'admin.maker_checker.awaiting': 'Bitegereje uwemeza wa kabiri',
-    'admin.maker_checker.self_blocked':
-        'Ni wowe wemereye uku kwishyura, ntushobora no kukwemeza. Undi wemeza agomba kukugenzura.',
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Amabwiriza yo kwishyura akurikizwa',
     'admin.disbursements.title': 'Kwishyura bitegereje',
-    'admin.disbursements.awaiting_count':
-        '{count} bitegereje uwemeza wa kabiri',
     'admin.disbursements.table': 'Kwishyura bitegereje',
     'admin.disbursements.col.reference': 'Indango yo kwishyura',
     'admin.disbursements.col.note': 'Inyandiko',
@@ -1724,7 +2265,7 @@ const rw: Catalog = {
     'admin.disbursements.col.amount': 'Amafaranga',
     'admin.disbursements.col.due': 'Igihe',
     'admin.disbursements.col.actions': 'Imiterere · Ibikorwa',
-    'admin.disbursements.state.ready': 'Biteguye kwemererwa',
+    'admin.disbursements.state.ready': 'Bitegereje kwishyurwa byikora',
     'admin.disbursements.state.awaiting_second_approver':
         'Bitegereje uwemeza wa kabiri',
     'admin.disbursements.state.on_hold': 'Byahagaritswe',
@@ -1743,8 +2284,9 @@ const rw: Catalog = {
     'admin.disbursements.empty_title': 'Kwishyura kose kwarangiye',
     'admin.disbursements.empty_body': 'Nta kwishyura gutegerejwe ubu.',
     'admin.disbursements.drawer_label': 'Kwishyura {reference}',
-    'admin.disbursements.independence.title': 'Itangazo ry’ubwigenge',
     'admin.disbursements.amount': 'Amafaranga',
+    'admin.disbursements.platform_fee':
+        'Amafaranga ya platifomu ya 3%: {fee}, muri yo {share} ajya ku mugenzuzi. Ikigo cyakira {payout}.',
     'admin.disbursements.destination': 'Aho yoherezwa',
     'admin.disbursements.due': 'Igihe',
     'admin.disbursements.rule_dual':
@@ -1758,32 +2300,10 @@ const rw: Catalog = {
     'admin.disbursements.failure_attempts': 'Inshuro zagerageje',
     'admin.disbursements.failure_inspect':
         'Suzuma mbere yo kongera kugerageza: emeza ku utanga serivisi ko nta mafaranga yasohotse, kugira ngo kwishyura kumwe kutoherezwa kabiri.',
-    'admin.disbursements.approvals': 'Ibyemezo',
     'admin.disbursements.trail': 'Amateka yo kwishyura',
     'admin.disbursements.trail_empty': 'Nta kiranditswe.',
-    'admin.disbursements.command.authorize': 'Emerera kwishyura',
-    'admin.disbursements.command.approve': 'Emeza kwishyura',
-    'admin.disbursements.command.reject': 'Anga',
     'admin.disbursements.command.hold': 'Hagarika',
     'admin.disbursements.command.retry': 'Ongera ugerageze kwishyura',
-    'admin.disbursements.stage.authorize.title': 'Emerera uku kwishyura',
-    'admin.disbursements.stage.authorize.body':
-        'Uremerera kwishyura {amount} kuri {business}. Ibi bikora igenzura ribanza; undi mukozi agomba kubyemeza nyuma.',
-    'admin.disbursements.stage.authorize.cta': 'Emerera',
-    'admin.disbursements.stage.authorize.placeholder':
-        'urugero: Amafaranga yose yakusanyijwe; aho yoherezwa hemejwe hakurikijwe manda ya RDB.',
-    'admin.disbursements.stage.approve.title': 'Emeza uku kwishyura',
-    'admin.disbursements.stage.approve.body':
-        "Nk'umukozi wa kabiri, wemeje kwishyura {amount} kuri {business}. Ibi byandika icyifuzo cyo kwishyura; si ukwishyura. Serivisi iracyohereza gusa nyuma yo kongera kugenzura.",
-    'admin.disbursements.stage.approve.cta': 'Emeza wandike icyifuzo',
-    'admin.disbursements.stage.approve.placeholder':
-        "urugero: Nagenzuye ko amafaranga yakusanyijwe n'aho yoherezwa bihuye n'itangwa.",
-    'admin.disbursements.stage.reject.title': 'Anga uku kwishyura',
-    'admin.disbursements.stage.reject.body':
-        'Ibi bikuraho kwemerera gusa kandi byandika impamvu yawe. Ubukusanye ntibuhagarikwa; kwishyura gusubira gutegereza kwemererwa.',
-    'admin.disbursements.stage.reject.cta': 'Anga kwishyura',
-    'admin.disbursements.stage.reject.placeholder':
-        "urugero: Izina rya konti ntirihura n'ikigo.",
     'admin.disbursements.stage.hold.title': 'Hagarika uku kwishyura',
     'admin.disbursements.stage.hold.body':
         'Nta kwishyura mu gihe bihagaritswe. Vuga impamvu, kugira ngo ukurikira amenye icyo akuraho.',
@@ -1798,7 +2318,83 @@ const rw: Catalog = {
         'urugero: MTN yemeje ko MM-88213 yasubijwe yose; aho yoherezwa hongeye kugenzurwa.',
     'admin.parties.policy_title': "Amabwiriza yo kwemererwa kw'ibigo",
     'admin.parties.filter': 'Tondeka ukurikije imiterere',
+    'admin.audit_reports.title': "Ikurikirana ry'igenzura rya buri kwezi",
+    'admin.audit_reports.caption':
+        "Igenzura ryose n'uko raporo yaryo ihagaze. Igenzura rya buri kwezi rikorerwa aho ubucuruzi buri bitarenze ku itariki ya 7; nyuma ubucuruzi bugira amasaha 24 yo gusinya cyangwa kujuririra.",
+    'admin.audit_reports.field.title': "Ibikorwa by'igenzura ryihuse ku butaka",
+    'admin.audit_reports.field.caption':
+        'Buri genzura ryo ku kibanza ryerekana CPA n’uruhushya rwe, uko raporo ihagaze n’ikinyuranyo kigereranyijwe hakurikijwe amafaranga, hamwe n’ikimenyetso cy’ifungwa ryabitswe na raporo ya PDF iyo bihari.',
+    'admin.audit_reports.field.table': 'Igenzura ryihuse ku butaka',
+    'admin.audit_reports.field.empty': 'Nta gikorwa cya ISRS 4400 kiranditswe.',
+    'admin.audit_reports.feed.title': 'Ibyagenzuwe vuba bigatangazwa',
+    'admin.audit_reports.feed.audited':
+        '✓ Byagenzuwe aho bikorera na {auditor} · {licence}',
+    'admin.audit_reports.feed.empty': 'Nta raporo ya buri kwezi iragenzurwa.',
+    'admin.audit_reports.filter': "Uko raporo z'igenzura zigaragara",
+    'admin.audit_reports.table': "Raporo z'igenzura",
+    'admin.audit_reports.empty_title': 'Nta kintu kiri hano.',
+    'admin.audit_reports.empty_body':
+        'Igenzura rigaragara hano iyo umugenzuzi aryemeye.',
+    'admin.audit_reports.monthly': 'Igenzura rya buri kwezi',
+    'admin.audit_reports.flash': 'Igenzura ryihuse',
+    'admin.audit_reports.due': 'Bigomba kurangira {date}',
+    'admin.audit_reports.cosign_by': 'Gusinya bitarenze {date}',
+    'admin.audit_reports.remind': 'Ibutsa',
+    'admin.audit_reports.remind_auditor': 'Ibutsa umugenzuzi ibya {business}',
+    'admin.audit_reports.remind_business':
+        'Ibutsa {business} gusinya cyangwa kujuririra',
+    'admin.audit_reports.reminded': 'Yibukijwe {date}',
+    'admin.audit_reports.pdf': 'Kora PDF',
+    'admin.audit_reports.pdf_named':
+        'Kuramo raporo yashyizweho kashe ya {business} (PDF)',
+    'admin.audit_reports.stats.published': 'Byagenzuwe kandi byatangajwe',
+    'admin.audit_reports.stats.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.stats.overdue': 'Igihe cyarenze',
+    'admin.audit_reports.stats.on_time': 'Igipimo cyo kurangiza ku gihe',
+    'admin.audit_reports.chip.all': 'Byose',
+    'admin.audit_reports.chip.owed': 'Bitegereje umugenzuzi',
+    'admin.audit_reports.chip.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.chip.published': 'Byatangajwe',
+    'admin.audit_reports.chip.disputed': 'Byajuririwe',
+    'admin.audit_reports.col.business': 'Ubucuruzi',
+    'admin.audit_reports.col.period': 'Igihe',
+    'admin.audit_reports.col.partner': 'Umugenzuzi',
+    'admin.audit_reports.col.status': 'Uko bihagaze',
+    'admin.audit_reports.col.variance': 'Ikinyuranyo',
+    'admin.audit_reports.col.action': 'Igikorwa',
+    'admin.audit_reports.status.not_started': 'Igenzura ntirirafungurwa',
+    'admin.audit_reports.status.in_progress': 'Birakomeje',
+    'admin.audit_reports.status.overdue': 'Byatinze',
+    'admin.audit_reports.status.returned': 'Byagaruwe',
+    'admin.audit_reports.status.sealed': 'Byashyizweho kashe',
+    'admin.audit_reports.status.awaiting_cosign': 'Bitegereje gusinywa',
+    'admin.audit_reports.status.published': 'Byatangajwe',
+    'admin.audit_reports.status.disputed': 'Byajuririwe',
+    'admin.audit_reports.status.escalated': 'Byazamuwe',
+    'admin.audit_reports.status.amended': 'Byahinduwe',
+    'admin.audit_reports.status.withdrawn': 'Byakuweho',
     'admin.parties.coverage_link': 'Aho abafatanyabikorwa bagera',
+    'admin.parties.registry.title': 'Urutonde rwa CPA',
+    'admin.parties.registry.caption':
+        "Buri CPA ufite uruhushya, n'uruhushya rwe, uko ahagaze n'igenzura arimo gukora. Fungura umurongo ubone umwirondoro wose.",
+    'admin.parties.queue.requests.title': "Ibisabwa n'abafatanyabikorwa",
+    'admin.parties.queue.requests.caption':
+        'Kongerera igihe impushya bitegereje gusuzumwa. Umufatanyabikorwa abona ko bigitegereje kugeza ufashe icyemezo.',
+    'admin.parties.queue.requests.empty':
+        'Nta busabe bw’abafatanyabikorwa butegereje. Kongerera igihe impushya biva muri porogaramu y’Abagenzuzi bigera hano.',
+    'admin.parties.queue.requests.chip': 'KONGERERA IGIHE',
+    'admin.parties.queue.desk.title': 'Ibiro byo kugenzura ICPAR',
+    'admin.parties.queue.desk.caption':
+        'Emeza uruhushya mu gitabo cya ICPAR, hanyuma wemeze kugira ngo umufatanyabikorwa ashobore gufata igenzura.',
+    'admin.parties.queue.desk.empty':
+        "Nta busabe bw'abagenzuzi butegereje kugenzurwa.",
+    'admin.parties.queue.desk.chip': 'BITEGEREJE KUGENZURWA',
+    'admin.parties.queue.approve': 'Emeza',
+    'admin.parties.queue.reject': 'Wanga',
+    'admin.parties.queue.review': 'Suzuma',
+    'admin.parties.queue.field.licence': 'Uruhushya',
+    'admin.parties.queue.field.expires_on': 'Uruhushya rurangira',
+    'admin.parties.queue.field.submitted_at': 'Byoherejwe',
     'admin.parties.chip.all': 'Byose',
     'admin.parties.chip.healthy': 'Bimeze neza',
     'admin.parties.chip.watch': 'Bikurikiranwa',
@@ -1817,14 +2413,14 @@ const rw: Catalog = {
     'admin.parties.stats.total_businesses': 'Ibigo byose',
     'admin.parties.stats.avg_rating': 'Amanota ugereranyije',
     'admin.parties.stats.active_notes': 'Inyandiko zikora',
-    'admin.parties.stats.capital_raised': 'Imari yakusanyijwe',
+    'admin.parties.stats.capital_raised': 'Imari yatewe inkunga',
     'admin.parties.stats.total_investors': 'Abashoramari bose',
     'admin.parties.stats.kyc_verified': 'KYC yemejwe',
     'admin.parties.stats.awaiting_kyc': 'Bategereje KYC',
     'admin.parties.stats.total_aum': 'Imari yose icungwa',
-    'admin.parties.stats.partners': 'Abagenzuzi bafatanya',
-    'admin.parties.stats.active_partners': 'Bakora',
-    'admin.parties.stats.pending_partners': 'Bategereje kwemezwa',
+    'admin.parties.stats.active_audits': 'Igenzura riri gukorwa',
+    'admin.parties.stats.active_partners': 'Abafatanyabikorwa bakora',
+    'admin.parties.stats.pending_partners': 'ICPAR itegerejwe',
     'admin.parties.stats.licences_expiring': 'Impushya zirangira ≤ iminsi 30',
     'admin.parties.stats.operators': 'Abakozi',
     'admin.parties.stats.approvers': 'Abemeza',
@@ -1852,14 +2448,15 @@ const rw: Catalog = {
     'admin.parties.empty.staff': "Nta mukozi uhuye n'ibi byatoranyijwe.",
     'admin.parties.col.business': 'Ikigo',
     'admin.parties.col.rating': 'Amanota',
+    'admin.parties.name_pending': 'Izina ritaraboneka',
     'admin.parties.col.active_notes': 'Inyandiko zikora',
-    'admin.parties.col.investors': 'Abashoramari',
-    'admin.parties.col.raised': 'Byakusanyijwe',
+    'admin.parties.col.investors': 'Abateye inkunga',
+    'admin.parties.col.raised': 'Byatewe inkunga',
     'admin.parties.col.capacity': 'Ubushobozi bwakoreshejwe',
     'admin.parties.col.status': 'Imiterere',
     'admin.parties.col.investor': 'Umushoramari',
     'admin.parties.col.kyc': 'KYC',
-    'admin.parties.col.portfolio': 'Ishoramari',
+    'admin.parties.col.portfolio': 'Byashowe + byemewe',
     'admin.parties.col.wallet': 'Igikapu',
     'admin.parties.col.holdings': 'Imigabane',
     'admin.parties.col.businesses': 'Ibigo',
@@ -1885,6 +2482,7 @@ const rw: Catalog = {
     'admin.parties.kyc.overdue': 'Byarengeje igihe',
     'admin.parties.kyc.rejected': 'Byanzwe',
     'admin.parties.status.frozen': 'Yahagaritswe',
+    'admin.parties.status.suspended': 'Yahagaritswe',
     'admin.parties.status.restricted': 'Ifite imbogamizi',
     'admin.parties.status.verified': 'Yemejwe',
     'admin.parties.status.pending': 'Itegereje',
@@ -1893,6 +2491,134 @@ const rw: Catalog = {
     'admin.parties.standing.pending': 'Ategereje kwemezwa',
     'admin.parties.standing.licence_expired': 'Uruhushya rwarangiye',
     'admin.parties.standing.suspended': "Yahagaritswe by'agateganyo",
+    'admin.matrix.title': "Uburenganzira bw'inshingano",
+    'admin.matrix.info':
+        'Icyo buri rwego rwemerewe gukora. Inzego zo hasi zibuzwa ibikorwa byangiza, ntizihishwa gusa.',
+    'admin.matrix.col.capability': 'Ubushobozi',
+    'admin.matrix.col.detail': 'Icyo bwemerera',
+    'admin.matrix.granted': 'Byemewe',
+    'admin.matrix.withheld': 'Ntibyemewe',
+    'admin.permission.admin.open': 'Gufungura konsole',
+    'admin.permission_detail.admin.open':
+        "Kwinjira muri konsole y'abakozi, imbonerahamwe yayo n'Abakozi n'inshingano.",
+    'admin.permission.businesses.view': 'Kureba ibigo',
+    'admin.permission_detail.businesses.view':
+        "Gusoma urutonde rw'ibigo n'amakuru yose ya buri kigo.",
+    'admin.permission.businesses.verify': 'Kugenzura ibigo',
+    'admin.permission_detail.businesses.verify':
+        "Gufata icyemezo ku igenzura ry'ibigo, handitswe impamvu.",
+    'admin.permission.investors.verify': 'Kugenzura abashoramari',
+    'admin.permission_detail.investors.verify':
+        "Gufata icyemezo ku igenzura ry'umwirondoro w'abashoramari no gusoma Ibikorwa n'igenzura.",
+    'admin.permission.applications.review': 'Gusuzuma ubusabe',
+    'admin.permission_detail.applications.review':
+        'Gusuzuma ubusabe bwo gukusanya imari no kubwemerera gutangazwa.',
+    'admin.permission.audit.partners.verify':
+        'Kugenzura abafatanyabikorwa mu igenzura',
+    'admin.permission_detail.audit.partners.verify':
+        'Kwemeza ibigo bya CPA no kureba aho abafatanyabikorwa bakorera.',
+    'admin.permission.audit.assignments.manage': 'Gutanga igenzura',
+    'admin.permission_detail.audit.assignments.manage':
+        'Kohereza no kwimurira igenzura ku bafatanyabikorwa mu igenzura.',
+    'admin.permission.audit.reports.view': "Gusoma raporo z'igenzura",
+    'admin.permission_detail.audit.reports.view':
+        "Gufungura raporo z'igenzura zafunzwe n'ibimenyetso byazo.",
+    'admin.permission.consent.documents.record':
+        "Kwandika inyandiko z'amategeko",
+    'admin.permission_detail.consent.documents.record':
+        "Kwandika verisiyo nshya z'Amabwiriza n'Itangazo ry'ibanga.",
+    'admin.permission.ledger.view': "Kureba igitabo cy'imari",
+    'admin.permission_detail.ledger.view':
+        "Gusoma ibyanditswe mu gitabo cy'imari n'amafaranga asigaye.",
+    'admin.permission.disbursements.view': 'Kureba kwishyura',
+    'admin.permission_detail.disbursements.view':
+        "Kureba urutonde rw'ibyishyurwa na buri kurekurwa.",
+    'admin.permission.disbursements.hold': 'Guhagarika kwishyura',
+    'admin.permission_detail.disbursements.hold':
+        'Guhagarika ubwishyu mbere y’uko burekurwa.',
+    'admin.permission.disbursements.requery': 'Kongera kubaza ku bwishyu',
+    'admin.permission_detail.disbursements.requery':
+        "Kubaza utanga serivisi z'ubwishyu uko ubwishyu buhagaze ubu.",
+    'admin.permission.staging.mail.testers.manage': 'Gucunga abagerageza imeri',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Guhitamo abakira imeri kuri staging.',
+    'admin.permission.staff.manage': 'Gucunga abakozi',
+    'admin.permission_detail.staff.manage':
+        "Kongeramo umukozi, cyangwa guhagarika cyangwa gusubizaho uburenganzira bw'undi mukozi, hatanzwe impamvu.",
+    'admin.permission.accounts.freeze': 'Guhagarika konti',
+    'admin.permission_detail.accounts.freeze':
+        "Guhagarika by'agateganyo uburenganzira bw'umushoramari cyangwa ubucuruzi kuri porogaramu yabo.",
+    'admin.permission.capacity.adjust': 'Guhindura ubushobozi',
+    'admin.permission_detail.capacity.adjust':
+        'Guhindura umubare ubucuruzi bushobora gukusanya.',
+    'admin.permission.records.edit': 'Guhindura amakuru',
+    'admin.permission_detail.records.edit':
+        'Guhindura amakuru yabitswe ku nyandiko iyo ari yo yose.',
+    'admin.permission.ledger.correct': 'Gukosora ibyakozwe',
+    'admin.permission_detail.ledger.correct':
+        'Gukosora igikorwa cyarangiye hakoreshejwe igikorwa gishya gihujwe nacyo, hatanzwe impamvu.',
+    'admin.permission.policies.change': 'Amategeko',
+    'admin.permission_detail.policies.change':
+        "Guhindura amategeko y'ibiciro, ibisabwa n'ibikorwa byikora.",
+    'admin.permission.records.delete': 'Gusiba',
+    'admin.permission_detail.records.delete':
+        'Gukura burundu inyandiko kuri platform.',
+    'admin.matrix.withheld.not_built': 'Nta ruhare kugeza ubu: ntikirubakwa',
+    'admin.matrix.withheld.by_rule':
+        "Nta ruhare, ku itegeko: ibyanditswe mu gitabo cy'imari n'igenzura ntibisibwa",
+    'admin.action_log.title': "Igitabo cy'ibikorwa by'ubuyobozi",
+    'admin.staff.approvals.title': 'Gutegereza kwemezwa n’undi muyobozi mukuru',
+    'admin.staff.approvals.body':
+        'Uburenganzira bw’umuyobozi mukuru ntibuhinduka kugeza bwemejwe n’undi muyobozi mukuru ubufitiye uburenganzira. Uwasabye n’uwasabiriwe ntibashobora kwemeza.',
+    'admin.staff.approvals.grant':
+        '{requester} yasabye uburenganzira bw’umuyobozi mukuru.',
+    'admin.staff.approvals.reactivate':
+        '{requester} yasabye kongera gufungura uburenganzira bw’umuyobozi mukuru.',
+    'admin.staff.approvals.form': 'Emeza uburenganzira bwa {recipient}',
+    'admin.staff.approvals.submit': 'Emeza uburenganzira bw’umuyobozi mukuru',
+    'admin.staff.approvals.waiting':
+        'Gutegereza ko undi muyobozi mukuru abyemeza.',
+    'admin.staff.invite.open': '+ Tumira umukozi',
+    'admin.staff.invite.title': 'Tumira umukozi',
+    'admin.staff.invite.body':
+        "Ha konti isanzweho uburenganzira bwo kwinjira muri console n'uruhare rumwe. Umukozi abanza kwiyandikisha kuri konti ye yihariye no gufungura kwinjira mu ntambwe ebyiri. Impinduka yandikwa n'izina ryawe n'impamvu.",
+    'admin.staff.invite.email': 'Imeli ya konti',
+    'admin.staff.invite.role': 'Uruhare',
+    'admin.staff.invite.cancel': 'Hagarika',
+    'admin.staff.invite.submit': 'Tanga uburenganzira',
+    'admin.staff.signed_in_as': 'Winjiye nka',
+    'admin.staff.access_full': 'Uburenganzira bwose',
+    'admin.staff.access_count': 'Ubushobozi {granted} kuri {total}',
+    'admin.action_log.info':
+        "Impinduka ziheruka ku burenganzira bw'abakozi, izigezweho mbere: uwazikoze, uwo zahinduriye uburenganzira n'impamvu.",
+    'admin.action_log.empty': "Nta gikorwa cy'ubuyobozi kiranditswe.",
+    'admin.action_log.col.action': 'Igikorwa',
+    'admin.action_log.col.by': 'Na',
+    'admin.action_log.col.target': 'Uwo bireba',
+    'admin.action_log.col.reason': 'Impamvu',
+    'admin.action_log.col.when': 'Ryari',
+    'admin.action_log.action.staff_suspended': 'Uburenganzira bwahagaritswe',
+    'admin.action_log.action.staff_enabled': 'Uburenganzira bwemejwe',
+    'admin.action_log.action.staff_granted': 'Yongewemo nka {role}',
+    'admin.permission.reconciliation.view': 'Kureba guhuza konti',
+    'admin.permission_detail.reconciliation.view':
+        "Kugereranya igitabo cy'imari n'imbonerahamwe z'abatanga serivisi.",
+    'admin.permission.exceptions.view': 'Kureba ibidasanzwe',
+    'admin.permission_detail.exceptions.view':
+        "Kureba ibidasanzwe bifunguye mu Kigo cy'ingaruka.",
+    'admin.permission.messaging.view': 'Kureba ubutumwa',
+    'admin.permission_detail.messaging.view': "Gusoma amateka y'ubutumwa.",
+    'admin.permission.primary.view': "Kureba isoko ry'ibanze",
+    'admin.permission_detail.primary.view':
+        "Gukurikirana ikusanyamari riri gukorwa n'urutonde rw'inoti.",
+    'admin.permission.payments.view': 'Kureba ubwishyu',
+    'admin.permission_detail.payments.view': "Gufungura Ikigo cy'ubwishyu.",
+    'admin.permission.complaints.answer': 'Gusubiza ibirego',
+    'admin.permission_detail.complaints.answer':
+        "Gusubiza no gufunga ibirego by'abitabiriye.",
+    'admin.permission.health.view': 'Kureba ubuzima bwa sisitemu',
+    'admin.permission_detail.health.view':
+        "Kureba imirongo y'ibitegereje, imirimo n'uko serivisi zihagaze.",
     'admin.parties.you': 'Wowe',
     'admin.parties.drawer_label': "{name}, amakuru y'uruhande",
     'admin.parties.type.business': 'Ikigo',
@@ -1912,12 +2638,12 @@ const rw: Catalog = {
     'admin.parties.kyc_overdue_note':
         'Kongera kwemeza KYC byarengeje igihe kuva {date}.',
     'admin.parties.stat.active_notes': 'Inyandiko zikora',
-    'admin.parties.stat.investors': 'Abashoramari',
-    'admin.parties.stat.raised': 'Byakusanyijwe',
+    'admin.parties.stat.investors': 'Abateye inkunga',
+    'admin.parties.stat.raised': 'Byatewe inkunga',
     'admin.parties.stat.rating': 'Amanota ya Rozine',
     'admin.parties.stat.capacity': 'Ubushobozi',
     'admin.parties.stat.capacity_used': 'Ubushobozi bwakoreshejwe',
-    'admin.parties.stat.portfolio': 'Ishoramari',
+    'admin.parties.stat.portfolio': 'Byashowe + byemewe',
     'admin.parties.stat.wallet': 'Igikapu',
     'admin.parties.stat.holdings': 'Imigabane',
     'admin.parties.stat.businesses': 'Ibigo',
@@ -1931,13 +2657,17 @@ const rw: Catalog = {
     'admin.parties.list.holdings': 'Imigabane',
     'admin.parties.list.engagements': 'Imirimo',
     'admin.parties.list_empty': 'Nta kintu kirimo.',
+    'admin.parties.holding_detail': {
+        one: '{amount} · inyandiko {count}',
+        other: '{amount} · inyandiko {count}',
+    },
     'admin.parties.note_status.draft': 'Umushinga',
     'admin.parties.note_status.active': 'Iri ku isoko',
     'admin.parties.note_status.funded': 'Yakusanyijwe',
     'admin.parties.note_status.repaying': 'Irishyurwa',
     'admin.parties.note_status.completed': 'Yarangiye',
     'admin.parties.note_status.failed': 'Yananiranye',
-    'admin.parties.history': 'Amateka',
+    'admin.parties.history': 'Ibikorwa',
     'admin.parties.history_empty': 'Nta gikorwa kiranditswe.',
     'admin.parties.kyc_title': 'KYC no kwemeza',
     'admin.parties.kyc_current': 'Uko bimeze ubu',
@@ -2084,6 +2814,19 @@ const rw: Catalog = {
     'business.wallet.back': 'Subira ku Ahabanza',
     'business.wallet.available': 'Amafaranga ahari',
     'business.wallet.brand': 'Ikofi ya Rozine',
+    'business.wallet.range.label': 'Igihe',
+    'business.wallet.range.all': 'Igihe cyose',
+    'business.wallet.range.start': 'Intangiriro',
+    'business.wallet.range.now': 'Ubu',
+    'business.wallet.range.from': 'Kuva',
+    'business.wallet.range.to': 'Kugeza',
+    'business.wallet.range.apply': 'Emeza',
+    'business.wallet.range.clear': 'Igihe cyose',
+    'business.wallet.export.label': 'Kuramo raporo y’ikofi',
+    'business.wallet.export.pdf': 'Kuramo PDF',
+    'business.wallet.export.csv': 'Kuramo Excel',
+    'business.wallet.caption':
+        'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
     'business.wallet.withdraw.button': 'Bikuza',
     'business.wallet.processing': 'Birimo gukorwa…',
@@ -2096,14 +2839,12 @@ const rw: Catalog = {
     'business.servicing.wallet.status.restricted': 'Byabujijwe',
     'business.servicing.wallet.restricted':
         'Byabujijwe kuva ku wa {date}. Kubitsa no kwishyura biracyakunda.',
-    'business.servicing.wallet.no_pending': 'Nta mafaranga ategereje kwemezwa',
     'business.servicing.wallet.pending': '{amount} bitegereje kwemezwa',
     'business.servicing.wallet.to_repayments': 'Jya ku kwishyura',
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",
     'business.servicing.wallet.filter.external': 'Ibyabikijwe',
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
-    'business.servicing.wallet.entry.deposit':
-        'Kubitsa uvuye kuri {counterparty}',
+    'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Kwishyura · {note}',
     'business.servicing.wallet.instalments': 'Ibice {list}',
     'business.servicing.wallet.empty': 'Nta kirimo kugeza ubu.',
@@ -2123,7 +2864,7 @@ const rw: Catalog = {
     'auditor.time.hours_ago': 'hashize amasaha {count}',
     'auditor.time.days_ago': 'hashize iminsi {count}',
     'auditor.home.head_title': 'Ahabanza',
-    'auditor.home.wallet_balance': 'Amafaranga ari mu gikapu',
+    'auditor.home.wallet_owed': 'Ayo ugomba guhabwa',
     'auditor.home.withdraw': 'Bikuza',
     'auditor.home.statement': "Inyandiko y'ibyakozwe",
     'auditor.home.notifications': 'Ubutumwa',
@@ -2212,6 +2953,20 @@ const rw: Catalog = {
     'auditor.monthly.to_open': 'Amagenzura yo gufungura',
     'auditor.monthly.waiting': '{count} bitegereje',
     'auditor.monthly.not_opened': "{month} · dosiye y'igenzura ntirafungurwa",
+    'auditor.monthly.not_opened_undated': "Dosiye y'igenzura ntirafungurwa",
+    'auditor.desk_review.eyebrow': 'Isuzuma ry’impapuro · {month}',
+    'auditor.desk_review.eyebrow_undated': 'Isuzuma ry’impapuro',
+    'auditor.desk_review.status.disputed': 'Riri gusuzumwa',
+    'auditor.desk_review.status.escalated': 'Ryoherejwe hejuru',
+    'auditor.desk_review.note':
+        "Ntibishobora guhindurwa kugeza ubuyobozi bwa Rozine bukemuye ikibazo. Kuvugana mu buryo butaziguye n'uyu mucuruzi byahagaritswe.",
+    'auditor.desk_review.proofs': 'Ibimenyetso byatanzwe',
+    'auditor.desk_review.proofs_value': {
+        one: 'Ikimenyetso {count}',
+        other: 'Ibimenyetso {count}',
+    },
+    'auditor.desk_review.variance': 'Ikinyuranyo cyawe kiremereye',
+    'auditor.desk_review.view': 'Reba raporo →',
     'auditor.monthly.open': 'Fungura igenzura',
     'auditor.monthly.show_all': 'Erekana amadirishya {count} yose afunguye',
     'auditor.monthly.show_fewer': 'Erekana bike · {shown} kuri {count}',
@@ -2292,14 +3047,39 @@ const rw: Catalog = {
     'auditor.file.no_documents':
         'Nta nyandiko zatanzwe ziranditswe kuri iyi dosiye.',
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Byemejwe',
     'auditor.file.doc_status.present': '✓ Birahari',
-    'auditor.file.doc_status.missing': 'Ntibirimo',
     'auditor.file.prescreen': "Isuzuma ry'ibanze ryikora",
     'auditor.file.no_prescreen':
         "Nta gisubizo cy'isuzuma ry'ibanze ryikora kiratangazwa kuri iyi dosiye.",
     'auditor.file.check.met': 'Byujujwe',
     'auditor.file.check.flag': 'Ikimenyetso',
+    'auditor.file.document.pdf': 'Raporo ya konti (PDF)',
+    'auditor.file.document.csv': 'Raporo ya konti (CSV)',
+    'auditor.file.document.received': 'Yakiriwe {date}',
+    'auditor.file.document.received_records': {
+        one: 'Yakiriwe {date} · inyandiko {count}',
+        other: 'Yakiriwe {date} · inyandiko {count}',
+    },
+    'auditor.file.brief.flash.reason':
+        "Nta noti ishobora gushyirwa ku isoko mbere y'uko Umugenzuzi asura ubucuruzi agafunga raporo y'ibanze. Rozine yagenzuye kure raporo za konti zatanzwe; uruzinduko rwawe rwemeza ku kibanza ko ubucuruzi, ububiko bwabwo n'ibitabo byabwo ari ukuri mbere y'uko amafaranga atangwa.",
+    'auditor.file.brief.flash.step_1':
+        "Iyandikishe ugeze aho ubucuruzi bukorera; aho uri ako kanya handikwa hamwe n'igenzura.",
+    'auditor.file.brief.flash.step_2':
+        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera. Gushyiraho amafoto ari muri telefoni ntibyemewe.",
+    'auditor.file.brief.flash.step_3':
+        "Bara ububiko ku kibanza wandike agaciro kabwo. Ikinyuranyo cyose n'umubare watangajwe kigomba gusobanurwa mbere yo gufunga.",
+    'auditor.file.brief.flash.step_4':
+        "Huza ibitabo by'impapuro n'inyemezabwishyu na raporo za konti zagenzuwe, ukurikije uburyo bwemeranyijweho bwa ISRS 4400.",
+    'auditor.file.brief.monthly.reason':
+        'Buri kwezi igihe noti itararangira, Umugenzuzi agenzura ku kibanza inyandiko z’ubucuruzi. Muri porogaramu ikoreshwa ubu, funga raporo y’ukwezi kwagenzuwe bitarenze impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali). Ubucuruzi buhabwa amasaha 24 yo kwemeza cyangwa kujuririra.',
+    'auditor.file.brief.monthly.step_1':
+        "Suzuma raporo za konti z'ukwezi ubucuruzi bwashyizeho.",
+    'auditor.file.brief.monthly.step_2':
+        "Bara amafaranga n'ibicuruzwa biri mu bubiko ku kibanza. Ikinyuranyo cyose kigomba gusobanurwa mbere yo gufunga.",
+    'auditor.file.brief.monthly.step_3':
+        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera.",
+    'auditor.file.brief.monthly.step_4':
+        'Funga bitarenze itariki ntarengwa iri kuri raporo: impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali) muri porogaramu ikoreshwa ubu.',
     'auditor.file.why': 'Impamvu igenzura ryo ku kibanza rikenewe',
     'auditor.file.mandate': 'Ibyo ugomba kugenzura ku kibanza',
     'auditor.file.history': 'Amateka ya dosiye',
@@ -2463,8 +3243,8 @@ const rw: Catalog = {
     'auditor.seal.digest': 'Ikimenyetso gitegereje',
     'auditor.seal.digest_note':
         "Birangira iyo kashe yawe ya ICPAR ishyizweho. PDF isinywe ikorwa na Rozine igezwa ku bashoramari nyuma y'uko ikigo cyemeje.",
-    'auditor.seal.apply': "Emeza ukoresheje porogaramu y'umutekano",
-    'auditor.seal.submit': 'Shyiraho kashe wohereze kuri Rozine',
+    'auditor.seal.apply': 'Ongera wiyemeze kugira ngo ushyireho kashe',
+    'auditor.seal.submit': "Shyiraho kashe y'uruhushya rwa ICPAR",
     'auditor.sealed.title': 'Byashyizweho kashe biratangwa',
     'auditor.sealed.body':
         'Raporo yashyizweho kashe ntishobora guhindurwa. {party} isinya bitarenze {date}; nyuma igezwa ku bashoramari.',
@@ -2497,6 +3277,24 @@ const rw: Catalog = {
     'auditor.portfolio.yield.empty':
         "Ubwishyu bw'umugabane ku nyungu bugaragara hano bumaze kwishyurwa.",
     'auditor.portfolio.managed.title': 'Imishinga ucunga',
+    'auditor.portfolio.managed.groups': "Amatsinda y'amasezerano ucunga",
+    'auditor.portfolio.managed.group.active': 'Ishoramari rikora',
+    'auditor.portfolio.managed.group.raising': 'Ikusanya',
+    'auditor.portfolio.managed.filter': 'Uko ikusanya rihagaze',
+    'auditor.portfolio.managed.chip.all': 'Byose',
+    'auditor.portfolio.managed.chip.live': 'Birakomeje',
+    'auditor.portfolio.managed.chip.failed': 'Byanze',
+    'auditor.portfolio.managed.raising_empty':
+        "Nta ikusanya ry'ubucuruzi wagenzuye riri muri iki gice.",
+    'auditor.portfolio.managed.raised': 'Ayakusanyijwe',
+    'auditor.portfolio.managed.target': 'Intego',
+    'auditor.portfolio.managed.investors': 'Abashoramari',
+    'auditor.portfolio.managed.count': '{count} zose',
+    'auditor.portfolio.managed.sub': '{district} · yishyuwe {date}',
+    'auditor.portfolio.managed.funded': 'Byatewe inkunga',
+    'auditor.portfolio.managed.raise': 'Amafaranga yashakwaga',
+    'auditor.portfolio.managed.fee': "Amafaranga y'urubuga",
+    'auditor.portfolio.managed.share': '40% yawe',
     'auditor.portfolio.managed.empty':
         "Nta mishinga uracunga. Tsinda Igenzura ryihuse kugira ngo ube ushinzwe konti y'ubucuruzi.",
     'auditor.calendar.title': "Ingengabihe y'igenzura",
@@ -2619,16 +3417,32 @@ const rw: Catalog = {
         "Yemejwe · amasezerano rusange n'uburyo bwumvikanyweho",
     'auditor.profile.legal.required': 'Bisaba ko ubyemeza',
     'auditor.profile.legal.unavailable': 'Ntibishoboka gusomwa ubu',
-    'auditor.profile.pending.earnings_title': 'Nta byo winjije biraboneka',
-    'auditor.profile.pending.earnings_body':
-        "Umugabane wawe w'amafaranga ya serivisi n'inyungu bizagaragara hano nibimara kuboneka.",
+    'auditor.profile.earnings.title': 'Ibyo winjije',
+    'auditor.profile.earnings.lead':
+        "Ibyo winjije byose uku kwezi, umurongo ku murongo, n'uko buri mubare wabazwe.",
+    'auditor.profile.earnings.this_month': 'Ibyo winjije muri {month}',
+    'auditor.profile.earnings.total': 'Ibyo winjije byose hamwe',
+    'auditor.profile.earnings.sources': 'Aho byaturutse',
+    'auditor.profile.earnings.platform_fee':
+        "Umugabane w'amafaranga ya platform",
+    'auditor.profile.earnings.platform_fee_rule':
+        "40% by'amafaranga ya platform ya 3% kuri buri nkunga wagenzuye, ashyirwa kuri konti iyo yishyuwe.",
+    'auditor.profile.earnings.earnings_fee': "Umugabane w'amafaranga ku nyungu",
+    'auditor.profile.earnings.earnings_fee_rule':
+        "25% by'amafaranga ku nyungu kuri buri bwishyu bwa buri kwezi bw'abashoramari. Bitangirana n'ubwishyu bwa mbere.",
+    'auditor.profile.earnings.lines': "Imirongo yose y'uku kwezi",
+    'auditor.profile.earnings.line_count': {
+        one: 'Umurongo {count}',
+        other: 'Imirongo {count}',
+    },
+    'auditor.profile.earnings.empty':
+        'Nta cyo urinjiza uku kwezi. Umurongo ugaragara ako kanya inkunga wagenzuye yishyuwe.',
+    'auditor.profile.earnings.basis':
+        'Inkunga {raise} · amafaranga ya platform ya 3% {fee} · 40% byawe {amount}',
     'auditor.profile.pending.payout_title':
         'Nta konti yo kwishyurirwaho iracyahari',
     'auditor.profile.pending.payout_body':
         'Konti ya banki wishyurirwaho izagaragara hano.',
-    'auditor.profile.pending.learn_title': 'Biraza vuba muri porogaramu',
-    'auditor.profile.pending.learn_body':
-        "Amasomo y'Ishuri ry'abagenzuzi azagaragara hano namara gutangazwa.",
     'auditor.profile.pending.legal_title': 'Biraza vuba muri porogaramu',
     'auditor.profile.pending.legal_body':
         "Amasezerano yawe y'akazi azasomerwa hano.",
@@ -2685,70 +3499,46 @@ const rw: Catalog = {
     'business.rating.factor.repayment_history': 'Amateka yo kwishyura',
     'business.rating.factor.statement_consistency':
         'Guhuza kwa raporo za banki',
-    'business.rating.factor.growth_outlook': "Iterambere n'icyerekezo",
+    'business.rating.factor.track_record': 'Amateka yagenzuwe',
     'business.rating.sizing.title': 'Uko ubushobozi bwawe bubarwa',
-    'business.rating.sizing.cash': 'Amafaranga ku kwezi',
+    'business.rating.sizing.cash': 'Amafaranga usigarana buri kwezi',
     'business.rating.sizing.cash_note':
-        "inyungu nyayo {margin}% + {depreciation}% by'iyangirika byongeweho",
-    'business.rating.sizing.multiplier': '× Ikigwizo cyawe',
-    'business.rating.sizing.tier.none': 'Nta bicuruzwa byemejwe biraboneka',
-    'business.rating.sizing.tier.cover1x':
-        "CPA wawe yemeje ibicuruzwa bingana nibura n'amafaranga asabwa inshuro 1",
-    'business.rating.sizing.tier.cover2x':
-        "CPA wawe yemeje ibicuruzwa bingana nibura n'amafaranga asabwa inshuro 2",
-    'business.rating.sizing.carry':
-        'Ubwishyu bwa buri kwezi ushobora kwishyura',
+        'Nyuma y’ayo nyir’ubucuruzi afata n’imyenda usanzwe wishyura',
+    'business.rating.sizing.cover': 'Ingwate isabwa',
+    'business.rating.sizing.cover_note':
+        'Buri kwishyura kwa buri kwezi kugomba gukubwa inshuro {cover} n’ayo mafaranga',
+    'business.rating.sizing.cover_value': '{cover}×',
+    'business.rating.sizing.term': 'Igihe n’inyungu byakoreshejwe',
+    'business.rating.sizing.term_value':
+        'Amezi {months} · {rate}% ku giciro kimwe',
     'business.rating.sizing.explainer':
-        "Ubushobozi bwawe ni amafaranga ikigo cyawe kinjiza buri kwezi, agwizwa n'ibyo ibicuruzwa byemejwe byemerera, hanyuma bigarukira ku gipimo gito muri bitanu biri hejuru. Nta muntu muri Rozine ushyiraho iyi mibare n'intoki. Ubusabe burenze ubushobozi bwangwa ako kanya.",
-    'business.rating.stock.title': 'Ibicuruzwa byanditswe',
-    'business.rating.stock.verified':
-        '{value} byabaruwe na CPA wawe aho ukorera',
-    'business.rating.stock.indicative':
-        '{value} ni ibisanzwe mu rwego rwawe — ariko ibarura rya CPA ni ryo ryonyine ritanga ikigwizo kinini',
-    'business.rating.stock.none': 'Nta bicuruzwa byanditswe',
-    'business.rating.stock.why':
-        'Inguzanyo igura ibicuruzwa yishyurwa hagurishijwe ibyo bicuruzwa, bityo ibicuruzwa byemejwe byongera ubushobozi bwawe.',
-    'business.rating.limits': 'Ibipimo bitanu · igito ni cyo gikoreshwa',
-    'business.rating.limit.capacity': "Ubushobozi bw'amafaranga",
-    'business.rating.limit.capacity_detail':
-        'EBITDA {ebitda}/ukwezi × M {multiplier}',
-    'business.rating.limit.capacity_lift':
-        'Ongera EBITDA, cyangwa usabe CPA wawe kwemeza ibicuruzwa',
-    'business.rating.limit.revenue_share': "Igice cy'ayinjiye",
-    'business.rating.limit.revenue_share_detail':
-        '{percent}% bya {revenue} byinjiye mu mwaka byagenzuwe',
-    'business.rating.limit.revenue_share_lift':
-        'Ongera ayinjiye mu mwaka yagenzuwe',
-    'business.rating.limit.book_share': "Igice cy'inguzanyo zose",
-    'business.rating.limit.book_share_detail':
-        "{percent}% bya {book} by'inguzanyo zitarishyurwa",
-    'business.rating.limit.book_share_lift':
-        "Kizamuka ubwacyo uko inguzanyo z'urubuga ziyongera",
-    'business.rating.limit.phase_cap': "Igipimo cy'icyiciro {phase}",
-    'business.rating.limit.phase_cap_detail':
-        "Igipimo cy'urubuga igihe inguzanyo ziri munsi ya {book}",
-    'business.rating.limit.phase_cap_lift': 'Kizamuka mu cyiciro gikurikira',
+        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo ibyo wasabye ugasinya kuva bwabarwa; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
+    'business.rating.limits': 'Imbibi eshatu · ntoya ni yo ikurikizwa',
+    'business.rating.limit.cash_flow': 'Ibyo amafaranga yawe yishyura',
+    'business.rating.limit.cash_flow_detail':
+        'Byishyurwa n’ingwate ya {cover}× mu mezi {months}',
+    'business.rating.limit.cash_flow_lift':
+        'Sigarana amafaranga menshi buri kwezi, cyangwa uhitemo igihe kirekire',
+    'business.rating.limit.exposure': 'Imbibi z’umwenda',
+    'business.rating.limit.exposure_detail':
+        '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi',
+    'business.rating.limit.exposure_lift':
+        'Ongera ibyinjira, cyangwa wishyure ibyo ufitiye abandi',
     'business.rating.limit.policy_max': 'Igipimo ntarengwa',
     'business.rating.limit.policy_max_detail':
-        'Igipimo ntarengwa ku gukusanya kumwe',
-    'business.rating.limit.policy_max_lift': 'Nta na kimwe — iki ni ntarengwa',
-    'business.rating.limit.yours': 'Iki ni cyo gipimo cyawe',
+        'Igipimo ntarengwa cy’ubusabe bumwe',
+    'business.rating.limit.policy_max_lift': 'Ntacyo — iki gipimo ntigihinduka',
+    'business.rating.limit.yours': 'Iyi ni yo mbibi yawe',
     'business.rating.approved': 'Ubushobozi bwemejwe',
     'business.rating.bound': 'Igikubuza: {limit}',
     'business.rating.lift': 'Kugira ngo kizamuke — {how}',
     'business.rating.headroom': 'Umwanya usigaye',
     'business.rating.headroom_note': 'Ushobora gukusanya aya yiyongera ubu.',
     'business.rating.raise': 'Kusanya',
-    'business.rating.tiers.title': 'Icyo ikigwizo kinini cyakwemerera',
-    'business.rating.tiers.applied': 'Cyakoreshejwe',
-    'business.rating.tiers.not_yet': 'Ntibirashoboka',
-    'business.rating.tiers.no_cover': 'Nta bicuruzwa bikenewe kuri uru rwego',
-    'business.rating.tiers.needs':
-        'Hakenewe {need}× · ibicuruzwa byawe bitanga {yours}×',
     'business.rating.financials': 'Imibare yemejwe',
     'business.rating.sources': 'Banki · MoMo',
     'business.rating.financial.revenue': 'Ayinjira buri kwezi',
-    'business.rating.financial.ebitda': 'EBITDA / ukwezi',
+    'business.rating.financial.ebitda': 'Amafaranga asigaye / ukwezi',
     'business.rating.financial.margin': 'Inyungu nyayo',
     'business.rating.financial.outstanding': 'Ibitarishyurwa',
 
@@ -2800,7 +3590,6 @@ const rw: Catalog = {
         'Byabujijwe kuva ku wa {date}. Uracyashobora kwishyura.',
     'business.servicing.repay.part.principal': 'Igishoro',
     'business.servicing.repay.part.return': 'Inyungu',
-    'business.servicing.repay.part.service_fee': 'Amafaranga ya serivisi',
     'business.servicing.repay.part.late_fees': "Amafaranga y'ubukererwe",
     'business.servicing.repay.part.total': 'Igiteranyo',
     'business.servicing.repay.pay_title': 'Ishyura uvuye mu gikapu',
@@ -2951,6 +3740,26 @@ const rw: Catalog = {
     'investor.cart.empty_body':
         'Ongeramo noti uvuye mu Mahirwe, uhitemo amafaranga ushaka kuri buri imwe, maze uzishyure zose icyarimwe.',
     'investor.cart.browse_deals': 'Reba amahirwe',
+    'investor.cart.add': 'Shyira mu gitebo',
+    'investor.cart.in_cart_remove': 'Iri mu gitebo · Kuramo',
+    'investor.cart.update_failed':
+        'Ntitwashoboye kuvugurura igitebo cyawe. Ongera ufungure maze wongere ugerageze.',
+    'investor.cart.count': { one: 'Noti {count}', other: 'Noti {count}' },
+    'investor.cart.total': 'IGITERANYO CY’IGITEBO',
+    'investor.cart.remove': 'Kura {name} mu gitebo',
+    'investor.cart.filled_remove': 'Yujujwe · Kuramo',
+    'investor.cart.filled_note': {
+        one: 'Noti {count} yujujwe kandi ntizishyurwa.',
+        other: 'Noti {count} zujujwe kandi ntizishyurwa.',
+    },
+    'investor.cart.target_of': 'kuri {amount}',
+    'investor.cart.units': { one: 'noti', other: 'noti' },
+    'investor.cart.quantity': 'Umubare wa noti muri {name}',
+    'investor.cart.checkout': 'Ishyura',
+    'investor.cart.checkout_note':
+        'Kuri ubu buri noti yishyurwa ukwayo: fungura aho kuyishyura kugira ngo uyifate kandi uyishyure.',
+    'investor.cart.before_charge':
+        'Amafaranga usubizwa ni mbere yo gukuraho igiciro ku nyungu. Buri kwishyura kwerekana amafaranga nyayo.',
     'investor.common.back': 'Subira inyuma',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Ikomeye',
@@ -2968,6 +3777,7 @@ const rw: Catalog = {
     'investor.deals.sort.top_interest': 'Inyungu nyinshi',
     'investor.deals.sort.top_rated': 'Izifite amanota menshi',
     'investor.deals.sort.top_picks': 'Izatoranyijwe',
+    'investor.deals.sort.in_cart': 'Biri mu gitebo',
     'investor.deals.industry_label': 'Shungura ukurikije urwego',
     'investor.deals.industry_all': 'Byose',
     'investor.deals.audited': 'YAGENZUWE',
@@ -2979,6 +3789,7 @@ const rw: Catalog = {
     'investor.deals.avg_revenue_short': "IMPUZANDENGO Y'UKWEZI",
     'investor.deals.avg_revenue': "IMPUZANDENGO Y'INJIZA Y'UKWEZI",
     'investor.deals.funded_label': 'Aho ishoramari rya {name} rigeze',
+    'investor.deals.investors_one': 'umushoramari',
     'investor.deals.investors': 'abashoramari',
     'investor.deals.left_to_fill': 'ASIGAYE',
     'investor.deals.notes': 'IMPAPURO',
@@ -3056,7 +3867,7 @@ const rw: Catalog = {
     'investor.deal.total_return': 'Inyungu yose',
     'investor.deal.repayment': 'Kwishyura',
     'investor.deal.monthly': 'Buri kwezi',
-    'investor.deal.term': 'IGIHE',
+    'investor.deal.term': 'Igihe',
     'investor.deal.months_long': 'Amezi {count}',
     'investor.deal.track_record': 'Amateka kuri Rozine',
     'investor.deal.history': 'AMATEKA',
@@ -3112,9 +3923,11 @@ const rw: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
-    'investor.checkout.pay_with': 'ISHYURA UKORESHEJE',
     'investor.checkout.wallet': 'Ikofi',
-    'investor.checkout.wallet_detail': 'Ikofi ya Rozine · {amount} birahari',
+    'investor.checkout.funding_source': 'Aho amafaranga ava',
+    'investor.checkout.wallet_available': 'Ahari: {amount}',
+    'investor.checkout.pay_with': 'Ishyura ukoresheje',
+    'investor.checkout.wallet_line': '{wallet} · {amount} bihari',
     'investor.checkout.insufficient':
         'Amafaranga arenze ayo ufite ku ikofi. Shyira amafaranga ku ikofi cyangwa ugabanye umubare.',
     'investor.checkout.deposit': 'Shyiraho',
@@ -3136,7 +3949,7 @@ const rw: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Amabwiriza yahindutse urimo gusoma. Yongere uyasome wemeze.',
     'investor.checkout.processing': 'Biremezwa…',
-    'investor.checkout.confirm': 'Emeza · {amount}',
+    'investor.checkout.confirm': 'Emeza ishoramari · {amount}',
     'investor.checkout.fine_print':
         'Amafaranga ahita yiyemezwa · Inyungu iteganyijwe, ntisezeranyijwe',
     'investor.checkout.confirmed': 'Ishoramari ryemejwe',
@@ -3466,6 +4279,7 @@ const rw: Catalog = {
     'investor.portfolio.empty.saved.title': 'Nta mahirwe urabika',
     'investor.portfolio.browse_deals': 'Reba amahirwe',
     'investor.portfolio.total_value': 'AGACIRO KOSE',
+    'investor.portfolio.businesses_one': 'Ikigo 1',
     'investor.portfolio.businesses': 'Ibigo {count}',
     'investor.portfolio.invested': 'BYASHOWE',
     'investor.portfolio.total_gain': 'INYUNGU YOSE',
@@ -3487,12 +4301,18 @@ const rw: Catalog = {
     'investor.portfolio.balanced': 'Byakwirakwijwe neza',
     'investor.portfolio.balanced_body':
         'Igishoro cyawe kiri mu bigo byinshi nta na kimwe kiganje. Komeza utyo.',
+    'investor.portfolio.balanced_count':
+        'Igishoro cyawe kiri mu bigo {count} nta na kimwe kiganje. Komeza utyo.',
     'investor.portfolio.idle': 'BIDAKORA KU IKOFI',
     'investor.portfolio.idle_body': 'Bishore mu rupapuro rushya.',
     'investor.portfolio.reinvest': 'Ongera ushore ›',
     'investor.holding.frozen_title': 'Uru rupapuro rwahagaritswe',
     'investor.holding.frozen_body':
         'Rozine yahagaritse uru rupapuro mu gihe hakorwa isuzuma. Ubwishyu buzasubukurwa rurekuwe; uburenganzira bwawe ntibuhinduka.',
+    'investor.holding.latest_report': 'Raporo iheruka',
+    'investor.holding.latest_report_month': 'Raporo ya {month}',
+    'investor.holding.on_watch': 'Biri gukurikiranwa · birimo gusuzumwa',
+    'investor.holding.on_plan': 'Biri ku murongo',
     'investor.holding.invested': 'BYASHOWE',
     'investor.holding.expected_profit': 'INYUNGU ITEGANYIJWE',
     'investor.holding.yield': 'Inyungu ya {rate}%',
@@ -3500,6 +4320,9 @@ const rw: Catalog = {
     'investor.holding.principal_yield': 'Igishoro + inyungu',
     'investor.holding.received': 'BYAKIRIWE KUGEZA UBU',
     'investor.holding.payments': '{made}/{total} byishyuwe',
+    'investor.holding.due.today': 'Uyu munsi',
+    'investor.holding.due.tomorrow': 'Ejo',
+    'investor.holding.due.in_days': 'mu minsi {count}',
     'investor.holding.next_payment': 'UBWISHYU BUKURIKIRA',
     'investor.holding.no_next.matured': 'Byishyuwe byose',
     'investor.holding.no_next.paused': 'Byahagaritswe',
@@ -3563,7 +4386,7 @@ const rw: Catalog = {
     'investor.wallet.panel.withdraw': 'Bikuza',
     'investor.wallet.amount': 'AMAFARANGA',
     'investor.wallet.method': 'UBURYO BWO KWISHYURA',
-    'investor.wallet.method_to': 'OHEREZA KURI',
+    'investor.wallet.method_to': 'UBURYO BWO KWISHYURA',
     'investor.wallet.fee': 'Ikiguzi cyo gukora',
     'investor.wallet.result.deposit': 'Amafaranga mashya ahari',
     'investor.wallet.result.withdraw': 'Uzakira',
@@ -3650,6 +4473,11 @@ const rw: Catalog = {
     'investor.profile.kyc.expired': 'Icyangombwa cyarangiye',
     'investor.profile.type.individual': 'Umuntu ku giti cye',
     'investor.profile.type.institution': 'Ikigo',
+    'investor.profile.support.label': 'Ubufasha',
+    'investor.profile.support.title': 'Vugana n’ubufasha bwa Rozine',
+    'investor.profile.support.sub':
+        'Baza ikibazo cyangwa utange ikirego. Itsinda rigusubiza mu gice cy’ubufasha.',
+    'investor.profile.support.message': 'Andika',
     'investor.profile.member_since': 'Umunyamuryango kuva {date}',
     'investor.profile.item.linked': 'Konti zahujwe',
     'investor.profile.item.statements': "Inyandiko z'imari n'imisoro",
@@ -3700,6 +4528,227 @@ const rw: Catalog = {
     'support.help.still_body':
         'Twandikire. Twemeza ko twakiriye buri butumwa mu masaha 4.',
     'support.help.still_action': 'Andikira ubufasha',
+    'investor.deals.nudge.tag': 'Komeza kwiga',
+    'investor.deals.nudge.title': 'Komeza Ishuri ry’Umushoramari',
+    'investor.deals.nudge.body':
+        'Wasoje amasomo {done} kuri {total}. Komereza aho wari ugeze.',
+    'investor.deals.nudge.later': 'Nyuma',
+    'investor.deals.nudge.continue': 'Komeza',
+    'investor.academy.title': 'Ishuri ry’Umushoramari',
+    'investor.academy.learning': 'Kwiga',
+    'investor.academy.summary_start':
+        'Menya uko inyandiko z’umwenda za Rozine zikora',
+    'investor.academy.summary_resume': 'Komereza aho wari ugeze',
+    'investor.academy.summary_done': 'Amasomo yose yarangiye',
+    'investor.academy.done_count': 'Amasomo {done} kuri {total} yarangiye',
+    'investor.academy.tracks': 'Ibyiciro {count}',
+    'investor.academy.intro':
+        'Amasomo magufi ku buryo inyandiko z’umwenda, amanota n’ubwishyu bikora. Aho ugeze ubikwa kuri iki gikoresho gusa.',
+    'investor.academy.group.basics': 'Ibanze kuri Rozine',
+    'investor.academy.group.mission': 'Intego yacu',
+    'investor.academy.group.investing': 'Ishoramari: ibanze',
+    'investor.academy.group.rozine': 'Gushora kuri Rozine',
+    'investor.academy.group_progress': '{done}/{total} birangiye',
+    'investor.academy.status.start': 'Tangira',
+    'investor.academy.status.progress': '{done}/{total}',
+    'investor.academy.status.done': 'Byarangiye ✓',
+    'investor.academy.close': 'Funga isomo',
+    'investor.academy.progress': 'Aho isomo rigeze',
+    'investor.academy.step': '{step} kuri {total}',
+    'investor.academy.got_it': 'Ndabyumvise',
+    'investor.academy.quick_check': 'Isuzuma rito',
+    'investor.academy.correct': 'Ni byo',
+    'investor.academy.correct_body': 'Ni byo rwose. Komeza ku gikurikira.',
+    'investor.academy.wrong': 'Si byo neza',
+    'investor.academy.wrong_body':
+        'Ongera usome iyi ngingo. Izagaruka rimwe mbere y’uko isomo rirangira.',
+    'investor.academy.next': 'Komeza',
+    'investor.academy.finish': 'Soza',
+    'investor.academy.done_title': 'Isomo ryarangiye',
+    'investor.academy.done_body': 'Urangije isomo “{lesson}”.',
+    'investor.academy.partial_title': 'Ntibiruzura neza',
+    'investor.academy.partial_body':
+        'Watsinze {passed} mu bibazo {total} byihuse bya {lesson}. Ongera usubire mu isomo kugira ngo urirangize.',
+    'investor.academy.partial_retry': 'Ongera utangire isomo',
+    'investor.academy.done_cta': 'Subira ku Ishuri',
+    'investor.academy.lesson.notes.title': 'Inyandiko z’umwenda za Rozine',
+    'investor.academy.lesson.notes.sub': 'Icyo ugura n’uko cyishyura',
+    'investor.academy.lesson.notes.topic1.title': 'Inyandiko y’umwenda ni iki?',
+    'investor.academy.lesson.notes.topic1.body':
+        'Inyandiko y’umwenda ni inguzanyo y’igihe gito ihabwa ubucuruzi bwo mu Rwanda bwagenzuwe, igurishwa mu migabane ya RWF 5,000. Ubucuruzi bukwishyura igishoro cyawe n’inyungu idahinduka mu mezi 3 kugeza kuri 6.',
+    'investor.academy.lesson.notes.topic1.q':
+        'Kugura inyandiko y’umwenda bivuga ko…',
+    'investor.academy.lesson.notes.topic1.option1':
+        'Uguriza ubucuruzi bwagenzuwe ku nyungu idahinduka',
+    'investor.academy.lesson.notes.topic1.option2':
+        'Ugura imigabane muri Rozine',
+    'investor.academy.lesson.notes.topic1.option3':
+        'Uhabwa agahimbazamusyi uko byagenda kose',
+    'investor.academy.lesson.notes.topic2.title': 'Inyungu n’ubwishyu',
+    'investor.academy.lesson.notes.topic2.body':
+        'Buri shoramari ryerekana inyungu yaryo yose n’igihe cyaryo. Ubucuruzi bwishyura mu byiciro bingana buri kwezi, kandi umugabane wawe kuri buri cyiciro ushyirwa mu gasanduku kawe, havuyemo amafaranga ya Rozine ku gice cy’inyungu.',
+    'investor.academy.lesson.notes.topic2.q': 'Inyungu yawe yishyurwa…',
+    'investor.academy.lesson.notes.topic2.option1': 'Icyarimwe nyuma y’umwaka',
+    'investor.academy.lesson.notes.topic2.option2':
+        'Buri kwezi, mu gihe cyose cy’inyandiko',
+    'investor.academy.lesson.notes.topic2.option3': 'Ari uko ubisabye gusa',
+    'investor.academy.lesson.wallet.title': 'Agasanduku kawe ka Rozine',
+    'investor.academy.lesson.wallet.sub': 'Kubitsa, ubwishyu no kubikuza',
+    'investor.academy.lesson.wallet.topic1.title': 'Ahari, afashwe n’ayemejwe',
+    'investor.academy.lesson.wallet.topic1.body':
+        'Amafaranga ahari ashobora gushorwa cyangwa gukurwamo. Amafaranga afashwe kubera kwishyura, cyangwa yemejwe mu ikusanya winjiyemo, abikwa ku ruhande kugeza ikusanya ryuzuye cyangwa usubijwe amafaranga.',
+    'investor.academy.lesson.wallet.topic1.q':
+        'Amafaranga yemejwe mu ikusanya…',
+    'investor.academy.lesson.wallet.topic1.option1':
+        'Ashobora gukurwamo igihe cyose',
+    'investor.academy.lesson.wallet.topic1.option2': 'Aba yatakaye burundu',
+    'investor.academy.lesson.wallet.topic1.option3':
+        'Abikwa ku ruhande kugeza ikusanya ryuzuye cyangwa asubijwe',
+    'investor.academy.lesson.wallet.topic2.title': 'Kwishyurwa',
+    'investor.academy.lesson.wallet.topic2.body':
+        'Ubwishyu bugera mu gasanduku kawe kuri buri munsi wo kwishyura. Ushobora kubushora mu rindi kusanya rifunguye, cyangwa kubukura ukabwohereza kuri konti yagenzuwe iri mu izina ryawe.',
+    'investor.academy.lesson.wallet.topic2.q':
+        'Iyo ubucuruzi bwishyuye, amafaranga…',
+    'investor.academy.lesson.wallet.topic2.option1':
+        'Agera mu gasanduku kawe mu buryo bwikora',
+    'investor.academy.lesson.wallet.topic2.option2':
+        'Agomba gusabwa mu munsi umwe',
+    'investor.academy.lesson.wallet.topic2.option3':
+        'Ahita ajya mu yindi nyandiko',
+    'investor.academy.lesson.rating.title': 'Gusoma amanota ya Rozine',
+    'investor.academy.lesson.rating.sub': 'Amanota amwe, ijambo rimwe',
+    'investor.academy.lesson.rating.topic1.title': 'Icyo amanota asobanura',
+    'investor.academy.lesson.rating.topic1.body':
+        'Buri bucuruzi buhabwa amanota kuri 5.0 aherekejwe n’ijambo: Ikomeye (4.0 kugeza 5.0), Ihamye (3.0 kugeza 3.9), Intege nke (2.0 kugeza 2.9) cyangwa Mu bibazo (munsi ya 2.0). Ubucuruzi bugomba kugira nibura 2.0 kugira ngo bukusanye.',
+    'investor.academy.lesson.rating.topic1.q':
+        'Ubucuruzi bufite amanota 4.4 ni…',
+    'investor.academy.lesson.rating.topic1.option1': 'Mu bibazo',
+    'investor.academy.lesson.rating.topic1.option2': 'Ikomeye',
+    'investor.academy.lesson.rating.topic1.option3': 'Ntibwemerewe gukusanya',
+    'investor.academy.lesson.rating.topic2.title': 'Kuyakoresha neza',
+    'investor.academy.lesson.rating.topic2.body':
+        'Amanota yongera kubarwa kuri buri raporo y’ukwezi ifite umukono. Amanota menshi asobanura ingaruka nke, si ukubura ingaruka, bityo gabanya amafaranga yawe mu nyandiko nyinshi.',
+    'investor.academy.lesson.rating.topic2.q': 'Amanota akoreshwa neza nk’…',
+    'investor.academy.lesson.rating.topic2.option1': 'Isezerano ry’inyungu',
+    'investor.academy.lesson.rating.topic2.option2':
+        'Impamvu yo gushyira byose mu nyandiko imwe',
+    'investor.academy.lesson.rating.topic2.option3':
+        'Umuyobozi, hamwe no kugabanya amafaranga yawe',
+    'investor.academy.lesson.mission.title': 'Impamvu Rozine ibaho',
+    'investor.academy.lesson.mission.sub': 'Intego yacu n’indangagaciro zacu',
+    'investor.academy.lesson.mission.topic1.title': 'Intego',
+    'investor.academy.lesson.mission.topic1.body':
+        'Rozine ihuza abashoramari basanzwe n’ubucuruzi bwo mu Rwanda bwagenzuwe bukeneye igishoro cyo gukora, kugira ngo ibigo byo mu gihugu bikure kandi abashoramari babone inyungu idahinduka.',
+    'investor.academy.lesson.mission.topic1.q': 'Rozine ibaho kugira ngo…',
+    'investor.academy.lesson.mission.topic1.option1':
+        'Ihuze abashoramari n’ubucuruzi bwo mu gihugu bwagenzuwe',
+    'investor.academy.lesson.mission.topic1.option2':
+        'Icuruze imigabane yo hanze',
+    'investor.academy.lesson.mission.topic1.option3': 'Igurishe ubwishingizi',
+    'investor.academy.lesson.mission.topic2.title': 'Gukorera mu mucyo mbere',
+    'investor.academy.lesson.mission.topic2.body':
+        'Buri shoramari rishingiye ku nyandiko za banki na mobile money zagenzuwe, isura ryigenga aho bukorera na raporo z’ukwezi zifite umukono, kugira ngo ubone icyo ushoramo.',
+    'investor.academy.lesson.mission.topic2.q':
+        'Rozine ishingira buri shoramari kuri…',
+    'investor.academy.lesson.mission.topic2.option1':
+        'Amasezerano y’ubucuruzi ubwabwo',
+    'investor.academy.lesson.mission.topic2.option2':
+        'Inyandiko zagenzuwe na raporo z’ukwezi zifite umukono',
+    'investor.academy.lesson.mission.topic2.option3':
+        'Isezerano rya Rozine ryo kwishyura',
+    'investor.academy.lesson.fundamentals.title': 'Ibanze by’ishoramari',
+    'investor.academy.lesson.fundamentals.sub': 'Ingaruka n’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.title': 'Ingaruka n’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.body':
+        'Inyungu ishobora kuba nini akenshi iherekezwa n’ingaruka nyinshi. Ushobora gutakaza igice cyangwa amafaranga yose washoye iyo ubucuruzi butishyuye.',
+    'investor.academy.lesson.fundamentals.topic1.q':
+        'Inyungu ishobora kuba nini akenshi iherekezwa na…',
+    'investor.academy.lesson.fundamentals.topic1.option1': 'Nta ngaruka na nke',
+    'investor.academy.lesson.fundamentals.topic1.option2':
+        'Isezerano ry’inyungu',
+    'investor.academy.lesson.fundamentals.topic1.option3': 'Ingaruka nyinshi',
+    'investor.academy.lesson.fundamentals.topic2.title': 'Shora ufite gahunda',
+    'investor.academy.lesson.fundamentals.topic2.body':
+        'Inyandiko ntishobora kuvunjwamo amafaranga mbere y’igihe cyayo, bityo shora gusa amafaranga utazakenera muri icyo gihe, kandi wiyemeze mbere amafaranga ushaka gushora.',
+    'investor.academy.lesson.fundamentals.topic2.q':
+        'Mbere yo gushora, ukwiye…',
+    'investor.academy.lesson.fundamentals.topic2.option1':
+        'Gukoresha gusa amafaranga utazakenera muri icyo gihe',
+    'investor.academy.lesson.fundamentals.topic2.option2':
+        'Kuguza kugira ngo ushore byinshi',
+    'investor.academy.lesson.fundamentals.topic2.option3':
+        'Gutegura kuvunja mbere y’igihe',
+    'investor.academy.lesson.diversify.title': 'Kugabanya ishoramari',
+    'investor.academy.lesson.diversify.sub': 'Gabanya amafaranga yawe',
+    'investor.academy.lesson.diversify.topic1.title': 'Kugabanya',
+    'investor.academy.lesson.diversify.topic1.body':
+        'Kugabanya amafaranga yawe mu bucuruzi bwinshi bituma ubutinze kwishyura bugira ingaruka nto ku mafaranga yawe yose.',
+    'investor.academy.lesson.diversify.topic1.q':
+        'Kugabanya ishoramari bifasha cyane cyane…',
+    'investor.academy.lesson.diversify.topic1.option1':
+        'Gutuma buri nyandiko yishyura byinshi',
+    'investor.academy.lesson.diversify.topic1.option2':
+        'Kugabanya ingaruka z’ubucuruzi bumwe',
+    'investor.academy.lesson.diversify.topic1.option3':
+        'Gukuraho ingaruka zose',
+    'investor.academy.lesson.diversify.topic2.title': 'Vanga inzego n’ibihe',
+    'investor.academy.lesson.diversify.topic2.body':
+        'Kuvanga inzego, amanota n’ibihe bikurinda guterwa n’ikibazo kimwe. Ntushobora gutunga ibirenze kimwe cya kabiri cy’ikusanya rimwe.',
+    'investor.academy.lesson.diversify.topic2.q':
+        'Kuvanga inzego n’ibihe bigufasha…',
+    'investor.academy.lesson.diversify.topic2.option1':
+        'Kudaterwa n’ikibazo kimwe',
+    'investor.academy.lesson.diversify.topic2.option2':
+        'Kwishyura amafaranga make',
+    'investor.academy.lesson.diversify.topic2.option3':
+        'Gutunga ibirenze kimwe cya kabiri cy’ikusanya',
+    'investor.academy.lesson.deals.title': 'Guhitamo ishoramari',
+    'investor.academy.lesson.deals.sub': 'Gusoma urupapuro rw’ishoramari',
+    'investor.academy.lesson.deals.topic1.title': 'Ibyo ugomba kureba',
+    'investor.academy.lesson.deals.topic1.body':
+        'Ku rupapuro rwa buri shoramari, reba amanota, inyungu, igihe, igisigaye kuzuzwa, imibare yagenzuwe na raporo z’ukwezi zifite umukono mbere yo kwiyemeza.',
+    'investor.academy.lesson.deals.topic1.q': 'Mbere yo gushora ukwiye kureba…',
+    'investor.academy.lesson.deals.topic1.option1': 'Izina ry’ubucuruzi gusa',
+    'investor.academy.lesson.deals.topic1.option2':
+        'Umubare w’abantu babukunze',
+    'investor.academy.lesson.deals.topic1.option3':
+        'Amanota, inyungu, igihe n’imibare yagenzuwe',
+    'investor.academy.lesson.deals.topic2.title': 'Ayo ushobora gushora',
+    'investor.academy.lesson.deals.topic2.body':
+        'Inyandiko z’umwenda zigurishwa mu migabane ya RWF 5,000, bityo ushobora gutangirira ku mugabane umwe. Ishoramari ntirishobora kurenga igisigaye kuzuzwa.',
+    'investor.academy.lesson.deals.topic2.q':
+        'Ishoramari rito kurusha ayandi ni…',
+    'investor.academy.lesson.deals.topic2.option1': 'RWF 1,000,000',
+    'investor.academy.lesson.deals.topic2.option2':
+        'Umugabane umwe wa RWF 5,000',
+    'investor.academy.lesson.deals.topic2.option3':
+        'Kimwe cya kabiri cy’ikusanya',
+    'investor.academy.lesson.repayments.title': 'Ubwishyu n’amafaranga uhabwa',
+    'investor.academy.lesson.repayments.sub': 'Uko wishyurwa',
+    'investor.academy.lesson.repayments.topic1.title':
+        'Wishyurwa mu gihe cyose',
+    'investor.academy.lesson.repayments.topic1.body':
+        'Mbere yo kwiyemeza, ubona amafaranga uzishyurwa n’igihe ubwishyu buzamara. Icyiciro cya mbere cyishyurwa ukwezi kumwe kuzuye nyuma y’uko amafaranga ahawe ikigo koko, hanyuma buri kwezi ku munsi umwe (cyangwa ku munsi wa nyuma w’ukwezi iyo bibaye ngombwa). Amatariki nyayo y’ubwishyu agenwa kandi akerekanwa iyo inyandiko z’umwenda zitanzwe.',
+    'investor.academy.lesson.repayments.topic1.q': 'Ubwishyu bwa Rozine…',
+    'investor.academy.lesson.repayments.topic1.option1':
+        'Buteganyijwe buri kwezi mu gihe cyose',
+    'investor.academy.lesson.repayments.topic1.option2':
+        'Bwishyurwa rimwe ku iherezo',
+    'investor.academy.lesson.repayments.topic1.option3':
+        'Igihe ubucuruzi bubishakiye',
+    'investor.academy.lesson.repayments.topic2.title':
+        'Ongera ushore cyangwa ubikuze',
+    'investor.academy.lesson.repayments.topic2.body':
+        'Buri bwishyu ni ubwawe: ushobora kubushora mu rindi kusanya rifunguye cyangwa kububikuza. Nta kintu cyongera gushorwa mu buryo bwikora.',
+    'investor.academy.lesson.repayments.topic2.q':
+        'Iyo uhawe ubwishyu ushobora…',
+    'investor.academy.lesson.repayments.topic2.option1':
+        'Kubusiga mu nyandiko gusa',
+    'investor.academy.lesson.repayments.topic2.option2':
+        'Kubukoresha ku mafaranga y’serivisi gusa',
+    'investor.academy.lesson.repayments.topic2.option3':
+        'Kongera kubushora cyangwa kububikuza',
+
     'investor.help.group.start': 'Gutangira',
     'investor.help.group.returns': "Inyungu n'ubwishyu",
     'investor.help.group.risk': "Ingaruka n'uko ubucuruzi bugenzurwa",
@@ -3925,20 +4974,6 @@ const rw: Catalog = {
     'business.apply.review.reduced':
         'Wahisemo {principal} kuri {offered} wahawe.',
     'business.apply.review.use_full': 'Fata ayo wahawe yose',
-    'business.apply.raise.instalment_fee': "+ {fee} y'amafaranga ya serivisi",
-    'business.apply.review.service_fee':
-        'Amafaranga ya serivisi ({rate}% bya buri bwishyu)',
-    'business.apply.review.projected': 'Biteganyijwe',
-    'business.apply.review.total_payable':
-        'Igiteranyo cyo kwishyura (biteganyijwe)',
-    'business.apply.review.fee_projection_note':
-        "Amafaranga ya serivisi ateganyijwe: {rate}% bya buri bwishyu, acibwa ku mafaranga yishyuwe koko (igishoro n'inyungu, hatarimo andi mafaranga n'amande). Iyi mibare ifata ko buri cyiciro cyishyurwa cyose ku gihe cyateganyijwe.",
-    'business.apply.review.fee_note_service_fee':
-        "Nta mafaranga ku gishoro ubona. Yishyurwa urupapuro rwemejwe, mbere yo gutangazwa. Amafaranga ya serivisi kuri buri bwishyu agaragara hamwe n'icyifuzo cyawe hejuru.",
-    'business.apply.review.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gusinya ubu",
-    'business.apply.review.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iki cyifuzo, bityo ntikiremerwa. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
 
     'business.apply.recalculating': 'Turimo kubara…',
     'auditor.capture.unavailable':
@@ -4355,6 +5390,7 @@ const rw: Catalog = {
         'Emeza imeyili yawe kandi ukoreshe kwemeza mu ntambwe ebyiri kugira ngo ukomeze.',
     'settlement.refusal.MFA_REQUIRED': 'Kwemeza mu ntambwe ebyiri birakenewe.',
     'settlement.refusal.NOT_FOUND': 'Ntushobora kongera kureba iyi nyandiko.',
+    'investor.wallet.c3.available_balance': 'Amafaranga aboneka',
     'investor.wallet.c3.total': "Igiteranyo cy'ikofi",
     'investor.wallet.c3.bucket.available': 'Aboneka',
     'investor.wallet.c3.bucket.held': 'Afashwe',
@@ -4365,7 +5401,7 @@ const rw: Catalog = {
         'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa biracyashoboka.',
     'investor.wallet.c3.restricted_unavailable':
         'Hari ikumira rikurikizwa kuva ku wa {date}. Kubitsa ntibiboneka muri iki gihe.',
-    'investor.wallet.c3.no_pending': 'Nta kubitsa gutegereje',
+    'investor.wallet.c3.no_pending': 'Bihita bishobora gushorwa',
     'investor.wallet.c3.pending_deposits':
         '{amount} ntibiremezwa — ntibiri mu giteranyo',
     'investor.wallet.c3.no_policy':
@@ -4387,20 +5423,26 @@ const rw: Catalog = {
     },
     'investor.wallet.c3.hold_expires': 'Birekurwa mu {time} keretse wemeje',
     'investor.wallet.c3.deposits': 'Ibyabikijwe',
-    'investor.wallet.c3.deposit_from': 'Kubitsa uvuye kuri {method}',
+    'investor.wallet.c3.deposit_from': 'Kubitsa · {method}',
     'investor.wallet.c3.intent.pending': 'Ntibiremezwa',
     'investor.wallet.c3.intent.unknown':
         "Ntibiremezwa — turi kugenzura n'utanga serivisi",
     'investor.wallet.c3.intent.succeeded': 'Byashyizwe kuri konti',
     'investor.wallet.c3.intent.failed':
         'Ntibyakunze — nta cyashyizwe kuri konti',
-    'investor.wallet.c3.entry.deposit_in': 'Kubitsa uvuye kuri {counterparty}',
+    'investor.wallet.c3.entry.deposit_in': 'Kubitsa · {counterparty}',
     'investor.wallet.c3.entry.deposit_out': 'Kohereza kuri {counterparty}',
     'investor.wallet.c3.entry.hold': 'Afashwe kuri {name}',
     'investor.wallet.c3.entry.hold_release': 'Ifatwa ryarekuwe · {name}',
-    'investor.wallet.c3.entry.commitment': 'Yiyemejwe muri {name}',
+    'investor.wallet.c3.entry.commitment': 'Ishoramari · {name}',
     'investor.wallet.c3.entry.commitment_refund': 'Gusubizwa · {name}',
     'investor.wallet.c3.movement': "Ubwoko bw'imyimukire",
+    'investor.wallet.c3.period': 'Igihe',
+    'investor.wallet.c3.range.today': 'Uyu munsi',
+    'investor.wallet.c3.range.7d': 'Iminsi 7',
+    'investor.wallet.c3.range.30d': 'Iminsi 30',
+    'investor.wallet.c3.range.all': 'Igihe cyose',
+    'investor.wallet.c3.range.all_short': 'Byose',
     'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
     'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -4422,7 +5464,7 @@ const rw: Catalog = {
     'investor.wallet.c3.withdraw_only_on_success':
         'Amafaranga ava ku yo ushobora gukoresha ubu, akoherezwa iyo utanga serivisi abyemeje. Iyo kohereza binaniranye, agaruka mu gikapu cyawe.',
     'investor.wallet.c3.withdrawals': 'Ibyabikujwe',
-    'investor.wallet.c3.withdrawal_to': 'Kubikuza kuri {method}',
+    'investor.wallet.c3.withdrawal_to': 'Kubikuza · {method}',
     'investor.wallet.c3.withdrawal.pending': 'Biroherezwa',
     'investor.wallet.c3.withdrawal.unknown':
         'Biroherezwa — turi kubaza utanga serivisi',
@@ -4437,7 +5479,7 @@ const rw: Catalog = {
         'Inyemezabwishyu yo kugarura',
     'investor.wallet.c3.entry.withdrawal_in':
         'Byagarutse bivuye kuri {counterparty}',
-    'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza kuri {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza · {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
     'business.publish.release.awaiting':
@@ -4497,10 +5539,23 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
-    'business.publish.fee_unavailable':
-        "Amategeko y'amafaranga ntaraboneka — ntushobora gutangaza ubu",
-    'business.publish.fee_unavailable_body':
-        "Rozine ntiratangaza amategeko y'amafaranga ya serivisi kuri iyi nkunga, bityo ntirashobora gutangazwa. Nta kintu cyatangajwe.",
+    'business.campaign.investors.title': 'Abashoramari',
+    'business.campaign.investors.all': 'Reba bose ({count}) ›',
+    'business.campaign.investors.fewer': 'Erekana bake',
+    'business.campaign.investors.raised': 'Ayakusanyijwe yose',
+    'business.campaign.investors.holders': 'Abafite inyandiko',
+    'business.campaign.investors.average': 'Impuzandengo',
+    'business.campaign.investors.mix': 'Uko bagabanyije',
+    'business.campaign.investors.by_capital': 'ukurikije imari',
+    'business.campaign.investors.kinds.person': 'Abantu ku giti cyabo',
+    'business.campaign.investors.kinds.organization': 'Ibigo',
+    'business.campaign.investors.kind.person': 'Umushoramari ku giti cye',
+    'business.campaign.investors.kind.organization': 'Ikigo gishora imari',
+    'business.campaign.investors.notes': {
+        other: 'Inyandiko {count}',
+    },
+    'business.campaign.investors.privacy':
+        'Abashoramari ntibavugwa amazina hano: umwirondoro wabo urinzwe n’amabwiriza y’ibanga ya Rozine.',
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',
@@ -4528,6 +5583,7 @@ const rw: Catalog = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         'Ntiyemerewe ibyiyemezo bishya kuva ku wa {date}; ibyamaze kwiyemezwa birahaguma.',
     'business.campaign.tile.committed': 'Byiyemejwe',
+    'business.campaign.tile.of_target': "By'intego",
     'business.campaign.tile.refunded': 'Byasubijwe',
     'business.campaign.tracker.title': "Ikurikirana ry'ibyiyemejwe",
     'business.campaign.tracker.committed_pct': '{pct}% byiyemejwe',
@@ -4606,12 +5662,9 @@ const rw: Catalog = {
     'admin.disbursements.provider.unknown': 'Ntibizwi · ntibiremezwa',
     'admin.disbursements.provider.succeeded': 'Byagenze neza · byagenzuwe',
     'admin.disbursements.provider.failed': 'Byananiranye · byagenzuwe',
-    'admin.disbursements.action.authorize': 'Emerera',
     'admin.disbursements.older': 'Kwishyura kwa kera',
     'admin.disbursements.deadline': 'Itariki ntarengwa',
     'admin.disbursements.deadline_unavailable': 'Nta tariki ntarengwa yemejwe',
-    'admin.disbursements.rule_two_staff':
-        "Hakenewe abakozi babiri batandukanye: umwe aremerera, undi akemeza. Nta rugero rw'amafaranga cyangwa uburenganzira bwo kubirengaho. Inshingano ni amazina gusa: ibyo ushobora gukora biva ku burenganzira bwawe.",
     'admin.disbursements.causes': 'Impamvu',
     'admin.disbursements.receipt.code': 'Inyemezabwishyu',
     'admin.disbursements.receipt.reference': 'Indango',
@@ -4624,27 +5677,6 @@ const rw: Catalog = {
     'admin.disbursements.precheck.title': 'Igenzura ribanza',
     'admin.disbursements.checked_at': 'Byagenzuwe ku',
     'admin.disbursements.policy_version': "Verisiyo y'amabwiriza",
-    'admin.disbursements.binding.title': 'Ibyo kwemeza bihuza',
-    'admin.disbursements.binding.none': 'Bishyirwaho iyo kwishyura byemerewe.',
-    'admin.disbursements.binding.revision': 'Ivugurura',
-    'admin.disbursements.binding.amount': 'Amafaranga nyayo',
-    'admin.disbursements.binding.digest': "Igikumwe cy'icyifuzo",
-    'admin.disbursements.step_up.unavailable':
-        "Kwemeza bisaba kwemeza kongerewe umutekano gushya guhujwe n'aya makuru. Uko kwemeza ntikuraboneka, bityo ntushobora kwemeza hano.",
-    'admin.disbursements.step_up.title': 'Emeza ko ari wowe',
-    'admin.disbursements.step_up.lead':
-        "Andika kode y'imibare itandatu iri muri porogaramu yawe y'umutekano. Iri yemeza rihujwe n'iri vugurura, amafaranga nyayo, aho yoherezwa n'incamake y'icyifuzo, kandi rikoreshwa rimwe gusa.",
-    'admin.disbursements.step_up.code_label':
-        "Kode y'umutekano y'imibare itandatu",
-    'admin.disbursements.step_up.verify': 'Emeza kode',
-    'admin.disbursements.step_up.ready':
-        'Byemejwe kugeza {time}. Rikoreshwa rimwe gusa, kuri uku kwemeza, kandi riracyasaba impamvu yawe.',
-    'admin.disbursements.step_up.wrong_code':
-        "Iyo kode ntihuye. Andika kode iriho ubu muri porogaramu yawe y'umutekano.",
-    'admin.disbursements.step_up.lost':
-        'Ntibyashobotse kugera kuri Rozine ngo igenzure kode yawe. Nta cyemejwe — andika kode nshya kugira ngo wemeze bundi bushya.',
-    'admin.disbursements.step_up.changed':
-        'Amakuru uku kwemeza guhujwe na yo yahindutse, bityo iyemeza ryawe ryasibwe. Yagenzure, hanyuma wandike kode nshya.',
     'admin.disbursements.intent.title': 'Icyifuzo cyo kwishyura',
     'admin.disbursements.intent.not_payment':
         'Icyifuzo cyanditswe — si ukwishyura. Serivisi yishyura iracyohereza gusa nyuma yo kongera kugenzura.',
@@ -4681,9 +5713,7 @@ const rw: Catalog = {
         'Ikibazo · byahagaritswe, ntibyahujwe',
     'admin.disbursements.hold.title': 'Ihagarikwa',
     'admin.disbursements.hold.release_note':
-        'Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisaba umukozi utari uwarishyizeho.',
-    'admin.disbursements.hold.self':
-        'Ni wowe washyizeho iri hagarikwa, bityo undi mukozi ni we ugomba kurikuraho.',
+        "Gukuraho ihagarikwa bituma kwishyura byikora byongera gukora. Umukozi wese ubifitiye uburenganzira ashobora kurikuraho, harimo n'uwarishyizeho.",
     'admin.disbursements.issue.title': 'Isohora',
     'admin.disbursements.issue.holdings': 'Imigabane yasohowe',
     'admin.disbursements.issue.issued_at': 'Byasohowe ku',
@@ -4692,11 +5722,19 @@ const rw: Catalog = {
     'admin.disbursements.refund.commitments': 'Ibyiyemejwe byasubijwe',
     'admin.disbursements.refund.total': 'Igiteranyo cyasubijwe',
     'admin.disbursements.ledger': "Fungura mu gitabo cy'ibaruramari",
+    'admin.disbursements.attention_count': '{count} bikeneye kurebwa',
+    'admin.disbursements.automation.title': 'Kwishyura byikora',
+    'admin.disbursements.automation.payout': 'Ikigo kirahabwa',
+    'admin.disbursements.automation.rule': 'Itegeko',
+    'admin.disbursements.automation.waiting.verified_payout_destination':
+        'Bitegereje aho kwishyurira hemejwe. Kwishyura bitangira byikora iyo aho ikigo cyishyurirwa hamaze kwemezwa.',
+    'admin.disbursements.automation.waiting.next_run':
+        'Kwishyura bitangira byikora ubutaha bikora.',
     'admin.disbursements.command.release_hold': 'Kuraho ihagarikwa',
     'admin.disbursements.command.requery': 'Ongera ubaze utanga serivisi',
     'admin.disbursements.stage.release_hold.title': 'Kuraho iri hagarikwa',
     'admin.disbursements.stage.release_hold.body':
-        "Gukuraho ihagarikwa ntibyemeza uku kwishyura kandi ntibyohereza amafaranga. Bisubira aho byari biri mbere y'ihagarikwa.",
+        "Kwishyura byikora byongera gukora iyo ihagarikwa rikuweho. Bisubira aho byari biri mbere y'ihagarikwa.",
     'admin.disbursements.stage.release_hold.cta': 'Kuraho ihagarikwa',
     'admin.disbursements.stage.release_hold.placeholder':
         'urugero: Ikigo cyemeje nimero yacyo nshya ya MoMo.',
@@ -4720,6 +5758,31 @@ const rw: Catalog = {
         "Raporo y'igenzura ryo gushyira ku isoko",
     'admin.applications.release.gate_state.passed': 'Byatsinze',
     'admin.applications.release.gate_state.failed': 'Byahagaritswe',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "Ibisabwa by'inguzanyo bya moteri y'amanota ntibyujujwe.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Ububasha bwo gusinya bw'ikigo bwahindutse nyuma yo gusinya.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        'Uburenganzira bwo gusinyira ikigo ntiburemezwa.',
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Raporo y'igenzura ntikiri iy'ubu.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Ntabwo abasinya bose basabwa basinye ku Isuzuma.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "Iyemezwa ryanditswe ntirigihuye n'ibyo ikigo cyasinye.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Amasezerano yahindutse nyuma y'uko ikigo gisinye.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "Itangazo ry'amafaranga yo gushyira ku isoko ryahindutse.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Igiciro cyatanzwe ntikiri icy'ubu.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'Iki kigo gifite imbogamizi.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Iri genzura ntiryashoboye kurangira.',
+    'admin.applications.release.cause.other': 'Iri genzura ntiryatsinze.',
     'admin.applications.release.blocked':
         'Igenzura rimwe ryananiranye, bityo iyi dosiye ntishobora kurekurwa. Kurekura ntibirenga igenzura ryananiranye.',
     'admin.applications.release.receipt': 'Inyemezabwishyu yo kurekura',
@@ -4823,6 +5886,12 @@ const rw: Catalog = {
     'investor.checkout.c3.reserve': 'Fata · {amount}',
     'investor.notices.title': 'Imenyesha',
     'investor.notices.unread_count': '{count} bitarasomwa',
+    'investor.notices.ago.now': 'Ubu nyine',
+    'investor.notices.ago.minutes': 'hashize iminota {count}',
+    'investor.notices.ago.hour': 'hashize isaha 1',
+    'investor.notices.ago.hours': 'hashize amasaha {count}',
+    'investor.notices.ago.day': 'hashize umunsi 1',
+    'investor.notices.ago.days': 'hashize iminsi {count}',
     'investor.notices.unread': 'Bitarasomwa',
     'investor.notices.mark_all': 'Byose byasomwe',
     'investor.notices.close': 'Funga imenyesha',
@@ -4856,6 +5925,12 @@ const rw: Catalog = {
         'Igihe cyo kuvugurura uruhushya kirageze',
     'investor.notices.auditor.accreditation_renewal_due.body':
         "Uruhushya {licence} ruzarangira ku wa {date}. Ohereza uruhushya ruvuguruye uhereye kuri porofayili yawe kugira ngo ukomeze kwakira imirimo y'igenzura.",
+    'investor.notices.auditor.report_reminder.title':
+        "Kwibutsa raporo y'igenzura",
+    'investor.notices.auditor.report_reminder.body_monthly':
+        'Rozine irakwibutsa ko igenzura rya {month} rya {business} rigomba kurangira bitarenze {date}.',
+    'investor.notices.auditor.report_reminder.body_flash':
+        'Rozine irakwibutsa ko igenzura ryihuse rya {business} rigomba kurangira bitarenze {date}.',
     'investor.notices.support.complaint_answered.title':
         'Rozine yashubije ikirego cyawe',
     'investor.notices.support.complaint_answered.body':
@@ -4898,6 +5973,10 @@ const rw: Catalog = {
         'Igihe cyo gusuzuma kirarangiye vuba',
     'investor.notices.business.report_review_closing.body':
         "Igihe cyo gusinya cyangwa kujurira raporo y'igenzura kirangira saa {time}. Nutagira icyo ukora, izatangazwa uko yashyizweho kashe.",
+    'investor.notices.business.reporting_window_open.title':
+        "Igenzura ry'ukwezi ryatangiye",
+    'investor.notices.business.reporting_window_open.body':
+        "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
@@ -4928,6 +6007,8 @@ const rw: Catalog = {
     'investor.notices.business.disbursement_sent.title': 'Amafaranga yoherejwe',
     'investor.notices.business.disbursement_sent.body':
         '{amount} ya {title} yoherejwe kuri {account}.',
+    'investor.notices.business.disbursement_sent.body_fee':
+        '{amount} ya {title} yoherejwe kuri {account}: ni {principal} zakusanyijwe havuyemo amafaranga ya serivisi ya 3% angana na {fee}.',
     'investor.notices.primary.report_published.title':
         'Raporo y’ukwezi yasohotse',
     'investor.notices.primary.report_published.body':
@@ -4960,6 +6041,8 @@ const rw: Catalog = {
     'investor.checkout.risks.accept': 'Ndumva izi ngaruka',
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
+    'investor.checkout.c3.reserve_after_risks':
+        "Emeza amagambo y'ingaruka ari hejuru kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
     'investor.checkout.c3.reserve_fine_print':
         "Gufata bibika impapuro n'amafaranga iminota 5 mu gihe wemeza.",
@@ -5297,7 +6380,6 @@ const rw: Catalog = {
         'Igice {index} · kigomba kwishyurwa ku wa {date}',
     'business.campaign.servicing.principal': 'Igishoro',
     'business.campaign.servicing.return': 'Inyungu',
-    'business.campaign.servicing.service_fee': 'Amafaranga ya serivisi',
     'business.campaign.servicing.next_total': 'Igiteranyo kigomba kwishyurwa',
     'business.campaign.servicing.open': 'Fungura ibyo kwishyura',
     'business.campaign.servicing.repaid':
@@ -5489,7 +6571,6 @@ const rw: Catalog = {
     'admin.repayments.component.principal': 'Igishoro',
     'admin.repayments.component.return': 'Inyungu',
     'admin.repayments.component.late_fees': "Amande z'ubukererwe",
-    'admin.repayments.component.service_fee': 'Amafaranga ya serivisi',
     'admin.repayments.component.total': 'Ibisigaye',
     'admin.repayments.allocation.title': 'Igabanya',
     'admin.repayments.allocation.pending':
@@ -5505,8 +6586,6 @@ const rw: Catalog = {
     'admin.repayments.allocation.kind.principal': 'Igishoro',
     'admin.repayments.allocation.kind.return': 'Inyungu',
     'admin.repayments.allocation.kind.late_fee': "Amande y'ubukererwe",
-    'admin.repayments.allocation.kind.service_fee': 'Amafaranga ya serivisi',
-    'admin.repayments.allocation.kind.steward_share': "Umugabane w'umugenzuzi",
     'admin.repayments.allocation.kind.investor_gross': 'Abashoramari, mbumbe',
     'admin.repayments.allocation.kind.investor_fee':
         "Amafaranga y'abashoramari",
@@ -5606,6 +6685,19 @@ const rw: Catalog = {
     'admin.exceptions.filtered_title': 'Nta kidasanzwe cy’ubu bwoko',
     'admin.exceptions.filtered_body':
         'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
+    'admin.notes.tabs': 'Inyandiko z’imyenda ukurikije aho zigeze',
+    'admin.notes.sort_label': 'Tondeka inyandiko',
+    'admin.notes.sort.newest': 'Tondeka: izigezweho',
+    'admin.notes.sort.raised': 'Tondeka: imari yakusanyijwe',
+    'admin.notes.sort.yield': 'Tondeka: inyungu',
+    'admin.notes.sort.funded': 'Tondeka: % yatewe inkunga',
+    'admin.notes.sort.investors': 'Tondeka: abashoramari',
+    'admin.notes.sort.term': 'Tondeka: igihe',
+    'admin.notes.state.live': 'Irakusanya',
+    'admin.notes.state.funded': 'Yuzuye',
+    'admin.notes.state.repaying': 'Irishyurwa',
+    'admin.notes.state.failed': 'Ntiyagezweho',
+    'admin.notes.more': 'Izindi nyandiko',
     'admin.primary.title': 'Ubukusanyamari buri gukorwa',
     'admin.primary.caption':
         'Ubukusanyamari bwose butaruzura, ubushya mbere. Ubukusanyamari buzura cyangwa bukananirwa ku gihe cyabwo, bityo nta kugenzura kuri hano.',
@@ -5623,11 +6715,13 @@ const rw: Catalog = {
     'admin.payments.title': 'Ubwishyu buri mu nzira',
     'admin.payments.caption':
         'Kubikuza amafaranga yabo afashwe mu gihe utanga serivisi yemeza ubwishyu. Buri kimwe cyishyurwa, cyangwa kigasubira mu gikapu, hakurikijwe igisubizo cyemejwe.',
-    'admin.payments.movement.caption':
-        'Amafaranga yashyizwe kuri konti n’ayabikujwe yishyuwe ku munsi (Kigali), iminsi 14 ishize',
     'admin.payments.kpi.count': {
         one: 'Igikorwa {count} · iminsi 14 ishize',
         other: 'Ibikorwa {count} · iminsi 14 ishize',
+    },
+    'admin.payments.kpi.disbursed_count': {
+        one: 'Ubwishyu {count} ku bigo · iminsi 14 ishize',
+        other: 'Ubwishyu {count} ku bigo · iminsi 14 ishize',
     },
     'admin.payments.kpi.in_flight': 'Ubwishyu buri mu nzira',
     'admin.payments.kpi.in_flight.sub': 'Bitegereje utanga serivisi',
@@ -5659,8 +6753,7 @@ const rw: Catalog = {
     'admin.primary.lifecycle.inventory_unavailable': 'Ntibiboneka',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Byashize',
     'admin.primary.lifecycle.closing_pending_settlement': 'Birarangira',
-    'admin.primary.trend.caption':
-        'Amafaranga yashowe mu bukusanyamari buri munsi, mu minsi 14 ishize.',
+    'admin.primary.trend.last_14': 'Iminsi 14 ishize',
     'admin.primary.more': 'Ubundi bukusanyamari buri gukorwa',
     'admin.primary.empty_title': 'Nta bukusanyamari buri gukorwa',
     'admin.primary.empty_body':
@@ -5821,6 +6914,8 @@ const rw: Catalog = {
     'admin.health.queue.rec.watch':
         'Ubusabe buri kwiyongera. Shyiraho umusesenguzi.',
     'admin.health.queue.rec.healthy': 'Umurongo nta busabe burimo.',
+    'admin.health.queue.rec.within':
+        'Biri mu rugero. Nta busabe burimo kwirundanya.',
     'admin.health.queue.action': 'Fungura umurongo',
     'admin.health.events.label': 'Ibikorwa byanditswe',
     'admin.health.events.value': '{count}/isaha',
@@ -5840,7 +6935,16 @@ const rw: Catalog = {
     'admin.health.treasury.label': 'Uko isanduku ihagaze',
     'admin.health.treasury.detail': 'Nta mafaranga y’isanduku arandikwa',
     'admin.health.frozen.label': 'Konti zahagaritswe',
-    'admin.health.frozen.detail': 'Guhagarika konti ntibiraboneka',
+    'admin.health.frozen.detail': 'konti zahagaritswe kwinjira',
+    'admin.health.frozen.rec.healthy': {
+        one: 'Nta konti y’umukozi yahagaritswe.',
+        other: 'Nta konti y’umukozi yahagaritswe.',
+    },
+    'admin.health.frozen.rec.watch': {
+        one: "Konti {count} y'umukozi yahagaritswe. Yisuzume muri Abakozi n'inshingano.",
+        other: "Konti {count} z'abakozi zahagaritswe. Zisuzume muri Abakozi n'inshingano.",
+    },
+    'admin.health.frozen.action': "Fungura Abakozi n'inshingano",
     'admin.complaints.title': 'Ibirego',
     'admin.complaints.caption':
         'Emeza ko cyakiriwe mu masaha 4 ugikemure mu masaha 48, cyangwa ubwire umukiriya impamvu n’igihe (BRS CMP-R03).',
@@ -5880,6 +6984,275 @@ const rw: Catalog = {
         'Umukiriya agisoma muri porogaramu kandi akabona ubutumwa. Igisubizo gikemura gifunga ikirego.',
     'admin.complaints.closed':
         'Iki kirego cyakemutse. Nta kindi gishobora kongerwaho.',
+    'auditor.academy.title': 'Ishuri ry’Umugenzuzi',
+    'auditor.academy.intro':
+        'Amasomo magufi ku igenzura, raporo zifunze n’uko uhembwa kuri Rozine, akubiyemo amategeko akurikizwa ubu n’amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza. Ayo mabwiriza y’ahazaza agaragazwa mu masomo. Aho ugeze ubikwa kuri iki gikoresho gusa.',
+    'auditor.academy.summary_start': 'Menya uko igenzura rikorwa kuri Rozine',
+    'auditor.academy.resume': 'Komeza: {lesson}',
+    'auditor.academy.review': 'Subiramo Ishuri',
+    'auditor.academy.browse': 'Reba amasomo yose',
+    'auditor.academy.group.role': 'Uruhare rwawe',
+    'auditor.academy.group.assignments': 'Uko akazi kakugeraho',
+    'auditor.academy.group.verification': 'Kugenzura ubucuruzi',
+    'auditor.academy.group.monthly': 'Buri kwezi',
+    'auditor.academy.group.visits':
+        'Igenzura ritunguranye n’isura ry’ibirarane',
+    'auditor.academy.group.pay': 'Uko uhembwa',
+    'auditor.academy.lesson.role.title': 'Uri nde',
+    'auditor.academy.lesson.role.sub': 'Umugenzuzi wemewe kandi wigenga',
+    'auditor.academy.lesson.role.topic1.title': 'Umucungamari wigenga',
+    'auditor.academy.lesson.role.topic1.body':
+        'Uri Umufatanyabikorwa mu igenzura: umucungamari w’umwuga wigenga, wemewe na ICPAR kandi ufitanye amasezerano na Rozine. Ugenzura imbonankubone ibyo inyandiko z’imari zonyine zidashobora kwemeza, mbere y’uko ubucuruzi bukusanya amafaranga na buri kwezi igihe inyandiko y’umwenda yabwo itarishyurwa.',
+    'auditor.academy.lesson.role.topic1.q':
+        'Ni nde ushobora kugenzura ubucuruzi kuri Rozine?',
+    'auditor.academy.lesson.role.topic1.option1':
+        'Abacungamari bemewe kandi bigenga gusa',
+    'auditor.academy.lesson.role.topic1.option2':
+        'Umukozi uwo ari we wese wa Rozine',
+    'auditor.academy.lesson.role.topic1.option3':
+        'Umucungamari w’ubwo bucuruzi',
+    'auditor.academy.lesson.role.topic2.title': 'Uruhushya rwawe',
+    'auditor.academy.lesson.role.topic2.body':
+        'Uruhushya rwawe rwa ICPAR rusuzumwa igihe wemerewe, kandi rukongera gusuzumwa mbere ya buri kazi uhawe. Uruhushya rwarangiye ruhagarika akazi gashya uwo munsi nyine.',
+    'auditor.academy.lesson.role.topic2.q':
+        'Uruhushya rwawe rurangiye uyu munsi. Bigenda bite?',
+    'auditor.academy.lesson.role.topic2.option1': 'Uhabwa ukwezi k’inyongera',
+    'auditor.academy.lesson.role.topic2.option2':
+        'Nta kazi gashya uhabwa guhera uyu munsi',
+    'auditor.academy.lesson.role.topic2.option3':
+        'Nta kintu kugeza igenzura ritaha rirangiye',
+    'auditor.academy.lesson.independence.title': 'Kwigenga',
+    'auditor.academy.lesson.independence.sub':
+        'Inyungu zivuguruzanya n’amakuru ufite',
+    'auditor.academy.lesson.independence.topic1.title':
+        'Garagaza buri nyungu ivuguruzanya',
+    'auditor.academy.lesson.independence.topic1.body':
+        'Ugaragaza inyungu zose zivuguruzanya. Ntuzigera uhabwa ubucuruzi wowe cyangwa ikigo cyawe mufitanye isano.',
+    'auditor.academy.lesson.independence.topic1.q':
+        'Ikigo cyawe gikora ibaruramari ry’ubucuruzi runaka. Ushobora kubugenzura?',
+    'auditor.academy.lesson.independence.topic1.option1':
+        'Yego, niba ubivuze muri raporo',
+    'auditor.academy.lesson.independence.topic1.option2':
+        'Mu igenzura ritunguranye gusa',
+    'auditor.academy.lesson.independence.topic1.option3':
+        'Oya, ntushobora kubuhabwa',
+    'auditor.academy.lesson.independence.topic2.title':
+        'Ntugacuruze ushingiye ku byo uzi',
+    'auditor.academy.lesson.independence.topic2.body':
+        'Raporo, amanota cyangwa ibirarane ntibiba ibya rubanda kugeza Rozine ibitangaje. Kugura inyandiko y’umwenda ugenzura hagati yo gufunga raporo yayo no kuyitangaza bifungura dosiye y’igenzura.',
+    'auditor.academy.lesson.independence.topic2.q':
+        'Wafunze raporo nziza uyu munsi, izatangazwa ejo. Ushobora kugura iyo nyandiko uyu munsi?',
+    'auditor.academy.lesson.independence.topic2.option1':
+        'Oya, bifungura dosiye y’igenzura',
+    'auditor.academy.lesson.independence.topic2.option2':
+        'Yego, raporo yamaze gufungwa',
+    'auditor.academy.lesson.independence.topic2.option3':
+        'Yego, niba amafaranga ari make',
+    'auditor.academy.lesson.dispatch.title': 'Akazi uhabwa',
+    'auditor.academy.lesson.dispatch.sub':
+        'Umugenzuzi wujuje ibisabwa uri hafi, muri km 30',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Muri km 30',
+    'auditor.academy.lesson.dispatch.topic1.body':
+        'Akazi gahabwa umucungamari wujuje ibisabwa uri hafi kurusha abandi, ufite ibiro biri muri km 30 uvuye aho ubucuruzi bukorera. Kujuja ibisabwa bivuze kugira uruhushya rugifite agaciro, nta nyungu zivuguruzanya wagaragaje, kandi uburyo bwo gusimburana bubyemera.',
+    'auditor.academy.lesson.dispatch.topic1.q':
+        'Ubucuruzi buri kuri km 31 uvuye ku biro byawe. Bigenda bite?',
+    'auditor.academy.lesson.dispatch.topic1.option1':
+        'Burahabwa wowe niba nta wundi uri hafi',
+    'auditor.academy.lesson.dispatch.topic1.option2': 'Ntuzigera ubuhabwa',
+    'auditor.academy.lesson.dispatch.topic1.option3':
+        'Ushobora kubusaba ku rutonde',
+    'auditor.academy.lesson.dispatch.topic2.title': 'Gusimburana',
+    'auditor.academy.lesson.dispatch.topic2.body':
+        'Abacungamari basimburana ku bucuruzi, ku buryo nta n’umwe ugenzura ubucuruzi bumwe ubuziraherezo. Rozine ishyiraho umubare w’amezi akurikirana umucungamari umwe ashobora kugenzura ubucuruzi.',
+    'auditor.academy.lesson.dispatch.topic2.q':
+        'Kuki abacungamari basimburana?',
+    'auditor.academy.lesson.dispatch.topic2.option1':
+        'Kugira ngo igihembo kigabanywe kimwe',
+    'auditor.academy.lesson.dispatch.topic2.option2':
+        'Kubera ko impushya zirangira buri kwezi',
+    'auditor.academy.lesson.dispatch.topic2.option3':
+        'Kugira ngo nta mucungamari ugenzura ubucuruzi bumwe ubuziraherezo',
+    'auditor.academy.lesson.baseline.title': 'Raporo y’ibanze',
+    'auditor.academy.lesson.baseline.sub':
+        'Nta nyandiko y’umwenda isohoka itariho',
+    'auditor.academy.lesson.baseline.topic1.title':
+        'Mbere y’uko isoko rifungurwa',
+    'auditor.academy.lesson.baseline.topic1.body':
+        'Nta nyandiko y’umwenda ishyirwa ku isoko utarasura ubucuruzi ngo ufunge raporo y’ibanze. Ukurikiza aho hantu uburyo bwumvikanyweho bwa ISRS 4400, kandi raporo ifunze itangazwa hamwe n’isoko.',
+    'auditor.academy.lesson.baseline.topic1.q':
+        'Ikusanya ry’amafaranga rishobora gufungurwa raporo y’ibanze itarafungwa?',
+    'auditor.academy.lesson.baseline.topic1.option1': 'Oya, na rimwe',
+    'auditor.academy.lesson.baseline.topic1.option2':
+        'Yego, abashoramari baburiwe',
+    'auditor.academy.lesson.baseline.topic1.option3': 'Yego, ku makusanya mato',
+    'auditor.academy.lesson.baseline.topic2.title': 'Amategeko y’ibimenyetso',
+    'auditor.academy.lesson.baseline.topic2.body':
+        'Amafoto aturuka gusa kuri kamera iri muri porogaramu, ifite aho uri ako kanya. Kohereza amafoto ari muri telefoni birabujijwe, kandi ifoto yafatiwe hanze y’imbibi z’aho ubucuruzi bukorera irangwa.',
+    'auditor.academy.lesson.baseline.topic2.q':
+        'Ejo wafashe ifoto ukoresheje kamera isanzwe ya telefoni yawe. Ushobora kuyohereza?',
+    'auditor.academy.lesson.baseline.topic2.option1':
+        'Yego, uyikuye mu mafoto yawe',
+    'auditor.academy.lesson.baseline.topic2.option2':
+        'Oya, amafoto yafatiwe muri porogaramu ako kanya ni yo yemewe',
+    'auditor.academy.lesson.baseline.topic2.option3':
+        'Yego, niba wongeyeho ibisobanuro',
+    'auditor.academy.lesson.differences.title':
+        'Itandukaniro no gufunga raporo',
+    'auditor.academy.lesson.differences.sub':
+        'Ibibuza gufunga raporo n’ibyo ihuza',
+    'auditor.academy.lesson.differences.topic1.title':
+        'Sobanura buri tandukaniro',
+    'auditor.academy.lesson.differences.topic1.body':
+        'Itandukaniro ryose ridasobanuwe hagati y’inyandiko z’ubucuruzi n’ibyo usanze aho bukorera ribuza gufunga raporo. Sobanura buri tandukaniro muri raporo, bitabaye ibyo ntishobora gufungwa.',
+    'auditor.academy.lesson.differences.topic1.q':
+        'Ubaze ibicuruzwa bike ugereranyije n’ibiri mu nyandiko, kandi ntubashe gusobanura impamvu. Ushobora gufunga raporo?',
+    'auditor.academy.lesson.differences.topic1.option1':
+        'Yego, niba itandukaniro ari rito',
+    'auditor.academy.lesson.differences.topic1.option2':
+        'Yego, wongeyeho igitekerezo',
+    'auditor.academy.lesson.differences.topic1.option3':
+        'Oya, gufunga birabujijwe',
+    'auditor.academy.lesson.differences.topic2.title':
+        'Ibyo gufunga raporo bihuza',
+    'auditor.academy.lesson.differences.topic2.body':
+        'Raporo ifunze ifungishwa ikimenyetso cya SHA-256 gihuza umwirondoro wawe, uruhushya rwawe, ibiri muri raporo n’igihe. Iyo imaze gufungwa, nta kintu na kimwe kiyihinduraho.',
+    'auditor.academy.lesson.differences.topic2.q':
+        'Ikimenyetso cyo gufunga gihuza iki?',
+    'auditor.academy.lesson.differences.topic2.option1':
+        'Umwirondoro wawe, uruhushya, ibiri muri raporo n’igihe',
+    'auditor.academy.lesson.differences.topic2.option2':
+        'Izina ry’ubucuruzi gusa',
+    'auditor.academy.lesson.differences.topic2.option3':
+        'Abashoramari bafite iyo nyandiko',
+    'auditor.academy.lesson.numbers.title': 'Imibare ishingirwaho itangwa',
+    'auditor.academy.lesson.numbers.sub': 'Ibyo igenzura ryawe ryemeza',
+    'auditor.academy.lesson.numbers.topic1.title': 'CFADS',
+    'auditor.academy.lesson.numbers.topic1.body':
+        'Amafaranga aboneka yo kwishyura imyenda ni amafaranga yinjira buri kwezi yagenzuwe, ukuyemo ibyakoreshejwe mu mikorere, ayo nyirubucuruzi afata n’ayishyurwa ku myenda isanzwe. RWF 4,200,000 nyuma y’ibyakoreshejwe, ukuyemo 600,000 nyirubucuruzi yafashe n’inguzanyo ya 400,000, bisigaza 3,200,000.',
+    'auditor.academy.lesson.numbers.topic1.q':
+        'Amafaranga yinjiye nyuma y’ibyakoreshejwe ni RWF 5,000,000, ayo nyirubucuruzi yafashe ni 1,000,000, inguzanyo isanzwe yishyurwa ni 500,000. CFADS ni angahe?',
+    'auditor.academy.lesson.numbers.topic1.option1': 'RWF 3,500,000',
+    'auditor.academy.lesson.numbers.topic1.option2': 'RWF 4,000,000',
+    'auditor.academy.lesson.numbers.topic1.option3': 'RWF 5,500,000',
+    'auditor.academy.lesson.numbers.topic2.title':
+        'Ubushobozi bwo kwishyura n’itangwa',
+    'auditor.academy.lesson.numbers.topic2.body':
+        'Ubushobozi bwo kwishyura ni CFADS igabanyijwe n’umubare w’ubwishyu bwa buri kwezi busabwa. Itangwa ni rito kurusha ibindi muri ibi: ayasabwe, ayo ubushobozi bwa 1.50 bwemera, 35% by’amafaranga yinjiye ku mwaka yagenzuwe, na RWF 100,000,000. Igenzura ukora aho bukorera ryemeza inyandiko iyo mibare ishingiyeho.',
+    'auditor.academy.lesson.numbers.topic2.q':
+        'Rozine igena itangwa ishingiye ku bushobozi bungana iki?',
+    'auditor.academy.lesson.numbers.topic2.option1': '1.00',
+    'auditor.academy.lesson.numbers.topic2.option2': '1.50',
+    'auditor.academy.lesson.numbers.topic2.option3': '1.25',
+    'auditor.academy.lesson.cycle.title': 'Uruziga rwa buri kwezi',
+    'auditor.academy.lesson.cycle.sub': 'Igihe porogaramu ikoresha ubu',
+    'auditor.academy.lesson.cycle.topic1.title':
+        'Bitarenze ku ya 7, ku isaha ya Kigali',
+    'auditor.academy.lesson.cycle.topic1.body':
+        'Muri porogaramu ikoreshwa ubu, funga raporo ya buri kwezi kwagenzuwe bitarenze impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali). Kurikiza itariki ntarengwa iri kuri raporo; ntihindukana n’umunsi wo kwishyura inyandiko y’umwenda.',
+    'auditor.academy.lesson.cycle.topic1.q':
+        'Muri porogaramu ikoreshwa ubu, raporo y’igenzura rya Nzeri igomba gufungwa bitarenze iyihe tariki?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Ku ya 7 Ukwakira',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Ku ya 15 Ukwakira',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Ku ya 18 Ukwakira',
+    'auditor.academy.lesson.cycle.topic2.title': 'Igihe igenzura ryatinze',
+    'auditor.academy.lesson.cycle.topic2.body':
+        'Porogaramu ikoreshwa ubu igaragaza ko igenzura rya buri kwezi ritarafungwa ryatinze iyo igihe cyagenwe kirangiye. Iyo tariki ni na yo ikoreshwa mu kubara uko urangiza ku gihe. Raporo ibuze yonyine ntituma inyandiko y’umwenda ifatwa nk’iyananiwe kwishyurwa.',
+    'auditor.academy.lesson.cycle.topic2.q':
+        'Igihe ntarengwa cyo gufunga raporo y’ukwezi kirangiye utarayifunga. Ni iki gihinduka?',
+    'auditor.academy.lesson.cycle.topic2.option1':
+        'Inyandiko ihita ifatwa nk’iyananiwe kwishyurwa',
+    'auditor.academy.lesson.cycle.topic2.option2':
+        'Igenzura riratinze kandi gufunga nyuma yaho bibarwa nk’ubukererwe',
+    'auditor.academy.lesson.cycle.topic2.option3':
+        'Itariki ntarengwa ikurikira umunsi wo kwishyura',
+    'auditor.academy.lesson.disputes.title': 'Kwemeza no kujurira',
+    'auditor.academy.lesson.disputes.sub': 'Ibikurikira nyuma yo gufunga',
+    'auditor.academy.lesson.disputes.topic1.title': 'Amasaha 24 yo gusubiza',
+    'auditor.academy.lesson.disputes.topic1.body':
+        'Nyuma yo gufunga, uhagarariye ubucuruzi afite amasaha 24 yo kwemeza cyangwa kujuririra raporo yawe.',
+    'auditor.academy.lesson.disputes.topic1.q':
+        'Ubucuruzi bufite igihe kingana iki cyo kujuririra raporo ifunze?',
+    'auditor.academy.lesson.disputes.topic1.option1':
+        'Kugeza ku munsi wo kwishyura',
+    'auditor.academy.lesson.disputes.topic1.option2': 'Iminsi irindwi',
+    'auditor.academy.lesson.disputes.topic1.option3': 'Amasaha 24',
+    'auditor.academy.lesson.disputes.topic2.title': 'Isuzuma ry’ibiro',
+    'auditor.academy.lesson.disputes.topic2.body':
+        'Ubujurire bwohereza raporo mu isuzuma ry’ibiro rikorwa n’Umuyobozi w’Imari n’Urusobe rw’Abagenzuzi. Igihe ikijurirwa, inyandiko ntishobora gucuruzwa, kandi icyemezo n’impamvu yacyo bitangazwa hamwe na raporo.',
+    'auditor.academy.lesson.disputes.topic2.q':
+        'Inyandiko y’umwenda bigenda bite igihe raporo yayo ijuririrwa?',
+    'auditor.academy.lesson.disputes.topic2.option1': 'Ntishobora gucuruzwa',
+    'auditor.academy.lesson.disputes.topic2.option2': 'Ifatwa nk’itarishyuwe',
+    'auditor.academy.lesson.disputes.topic2.option3': 'Nta gihinduka',
+    'auditor.academy.lesson.flash.title': 'Igenzura ritunguranye',
+    'auditor.academy.lesson.flash.sub': 'Ridateguje, mu masaha 24',
+    'auditor.academy.lesson.flash.topic1.title': 'Mu masaha 24',
+    'auditor.academy.lesson.flash.topic1.body':
+        'Rozine ishobora kukohereza ku bucuruzi butabimenyeshejwe. Igenzura ritunguranye rigomba kurangira mu masaha 24 uhereye igihe urihawe, hakurikijwe amategeko y’ibimenyetso amwe n’aya raporo y’ibanze.',
+    'auditor.academy.lesson.flash.topic1.q':
+        'Ufite igihe kingana iki cyo kurangiza igenzura ritunguranye?',
+    'auditor.academy.lesson.flash.topic1.option1':
+        'Amasaha 24 uhereye igihe urihawe',
+    'auditor.academy.lesson.flash.topic1.option2':
+        'Amasaha 24 uhereye igihe uhagereye',
+    'auditor.academy.lesson.flash.topic1.option3': 'Iminsi itatu',
+    'auditor.academy.lesson.flash.topic2.title': 'Iyo igihe kirangiye',
+    'auditor.academy.lesson.flash.topic2.body':
+        'Igenzura ritunguranye ritarangiye mu masaha 24 ritera impuruza, kandi igihe umucungamari atubahirije kimenyeshwa CMA. Fata gusa ibyo ushobora kurangiza ku gihe.',
+    'auditor.academy.lesson.flash.topic2.q':
+        'Bigenda bite iyo igenzura ritunguranye ritarangiye mu masaha 24?',
+    'auditor.academy.lesson.flash.topic2.option1': 'Igihe cyongerwa ubwacyo',
+    'auditor.academy.lesson.flash.topic2.option2': 'Hatangwa impuruza',
+    'auditor.academy.lesson.flash.topic2.option3': 'Ubucuruzi buhakanwa',
+    'auditor.academy.lesson.arrears.title': 'Isura ry’ibirarane',
+    'auditor.academy.lesson.arrears.sub': 'Iyo ubucuruzi bwatinze icyumweru',
+    'auditor.academy.lesson.arrears.topic1.title': 'Umunsi wa 7 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic1.body':
+        'Iyo ubucuruzi ugenzura bumaze iminsi irindwi butishyura, uhabwa igikorwa cyo kubusura. Uhita ujyayo kugenzura ibicuruzwa, amafaranga n’imikorere.',
+    'auditor.academy.lesson.arrears.topic1.q':
+        'Isura ry’ibirarane ritangira ryari?',
+    'auditor.academy.lesson.arrears.topic1.option1':
+        'Ku munsi wa mbere w’ubukererwe',
+    'auditor.academy.lesson.arrears.topic1.option2':
+        'Ku munsi wa 30 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic1.option3':
+        'Ku munsi wa 7 w’ibirarane',
+    'auditor.academy.lesson.arrears.topic2.title':
+        'Inyandiko ifunze ihabwa abafite inyandiko z’umwenda',
+    'auditor.academy.lesson.arrears.topic2.body':
+        'Nyuma y’isura, wohereza inyandiko ifunze igenewe abafite inyandiko z’umwenda, ku buryo abashoramari bamenya ibyo wasanze babibwiwe n’uwagenzuye.',
+    'auditor.academy.lesson.arrears.topic2.q':
+        'Nyuma y’isura ry’ibirarane wohereza iki?',
+    'auditor.academy.lesson.arrears.topic2.option1':
+        'Inyandiko ifunze igenewe abafite inyandiko z’umwenda',
+    'auditor.academy.lesson.arrears.topic2.option2':
+        'Itangwa rishya ry’ubucuruzi',
+    'auditor.academy.lesson.arrears.topic2.option3':
+        'Nta cyo, Rozine yandikira abafite inyandiko',
+    'auditor.academy.lesson.earnings.title': 'Ibyo winjiza',
+    'auditor.academy.lesson.earnings.sub':
+        'Umugabane ku byo Rozine yinjiza ku nyandiko wagenzuye',
+    'auditor.academy.lesson.earnings.topic1.title':
+        '40% by’amafaranga y’urubuga',
+    'auditor.academy.lesson.earnings.topic1.body':
+        'Ubucuruzi bwishyura amafaranga y’urubuga angana na 3% by’igishoro igihe amafaranga atanzwe. 40% by’ayo mafaranga ashyirwa kuri konti yawe, nk’Umufatanyabikorwa mu igenzura wagenzuye iyo nyandiko, igihe amafaranga atanzwe. Ku ikusanya rya RWF 12,000,000, amafaranga y’urubuga ni 360,000, umugabane wawe ukaba 144,000.',
+    'auditor.academy.lesson.earnings.topic1.q':
+        'Ikusanya rya RWF 10,000,000 ryatanzwe. Umugabane wawe ku mafaranga y’urubuga ni angahe?',
+    'auditor.academy.lesson.earnings.topic1.option1': 'RWF 300,000',
+    'auditor.academy.lesson.earnings.topic1.option2': 'RWF 40,000',
+    'auditor.academy.lesson.earnings.topic1.option3': 'RWF 120,000',
+    'auditor.academy.lesson.earnings.topic2.title':
+        '25% by’amafaranga ku nyungu (amabwiriza y’ahazaza)',
+    'auditor.academy.lesson.earnings.topic2.body':
+        'Amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza ateganya amafaranga ku gice cy’inyungu cya buri bwishyu bwa buri kwezi ku bashoramari, aho 25% by’ayo mafaranga yazajya ashyirwa kuri konti yawe kuri buri bwishyu bw’inyandiko ugenzura. Aya mafaranga ntaratangira gushyirwa kuri konti.',
+    'auditor.academy.lesson.earnings.topic2.q':
+        'Dukurikije amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza, umugabane wa 25% ku mafaranga y’inyungu wazajya ugushyirwaho ryari?',
+    'auditor.academy.lesson.earnings.topic2.option1':
+        'Kuri buri bwishyu bwa buri kwezi bw’inyandiko ugenzura, bimaze gutangira gukurikizwa',
+    'auditor.academy.lesson.earnings.topic2.option2':
+        'Rimwe kuri buri genzura rirangiye',
+    'auditor.academy.lesson.earnings.topic2.option3':
+        'Igihe inyandiko irangiye gusa',
 };
 
 export default rw;

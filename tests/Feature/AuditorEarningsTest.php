@@ -1,0 +1,134 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Application\Auditor\GetAuditorEarnings;
+use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\PublishedCampaignEvidence;
+use App\Models\AuditPartnerCredit;
+use App\Models\AuditReport;
+use App\Models\BusinessCampaign;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\AuditorFixture;
+use Tests\Support\PrimaryFailedClosingFixture;
+use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\PrimaryIssuanceFixture;
+
+use function Pest\Laravel\actingAs;
+
+/*
+ * BRS v2.0 FEE-R02 and the Audit Partner's earnings statement: 40% of the 3% platform fee on each raise
+ * the partner audited, credited when it is paid out, shown on their Portfolio and Profile.
+ */
+
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
+/** @return array<string, mixed> the earnings a page sends to this user */
+function auditorEarnings(User $user, string $route): array
+{
+    $earnings = [];
+    actingAs($user)->get(route($route, $route === 'auditor.profile' ? ['section' => 'earnings'] : []))->assertOk()
+        ->assertInertia(function (Assert $page) use (&$earnings): Assert {
+            $earnings = $page->toArray()['props']['earnings'];
+
+            return $page;
+        });
+
+    return $earnings;
+}
+
+it('states the platform fee share credited to the partner who sealed the report, on Portfolio and Profile', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $credit = AuditPartnerCredit::query()->sole();
+    $auditor = User::query()->where('party_id', $credit->auditor_party_id)->sole();
+    $month = $credit->created_at->setTimezone('Africa/Kigali')->format('Y-m');
+    $line = ['id' => $credit->id, 'business' => 'Synthetic business', 'district' => 'Gasabo',
+        'raise' => ['currency' => 'RWF', 'amount' => '10800000'], 'platform_fee' => ['currency' => 'RWF', 'amount' => '324000'],
+        'amount' => ['currency' => 'RWF', 'amount' => '129600'], 'credited_at' => $credit->created_at->toIso8601String()];
+    $statement = ['month' => $month.'-01', 'this_month' => ['currency' => 'RWF', 'amount' => '129600'],
+        'total' => ['currency' => 'RWF', 'amount' => '129600'], 'lines' => [$line], 'deals' => 1, 'managed' => [$line]];
+
+    expect(auditorEarnings($auditor, 'auditor.portfolio.index'))->toBe($statement)
+        ->and(auditorRaising(BusinessCampaign::query()->sole()))->toBe([])
+        ->and(auditorEarnings($auditor, 'auditor.profile'))->toBe($statement)
+        ->and(auditorEarnings(AuditorFixture::make()['user'], 'auditor.portfolio.index'))->toBe(['month' => $month.'-01',
+            'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => [], 'deals' => 0, 'managed' => []]);
+    // Home's "earned this month" is the same month's credit, the wallet what is owed, and deals the funded raises.
+    actingAs($auditor)->get(route('auditor.home'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('earned_this_month', ['currency' => 'RWF', 'amount' => '129600'])
+            ->where('wallet.available', ['currency' => 'RWF', 'amount' => '129600'])->where('active_deals', 1));
+
+    $this->travelTo(CarbonImmutable::parse($month.'-01 00:00:00', 'Africa/Kigali')->addMonthNoOverflow());
+    expect(auditorEarnings($auditor, 'auditor.profile'))->toBe([...$statement, 'month' => now('Africa/Kigali')->format('Y-m').'-01',
+        'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => []]);
+    $this->travelTo(now()->subSecond());
+    expect(auditorEarnings($auditor, 'auditor.portfolio.index'))->toBe($statement);
+});
+
+it('counts a credit made in the first Kigali hours of a month in that month', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-30T22:30:00+00:00'));
+    PrimaryIssuanceFixture::close('2026-09-30T22:30:00+00:00');
+    $credit = AuditPartnerCredit::query()->sole();
+    $auditor = User::query()->where('party_id', $credit->auditor_party_id)->sole();
+    $this->travelTo(CarbonImmutable::parse($credit->created_at)->addHour());
+
+    expect($credit->created_at->setTimezone('Africa/Kigali')->format('Y-m-d'))->toBe('2026-10-01')
+        ->and(auditorEarnings($auditor, 'auditor.profile')['this_month'])->toBe(['currency' => 'RWF', 'amount' => '129600']);
+});
+
+it('owes the partner every credit while nothing in the ledger pays their pooled share out', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $credit = AuditPartnerCredit::query()->sole();
+    $auditor = User::query()->where('party_id', $credit->auditor_party_id)->sole();
+
+    expect(app(GetAuditorEarnings::class)->handle($auditor->id, 1))->toMatchArray(['total' => '129600', 'owed' => '129600', 'deals' => 1])
+        ->and(DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->where('ledger_accounts.kind', 'audit_partner_fee_payable')->pluck('ledger_lines.direction')->all())->toBe(['credit']);
+});
+
+/** @return list<array<string, mixed>> the unfunded raises the partner who sealed the campaign's Flash Audit is shown */
+function auditorRaising(BusinessCampaign $campaign): array
+{
+    $author = AuditReport::query()->where('application_id', $campaign->business_application_id)->where('kind', 'flash')->sole()->author_party_id;
+    $raising = [];
+    actingAs(User::query()->where('party_id', $author)->sole())->get(route('auditor.portfolio.index'))->assertOk()
+        ->assertInertia(function (Assert $page) use (&$raising): Assert {
+            $raising = $page->toArray()['props']['raising'];
+
+            return $page;
+        });
+
+    return $raising;
+}
+
+it('lists a raise the partner audited as live while it takes commitments', function (): void {
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed(units: ['1080'], fund: false);
+
+    expect(auditorRaising($campaign))->toBe([['campaign_id' => $campaign->id, 'business' => 'Synthetic business',
+        'title' => app(PublishedCampaignEvidence::class)->find($campaign->id)['title'], 'status' => 'live',
+        'raised' => ['currency' => 'RWF', 'amount' => '5400000'], 'target' => ['currency' => 'RWF', 'amount' => '10800000'], 'investors' => 1]])
+        ->and(auditorEarnings(AuditorFixture::make()['user'], 'auditor.portfolio.index')['deals'])->toBe(0);
+});
+
+it('leaves a funded raise out of Raising, whether it is still closing or has issued', function (): void {
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed();
+
+    expect(auditorRaising($campaign))->toBe([]);
+});
+
+it('lists a raise that closed without funding as failed, with what investors had committed', function (): void {
+    ['campaign' => $funded] = PrimaryFailedClosingFixture::close();
+    $campaign = BusinessCampaign::query()->findOrFail($funded->campaignId);
+    $closure = app(CampaignClosureEvidence::class)->find($campaign->id);
+
+    expect($closure)->not->toBeNull()
+        ->and(auditorRaising($campaign))->toBe([['campaign_id' => $campaign->id, 'business' => 'Synthetic business',
+            'title' => app(PublishedCampaignEvidence::class)->find($campaign->id)['title'], 'status' => 'failed',
+            'raised' => ['currency' => 'RWF', 'amount' => (string) $closure['committed_refunded']['amount']],
+            'target' => ['currency' => 'RWF', 'amount' => '10800000'], 'investors' => $closure['investors']]]);
+});

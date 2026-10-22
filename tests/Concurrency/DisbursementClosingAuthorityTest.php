@@ -8,24 +8,30 @@ use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\IssueInstruction;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\RecheckResult;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
+use App\Models\CommandOperation;
+use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
+use App\Models\DisbursementEvent;
+use App\Models\DisbursementIntent;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 /*
- * The approve-time closing's command authority across a real outer commit (#96 5925545895). The
- * operation journal records the approve only after its effect returns, so the closing evidence is
- * read inside `failClose` before the command row exists; the deferred authority trigger then binds
- * the closing to that recorded command when the approve commits, and a later read replays the same
- * evidence exactly.
+ * The automatic closing's evidence across a real outer commit (#96 5925545895, BRS v2.0 SVC-R01).
+ * A failed recheck when automatic payment runs closes the campaign with no staff authority: the
+ * closing evidence read inside `failClose` names no operation, and a later read replays the same
+ * evidence exactly. Legacy approve-time closings keep their deferred command authority, and a system
+ * intent can never commit bound to a recorded staff command.
  */
 
 /**
- * A funding source that reads the closing evidence inside `failClose`, noting whether the approve
- * command was already recorded at that moment.
+ * A funding source that reads the closing evidence inside `failClose`, noting whether a command
+ * operation was recorded under its operation id at that moment.
  *
  * @param  ArrayObject<int, array{evidence: ClosingEvidence, recorded: bool}>  $seen
  */
@@ -64,7 +70,7 @@ function authorityRecordingFunding(ArrayObject $seen): FundedCampaigns
         public function failClose(FundedCampaign $campaign, FailedClosing $closing): void
         {
             $evidence = app(DisbursementClosingEvidence::class)->find($closing->closingId);
-            $this->seen[] = ['evidence' => $evidence, 'recorded' => DB::table('command_operations')->where('id', $evidence->operationId)->exists()];
+            $this->seen[] = ['evidence' => $evidence, 'recorded' => $evidence->operationId !== null && DB::table('command_operations')->where('id', $evidence->operationId)->exists()];
             $this->inner->failClose($campaign, $closing);
         }
     };
@@ -76,39 +82,75 @@ function authorityCalls(): ArrayObject
     return new ArrayObject;
 }
 
-it('commits an immediate approve-time closing read inside failClose, then replays the same evidence exactly', function (): void {
+/**
+ * A legacy maker authorization, recorded raw as the retired authorize command left it, so a real
+ * hold and release move the disbursement back to `awaiting_second_approver`.
+ *
+ * @return array{operation_id: string, staff: User}
+ */
+function legacyAwaitingWithRecordedHold(Disbursement $disbursement): array
+{
+    $maker = DisbursementFixture::staff(['treasury']);
+    DB::table('disbursement_events')->insert(['id' => strtolower((string) Str::ulid()), 'disbursement_id' => $disbursement->id, 'revision' => 1,
+        'kind' => 'authorized', 'actor_user_id' => $maker->id,
+        'operation_id' => CommandOperation::factory()->create(['actor_key' => 'staff:'.$maker->id, 'actor_user_id' => $maker->id, 'command' => 'disbursement.authorize'])->id, 'request_id' => (string) Str::uuid(),
+        'binding_sha256' => str_repeat('b', 64), 'destination_sha256' => str_repeat('d', 64), 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
+    $compliance = DisbursementFixture::staff(['compliance']);
+    $hold = DisbursementFixture::command($compliance, $disbursement, 'hold', 1);
+    DisbursementFixture::command($compliance, $disbursement, 'release_hold', 2);
+
+    return ['operation_id' => (string) $hold['operation_id'], 'staff' => $compliance];
+}
+
+it('commits an automatic closing read inside failClose with no staff authority, then replays the same evidence exactly', function (): void {
     $seen = authorityCalls();
     app()->instance(FundedCampaigns::class, authorityRecordingFunding($seen));
     ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
     DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['restriction']);
-    $requestId = (string) Str::uuid();
-    $result = DisbursementFixture::command($checker, $disbursement, 'approve', 1, DisbursementFixture::stepUp($checker, $disbursement)['proof'], $requestId);
+    DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');
+    expect(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 0, 'known' => 1, 'queued' => 0, 'failed' => 1]);
     $closing = DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->sole();
     $read = fn (): ClosingEvidence => DB::transaction(fn (): ClosingEvidence => app(DisbursementClosingEvidence::class)->find($closing->id));
 
-    expect([$result['code'], $result['status']])->toBe(['CAMPAIGN_FAILED_CLOSING', 'completed'])
+    expect([$closing->cause, $closing->causes])->toBe(['auto_recheck', ['restriction']])
         ->and($seen)->toHaveCount(1)->and($seen[0]['recorded'])->toBeFalse()
-        ->and([$closing->operation_id, $closing->actor_user_id, $closing->request_id])->toBe([$result['operation_id'], $checker->id, $requestId])
+        ->and([$closing->intent_id, $closing->operation_id, $closing->actor_user_id, $closing->request_id])->toBe([null, null, null, null])
+        ->and([$seen[0]['evidence']->cause, $seen[0]['evidence']->operationId, $seen[0]['evidence']->intentId])->toBe(['auto_recheck', null, null])
         ->and($read())->toEqual($seen[0]['evidence'])
         ->and($read())->toEqual($seen[0]['evidence'])
-        ->and($seen[0]['evidence']->recordedAt)->toBe($closing->created_at->utc()->toIso8601String());
+        ->and($seen[0]['evidence']->recordedAt)->toBe($closing->created_at->utc()->toIso8601String())
+        ->and(DisbursementEvent::query()->where('disbursement_id', $disbursement->id)->sole()->only(['kind', 'actor_user_id', 'operation_id']))
+        ->toBe(['kind' => 'failed_closing', 'actor_user_id' => null, 'operation_id' => null]);
 });
 
-it('refuses to commit an approve-time closing bound to a command other than its own approve', function (): void {
+it('refuses to commit a legacy approve-time closing bound to a command other than its own approve', function (): void {
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $requestId = (string) Str::uuid();
-    $authorize = DisbursementFixture::command($maker, $disbursement, 'authorize', 0, null, $requestId);
+    ['operation_id' => $operationId, 'staff' => $staff] = legacyAwaitingWithRecordedHold($disbursement);
 
-    // The recorded authorize exists, so only the authority binding can refuse the commit; a deferred
+    // The recorded hold exists, so only the authority binding can refuse the commit; a deferred
     // refusal surfaces from COMMIT itself.
     expect(fn () => DB::transaction(fn () => DB::table('disbursement_closings')->insert(['id' => strtolower((string) Str::ulid()),
         'disbursement_id' => $disbursement->id, 'kind' => 'failed_closing', 'cause' => 'approve_recheck', 'causes' => '["mandate"]',
-        'operation_id' => $authorize['operation_id'], 'actor_user_id' => $maker->id, 'request_id' => $requestId, 'payload' => 'x',
+        'operation_id' => $operationId, 'actor_user_id' => $staff->id, 'request_id' => (string) Str::uuid(), 'payload' => 'x',
         'sha256' => str_repeat('0', 64), 'created_at' => now()])))
         ->toThrow(PDOException::class, 'commits only with its own recorded approve command')
         ->and(DisbursementClosing::query()->count())->toBe(0);
+});
+
+it('refuses to commit a system intent whose operation is a recorded staff command', function (): void {
+    ['disbursement' => $disbursement] = DisbursementFixture::funded();
+    $hold = DisbursementFixture::command(DisbursementFixture::staff(['compliance']), $disbursement, 'hold', 0);
+    DisbursementFixture::command(DisbursementFixture::staff(['compliance']), $disbursement, 'release_hold', 1);
+    $id = strtolower((string) Str::ulid());
+
+    expect(fn () => DB::transaction(fn () => DB::table('disbursement_intents')->insert(['id' => $id, 'disbursement_id' => $disbursement->id,
+        'operation_id' => $hold['operation_id'], 'request_id' => (string) Str::uuid(), 'revision' => 2,
+        'amount' => (string) ((int) $disbursement->amount - (int) $disbursement->platform_fee), 'currency' => 'RWF', 'destination_id' => 'dest-1',
+        'destination_revision' => 1, 'destination_sha256' => str_repeat('d', 64), 'commitments_digest' => $disbursement->commitments_digest,
+        'binding_sha256' => str_repeat('b', 64), 'intent_digest' => str_repeat('i', 64), 'provider' => 'synthetic', 'provider_reference' => 'x',
+        'provider_reference_sha256' => hash('sha256', $id), 'environment' => $disbursement->environment, 'idempotent_sends' => false,
+        'maker_user_id' => null, 'checker_user_id' => null, 'rule_version' => 'brs-2.0-svc-r01', 'payload' => 'x', 'sha256' => str_repeat('0', 64),
+        'created_at' => now()])))
+        ->toThrow(PDOException::class, 'An automatic disbursement intent is never a staff command')
+        ->and(DisbursementIntent::query()->count())->toBe(0);
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Auditor\GetAuditorEarnings;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListAuditorFiledReports;
 use App\Application\Auditor\ListOwnAuditConflicts;
@@ -15,13 +16,14 @@ use Inertia\Response;
 
 /**
  * The Auditor Portfolio (MVP-AUDITOR-SCR-07, AC-08): the partner's filed reports beside their
- * conflict register. Every read goes through the protected Auditor actions under the current
- * identity context; this controller only picks the report filter and carries the request.
+ * conflict register and this month's platform fee shares. Every read goes through the protected
+ * Auditor actions under the current identity context; this controller only picks the report
+ * filter and carries the request.
  */
 class AuditorPortfolioController extends Controller
 {
     public function index(Request $request, AuthorizeActiveRole $identity, ListAuditorFiledReports $reports, ListAuditJobs $jobs,
-        ListOwnAuditConflicts $conflicts): Response
+        ListOwnAuditConflicts $conflicts, GetAuditorEarnings $earnings): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = (int) $identity->context($userId, 'auditor')['context_revision'];
@@ -34,6 +36,7 @@ class AuditorPortfolioController extends Controller
             'reports' => $reports->handle($userId, $revision, $filter === 'all' ? null : $filter === 'published'),
             'jobs' => $jobs->handle($userId, $revision),
             'conflicts' => $conflicts->handle($userId, $revision),
+            'earnings' => $earnings->handle($userId, $revision),
         ]))->resolve($request));
     }
 }

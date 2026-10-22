@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->withoutVite();
@@ -141,7 +142,7 @@ it('rolls back staff grants if immutable audit persistence fails', function (): 
 
 it('opens the console Dashboard from the staff entry and links each console page to exactly the sections the account may open', function (string $role, array $sections): void {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console sections.', (string) Str::uuid(), [$role]);
+    StaffFixture::provision($user, [$role], 'Console sections.');
     $urls = ['investors' => route('staff.investors.index', [], false), 'applications' => route('staff.applications.index', [], false),
         'disbursements' => route('staff.disbursements.index', [], false)];
     $expected = array_map(fn (string $section): ?array => in_array($section, $sections, true) ? ['url' => $urls[$section], 'method' => 'get'] : null,

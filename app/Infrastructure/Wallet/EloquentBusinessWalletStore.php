@@ -32,9 +32,11 @@ use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProviderEvent;
 use App\Models\BusinessRepayment;
 use App\Models\BusinessWallet;
+use App\Models\BusinessWithdrawal;
 use App\Models\DepositPolicy;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -59,7 +61,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessWithdrawals $withdrawals) {}
 
     /**
-     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null, from?: string|null, to?: string|null}  $query
      * @return array<string, mixed>
      */
     public function page(int $userId, int $contextRevision, string $businessId, array $query): array
@@ -77,7 +79,9 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 ]));
                 $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
                 $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
-                $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null] : $this->history($wallet, $query['before'] ?? null);
+                $range = ['from' => $query['from'] ?? null, 'to' => $query['to'] ?? null];
+                $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null]
+                    : $this->history($wallet, $query['before'] ?? null, $range['from'], $range['to']);
                 $withdrawals = $this->withdrawals->view($wallet?->id, $methods->isNotEmpty(), $kind === 'withdraw', $query['amount'] ?? null, $query['receipt'] ?? null);
 
                 return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $allowed,
@@ -90,7 +94,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                         'methods' => $methods->map(fn (BusinessFundingMethod $method): array => $this->method($method))->values()->all(), 'picks' => [],
                         'quote' => $this->quote($policy, $methods->isNotEmpty(), $kind, $query['amount'] ?? null)],
                     'deposits' => $wallet === null ? [] : $this->deposits($wallet), 'withdrawals' => $withdrawals['withdrawals'],
-                    'history' => ['movement' => $movement, ...$history],
+                    'history' => ['movement' => $movement, 'range' => $range, ...$history],
                     'receipt' => $wallet === null ? null : ($this->openedReceipt($wallet, $query['receipt'] ?? null) ?? $withdrawals['receipt'])];
             });
     }
@@ -109,6 +113,42 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
             fn (array $business): array => array_values($this->verifiedMethods($business['id'])->map(fn (BusinessFundingMethod $method): array => $this->method($method))->all()));
+    }
+
+    public function statement(int $userId, int $contextRevision, string $businessId, ?string $from, ?string $to): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business) use ($from, $to): array {
+            $wallet = BusinessWallet::query()->where('business_id', $business['id'])->first();
+            $rows = [];
+            if ($wallet !== null) {
+                foreach ($this->recordedBetween(BusinessDepositCredit::query()->where('wallet_id', $wallet->id), $from, $to)->orderByDesc('id')->get() as $credit) {
+                    $entry = $this->historyEntry($credit);
+                    $rows[] = ['occurred_at' => (string) $entry['occurred_at'], 'movement' => 'external', 'kind' => 'deposit', 'deal_name' => null,
+                        'counterparty' => (string) $entry['counterparty'], 'direction' => 'in', 'amount' => WalletMoney::of($credit->amount)->money(),
+                        'reference' => (string) $this->creditReceipt($credit)['reference']];
+                }
+                $payouts = $this->recordedBetween(LedgerEntry::query()->where('wallet_id', $wallet->id)->where('kind', 'business_withdrawal_payout')
+                    ->where('source_type', 'business_withdrawal'), $from, $to)->orderByDesc('id')->get();
+                $withdrawals = BusinessWithdrawal::query()->whereIn('id', $payouts->pluck('source_id'))->get()->keyBy('id');
+                $methods = BusinessFundingMethod::query()->whereIn('id', $withdrawals->pluck('method_id'))->get()->keyBy('id');
+                foreach ($payouts as $payout) {
+                    $withdrawal = $withdrawals->get($payout->source_id) ?? throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+                    $method = $methods->get($withdrawal->method_id) ?? throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+                    $rows[] = ['occurred_at' => (string) $payout->payload['recorded_at'], 'movement' => 'external', 'kind' => 'withdrawal', 'deal_name' => null,
+                        'counterparty' => $method->label.' '.$method->masked, 'direction' => 'out', 'amount' => WalletMoney::of($withdrawal->amount)->money(),
+                        'reference' => 'RZW-'.strtoupper(substr($payout->id, -10))];
+                }
+                foreach ($this->recordedBetween(BusinessRepayment::query()->where('wallet_id', $wallet->id), $from, $to)->orderByDesc('id')->get() as $repayment) {
+                    $rows[] = ['occurred_at' => (string) $repayment->payload['recorded_at'], 'movement' => 'internal', 'kind' => 'repayment', 'deal_name' => null,
+                        'counterparty' => null, 'direction' => 'out', 'amount' => WalletMoney::of($repayment->amount)->money(),
+                        'reference' => 'RZR-'.strtoupper(substr($repayment->id, -10))];
+                }
+            }
+            usort($rows, fn (array $left, array $right): int => [CarbonImmutable::parse($right['occurred_at']), $right['reference']]
+                <=> [CarbonImmutable::parse($left['occurred_at']), $left['reference']]);
+
+            return ['generated_at' => now()->utc()->toIso8601String(), 'from' => $from, 'to' => $to, 'rows' => $rows];
+        });
     }
 
     /**
@@ -414,18 +454,35 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     }
 
     /**
-     * External cash movements: each credited deposit, newest first, twenty to a page.
+     * External cash movements: each credited deposit in the range, newest first, twenty to a page.
      *
      * @return array{items: list<array<string, mixed>>, next_before: string|null}
      */
-    private function history(BusinessWallet $wallet, ?string $before): array
+    private function history(BusinessWallet $wallet, ?string $before, ?string $from, ?string $to): array
     {
-        $credits = BusinessDepositCredit::query()->where('wallet_id', $wallet->id)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
-            ->orderByDesc('id')->limit(21)->get();
+        $credits = $this->recordedBetween(BusinessDepositCredit::query()->where('wallet_id', $wallet->id), $from, $to)
+            ->when($before !== null, fn ($query) => $query->where('id', '<', $before))->orderByDesc('id')->limit(21)->get();
         $page = $credits->take(20);
 
         return ['items' => array_values($page->map(fn (BusinessDepositCredit $credit): array => $this->historyEntry($credit))->all()),
             'next_before' => $credits->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /**
+     * Rows recorded on or after `from` and on or before `to`, inclusive calendar days in the app timezone.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
+    private function recordedBetween(Builder $query, ?string $from, ?string $to): Builder
+    {
+        // A range names Kigali days; its bounds are sent in UTC, the database session's zone.
+        $zone = 'Africa/Kigali';
+
+        return $query->when($from !== null, fn (Builder $query) => $query->where('created_at', '>=', CarbonImmutable::parse((string) $from, $zone)->startOfDay()->utc()))
+            ->when($to !== null, fn (Builder $query) => $query->where('created_at', '<', CarbonImmutable::parse((string) $to, $zone)->addDay()->startOfDay()->utc()));
     }
 
     /** @return array<string, mixed> */

@@ -182,7 +182,7 @@ function Raising({
                     value={formatRwfShort(progress.committed)}
                 />
                 <Tile
-                    label={t('business.campaign.tile.committed')}
+                    label={t('business.campaign.tile.of_target')}
                     value={t('business.note.pct', { pct: progress.funded_pct })}
                     green
                 />
@@ -598,12 +598,6 @@ function Repaying({ progress }: { progress: Phase<'repaying'> }) {
                         <Row
                             label={t('business.campaign.servicing.return')}
                             value={formatRwf(servicing.next.amounts.return)}
-                        />
-                        <Row
-                            label={t('business.campaign.servicing.service_fee')}
-                            value={formatRwf(
-                                servicing.next.amounts.service_fee,
-                            )}
                         />
                         <Row
                             label={t('business.campaign.servicing.next_total')}

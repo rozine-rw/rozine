@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessMandate;
@@ -18,6 +17,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\PrimaryFailedClosingFixture;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->analyst = businessDirectoryStaff(['analyst']);
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 function businessDirectoryStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Business directory assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Business directory assignment.');
 
     return $user;
 }
@@ -51,7 +51,9 @@ test('every staff role may open the Business directory; participants and guests 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/parties')->where('kind', 'business')->where('viewer.role', 'analyst')
             ->where('contract_version', 'staff-business-directory-v1')->where('nav.businesses.url', '/admin/businesses')
-            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [])->where('party', null));
+            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [['key' => 'min_revenue', 'value' => 'RWF 30,000,000'],
+                ['key' => 'min_statement_years', 'value' => '3'], ['key' => 'rdb_certificate', 'value' => '', 'term' => 'required'],
+                ['key' => 'max_notes', 'value' => '', 'term' => 'not_set']])->where('party', null));
     $this->actingAs(businessDirectoryStaff(['superadmin']))->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')->where('nav.auditors.url', '/admin/auditors'));
     $this->actingAs(businessDirectoryStaff(['treasury']))->get(route('staff.businesses.index'))->assertOk()
@@ -110,6 +112,15 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
                 'link' => ['url' => '/admin/businesses?q=isoko&sector=Agriculture&sort=name', 'method' => 'get']]])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Isoko Farms')
             ->where('directory.rows.0.link.url', '/admin/businesses?q=isoko&sector=Agriculture&sort=name&business='.$seed->business_id));
+    foreach (['active_notes', 'investors'] as $sort) {
+        $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => $sort]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('filters.1.value', $sort)
+                ->where('filters.1.options', fn (Collection $options): bool => $options->pluck('label')->all()
+                    === ['Sort: Capital raised', 'Sort: Active notes', 'Sort: Investors', 'Sort: Name (A–Z)'])
+                ->where('directory.rows', fn (Collection $rows): bool => $rows->pluck($sort)->all() === $rows->pluck($sort)->sortDesc()->values()->all()));
+    }
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'active_notes']))
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.name', 'Isoko Farms'));
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sector' => 'all', 'q' => 'kivu']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('filters.0.value', 'all')->where('directory.rows.0.id', $mill->business_id));
     // Health filters wait for an arrears and freeze read, so none is accepted.
@@ -213,7 +224,7 @@ test('staff web and API history distinguish an authentic funded failure from unf
         ->and(DB::table('ledger_lines')->orderBy('id')->get()->toJson())->toBe($lines)
         ->and(DB::table('primary_campaign_closure_returns')->orderBy('primary_reservation_id')->get()->toJson())->toBe($returns)
         ->and(BusinessCampaignClosure::query()->sole()->payload)->toBe($closure->payload);
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure']);
 
 test('a funded Business counts its funded principal, its distinct Investors and its authority history', function (): void {
     // One Investor makes two purchases and another takes the rest of the raise, which funds the note.
@@ -229,6 +240,15 @@ test('a funded Business counts its funded principal, its distinct Investors and 
             ->where('party.list.rows.0', ['id' => $campaign->id, 'title' => $campaign->payload['title'], 'tone' => 'blue', 'detail' => ['kind' => 'note_status', 'value' => 'funded']])
             ->where('party.history', fn (Collection $history): bool => $history->pluck('action.code')->contains('business.authority.configure')
                 && $history->firstWhere('action.code', 'business.authority.configure')['reason'] === 'Reviewed complete authority evidence.'));
+});
+
+test('a live raise counts the Investors committed to it before it funds, as Primary market does', function (): void {
+    // One Investor makes two purchases and another buys once; the raise is still live.
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed(['540', '540', '1080'], fund: false, buyers: [0 => 'same', 1 => 'same']);
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $campaign->business_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.id', $campaign->business_id)->where('directory.rows.0.investors', 2)
+            ->where('directory.rows.0.raised', ['currency' => 'RWF', 'amount' => '0'])->where('directory.rows.0.active_notes', 1));
 });
 
 test('the directory answers over the API with the read ability and links API routes', function (): void {

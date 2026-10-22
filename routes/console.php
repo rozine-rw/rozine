@@ -12,6 +12,8 @@ Schedule::command('statements:extract')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('audits:advance-reviews')->everyMinute()->withoutOverlapping(5);
 
+Schedule::command('audits:request-monthly')->hourly()->withoutOverlapping(30);
+
 Schedule::command('auditors:remind-renewals')->hourly()->withoutOverlapping(30);
 
 Artisan::command('inspire', function () {

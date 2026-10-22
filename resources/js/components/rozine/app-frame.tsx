@@ -16,7 +16,28 @@ export type AppNavItem = {
     href: RouteLink;
     /** The 24-unit stroke glyph, drawn in `currentColor`. */
     glyph: ReactNode;
+    /** A count drawn on the glyph, such as the Cart's lines; none when absent or zero. */
+    badge?: number;
 };
+
+/** The glyph with its count badge, as the design draws the Cart tab. */
+function Glyph({ item }: { item: AppNavItem }) {
+    if (item.badge === undefined || item.badge < 1) {
+        return item.glyph;
+    }
+
+    return (
+        <span className="relative flex">
+            {item.glyph}
+            <span
+                aria-hidden
+                className="absolute -top-1 -right-[9px] flex h-4 min-w-4 items-center justify-center rounded-lg bg-rz-accent-fill px-1 text-[9.5px] leading-none font-bold text-white shadow-[0_0_0_2px_var(--color-rz-surface)]"
+            >
+                {item.badge}
+            </span>
+        </span>
+    );
+}
 
 type Audience = 'investor' | 'business' | 'auditor';
 
@@ -51,8 +72,9 @@ const SIDEBAR_ACTIVE: Record<Audience, string> = {
 /**
  * The role-app shell. On a phone: the screen fills the viewport with the design's frosted bottom
  * tab bar. On a wide screen: the design's desktop frame — a 182px sidebar beside the main pane on
- * the grey page — which fills the window up to a capped width instead of the prototype's fixed
- * 1113×750 box, so it matches the design exactly at that size and grows sensibly beyond it.
+ * the grey page — centred at the prototype's 1113px width (1057px inside its 28px padding), so
+ * wider windows show page background around it as the design does. It keeps the window's height
+ * rather than the prototype's fixed 750px, so long screens use the space they have.
  */
 export function AppFrame({
     audience,
@@ -106,14 +128,22 @@ export function AppFrame({
                             >
                                 <span
                                     className={cn(
-                                        'flex size-5 shrink-0 items-center justify-center [&>svg]:size-[19px]',
+                                        'flex size-5 shrink-0 items-center justify-center [&_svg]:size-[19px]',
                                         item.key !== active &&
                                             'text-rz-secondary',
                                     )}
                                 >
-                                    {item.glyph}
+                                    <Glyph item={item} />
                                 </span>
-                                <span className="flex-1">{item.label}</span>
+                                <span className="flex-1">
+                                    {item.label}
+                                    {item.badge !== undefined &&
+                                        item.badge > 0 && (
+                                            <span className="sr-only">
+                                                {` (${item.badge})`}
+                                            </span>
+                                        )}
+                                </span>
                             </Link>
                         ))}
                     </nav>
@@ -172,11 +202,16 @@ export function AppFrame({
                                     : 'text-rz-secondary',
                             )}
                         >
-                            <span className="flex [&>svg]:size-[22px]">
-                                {item.glyph}
+                            <span className="flex [&_svg]:size-[22px]">
+                                <Glyph item={item} />
                             </span>
                             <span className="text-[10.5px] font-semibold">
                                 {item.label}
+                                {item.badge !== undefined && item.badge > 0 && (
+                                    <span className="sr-only">
+                                        {` (${item.badge})`}
+                                    </span>
+                                )}
                             </span>
                         </Link>
                     ))}

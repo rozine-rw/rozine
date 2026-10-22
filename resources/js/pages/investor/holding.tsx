@@ -104,13 +104,25 @@ export default function InvestorHolding(
                         />
                     </div>
                     <div className="flex min-h-0 flex-1 items-stretch gap-4 px-5 pt-4 pb-5">
-                        <div className="rz-scroll min-h-0 min-w-0 flex-[0_0_calc(50%-8px)] overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface px-[18px] pt-4 pb-[18px]">
+                        <div
+                            tabIndex={0}
+                            className="rz-scroll min-h-0 min-w-0 flex-[0_0_calc(50%-8px)] overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface px-[18px] pt-4 pb-[18px]"
+                        >
                             {frozen}
-                            <HoldingFigures holding={figures} />
+                            <HoldingFigures
+                                holding={figures}
+                                now={props.server_time}
+                            />
                             {summary}
                         </div>
-                        <div className="rz-scroll relative min-h-0 min-w-0 flex-[0_0_calc(50%-8px)] overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface px-[18px] pt-0.5 pb-[18px]">
-                            <HoldingSchedule holding={figures} />
+                        <div
+                            tabIndex={0}
+                            className="rz-scroll relative min-h-0 min-w-0 flex-[0_0_calc(50%-8px)] overflow-y-auto rounded-2xl border border-rz-border bg-rz-surface px-[18px] pt-0.5 pb-[18px]"
+                        >
+                            <HoldingSchedule
+                                holding={figures}
+                                now={props.server_time}
+                            />
                             {history}
                         </div>
                     </div>
@@ -124,9 +136,15 @@ export default function InvestorHolding(
                     />
                     <div className="px-5 pt-[18px]">
                         {frozen}
-                        <HoldingFigures holding={figures} />
+                        <HoldingFigures
+                            holding={figures}
+                            now={props.server_time}
+                        />
                         {summary}
-                        <HoldingSchedule holding={figures} />
+                        <HoldingSchedule
+                            holding={figures}
+                            now={props.server_time}
+                        />
                         {history}
                     </div>
                 </div>

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Disbursement;
 use App\Models\User;
 use App\Models\WalletWithdrawal;
@@ -12,6 +11,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryIssuanceFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * The Payment Center from live money movement: credited deposits, paid-out withdrawals and closed
@@ -23,7 +23,7 @@ use Tests\Support\PrimaryIssuanceFixture;
 function paymentsStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Payment center assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Payment center assignment.');
 
     return $user;
 }
@@ -76,7 +76,10 @@ it('sums the last fourteen days of deposits and payouts, charts them per day and
             ['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => '0'], 'count' => 0]])
         ->and($props['bars'])->toBe([['label' => now('Africa/Kigali')->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '400500'], 'height_pct' => 100]])
         ->and($props['payouts'])->toBe([$row($held, '20000', 'pending'), $row($unknown, '5000', 'unknown')])
-        ->and($props['nav']['payments'])->toBe(['url' => '/admin/payments', 'method' => 'get']);
+        ->and($props['nav']['payments'])->toBe(['url' => '/admin/payments', 'method' => 'get'])
+        ->and($props['policy'])->toBe([['key' => 'platform_fee', 'value' => '3%'], ['key' => 'cpa_share', 'value' => '40%'],
+            ['key' => 'cpa_share_upcountry', 'value' => '40%'], ['key' => 'listing_fee', 'value' => '0%'], ['key' => 'repayment_fee', 'value' => '0%'],
+            ['key' => 'resale_fee', 'value' => '2%']]);
 
     expect(($this->page)(paymentsStaff(['compliance']), ['q' => Str::substr($unknown, -6)])['payouts'])->toHaveCount(1)
         ->and(($this->page)(paymentsStaff(['superadmin']), ['q' => 'aline', 'limit' => 1]))
@@ -94,7 +97,19 @@ it('counts a disbursement that closed with issued notes, and leaves out movement
     $this->travel(15)->days();
     $props = ($this->page)(paymentsStaff(['treasury']));
     expect(array_column(array_column($props['stats'], 'value'), 'amount'))->toBe(['0', '0', '0'])
-        ->and($props['bars'])->toBe([])->and($props['payouts'])->toBe([]);
+        ->and($props['bars'])->toBe([])->and($props['payouts'])->toBe([])
+        ->and($props['trend'])->toBe(['from' => now('Africa/Kigali')->startOfDay()->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day', 'custom' => false]);
+
+    $start = now('Africa/Kigali')->startOfDay()->subDays(20);
+    $chosen = ($this->page)(paymentsStaff(['treasury']), ['from' => $start->format('Y-m-d'), 'to' => now('Africa/Kigali')->subDays(10)->format('Y-m-d')]);
+    expect($chosen['trend'])->toBe(['from' => $start->toIso8601String(), 'to' => now('Africa/Kigali')->startOfDay()->subDays(10)->toIso8601String(), 'grain' => 'day', 'custom' => true])
+        ->and($chosen['bars'])->toHaveCount(1)
+        ->and(array_column($chosen['stats'], 'count'))->toBe([0, 0, 0])
+        ->and(($this->page)(paymentsStaff(['treasury']), ['to' => now('Africa/Kigali')->subDays(16)->format('Y-m-d')])['bars'])->toBe([]);
+    $long = ($this->page)(paymentsStaff(['treasury']), ['from' => now('Africa/Kigali')->subDays(100)->format('Y-m-d')]);
+    expect($long['trend']['grain'])->toBe('month')->and($long['trend']['to'])->toBeNull()->and($long['bars'])->toHaveCount(1);
+    $this->actingAs(paymentsStaff(['treasury']))->get(route('staff.payments.index', ['from' => '2026-10-05', 'to' => '2026-10-02']))->assertSessionHasErrors('to');
+    $this->actingAs(paymentsStaff(['treasury']))->get(route('staff.payments.index', ['from' => '5 October']))->assertSessionHasErrors('from');
 });
 
 it('is for Treasury, Compliance and superadmin only, and over API v1 with its own ability', function (): void {

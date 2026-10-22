@@ -497,7 +497,7 @@ profile.form = profileForm
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 export const market = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -512,7 +512,7 @@ market.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 market.url = (options?: RouteQueryOptions) => {
@@ -521,7 +521,7 @@ market.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 market.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -531,7 +531,7 @@ market.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 market.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -541,7 +541,7 @@ market.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 const marketForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -551,7 +551,7 @@ const marketForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 marketForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -561,7 +561,7 @@ marketForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::market
-* @see app/Http/Controllers/InvestorMarketController.php:20
+* @see app/Http/Controllers/InvestorMarketController.php:28
 * @route '/investor/market'
 */
 marketForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -578,7 +578,7 @@ market.form = marketForm
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 export const cart = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -593,7 +593,7 @@ cart.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 cart.url = (options?: RouteQueryOptions) => {
@@ -602,7 +602,7 @@ cart.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 cart.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -612,7 +612,7 @@ cart.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 cart.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -622,7 +622,7 @@ cart.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 const cartForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -632,7 +632,7 @@ const cartForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 cartForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -642,7 +642,7 @@ cartForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorMarketController::cart
-* @see app/Http/Controllers/InvestorMarketController.php:25
+* @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
 */
 cartForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -656,6 +656,228 @@ cartForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 cart.form = cartForm
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_add
+* @see app/Http/Controllers/InvestorMarketController.php:38
+* @route '/investor/deals/{campaign}/cart'
+*/
+export const cart_add = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_add.url(args, options),
+    method: 'post',
+})
+
+cart_add.definition = {
+    methods: ["post"],
+    url: '/investor/deals/{campaign}/cart',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_add
+* @see app/Http/Controllers/InvestorMarketController.php:38
+* @route '/investor/deals/{campaign}/cart'
+*/
+cart_add.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return cart_add.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_add
+* @see app/Http/Controllers/InvestorMarketController.php:38
+* @route '/investor/deals/{campaign}/cart'
+*/
+cart_add.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_add.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_add
+* @see app/Http/Controllers/InvestorMarketController.php:38
+* @route '/investor/deals/{campaign}/cart'
+*/
+const cart_addForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_add.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_add
+* @see app/Http/Controllers/InvestorMarketController.php:38
+* @route '/investor/deals/{campaign}/cart'
+*/
+cart_addForm.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_add.url(args, options),
+    method: 'post',
+})
+
+cart_add.form = cart_addForm
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_units
+* @see app/Http/Controllers/InvestorMarketController.php:44
+* @route '/investor/cart/{campaign}/units'
+*/
+export const cart_units = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_units.url(args, options),
+    method: 'post',
+})
+
+cart_units.definition = {
+    methods: ["post"],
+    url: '/investor/cart/{campaign}/units',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_units
+* @see app/Http/Controllers/InvestorMarketController.php:44
+* @route '/investor/cart/{campaign}/units'
+*/
+cart_units.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return cart_units.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_units
+* @see app/Http/Controllers/InvestorMarketController.php:44
+* @route '/investor/cart/{campaign}/units'
+*/
+cart_units.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_units.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_units
+* @see app/Http/Controllers/InvestorMarketController.php:44
+* @route '/investor/cart/{campaign}/units'
+*/
+const cart_unitsForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_units.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_units
+* @see app/Http/Controllers/InvestorMarketController.php:44
+* @route '/investor/cart/{campaign}/units'
+*/
+cart_unitsForm.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_units.url(args, options),
+    method: 'post',
+})
+
+cart_units.form = cart_unitsForm
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_remove
+* @see app/Http/Controllers/InvestorMarketController.php:50
+* @route '/investor/cart/{campaign}/remove'
+*/
+export const cart_remove = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_remove.url(args, options),
+    method: 'post',
+})
+
+cart_remove.definition = {
+    methods: ["post"],
+    url: '/investor/cart/{campaign}/remove',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_remove
+* @see app/Http/Controllers/InvestorMarketController.php:50
+* @route '/investor/cart/{campaign}/remove'
+*/
+cart_remove.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return cart_remove.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_remove
+* @see app/Http/Controllers/InvestorMarketController.php:50
+* @route '/investor/cart/{campaign}/remove'
+*/
+cart_remove.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_remove.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_remove
+* @see app/Http/Controllers/InvestorMarketController.php:50
+* @route '/investor/cart/{campaign}/remove'
+*/
+const cart_removeForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_remove.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorMarketController::cart_remove
+* @see app/Http/Controllers/InvestorMarketController.php:50
+* @route '/investor/cart/{campaign}/remove'
+*/
+cart_removeForm.post = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_remove.url(args, options),
+    method: 'post',
+})
+
+cart_remove.form = cart_removeForm
 
 /**
 * @see \App\Http\Controllers\InvestorDealsController::checkout
@@ -929,6 +1151,9 @@ const investor = {
     complaints: Object.assign(complaints, complaints),
     market: Object.assign(market, market),
     cart: Object.assign(cart, cart),
+    cart_add: Object.assign(cart_add, cart_add),
+    cart_units: Object.assign(cart_units, cart_units),
+    cart_remove: Object.assign(cart_remove, cart_remove),
     checkout: Object.assign(checkout, checkout),
     wallet: Object.assign(wallet, wallet0fdd46),
     risks: Object.assign(risks, risks),

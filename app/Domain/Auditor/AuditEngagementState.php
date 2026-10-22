@@ -8,7 +8,7 @@ use App\Domain\Operations\CommandRejection;
 use DateTimeImmutable;
 
 /**
- * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, closed_at?: string}
+ * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, closed_at?: string, completed_at?: string}
  */
 final class AuditEngagementState
 {
@@ -58,6 +58,21 @@ final class AuditEngagementState
 
         return [...$state, 'status' => 'accepted', 'accepted_at' => $this->time($now),
             'visit_by' => $clock['visit_by'] === null ? null : $this->time($clock['visit_by'])];
+    }
+
+    /**
+     * An accepted engagement whose report is published is complete, so the Business can be audited again.
+     *
+     * @param  State  $state
+     * @return State
+     */
+    public function complete(array $state, DateTimeImmutable $now): array
+    {
+        if ($state['status'] !== 'accepted') {
+            throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED');
+        }
+
+        return [...$state, 'status' => 'completed', 'completed_at' => $this->time($now)];
     }
 
     public function reason(string $reason): void

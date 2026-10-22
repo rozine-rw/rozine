@@ -49,6 +49,11 @@ beforeEach(function (): void {
             {
                 return $id === $this->entry['id'] ? $this->entry : null;
             }
+
+            public function credits(array $kinds, ?string $from = null, ?string $before = null): array
+            {
+                return array_fill_keys($kinds, '0');
+            }
         });
 
         return app(BrowseLedger::class)->handle($this->staff->id, null, 50, '01k00000000000000000000001')['entry'];

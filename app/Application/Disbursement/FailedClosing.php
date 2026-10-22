@@ -11,7 +11,7 @@ namespace App\Application\Disbursement;
 final readonly class FailedClosing
 {
     /**
-     * @param  'approve_recheck'|'worker_recheck'|'reconciled_failure'  $cause
+     * @param  'auto_recheck'|'approve_recheck'|'worker_recheck'|'reconciled_failure'  $cause
      * @param  list<string>  $causes
      */
     public function __construct(public string $closingId, public string $disbursementId, public string $cause, public array $causes) {}

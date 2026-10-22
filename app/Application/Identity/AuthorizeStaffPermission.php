@@ -37,23 +37,13 @@ final class AuthorizeStaffPermission
     }
 
     /**
-     * Locks another recorded staff member's account row (a maker or checker, in the caller's lock
-     * order) and reports whether they still hold this permission, with current MFA and an enabled
-     * staff account. It refuses nothing itself: the caller decides what a lapsed authority means.
+     * Locks the staff member's account row (in the caller's lock order) and reports whether they
+     * still hold this permission, with current MFA and an enabled staff account. It refuses nothing
+     * itself: the caller decides what a lapsed authority means.
      */
     public function currentlyHolds(int $userId, string $permission): bool
     {
         return in_array($permission, $this->access->staffAccess($userId, false, true)['allowed_actions'], true);
-    }
-
-    /**
-     * Whether the staff member has held this permission without a gap since the instant their
-     * recorded act (an authorization or an approval) was made. A revoked and later restored role
-     * does not revive the earlier act. It locks their account row unless told not to.
-     */
-    public function continuouslyHeldSince(int $userId, string $permission, string $since, bool $lock = true): bool
-    {
-        return $this->access->staffPermissionContinuousSince($userId, $permission, $since, $lock);
     }
 
     /**

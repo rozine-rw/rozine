@@ -6,6 +6,7 @@ namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\VerifyAuthenticator;
 use App\Domain\Identity\ActiveRolePolicy;
 use App\Domain\Identity\BookmarkDestination;
 use App\Domain\Identity\IdentityViolation;
@@ -24,17 +25,24 @@ use App\Models\VerifiedPersonIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Features;
 
 /** @phpstan-import-type AccessSnapshot from ActiveRolePolicy */
 final class EloquentIdentityAccessStore implements IdentityAccessStore
 {
+    private const STAFF_APPROVAL_POLICY = 'staff-superadmin-approval-v1';
+
+    private const STAFF_RECOVERY_POLICY = 'staff-two-operator-recovery-v1';
+
     public function __construct(
         private IdentityRepository $identities,
         private MembershipTransitions $transitions,
         private ActiveRolePolicy $roles,
         private BookmarkDestination $destinations,
+        private VerifyAuthenticator $authenticator,
     ) {}
 
     /** @return array<string, mixed> */
@@ -54,10 +62,8 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 throw new IdentityViolation('OPERATOR_VERIFIED_EMAIL_AND_MFA_REQUIRED');
             }
 
-            if ($enabled && $party !== null && ($party->kind !== 'person' || $party->verified_at !== null
-                || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
-                || User::query()->where('party_id', $party->id)->whereKeyNot($userId)->exists())) {
-                throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+            if ($enabled) {
+                $this->requireDedicated($user, $party);
             }
 
             $operator = IdentityOperator::query()->find($userId);
@@ -119,6 +125,10 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if (! $enabled && $staff === null) {
                 throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
             }
+            if (in_array('superadmin', $roles, true) && ($staff === null || ! in_array('superadmin', $staff->roles, true)
+                || ($enabled && ! $staff->enabled))) {
+                throw new IdentityViolation('STAFF_SUPERADMIN_APPROVAL_REQUIRED', 409);
+            }
             $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
             $staff ??= new StaffAccount;
             $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled, 'roles' => $roles])->save();
@@ -136,6 +146,427 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
             return $result;
         }, 3);
+    }
+
+    /**
+     * A superadmin suspends or reactivates another operator's staff access with a reason (ADM-R02).
+     * Roles are kept, so reactivating restores exactly what was suspended; reactivation still needs
+     * a verified email and confirmed MFA. Nobody changes their own access here.
+     *
+     * @return array<string, mixed>
+     */
+    public function setStaffEnabled(int $actorId, int $userId, bool $enabled, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $userId, $enabled, $reason, $requestId): array {
+            $hash = $this->requestHash(['staff.enable', $userId, $enabled, $reason], $reason, $requestId);
+            User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get();
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if ($actorId === $userId) {
+                throw new IdentityViolation('STAFF_SELF_CHANGE_FORBIDDEN', 409);
+            }
+            $user = User::query()->lockForUpdate()->find($userId);
+            $staff = StaffAccount::query()->lockForUpdate()->find($userId);
+            if ($user === null || $staff === null) {
+                throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
+            }
+            if ($staff->enabled === $enabled) {
+                throw new IdentityViolation('STAFF_STATE_UNCHANGED', 409);
+            }
+            if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
+                throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            }
+            if ($enabled && in_array('superadmin', $staff->roles, true)) {
+                return $this->requestSuperadmin($actorId, $user, $staff, 'reactivate', $reason, $requestId, $hash);
+            }
+            $before = ['enabled' => $staff->enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles];
+            $staff->forceFill(['enabled' => $enabled])->save();
+            $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
+            $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles], $result);
+
+            return $result;
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function grantStaff(int $actorId, string $email, string $role, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $email, $role, $reason, $requestId): array {
+            $email = mb_strtolower(trim($email));
+            $hash = $this->requestHash(['staff.grant', $email, $role, $reason], $reason, $requestId);
+            $candidate = User::query()->whereRaw('lower(email) = ?', [$email])->first();
+            User::query()->whereKey([$actorId, ...($candidate === null ? [] : [$candidate->id])])->orderBy('id')->lockForUpdate()->get();
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            $roles = StaffPermission::normalizeRoles([$role]);
+            $user = $candidate === null ? null : User::query()->find($candidate->id);
+            if ($user === null || mb_strtolower($user->email) !== $email) {
+                throw new IdentityViolation('STAFF_EMAIL_NOT_FOUND', 404);
+            }
+            if ($user->id === $actorId) {
+                throw new IdentityViolation('STAFF_SELF_CHANGE_FORBIDDEN', 409);
+            }
+            $staff = StaffAccount::query()->lockForUpdate()->find($user->id);
+            if ($staff !== null) {
+                throw new IdentityViolation('STAFF_ALREADY_OPERATOR', 409);
+            }
+            $this->requireStaffRecipient($user);
+            if ($role === 'superadmin') {
+                return $this->requestSuperadmin($actorId, $user, null, 'grant', $reason, $requestId, $hash);
+            }
+
+            return $this->enableStaff($actorId, $user, null, $roles, $reason, $requestId, $hash);
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function approveStaff(int $actorId, string $proposalId, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $proposalId, $reason, $requestId): array {
+            $hash = $this->requestHash(['staff.superadmin.approve', $proposalId, $reason], $reason, $requestId);
+            $proposal = IdentityAuditEvent::query()->where('action', 'staff.superadmin.request')->where('target_type', 'user')->find($proposalId);
+            $recipientId = $proposal === null ? null : (int) $proposal->target_id;
+            $requesterId = $proposal?->actor_user_id;
+            User::query()->whereKey(array_filter([$actorId, $requesterId, $recipientId]))->orderBy('id')->lockForUpdate()->get();
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if ($proposal === null || $requesterId === null || $recipientId === null) {
+                throw new IdentityViolation('STAFF_APPROVAL_NOT_FOUND', 404);
+            }
+            if ($actorId === $requesterId || $actorId === $recipientId || $requesterId === $recipientId) {
+                throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+            }
+            $this->requireStaffPermission($requesterId, 'staff.manage');
+            if (IdentityAuditEvent::query()->where('action', 'staff.configure')->where('after->proposal_id', $proposalId)->exists()) {
+                throw new IdentityViolation('STAFF_APPROVAL_COMPLETED', 409);
+            }
+            $user = User::query()->find($recipientId);
+            $staff = StaffAccount::query()->lockForUpdate()->find($recipientId);
+            if ($user === null || ($proposal->after['approval_policy_version'] ?? null) !== self::STAFF_APPROVAL_POLICY
+                || $this->staffBaseline($user, $staff) != $proposal->before) {
+                throw new IdentityViolation('STAFF_APPROVAL_STALE', 409);
+            }
+            $this->requireStaffRecipient($user);
+            $operation = $proposal->after['operation'] ?? null;
+            if (($operation === 'grant' && $staff !== null) || ($operation === 'reactivate' && ($staff === null || $staff->enabled
+                || ! in_array('superadmin', $staff->roles, true))) || ! in_array($operation, ['grant', 'reactivate'], true)) {
+                throw new IdentityViolation('STAFF_APPROVAL_STALE', 409);
+            }
+
+            return $this->enableStaff($actorId, $user, $staff, $operation === 'grant' ? ['superadmin'] : $staff->roles,
+                $reason, $requestId, $hash, ['proposal_id' => $proposalId, 'requested_by' => $requesterId, 'request_reason' => $proposal->reason,
+                    'approval_policy_version' => self::STAFF_APPROVAL_POLICY]);
+        }, 3);
+    }
+
+    /** @param list<int> $recipients
+     * @return array<string, mixed>
+     */
+    public function requestStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $kind, array $recipients, string $reason, string $requestId): array
+    {
+        sort($recipients);
+        if (! in_array($kind, ['genesis', 'recovery'], true) || count($recipients) !== 2
+            || count(array_unique($recipients)) !== 2 || min($recipients) < 1) {
+            throw new IdentityViolation('STAFF_RECOVERY_INPUT_INVALID', 422);
+        }
+        $hash = $this->requestHash(['staff.recovery.request', $kind, $recipients, $reason], $reason, $requestId);
+        $this->recoveryThrottle($operatorId);
+        $result = DB::transaction(function () use ($operatorId, $password, $code, $kind, $recipients, $reason, $requestId, $hash): array {
+            $holders = $this->lockRecoveryAccounts([$operatorId, ...$recipients]);
+            $operator = $this->recoveryOperator($operatorId, $password, $code);
+            if (($replay = $this->replay('recovery:'.$operatorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            $state = $this->recoveryState($kind, $recipients, $holders);
+            $people = array_column($state['recipients'], 'person');
+            if (in_array($operator['person']['digest'], array_column($people, 'digest'), true)) {
+                throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+            }
+            $proposalId = strtolower((string) Str::ulid());
+            $payload = ['policy' => self::STAFF_RECOVERY_POLICY, 'kind' => $kind, 'recipients' => $recipients,
+                'requester' => $operator, 'registry_sha256' => $this->recoveryRegistryDigest(),
+                'expires_at' => now()->addMinutes(10)->toIso8601String(), 'reason' => $reason];
+            $digest = hash('sha256', json_encode([$state, $payload], JSON_THROW_ON_ERROR));
+            $result = ['code' => 'STAFF_RECOVERY_APPROVAL_REQUIRED', 'proposal_id' => $proposalId,
+                'kind' => $kind, 'recipients' => $recipients, 'expires_at' => $payload['expires_at'], 'payload_sha256' => $digest];
+            $this->record('recovery:'.$operatorId, $operatorId, 'staff_recovery', $proposalId, 'staff.recovery.request',
+                $reason, $requestId, $hash, $state, [...$payload, 'payload_sha256' => $digest], $result, $proposalId);
+
+            return $result;
+        });
+        RateLimiter::clear('staff-recovery:'.$operatorId);
+
+        return $result;
+    }
+
+    /** @param list<int> $expectedRecipients
+     * @return array<string, mixed>
+     */
+    public function approveStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $proposalId, string $payloadSha256, string $reason, string $requestId, string $expectedKind, array $expectedRecipients): array
+    {
+        sort($expectedRecipients);
+        $hash = $this->requestHash(['staff.recovery.approve', $proposalId, $payloadSha256, $expectedKind, $expectedRecipients, $reason], $reason, $requestId);
+        $this->recoveryThrottle($operatorId);
+        $result = DB::transaction(function () use ($operatorId, $password, $code, $proposalId, $payloadSha256, $reason, $requestId, $hash, $expectedKind, $expectedRecipients): array {
+            $proposal = IdentityAuditEvent::query()->where('action', 'staff.recovery.request')->where('target_type', 'staff_recovery')->find($proposalId);
+            if ($proposal === null) {
+                throw new IdentityViolation('STAFF_RECOVERY_NOT_FOUND', 404);
+            }
+            /** @var list<int> $recipients */
+            $recipients = $proposal->after['recipients'];
+            $requesterId = (int) $proposal->actor_user_id;
+            $holders = $this->lockRecoveryAccounts([$operatorId, $requesterId, ...$recipients]);
+            $operator = $this->recoveryOperator($operatorId, $password, $code);
+            if (($replay = $this->replay('recovery:'.$operatorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if (IdentityAuditEvent::query()->where('action', 'staff.recovery.complete')->where('after->recovery_proposal_id', $proposalId)->exists()) {
+                throw new IdentityViolation('STAFF_RECOVERY_COMPLETED', 409);
+            }
+            if ($operatorId === $requesterId) {
+                throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+            }
+            if (($proposal->after['policy'] ?? null) !== self::STAFF_RECOVERY_POLICY
+                || $expectedKind !== $proposal->after['kind'] || $expectedRecipients !== $recipients
+                || ! preg_match('/^[a-f0-9]{64}$/D', $payloadSha256)
+                || ! hash_equals($proposal->after['payload_sha256'], $payloadSha256)) {
+                throw new IdentityViolation('STAFF_RECOVERY_PAYLOAD_MISMATCH', 409);
+            }
+            if (now()->gte(CarbonImmutable::parse($proposal->after['expires_at']))) {
+                throw new IdentityViolation('STAFF_RECOVERY_EXPIRED', 409);
+            }
+            $requester = $this->recoveryOperatorBinding($requesterId);
+            if ($requester != $proposal->after['requester']
+                || ! hash_equals($this->recoveryRegistryDigest(), $proposal->after['registry_sha256'])) {
+                throw new IdentityViolation('STAFF_RECOVERY_STALE', 409);
+            }
+            $kind = $proposal->after['kind'];
+            $state = $this->recoveryState($kind, $recipients, $holders);
+            if ($state != $proposal->before) {
+                throw new IdentityViolation('STAFF_RECOVERY_STALE', 409);
+            }
+            $people = [$requester['person']['digest'], $operator['person']['digest'],
+                ...array_column(array_column($state['recipients'], 'person'), 'digest')];
+            if (count(array_unique($people)) !== 4) {
+                throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+            }
+            $grants = [];
+            foreach ($recipients as $recipientId) {
+                $user = User::query()->findOrFail($recipientId);
+                $staff = StaffAccount::query()->findOrFail($recipientId);
+                $childId = (string) Str::uuid();
+                $roles = StaffPermission::normalizeRoles([...$staff->roles, 'superadmin']);
+                $grants[] = $this->enableStaff($operatorId, $user, $staff, $roles, $reason, $childId,
+                    $this->requestHash(['staff.recovery.grant', $proposalId, $recipientId, $reason], $reason, $childId),
+                    ['recovery_proposal_id' => $proposalId, 'requested_by' => $requesterId,
+                        'approval_policy_version' => self::STAFF_RECOVERY_POLICY]);
+            }
+            $result = ['code' => 'STAFF_RECOVERY_COMPLETED', 'proposal_id' => $proposalId, 'recipients' => $recipients];
+            $this->record('recovery:'.$operatorId, $operatorId, 'staff_recovery', $proposalId, 'staff.recovery.complete',
+                $reason, $requestId, $hash, $state, ['recovery_proposal_id' => $proposalId, 'kind' => $kind,
+                    'policy' => self::STAFF_RECOVERY_POLICY, 'requester' => $requester, 'approver' => $operator,
+                    'payload_sha256' => $payloadSha256, 'grants' => $grants], $result);
+
+            return $result;
+        });
+        RateLimiter::clear('staff-recovery:'.$operatorId);
+
+        return $result;
+    }
+
+    private function recoveryThrottle(int $operatorId): void
+    {
+        if (RateLimiter::tooManyAttempts('staff-recovery:'.$operatorId, 5)) {
+            throw new IdentityViolation('STAFF_RECOVERY_AUTHENTICATION_THROTTLED', 429);
+        }
+        RateLimiter::hit('staff-recovery:'.$operatorId, 60);
+    }
+
+    /**
+     * All access writers lock their User rows. Serializing recovery and locking every role holder
+     * prevents an ordinary two-manager approval from racing the below-two-manager decision.
+     * A changed roster is refused rather than taking extra User locks out of order.
+     *
+     * @param  list<int>  $participants
+     * @return list<int>
+     */
+    private function lockRecoveryAccounts(array $participants): array
+    {
+        DB::select('SELECT pg_advisory_xact_lock(18492, 7301)');
+        $holders = $this->recoveryHolders();
+        User::query()->whereKey(array_unique([...$holders, ...$participants]))->orderBy('id')->lockForUpdate()->get();
+        if ($holders !== $this->recoveryHolders()) {
+            throw new IdentityViolation('STAFF_RECOVERY_STALE', 409);
+        }
+
+        return $holders;
+    }
+
+    /** @return list<int> */
+    private function recoveryHolders(): array
+    {
+        return array_values(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->orderBy('user_id')->get()
+            ->map(fn (StaffAccount $staff): int => $staff->user_id)->all());
+    }
+
+    private function recoveryRegistryDigest(): string
+    {
+        $registry = config('staff-recovery.operators', []);
+        if (! is_array($registry) || $registry === []) {
+            throw new IdentityViolation('STAFF_RECOVERY_NOT_ENROLLED', 403);
+        }
+        ksort($registry);
+
+        return hash('sha256', json_encode($registry, JSON_THROW_ON_ERROR));
+    }
+
+    /** @return array<string, mixed> */
+    private function recoveryOperator(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code): array
+    {
+        $operator = $this->recoveryOperatorBinding($operatorId);
+        $user = User::query()->findOrFail($operatorId);
+        if (! Hash::check($password, $user->password)) {
+            throw new IdentityViolation('STAFF_RECOVERY_AUTHENTICATION_REQUIRED', 403);
+        }
+        $this->authenticator->handle($operatorId, $code);
+
+        return $operator;
+    }
+
+    /** @return array<string, mixed> */
+    private function recoveryOperatorBinding(int $operatorId): array
+    {
+        $this->recoveryRegistryDigest();
+        $expected = config('staff-recovery.operators.'.$operatorId);
+        $user = User::query()->find($operatorId);
+        if (! is_string($expected) || ! preg_match('/^[a-f0-9]{64}$/D', $expected) || $user === null) {
+            throw new IdentityViolation('STAFF_RECOVERY_NOT_ENROLLED', 403);
+        }
+        $person = $this->recoveryPerson($user);
+        if (! hash_equals($expected, $person['digest'])) {
+            throw new IdentityViolation('STAFF_RECOVERY_NOT_ENROLLED', 403);
+        }
+
+        return ['user_id' => $operatorId, 'person' => $person, 'credentials' => $this->authenticator->binding($operatorId),
+            'email' => $user->email, 'email_verified_at' => $user->email_verified_at?->toIso8601String()];
+    }
+
+    /** @return array{id: string, revision: int, digest: string} */
+    private function recoveryPerson(User $user): array
+    {
+        if ($user->party_id !== null || ! $this->emailVerified($user) || ! $this->mfaConfirmed($user)
+            || ! StaffAccount::query()->whereKey($user->id)->exists()) {
+            throw new IdentityViolation('STAFF_RECOVERY_ACCOUNT_INELIGIBLE', 409);
+        }
+        $person = StaffPersonIdentity::query()->where('staff_user_id', $user->id)->orderByDesc('revision')->first();
+        if ($person === null || $person->status !== 'active' || $person->identity_digest === null || $person->created_at->isFuture()) {
+            throw new IdentityViolation('STAFF_RECOVERY_PERSON_REQUIRED', 409);
+        }
+
+        return ['id' => $person->id, 'revision' => $person->revision, 'digest' => $person->identity_digest];
+    }
+
+    /** @param list<int> $recipients
+     * @param  list<int>  $holders
+     * @return array<string, mixed>
+     */
+    private function recoveryState(string $kind, array $recipients, array $holders): array
+    {
+        $managers = [];
+        $effective = [];
+        foreach ($holders as $id) {
+            $user = User::query()->findOrFail($id);
+            $managers[] = ['user_id' => $id, 'state' => $this->staffBaseline($user, StaffAccount::query()->find($id)),
+                'credentials' => hash('sha256', $user->password.'|'.$user->two_factor_secret.'|'.$user->two_factor_confirmed_at?->toIso8601String()),
+                'email' => $user->email, 'email_verified_at' => $user->email_verified_at?->toIso8601String()];
+            if (in_array('staff.manage', $this->staffAccess($id, lock: false)['allowed_actions'], true)) {
+                $effective[] = $id;
+            }
+        }
+        $historical = $holders !== [] || IdentityAuditEvent::query()->where('action', 'staff.configure')
+            ->whereJsonContains('after->roles', 'superadmin')->exists()
+            || IdentityAuditEvent::query()->where('action', 'staff.recovery.complete')->exists();
+        if (count($effective) >= 2 || ($kind === 'genesis' && $historical) || ($kind === 'recovery' && ! $historical)) {
+            throw new IdentityViolation('STAFF_RECOVERY_NOT_REQUIRED', 409);
+        }
+        if (count($effective) === 1 && ! in_array($effective[0], $recipients, true)) {
+            throw new IdentityViolation('STAFF_RECOVERY_EXISTING_MANAGER_REQUIRED', 409);
+        }
+        $targets = [];
+        foreach ($recipients as $id) {
+            $user = User::query()->find($id);
+            if ($user === null) {
+                throw new IdentityViolation('STAFF_RECOVERY_ACCOUNT_INELIGIBLE', 409);
+            }
+            $targets[] = ['user_id' => $id, 'person' => $this->recoveryPerson($user),
+                'state' => $this->staffBaseline($user, StaffAccount::query()->find($id)),
+                'credentials' => $this->authenticator->binding($id), 'email' => $user->email,
+                'email_verified_at' => $user->email_verified_at?->toIso8601String()];
+        }
+        if (count(array_unique(array_column(array_column($targets, 'person'), 'digest'))) !== 2) {
+            throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+        }
+
+        return ['managers' => $managers, 'effective_managers' => $effective, 'recipients' => $targets];
+    }
+
+    private function requireStaffRecipient(User $user): void
+    {
+        if (! $this->emailVerified($user) || ! $this->mfaConfirmed($user)) {
+            throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+        }
+        $this->requireDedicated($user, $this->lockParty($user->party_id));
+    }
+
+    /** @return array<string, mixed> */
+    private function staffBaseline(User $user, ?StaffAccount $staff): array
+    {
+        return ['staff_exists' => $staff !== null, 'enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id,
+            'roles' => $staff->roles ?? [], 'context_revision' => $user->context_revision,
+            'access_event_id' => IdentityAuditEvent::query()->where('action', 'staff.configure')->where('target_type', 'user')
+                ->where('target_id', (string) $user->id)->orderByDesc('created_at')->orderByDesc('id')->value('id')];
+    }
+
+    /** @return array<string, mixed> */
+    private function requestSuperadmin(int $actorId, User $user, ?StaffAccount $staff, string $operation, string $reason, string $requestId, string $hash): array
+    {
+        $proposalId = strtolower((string) Str::ulid());
+        $before = $this->staffBaseline($user, $staff);
+        $result = ['code' => 'STAFF_SUPERADMIN_APPROVAL_REQUIRED', 'user_id' => $user->id, 'proposal_id' => $proposalId];
+        $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.superadmin.request', $reason, $requestId, $hash,
+            $before, [...$before, 'operation' => $operation, 'requested_roles' => $operation === 'grant' ? ['superadmin'] : $staff->roles,
+                'approval_policy_version' => self::STAFF_APPROVAL_POLICY], $result, $proposalId);
+
+        return $result;
+    }
+
+    /**
+     * @param  list<string>  $roles
+     * @param  array<string, mixed>  $approval
+     * @return array<string, mixed>
+     */
+    private function enableStaff(int $actorId, User $user, ?StaffAccount $staff, array $roles, string $reason, string $requestId, string $hash, array $approval = []): array
+    {
+        $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
+        $new = $staff === null;
+        $staff ??= new StaffAccount;
+        $staff->forceFill(['user_id' => $user->id, 'enabled' => true, 'roles' => $roles])->save();
+        if ($new) {
+            $user->forceFill(['party_id' => null, 'active_membership_id' => null, 'active_membership_revision' => null,
+                'context_revision' => $user->context_revision + 1])->save();
+        }
+        $result = ['code' => 'STAFF_ACCESS_ENABLED', 'user_id' => $user->id];
+        $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.configure', $reason, $requestId, $hash,
+            $before, ['enabled' => true, 'party_id' => $user->party_id, 'roles' => $roles, ...$approval], $result);
+
+        return $result;
     }
 
     /** @return array<string, mixed> */
@@ -408,27 +839,6 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
-    public function staffPermissionContinuousSince(int $userId, string $permission, string $since, bool $lock = true): bool
-    {
-        return DB::transaction(function () use ($userId, $permission, $since, $lock): bool {
-            if (! in_array($permission, $this->staffAccess($userId, false, $lock)['allowed_actions'], true)) {
-                return false;
-            }
-            $user = User::query()->findOrFail($userId);
-            // Audit times are whole seconds, so a change in the same second counts against continuity.
-            $from = CarbonImmutable::parse($since)->utc();
-            $changes = IdentityAuditEvent::query()->where('target_type', 'user')->where('target_id', (string) $userId)
-                ->where('action', 'staff.configure')->where('created_at', '>=', $from->startOfSecond())->get();
-            foreach ($changes as $change) {
-                if (($change->after['enabled'] ?? false) !== true || ! in_array($permission, StaffPermission::forRoles($change->after['roles'] ?? []), true)) {
-                    return false;
-                }
-            }
-
-            return $user->two_factor_confirmed_at !== null && $user->two_factor_confirmed_at->lessThanOrEqualTo($from);
-        }, 3);
-    }
-
     /**
      * @template TResult
      *
@@ -686,6 +1096,19 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             && $user->two_factor_confirmed_at !== null && $user->two_factor_confirmed_at->lte(now());
     }
 
+    /**
+     * Staff access goes only to a dedicated account: one with no party, or a lone unverified person
+     * party with no memberships or verified identity.
+     */
+    private function requireDedicated(User $user, ?Party $party): void
+    {
+        if ($party !== null && ($party->kind !== 'person' || $party->verified_at !== null
+            || $party->memberships()->exists() || $party->verifiedIdentity()->exists()
+            || User::query()->where('party_id', $party->id)->whereKeyNot($user->id)->exists())) {
+            throw new IdentityViolation('DEDICATED_STAFF_ACCOUNT_REQUIRED');
+        }
+    }
+
     private function lockParty(?string $partyId): ?Party
     {
         return $partyId === null ? null : Party::query()->lockForUpdate()->find($partyId);
@@ -724,10 +1147,10 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      * @param  array<string, mixed>  $after
      * @param  array<string, mixed>  $result
      */
-    private function record(string $actorKey, ?int $actorId, string $targetType, string $targetId, string $action, string $reason, string $requestId, string $hash, array $before, array $after, array $result): void
+    private function record(string $actorKey, ?int $actorId, string $targetType, string $targetId, string $action, string $reason, string $requestId, string $hash, array $before, array $after, array $result, ?string $id = null): void
     {
         (new IdentityAuditEvent)->forceFill([
-            'actor_key' => $actorKey, 'actor_user_id' => $actorId, 'target_type' => $targetType, 'target_id' => $targetId,
+            'id' => $id ?? strtolower((string) Str::ulid()), 'actor_key' => $actorKey, 'actor_user_id' => $actorId, 'target_type' => $targetType, 'target_id' => $targetId,
             'action' => $action, 'reason' => $reason, 'request_id' => $requestId, 'request_hash' => $hash,
             'before' => $before, 'after' => $after, 'result' => $result, 'policy_version' => ActiveRolePolicy::POLICY_VERSION,
         ])->save();

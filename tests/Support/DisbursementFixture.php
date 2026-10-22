@@ -10,7 +10,6 @@ use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\ManageDisbursements;
 use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
@@ -20,9 +19,9 @@ use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
- * Synthetic S3-D scenarios: dedicated staff accounts with their own authenticator secrets, a
- * synthetic funded campaign opened as a disbursement, and the maker/checker steps. Nothing here is
- * production funding authority.
+ * Synthetic S3-D scenarios: dedicated staff accounts with their own authenticator secrets, and a
+ * synthetic funded campaign opened as a disbursement, which pays automatically (BRS v2.0 SVC-R01)
+ * unless something blocks it. Nothing here is production funding authority.
  */
 final class DisbursementFixture
 {
@@ -35,7 +34,7 @@ final class DisbursementFixture
         $secret = (new Google2FA)->generateSecretKey();
         $user = User::factory()->create();
         $user->forceFill(['two_factor_secret' => encrypt($secret), 'two_factor_confirmed_at' => now()->subMinute()])->save();
-        app(ConfigureStaffAccess::class)->handle($user->id, true, 'Synthetic disbursement staff.', (string) Str::uuid(), $roles);
+        StaffFixture::provision($user, $roles, 'Synthetic disbursement staff.');
         self::$secrets[$user->id] = $secret;
 
         return $user;
@@ -60,19 +59,32 @@ final class DisbursementFixture
         return app(SyntheticPayoutScripts::class);
     }
 
-    /** @return array{campaign: FundedCampaign, disbursement: Disbursement} */
+    /**
+     * A funded campaign whose disbursement is opened but not paid: its payout destination is not
+     * verified, so automatic payment waits. `release()` verifies it and runs payment again.
+     *
+     * @return array{campaign: FundedCampaign, disbursement: Disbursement}
+     */
     public static function funded(): array
     {
         $campaign = self::sources()->fund();
+        self::sources()->setDestination($campaign->businessId, 'revoked');
         app(OpenFundedDisbursements::class)->handle();
 
         return ['campaign' => $campaign, 'disbursement' => Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->sole()];
     }
 
-    /** @return array<string, mixed> */
-    public static function command(User $actor, Disbursement $disbursement, string $command, int $revision, ?string $proof = null, ?string $requestId = null, string $reason = 'Checked against the funded campaign.'): array
+    /** Verifies the campaign's destination again and runs automatic payment. */
+    public static function release(FundedCampaign $campaign): void
     {
-        return app(ManageDisbursements::class)->command($actor->id, $disbursement->id, $command, $revision, $reason, $requestId ?? (string) Str::uuid(), $proof);
+        self::sources()->setDestination($campaign->businessId, 'rotated');
+        app(OpenFundedDisbursements::class)->handle();
+    }
+
+    /** @return array<string, mixed> */
+    public static function command(User $actor, Disbursement $disbursement, string $command, int $revision, ?string $requestId = null, string $reason = 'Checked against the funded campaign.'): array
+    {
+        return app(ManageDisbursements::class)->command($actor->id, $disbursement->id, $command, $revision, $reason, $requestId ?? (string) Str::uuid());
     }
 
     /** @return array<string, mixed> the disbursement detail as this staff member reads it */
@@ -81,35 +93,24 @@ final class DisbursementFixture
         return app(ManageDisbursements::class)->page($viewer->id, $disbursement->id, null, 25)['disbursement'];
     }
 
-    /** @return array{proof: string, expires_at: string} */
-    public static function stepUp(User $checker, Disbursement $disbursement): array
-    {
-        $detail = self::detail($checker, $disbursement);
-
-        return app(ManageDisbursements::class)->stepUp($checker->id, $disbursement->id, $detail['revision'], $detail['approval_binding']['intent_digest'], self::code($checker));
-    }
-
     /**
-     * Authorized by a treasury maker and approved by an approver checker, with the payout sent.
+     * Funded and paid automatically: the system recorded the intent and the payout was sent.
      *
-     * @return array{campaign: FundedCampaign, disbursement: Disbursement, maker: User, checker: User, intent: DisbursementIntent, approval: array<string, mixed>}
+     * @return array{campaign: FundedCampaign, disbursement: Disbursement, intent: DisbursementIntent}
      */
-    public static function approved(): array
+    public static function paid(): array
     {
-        ['campaign' => $campaign, 'disbursement' => $disbursement] = self::funded();
-        $maker = self::staff(['treasury']);
-        $checker = self::staff(['approver']);
-        self::command($maker, $disbursement, 'authorize', 0);
-        $approval = self::command($checker, $disbursement, 'approve', 1, self::stepUp($checker, $disbursement)['proof']);
+        $campaign = self::sources()->fund();
+        app(OpenFundedDisbursements::class)->handle();
+        $disbursement = Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->sole();
 
-        return ['campaign' => $campaign, 'disbursement' => $disbursement, 'maker' => $maker, 'checker' => $checker,
-            'intent' => DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole(), 'approval' => $approval];
+        return ['campaign' => $campaign, 'disbursement' => $disbursement, 'intent' => DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole()];
     }
 
     /** A real issued disbursement closing, as the cause an issue posting must name. */
     public static function issuedClosing(): string
     {
-        ['intent' => $intent] = self::approved();
+        ['intent' => $intent] = self::paid();
         app(RecordPayoutEvent::class)->handle(self::provider()->callback($intent->id, 'succeeded'));
 
         return DisbursementClosing::query()->where('intent_id', $intent->id)->where('kind', 'issued')->sole()->id;

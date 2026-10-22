@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
@@ -9,17 +9,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTranslation } from '@/hooks/use-translation';
+import { audienceQuery, authBranding } from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import type { AuthAudience } from '@/types';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
+    audience?: AuthAudience;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    audience = null,
+}: Props) {
     const { t } = useTranslation();
+    const brand = authBranding(audience, 'login');
+
+    setLayoutProps({
+        title: brand.title,
+        description: brand.description,
+        eyebrow: brand.eyebrow ?? '',
+        audience,
+    });
 
     return (
         <>
@@ -37,7 +52,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">
-                                    {t('auth.login.email_label')}
+                                    {t(brand.emailLabel)}
                                 </Label>
                                 <Input
                                     id="email"
@@ -47,9 +62,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder={t(
-                                        'auth.login.email_placeholder',
-                                    )}
+                                    placeholder={t(brand.emailPlaceholder)}
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -106,9 +119,12 @@ export default function Login({ status, canResetPassword }: Props) {
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            {t('auth.login.no_account')}{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                {t('common.action.sign_up')}
+                            {t(brand.switchText)}{' '}
+                            <TextLink
+                                href={register(audienceQuery(audience))}
+                                tabIndex={5}
+                            >
+                                {t(brand.switchCta)}
                             </TextLink>
                         </div>
                     </>
@@ -125,6 +141,6 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'auth.login.layout_title',
+    description: 'auth.login.layout_description',
 };

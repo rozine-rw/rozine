@@ -11,6 +11,7 @@ import {
     InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { Spinner } from '@/components/ui/spinner';
+import { useTranslation } from '@/hooks/use-translation';
 import { logout } from '@/routes';
 import { code as verifyCode, send } from '@/routes/verification';
 
@@ -18,16 +19,16 @@ import { code as verifyCode, send } from '@/routes/verification';
 const CODE_LENGTH = 6;
 
 export default function VerifyEmail({ status }: { status?: string }) {
+    const { t } = useTranslation();
     const [code, setCode] = useState<string>('');
 
     return (
         <>
-            <Head title="Email verification" />
+            <Head title={t('auth.verify_email.head_title')} />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new code has been sent to the email address you signed up
-                    with. Earlier codes no longer work.
+                    {t('auth.verify_email.resent')}
                 </div>
             )}
 
@@ -63,7 +64,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                             disabled={processing || code.length < CODE_LENGTH}
                         >
                             {processing && <Spinner />}
-                            Verify email
+                            {t('auth.verify_email.submit')}
                         </Button>
                     </div>
                 )}
@@ -74,14 +75,14 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     <>
                         <Button disabled={processing} variant="secondary">
                             {processing && <Spinner />}
-                            Send a new code
+                            {t('auth.verify_email.resend')}
                         </Button>
 
                         <TextLink
                             href={logout()}
                             className="mx-auto block text-sm"
                         >
-                            Log out
+                            {t('auth.verify_email.log_out')}
                         </TextLink>
                     </>
                 )}
@@ -91,7 +92,6 @@ export default function VerifyEmail({ status }: { status?: string }) {
 }
 
 VerifyEmail.layout = {
-    title: 'Verify your email',
-    description:
-        'Enter the 6-digit code we emailed you. It expires in 10 minutes.',
+    title: 'auth.verify_email.layout_title',
+    description: 'auth.verify_email.layout_description',
 };

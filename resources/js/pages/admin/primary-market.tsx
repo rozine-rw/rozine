@@ -1,5 +1,6 @@
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SearchEmpty } from '@/components/admin/search-empty';
+import { TrendRange } from '@/components/admin/trend-range';
 import {
     CardTitle,
     EmptyState,
@@ -35,10 +36,13 @@ const STAT_ACCENT: Record<PrimaryMarketStatKey, number> = {
 /** Green once the raise is full, blue while it fills (design `pctColor`). */
 const fillColour = (raise: PrimaryMarketRaise): [string, string] =>
     Number(raise.funded_pct) >= 100
-        ? ['bg-[#1d9e75]', 'text-[#1d9e75]']
+        ? ['bg-[#1d9e75]', 'text-[#157357]']
         : ['bg-[#1e3aff]', 'text-[#1e3aff] dark:text-[#99a3ff]'];
 
-/** "Funding trend": the cash Investors committed per Kigali day, as the server buckets it. */
+/**
+ * "Funding trend": the cash Investors committed per Kigali day, as the server buckets it, over the
+ * last fourteen days or the chosen window of dates (by month over a long one).
+ */
 function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
     const { t } = useTranslation();
 
@@ -47,12 +51,11 @@ function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
             label={t('admin.design.primary_market.trend.title')}
             className="mb-6"
         >
-            <CardTitle>
-                {t('admin.design.primary_market.trend.title')}
-            </CardTitle>
-            <p className="mt-[3px] text-[12px] text-rz-muted">
-                {t('admin.primary.trend.caption')}
-            </p>
+            <TrendRange
+                title={t('admin.design.primary_market.trend.title')}
+                trend={trend}
+                only={['trend']}
+            />
             <div className="mt-5 flex h-[180px] items-end gap-2.5">
                 {trend.bars.length === 0 && (
                     <p className="w-full self-center py-6 text-center text-[12.5px] text-rz-faint">
@@ -62,7 +65,8 @@ function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
                 {trend.bars.map((bar) => (
                     <div
                         key={bar.label}
-                        className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                        data-testid="chart-bar"
+                        className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
                             {formatRwfShort(bar.amount).replace('RWF ', '')}
@@ -96,7 +100,7 @@ function Row({ raise }: { raise: PrimaryMarketRaise }) {
                         {raise.business}
                     </span>
                     {raise.lifecycle !== 'live' && (
-                        <span className="shrink-0 rounded-[5px] bg-[rgba(210,120,45,.14)] px-1.5 py-0.5 text-[9px] font-bold text-[#c2661f] uppercase">
+                        <span className="shrink-0 rounded-[5px] bg-[rgba(210,120,45,.14)] px-1.5 py-0.5 text-[9px] font-bold text-[#a4521a] uppercase">
                             {t(`admin.primary.lifecycle.${raise.lifecycle}`)}
                         </span>
                     )}

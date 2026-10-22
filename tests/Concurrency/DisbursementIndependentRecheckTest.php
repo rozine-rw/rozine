@@ -82,8 +82,8 @@ function observeCallback(array $message): string
 }
 
 it('retains simultaneous provider key collisions across different payout intents without a database error', function (): void {
-    ['intent' => $first] = DisbursementFixture::approved();
-    ['intent' => $second] = DisbursementFixture::approved();
+    ['intent' => $first] = DisbursementFixture::paid();
+    ['intent' => $second] = DisbursementFixture::paid();
     $one = DisbursementFixture::provider()->callback($first->id, 'succeeded', ['event_id' => 'shared-provider-event']);
     $two = DisbursementFixture::provider()->callback($second->id, 'succeeded', ['event_id' => 'shared-provider-event']);
 
@@ -93,8 +93,8 @@ it('retains simultaneous provider key collisions across different payout intents
 });
 
 it('retains the same event content observed for two different intents at once, refused for the one it does not match', function (): void {
-    ['intent' => $first] = DisbursementFixture::approved();
-    ['intent' => $second] = DisbursementFixture::approved();
+    ['intent' => $first] = DisbursementFixture::paid();
+    ['intent' => $second] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($first->id, 'succeeded', ['event_id' => 'replayed-provider-event']);
     $event = app(PayoutProvider::class)->verify($message);
 
@@ -111,8 +111,8 @@ it('retains the same event content observed for two different intents at once, r
 });
 
 it('retains a key collision between a callback and a staff requery for different intents at once', function (): void {
-    ['intent' => $first] = DisbursementFixture::approved();
-    ['disbursement' => $disbursement, 'intent' => $second] = DisbursementFixture::approved();
+    ['intent' => $first] = DisbursementFixture::paid();
+    ['disbursement' => $disbursement, 'intent' => $second] = DisbursementFixture::paid();
     $treasury = DisbursementFixture::staff(['treasury']);
     $callback = DisbursementFixture::provider()->callback($first->id, 'succeeded', ['event_id' => 'requeried-provider-event']);
     DisbursementFixture::provider()->scriptQuery($second->id, 'succeeded', ['event_id' => 'requeried-provider-event']);
@@ -120,7 +120,7 @@ it('retains a key collision between a callback and a staff requery for different
     $outcome = identityContenders([
         fn () => observeCallback($callback),
         function () use ($treasury, $disbursement): string {
-            $result = app(ManageDisbursements::class)->command(User::query()->findOrFail($treasury->id)->id, $disbursement->id, 'requery', 3,
+            $result = app(ManageDisbursements::class)->command(User::query()->findOrFail($treasury->id)->id, $disbursement->id, 'requery', 2,
                 'Asked the provider again.', (string) Str::uuid());
 
             return (string) ($result['data']['observation']['disposition'] ?? $result['code']);

@@ -206,7 +206,10 @@ export default function BusinessWallet(props: BusinessWalletProps) {
                 <DepositIntents deposits={props.deposits} />
                 <WithdrawalList withdrawals={props.withdrawals} />
                 <PollStopped {...poll} className="mt-2" />
-                <WalletHistory history={props.history} />
+                <WalletHistory
+                    history={props.history}
+                    exports={props.exports}
+                />
                 {receipt !== null &&
                     (isRecord(receipt) ? (
                         <ReceiptSheet receipt={receipt} close={closeReceipt} />

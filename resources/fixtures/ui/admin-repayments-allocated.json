@@ -146,7 +146,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -164,7 +164,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "state": "received",
                 "dpd_at_receipt": 0,
@@ -218,7 +218,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -240,7 +240,7 @@
             "source": "wallet",
             "amount": {
                 "currency": "RWF",
-                "amount": "3465000"
+                "amount": "3405000"
             },
             "state": "allocated",
             "dpd_at_receipt": 0,
@@ -267,13 +267,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "240000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "13860000"
+                        "amount": "13620000"
                     }
                 }
             },
@@ -293,13 +289,9 @@
                         "currency": "RWF",
                         "amount": "0"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "180000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "10395000"
+                        "amount": "10215000"
                     }
                 }
             },
@@ -315,11 +307,11 @@
                 },
                 "expected": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "observed": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "difference": {
                     "currency": "RWF",
@@ -332,7 +324,7 @@
             "allocation": {
                 "receipt_amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "paid": [
                     {
@@ -353,16 +345,6 @@
                             "amount": "405000"
                         },
                         "account_code": "1320-NOTE-RET",
-                        "holders": null
-                    },
-                    {
-                        "kind": "service_fee",
-                        "instalment_index": 4,
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "60000"
-                        },
-                        "account_code": "1330-NOTE-SVC",
                         "holders": null
                     }
                 ],
@@ -396,26 +378,6 @@
                         },
                         "account_code": "2210-INV-WAL",
                         "holders": 318
-                    },
-                    {
-                        "kind": "service_fee",
-                        "instalment_index": 4,
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "45000"
-                        },
-                        "account_code": "4200-REV-SVC",
-                        "holders": null
-                    },
-                    {
-                        "kind": "steward_share",
-                        "instalment_index": 4,
-                        "amount": {
-                            "currency": "RWF",
-                            "amount": "15000"
-                        },
-                        "account_code": "2400-AUD-STW",
-                        "holders": null
                     }
                 ],
                 "balanced": true,
@@ -439,7 +401,7 @@
                     "recorded_at": "2027-01-23T09:12:04+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "units": null,
                     "reference": "RPY-2026-0301",
@@ -459,7 +421,7 @@
                     "recorded_at": "2027-01-23T09:12:06+02:00",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     },
                     "units": null,
                     "reference": "RPY-2026-0301",

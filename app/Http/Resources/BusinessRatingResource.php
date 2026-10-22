@@ -9,9 +9,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * `BusinessRatingProps`: the Rating sheet drawn over the Business's real Home. The rating is the
- * latest published one Home shows, or null before the first. The engine publishes no factor
- * scores, capacity sizing, drift or refusal to the Business, and no financial-health read exists,
- * so each is null and its section is not drawn; nothing here is computed.
+ * latest published one Home shows, or null before the first. With it come the Business's own score
+ * in four factors and how its capacity was sized, from the quote that rating was underwritten on;
+ * the engine records no drift or refusal for it, so those stay null and are not drawn. Its verified
+ * financials are the statement figures its rating was underwritten on.
  */
 class BusinessRatingResource extends JsonResource
 {
@@ -19,8 +20,11 @@ class BusinessRatingResource extends JsonResource
     public function toArray(Request $request): array
     {
         $home = (new BusinessHomeResource($this->resource))->toArray($request);
+        /** @var array{raises: array{financials?: array<string, mixed>|null, factors?: list<array<string, mixed>>|null, sizing?: array<string, mixed>|null}} $data */
+        $data = $this->resource;
 
-        return ['home' => $home, 'rating' => $home['rating'], 'refusal' => null, 'drift' => null, 'factors' => null, 'sizing' => null, 'financials' => null,
+        return ['home' => $home, 'rating' => $home['rating'], 'refusal' => null, 'drift' => null, 'factors' => $data['raises']['factors'] ?? null,
+            'sizing' => $data['raises']['sizing'] ?? null, 'financials' => $data['raises']['financials'] ?? null,
             'links' => ['close' => $home['links']['home'], 'raise' => null]];
     }
 }

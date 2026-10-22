@@ -28,11 +28,8 @@ import type {
 const GRID =
     'grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.9fr)_minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(230px,1.5fr)] gap-3 px-5';
 
-const OPEN_LABEL: Record<
-    C3DisbursementState,
-    'authorize' | 'check' | 'open' | 'inspect'
-> = {
-    ready: 'authorize',
+const OPEN_LABEL: Record<C3DisbursementState, 'check' | 'open' | 'inspect'> = {
+    ready: 'check',
     awaiting_second_approver: 'check',
     on_hold: 'open',
     queued: 'open',
@@ -42,9 +39,7 @@ const OPEN_LABEL: Record<
 };
 
 const OPEN_TONE: Partial<Record<C3DisbursementState, string>> = {
-    ready: 'bg-[#1d9e75] text-white',
-    awaiting_second_approver: 'bg-[#1d9e75] text-white',
-    failed_closing: 'bg-[#e5484d] text-white',
+    failed_closing: 'bg-[#b3352a] text-white',
 };
 
 function Row({ row }: { row: C3DisbursementRow }) {
@@ -91,16 +86,16 @@ function Row({ row }: { row: C3DisbursementRow }) {
 }
 
 /**
- * Disbursements (MVP-ADMIN-SCR-03, C3 proposal v2 §2e): funded raises waiting to be paid to
- * their business, and the ones already in flight. No release commits from the list and nothing
- * is released in bulk; every command runs from the drawer with two distinct staff. There is no
+ * Disbursements (MVP-ADMIN-SCR-03, BRS v2.0 SVC-R01): funded raises are paid to their business
+ * automatically. The list shows the ones still waiting, held or in flight; nothing is approved
+ * here, and a hold or its release runs from the drawer with a reason (ADM-R02). There is no
  * sourced deadline after full funding, so none is shown, and a provider that has not confirmed an
  * outcome never reads as paid or failed.
  */
 export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
     const { t } = useTranslation();
     const refusal = useRefusalText();
-    const awaiting = props.awaiting_second_approver;
+    const attention = props.needs_attention;
 
     return (
         <AdminFrame
@@ -112,7 +107,6 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
                         key={props.disbursement.id}
                         disbursement={props.disbursement}
                         viewer={props.viewer}
-                        serverTime={props.server_time}
                         preview={props.preview_outcome}
                     />
                 )
@@ -128,10 +122,10 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
             )}
             <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
                 <CardTitle>{t('admin.disbursements.title')}</CardTitle>
-                {awaiting > 0 && (
-                    <span className="rounded-lg border border-[#e7e1fb] bg-[rgba(124,58,237,.1)] px-2.5 py-1 text-[11.5px] font-semibold text-[#7c3aed] dark:border-rz-border dark:text-[#b199fb]">
-                        {t('admin.disbursements.awaiting_count', {
-                            count: awaiting,
+                {attention > 0 && (
+                    <span className="rounded-lg border border-[#f6e7c8] bg-[rgba(194,102,31,.09)] px-2.5 py-1 text-[11.5px] font-semibold text-[#a55418] dark:border-rz-border dark:text-[#f0a060]">
+                        {t('admin.disbursements.attention_count', {
+                            count: attention,
                         })}
                     </span>
                 )}

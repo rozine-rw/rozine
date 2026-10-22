@@ -88,6 +88,18 @@ describe('Profile', () => {
         ]);
     });
 
+    it('offers every investor the plain support card, whose Message opens the Help center', () => {
+        render(<InvestorProfile {...profile()} />);
+
+        const support = screen.getByRole('region', { name: 'Support' });
+
+        expect(support).toHaveTextContent('Talk to Rozine support');
+        expect(support).not.toHaveTextContent(/priority/iu);
+        expect(
+            within(support).getByRole('link', { name: 'Message' }),
+        ).toHaveAttribute('href', '/preview/investor-profile-help');
+    });
+
     it('opens linked accounts as its own phone page and links a bank account', async () => {
         const user = userEvent.setup();
 
@@ -413,6 +425,8 @@ describe('Profile', () => {
         expect(field('ID NUMBER')).toBe('•••• •••• •••• 5678');
         expect(screen.getByText('ADDRESS')).toBeInTheDocument();
         expect(field('COUNTRY')).toBe('Unknown');
+        expect(screen.getAllByRole('term')).toHaveLength(10);
+        expect(screen.getAllByRole('definition')).toHaveLength(10);
 
         for (const label of ['PROVINCE', 'DISTRICT', 'SECTOR', 'CELL']) {
             expect(field(label)).toBe('Not provided');

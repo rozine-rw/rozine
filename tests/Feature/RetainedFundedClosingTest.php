@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
 use Tests\Support\DisbursementFixture;
 
 /**
- * Real command/intent/provider/reconciliation ancestry with explicitly synthetic funding/current
+ * Real automatic intent/provider/reconciliation ancestry with explicitly synthetic funding/current
  * admission. No schema-only PrimaryHoldingFixture closing is financial source authority here.
  *
  * @param  ArrayObject<int, array{campaign: FundedCampaign, instruction: IssueInstruction|FailedClosing, evidence: ClosingEvidence, command_visible: bool}>  $seen
@@ -79,23 +79,19 @@ function retainedPrimaryClosingCall(string $cause): array
 {
     $seen = primaryClosingCalls();
     app()->instance(FundedCampaigns::class, recordingPrimaryClosingAuthority($seen));
-    if (in_array($cause, ['approve_recheck', 'worker_recheck'], true)) {
-        ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
-        $maker = DisbursementFixture::staff(['treasury']);
-        $checker = DisbursementFixture::staff(['approver']);
-        DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-        $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-        if ($cause === 'approve_recheck') {
+    if (in_array($cause, ['auto_recheck', 'worker_recheck'], true)) {
+        ['campaign' => $campaign] = DisbursementFixture::funded();
+        if ($cause === 'auto_recheck') {
             DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['restriction']);
-            DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            DisbursementFixture::release($campaign);
         } else {
-            DB::transaction(function () use ($checker, $disbursement, $proof, $campaign): void {
-                DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+            DB::transaction(function () use ($campaign): void {
+                DisbursementFixture::release($campaign);
                 DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'failed', ['exposure']);
             });
         }
     } else {
-        ['intent' => $intent] = DisbursementFixture::approved();
+        ['intent' => $intent] = DisbursementFixture::paid();
         app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id,
             $cause === 'reconciled_success' ? 'succeeded' : 'failed', ['effective_at' => '2028-01-31T08:00:00+00:00']));
     }
@@ -112,9 +108,10 @@ function readPrimaryClosingCall(RetainedFundedClosing $authority, FundedCampaign
 it('binds every real closing cause immediately and on retained SELECT-only replay', function (string $cause): void {
     $call = retainedPrimaryClosingCall($cause);
     $evidence = $call['evidence'];
-    if ($cause === 'approve_recheck') {
+    if ($cause === 'auto_recheck') {
         expect($call['command_visible'])->toBeFalse()
-            ->and(DB::table('command_operations')->where('id', $evidence->operationId)->exists())->toBeTrue();
+            ->and([$evidence->operationId, $evidence->intentId, $evidence->intentOperationId])->toBe([null, null, null])
+            ->and($evidence->causes)->toBe(['restriction']);
     }
     $this->travel(1)->hours();
     $queries = [];
@@ -126,7 +123,7 @@ it('binds every real closing cause immediately and on retained SELECT-only repla
     foreach ($queries as $query) {
         expect(strtolower($query))->toStartWith('select')->not->toContain('for update', 'for share');
     }
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure', 'reconciled_success']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure', 'reconciled_success']);
 
 it('refuses each distinct funding binding from an otherwise authenticated closing projection', function (string $cause): void {
     $call = retainedPrimaryClosingCall($cause);
@@ -145,11 +142,16 @@ it('refuses each distinct funding binding from an otherwise authenticated closin
             {
                 return $this->evidence;
             }
+
+            public function intentRequest(string $closingId): ?string
+            {
+                return null;
+            }
         };
         expect(fn () => readPrimaryClosingCall(new RetainedFundedClosing($source), $call['campaign'], $call['instruction']))
             ->toThrow(RuntimeException::class, 'PRIMARY_CLOSING_MISMATCH');
     }
-})->with(['approve_recheck', 'reconciled_success']);
+})->with(['auto_recheck', 'reconciled_success']);
 
 it('refuses every supplied issue field against genuine retained authority', function (): void {
     $call = retainedPrimaryClosingCall('reconciled_success');
@@ -177,6 +179,11 @@ it('refuses malformed issued kind and causes from the source boundary', function
         {
             return $this->evidence;
         }
+
+        public function intentRequest(string $closingId): ?string
+        {
+            return null;
+        }
     };
     $before = [DisbursementClosing::query()->count(), DB::table('ledger_entries')->count()];
 
@@ -193,20 +200,20 @@ it('refuses malformed issued kind and causes from the source boundary', function
 it('refuses every supplied failure field against genuine retained authority', function (string $cause): void {
     $call = retainedPrimaryClosingCall($cause);
     foreach (['closingId' => strtolower((string) Str::ulid()), 'disbursementId' => strtolower((string) Str::ulid()),
-        'cause' => $cause === 'approve_recheck' ? 'worker_recheck' : 'approve_recheck', 'causes' => ['dscr']] as $field => $value) {
+        'cause' => $cause === 'auto_recheck' ? 'worker_recheck' : 'auto_recheck', 'causes' => ['dscr']] as $field => $value) {
         $other = new FailedClosing(...array_replace(get_object_vars($call['instruction']), [$field => $value]));
         expect(fn () => DB::transaction(fn (): ClosingEvidence => app(RetainedFundedClosing::class)->failed($call['campaign'], $other)))
             ->toThrow($field === 'closingId' ? DisbursementViolation::class : RuntimeException::class,
                 $field === 'closingId' ? 'DISBURSEMENT_CLOSING_UNAVAILABLE' : 'PRIMARY_CLOSING_MISMATCH');
     }
-})->with(['approve_recheck', 'worker_recheck', 'reconciled_failure']);
+})->with(['auto_recheck', 'worker_recheck', 'reconciled_failure']);
 
 it('refuses crossing issued and failed closings', function (): void {
     $issued = retainedPrimaryClosingCall('reconciled_success');
     expect(fn () => DB::transaction(fn (): ClosingEvidence => app(RetainedFundedClosing::class)->failed($issued['campaign'],
         new FailedClosing($issued['evidence']->closingId, $issued['evidence']->disbursementId, 'reconciled_failure', ['provider_failure']))))
         ->toThrow(RuntimeException::class, 'PRIMARY_CLOSING_MISMATCH');
-    $failed = retainedPrimaryClosingCall('approve_recheck');
+    $failed = retainedPrimaryClosingCall('auto_recheck');
     expect(fn () => DB::transaction(fn (): ClosingEvidence => app(RetainedFundedClosing::class)->issued($failed['campaign'],
         new IssueInstruction($failed['evidence']->closingId, $failed['evidence']->disbursementId, 'other', '2028-01-31T08:00:00+00:00',
             '2028-01-31', ['2028-02-29'], $failed['evidence']->recordedAt))))
@@ -228,13 +235,18 @@ it('refuses issued authority as failed even when a malformed instruction matches
 });
 
 it('propagates unavailable source evidence instead of creating a financial failure', function (): void {
-    $call = retainedPrimaryClosingCall('approve_recheck');
+    $call = retainedPrimaryClosingCall('auto_recheck');
     $before = DisbursementClosing::query()->count();
     $source = new class implements DisbursementClosingEvidence
     {
         public function find(string $closingId): ClosingEvidence
         {
             throw new DisbursementViolation('DISBURSEMENT_CLOSING_UNAVAILABLE');
+        }
+
+        public function intentRequest(string $closingId): ?string
+        {
+            return null;
         }
     };
     expect(fn () => readPrimaryClosingCall(new RetainedFundedClosing($source), $call['campaign'], $call['instruction']))
@@ -243,7 +255,7 @@ it('propagates unavailable source evidence instead of creating a financial failu
 });
 
 it('requires the caller transaction even for retained replay', function (): void {
-    $call = retainedPrimaryClosingCall('approve_recheck');
+    $call = retainedPrimaryClosingCall('auto_recheck');
     expect(fn () => readPrimaryClosingCall(app(RetainedFundedClosing::class), $call['campaign'], $call['instruction']))
         ->toThrow(DisbursementViolation::class, 'DISBURSEMENT_CLOSING_TRANSACTION_REQUIRED');
 });

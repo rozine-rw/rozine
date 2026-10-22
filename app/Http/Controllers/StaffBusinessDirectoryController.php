@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
 use Inertia\Inertia;
@@ -28,7 +29,7 @@ class StaffBusinessDirectoryController extends Controller
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
         $chip = (string) $request->validated('chip', 'all');
-        /** @var 'raised'|'name' $sort */
+        /** @var 'raised'|'active_notes'|'investors'|'name' $sort */
         $sort = (string) $request->validated('sort', 'raised');
         $sector = trim((string) $request->validated('sector', ''));
         $sector = $sector === 'all' ? '' : $sector;
@@ -36,7 +37,7 @@ class StaffBusinessDirectoryController extends Controller
         $selected = $request->validated('business');
         $staff = $access->handle($actorId);
 
-        $resource = new StaffBusinessDirectoryResource([...$this->directory->directory($actorId, $chip, $sort, $sector, $search, self::LIMIT),
+        $resource = new StaffBusinessDirectoryResource([...$this->directory->directory($actorId, $chip, $sort, $sector, $search, self::LIMIT), 'policy' => PlatformPolicies::businesses(),
             'chip' => $chip, 'sort' => $sort, 'sector' => $sector, 'search' => $search,
             'business' => $selected === null ? null : $this->directory->business($actorId, (string) $selected),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);

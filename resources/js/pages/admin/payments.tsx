@@ -1,11 +1,13 @@
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SearchEmpty } from '@/components/admin/search-empty';
+import { TrendRange } from '@/components/admin/trend-range';
 import {
     CardTitle,
     EmptyState,
     HeadCell,
     KpiTile,
     Panel,
+    PolicyPeek,
     ROW_RULE,
     ShowMoreLink,
     TABLE_HEAD,
@@ -30,8 +32,17 @@ const STAT_ACCENT: Record<PaymentsStatKey, number> = {
     disbursed: 0,
 };
 
-/** "Money movement": credited deposits plus paid-out withdrawals per Kigali day. */
-function MovementPanel({ bars }: { bars: AdminPaymentsProps['bars'] }) {
+/**
+ * "Money movement": credited deposits plus paid-out withdrawals per Kigali day, over the last
+ * fourteen days or the chosen window of dates (per month over a long one).
+ */
+function MovementPanel({
+    bars,
+    trend,
+}: {
+    bars: AdminPaymentsProps['bars'];
+    trend: AdminPaymentsProps['trend'];
+}) {
     const { t } = useTranslation();
 
     return (
@@ -39,10 +50,11 @@ function MovementPanel({ bars }: { bars: AdminPaymentsProps['bars'] }) {
             label={t('admin.design.payments.movement.title')}
             className="mb-6"
         >
-            <CardTitle>{t('admin.design.payments.movement.title')}</CardTitle>
-            <p className="mt-[3px] text-[12px] text-rz-muted">
-                {t('admin.payments.movement.caption')}
-            </p>
+            <TrendRange
+                title={t('admin.design.payments.movement.title')}
+                trend={trend}
+                only={['bars', 'trend']}
+            />
             <div className="mt-5 flex h-[180px] items-end gap-2.5">
                 {bars.length === 0 && (
                     <p className="w-full self-center py-6 text-center text-[12.5px] text-rz-faint">
@@ -52,7 +64,8 @@ function MovementPanel({ bars }: { bars: AdminPaymentsProps['bars'] }) {
                 {bars.map((bar) => (
                     <div
                         key={bar.label}
-                        className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                        data-testid="chart-bar"
+                        className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
                             {formatRwfShort(bar.amount).replace('RWF ', '')}
@@ -112,7 +125,7 @@ function Row({ payout }: { payout: PayoutInFlight }) {
                 className={cn(
                     'text-[11.5px] font-semibold',
                     payout.state === 'unknown'
-                        ? 'text-[#c2661f]'
+                        ? 'text-[#a4521a]'
                         : 'text-rz-muted',
                 )}
             >
@@ -133,6 +146,11 @@ export default function AdminPayments(props: AdminPaymentsProps) {
 
     return (
         <AdminFrame section="payments" {...props}>
+            <PolicyPeek
+                title={t('admin.payments.policy_title')}
+                items={props.policy}
+                link={props.nav.policies}
+            />
             <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {props.stats.map((stat) => (
                     <KpiTile
@@ -140,9 +158,15 @@ export default function AdminPayments(props: AdminPaymentsProps) {
                         index={STAT_ACCENT[stat.key]}
                         label={t(`admin.design.payments.kpi.${stat.key}`)}
                         value={formatRwfShort(stat.value)}
-                        sub={t('admin.payments.kpi.count', {
-                            count: stat.count,
-                        })}
+                        sub={
+                            stat.key === 'disbursed'
+                                ? t('admin.payments.kpi.disbursed_count', {
+                                      count: stat.count,
+                                  })
+                                : t('admin.payments.kpi.count', {
+                                      count: stat.count,
+                                  })
+                        }
                     />
                 ))}
                 <KpiTile
@@ -152,7 +176,7 @@ export default function AdminPayments(props: AdminPaymentsProps) {
                     sub={t('admin.payments.kpi.in_flight.sub')}
                 />
             </div>
-            <MovementPanel bars={props.bars} />
+            <MovementPanel bars={props.bars} trend={props.trend} />
             <div className="mb-3.5">
                 <CardTitle>{t('admin.payments.title')}</CardTitle>
                 <p className="mt-[3px] text-[12px] text-rz-muted">

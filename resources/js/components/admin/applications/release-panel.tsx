@@ -14,6 +14,27 @@ import type {
     Tone,
 } from '@/types/admin';
 
+/** Release causes with their own explanation; any other code reads as a generic refusal. */
+const RELEASE_CAUSES = [
+    'ENGINE_GATE_FAILED',
+    'AUTHORITY_CHANGED',
+    'MANDATE_UNVERIFIED',
+    'REPORT_NOT_CURRENT',
+    'EXPOSURE_RESERVATION_REQUIRED',
+    'SIGNATURES_REQUIRED',
+    'STAFF_RELEASE_REQUIRED',
+    'TERMS_CHANGED',
+    'FEE_DISCLOSURE_CHANGED',
+    'QUOTE_STALE',
+    'RESTRICTION_ACTIVE',
+    'RELEASE_CHECK_NOT_COMPLETED',
+] as const;
+
+type ReleaseCause = (typeof RELEASE_CAUSES)[number];
+
+const isReleaseCause = (code: string): code is ReleaseCause =>
+    (RELEASE_CAUSES as readonly string[]).includes(code);
+
 const STATE_TONE: Record<StaffRelease['state'], Tone> = {
     awaiting_staff_review: 'purple',
     released: 'green',
@@ -85,9 +106,12 @@ export function ReleasePanel({
                         </span>
                         {gate.cause !== null && (
                             <span
-                                className={cn('font-mono text-[11px]', CAPTION)}
+                                title={gate.cause}
+                                className={cn('text-[11.5px]', CAPTION)}
                             >
-                                {gate.cause}
+                                {t(
+                                    `admin.applications.release.cause.${isReleaseCause(gate.cause) ? gate.cause : 'other'}`,
+                                )}
                             </span>
                         )}
                         <Chip tone={gate.state === 'passed' ? 'green' : 'red'}>
@@ -125,7 +149,7 @@ export function ReleasePanel({
                     type="button"
                     disabled={command.unresolved}
                     onClick={() => setStaged(true)}
-                    className="mt-3 h-[42px] w-full rounded-[11px] bg-[#1d9e75] text-[13.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                    className="mt-3 h-[42px] w-full rounded-[11px] bg-[#157357] text-[13.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
                 >
                     {t('admin.applications.release.command')}
                 </button>

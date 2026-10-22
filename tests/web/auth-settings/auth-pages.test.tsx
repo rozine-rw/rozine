@@ -215,10 +215,9 @@ describe('authentication pages', () => {
             screen.queryByRole('link', { name: 'Forgot your password?' }),
         ).not.toBeInTheDocument();
         expect(screen.queryByText('Password reset.')).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute(
-            'href',
-            '/register',
-        );
+        expect(
+            screen.getByRole('link', { name: 'Create account' }),
+        ).toHaveAttribute('href', '/register');
     });
 
     it('renders register processing, password rules, and all errors', () => {
@@ -246,6 +245,87 @@ describe('authentication pages', () => {
         inertia.state.errors = {};
         rerender(<Register key="idle" passwordRules="minlength:12" />);
         expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
+    });
+
+    it('brands log in and register for the app the visitor came from', () => {
+        const { unmount } = render(
+            <Login canResetPassword audience="business" />,
+        );
+
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith({
+            title: 'auth.login.layout_title',
+            description: 'auth.brand.business.login_description',
+            eyebrow: 'auth.brand.business.eyebrow',
+            audience: 'business',
+        });
+        expect(screen.getByText('Work email')).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText('you@company.rw'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Register a business' }),
+        ).toHaveAttribute('href', '/register?for=business');
+        unmount();
+
+        render(<Login canResetPassword audience="investor" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith({
+            title: 'auth.login.layout_title',
+            description: 'auth.brand.investor.login_description',
+            eyebrow: '',
+            audience: 'investor',
+        });
+        expect(
+            screen.getByRole('link', { name: 'Create account' }),
+        ).toHaveAttribute('href', '/register?for=investor');
+        cleanup();
+
+        render(<Login canResetPassword audience="auditor" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                eyebrow: 'auth.brand.auditor.eyebrow',
+                description: 'auth.brand.auditor.login_description',
+            }),
+        );
+        cleanup();
+
+        render(<Register passwordRules="minlength:12" audience="business" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith({
+            title: 'auth.brand.business.register_title',
+            description: 'auth.brand.business.register_description',
+            eyebrow: 'auth.brand.business.eyebrow',
+            audience: 'business',
+        });
+        expect(screen.getByText(/Already registered\?/)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute(
+            'href',
+            '/login?for=business',
+        );
+        cleanup();
+
+        render(<Register passwordRules="minlength:12" audience="investor" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                description: 'auth.brand.investor.register_description',
+                eyebrow: '',
+            }),
+        );
+        cleanup();
+
+        render(<Register passwordRules="minlength:12" audience="auditor" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                description: 'auth.brand.auditor.register_description',
+            }),
+        );
+        cleanup();
+
+        render(<Register passwordRules="minlength:12" />);
+        expect(inertia.layoutProps).toHaveBeenLastCalledWith({
+            title: 'auth.register.layout_title',
+            description: 'auth.register.layout_description',
+            eyebrow: '',
+            audience: null,
+        });
     });
 
     it('transforms reset-password data and renders both processing states', () => {
@@ -300,9 +380,8 @@ describe('authentication pages', () => {
         render(<TwoFactorChallenge />);
 
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
-            title: 'Authentication code',
-            description:
-                'Enter the authentication code provided by your authenticator application.',
+            title: 'auth.two_factor_challenge.code_title',
+            description: 'auth.two_factor_challenge.code_description',
         });
         expect(screen.getByLabelText('One-time code')).toBeDisabled();
         expect(screen.getByText('Code invalid.')).toBeInTheDocument();
@@ -322,9 +401,8 @@ describe('authentication pages', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('Recovery code invalid.')).toBeInTheDocument();
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
-            title: 'Recovery code',
-            description:
-                'Please confirm access to your account by entering one of your emergency recovery codes.',
+            title: 'auth.two_factor_challenge.recovery_title',
+            description: 'auth.two_factor_challenge.recovery_description',
         });
         expect(inertia.forms.at(-1)?.resetOnSuccess).toBe(false);
 

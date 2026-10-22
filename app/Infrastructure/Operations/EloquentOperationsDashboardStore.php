@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
  * @phpstan-import-type Bar from OperationsDashboardStore
  * @phpstan-import-type Movements from OperationsDashboardStore
  * @phpstan-import-type Payout from OperationsDashboardStore
+ * @phpstan-import-type Sector from OperationsDashboardStore
  */
 final class EloquentOperationsDashboardStore implements OperationsDashboardStore
 {
@@ -47,13 +48,31 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             ->whereRaw("(m.terms->>'expires_at' IS NULL OR m.terms->>'expires_at' > ?)", [$now])->count();
         $disbursed = DB::table('disbursements AS d')->join('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
             ->where('closing.kind', 'issued')->sum('d.amount');
-        $awaiting = DB::selectOne("SELECT count(*) AS total FROM disbursements d
-            WHERE (SELECT f_state FROM disbursement_fold(d.id)) = 'awaiting_second_approver'");
+        $waiting = DB::selectOne("SELECT count(*) AS total FROM disbursements d
+            WHERE (SELECT f_state FROM disbursement_fold(d.id)) IN ('ready', 'awaiting_second_approver', 'on_hold')");
 
         return ['capital_raised' => (string) DB::table('primary_holdings')->sum('principal'), 'active_businesses' => $businesses,
-            'awaiting_second_approver' => (int) ($awaiting->total ?? 0), 'disbursed' => (string) $disbursed,
+            'disbursements_waiting' => (int) ($waiting->total ?? 0), 'disbursed' => (string) $disbursed,
             'notes' => ['live' => (int) ($notes->live ?? 0), 'funded' => (int) ($notes->funded ?? 0),
                 'repaying' => (int) ($notes->repaying ?? 0), 'failed' => (int) ($notes->failed ?? 0)]];
+    }
+
+    public function noteStates(): array
+    {
+        return array_values(array_map(fn (object $row): array => ['campaign_id' => (string) $row->id, 'business_id' => (string) $row->business_id, 'state' => match ((string) $row->state) {
+            'live' => 'live', 'funded' => 'funded', 'repaying' => 'repaying', default => 'failed',
+        }, 'live_at' => CarbonImmutable::parse((string) $row->live_at)->toIso8601String()], DB::table('business_campaigns AS c')
+            ->leftJoin('business_campaign_closures AS closure', 'closure.business_campaign_id', '=', 'c.id')
+            ->leftJoin('primary_campaign_fundings AS funding', 'funding.business_campaign_id', '=', 'c.id')
+            ->leftJoin('disbursements AS d', 'd.business_campaign_id', '=', 'c.id')
+            ->leftJoin('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
+            ->selectRaw("c.id, c.business_id, c.live_at, CASE
+                WHEN closure.id IS NOT NULL OR closing.kind = 'failed_closing' THEN 'failed'
+                WHEN closing.kind = 'issued' THEN 'repaying'
+                WHEN funding.id IS NOT NULL AND closing.id IS NULL THEN 'funded'
+                WHEN funding.id IS NULL THEN 'live'
+                ELSE 'failed' END AS state")
+            ->orderByDesc('c.live_at')->orderByDesc('c.id')->get()->all()));
     }
 
     /** @return list<Bar> */
@@ -115,6 +134,18 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             'account' => (string) $row->account, 'state' => $row->state === 'unknown' ? 'unknown' : 'pending',
             'requested_at' => CarbonImmutable::parse((string) $row->created_at)->utc()->toIso8601String()],
             DB::query()->fromSub($investor->unionAll($business), 'payouts')->orderBy('created_at')->orderBy('id')->get()->all()));
+    }
+
+    /** @return list<Sector> */
+    public function sectorExposure(): array
+    {
+        return array_values(array_map(fn (object $row): array => ['sector' => (string) $row->sector, 'principal' => (string) $row->principal,
+            'notes' => (int) $row->notes, 'campaigns' => explode(',', (string) $row->campaigns)], DB::table('primary_holdings AS h')
+                ->join('business_campaigns AS c', 'c.id', '=', 'h.business_campaign_id')
+                ->join('business_profiles AS b', 'b.id', '=', 'c.business_id')
+                ->selectRaw("b.profile->>'industry' AS sector, sum(h.principal) AS principal, count(DISTINCT c.id) AS notes,
+                    string_agg(DISTINCT c.id, ',' ORDER BY c.id) AS campaigns")
+                ->groupBy('sector')->orderByDesc('principal')->orderBy('sector')->get()->all()));
     }
 
     /**

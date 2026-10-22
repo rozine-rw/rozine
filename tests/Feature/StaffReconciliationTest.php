@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Party;
 use App\Models\User;
 use App\Models\WalletProviderEvent;
 use App\Models\WalletWithdrawal;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * Reconciliation (MVP-ADMIN-SCR-04, AC-05) from live records: each provider clearing account
@@ -19,11 +18,15 @@ use Tests\Support\InvestorWalletFixture;
  * provider outcome the ledger could not follow, aged and never hidden.
  */
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 /** @param list<string> $roles */
 function reconciliationStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Reconciliation assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Reconciliation assignment.');
 
     return $user;
 }
@@ -58,7 +61,7 @@ it('closes yesterday as reconciled when every provider outcome was followed', fu
     expect($props['contract_version'])->toBe('staff-reconciliation-v1')
         ->and($props['allowed_actions'])->toBe([])
         ->and($props['nav']['reconciliation'])->toBe(['url' => '/admin/reconciliation', 'method' => 'get'])
-        ->and($props['nav']['finance'])->toBe(['url' => '/admin/reconciliation', 'method' => 'get'])
+        ->and($props['nav']['finance'])->toBe(['url' => '/admin/finance', 'method' => 'get'])
         ->and($props['day_close'])->toBe(['business_date' => $yesterday->format('Y-m-d'), 'state' => 'reconciled', 'reconciled_at' => $yesterday->toIso8601String()])
         ->and($props['accounts'])->toBe([
             ['id' => 'deposits', 'label' => 'Deposit collections (provider clearing)', 'as_of' => $yesterday->toIso8601String(),

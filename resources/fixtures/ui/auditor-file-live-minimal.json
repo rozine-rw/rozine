@@ -32,12 +32,11 @@
             },
             "documents": [],
             "prescreen": [],
-            "reason": null,
-            "mandate": [],
             "history": {
                 "last_audit": null,
                 "flags": []
-            }
+            },
+            "brief": null
         },
         "actions": {
             "accept": {

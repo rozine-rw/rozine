@@ -8,7 +8,7 @@ namespace App\Domain\Identity;
  * The in-app notices a Party receives (BRS v2.0 NTF-R01), each from one recorded event. A kind
  * names the facts it carries; the client words them from its catalogs, and the notice opens the
  * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal
- * an issued Holding, a Business's approved application and its expired raise, and an Audit
+ * an issued Holding, a Business's approved application, its expired raise and its monthly reporting window, and an Audit
  * Partner's accreditation decision and job offers are also e-mailed. Rozine's answer to a complaint and its
  * resolution are in-app only. A Business's notices belong to its entity Party.
  */
@@ -36,10 +36,12 @@ enum PartyNoticeKind: string
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
     case BusinessReportSealed = 'business.report_sealed';
     case BusinessReportReviewClosing = 'business.report_review_closing';
+    case BusinessReportingWindowOpen = 'business.reporting_window_open';
     case AuditorAccreditationApproved = 'auditor.accreditation_approved';
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';
     case AuditorAccreditationRenewalDue = 'auditor.accreditation_renewal_due';
+    case AuditorReportReminder = 'auditor.report_reminder';
     case ComplaintAnswered = 'support.complaint_answered';
     case ComplaintResolved = 'support.complaint_resolved';
 
@@ -47,7 +49,24 @@ enum PartyNoticeKind: string
     {
         return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
-            self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::HoldingIssued], true);
+            self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::HoldingIssued, self::BusinessReportingWindowOpen], true);
+    }
+
+    /**
+     * Who the automation reaches, by the participant the notice is written for: a Business's
+     * entity, an Audit Partner, an Investor, or anyone with an account for security and support
+     * notices.
+     *
+     * @return 'investor'|'business'|'auditor'|'everyone'
+     */
+    public function audience(): string
+    {
+        return match (strstr($this->value, '.', true)) {
+            'business' => 'business',
+            'auditor' => 'auditor',
+            'security', 'support' => 'everyone',
+            default => 'investor',
+        };
     }
 
     /**
@@ -64,12 +83,12 @@ enum PartyNoticeKind: string
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
             self::HoldingIssued => 'portfolio',
-            self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing => 'reporting',
+            self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen => 'reporting',
             self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
             self::BusinessApplicationApproved => 'underwriting',
             self::BusinessDisbursementSent => 'payments',
             self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
-            self::AuditorAccreditationRenewalDue => 'audits',
+            self::AuditorAccreditationRenewalDue, self::AuditorReportReminder => 'audits',
             self::ComplaintAnswered, self::ComplaintResolved => 'support',
         };
     }

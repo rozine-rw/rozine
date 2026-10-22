@@ -262,8 +262,10 @@
             ],
             "pagination": {
                 "next": null
-            }
+            },
+            "range": null
         },
+        "exports": null,
         "receipt": {
             "id": "bdep-1201",
             "request_id": "5b0f7c2e-1d4a-4c6b-9e21-0000bdep-120",

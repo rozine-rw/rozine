@@ -16,22 +16,33 @@ namespace App\Application\Operations\Contracts;
  *   and no closure), `funded` once its funding lock is recorded and before its disbursement closes,
  *   `repaying` once its disbursement closed with issued notes, and `failed` when it closed unfunded
  *   (cancelled or expired) or its disbursement failed to close.
- * - `awaiting_second_approver`: disbursements whose folded state waits for the checker.
+ * - `disbursements_waiting`: funded disbursements that automatic payment has not queued yet: held,
+ *   or waiting for a verified payout destination or recheck inputs.
  * - `disbursed`: the amount of every disbursement that closed with issued notes.
  *
  * @phpstan-type Figures array{
- *     capital_raised: string, active_businesses: int, awaiting_second_approver: int, disbursed: string,
+ *     capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *     notes: array{live: int, funded: int, repaying: int, failed: int}
  * }
+ * @phpstan-type NoteState array{campaign_id: string, business_id: string, state: 'live'|'funded'|'repaying'|'failed', live_at: string}
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Movement array{amount: string, count: int}
  * @phpstan-type Movements array{deposits: Movement, withdrawals: Movement, disbursed: Movement}
+ * @phpstan-type Sector array{sector: string, principal: string, notes: int, campaigns: list<string>}
  * @phpstan-type Payout array{id: string, owner: 'investor'|'business', name: string|null, amount: string, received: string, account: string, state: 'pending'|'unknown', requested_at: string}
  */
 interface OperationsDashboardStore
 {
     /** @return Figures */
     public function figures(): array;
+
+    /**
+     * Every published campaign with where it sits now, by the same rules as `figures()['notes']`,
+     * newest first.
+     *
+     * @return list<NoteState>
+     */
+    public function noteStates(): array;
 
     /**
      * Issued Holding principal per Kigali calendar bucket, oldest first, from `$from` (inclusive) to
@@ -77,4 +88,13 @@ interface OperationsDashboardStore
      * @return list<Payout>
      */
     public function payoutsInFlight(): array;
+
+    /**
+     * Issued Holding principal per Business industry, largest first, with the notes (campaigns) it
+     * spans.
+     * The platform records no repayment yet, so issued principal is what stays outstanding.
+     *
+     * @return list<Sector>
+     */
+    public function sectorExposure(): array;
 }

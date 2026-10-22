@@ -1,4 +1,6 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
@@ -64,23 +66,235 @@ function useEntryLabel(): (entry: BusinessWalletEntry) => string {
 }
 
 /**
+ * The history's date range (design `txFrom`/`txTo`, "All time"): inclusive calendar days the
+ * server narrows the list and the statement to. Applying reloads the page with the new range.
+ */
+function RangePicker({
+    range,
+}: {
+    range: NonNullable<BusinessWalletProps['history']['range']>;
+}) {
+    const { t, locale } = useTranslation();
+    const [open, setOpen] = useState(false);
+    const [from, setFrom] = useState(range.from ?? '');
+    const [to, setTo] = useState(range.to ?? '');
+    const label =
+        range.from === null && range.to === null
+            ? t('business.wallet.range.all')
+            : `${range.from === null ? t('business.wallet.range.start') : formatDate(range.from, locale)} – ${range.to === null ? t('business.wallet.range.now') : formatDate(range.to, locale)}`;
+    const apply = (query: Record<string, string>) => {
+        const search = new URLSearchParams(query).toString();
+
+        setOpen(false);
+        router.visit(
+            {
+                url:
+                    search === ''
+                        ? range.base.url
+                        : `${range.base.url}${range.base.url.includes('?') ? '&' : '?'}${search}`,
+                method: 'get',
+            },
+            { preserveScroll: true },
+        );
+    };
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        apply({
+            ...(from === '' ? {} : { from }),
+            ...(to === '' ? {} : { to }),
+        });
+    };
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                aria-label={`${t('business.wallet.range.label')}: ${label}`}
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+                className="flex h-[30px] items-center gap-1.5 rounded-[10px] border border-rz-border bg-rz-surface px-2.5 text-xs font-semibold text-rz-slate"
+            >
+                <svg
+                    aria-hidden
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                >
+                    <rect
+                        x="4"
+                        y="5"
+                        width="16"
+                        height="15"
+                        rx="2"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                    />
+                    <path
+                        d="M4 10h16M9 3v4M15 3v4"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                    />
+                </svg>
+                {label}
+            </button>
+            {open && (
+                <form
+                    onSubmit={submit}
+                    className="absolute top-[37px] right-0 z-40 flex w-[220px] flex-col gap-2.5 rounded-xl border border-rz-border bg-rz-surface p-3 shadow-[0_20px_44px_-16px_rgba(20,45,95,.34)]"
+                >
+                    <label className="flex flex-col gap-1 text-[11px] font-semibold text-rz-secondary">
+                        {t('business.wallet.range.from')}
+                        <input
+                            type="date"
+                            value={from}
+                            max={to === '' ? undefined : to}
+                            onChange={(event) => setFrom(event.target.value)}
+                            className="rounded-[10px] border border-rz-border bg-rz-surface px-2.5 py-2 text-[12.5px] text-rz-ink"
+                        />
+                    </label>
+                    <label className="flex flex-col gap-1 text-[11px] font-semibold text-rz-secondary">
+                        {t('business.wallet.range.to')}
+                        <input
+                            type="date"
+                            value={to}
+                            min={from === '' ? undefined : from}
+                            onChange={(event) => setTo(event.target.value)}
+                            className="rounded-[10px] border border-rz-border bg-rz-surface px-2.5 py-2 text-[12.5px] text-rz-ink"
+                        />
+                    </label>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => apply({})}
+                            className="flex-1 rounded-[10px] border border-rz-border py-2 text-xs font-semibold text-rz-slate"
+                        >
+                            {t('business.wallet.range.clear')}
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 rounded-[10px] bg-rz-accent-fill py-2 text-xs font-semibold text-white"
+                        >
+                            {t('business.wallet.range.apply')}
+                        </button>
+                    </div>
+                </form>
+            )}
+        </div>
+    );
+}
+
+/** The statement download (design "Download"): a PDF or a spreadsheet of the same range, from the server. */
+function StatementDownload({
+    exports,
+}: {
+    exports: NonNullable<BusinessWalletProps['exports']>;
+}) {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
+    const options = [
+        {
+            key: 'pdf',
+            link: exports.pdf,
+            label: t('business.wallet.export.pdf'),
+            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c]',
+        },
+        {
+            key: 'csv',
+            link: exports.csv,
+            label: t('business.wallet.export.csv'),
+            tint: 'bg-rz-accent-soft text-rz-accent-app-text',
+        },
+    ];
+
+    return (
+        <div className="relative">
+            <button
+                type="button"
+                title={t('business.wallet.export.label')}
+                aria-label={t('business.wallet.export.label')}
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+                className="flex size-[30px] items-center justify-center rounded-[10px] border border-rz-border bg-rz-surface text-rz-slate"
+            >
+                <svg
+                    aria-hidden
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                >
+                    <path
+                        d="M12 3v12M8 11l4 4 4-4M5 20h14"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                </svg>
+            </button>
+            {open && (
+                <div className="absolute top-[37px] right-0 z-40 w-[168px] rounded-xl border border-rz-border bg-rz-surface p-[5px] shadow-[0_20px_44px_-16px_rgba(20,45,95,.34)]">
+                    {options.map((option) => (
+                        <a
+                            key={option.key}
+                            href={option.link.url}
+                            download
+                            onClick={() => setOpen(false)}
+                            className="flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-[9px] text-left"
+                        >
+                            <span
+                                aria-hidden
+                                className={cn(
+                                    'flex size-[26px] items-center justify-center rounded-[10px] text-[10px] font-bold uppercase',
+                                    option.tint,
+                                )}
+                            >
+                                {option.key}
+                            </span>
+                            <span className="text-[12.5px] font-semibold text-rz-ink">
+                                {option.label}
+                            </span>
+                        </a>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
  * The wallet history (design L1347–1457) in C4 terms: external cash in apart from internal
  * repayments (H5), newest first, each opening its immutable receipt. Amounts are a magnitude with
- * a direction, never a sign the client computed; older entries page on.
+ * a direction, never a sign the client computed; older entries page on. The date range and the
+ * statement download sit beside the heading, as the design draws them.
  */
 export function WalletHistory({
     history,
+    exports = null,
 }: {
     history: BusinessWalletProps['history'];
+    exports?: BusinessWalletProps['exports'];
 }) {
     const { t, locale } = useTranslation();
     const label = useEntryLabel();
 
     return (
         <section aria-label={t('business.wallet.history')} className="mt-5">
-            <h2 className="text-sm font-semibold text-rz-ink">
-                {t('business.wallet.history')}
-            </h2>
+            <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold text-rz-ink">
+                    {t('business.wallet.history')}
+                </h2>
+                <div className="flex items-center gap-1.5">
+                    {history.range !== null && (
+                        <RangePicker range={history.range} />
+                    )}
+                    {exports !== null && (
+                        <StatementDownload exports={exports} />
+                    )}
+                </div>
+            </div>
             <nav
                 aria-label={t('business.servicing.wallet.movement')}
                 className="mt-[11px] flex gap-[7px]"

@@ -18,7 +18,7 @@ import type {
 import type { ProviderOutcomeState } from '@/types/settlement';
 
 const HEADING =
-    'mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted';
+    'mb-2.5 text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted';
 
 const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface px-4 py-3';
 
@@ -144,10 +144,6 @@ export function ServicingPanel({
                     <Fact
                         label={t('admin.repayments.component.late_fees')}
                         value={formatRwf(snapshot.outstanding.late_fees)}
-                    />
-                    <Fact
-                        label={t('admin.repayments.component.service_fee')}
-                        value={formatRwf(snapshot.outstanding.service_fee)}
                     />
                     <Fact
                         label={t('admin.repayments.component.total')}

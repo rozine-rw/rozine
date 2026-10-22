@@ -8,7 +8,7 @@ import { resetInertia } from './inertia-mock';
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const untracked = (
-    key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury' | 'frozen',
+    key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury',
 ): HealthSignal => ({ key, status: 'untracked', facts: [], action: null });
 
 const healthy: HealthSignal[] = [
@@ -35,7 +35,7 @@ const healthy: HealthSignal[] = [
     untracked('arrears'),
     untracked('outstanding'),
     untracked('treasury'),
-    untracked('frozen'),
+    { key: 'frozen', status: 'healthy', facts: { accounts: 0 }, action: null },
 ];
 
 const props = (
@@ -90,12 +90,23 @@ describe('Admin System Health', () => {
         expect(card('Capital in flight')).toHaveTextContent(
             '1 raise filling or awaiting disbursement',
         );
+        /* Two applications still wait, so the queue is within tolerance, not clear. */
         expect(card('Underwriting queue')).toHaveTextContent(
-            'The queue is clear.',
+            'Within tolerance. No backlog is building.',
+        );
+        expect(card('Underwriting queue')).not.toHaveTextContent(
+            'Queue is clear.',
+        );
+        expect(card('Capital in flight')).toHaveTextContent(
+            'Liquidity is flowing. Ensure disbursement queue stays clear.',
         );
         expect(card('Event throughput')).toHaveTextContent('7/h');
-        expect(card('Event throughput')).toHaveTextContent(
-            '90 actions recorded in total',
+        expect(card('Event throughput')).toHaveTextContent('90 events total');
+        expect(card('Frozen accounts')).toHaveTextContent(
+            '0accounts with access paused',
+        );
+        expect(card('Frozen accounts')).toHaveTextContent(
+            'No operator accounts are currently restricted.',
         );
         expect(card('Treasury position')).toHaveTextContent('Not tracked yet');
         expect(card('Treasury position')).toHaveTextContent(
@@ -104,6 +115,22 @@ describe('Admin System Health', () => {
         expect(
             screen.queryByRole('link', { name: /Open/ }),
         ).not.toBeInTheDocument();
+    });
+
+    it('says the queue is clear only when nothing waits', () => {
+        render(
+            <AdminSystemHealth
+                {...props({
+                    signals: healthy.map((signal) =>
+                        signal.key === 'queue'
+                            ? { ...signal, facts: { pending: 0 } }
+                            : signal,
+                    ),
+                })}
+            />,
+        );
+
+        expect(card('Underwriting queue')).toHaveTextContent('Queue is clear.');
     });
 
     it('leads with a critical ledger and links what needs a look', () => {
@@ -136,11 +163,25 @@ describe('Admin System Health', () => {
                             facts: { last_hour: 0, total: 1 },
                             action: null,
                         },
+                        {
+                            key: 'frozen',
+                            status: 'watch',
+                            facts: { accounts: 2 },
+                            action: { url: '/admin/staff', method: 'get' },
+                        },
                     ],
                 })}
             />,
         );
 
+        expect(card('Frozen accounts')).toHaveTextContent(
+            '2 operator accounts are frozen. Review them in Staff & Roles.',
+        );
+        expect(
+            within(card('Frozen accounts')).getByRole('link', {
+                name: /Open Staff & Roles/,
+            }),
+        ).toHaveAttribute('href', '/admin/staff');
         expect(screen.getByRole('status')).toHaveTextContent(
             'Attention required',
         );
@@ -159,7 +200,7 @@ describe('Admin System Health', () => {
             within(queue).getByRole('link', { name: /Open the queue/ }),
         ).toHaveAttribute('href', '/admin/applications');
         expect(card('Event throughput')).toHaveTextContent(
-            'No actions were recorded in the last hour.',
+            'No events in the last hour. Act in the apps to generate activity.',
         );
     });
 
@@ -197,7 +238,7 @@ describe('Admin System Health', () => {
             <AdminSystemHealth {...props({ search: 'not tracked' })} />,
         );
 
-        expect(screen.getAllByRole('article')).toHaveLength(5);
+        expect(screen.getAllByRole('article')).toHaveLength(4);
 
         rerender(<AdminSystemHealth {...props({ search: 'zzz' })} />);
 

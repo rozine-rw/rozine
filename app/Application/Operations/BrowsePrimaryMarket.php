@@ -14,7 +14,8 @@ use Carbon\CarbonImmutable;
  * the same projection Investors browse, with its Kigali days left, and how many published raises
  * ended funded or failed. A raise whose funding lock is recorded has left the market and waits on
  * its disbursement, so it is not listed. The funding trend is the cash committed per Kigali day
- * over the last fourteen days. Nothing here can feature, pause, fill or fail a raise:
+ * over the last fourteen days, or over a chosen window of Kigali dates (both ends included), read
+ * by month once the window spans more than two months. Nothing here can feature, pause, fill or fail a raise:
  * a raise fills or fails on its own clock (BRS), and no moderation policy is signed.
  *
  * @phpstan-import-type Bar from OperationsDashboardStore
@@ -34,8 +35,15 @@ final readonly class BrowsePrimaryMarket
     /** The design's funding trend reads the last fourteen Kigali days. */
     private const int TREND_DAYS = 14;
 
-    /** @return array{raises: list<Raise>, ended: array{funded: int, failed: int}, trend: array{from: string, bars: list<Bar>}} */
-    public function handle(int $actorId): array
+    /** A window longer than this many days reads by month. */
+    private const int DAILY_DAYS = 62;
+
+    /**
+     * @param  string|null  $from  the window's first Kigali date `Y-m-d`, or null for fourteen days back
+     * @param  string|null  $to  the window's last Kigali date `Y-m-d`, or null for today
+     * @return array{raises: list<Raise>, ended: array{funded: int, failed: int}, trend: array{from: string, to: string|null, grain: 'day'|'month', custom: bool, bars: list<Bar>}}
+     */
+    public function handle(int $actorId, ?string $from = null, ?string $to = null): array
     {
         $this->staff->check($actorId, 'primary.view');
         $today = CarbonImmutable::now(self::ZONE)->startOfDay();
@@ -55,9 +63,12 @@ final readonly class BrowsePrimaryMarket
                 'days_left' => max(0, (int) $today->diffInDays($closes->startOfDay(), false))];
         }
         $notes = $this->dashboard->figures()['notes'];
-        $from = $today->subDays(self::TREND_DAYS - 1);
+        $last = $to === null ? null : CarbonImmutable::parse($to, self::ZONE)->startOfDay();
+        $first = $from === null ? ($last ?? $today)->subDays(self::TREND_DAYS - 1) : CarbonImmutable::parse($from, self::ZONE)->startOfDay();
+        $grain = $first->diffInDays($last ?? $today, true) >= self::DAILY_DAYS ? 'month' : 'day';
 
         return ['raises' => $raises, 'ended' => ['funded' => $notes['funded'] + $notes['repaying'], 'failed' => $notes['failed']],
-            'trend' => ['from' => $from->toIso8601String(), 'bars' => $this->dashboard->committed('day', $from->utc()->toIso8601String(), null)]];
+            'trend' => ['from' => $first->toIso8601String(), 'to' => $last?->toIso8601String(), 'grain' => $grain, 'custom' => $from !== null || $to !== null,
+                'bars' => $this->dashboard->committed($grain, $first->utc()->toIso8601String(), $last?->addDay()->utc()->toIso8601String())]];
     }
 }

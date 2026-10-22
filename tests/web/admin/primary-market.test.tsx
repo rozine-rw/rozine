@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminPrimaryMarket from '@/pages/admin/primary-market';
 import type {
@@ -6,7 +6,7 @@ import type {
     PrimaryMarketRaise,
 } from '@/types/admin';
 import shellFixture from '../../../resources/fixtures/ui/admin-exceptions-empty.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -63,6 +63,8 @@ const props = (
         ],
         trend: {
             from: '2026-10-02T00:00:00+02:00',
+            to: null,
+            grain: 'day',
             bars: [
                 {
                     label: '10-14',
@@ -122,9 +124,7 @@ describe('Primary Market Monitor', () => {
 
         const trend = screen.getByRole('region', { name: 'Funding trend' });
 
-        expect(trend).toHaveTextContent(
-            'Cash committed to raises each day, last 14 days.',
-        );
+        expect(trend).toHaveTextContent('Last 14 days · grouped by day');
         expect(within(trend).getByText('10-14')).toBeInTheDocument();
         expect(within(trend).getByText('2.5M')).toBeInTheDocument();
         expect(
@@ -161,6 +161,100 @@ describe('Primary Market Monitor', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('reloads the funding trend over the chosen dates and clears back to the last 14 days', () => {
+        render(
+            <AdminPrimaryMarket
+                {...props({
+                    trend: {
+                        from: '2026-05-01T00:00:00+02:00',
+                        to: '2026-10-14T00:00:00+02:00',
+                        grain: 'month',
+                        custom: true,
+                        bars: [],
+                    },
+                })}
+            />,
+        );
+
+        const trend = screen.getByRole('region', { name: 'Funding trend' });
+
+        expect(trend).toHaveTextContent('grouped by month');
+        expect(within(trend).getByLabelText('From date')).toHaveValue(
+            '2026-05-01',
+        );
+        fireEvent.change(within(trend).getByLabelText('To date'), {
+            target: { value: '2026-10-20' },
+        });
+        expect(inertia.reload.at(-1)).toMatchObject({
+            data: { from: '2026-05-01', to: '2026-10-20' },
+            only: ['trend'],
+        });
+        fireEvent.click(within(trend).getByRole('button', { name: 'Clear' }));
+        expect(inertia.reload.at(-1)).toMatchObject({
+            data: { from: null, to: null },
+        });
+        expect(trend).toHaveTextContent('Last 14 days');
+        expect(
+            within(trend).queryByRole('button', { name: 'Clear' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows a From-only window as chosen, and says when the dates were refused', () => {
+        inertia.errors = {
+            to: 'The to field must be a date after or equal to from.',
+        };
+        render(
+            <AdminPrimaryMarket
+                {...props({
+                    trend: {
+                        from: '2026-09-01T00:00:00+02:00',
+                        to: null,
+                        grain: 'day',
+                        custom: true,
+                        bars: [],
+                    },
+                })}
+            />,
+        );
+
+        const trend = screen.getByRole('region', { name: 'Funding trend' });
+        const from = within(trend).getByLabelText('From date');
+        expect(from).toHaveValue('2026-09-01');
+        expect(trend).not.toHaveTextContent('Last 14 days');
+        expect(within(trend).getByLabelText('To date')).toHaveAttribute(
+            'min',
+            '2026-09-01',
+        );
+        expect(within(trend).getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+        expect(from).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('keeps a single day of commitments to one bar wide', () => {
+        render(
+            <AdminPrimaryMarket
+                {...props({
+                    trend: {
+                        from: '2026-10-14T00:00:00+02:00',
+                        to: null,
+                        grain: 'day',
+                        custom: false,
+                        bars: [
+                            {
+                                label: '10-14',
+                                amount: { currency: 'RWF', amount: '1000000' },
+                                height_pct: 100,
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByTestId('chart-bar')).toHaveClass('max-w-14');
+    });
+
     it('shows one day left in the singular and offers a further page', () => {
         render(
             <AdminPrimaryMarket
@@ -192,7 +286,16 @@ describe('Primary Market Monitor', () => {
 
         rerender(
             <AdminPrimaryMarket
-                {...props({ raises: [], trend: { from: '', bars: [] } })}
+                {...props({
+                    raises: [],
+                    trend: {
+                        from: '',
+                        to: null,
+                        grain: 'day',
+                        custom: false,
+                        bars: [],
+                    },
+                })}
             />,
         );
 

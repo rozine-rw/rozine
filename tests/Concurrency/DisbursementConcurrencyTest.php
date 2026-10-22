@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\DispatchDisbursements;
+use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\PayoutInstruction;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
 use App\Application\Disbursement\VerifiedPayoutEvent;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\CommandOperation;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementDispatch;
+use App\Models\DisbursementEvent;
 use App\Models\DisbursementIntent;
 use App\Models\DisbursementProviderCall;
 use App\Models\DisbursementReconciliation;
@@ -75,7 +76,7 @@ function recordedCodes(string $command): array
     return $codes;
 }
 
-it('dispatches only after the outermost commit, and never for a rolled-back approval', function (): void {
+it('dispatches only after the outermost commit, and never for a rolled-back automatic payment', function (): void {
     $provider = new class implements PayoutProvider
     {
         /** @var list<int> */
@@ -109,71 +110,60 @@ it('dispatches only after the outermost commit, and never for a rolled-back appr
         }
     };
     app()->instance(PayoutProvider::class, $provider);
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
+    ['campaign' => $campaign] = DisbursementFixture::funded();
+    DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');
 
-    expect(fn () => DB::transaction(function () use ($checker, $disbursement, $proof): void {
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
+    expect(fn () => DB::transaction(function (): void {
+        expect(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 0, 'known' => 1, 'queued' => 1, 'failed' => 0]);
         throw new RuntimeException('Roll back the caller transaction.');
     }))->toThrow(RuntimeException::class, 'Roll back the caller transaction.');
     expect(DisbursementIntent::query()->count())->toBe(0)->and($provider->levels)->toBe([]);
 
-    DB::transaction(fn () => DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof));
+    expect(DB::transaction(fn () => app(OpenFundedDisbursements::class)->handle()))->toBe(['opened' => 0, 'known' => 1, 'queued' => 1, 'failed' => 0])
+        ->and(app(OpenFundedDisbursements::class)->handle())->toBe(['opened' => 0, 'known' => 1, 'queued' => 0, 'failed' => 0]);
     expect(DisbursementIntent::query()->count())->toBe(1)->and($provider->levels)->toBe([0])
         ->and(DisbursementDispatch::query()->pluck('phase')->all())->toBe(['queued', 'claimed', 'sent']);
 });
 
-it('records one intent when two checkers approve at once', function (): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $first = DisbursementFixture::staff(['approver']);
-    $second = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proofs = [$first->id => DisbursementFixture::stepUp($first, $disbursement)['proof'], $second->id => DisbursementFixture::stepUp($second, $disbursement)['proof']];
-    $approve = fn ($checker): Closure => fn () => DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proofs[$checker->id]);
+it('records one intent and sends once when two automatic runs pay at once', function (): void {
+    ['campaign' => $campaign] = DisbursementFixture::funded();
+    DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');
+    $pay = fn (): Closure => fn () => app(OpenFundedDisbursements::class)->handle();
 
-    expect(disbursementContenders([$approve($first), $approve($second)]))->toBe([0, 0])
+    expect(disbursementContenders([$pay(), $pay()]))->toBe([0, 0])
         ->and(DisbursementIntent::query()->count())->toBe(1)
-        ->and(recordedCodes('disbursement.approve'))->toBe(['DISBURSEMENT_INTENT_RECORDED', 'DISBURSEMENT_IN_FLIGHT'])
+        ->and(DisbursementEvent::query()->where('kind', 'auto_intent_recorded')->count())->toBe(1)
         ->and(DisbursementProviderCall::query()->where('kind', 'send')->count())->toBe(1);
 });
 
-it('lets approve and hold race to exactly one effect', function (): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
+it('lets automatic payment and a hold race to exactly one effect', function (): void {
+    ['campaign' => $campaign, 'disbursement' => $disbursement] = DisbursementFixture::funded();
     $compliance = DisbursementFixture::staff(['compliance']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
+    DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');
 
     expect(disbursementContenders([
-        fn () => DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof),
-        fn () => DisbursementFixture::command($compliance, $disbursement, 'hold', 1),
+        fn () => app(OpenFundedDisbursements::class)->handle(),
+        fn () => DisbursementFixture::command($compliance, $disbursement, 'hold', 0),
     ]))->toBe([0, 0]);
-    $approved = recordedCodes('disbursement.approve') === ['DISBURSEMENT_INTENT_RECORDED'];
-    expect(recordedCodes('disbursement.hold'))->toBe([$approved ? 'DISBURSEMENT_IN_FLIGHT' : 'DISBURSEMENT_HELD'])
-        ->and(DisbursementIntent::query()->count())->toBe($approved ? 1 : 0)
-        ->and(recordedCodes('disbursement.approve'))->toBe([$approved ? 'DISBURSEMENT_INTENT_RECORDED' : 'DISBURSEMENT_STATE_INVALID']);
+    $paid = DisbursementIntent::query()->exists();
+    expect(recordedCodes('disbursement.hold'))->toBe([$paid ? 'DISBURSEMENT_IN_FLIGHT' : 'DISBURSEMENT_HELD'])
+        ->and(DisbursementEvent::query()->orderBy('revision')->pluck('kind')->all())->toBe($paid ? ['auto_intent_recorded', 'dispatched'] : ['held'])
+        ->and(DisbursementProviderCall::query()->where('kind', 'send')->count())->toBe($paid ? 1 : 0);
 });
 
-it('never claims for a maker whose authority was revoked before the worker\'s locked recheck', function (): void {
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    $maker = DisbursementFixture::staff(['treasury']);
-    $checker = DisbursementFixture::staff(['approver']);
-    DisbursementFixture::command($maker, $disbursement, 'authorize', 0);
-    $proof = DisbursementFixture::stepUp($checker, $disbursement)['proof'];
-    DB::transaction(function () use ($checker, $disbursement, $proof): void {
-        DisbursementFixture::command($checker, $disbursement, 'approve', 1, $proof);
-        DisbursementFixture::sources()->setConnection(null, 'unavailable');
+it('never claims for a destination revoked before the worker\'s locked recheck', function (): void {
+    ['campaign' => $campaign] = DisbursementFixture::funded();
+    DisbursementFixture::sources()->setDestination($campaign->businessId, 'rotated');
+    DB::transaction(function () use ($campaign): void {
+        app(OpenFundedDisbursements::class)->handle();
+        DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'unavailable', ['exposure']);
     });
-    DisbursementFixture::sources()->setConnection(null, 'available');
+    DisbursementFixture::sources()->scriptRecheck($campaign->campaignId, 'passed');
+    expect(DisbursementDispatch::query()->pluck('phase')->all())->toBe(['queued']);
 
     expect(disbursementContenders([
         fn () => app(DispatchDisbursements::class)->handle(),
-        fn () => app(ConfigureStaffAccess::class)->handle($maker->id, true, 'Revoked.', (string) Str::uuid(), ['compliance']),
+        fn () => DisbursementFixture::sources()->setDestination($campaign->businessId, 'revoked'),
     ]))->toBe([0, 0]);
     $claimed = DisbursementDispatch::query()->where('phase', 'claimed')->exists();
     expect(DisbursementProviderCall::query()->where('kind', 'send')->count())->toBe($claimed ? 1 : 0)
@@ -184,7 +174,7 @@ it('never claims for a maker whose authority was revoked before the worker\'s lo
 });
 
 it('never closes twice when a success and a failure arrive together', function (): void {
-    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     $success = DisbursementFixture::provider()->callback($intent->id, 'succeeded');
     $failure = DisbursementFixture::provider()->callback($intent->id, 'failed');
 
@@ -199,7 +189,7 @@ it('never closes twice when a success and a failure arrive together', function (
 });
 
 it('issues once when duplicate successes race the scheduled reconciler', function (): void {
-    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     DisbursementFixture::provider()->scriptQuery($intent->id, 'succeeded');
     $message = DisbursementFixture::provider()->callback($intent->id, 'succeeded');
 
@@ -214,7 +204,7 @@ it('issues once when duplicate successes race the scheduled reconciler', functio
 });
 
 it('refuses raw concurrent closings and a raw refund closing after an issue', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent] = DisbursementFixture::paid();
     DisbursementFixture::provider()->callback($intent->id, 'succeeded');
     app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'succeeded'));
     $raw = fn (string $cause): Closure => fn () => DB::transaction(fn () => DB::table('disbursement_closings')->insert(['id' => strtolower((string) Str::ulid()),
@@ -229,7 +219,7 @@ it('refuses raw concurrent closings and a raw refund closing after an issue', fu
 // PROVISIONAL (#96 5874488658): this probes the synthetic source's advisory Business lock. A probe
 // on the real S3-C Business row lock must replace it before joint activation.
 it('takes the Business lock before the disbursement row on the issue path', function (): void {
-    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::approved();
+    ['disbursement' => $disbursement, 'intent' => $intent, 'campaign' => $campaign] = DisbursementFixture::paid();
     $message = DisbursementFixture::provider()->callback($intent->id, 'succeeded');
     $probe = tempnam(sys_get_temp_dir(), 'lock-order');
 

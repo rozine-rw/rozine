@@ -14,7 +14,7 @@ final readonly class ClosingEvidence
 {
     /**
      * @param  'issued'|'failed_closing'  $kind
-     * @param  'approve_recheck'|'worker_recheck'|'reconciled_failure'|'reconciled_success'  $cause
+     * @param  'auto_recheck'|'approve_recheck'|'worker_recheck'|'reconciled_failure'|'reconciled_success'  $cause
      * @param  list<string>  $causes
      * @param  list<string>|null  $dueDates
      */

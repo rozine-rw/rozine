@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Application\Operations\Contracts\OperationsDashboardStore;
 use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -16,12 +19,13 @@ use Tests\Support\AuditSealingFixture;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 /** @param  list<string>  $roles */
 function boardStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Operations Center assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Operations Center assignment.');
 
     return $user;
 }
@@ -83,8 +87,8 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             // An analyst cannot review applications, so the queue is not read at all.
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
-                ['key' => 'frozen_accounts', 'count' => null, 'link' => null]])
-            ->where('breaks', null)->where('portfolio_health', null)->where('activity', null)->where('sector_exposure', null)->where('collections', null)
+                ['key' => 'frozen_accounts', 'count' => 0, 'link' => null]])
+            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->where('activity', null)->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
@@ -92,6 +96,14 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('treasury', ['invested' => ['currency' => 'RWF', 'amount' => '0'], 'disbursed' => ['currency' => 'RWF', 'amount' => '0'],
                 'platform_net' => null, 'paid_to_investors' => null])
             ->where('nav.applications', null)->where('nav.events', null)->where('nav.staff.url', '/admin/staff'));
+});
+
+test('frozen accounts counts frozen operators and opens Staff & Roles once one is frozen', function (): void {
+    $frozen = boardStaff(['analyst']);
+    app(ConfigureStaffAccess::class)->handle($frozen->id, false, 'Left the team.', (string) Str::uuid(), ['analyst']);
+
+    $this->actingAs(boardStaff(['treasury']))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('attention.4', ['key' => 'frozen_accounts', 'count' => 1, 'link' => ['url' => '/admin/staff', 'method' => 'get']]));
 });
 
 test('the open reconciliation breaks show, oldest first and unowned, to whoever may view reconciliation', function (): void {
@@ -130,7 +142,18 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
                 'bars' => [['label' => '2027', 'amount' => ['currency' => 'RWF', 'amount' => $total], 'height_pct' => 100]]])
             ->where('attention.1.link', ['url' => '/admin/investors?chip=pending', 'method' => 'get'])
             ->where('attention.0.link', ['url' => '/admin/applications', 'method' => 'get'])
-            ->where('badges', ['applications' => 0, 'disbursements' => 0]));
+            ->where('badges', ['applications' => 0, 'disbursements' => 0])
+            ->where('sector_exposure', [['sector' => (string) DB::table('business_profiles')->value('profile->industry'),
+                'outstanding' => ['currency' => 'RWF', 'amount' => $total], 'notes' => 1, 'at_risk' => false]])
+            ->where('portfolio_health', ['total' => 1, 'healthy' => ['count' => 1, 'pct' => 100], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null]));
+
+    // The Business's newest monthly report is on watch: so is its note, and its sector is at risk.
+    $deals = $this->createMock(InvestorDealCatalogue::class);
+    $deals->method('updates')->willReturn([['status' => 'watch'], ['status' => 'healthy']]);
+    app()->instance(InvestorDealCatalogue::class, $deals);
+    $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('sector_exposure.0.at_risk', true)
+            ->where('portfolio_health', ['total' => 1, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 1, 'pct' => 100], 'distressed' => null]));
 
     // Kigali is UTC+2: 22:30 UTC on 1 March is already 2 March there.
     $window = fn (string $from, ?string $to = null): array => $this->actingAs($viewer)->get(route('staff.dashboard', array_filter(['from' => $from, 'to' => $to])))
@@ -163,14 +186,13 @@ test('the lifecycle places each published campaign where it sits now', function 
                 ['stage' => 'matured', 'count' => null, 'width_pct' => 0], ['stage' => 'failed', 'count' => 1, 'width_pct' => 100]]));
 });
 
-test('the queues count applications waiting, submissions awaiting review and disbursements awaiting a checker', function (): void {
+test('the queues count applications waiting, submissions awaiting review and disbursements automatic payment has not queued', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
     AuditSealingFixture::cosign($fixture);
     $application = $fixture['application'];
     boardSubmission(User::factory()->create(['name' => 'Aline Uwase', 'party_id' => Party::factory()]));
-    ['disbursement' => $disbursement] = DisbursementFixture::funded();
-    DisbursementFixture::command(DisbursementFixture::staff(['treasury']), $disbursement, 'authorize', 0);
+    DisbursementFixture::funded();
 
     $this->actingAs(boardStaff(['approver']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('badges', ['applications' => 1, 'disbursements' => 1])
@@ -192,6 +214,39 @@ test('the queues count applications waiting, submissions awaiting review and dis
     $this->actingAs(boardStaff(['compliance']))->get(route('staff.dashboard'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('badges.disbursements', 1)->where('attention.1.link.url', '/admin/investors?chip=pending')
             ->where('nav.events.url', '/admin/activity'));
+});
+
+test('portfolio health reads each Business\'s newest report once, and puts every note it issued on watch with it', function (): void {
+    $note = fn (string $campaign, string $business): array => ['campaign_id' => $campaign, 'business_id' => $business, 'state' => 'repaying',
+        'live_at' => '2026-10-01T08:00:00+00:00'];
+    app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, [
+        'noteStates' => [$note('01K000000000000000000000N1', '01K000000000000000000000B1'), $note('01K000000000000000000000N2', '01K000000000000000000000B1'),
+            $note('01K000000000000000000000N3', '01K000000000000000000000B2')],
+        'figures' => ['capital_raised' => '0', 'active_businesses' => 2, 'disbursements_waiting' => 0, 'disbursed' => '0',
+            'notes' => ['live' => 0, 'funded' => 0, 'repaying' => 3, 'failed' => 0]],
+        'sectorExposure' => [['sector' => 'Agriculture', 'principal' => '0', 'notes' => 2, 'campaigns' => ['01K000000000000000000000N1', '01K000000000000000000000N2']],
+            ['sector' => 'Retail', 'principal' => '0', 'notes' => 1, 'campaigns' => ['01K000000000000000000000N3']]],
+        'capitalRaised' => []]));
+    $deals = $this->createMock(InvestorDealCatalogue::class);
+    $deals->expects($this->exactly(2))->method('updates')
+        ->willReturnCallback(fn (string $campaign): array => [['status' => $campaign === '01K000000000000000000000N3' ? 'healthy' : 'watch']]);
+    app()->instance(InvestorDealCatalogue::class, $deals);
+
+    $this->actingAs(boardStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('sector_exposure.0.at_risk', true)->where('sector_exposure.1.at_risk', false)
+            ->where('portfolio_health', ['total' => 3, 'healthy' => ['count' => 1, 'pct' => 33], 'watch' => ['count' => 2, 'pct' => 67], 'distressed' => null]));
+});
+
+test('the Payments badge counts ready, held and legacy awaiting disbursements, never one already queued', function (): void {
+    ['campaign' => $legacy] = PrimaryHoldingFixture::committed();
+    PrimaryHoldingFixture::awaitingApproval($legacy);
+    DisbursementFixture::funded();
+    ['disbursement' => $held] = DisbursementFixture::funded();
+    DisbursementFixture::command(DisbursementFixture::staff(['compliance']), $held, 'hold', 0);
+    DisbursementFixture::paid();
+    $badge = fn (string $role) => $this->actingAs(boardStaff([$role]))->get(route('staff.dashboard'))->assertOk()->inertiaPage()['props']['badges']['disbursements'];
+
+    expect($badge('treasury'))->toBe(3)->and($badge('analyst'))->toBeNull();
 });
 
 test('the API mirror withholds pending application details from staff without applications.review', function (): void {

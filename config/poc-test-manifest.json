@@ -18,10 +18,19 @@
     "tests/Feature/EnvironmentIsolationTest.php",
     "tests/Feature/WalletSyntheticIsolationTest.php",
     "tests/Feature/StaffPermissionTest.php",
+    "tests/Feature/StaffSuperadminApprovalTest.php",
+    "tests/Feature/StaffRecoveryTest.php",
+    "tests/Feature/StaffDirectoryTest.php",
+    "tests/Feature/StaffAccessTest.php",
     "tests/Feature/DemoSafeguardsTest.php",
     "tests/Feature/AuditReportCryptographyTest.php",
+    "tests/Feature/AuditAssignmentCompletionTest.php",
+    "tests/Feature/MonthlyAuditSchedulerTest.php",
     "tests/Feature/AuditStatementAccessTest.php",
+    "tests/Feature/StaffAuditReportRegisterTest.php",
     "tests/Feature/OrganizationIdentityTest.php",
+    "tests/Concurrency/StaffSuperadminApprovalConcurrencyTest.php",
+    "tests/Concurrency/StaffRecoveryConcurrencyTest.php",
     "tests/Concurrency/LedgerCommitIntegrityTest.php",
     "tests/Concurrency/WalletPostingsConcurrencyTest.php"
   ],
@@ -33,6 +42,7 @@
     "tests/web/investor/wallet.test.tsx",
     "tests/web/business/wallet.test.tsx",
     "tests/web/admin/reconciliation.test.tsx",
-    "tests/web/auditor/conflicts.test.tsx"
+    "tests/web/auditor/conflicts.test.tsx",
+    "tests/web/admin/parties.test.tsx"
   ]
 }

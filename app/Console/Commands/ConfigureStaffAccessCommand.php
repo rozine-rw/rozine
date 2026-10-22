@@ -13,7 +13,7 @@ class ConfigureStaffAccessCommand extends Command
 {
     protected $signature = 'identity:staff {user : Dedicated staff account ID} {--revoke} {--role=* : Explicit staff role, repeatable} {--reason= : Required audit reason}';
 
-    protected $description = 'Grant or revoke scoped staff access for a dedicated verified account with MFA';
+    protected $description = 'Configure ordinary staff or revoke access; superadmin activation requires independent approval';
 
     public function handle(ConfigureStaffAccess $action): int
     {

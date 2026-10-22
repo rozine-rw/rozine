@@ -194,6 +194,7 @@
                     "email": "ops@rozine.rw",
                     "initials": "AD",
                     "role": "approver",
+                    "roles": ["approver"],
                     "frozen": false,
                     "you": true,
                     "link": {
@@ -207,6 +208,7 @@
                     "email": "eric@rozine.rw",
                     "initials": "EN",
                     "role": "approver",
+                    "roles": ["approver", "treasury"],
                     "frozen": false,
                     "you": false,
                     "link": {
@@ -220,6 +222,7 @@
                     "email": "grace@rozine.rw",
                     "initials": "GK",
                     "role": "analyst",
+                    "roles": ["analyst"],
                     "frozen": false,
                     "you": false,
                     "link": {
@@ -233,6 +236,7 @@
                     "email": "jp@rozine.rw",
                     "initials": "JP",
                     "role": "approver",
+                    "roles": ["approver"],
                     "frozen": true,
                     "you": false,
                     "link": {
@@ -242,6 +246,146 @@
                 }
             ]
         },
-        "party": null
+        "party": null,
+        "permission_matrix": [
+            {
+                "key": "admin.open",
+                "roles": [
+                    "superadmin",
+                    "compliance",
+                    "approver",
+                    "treasury",
+                    "analyst"
+                ]
+            },
+            {
+                "key": "businesses.view",
+                "roles": [
+                    "superadmin",
+                    "compliance",
+                    "approver",
+                    "treasury",
+                    "analyst"
+                ]
+            },
+            {
+                "key": "businesses.verify",
+                "roles": ["superadmin", "compliance", "approver"]
+            },
+            {
+                "key": "investors.verify",
+                "roles": ["superadmin", "compliance"]
+            },
+            {
+                "key": "applications.review",
+                "roles": ["superadmin", "approver"]
+            },
+            {
+                "key": "audit.partners.verify",
+                "roles": ["superadmin", "compliance", "approver"]
+            },
+            {
+                "key": "audit.assignments.manage",
+                "roles": ["superadmin", "approver"]
+            },
+            {
+                "key": "audit.reports.view",
+                "roles": [
+                    "superadmin",
+                    "compliance",
+                    "approver",
+                    "treasury",
+                    "analyst"
+                ]
+            },
+            {
+                "key": "consent.documents.record",
+                "roles": ["superadmin", "compliance"]
+            },
+            {
+                "key": "ledger.view",
+                "roles": ["superadmin", "compliance", "treasury"]
+            },
+            {
+                "key": "disbursements.view",
+                "roles": ["superadmin", "compliance", "approver", "treasury"]
+            },
+            {
+                "key": "staging.mail.testers.manage",
+                "roles": ["superadmin"]
+            },
+            {
+                "key": "reconciliation.view",
+                "roles": ["superadmin", "compliance", "treasury"]
+            },
+            {
+                "key": "exceptions.view",
+                "roles": ["superadmin", "compliance", "treasury"]
+            },
+            {
+                "key": "messaging.view",
+                "roles": ["superadmin", "compliance"]
+            },
+            {
+                "key": "primary.view",
+                "roles": [
+                    "superadmin",
+                    "compliance",
+                    "approver",
+                    "treasury",
+                    "analyst"
+                ]
+            },
+            {
+                "key": "payments.view",
+                "roles": ["superadmin", "compliance", "treasury"]
+            },
+            {
+                "key": "complaints.answer",
+                "roles": ["superadmin", "compliance"]
+            },
+            {
+                "key": "health.view",
+                "roles": ["superadmin", "compliance", "treasury"]
+            },
+            {
+                "key": "disbursements.hold",
+                "roles": ["compliance", "approver", "treasury"]
+            },
+            {
+                "key": "disbursements.requery",
+                "roles": ["treasury"]
+            },
+            {
+                "key": "accounts.freeze",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "capacity.adjust",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "records.edit",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "ledger.correct",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "policies.change",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "records.delete",
+                "roles": [],
+                "withheld": "by_rule"
+            }
+        ]
     }
 }

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminParties from '@/pages/admin/parties';
 import type { AdminPartiesProps, PartyDetail } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 import licenceFixture from '../../../resources/fixtures/ui/admin-auditors-licence.json';
 import auditorsFixture from '../../../resources/fixtures/ui/admin-auditors.json';
 import frozenFixture from '../../../resources/fixtures/ui/admin-businesses-frozen.json';
@@ -10,12 +11,13 @@ import overdueFixture from '../../../resources/fixtures/ui/admin-investors-kyc-o
 import investorsFixture from '../../../resources/fixtures/ui/admin-investors.json';
 import staffFixture from '../../../resources/fixtures/ui/admin-staff.json';
 import { renderWithUser } from '../helpers/render-with-user';
+import { textContrastOnSurface } from '../helpers/text-contrast';
 import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as AdminPartiesProps;
+    structuredClone(fixture.props) as AdminPartiesProps & LicenceQueues;
 
 const party = (fixture: { props: unknown }): PartyDetail => {
     const detail = props(fixture).party;
@@ -30,6 +32,30 @@ const party = (fixture: { props: unknown }): PartyDetail => {
 beforeEach(resetInertia);
 
 describe('Party directories', () => {
+    it.each(['light', 'dark'] as const)(
+        'keeps the rendered licence queue buttons and translucent chips readable in %s mode',
+        (theme) => {
+            render(<AdminParties {...props(auditorsFixture)} />);
+            const surface = theme === 'light' ? '#ffffff' : '#101a2e';
+
+            for (const [name, chip] of [
+                ['Partner change requests', 'RENEWAL'],
+                ['ICPAR verification desk', 'PENDING VERIFICATION'],
+            ]) {
+                const queue = within(screen.getByRole('region', { name }));
+
+                for (const control of [
+                    queue.getByRole('link', { name: 'Approve' }),
+                    queue.getByText(chip),
+                ]) {
+                    expect(
+                        textContrastOnSurface(control, theme, surface),
+                    ).toBeGreaterThanOrEqual(4.5);
+                }
+            }
+        },
+    );
+
     it('lists businesses with their state badges, filters and eligibility policy', () => {
         render(<AdminParties {...props(businessesFixture)} />);
 
@@ -56,6 +82,10 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Watch').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Healthy').length).toBeGreaterThan(1);
         expect(screen.getByText('1,657')).toBeInTheDocument();
+        /* Raised and investors count funded raises only, so they say so: a live raise is not funded. */
+        expect(screen.getByText('Capital Funded')).toBeInTheDocument();
+        expect(screen.getAllByText('Funded').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Funders').length).toBeGreaterThan(0);
 
         fireEvent.change(screen.getByRole('combobox', { name: 'Sector' }), {
             target: { value: 'agriculture' },
@@ -73,6 +103,72 @@ describe('Party directories', () => {
         expect(screen.getAllByText('Pending').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Verified').length).toBeGreaterThan(1);
+        /* The portfolio includes live commitments, while holdings count issued notes only. */
+        expect(
+            screen.getAllByText('Invested + committed').length,
+        ).toBeGreaterThan(0);
+    });
+
+    it('names an investor still in onboarding as pending, never blank', () => {
+        const fixture = props(investorsFixture);
+
+        if (fixture.directory.kind !== 'investor') {
+            throw new Error('fixture lists investors');
+        }
+
+        fixture.directory.rows[0] = { ...fixture.directory.rows[0], name: '' };
+        render(
+            <AdminParties
+                {...fixture}
+                party={{ ...party(overdueFixture), name: ' ' }}
+            />,
+        );
+
+        expect(
+            screen.getAllByRole('link', { name: 'Name pending' }).length,
+        ).toBeGreaterThan(0);
+        expect(
+            within(screen.getByRole('dialog')).getAllByText('Name pending')
+                .length,
+        ).toBeGreaterThan(0);
+    });
+
+    it("lists an investor's holdings by Business, with the principal and notes held", () => {
+        render(
+            <AdminParties
+                {...props(investorsFixture)}
+                party={{
+                    ...party(overdueFixture),
+                    list: {
+                        key: 'holdings',
+                        rows: [
+                            {
+                                id: 'bp_1',
+                                title: 'GreenLeaf Agro',
+                                tone: 'green',
+                                detail: {
+                                    kind: 'holding',
+                                    value: {
+                                        currency: 'RWF',
+                                        amount: '800000',
+                                    },
+                                    notes: 2,
+                                },
+                            },
+                        ],
+                    },
+                }}
+            />,
+        );
+
+        const drawer = screen.getByRole('dialog');
+        expect(
+            within(drawer).getByRole('heading', { name: 'Holdings' }),
+        ).toBeInTheDocument();
+        expect(within(drawer).getByText('GreenLeaf Agro')).toBeInTheDocument();
+        expect(
+            within(drawer).getByText('RWF 800,000 · 2 notes'),
+        ).toBeInTheDocument();
     });
 
     it('lists Audit Partners with their standing', () => {
@@ -92,6 +188,109 @@ describe('Party directories', () => {
         );
         expect(screen.getAllByText('Active').length).toBeGreaterThan(1);
         expect(screen.getAllByText('Frozen').length).toBeGreaterThan(0);
+    });
+
+    it('queues renewals and first licences above the Audit Partner directory, each opening its decision', () => {
+        render(<AdminParties {...props(auditorsFixture)} />);
+
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(
+            screen.getByRole('heading', { name: 'CPA registry' }),
+        ).toBeInTheDocument();
+
+        expect(
+            within(requests).getByText('Jean Habimana, CPA'),
+        ).toBeInTheDocument();
+        expect(within(requests).getByText('RENEWAL')).toBeInTheDocument();
+        expect(within(requests).getByText('PPC-0388-R')).toBeInTheDocument();
+        expect(
+            within(desk).getByText('Claude Mukamana, CPA'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(within(desk).getByText('1 Oct 2026')).toBeInTheDocument();
+        expect(within(desk).getByText('30 Jun 2027')).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(
+            within(desk).getByRole('link', { name: 'Reject' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(within(desk).getByRole('link', { name: 'Reject' })).toHaveClass(
+            'bg-rz-surface',
+            'text-[#b3352a]',
+            'dark:text-[#ff6b6f]',
+        );
+        expect(within(desk).getByText('Licence')).toHaveClass(
+            'text-[#7a5d33]',
+            'dark:text-[#f0a060]',
+        );
+    });
+
+    it('keeps a licence awaiting a name identifiable and reviewable', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = fixture.desk?.map((entry) => ({ ...entry, name: ' ' }));
+        render(<AdminParties {...fixture} />);
+
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(within(desk).getByText('Name pending')).toBeInTheDocument();
+        expect(within(desk).getByText('?')).toHaveAttribute(
+            'aria-hidden',
+            'true',
+        );
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+    });
+
+    it('offers only Review to a viewer who may not decide, and says when a queue is empty', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = [];
+        fixture.requests = fixture.requests?.map((entry) => ({
+            ...entry,
+            links: { review: entry.links.review },
+        }));
+        render(<AdminParties {...fixture} />);
+
+        expect(
+            screen.getByText('No auditor applications awaiting verification.'),
+        ).toBeInTheDocument();
+        const requests = screen.getByRole('region', {
+            name: 'Partner change requests',
+        });
+
+        expect(
+            within(requests).getByRole('link', { name: 'Review' }),
+        ).toBeInTheDocument();
+        expect(
+            within(requests).queryByRole('link', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows no licence queues outside the Audit Partner network', () => {
+        render(<AdminParties {...props(businessesFixture)} />);
+
+        expect(
+            screen.queryByRole('region', { name: 'ICPAR verification desk' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'CPA registry' }),
+        ).not.toBeInTheDocument();
     });
 
     it('opens Partner coverage from the Audit Partner directory for staff who may see it', () => {
@@ -127,16 +326,24 @@ describe('Party directories', () => {
                 id: 'stf_05',
                 name: 'Nadia K.',
                 role: 'superadmin',
+                roles: ['superadmin'],
             });
         }
 
         render(<AdminParties {...fixture} />);
 
+        const operators = screen.getByRole('table', { name: 'Operators' });
+
         expect(screen.getByText('4 operators')).toBeInTheDocument();
         expect(screen.getByText('You')).toBeInTheDocument();
-        expect(screen.getAllByText('Approver').length).toBeGreaterThan(1);
-        expect(screen.getByText('Analyst')).toBeInTheDocument();
-        expect(screen.getByText('Super-admin')).toBeInTheDocument();
+        expect(
+            within(operators).getAllByText('Approver').length,
+        ).toBeGreaterThan(1);
+        expect(within(operators).getByText('Analyst')).toBeInTheDocument();
+        expect(
+            within(operators).getAllByText('Suspended').length,
+        ).toBeGreaterThan(0);
+        expect(within(operators).getByText('Super-admin')).toBeInTheDocument();
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('region', {
@@ -239,13 +446,224 @@ describe('Party directories', () => {
         expect(within(jean).getByText('Huye')).toBeInTheDocument();
     });
 
+    it('lists the admin action log, newest first, or says it is empty', () => {
+        const fixture = props(staffFixture);
+
+        fixture.action_log = [
+            {
+                id: 'log-1',
+                at: fixture.server_time,
+                actor: 'A. Diane',
+                target: 'Jean-Paul M.',
+                action: 'staff_suspended',
+                role: null,
+                reason: 'On leave until November.',
+            },
+            {
+                id: 'log-2',
+                at: fixture.server_time,
+                actor: 'Server console',
+                target: 'Eric Ndoli',
+                action: 'staff_enabled',
+                role: null,
+                reason: 'Joined operations.',
+            },
+            {
+                id: 'log-3',
+                at: fixture.server_time,
+                actor: 'A. Diane',
+                target: 'Eric Kamanzi',
+                action: 'staff_granted',
+                role: 'treasury',
+                reason: 'Joins the treasury desk.',
+            },
+        ];
+        const { unmount } = render(<AdminParties {...fixture} />);
+        const log = screen.getByRole('table', { name: 'Admin action log' });
+        const rows = within(log).getAllByRole('row');
+
+        expect(rows[1]).toHaveTextContent('Suspended access');
+        expect(rows[1]).toHaveTextContent('A. Diane');
+        expect(rows[1]).toHaveTextContent('Jean-Paul M.');
+        expect(rows[1]).toHaveTextContent('On leave until November.');
+        expect(rows[2]).toHaveTextContent('Enabled access');
+        expect(rows[3]).toHaveTextContent('Added as Treasury');
+        unmount();
+
+        render(<AdminParties {...{ ...fixture, action_log: [] }} />);
+        expect(
+            screen.getByText('No admin actions logged yet.'),
+        ).toBeInTheDocument();
+    });
+
+    it('lets a superadmin invite an operator with one role and a reason', () => {
+        inertia.succeed = true;
+        render(
+            <AdminParties
+                {...{
+                    ...props(staffFixture),
+                    grant: { url: '/admin/staff', method: 'post' },
+                }}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Invite operator' }),
+        );
+        const form = screen.getByRole('form', { name: 'Invite an operator' });
+        const submit = within(form).getByRole('button', {
+            name: 'Give access',
+        });
+
+        expect(submit).toBeDisabled();
+        fireEvent.change(within(form).getByLabelText('Account email'), {
+            target: { value: 'eric.kamanzi@example.test' },
+        });
+        fireEvent.change(within(form).getByLabelText('Role'), {
+            target: { value: 'treasury' },
+        });
+        fireEvent.change(within(form).getByLabelText('Reason for the record'), {
+            target: { value: 'Joins the treasury desk.' },
+        });
+        fireEvent.click(submit);
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/staff',
+                data: expect.objectContaining({
+                    email: 'eric.kamanzi@example.test',
+                    role: 'treasury',
+                    reason: 'Joins the treasury desk.',
+                }),
+            },
+        ]);
+        expect(
+            screen.getByRole('button', { name: '+ Invite operator' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says which role the viewer signed in as and how much it may do', () => {
+        const fixture = props(staffFixture);
+        const { unmount } = render(
+            <AdminParties
+                {...{ ...fixture, access: { granted: 4, total: 22 } }}
+            />,
+        );
+
+        expect(screen.getByText('Signed in as')).toBeInTheDocument();
+        expect(
+            screen.getByText('4 of 22 capabilities', { exact: false }),
+        ).toBeInTheDocument();
+        unmount();
+        render(
+            <AdminParties
+                {...{ ...fixture, access: { granted: 22, total: 22 } }}
+            />,
+        );
+        expect(
+            screen.getByText('Full access', { exact: false }),
+        ).toBeInTheDocument();
+    });
+
+    it('hides the invite for operators who cannot manage staff', () => {
+        render(<AdminParties {...props(staffFixture)} />);
+        expect(
+            screen.queryByRole('button', { name: '+ Invite operator' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows every role an operator holds and what each role may do', () => {
+        render(<AdminParties {...props(staffFixture)} />);
+
+        const eric = screen.getByRole('row', { name: /Eric Ndoli/ });
+
+        expect(within(eric).getByText('Approver')).toBeInTheDocument();
+        expect(within(eric).getByText('Treasury')).toBeInTheDocument();
+
+        const matrix = screen.getByRole('table', { name: 'Role permissions' });
+
+        expect(
+            within(matrix)
+                .getAllByRole('columnheader')
+                .map((cell) => cell.textContent),
+        ).toEqual([
+            'Capability',
+            'What it allows',
+            'Super-admin',
+            'Compliance',
+            'Approver',
+            'Treasury',
+            'Analyst',
+        ]);
+        expect(
+            screen.getByText(
+                'What each tier may do. Lower tiers are blocked from destructive actions, not just hidden from them.',
+            ),
+        ).toBeInTheDocument();
+
+        const remove = within(matrix).getByRole('row', { name: /^Delete/ });
+
+        expect(
+            within(remove).getByText(
+                'No role, by rule: ledger and audit entries are never deleted',
+            ),
+        ).toBeInTheDocument();
+        expect(within(remove).getAllByLabelText('Not allowed')).toHaveLength(5);
+
+        // Capabilities the design names carry its words.
+        expect(
+            within(matrix).getByRole('row', { name: /^KYC decisions/ }),
+        ).toHaveTextContent('Verify or reject investor identity documents');
+        expect(
+            within(matrix).getByRole('row', { name: /^Approvals/ }),
+        ).toBeInTheDocument();
+        expect(
+            within(matrix).getByRole('row', { name: /^Freeze \/ suspend/ }),
+        ).toHaveTextContent('Pause an account’s access to either app.');
+
+        const requery = within(matrix).getByRole('row', {
+            name: /Requery disbursements/,
+        });
+
+        expect(
+            within(requery).getByText(
+                "Ask the payment provider for a disbursement's current state.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(requery)
+                .getAllByRole('cell')
+                .slice(2)
+                .map((cell) => cell.getAttribute('aria-label')),
+        ).toEqual([
+            'Not allowed',
+            'Not allowed',
+            'Not allowed',
+            'Allowed',
+            'Not allowed',
+        ]);
+        expect(within(matrix).getAllByRole('row')).toHaveLength(28);
+    });
+
+    it('shows no permission matrix outside Staff & Roles', () => {
+        render(<AdminParties {...props(investorsFixture)} />);
+
+        expect(
+            screen.queryByRole('table', { name: 'Role permissions' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('lists a Treasury operator, and one without a role as a dash', () => {
         const fixture = props(staffFixture);
 
         if (fixture.directory.kind === 'staff') {
             fixture.directory.rows = [
-                { ...fixture.directory.rows[1], role: 'treasury' },
-                { ...fixture.directory.rows[2], role: null },
+                {
+                    ...fixture.directory.rows[1],
+                    role: 'treasury',
+                    roles: ['treasury'],
+                },
+                { ...fixture.directory.rows[2], role: null, roles: [] },
             ];
         }
 
@@ -261,7 +679,11 @@ describe('Party directories', () => {
                 '—',
             ),
         ).toBeInTheDocument();
-        expect(screen.queryByText('Analyst')).not.toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Operators' }),
+            ).queryByText('Analyst'),
+        ).not.toBeInTheDocument();
     });
 
     it('says when nothing matches, and without stats', () => {
@@ -337,7 +759,10 @@ describe('Party 360', () => {
         expect(inertia.posts).toEqual([
             {
                 url: '/admin/parties/biz_rugali/release',
-                data: { reason: 'Cleared.' },
+                data: {
+                    reason: 'Cleared.',
+                    request_id: expect.any(String),
+                },
             },
         ]);
         expect(within(drawer).getByText('Freeze history')).toBeInTheDocument();
@@ -526,6 +951,31 @@ describe('Party 360', () => {
         ).toBeInTheDocument();
     });
 
+    it('opens on the decision the review queue chose, with its reason stage ready', () => {
+        const fixture = props(licenceFixture);
+        const detail = party(licenceFixture);
+
+        fixture.party = {
+            ...detail,
+            licence: detail.licence && {
+                ...detail.licence,
+                review: { revision: 3, submission_id: 'sub-a' },
+            },
+            stage: 'reject_licence',
+        };
+        render(<AdminParties {...fixture} />);
+
+        expect(screen.getByRole('tab', { name: 'Controls' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        expect(
+            screen.getByRole('form', {
+                name: 'Reject licence for Claude Mukamana, CPA',
+            }),
+        ).toBeInTheDocument();
+    });
+
     it('decides a live waiting licence with the revision and submission it answers', async () => {
         inertia.succeed = true;
         vi.spyOn(crypto, 'randomUUID').mockReturnValue(
@@ -617,7 +1067,10 @@ describe('Party 360', () => {
             },
             {
                 url: '/admin/parties/aud_claude/freeze',
-                data: { reason: 'Fraud alert.' },
+                data: {
+                    reason: 'Fraud alert.',
+                    request_id: answers.request_id,
+                },
             },
         ]);
     });
@@ -743,5 +1196,97 @@ describe('Party 360', () => {
         expect(
             within(drawer).getByText('Changed staff access'),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Super-admin approvals', () => {
+    const proposal = {
+        id: 'proposal-1',
+        recipient: 'New Operator',
+        email: 'operator@example.test',
+        requester: 'First Manager',
+        operation: 'grant' as const,
+        reason: 'Joining administration.',
+        approve: {
+            url: '/admin/staff/approvals/proposal-1',
+            method: 'post' as const,
+        },
+    };
+
+    it('shows pending access unchanged and submits only the independent approval reason and key', async () => {
+        const fixture = props(staffFixture);
+        fixture.pending_approvals = [proposal];
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+        const region = screen.getByRole('region', {
+            name: 'Awaiting super-admin approval',
+        });
+        expect(
+            within(region).getByText(/access stays unchanged/),
+        ).toBeInTheDocument();
+        expect(
+            within(region).getByText(
+                'First Manager requested super-admin access.',
+            ),
+        ).toBeInTheDocument();
+        const form = within(region).getByRole('form', {
+            name: 'Approve access for New Operator',
+        });
+        const button = within(form).getByRole('button', {
+            name: 'Approve super-admin access',
+        });
+        expect(button).toBeDisabled();
+        await user.type(
+            within(form).getByRole('textbox'),
+            'Independent review.',
+        );
+        await user.click(button);
+        expect(inertia.posts).toEqual([
+            {
+                url: proposal.approve.url,
+                data: {
+                    request_id: expect.any(String),
+                    reason: 'Independent review.',
+                },
+            },
+        ]);
+    });
+
+    it('explains the second approval before a super-admin request is submitted', async () => {
+        const fixture = props(staffFixture);
+        fixture.grant = { url: '/admin/staff', method: 'post' };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+        await user.click(
+            screen.getByRole('button', { name: /Invite operator/ }),
+        );
+        await user.selectOptions(screen.getByRole('combobox'), 'superadmin');
+        expect(screen.getByText(/access stays unchanged/)).toBeInTheDocument();
+    });
+
+    it('shows no approval control to the requester or on read-only projections and handles an empty queue', () => {
+        const fixture = props(staffFixture);
+        fixture.pending_approvals = [
+            { ...proposal, operation: 'reactivate', approve: null },
+        ];
+        const { unmount } = render(<AdminParties {...fixture} />);
+        expect(
+            screen.getByText(
+                'First Manager requested super-admin reactivation.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Waiting for a different super-admin to approve.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: 'Approve super-admin access',
+            }),
+        ).not.toBeInTheDocument();
+        unmount();
+        render(<AdminParties {...fixture} pending_approvals={[]} />);
+        expect(
+            screen.queryByRole('region', {
+                name: 'Awaiting super-admin approval',
+            }),
+        ).not.toBeInTheDocument();
     });
 });

@@ -72,23 +72,23 @@ describe('Business repayments (business-servicing-v1)', () => {
             name: 'Repayment progress',
         });
 
-        expect(progress).toHaveTextContent('RWF 6,930,000');
+        expect(progress).toHaveTextContent('RWF 6,810,000');
         expect(progress).toHaveTextContent('2 / 6 payments');
         expect(progress).toHaveTextContent('4 instalments left');
-        expect(progress).toHaveTextContent('RWF 20,790,000');
+        expect(progress).toHaveTextContent('RWF 20,430,000');
         expect(within(progress).getByRole('progressbar')).toHaveValue(33.3);
         expect(
-            within(progress).getByRole('link', { name: 'RWF 13,860,000' }),
+            within(progress).getByRole('link', { name: 'RWF 13,620,000' }),
         ).toHaveAttribute('href', '/preview/business-repayments-receipt');
 
         const due = view.getByRole('region', { name: 'Due now' });
 
         expect(due).toHaveTextContent('Next instalment · #3');
-        expect(due).toHaveTextContent('RWF 3,465,000');
+        expect(due).toHaveTextContent('RWF 3,405,000');
         expect(due).toHaveTextContent('Due 23 Dec 2026');
         expect(due).toHaveTextContent('PrincipalRWF 3,000,000');
         expect(due).toHaveTextContent('ReturnRWF 405,000');
-        expect(due).toHaveTextContent('Service feeRWF 60,000');
+        expect(due).not.toHaveTextContent('Service fee');
         expect(due).not.toHaveTextContent('Late fees');
         expect(due).toHaveTextContent(
             "We'll collect it from your Rozine wallet on 23 Dec 2026.",
@@ -103,7 +103,7 @@ describe('Business repayments (business-servicing-v1)', () => {
             'Your wallet has RWF 4,200,000 available.',
         );
         expect(
-            within(pay).getByRole('button', { name: 'Pay RWF 3,465,000' }),
+            within(pay).getByRole('button', { name: 'Pay RWF 3,405,000' }),
         ).toBeEnabled();
 
         const schedule = view.getByRole('region', {
@@ -143,7 +143,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         render(<BusinessRepayments {...props()} />);
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Pay RWF 3,465,000' }),
+            screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
         );
 
         await waitFor(() =>
@@ -159,7 +159,7 @@ describe('Business repayments (business-servicing-v1)', () => {
                 note_id: 'RZN-2026-0418',
                 option: 'next_instalment',
                 expected_servicing_revision: 7,
-                quoted_total: { currency: 'RWF', amount: '3465000' },
+                quoted_total: { currency: 'RWF', amount: '3405000' },
             },
         });
     });
@@ -187,11 +187,11 @@ describe('Business repayments (business-servicing-v1)', () => {
 
         expect(due).toHaveTextContent('Due today');
         expect(due).toHaveTextContent(
-            'If it is still unpaid on 30 Dec 2026, a late fee of about RWF 173,250 is added. This is a projection.',
+            'If it is still unpaid on 30 Dec 2026, a late fee of about RWF 170,250 is added. This is a projection.',
         );
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Pay RWF 3,465,000' }),
+            screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
         );
         await waitFor(() => expect(inertia.calls).toHaveLength(1));
         expect(inertia.calls[0].body).toMatchObject({ option: 'due_now' });
@@ -210,10 +210,10 @@ describe('Business repayments (business-servicing-v1)', () => {
             "In arrears since 24 Dec 2026. Your notes can't be traded until it is paid.",
         );
         expect(
-            within(due).getByRole('link', { name: 'RWF 3,811,500' }),
+            within(due).getByRole('link', { name: 'RWF 3,745,500' }),
         ).toHaveAttribute('href', '/preview/business-repayments-overdue');
         expect(due).toHaveTextContent('8 days past due');
-        expect(due).toHaveTextContent('Late feesRWF 346,500');
+        expect(due).toHaveTextContent('Late feesRWF 340,500');
         expect(due).toHaveTextContent(
             "We'll collect it from your Rozine wallet on 1 Jan 2027.",
         );
@@ -223,14 +223,14 @@ describe('Business repayments (business-servicing-v1)', () => {
         });
 
         expect(lines).toHaveTextContent(
-            'Due date missed · 23 Dec 2026 · addedRWF 173,250',
+            'Due date missed · 23 Dec 2026 · addedRWF 170,250',
         );
         expect(lines).toHaveTextContent(
-            'Day 7 unpaid · 30 Dec 2026 · addedRWF 173,250',
+            'Day 7 unpaid · 30 Dec 2026 · addedRWF 170,250',
         );
         expect(
             view.getByRole('region', { name: 'Repayment schedule' }),
-        ).toHaveTextContent('RWF 3,811,500');
+        ).toHaveTextContent('RWF 3,745,500');
     });
 
     it('offers a top-up instead of Pay when the wallet is short', () => {
@@ -306,7 +306,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         const receipt = view.getByRole('region', { name: 'Payment recorded' });
 
         expect(receipt).toHaveTextContent('Being shared with your investors');
-        expect(receipt).toHaveTextContent('RWF 3,465,000');
+        expect(receipt).toHaveTextContent('RWF 3,405,000');
         expect(receipt).toHaveTextContent('ReferenceRZ-RPY-1223');
         expect(
             view.getByRole('region', { name: 'Repayment schedule' }),
@@ -403,7 +403,7 @@ describe('Business repayments (business-servicing-v1)', () => {
             within(sheet()).getByText('Not yet confirmed'),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: 'Pay RWF 3,465,000' }),
+            screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
         ).toBeDisabled();
         expect(inertia.calls).toHaveLength(0);
     });
@@ -424,7 +424,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         render(<BusinessRepayments {...props()} />);
 
         fireEvent.click(
-            screen.getByRole('button', { name: 'Pay RWF 3,465,000' }),
+            screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
         );
 
         expect(
@@ -453,7 +453,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         const view = within(sheet());
 
         expect(view.getByRole('region', { name: 'Due now' })).toHaveTextContent(
-            'RWF 3,811,500Overdue',
+            'RWF 3,745,500Overdue',
         );
         expect(
             view.getByRole('region', { name: 'If a payment is late' }),
@@ -498,7 +498,7 @@ describe('Business repayments (business-servicing-v1)', () => {
             view.queryByRole('region', { name: 'Recent repayments' }),
         ).not.toBeInTheDocument();
         expect(
-            view.queryByRole('link', { name: 'RWF 20,790,000' }),
+            view.queryByRole('link', { name: 'RWF 20,430,000' }),
         ).not.toBeInTheDocument();
         expect(
             view.getByRole('region', { name: 'If a payment is late' }),

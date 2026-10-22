@@ -96,7 +96,7 @@ export function ConflictRegister({
                                 >
                                     <span
                                         aria-hidden
-                                        className="shrink-0 text-[12px] text-[#c2661f]"
+                                        className="shrink-0 text-[12px] text-[#a4521a]"
                                     >
                                         ●
                                     </span>

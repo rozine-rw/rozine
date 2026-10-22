@@ -287,3 +287,11 @@ it('reverses and reapplies unused closed-engagement protection without changing 
     expect(fn () => DB::transaction(fn (): int => DB::table('audit_assignments')->where('id', $assignment->id)->delete()))
         ->toThrow(QueryException::class, 'Closed audit assignments are immutable');
 });
+
+it('sends a browser that opens an Operations case data URL to the console', function (): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $url = route('staff.audit.show', ['assignment' => $assignment->id]);
+    $this->actingAs($fixture['staff'])->get($url)->assertRedirect(route('staff.dashboard'));
+    $this->getJson($url)->assertOk()->assertJsonPath('data.case.id', $assignment->id);
+});

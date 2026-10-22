@@ -146,7 +146,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -164,7 +164,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "2310000"
+                    "amount": "2270000"
                 },
                 "state": "received",
                 "dpd_at_receipt": 0,
@@ -218,7 +218,7 @@
                 "source": "wallet",
                 "amount": {
                     "currency": "RWF",
-                    "amount": "3465000"
+                    "amount": "3405000"
                 },
                 "state": "allocated",
                 "dpd_at_receipt": 0,
@@ -267,13 +267,9 @@
                         "currency": "RWF",
                         "amount": "115000"
                     },
-                    "service_fee": {
-                        "currency": "RWF",
-                        "amount": "80000"
-                    },
                     "total": {
                         "currency": "RWF",
-                        "amount": "4755000"
+                        "amount": "4675000"
                     }
                 }
             },

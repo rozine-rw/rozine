@@ -227,8 +227,7 @@ it('refuses to roll the extension back once an issue is recorded, and restores t
 
 it('refuses an issue whose cause is a failed closing rather than an issued one', function (): void {
     ['wallet' => $wallet, 'source' => $source] = committedWallet();
-    DisbursementFixture::funded();
-    ['intent' => $intent] = DisbursementFixture::approved();
+    ['intent' => $intent] = DisbursementFixture::paid();
     app(RecordPayoutEvent::class)->handle(DisbursementFixture::provider()->callback($intent->id, 'failed'));
     $refund = DisbursementClosing::query()->where('kind', 'failed_closing')->sole()->id;
     expect(fn () => rawIssuePosting($wallet, 'primary_issue', $source, [['investor_committed', 'debit', '20000'], ['disbursement_settlement', 'credit', '20000']], $refund))

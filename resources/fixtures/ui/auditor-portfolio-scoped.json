@@ -175,6 +175,21 @@
                 "method": "post"
             }
         },
+        "earnings": {
+            "month": "2026-10-01",
+            "this_month": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "total": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "lines": [],
+            "deals": 0,
+            "managed": []
+        },
+        "raising": [],
         "owed": [
             {
                 "id": "mr_greenleaf",

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
@@ -17,6 +16,7 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->officer = directoryStaff(['compliance']);
@@ -26,7 +26,7 @@ beforeEach(function (): void {
 function directoryStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Investor directory assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Investor directory assignment.');
 
     return $user;
 }
@@ -123,6 +123,13 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
             ->where('chips.2', ['key' => 'pending', 'count' => 1, 'link' => ['url' => '/admin/investors?q=aline&sort=name&chip=pending', 'method' => 'get'], 'active' => true])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Aline Uwase')
             ->where('directory.rows.0.link.url', '/admin/investors?q=aline&sort=name&chip=pending&investor='.$waiting->party_id));
+    foreach (['holdings', 'wallet'] as $sort) {
+        $this->actingAs($this->officer)->get(route('staff.investors.index', ['sort' => $sort]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('filters.0.value', $sort)
+                ->where('filters.0.options', fn (Collection $options): bool => $options->pluck('value')->all() === ['portfolio', 'holdings', 'wallet', 'name']));
+    }
+    $this->actingAs($this->officer)->get(route('staff.investors.index', ['sort' => 'holdings']))
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.id', $holder->party_id));
     foreach (['verified' => 2, 'restricted' => 1, 'kyc_overdue' => 0, 'frozen' => 0] as $chip => $count) {
         $this->actingAs($this->officer)->get(route('staff.investors.index', ['chip' => $chip]))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('total', $count));
@@ -130,8 +137,10 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
 
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => $holder->party_id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.kind', 'investor')->where('party.health', 'active')
-            // The 360 counts both holdings but lists none until the S3-C adapter exposes them.
-            ->where('party.stats.2', ['key' => 'holdings', 'value' => ['kind' => 'count', 'value' => 2]])->where('party.list', null)
+            // Both purchases are in one note of one Business, so the 360 lists that Business once, holding one note.
+            ->where('party.stats.2', ['key' => 'holdings', 'value' => ['kind' => 'count', 'value' => 2]])->has('party.list.rows', 1)
+            ->where('party.list.key', 'holdings')->where('party.list.rows.0.tone', 'green')
+            ->where('party.list.rows.0.detail', ['kind' => 'holding', 'value' => ['currency' => 'RWF', 'amount' => $principal], 'notes' => 1])
             ->where('party.verification', null)->where('party.history', []));
     expect($case->status)->toBe('submitted');
 });
@@ -143,7 +152,7 @@ test("a person's 360 carries their identity submission, its documents and histor
 
     $assert = fn (Assert $page) => $page->where('party.id', $person->party_id)->where('party.name', 'Aline Uwase')->where('party.subtitle', $person->email)
         ->where('party.health', 'kyc_pending')->where('party.kyc', ['state' => 'pending', 'due_on' => null])
-        ->where('party.restricted_since', fn ($since): bool => is_string($since))->where('party.list', null)
+        ->where('party.restricted_since', fn ($since): bool => is_string($since))->where('party.list', ['key' => 'holdings', 'rows' => []])
         ->where('party.history.0.action', ['code' => 'verification.submit', 'label' => 'Submitted for review', 'tone' => 'blue'])
         ->where('party.history.0.actor', 'Aline Uwase')->where('party.history.5.action.label', 'Saved a step')
         ->where('party.verification.id', $case->id)->where('party.verification.status', 'submitted')->has('party.verification.documents', 3)

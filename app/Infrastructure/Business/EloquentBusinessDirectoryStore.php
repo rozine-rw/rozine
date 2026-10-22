@@ -35,7 +35,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         $totals = (clone $businesses)->selectRaw('count(*) AS everyone, coalesce(sum(active_notes), 0) AS notes, coalesce(sum(raised), 0)::text AS raised')->first();
         $ratings = $this->ratings(array_values((clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $matching = (clone $businesses)->count();
-        $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc('raised')->orderBy('name');
+        $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc($sort)->orderBy('name');
         $everyone = (int) ($totals->everyone ?? 0);
         $scores = array_map(fn (array $rating): string => $rating['score'], array_values($ratings));
 
@@ -104,9 +104,13 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
                 CASE WHEN parties.verified_at IS NOT NULL AND parties.verified_at <= ? THEN 'verified' ELSE 'pending' END AS kyc,
                 (SELECT count(*) FROM business_campaigns c WHERE c.business_id = bp.id
                     AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS active_notes,
-                (SELECT count(DISTINCT r.party_id) FROM primary_campaign_fundings f JOIN primary_funding_commitments fc ON fc.funding_id = f.id
-                    JOIN primary_commitments pc ON pc.id = fc.commitment_id JOIN primary_reservations r ON r.id = pc.primary_reservation_id
-                    WHERE f.business_id = bp.id) AS investors,
+                (SELECT count(DISTINCT backer.party_id) FROM (
+                    SELECT r.party_id FROM primary_campaign_fundings f JOIN primary_funding_commitments fc ON fc.funding_id = f.id
+                        JOIN primary_commitments pc ON pc.id = fc.commitment_id JOIN primary_reservations r ON r.id = pc.primary_reservation_id
+                        WHERE f.business_id = bp.id
+                    UNION SELECT r.party_id FROM primary_commitments pc JOIN primary_reservations r ON r.id = pc.primary_reservation_id
+                        JOIN business_campaigns c ON c.id = r.business_campaign_id
+                        WHERE c.business_id = bp.id AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS backer) AS investors,
                 coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised", [now()]);
     }
 

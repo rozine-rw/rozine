@@ -5,7 +5,14 @@ import {
     waitFor,
     within,
 } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import AuditorProfile from '@/pages/auditor/profile';
 import type { Accreditation, AuditorProfileProps } from '@/types/auditor';
 import availabilityFixture from '../../../resources/fixtures/ui/auditor-profile-availability.json';
@@ -14,7 +21,6 @@ import earningsFixture from '../../../resources/fixtures/ui/auditor-profile-earn
 import expiredFixture from '../../../resources/fixtures/ui/auditor-profile-expired.json';
 import firstTimePendingFixture from '../../../resources/fixtures/ui/auditor-profile-first-time-pending.json';
 import firstTimeFixture from '../../../resources/fixtures/ui/auditor-profile-first-time.json';
-import learnFixture from '../../../resources/fixtures/ui/auditor-profile-learn.json';
 import legalFixture from '../../../resources/fixtures/ui/auditor-profile-legal.json';
 import pausedFixture from '../../../resources/fixtures/ui/auditor-profile-paused.json';
 import payoutFixture from '../../../resources/fixtures/ui/auditor-profile-payout.json';
@@ -32,7 +38,54 @@ vi.setConfig({ testTimeout: 30_000 });
 const props = (fixture: { props: unknown } = profileFixture) =>
     structuredClone(fixture.props) as AuditorProfileProps;
 
-beforeEach(() => inertia.reset());
+/** Whether the page sees the lg breakpoint: jsdom has no matchMedia of its own. */
+const wide = (matches: boolean) =>
+    vi.stubGlobal('matchMedia', (query: string) => ({
+        matches,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+    }));
+
+beforeEach(() => {
+    inertia.reset();
+    wide(true);
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('Auditor Profile on a phone', () => {
+    it('stacks every section under the identity card, with no menu, as the design does', () => {
+        wide(false);
+        render(<AuditorProfile {...props()} />);
+
+        expect(
+            screen.queryByRole('navigation', { name: 'Profile sections' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Diane Uwase, CPA')).toBeInTheDocument();
+        expect(
+            screen.getByText('Licence ICPAR/P-2026/0481 · expires 31 Mar 2027'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('No payout account yet')).toBeInTheDocument();
+        expect(
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent),
+        ).toEqual(
+            expect.arrayContaining([
+                'Payout bank account',
+                'Auditor Academy',
+                'Security & devices',
+            ]),
+        );
+        expect(
+            screen.getByText(/^Nothing earned yet this month\./u),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toBeInTheDocument();
+    });
+});
 
 describe('Auditor Profile', () => {
     it('shows the partner, their accreditation standing and the section menu', () => {
@@ -628,10 +681,42 @@ describe('Auditor Profile', () => {
         },
     );
 
+    it('states every platform fee share credited this month and how each was worked out', () => {
+        render(<AuditorProfile {...props(earningsFixture)} />);
+
+        expect(screen.getByText('Earned in October 2026')).toBeInTheDocument();
+        expect(screen.getByText('259,200')).toBeInTheDocument();
+        expect(screen.getAllByText('RWF 388,800')).toHaveLength(2);
+        expect(screen.getByText('2 lines')).toBeInTheDocument();
+        expect(screen.getByText('Kigali Fresh Foods')).toBeInTheDocument();
+        expect(screen.getByText('Gasabo · 2 Oct')).toBeInTheDocument();
+        expect(screen.getAllByText('RWF 129,600')).toHaveLength(2);
+        expect(
+            screen.getAllByText(
+                'Raise RWF 10,800,000 · 3% platform fee RWF 324,000 · your 40% RWF 129,600',
+            ),
+        ).toHaveLength(2);
+        expect(screen.getByText('Earnings fee share')).toBeInTheDocument();
+    });
+
+    it('says nothing was earned this month when no share was credited', () => {
+        const page = props(earningsFixture);
+
+        page.earnings = {
+            ...page.earnings,
+            this_month: { currency: 'RWF', amount: '0' },
+            lines: [],
+        };
+        render(<AuditorProfile {...page} />);
+
+        expect(screen.getByText('0 lines')).toBeInTheDocument();
+        expect(
+            screen.getByText(/^Nothing earned yet this month\./u),
+        ).toBeInTheDocument();
+    });
+
     it.each([
-        [earningsFixture, 'No earnings yet'],
         [payoutFixture, 'No payout account yet'],
-        [learnFixture, 'Coming to the app soon'],
         [
             { props: { ...legalFixture.props, engagement: null } },
             'Coming to the app soon',

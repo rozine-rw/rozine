@@ -1,0 +1,220 @@
+import { render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import AdminAuditReports from '@/pages/admin/audit-reports';
+import type { AdminAuditReportsProps } from '@/types/admin-audit';
+import registerFixture from '../../../resources/fixtures/ui/admin-audit-reports.json';
+import { resetInertia } from './inertia-mock';
+
+vi.mock('@inertiajs/react', () => import('./inertia-mock'));
+
+const props = () =>
+    structuredClone(registerFixture.props) as AdminAuditReportsProps;
+
+const rowOf = (business: string) => {
+    const [row] = screen
+        .getAllByRole('row')
+        .filter((candidate) => within(candidate).queryByText(business));
+
+    return row;
+};
+
+beforeEach(resetInertia);
+
+describe('Audit reports register', () => {
+    it('shows each audit’s state, digest and weighted variance with the server’s tiles', () => {
+        render(<AdminAuditReports {...props()} />);
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Console navigation' }),
+            ).getByRole('link', { name: 'Reports' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByText('67%')).toBeInTheDocument();
+
+        const published = rowOf('Kigali Fresh Foods Ltd');
+        expect(published).toHaveTextContent('Published');
+        expect(published).toHaveTextContent('sha256:9f3c2a71');
+        expect(published).toHaveTextContent('0.0%');
+        expect(published).toHaveTextContent('ICPAR-2024-0117');
+
+        expect(
+            screen.getByText(
+                '✓ Audited on site by Eric Kamanzi · ICPAR-2024-0117',
+            ),
+        ).toBeInTheDocument();
+
+        const disputed = rowOf('Rubavu Fish Market Co.');
+        expect(disputed).toHaveTextContent('Flash Audit');
+        expect(disputed).toHaveTextContent('Disputed');
+        expect(within(disputed).getByText('12.5%')).toHaveClass(
+            'text-[#b3352a]',
+        );
+    });
+
+    it.each([
+        ['0.0', true],
+        ['0.0', false],
+        [null, false],
+        [null, true],
+    ] as const)(
+        'colours variance %s using the exact server flag %s',
+        (percentage, flagged) => {
+            const fixture = props();
+            const row = {
+                ...fixture.rows[0],
+                variance_pct: percentage,
+                variance_flagged: flagged,
+            };
+
+            render(
+                <AdminAuditReports {...fixture} rows={[row]} published={[]} />,
+            );
+
+            const variance = within(rowOf(row.business)).getAllByRole(
+                'cell',
+            )[4];
+
+            expect(variance).toHaveTextContent(
+                percentage === null ? '—' : `${percentage}%`,
+            );
+            expect(variance).toHaveClass(
+                flagged ? 'text-[#b3352a]' : 'text-rz-ink',
+            );
+        },
+    );
+
+    it('offers Remind only where the server allows it, and the sealed PDF', () => {
+        render(<AdminAuditReports {...props()} />);
+
+        const awaiting = rowOf('Musanze Agro Traders');
+        expect(awaiting).toHaveTextContent('Awaiting sign-off');
+        expect(
+            within(awaiting).getByRole('button', { name: 'Remind' }),
+        ).toHaveAttribute('data-method', 'post');
+        expect(
+            within(awaiting).getByRole('link', {
+                name: 'Download the sealed report for Musanze Agro Traders (PDF)',
+            }),
+        ).toHaveAttribute('href', '/preview/admin-audit-reports');
+        expect(
+            within(awaiting).getByRole('link', {
+                name: 'Download the sealed report for Musanze Agro Traders (PDF)',
+            }),
+        ).toHaveClass('bg-rz-surface', 'text-[#7a5d33]', 'dark:text-[#f0a060]');
+
+        const overdue = rowOf('Huye Hardware Supplies');
+        expect(overdue).toHaveTextContent('Overdue');
+        expect(
+            within(overdue).queryByRole('button', { name: 'Remind' }),
+        ).not.toBeInTheDocument();
+        expect(overdue).toHaveTextContent('Reminded');
+        expect(within(overdue).queryByRole('link')).not.toBeInTheDocument();
+    });
+
+    it('shows an unstarted Flash Audit without inventing a period, deadline or partner', () => {
+        const fixture = props();
+        const row = {
+            ...fixture.rows[0],
+            business: 'New Flash Audit',
+            kind: 'flash' as const,
+            period: null,
+            due_at: null,
+            cosign_by: null,
+            auditor: null,
+            licence: null,
+            sealed_at: null,
+            digest: null,
+            variance_pct: null,
+            status: 'not_started' as const,
+            owes: 'auditor' as const,
+            links: {
+                pdf: null,
+                remind: {
+                    url: '/admin/reports/new/remind',
+                    method: 'post' as const,
+                },
+            },
+        };
+
+        render(<AdminAuditReports {...fixture} rows={[row]} published={[]} />);
+
+        const audit = rowOf('New Flash Audit');
+
+        expect(audit).toHaveTextContent('Flash Audit');
+        expect(audit).toHaveTextContent('Audit not opened');
+        expect(within(audit).getAllByText('—')).toHaveLength(4);
+        expect(audit).not.toHaveTextContent(/Due|sha256/u);
+        expect(
+            within(audit).getByRole('button', { name: 'Remind' }),
+        ).toHaveAttribute('data-href', '/admin/reports/new/remind');
+        expect(
+            within(audit).getByRole('button', { name: 'Remind' }),
+        ).toHaveAttribute('data-method', 'post');
+        expect(
+            screen.getByText('No monthly reports audited yet.'),
+        ).toBeInTheDocument();
+    });
+
+    it('labels a published Flash Audit and tolerates unavailable seal metadata', () => {
+        const fixture = props();
+        const row = {
+            ...fixture.published[0],
+            business: 'Historical Flash Audit',
+            kind: 'flash' as const,
+            period: null,
+            auditor: null,
+            licence: null,
+            digest: null,
+        };
+
+        render(
+            <AdminAuditReports
+                {...fixture}
+                rows={[row]}
+                field={[]}
+                published={[row]}
+            />,
+        );
+
+        expect(rowOf(row.business)).toHaveTextContent('sha256:');
+        expect(rowOf(row.business)).not.toHaveTextContent('sha256:undefined');
+        expect(screen.getAllByText('Flash Audit')).toHaveLength(2);
+        expect(
+            screen.getByText('✓ Audited on site by — · —'),
+        ).toBeInTheDocument();
+    });
+
+    it('says so when no audit matches the filter', () => {
+        render(<AdminAuditReports {...props()} rows={[]} field={[]} />);
+
+        expect(screen.queryAllByRole('row')).toHaveLength(2);
+        expect(
+            screen.getByText('No ISRS 4400 engagements recorded yet.'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Nothing in this view.')).toBeInTheDocument();
+        expect(
+            screen.queryByText('No monthly reports audited yet.'),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('Kigali Fresh Foods Ltd')).toHaveLength(1);
+    });
+
+    it('lists the field visits with their CPA, variance and seal above the monthly tracker', () => {
+        render(<AdminAuditReports {...props()} />);
+
+        const field = screen.getByRole('table', {
+            name: 'Field Flash Audits',
+        });
+        expect(
+            screen.getByText(
+                'Each field audit shows its CPA and licence, report state and weighted variance, with the retained seal digest and report PDF when available.',
+            ),
+        ).toBeInTheDocument();
+        const visit = within(field)
+            .getAllByRole('row')
+            .find((row) => within(row).queryByText('Rubavu Fish Market Co.'));
+        expect(visit).toHaveTextContent('Flash Audit');
+        expect(visit).toHaveTextContent('12.5%');
+        expect(within(field).getByText('12.5%')).toHaveClass('text-[#b3352a]');
+        expect(within(field).getAllByRole('row')).toHaveLength(2);
+    });
+});

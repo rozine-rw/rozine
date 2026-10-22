@@ -76,6 +76,20 @@ final readonly class JournalEntry
     }
 
     /**
+     * A disbursement's platform fee (BRS v2.0 SVC-R01, FEE-R02): the fee leaves disbursement settlement,
+     * the Audit Partner's share is credited to the payable account and the rest to Rozine's revenue.
+     */
+    public static function platformFee(WalletMoney $fee, WalletMoney $auditPartnerShare): self
+    {
+        if ($auditPartnerShare->isZero() || $fee->compareTo($auditPartnerShare) <= 0) {
+            throw new WalletViolation('PLATFORM_FEE_SPLIT_INVALID');
+        }
+
+        return self::balanced('disbursement_platform_fee', [new JournalLine('disbursement_settlement', 'debit', $fee),
+            new JournalLine('audit_partner_fee_payable', 'credit', $auditPartnerShare), new JournalLine('platform_fee_revenue', 'credit', $fee->minus($auditPartnerShare))]);
+    }
+
+    /**
      * A primary movement: the source bucket is debited and the destination credited by the same
      * amount. Between the Investor's own buckets (hold, commit, release, refund) the total never
      * changes; an issue moves committed principal out to the system settlement account, so it

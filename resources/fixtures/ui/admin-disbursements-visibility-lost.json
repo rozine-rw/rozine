@@ -129,7 +129,7 @@
         },
         "search": "",
         "server_time": "2026-09-25T10:00:00+02:00",
-        "contract_version": "staff-disbursement-v1",
+        "contract_version": "staff-disbursement-v2",
         "staff_access_version": "staff-access-v1",
         "allowed_actions": [],
         "disbursements": [
@@ -180,7 +180,7 @@
                 "state": "awaiting_second_approver",
                 "provider_state": null,
                 "link": {
-                    "url": "/preview/admin-disbursements-self",
+                    "url": "/preview/admin-disbursements-awaiting-second",
                     "method": "get"
                 }
             },
@@ -324,7 +324,7 @@
         "pagination": {
             "next": null
         },
-        "awaiting_second_approver": 2,
+        "needs_attention": 4,
         "disbursement": null,
         "refusal": {
             "code": "NOT_FOUND",

@@ -59,12 +59,12 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
 };
 
 const SECTION =
-    'text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted';
+    'text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted';
 const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface';
 const VERIFY =
-    'h-[38px] flex-1 rounded-[10px] bg-[#1d9e75] text-[12.5px] font-bold text-white';
+    'h-[38px] flex-1 rounded-[10px] bg-[#157357] text-[12.5px] font-bold text-white';
 const REJECT =
-    'h-[38px] flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface text-[12.5px] font-bold text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]';
+    'h-[38px] flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface text-[12.5px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]';
 
 function ListDetail({ detail }: { detail: PartyListRow['detail'] }) {
     const { t } = useTranslation();
@@ -76,6 +76,15 @@ function ListDetail({ detail }: { detail: PartyListRow['detail'] }) {
             return <>{formatRwfShort(detail.value)}</>;
         case 'text':
             return <>{detail.value}</>;
+        case 'holding':
+            return (
+                <>
+                    {t('admin.parties.holding_detail', {
+                        amount: formatRwfShort(detail.value),
+                        count: detail.notes,
+                    })}
+                </>
+            );
     }
 }
 
@@ -94,16 +103,28 @@ export function PartyDrawer({
 }) {
     const { t, locale } = useTranslation();
     const format = useStatFormatter();
-    // A submission waiting for review opens on Controls, where its documents and decision are.
+    // A party still in onboarding may have no name on record yet.
+    const name =
+        party.name.trim() === '' ? t('admin.parties.name_pending') : party.name;
+    // A submission waiting for review, or a licence decision opened from the review queue, opens on
+    // Controls, where its documents and decision are.
     const [tab, setTab] = useState<Tab>(
-        party.verification?.status === 'submitted' ? 'controls' : 'overview',
+        party.verification?.status === 'submitted' || party.stage
+            ? 'controls'
+            : 'overview',
     );
     // Each opened stage is one request: a double submit replays it, a later decision is new.
     const [stage, setStage] = useState<{
         key: Command;
         action: RouteAction;
         requestId: string;
-    } | null>(null);
+    } | null>(() => {
+        const action = party.stage ? party.actions[party.stage] : undefined;
+
+        return party.stage && action
+            ? { key: party.stage, action, requestId: crypto.randomUUID() }
+            : null;
+    });
     const frozen = party.freeze !== null;
     const overdue = party.kyc?.state === 'overdue';
     const review = party.licence?.review ?? null;
@@ -123,7 +144,7 @@ export function PartyDrawer({
             <ReasonStage
                 key={stage.key}
                 title={t(`admin.parties.stage.${stage.key}.title`, {
-                    name: party.name,
+                    name,
                 })}
                 body={t(`admin.parties.stage.${stage.key}.body`, {
                     app: t(`admin.parties.app.${party.kind}`),
@@ -143,14 +164,16 @@ export function PartyDrawer({
                               expected_revision: review.revision,
                               submission_id: review.submission_id,
                           }
-                        : undefined
+                        : stage.key === 'freeze' || stage.key === 'release'
+                          ? { request_id: stage.requestId }
+                          : undefined
                 }
             />
         ) : null;
 
     return (
         <Drawer
-            label={t('admin.parties.drawer_label', { name: party.name })}
+            label={t('admin.parties.drawer_label', { name })}
             close={party.links.close}
         >
             <div className="shrink-0 border-b border-rz-hairline bg-rz-surface px-[18px] pt-4">
@@ -164,12 +187,12 @@ export function PartyDrawer({
                                     : avatarColor(party.id),
                         }}
                     >
-                        {initialOf(party.name)}
+                        {initialOf(party.name) || '?'}
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
                             <h2 className="truncate text-[17px] font-bold text-rz-ink">
-                                {party.name}
+                                {name}
                             </h2>
                             <span className="flex shrink-0 items-center gap-[5px]">
                                 <span
@@ -199,7 +222,7 @@ export function PartyDrawer({
                                 </MicroBadge>
                             )}
                         </div>
-                        <p className="mt-0.5 truncate text-[12px] text-[#7b8699] dark:text-rz-muted">
+                        <p className="mt-0.5 truncate text-[12px] text-[#636e86] dark:text-rz-muted">
                             <span className="uppercase">
                                 {t(`admin.parties.type.${party.kind}`)}
                             </span>{' '}
@@ -240,6 +263,7 @@ export function PartyDrawer({
 
             <div
                 role="tabpanel"
+                tabIndex={0}
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
             >
                 {tab === 'overview' && (
@@ -492,7 +516,7 @@ export function PartyDrawer({
                                                 key={key}
                                                 className="rounded-[10px] border border-[#f0e6d4] bg-[#faf7f1] px-[11px] py-[9px] dark:border-rz-border dark:bg-rz-surface-sunken"
                                             >
-                                                <dt className="text-[10px] font-bold text-[#a1875a] uppercase dark:text-[#f0a060]">
+                                                <dt className="text-[10px] font-bold text-[#7a5d33] uppercase dark:text-[#f0a060]">
                                                     {t(
                                                         `admin.parties.licence_field.${key}`,
                                                     )}
@@ -554,7 +578,7 @@ export function PartyDrawer({
                             </h3>
                             {party.freeze !== null && (
                                 <div className="mb-3 rounded-xl border border-[#fdeaea] bg-rz-surface px-3.5 py-3 dark:border-[rgba(255,107,111,.25)]">
-                                    <div className="text-[13px] font-bold text-[#e5484d] dark:text-[#ff6b6f]">
+                                    <div className="text-[13px] font-bold text-[#b3352a] dark:text-[#ff6b6f]">
                                         {t('admin.parties.frozen_by', {
                                             actor: party.freeze.actor,
                                             at: formatTimestamp(
@@ -585,7 +609,7 @@ export function PartyDrawer({
                                 <button
                                     type="button"
                                     onClick={() => open('freeze', freeze)}
-                                    className="h-[46px] w-full rounded-xl border border-[#fdeaea] bg-[rgba(255,77,79,.08)] text-[13.5px] font-bold text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
+                                    className="h-[46px] w-full rounded-xl border border-[#fdeaea] bg-[rgba(255,77,79,.08)] text-[13.5px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
                                 >
                                     {t('admin.parties.freeze')}
                                 </button>
@@ -594,7 +618,7 @@ export function PartyDrawer({
                                 <button
                                     type="button"
                                     onClick={() => open('release', release)}
-                                    className="h-[46px] w-full rounded-xl border border-[#1d9e75] bg-[#1d9e75] text-[13.5px] font-bold text-white"
+                                    className="h-[46px] w-full rounded-xl border border-[#157357] bg-[#157357] text-[13.5px] font-bold text-white"
                                 >
                                     {t('admin.parties.release')}
                                 </button>

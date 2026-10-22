@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\SelectActiveRole;
 use App\Application\Wallet\ApplyProviderOutcome;
 use App\Application\Wallet\ApplyWithdrawalOutcome;
@@ -18,8 +19,10 @@ use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletWithdrawal;
+use Closure;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use LogicException;
 
 /**
  * Synthetic Investor wallet scenarios: a verified Party with the investor role active (identity
@@ -49,6 +52,48 @@ final class InvestorWalletFixture
         return InvestorFundingMethod::factory()->create(['party_id' => $party->id, 'kind' => $kind,
             'label' => ['mtn' => 'MTN MoMo', 'airtel' => 'Airtel Money', 'bank' => 'Bank of Kigali'][$kind],
             'masked' => $kind === 'bank' ? '···· 4417' : '+250 788 ···· 456']);
+    }
+
+    /**
+     * Buyers for an additive manual pack, funded under the existing policy without replacing it.
+     *
+     * @return Closure(): array{user: User, party: Party}
+     */
+    public static function packInvestorFactory(): Closure
+    {
+        $policy = DepositPolicy::query()->where('effective_at', '<=', now())->orderByDesc('effective_at')->orderByDesc('id')->first();
+        if ($policy === null && DepositPolicy::query()->exists()) {
+            throw new LogicException('C3_DEPOSIT_POLICY_UNAVAILABLE: existing policies were not changed.');
+        }
+        $policy ??= self::policy(maximum: null);
+        if ($policy->status !== 'active' || (int) ($policy->maximum ?? '10000000') - (int) $policy->fee < 10000) {
+            throw new LogicException('C3_DEPOSIT_POLICY_UNAVAILABLE: the current policy cannot fund this pack; existing policies were not changed.');
+        }
+
+        return fn (): array => self::packInvestor($policy);
+    }
+
+    /** @return array{user: User, party: Party} */
+    private static function packInvestor(DepositPolicy $policy): array
+    {
+        $investor = self::investor();
+        $fixture = [...$investor, 'method' => self::method($investor['party'])];
+        $fee = (int) $policy->fee;
+        $maximum = (int) ($policy->maximum ?? '10000000');
+        for ($left = 10000000; $left > 0;) {
+            $gross = max(min($left, $maximum - $fee) + $fee, (int) ($policy->minimum ?? '1'));
+            $deposit = self::deposit($fixture, (string) $gross);
+            if (($deposit['code'] ?? null) !== 'DEPOSIT_INTENT_RECORDED') {
+                throw new LogicException('C3_DEPOSIT_NOT_RECORDED');
+            }
+            $settled = self::settle($deposit['data']['intent_id']);
+            if (! $settled['credited']) {
+                throw new LogicException('C3_DEPOSIT_NOT_CREDITED');
+            }
+            $left -= $gross - $fee;
+        }
+
+        return $investor;
     }
 
     /**
@@ -85,7 +130,7 @@ final class InvestorWalletFixture
 
         return app(ApplyProviderOutcome::class)->handle(app(SyntheticEventSigner::class)->sign(['provider' => 'synthetic',
             'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(12)), 'reference' => $intent->provider_reference, 'state' => $state,
-            'amount' => $amount ?? $intent->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]));
+            'amount' => $amount ?? $intent->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]));
     }
 
     /**
@@ -137,7 +182,7 @@ final class InvestorWalletFixture
 
         return app(SyntheticWithdrawalSigner::class)->sign([...['provider' => 'synthetic',
             'event_id' => $eventId ?? 'synthetic-event-'.Str::lower(Str::random(12)), 'reference' => $withdrawal->provider_reference, 'state' => $state,
-            'amount' => $withdrawal->received, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)],
+            'amount' => $withdrawal->received, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)],
             ...$overrides]);
     }
 }

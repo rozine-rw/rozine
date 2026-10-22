@@ -7,12 +7,12 @@ const STATE_CHIP: Record<ApplicationState, string> = {
     submitted:
         'bg-[rgba(30,58,255,.12)] text-rz-accent-app-text dark:bg-[rgba(99,120,255,.18)]',
     under_review:
-        'bg-[rgba(210,120,45,.14)] text-[#c2661f] dark:text-[#f0a060]',
+        'bg-[rgba(210,120,45,.14)] text-[#a4521a] dark:text-[#f0a060]',
     info_requested:
         'bg-[rgba(124,58,237,.12)] text-[#7c3aed] dark:text-[#b199fb]',
     escalated: 'bg-[rgba(194,65,12,.12)] text-[#c2410c] dark:text-[#f59a6b]',
-    approved: 'bg-[rgba(29,158,117,.12)] text-[#1d9e75] dark:text-[#3fcda0]',
-    rejected: 'bg-[rgba(255,77,79,.12)] text-[#e5484d] dark:text-[#ff6b6f]',
+    approved: 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#3fcda0]',
+    rejected: 'bg-[rgba(255,77,79,.12)] text-[#b3352a] dark:text-[#ff6b6f]',
 };
 
 export function ApplicationStateChip({
@@ -43,29 +43,33 @@ export const DECISION_TONE: Record<
     { chip: string; box: string; text: string }
 > = {
     approve: {
-        chip: 'bg-[rgba(29,158,117,.15)] text-[#1d9e75] dark:text-[#3fcda0]',
+        chip: 'bg-[rgba(29,158,117,.15)] text-[#157357] dark:text-[#3fcda0]',
         box: 'bg-[rgba(29,158,117,.12)]',
-        text: 'text-[#1d9e75] dark:text-[#3fcda0]',
+        text: 'text-[#157357] dark:text-[#3fcda0]',
     },
     reject: {
-        chip: 'bg-[rgba(255,77,79,.15)] text-[#e5484d] dark:text-[#ff6b6f]',
+        chip: 'bg-[rgba(255,77,79,.15)] text-[#b3352a] dark:text-[#ff6b6f]',
         box: 'bg-[rgba(255,77,79,.12)]',
-        text: 'text-[#e5484d] dark:text-[#ff6b6f]',
+        text: 'text-[#b3352a] dark:text-[#ff6b6f]',
     },
     audit: {
-        chip: 'bg-[rgba(210,120,45,.15)] text-[#c2661f] dark:text-[#f0a060]',
+        chip: 'bg-[rgba(210,120,45,.15)] text-[#a4521a] dark:text-[#f0a060]',
         box: 'bg-[rgba(210,120,45,.14)]',
-        text: 'text-[#c2661f] dark:text-[#f0a060]',
+        text: 'text-[#a4521a] dark:text-[#f0a060]',
     },
     review: {
-        chip: 'bg-[rgba(210,120,45,.15)] text-[#c2661f] dark:text-[#f0a060]',
+        chip: 'bg-[rgba(210,120,45,.15)] text-[#a4521a] dark:text-[#f0a060]',
         box: 'bg-[rgba(210,120,45,.14)]',
-        text: 'text-[#c2661f] dark:text-[#f0a060]',
+        text: 'text-[#a4521a] dark:text-[#f0a060]',
     },
 };
 
 /** Reason codes the console explains itself; any other code falls back to the server's text. */
-const REASON_CODES = ['CURRENT_RELEASE_REVIEW_REQUIRED'] as const;
+const REASON_CODES = [
+    'CURRENT_RELEASE_REVIEW_REQUIRED',
+    'DSCR_BELOW_CUTOFF',
+    'RESTRICTION_ACTIVE',
+] as const;
 
 type ReasonCode = (typeof REASON_CODES)[number];
 

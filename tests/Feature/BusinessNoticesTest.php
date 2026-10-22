@@ -109,3 +109,18 @@ it('reads Business notices over API v1 with business:read and marks them read on
     Sanctum::actingAs($this->owner, ['business:read', 'business:command']);
     $this->postJson(route('api.v1.business.notices.read', [$business, $notice->id]))->assertOk()->assertJsonPath('data.unread', 0);
 });
+
+it('sends a browser that opens a notices URL directly to its page, while the bell\'s own requests still get the notices', function (): void {
+    ($this->credit)('50000');
+    $business = $this->business->id;
+
+    $this->actingAs($this->viewer)->get(route('business.notices.index', $business))->assertRedirect(route('business.show', $business));
+    $this->get(route('business.notices.index', $business), ['X-Requested-With' => 'XMLHttpRequest'])->assertOk()->assertJsonPath('data.unread', 1);
+    $this->getJson(route('business.notices.index', $business))->assertOk()->assertJsonPath('data.unread', 1);
+
+    $person = User::factory()->create();
+    $this->actingAs($person)->get(route('investor.notices'))->assertRedirect(route('investor.home'));
+    $this->get(route('auditor.notices'))->assertRedirect(route('auditor.home'));
+    Sanctum::actingAs($this->viewer, ['business:read']);
+    $this->get(route('api.v1.business.notices.index', $business), ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.unread', 1);
+});

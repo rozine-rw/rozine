@@ -439,6 +439,14 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
     $successfulIssuance = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
     $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
+    // The platform fee and automatic disbursement migrations reference these tables and rebind the closing authority, so they come off first and go back last.
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    // The Investor cart references campaigns, so it comes off first and goes back last.
+    $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
+    $cartLines->down();
+    $automaticDisbursement->down();
+    $platformFee->down();
     $successfulIssuance->down();
     $terminalFailures->down();
     $heldGenerations->down();
@@ -525,6 +533,9 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $heldGenerations->up();
     $terminalFailures->up();
     $successfulIssuance->up();
+    $platformFee->up();
+    $automaticDisbursement->up();
+    $cartLines->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);

@@ -28,6 +28,129 @@ budget = module("check-poc-budget.py")
 lint = module("check-workflow-lint.py")
 
 
+class ApiFailureDiagnosticTests(unittest.TestCase):
+    def test_api_failure_reports_only_bounded_status_and_preserves_original_exception(self):
+        cases = [(status, "", "http_error" if status else "unclassified") for status in (401, 403, 429, 503, None)]
+        cases += [(403, "API rate limit exceeded", "rate_limit"),
+                  (403, "You have exceeded a secondary rate limit", "secondary_rate_limit"),
+                  (401, "Bad credentials", "bad_credentials"),
+                  (403, "Resource not accessible by integration", "integration_access_denied"),
+                  (403, "Resource not accessible by personal access token", "personal_token_access_denied")]
+        for status, message, classification in cases:
+            secret = "Authorization: Bearer ghp_private_secret https://private.example/secret-endpoint"
+            stderr = secret + message + (f" (HTTP {status})" if status else " transport failed") + "x" * 10000
+            error = subprocess.CalledProcessError(7, ["gh", "api", "private-endpoint"], stderr=stderr)
+            output = io.StringIO()
+            stdout = io.StringIO()
+            with self.subTest(status=status, message=message), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 7)
+            call.assert_called_once()
+            self.assertEqual(output.getvalue(), "CI coordination: gh_api_failed " + json.dumps({
+                "classification": classification, "http_status": status, "returncode": 7,
+            }, sort_keys=True) + "\n")
+            self.assertLess(len(output.getvalue()), 160)
+            self.assertNotIn(secret, output.getvalue())
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_successful_command_is_unchanged_and_silent(self):
+        output = io.StringIO()
+        with patch.dict(policy.os.environ, {"GH_TOKEN": "private-token", "GH_DEBUG": "old"}, clear=True), patch.object(policy.subprocess, "check_output", return_value="  success\n") as call, contextlib.redirect_stderr(output):
+            self.assertEqual(policy.command("gh", "api", "private-endpoint", timeout=12), "success")
+            self.assertEqual(policy.os.environ["GH_DEBUG"], "old")
+        call.assert_called_once_with(("gh", "api", "private-endpoint"), text=True, stderr=subprocess.PIPE, timeout=12,
+                                     env={"GH_TOKEN": "private-token", "GH_DEBUG": "api"})
+        self.assertEqual(output.getvalue(), "")
+
+    def test_non_api_child_does_not_receive_debug_environment(self):
+        with patch.object(policy.subprocess, "check_output", return_value="  result\n") as call:
+            self.assertEqual(policy.command("git", "rev-parse", "HEAD"), "result")
+        call.assert_called_once_with(("git", "rev-parse", "HEAD"), text=True, stderr=subprocess.PIPE, timeout=45)
+
+    def test_other_command_failures_remain_unchanged_and_silent(self):
+        error = subprocess.CalledProcessError(3, ["gh", "run", "download"], stderr="private secret")
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", side_effect=error), contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+            policy.command("gh", "run", "download")
+        self.assertIs(caught.exception, error)
+        self.assertEqual(output.getvalue(), "")
+
+    def test_unavailable_diagnostic_output_does_not_replace_api_failure(self):
+        for stderr in (None, b"secret bytes", "secret text"):
+            for failure in (OSError("unavailable"), ValueError("closed")):
+                error = subprocess.CalledProcessError(2, ["gh", "api"], stderr=stderr)
+                with self.subTest(stderr=stderr, failure=failure), patch.object(policy.subprocess, "check_output", side_effect=error), patch.object(policy, "diagnostic", side_effect=failure), self.assertRaises(subprocess.CalledProcessError) as caught:
+                    policy.command("gh", "api", "private-endpoint")
+                self.assertIs(caught.exception, error)
+
+    def test_original_failure_headers_are_whitelisted_without_another_request(self):
+        headers = {"x-ratelimit-limit": 5000, "x-ratelimit-remaining": 0, "x-ratelimit-reset": 1792648800,
+                   "retry-after": 60, "x-ratelimit-resource": "core"}
+        debug = "* Request to https://private.example/secret\n> Authorization: Bearer private-token\n< HTTP/2.0 403 Forbidden\n"
+        debug += "\n".join(f"< {key}: {value}" for key, value in headers.items())
+        debug += "\n< X-Private: private-token\n\nprivate-token body\n< HTTP/2.0 403 Forbidden\n< Retry-After: 999\n"
+        for message in ("API rate limit exceeded", "secondary rate limit"):
+            error = subprocess.CalledProcessError(1, ["gh", "api", "private-endpoint"], stderr=debug + message + " (HTTP 403)")
+            output, stdout = io.StringIO(), io.StringIO()
+            with self.subTest(message=message), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 1)
+            call.assert_called_once()
+            self.assertEqual(call.call_args_list[0].args, (("gh", "api", "private-endpoint"),))
+            self.assertEqual(output.getvalue().splitlines()[-1], "CI coordination: gh_api_response_quota " + json.dumps(headers, sort_keys=True))
+            self.assertLess(len(output.getvalue().splitlines()[-1]), 320)
+            self.assertNotIn("private-token", output.getvalue())
+            self.assertNotIn("private-endpoint", output.getvalue())
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_malformed_or_untrusted_headers_cannot_emit_raw_data_or_replace_failure(self):
+        cases = ["< X-Ratelimit-Reset: 1792648800", "> X-Ratelimit-Reset: 1792648800"]
+        cases += ["< HTTP/2.0 403 Forbidden\n< X-Ratelimit-Reset: " + value
+                  for value in ("private-token", "true", "1.5", "-1", str(2 ** 63))]
+        cases += ["< HTTP/2.0 403 Forbidden\n< X-Ratelimit-Resource: private-token",
+                  "< HTTP/2.0 403 Forbidden\n\n< X-Ratelimit-Reset: 1792648800"]
+        for headers in cases:
+            error = subprocess.CalledProcessError(7, "gh", stderr="* Request to https://private.example/secret\n" + headers + "\nAPI rate limit exceeded (HTTP 403)")
+            output = io.StringIO()
+            with self.subTest(headers=headers), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 7)
+            call.assert_called_once()
+            self.assertEqual(len(output.getvalue().splitlines()), 1)
+            self.assertNotIn("private-token", output.getvalue())
+
+    def test_only_final_response_headers_survive_redirects_or_multiple_responses(self):
+        for final in ("< X-Ratelimit-Reset: 22", "< X-Ratelimit-Reset: private-token"):
+            debug = "* Request to https://private.example/first\n> X-Ratelimit-Reset: 999\n< HTTP/1.1 301 Moved Permanently\n< X-Ratelimit-Remaining: 0\n< X-Ratelimit-Reset: 11\n\n"
+            debug += "* Request to https://private.example/last\n< HTTP/2.0 403 Forbidden\n" + final + "\n\nAPI rate limit exceeded (HTTP 403)"
+            error = subprocess.CalledProcessError(1, "gh", stderr=debug)
+            output = io.StringIO()
+            with self.subTest(final=final), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            call.assert_called_once()
+            lines = output.getvalue().splitlines()
+            self.assertEqual(len(lines), 2 if "22" in final else 1)
+            if "22" in final:
+                self.assertEqual(lines[-1], 'CI coordination: gh_api_response_quota {"x-ratelimit-reset": 22}')
+
+    def test_original_failure_does_not_extend_or_restart_follower_deadline(self):
+        token = policy._follower_read_deadline.set(10)
+        try:
+            error = subprocess.CalledProcessError(1, "gh", stderr="API rate limit exceeded (HTTP 403)")
+            with patch.object(policy.time, "monotonic", return_value=7), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(io.StringIO()), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            call.assert_called_once()
+            self.assertEqual(call.call_args.kwargs["timeout"], 3)
+            self.assertEqual(policy._follower_read_deadline.get(), 10)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+
 class ScopeTests(unittest.TestCase):
     def test_only_poc_branches_use_poc(self):
         for env, expected in [
@@ -74,6 +197,26 @@ class ScopeTests(unittest.TestCase):
         for paths in [[], ["tests/missing.php"], ["tests/../composer.json"], ["composer.json"], ["tests/Unit/WalletMoneyTest.php"] * 2]:
             with self.subTest(paths=paths), self.assertRaises(ValueError):
                 runner.selected_paths({"schema": 1, "scope": "poc-only", "php": paths}, "php")
+
+    def test_poc_catalog_covers_audit_completion_and_monthly_dispatch(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        self.assertIn("tests/Feature/AuditAssignmentCompletionTest.php", runner.selected_paths(manifest, "php"))
+        self.assertIn("tests/Feature/MonthlyAuditSchedulerTest.php", runner.selected_paths(manifest, "php"))
+
+    def test_poc_catalog_retains_staff_approval_boundaries(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        paths = runner.selected_paths(manifest, "php")
+        for path in ["tests/Feature/StaffSuperadminApprovalTest.php", "tests/Feature/StaffDirectoryTest.php",
+                     "tests/Feature/StaffAccessTest.php", "tests/Concurrency/StaffSuperadminApprovalConcurrencyTest.php"]:
+            with self.subTest(path=path):
+                self.assertIn(path, paths)
+
+    def test_poc_transactional_features_precede_committed_concurrency_fixtures(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        paths = runner.selected_paths(manifest, "php")
+        features = [index for index, path in enumerate(paths) if path.startswith("tests/Feature/")]
+        concurrency = [index for index, path in enumerate(paths) if path.startswith("tests/Concurrency/")]
+        self.assertLess(max(features), min(concurrency))
 
     def test_selected_file_cannot_succeed_without_running_its_tests(self):
         with tempfile.TemporaryDirectory() as directory:

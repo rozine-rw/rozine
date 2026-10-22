@@ -56,40 +56,18 @@
                 },
                 "documents": [
                     {
-                        "name": "Bank statements",
-                        "detail": "Full required history · signature verified",
+                        "kind": "statement",
+                        "format": "pdf",
                         "status": "parsed",
-                        "kind": "statement"
+                        "received_on": "2026-09-24",
+                        "records": 182
                     },
                     {
-                        "name": "Mobile-money statements",
-                        "detail": "Full required history · parsed",
-                        "status": "parsed",
-                        "kind": "statement"
-                    },
-                    {
-                        "name": "RDB certificate",
-                        "detail": "Company code, directors & address matched",
-                        "status": "verified",
-                        "kind": "registry"
-                    },
-                    {
-                        "name": "Manager National ID",
-                        "detail": "Executive submitting the request",
-                        "status": "verified",
-                        "kind": "identity"
-                    },
-                    {
-                        "name": "Campaign pitch",
-                        "detail": "412 / 500 characters",
+                        "kind": "statement",
+                        "format": "csv",
                         "status": "present",
-                        "kind": "pitch"
-                    },
-                    {
-                        "name": "Site photos",
-                        "detail": "8 of max 10 uploaded",
-                        "status": "present",
-                        "kind": "photos"
+                        "received_on": "2026-09-24",
+                        "records": null
                     }
                 ],
                 "prescreen": [
@@ -114,17 +92,11 @@
                         "result": "met"
                     }
                 ],
-                "reason": "The engine computed a DSCR of 1.02×, inside the 1.00–1.24 manual band. A field check confirms the business, its stock and its ledgers before any principal is issued.",
-                "mandate": [
-                    "Confirm the business physically exists and is actively operating at the registered premises.",
-                    "Count inventory on site and record the value you observe against the reported figure.",
-                    "Reconcile the paper ledgers and receipts against the bank and MoMo statements on file.",
-                    "Capture the three required photos (storefront, inventory, team & site) in the capture app and attach the ledger books as documents."
-                ],
                 "history": {
                     "last_audit": null,
                     "flags": []
-                }
+                },
+                "brief": "flash"
             }
         },
         "can_continue": true,
@@ -244,9 +216,9 @@
                         "note_id": "RNP-2026-0118",
                         "business": "GreenLeaf Agro",
                         "month": "2026-09-01",
-                        "open": {
+                        "link": {
                             "url": "/preview/auditor-audit-statements",
-                            "method": "post"
+                            "method": "get"
                         }
                     },
                     {
@@ -255,9 +227,9 @@
                         "note_id": "RNP-2026-0042",
                         "business": "GreenLeaf Agro",
                         "month": "2026-09-01",
-                        "open": {
+                        "link": {
                             "url": "/preview/auditor-audit-statements",
-                            "method": "post"
+                            "method": "get"
                         }
                     },
                     {
@@ -266,9 +238,9 @@
                         "note_id": "RNP-2026-0077",
                         "business": "Musanze Traders",
                         "month": "2026-09-01",
-                        "open": {
+                        "link": {
                             "url": "/preview/auditor-audit-statements",
-                            "method": "post"
+                            "method": "get"
                         }
                     },
                     {
@@ -277,9 +249,9 @@
                         "note_id": "RNP-2026-0091",
                         "business": "Isoko Energy",
                         "month": "2026-09-01",
-                        "open": {
+                        "link": {
                             "url": "/preview/auditor-audit-statements",
-                            "method": "post"
+                            "method": "get"
                         }
                     }
                 ],
@@ -326,7 +298,8 @@
                             "method": "get"
                         }
                     }
-                ]
+                ],
+                "desk_reviews": []
             },
             "outcome": null,
             "links": {

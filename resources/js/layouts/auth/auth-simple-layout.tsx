@@ -1,37 +1,77 @@
 import { Link } from '@inertiajs/react';
-import AppLogoIcon from '@/components/app-logo-icon';
+import { IconGradients } from '@/components/rozine/icon';
+import { LogoMark } from '@/components/rozine/logo';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
+/**
+ * The form controls inside the branded auth column, drawn as the design's sign-in fields (Investor
+ * L3651–3709): uppercase field labels, 12px-radius fields, a full-width 52px primary button and
+ * accent links. Checkbox labels keep their sentence case.
+ */
+const FORM_SKIN = [
+    '[&_label]:text-xs [&_label]:font-semibold [&_label]:text-rz-label [&_label]:uppercase',
+    '[&_label[for=remember]]:text-[13px] [&_label[for=remember]]:font-medium [&_label[for=remember]]:normal-case [&_label[for=remember]]:text-rz-secondary',
+    '[&_input:not([type=checkbox])]:h-auto [&_input:not([type=checkbox])]:rounded-xl [&_input:not([type=checkbox])]:border-rz-border [&_input:not([type=checkbox])]:bg-rz-field [&_input:not([type=checkbox])]:px-3.5 [&_input:not([type=checkbox])]:py-[13px] [&_input:not([type=checkbox])]:text-sm [&_input:not([type=checkbox])]:text-rz-ink [&_input:not([type=checkbox])]:shadow-none',
+    '[&_button[type=submit]]:h-[52px] [&_button[type=submit]]:rounded-2xl [&_button[type=submit]]:bg-rz-accent-fill [&_button[type=submit]]:text-[15px] [&_button[type=submit]]:font-semibold [&_button[type=submit]]:text-white',
+    '[&_a]:font-semibold [&_a]:text-rz-accent-app-text [&_a]:no-underline',
+].join(' ');
+
+/**
+ * The signed-out surface every shared auth page sits in (log in, register, password reset, email
+ * verification, two-factor and password confirmation): the Rozine star centred over the title and
+ * its line, then the form. A phone fills the screen; a wide screen centres the same column as a
+ * card on the console frame. A branded entry names its app above the title and takes that app's
+ * accent.
+ */
 export default function AuthSimpleLayout({
     children,
     title,
     description,
+    eyebrow = '',
+    wordmark = '',
+    secure = '',
+    audience = null,
 }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link
-                            href={home()}
-                            className="flex flex-col items-center gap-2 font-medium"
-                        >
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
-
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-center text-sm text-muted-foreground">
-                                {description}
-                            </p>
-                        </div>
-                    </div>
-                    {children}
+        <div
+            data-audience={audience ?? 'investor'}
+            className="rz-surface flex min-h-svh flex-col bg-rz-surface lg:items-center lg:justify-center lg:bg-rz-frame lg:p-10"
+        >
+            <IconGradients />
+            <div className="mx-auto flex w-full max-w-[412px] flex-1 flex-col px-6 pt-[calc(env(safe-area-inset-top)+56px)] pb-[calc(env(safe-area-inset-bottom)+30px)] lg:max-w-[440px] lg:flex-none lg:rounded-[20px] lg:border lg:border-rz-border lg:bg-rz-surface lg:px-10 lg:pt-10 lg:pb-9 lg:shadow-[0_24px_60px_-28px_rgba(20,45,95,.35)]">
+                <div className="flex flex-col items-center text-center">
+                    <Link href={home()} className="flex items-center gap-2.5">
+                        <LogoMark className="h-[56px] w-[54px] text-rz-accent-fill" />
+                        <span className="sr-only">{title}</span>
+                        {eyebrow !== '' && (
+                            <span className="text-left">
+                                <span className="block text-base font-semibold tracking-[.06em] text-rz-ink">
+                                    {wordmark}
+                                </span>
+                                <span className="block text-[11px] font-semibold tracking-[.08em] text-rz-secondary uppercase">
+                                    {eyebrow}
+                                </span>
+                            </span>
+                        )}
+                    </Link>
+                    <h1 className="mt-3.5 text-[22px] font-semibold text-rz-ink">
+                        {title}
+                    </h1>
+                    <p className="mt-[5px] text-[13.5px] leading-normal text-rz-secondary">
+                        {description}
+                    </p>
                 </div>
+                <div className={`mt-6 ${FORM_SKIN}`}>{children}</div>
+                {secure !== '' && (
+                    <p className="mt-6 flex items-center justify-center gap-[7px] text-[11.5px] font-semibold tracking-[.06em] text-rz-secondary uppercase">
+                        <span
+                            aria-hidden="true"
+                            className="size-1.5 rounded-full bg-rz-positive"
+                        />
+                        {secure}
+                    </p>
+                )}
             </div>
         </div>
     );

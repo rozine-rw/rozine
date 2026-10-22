@@ -6,7 +6,7 @@ import type { MessageCode } from '@/lib/i18n/types';
 import AdminPendingSection from '@/pages/admin/section';
 import type { AdminPendingSectionProps } from '@/types/admin';
 import sectionFixture from '../../../resources/fixtures/ui/admin-section.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -41,7 +41,6 @@ describe('A designed section that is not wired yet', () => {
             'plus',
             'finance',
             'messaging',
-            'academies',
             'app_control',
             'engines',
             'policies',
@@ -92,9 +91,15 @@ describe('A designed section that is not wired yet', () => {
             const first = design.tabs?.[0]?.key;
 
             for (const block of design.blocks) {
-                if (block.tab !== undefined && block.tab !== first) {
+                if (
+                    design.tabs !== undefined &&
+                    block.tab !== undefined &&
+                    block.tab !== first
+                ) {
                     expect(
-                        within(region).queryByText(text(block.empty)),
+                        within(region).queryByRole('heading', {
+                            name: text(block.title),
+                        }),
                     ).not.toBeInTheDocument();
 
                     continue;
@@ -105,8 +110,9 @@ describe('A designed section that is not wired yet', () => {
                         name: text(block.title),
                     }),
                 ).toBeInTheDocument();
+                // Groups shown together may share one empty message.
                 expect(
-                    within(region).getByText(text(block.empty)),
+                    within(region).getAllByText(text(block.empty))[0],
                 ).toBeVisible();
 
                 if (block.sub !== undefined) {
@@ -154,7 +160,7 @@ describe('A designed section that is not wired yet', () => {
         expect(
             within(tabs).getByRole('tab', { name: 'Revenue streams' }),
         ).toHaveAttribute('aria-selected', 'true');
-        expect(screen.getByText('No revenue to show yet.')).toBeVisible();
+        expect(screen.getByText('No raise fees to show yet.')).toBeVisible();
 
         fireEvent.click(
             within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
@@ -170,7 +176,7 @@ describe('A designed section that is not wired yet', () => {
             screen.getByText('No ledger entries to show yet.'),
         ).toBeVisible();
         expect(
-            screen.queryByText('No revenue to show yet.'),
+            screen.queryByText('No raise fees to show yet.'),
         ).not.toBeInTheDocument();
         expect(screen.getAllByRole('tab', { selected: true })).toHaveLength(1);
     });
@@ -227,6 +233,433 @@ describe('The title ⓘ', () => {
     });
 });
 
+describe('Policies', () => {
+    it("lists every group's rules on one page, in the design's order, with each rule's version", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'policies',
+                    rules: [
+                        {
+                            tab: 'fees',
+                            key: 'platform_fee',
+                            value: '3%',
+                            version: 'brs-2.0-fee-r01',
+                        },
+                        {
+                            tab: 'fees',
+                            key: 'loss_reserve',
+                            value: '',
+                            term: 'none',
+                            version: 'brs-2.0-gen-r01',
+                        },
+                        {
+                            tab: 'kyc',
+                            key: 'minimum_age',
+                            value: '18',
+                            version: null,
+                        },
+                        {
+                            tab: 'investor',
+                            key: 'concentration',
+                            value: '50%',
+                            version: 'brs-2.0-inv-r01',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rules = screen.getByRole('table', { name: 'Fees' });
+        expect(
+            screen.getByText(
+                'What each side pays Rozine, and the share that goes to the auditor of record.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(rules).getAllByRole('row')).toHaveLength(3);
+        expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · at disbursementTaken from the raise when it is disbursed to the business.3%brs-2.0-fee-r01',
+        );
+        expect(within(rules).getAllByRole('row')[2]).toHaveTextContent(
+            'Loss reserveShare of fees set aside against defaults.Nonebrs-2.0-gen-r01',
+        );
+        expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+        expect(
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent),
+        ).toEqual([
+            'Fees',
+            'Underwriting',
+            'Business eligibility',
+            'Investor eligibility',
+            'KYC requirements',
+            'Compliance & penalties',
+            'Limits',
+        ]);
+        expect(
+            within(
+                screen.getByRole('table', { name: 'KYC requirements' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Minimum ageYoungest an investor may be.18—');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Investor eligibility' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent(
+            'Max investment / note · share of the raiseMost one investor may hold of a single raise.50%brs-2.0-inv-r01',
+        );
+        // Four groups have no rule in this fixture, so each shows its empty state.
+        expect(screen.getAllByText('No rules to show yet.')).toHaveLength(4);
+    });
+});
+
+describe('Finance', () => {
+    it('shows the fee revenue the ledger holds, stream by stream, and leaves uncharged fees blank', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    figures: {
+                        revenue: { currency: 'RWF', amount: '1950000' },
+                        primary: { currency: 'RWF', amount: '1800000' },
+                    },
+                    streams: [
+                        {
+                            key: 'platform_fee',
+                            rate: { key: 'platform_fee', value: '3%' },
+                            paid_by: 'business',
+                            collected: { currency: 'RWF', amount: '1800000' },
+                        },
+                        {
+                            key: 'deposit_fees',
+                            rate: null,
+                            paid_by: 'investor',
+                            collected: { currency: 'RWF', amount: '150000' },
+                        },
+                        {
+                            key: 'resale_fee',
+                            rate: { key: 'resale_fee', value: '2%' },
+                            paid_by: 'seller',
+                            collected: null,
+                        },
+                        {
+                            key: 'loss_reserve',
+                            rate: {
+                                key: 'loss_reserve',
+                                value: '',
+                                term: 'none',
+                            },
+                            paid_by: null,
+                            collected: null,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const region = screen.getByRole('region', {
+            name: 'Finance Dashboard',
+        });
+        expect(within(region).getAllByText('—')).toHaveLength(6);
+        expect(region).toHaveTextContent('All revenueRWF 2M');
+        expect(region).toHaveTextContent(
+            'Primary marketRWF 1.8MPlatform fee, Rozine share',
+        );
+
+        const raise = screen.getByRole('table', { name: 'Primary market' });
+        expect(
+            screen.getByText('What businesses pay to raise money'),
+        ).toBeVisible();
+        expect(within(raise).getAllByRole('row')).toHaveLength(2);
+        expect(within(raise).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · Rozine share3%BusinessesRWF 1,800,000',
+        );
+        expect(screen.getByText('No earnings fees to show yet.')).toBeVisible();
+        expect(
+            within(
+                screen.getByRole('table', {
+                    name: 'Secondary market',
+                }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Resale fee2%Seller—');
+        const residual = screen.getByRole('table', {
+            name: 'Cost recovery and residuals',
+        });
+        expect(
+            screen.getByText('Small lines. Forecast nothing from them.'),
+        ).toBeVisible();
+        expect(within(residual).getAllByRole('row')[1]).toHaveTextContent(
+            'Deposit fees—InvestorsRWF 150,000',
+        );
+        expect(within(residual).getAllByRole('row')[2]).toHaveTextContent(
+            'Loss reserveNone——',
+        );
+    });
+
+    it('filters every figure by a window of Kigali dates, from a quick window or two dates', () => {
+        const { rerender } = render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByText('Showing')).toBeVisible();
+        expect(
+            screen.getByText('Filters every figure on this page'),
+        ).toBeVisible();
+        expect(
+            screen.getByRole('button', { name: 'All time' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('Every stream, all time')).toBeVisible();
+
+        fireEvent.click(screen.getByRole('button', { name: '7 days' }));
+        fireEvent.click(screen.getByRole('button', { name: '1 year' }));
+        fireEvent.change(screen.getByLabelText('From date'), {
+            target: { value: '2026-09-01' },
+        });
+        expect(inertia.reload.map((options) => options.data)).toEqual([
+            { from: '2026-09-17', to: '2026-09-23' },
+            { from: '2025-09-24', to: '2026-09-23' },
+            { from: '2026-09-01', to: null },
+        ]);
+        expect(inertia.reload[0].only).toEqual([
+            'figures',
+            'streams',
+            'period',
+            'errors',
+        ]);
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-17', to: '2026-09-23' },
+                })}
+            />,
+        );
+        expect(screen.getByRole('button', { name: '7 days' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getByText('Every stream, this period')).toBeVisible();
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+        fireEvent.change(screen.getByLabelText('From date'), {
+            target: { value: '' },
+        });
+        expect(inertia.reload.slice(-2).map((options) => options.data)).toEqual(
+            [
+                { from: null, to: null },
+                { from: null, to: '2026-09-23' },
+            ],
+        );
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-01', to: null },
+                })}
+            />,
+        );
+        expect(screen.getByText(/^Since /)).toBeVisible();
+        fireEvent.change(screen.getByLabelText('To date'), {
+            target: { value: '2026-09-10' },
+        });
+        expect(inertia.reload.at(-1)?.data).toEqual({
+            from: '2026-09-01',
+            to: '2026-09-10',
+        });
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: '2026-09-10' },
+                })}
+            />,
+        );
+        expect(screen.getByText(/^Until /)).toBeVisible();
+
+        rerender(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: '2026-09-01', to: '2026-09-10' },
+                })}
+            />,
+        );
+        expect(screen.getByText(/ → /)).toBeVisible();
+    });
+
+    it('says when the server refused a reversed window', () => {
+        inertia.errors = {
+            to: 'The to field must be a date after or equal to from.',
+        };
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+        expect(screen.getByLabelText('From date')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+    });
+
+    it('says the same when the server refused the From date alone', () => {
+        inertia.errors = {
+            from: 'The from field must match the format Y-m-d.',
+        };
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    period: { from: null, to: null },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+    });
+});
+
+describe('Engines and Ratings', () => {
+    it("lists the engine's settings under their tab, with the rule set each comes from", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'engines',
+                    engine: [
+                        {
+                            tab: 'sizing',
+                            key: 'target_dscr',
+                            value: '1.50×',
+                            source: 'loan-capacity-v1',
+                        },
+                        {
+                            tab: 'cpa',
+                            key: 'cpa_share',
+                            value: '40%',
+                            source: 'brs-2.0-fee-r01',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const sizing = screen.getByRole('table', { name: 'Sizing' });
+        expect(within(sizing).getAllByRole('row')).toHaveLength(2);
+        expect(within(sizing).getAllByRole('row')[1]).toHaveTextContent(
+            'Target DSCR1.50×loan-capacity-v1',
+        );
+
+        fireEvent.click(screen.getByRole('tab', { name: 'CPA split' }));
+        expect(
+            within(
+                screen.getByRole('table', { name: 'CPA split' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Audit Partner share of the fee40%brs-2.0-fee-r01');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Refinance' }));
+        expect(
+            screen.getByText('No refinance inputs to show yet.'),
+        ).toBeVisible();
+    });
+
+    it('explains how a rating is computed: the weights, the caps and the bands', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    engine: [
+                        {
+                            tab: 'weights',
+                            key: 'coverage',
+                            value: '30% · 1.00×–1.50×',
+                            source: 'scorecard-v1',
+                        },
+                        {
+                            tab: 'movers',
+                            key: 'default_cap',
+                            value: '1.9',
+                            source: 'scorecard-v1',
+                        },
+                        {
+                            tab: 'bands',
+                            key: 'distressed',
+                            value: '< 2.0',
+                            source: 'scorecard-v1',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('table', { name: 'How a rating is computed' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Debt coverage30% · 1.00×–1.50×scorecard-v1');
+        expect(
+            within(screen.getByRole('table', { name: 'Bands' })).getAllByRole(
+                'row',
+            )[1],
+        ).toHaveTextContent('Distressed< 2.0scorecard-v1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'What moves a rating' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Rating cap · default1.9scorecard-v1');
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
+describe('The rating book', () => {
+    it('lists every rated Business under All, counts them, and keeps band changes empty', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    counts: { rated: 1 },
+                    book: [
+                        {
+                            key: 'b-1',
+                            business: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.6' },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            screen.getByRole('region', { name: 'Ratings' }),
+        ).toHaveTextContent('Businesses rated1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'The rating book' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('GreenLeaf AgroAgricultureStrong · 4.6——');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Band changed' }));
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);
@@ -251,5 +684,129 @@ describe('A designed screen whose live data is wired elsewhere', () => {
             ),
         ).toBeInTheDocument();
         expect(within(section).queryByRole('tab')).not.toBeInTheDocument();
+    });
+});
+
+describe('App Control', () => {
+    it('shows how much of each sandbox limit is used, as counts and RWF', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    sandbox: [
+                        {
+                            key: 'businesses',
+                            used: '12',
+                            cap: '100',
+                            used_pct: 12,
+                        },
+                        {
+                            key: 'investors',
+                            used: '2400',
+                            cap: '10000',
+                            used_pct: 24,
+                        },
+                        {
+                            key: 'principal',
+                            used: '250000000',
+                            cap: '5000000000',
+                            used_pct: 5,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const limits = screen.getByRole('table', { name: 'Sandbox limits' });
+        const rows = within(limits).getAllByRole('row');
+
+        expect(rows).toHaveLength(4);
+        expect(rows[1]).toHaveTextContent(
+            'Businesses with an active mandate1210012%',
+        );
+        expect(rows[2]).toHaveTextContent('Verified investors2,40010,00024%');
+        expect(rows[3]).toHaveTextContent(
+            'Principal outstandingRWF 250,000,000RWF 5,000,000,0005%',
+        );
+        expect(screen.getByText('No app settings to show yet.')).toBeVisible();
+    });
+
+    it('lists each app as online, with whether each of its features is built', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    apps: [
+                        {
+                            key: 'investor',
+                            features: [
+                                { key: 'sign_ups', state: 'live' },
+                                { key: 'secondary_market', state: 'not_built' },
+                            ],
+                        },
+                        {
+                            key: 'auditor',
+                            features: [{ key: 'flash_audits', state: 'live' }],
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Apps' }),
+        ).getAllByRole('row');
+
+        expect(rows).toHaveLength(3);
+        expect(rows[1]).toHaveTextContent(
+            'Investor AppOnlineNew sign-ups · Live, Secondary Market · Not built yet',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'Auditor AppOnlineFlash Audits (24h) · Live',
+        );
+    });
+
+    it('lists the businesses that raised most, rated or not, with nothing to edit', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    content: [
+                        {
+                            key: 'b1',
+                            type: 'business',
+                            name: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.2' },
+                            state: 'active',
+                        },
+                        {
+                            key: 'b2',
+                            type: 'business',
+                            name: 'Sebeya Logistics',
+                            sector: 'Logistics',
+                            rating: null,
+                            state: 'pending',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Content' }),
+        ).getAllByRole('row');
+
+        expect(rows[1]).toHaveTextContent(
+            'BusinessGreenLeaf Agro · Agriculture · Strong 4.2Active',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'BusinessSebeya Logistics · Logistics · Not rated yetPending verification',
+        );
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Content' }),
+            ).queryAllByRole('button'),
+        ).toEqual([]);
     });
 });

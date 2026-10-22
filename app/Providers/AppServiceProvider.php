@@ -11,18 +11,23 @@ use App\Application\Auditor\Contracts\AuditLedgerEvidence;
 use App\Application\Auditor\Contracts\AuditLedgerExtractionQueue;
 use App\Application\Auditor\Contracts\AuditLocationStore;
 use App\Application\Auditor\Contracts\AuditorDirectoryStore;
+use App\Application\Auditor\Contracts\AuditorEarningsStore;
 use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Auditor\Contracts\AuditorIndependenceStore;
 use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportLifecycle;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Auditor\Contracts\AuditReportRegisterStore;
 use App\Application\Auditor\Contracts\AuditReportStore;
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\Contracts\AuditStepUp;
+use App\Application\Auditor\Contracts\MonthlyAuditBusinesses;
+use App\Application\Auditor\Contracts\NoteAuditPartner;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\AcceptedApplicationStore;
+use App\Application\Business\Contracts\AuditedRaises;
 use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuditWindows;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
@@ -40,11 +45,12 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
+use App\Application\Disbursement\Contracts\DisbursementFeeFacts;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
-use App\Application\Disbursement\Contracts\StaffConnections;
+use App\Application\Disbursement\Contracts\PlatformFeeLedger;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
@@ -83,6 +89,7 @@ use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Application\Primary\Contracts\HoldingSource;
+use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Primary\Contracts\IssuedHoldingEvidence;
@@ -121,15 +128,19 @@ use App\Infrastructure\Auditor\EloquentAuditLedgerEvidence;
 use App\Infrastructure\Auditor\EloquentAuditLedgerExtractionQueue;
 use App\Infrastructure\Auditor\EloquentAuditLocationStore;
 use App\Infrastructure\Auditor\EloquentAuditorDirectoryStore;
+use App\Infrastructure\Auditor\EloquentAuditorEarningsStore;
 use App\Infrastructure\Auditor\EloquentAuditorFiledReportStore;
 use App\Infrastructure\Auditor\EloquentAuditorIndependenceStore;
 use App\Infrastructure\Auditor\EloquentAuditorProfileStore;
 use App\Infrastructure\Auditor\EloquentAuditReportLifecycle;
 use App\Infrastructure\Auditor\EloquentAuditReportPublicationStore;
+use App\Infrastructure\Auditor\EloquentAuditReportRegisterStore;
 use App\Infrastructure\Auditor\EloquentAuditReportStore;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Infrastructure\Auditor\EloquentAuditStepUp;
 use App\Infrastructure\Auditor\EloquentBusinessAuditWindows;
+use App\Infrastructure\Auditor\EloquentMonthlyAuditBusinesses;
+use App\Infrastructure\Auditor\EloquentNoteAuditPartner;
 use App\Infrastructure\Auditor\EloquentOverdueAudits;
 use App\Infrastructure\Auditor\JoseAuditReportCryptography;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
@@ -143,14 +154,15 @@ use App\Infrastructure\Business\EloquentBusinessExposureReservations;
 use App\Infrastructure\Business\EloquentBusinessNoticeAudience;
 use App\Infrastructure\Business\EloquentPrimaryCampaignSource;
 use App\Infrastructure\Business\EloquentStaffApplicationQueue;
+use App\Infrastructure\Business\RetainedAuditedRaises;
 use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Business\RetainedInvestorDeals;
 use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
+use App\Infrastructure\Disbursement\EloquentDisbursementFeeFacts;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
-use App\Infrastructure\Disbursement\EloquentStaffConnections;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
@@ -184,6 +196,7 @@ use App\Infrastructure\Operations\PostgresChangeFeed;
 use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Infrastructure\Primary\EloquentCampaignCommitments;
 use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
+use App\Infrastructure\Primary\EloquentInvestorCart;
 use App\Infrastructure\Primary\EloquentInvestorHoldings;
 use App\Infrastructure\Primary\EloquentPrimaryCheckout;
 use App\Infrastructure\Primary\EloquentPrimaryCommitmentView;
@@ -204,6 +217,7 @@ use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
+use App\Infrastructure\Wallet\EloquentPlatformFeeLedger;
 use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
 use App\Infrastructure\Wallet\EloquentPrimaryCommittedCash;
 use App\Infrastructure\Wallet\EloquentPrimaryReturnedCash;
@@ -270,6 +284,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PublishedCampaignEvidence::class, RetainedCampaignPublication::class);
         $this->app->bind(InvestorDealCatalogue::class, RetainedInvestorDeals::class);
         $this->app->bind(CampaignClosureEvidence::class, RetainedCampaignClosures::class);
+        $this->app->bind(AuditedRaises::class, RetainedAuditedRaises::class);
         $this->app->bind(StaffApplicationQueue::class, EloquentStaffApplicationQueue::class);
         $this->app->bind(AcceptedApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(PublishedApplicationReport::class, EloquentAuditReportPublicationStore::class);
@@ -283,11 +298,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvestorDirectoryStore::class, EloquentInvestorDirectoryStore::class);
         $this->app->bind(BusinessDirectoryStore::class, EloquentBusinessDirectoryStore::class);
         $this->app->bind(AuditorDirectoryStore::class, EloquentAuditorDirectoryStore::class);
+        $this->app->bind(AuditReportRegisterStore::class, EloquentAuditReportRegisterStore::class);
         $this->app->bind(StaffDirectoryStore::class, EloquentStaffDirectoryStore::class);
         $this->app->bind(OperationsDashboardStore::class, EloquentOperationsDashboardStore::class);
         $this->app->bind(ActivityTrailStore::class, EloquentActivityTrailStore::class);
         $this->app->bind(StagingMailTesterStore::class, EloquentStagingMailTesterStore::class);
         $this->app->bind(AuditAssignmentStore::class, EloquentAuditAssignmentStore::class);
+        $this->app->bind(MonthlyAuditBusinesses::class, EloquentMonthlyAuditBusinesses::class);
         $this->app->bind(AuditReportStore::class, EloquentAuditReportStore::class);
         $this->app->bind(AuditSourceFactsStore::class, EloquentAuditSourceFactsStore::class);
         $this->app->bind(AuditEngagementStore::class, EloquentAuditEngagementStore::class);
@@ -295,6 +312,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuditorIndependenceStore::class, EloquentAuditorIndependenceStore::class);
         $this->app->bind(AuditLocationStore::class, EloquentAuditLocationStore::class);
         $this->app->bind(AuditorFiledReportStore::class, EloquentAuditorFiledReportStore::class);
+        $this->app->bind(AuditorEarningsStore::class, EloquentAuditorEarningsStore::class);
+        $this->app->bind(DisbursementFeeFacts::class, EloquentDisbursementFeeFacts::class);
         $this->app->bind(StatementTextExtractor::class, IsolatedStatementTextExtractor::class);
         $this->app->bind(StatementExtractionQueue::class, EloquentStatementExtractionQueue::class);
         $this->app->bind(AuditLedgerExtractionQueue::class, EloquentAuditLedgerExtractionQueue::class);
@@ -313,6 +332,7 @@ class AppServiceProvider extends ServiceProvider
         // No current-authority admission source exists yet: reserve and confirm fail closed (#96 5968131139).
         $this->app->bind(PrimaryAdmission::class, CurrentPrimaryAdmission::class);
         $this->app->bind(RiskAcknowledgements::class, EloquentRiskAcknowledgements::class);
+        $this->app->bind(InvestorCart::class, EloquentInvestorCart::class);
         $this->app->bind(PartyNotices::class, EloquentPartyNotices::class);
         $this->app->bind(AccountDevices::class, EloquentAccountDevices::class);
         $this->app->bind(ReconciliationStore::class, EloquentReconciliationStore::class);
@@ -361,6 +381,8 @@ class AppServiceProvider extends ServiceProvider
     private function registerDisbursements(): void
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
+        $this->app->bind(PlatformFeeLedger::class, EloquentPlatformFeeLedger::class);
+        $this->app->bind(NoteAuditPartner::class, EloquentNoteAuditPartner::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
         $this->app->bind(FundedPurchaseChanges::class, RetainedFundedPurchaseChanges::class);
@@ -369,7 +391,6 @@ class AppServiceProvider extends ServiceProvider
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
         $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
         $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
-        $this->app->bind(StaffConnections::class, fn (): StaffConnections => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : $this->app->make(EloquentStaffConnections::class));
         $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
         $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
         $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
@@ -387,10 +408,6 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
             Limit::perMinute(20)->by('ip:'.$request->ip()),
-        ]);
-        RateLimiter::for('disbursement-step-up', fn (Request $request): array => [
-            Limit::perMinute(5)->by('disbursement-step-up-account:'.$request->user()?->getAuthIdentifier()),
-            Limit::perMinute(20)->by('disbursement-step-up-ip:'.$request->ip()),
         ]);
     }
 

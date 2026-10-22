@@ -106,14 +106,36 @@ describe('Auditor Portfolio', () => {
             name: 'Verification earned · this month',
         });
 
-        expect(within(earned).getAllByText('—')).toHaveLength(3);
+        expect(within(earned).getByText('259,200')).toBeInTheDocument();
+        expect(within(earned).getByText('RWF')).toBeInTheDocument();
+        expect(within(earned).getAllByText('—')).toHaveLength(1);
         expect(within(earned).getByText('Managed deals')).toBeInTheDocument();
+        expect(within(earned).getByText('2')).toBeInTheDocument();
         expect(within(earned).getByText('Next payout')).toBeInTheDocument();
         expect(
             screen.getByText(
                 'Yield-share payouts appear here once they are paid.',
             ),
         ).toBeInTheDocument();
+
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        expect(within(managed).getByText('2 total')).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Kigali Fresh Foods'),
+        ).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Gasabo · credited 2 Oct 2026'),
+        ).toBeInTheDocument();
+        expect(within(managed).getAllByText('Funded')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 10.8M')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 324K')).toHaveLength(2);
+        expect(within(managed).getAllByText('RWF 130K')).toHaveLength(2);
+    });
+
+    it('says there are no managed deals before a Flash Audit funds one', () => {
+        render(<AuditorPortfolio {...props(emptyFixture)} />);
+
         expect(
             screen.getByRole('region', { name: 'Managed deals' }),
         ).toHaveTextContent(
@@ -876,6 +898,77 @@ describe('Auditor Portfolio', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('alertdialog', { name: 'Interest declared' }),
+        ).toBeInTheDocument();
+    });
+
+    it('counts every managed deal, not only the capped list it shows', () => {
+        const page = props();
+        page.earnings.deals = 60;
+        render(<AuditorPortfolio {...page} />);
+
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Managed deals' }),
+            ).getByText('60 total'),
+        ).toBeInTheDocument();
+    });
+
+    it('switches to the raises still taking commitments and those that failed', async () => {
+        const { user } = renderWithUser(<AuditorPortfolio {...props()} />);
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        );
+
+        expect(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            within(managed).getByText('Kivu Coffee Roasters'),
+        ).toBeInTheDocument();
+        expect(within(managed).getByText('Isoko Energy')).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Solar Kiosk Rollout'),
+        ).toBeInTheDocument();
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Failed 1' }),
+        );
+
+        expect(
+            within(managed).queryByText('Kivu Coffee Roasters'),
+        ).not.toBeInTheDocument();
+        expect(within(managed).getByText('Isoko Energy')).toBeInTheDocument();
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Active portfolio' }),
+        );
+
+        expect(
+            within(managed).queryByText('Isoko Energy'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says when no audited business is raising in the chosen state', async () => {
+        const page = props();
+        page.raising = page.raising.filter(
+            (raise) => raise.status === 'failed',
+        );
+        const { user } = renderWithUser(<AuditorPortfolio {...page} />);
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        );
+        await user.click(
+            within(managed).getByRole('button', { name: 'Live 0' }),
+        );
+
+        expect(
+            within(managed).getByText(
+                'No raises from the businesses you audited in this view.',
+            ),
         ).toBeInTheDocument();
     });
 });

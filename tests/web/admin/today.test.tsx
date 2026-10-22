@@ -150,6 +150,22 @@ describe('Admin frame', () => {
 });
 
 describe('Admin Today', () => {
+    it('lets every panel row shrink to a phone width instead of widening the page', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+        const rows = screen.getAllByTestId('panel-row');
+
+        expect(rows.length).toBeGreaterThan(0);
+        rows.forEach((row) => expect(row).toHaveClass('grid-cols-1'));
+    });
+
+    it('keeps each capital-raised bar to one bar wide, however few there are', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+
+        screen
+            .getAllByTestId('chart-bar')
+            .forEach((bar) => expect(bar).toHaveClass('max-w-14'));
+    });
+
     it('shows the headline figures without a second score', () => {
         render(<AdminToday {...props(todayFixture)} />);
 
@@ -446,6 +462,58 @@ describe('Admin Today, live', () => {
         expect(
             screen.queryByText('No money has moved yet.'),
         ).not.toBeInTheDocument();
+    });
+
+    it('reads portfolio health from issued notes, with distress not tracked, and says when none have issued', () => {
+        const { unmount } = render(
+            <AdminToday
+                {...live()}
+                portfolio_health={{
+                    total: 4,
+                    healthy: { count: 3, pct: 75 },
+                    watch: { count: 1, pct: 25 },
+                    distressed: null,
+                }}
+            />,
+        );
+        const health = screen.getByRole('region', {
+            name: 'Portfolio health',
+        });
+
+        expect(health).toHaveTextContent(
+            '4 issued notes, by their newest monthly report',
+        );
+        expect(health).toHaveTextContent('Watch1 · 25%');
+        expect(health).toHaveTextContent('DistressedNot tracked yet');
+        unmount();
+
+        render(
+            <AdminToday
+                {...live()}
+                portfolio_health={{
+                    total: 0,
+                    healthy: { count: 0, pct: 0 },
+                    watch: { count: 0, pct: 0 },
+                    distressed: null,
+                }}
+            />,
+        );
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Portfolio health' }),
+            ).getByText('No notes have issued yet.'),
+        ).toBeInTheDocument();
+    });
+
+    it('says no notes have issued when the platform holds no sector exposure yet', () => {
+        render(<AdminToday {...live()} sector_exposure={[]} />);
+
+        expect(
+            screen.getByText('No notes have issued yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByText('Not tracked in the console yet.'),
+        ).toHaveLength(3);
     });
 
     it("offers the design's quick commands that open a page, in its order, and only those the server links", () => {

@@ -19,15 +19,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * due date whose report is not sealed yet, linked to its file (a sealed one is already a report).
  * `reports_complete` says whether the reports sent are every report the partner filed: the read
  * stops at its page size and a filter narrows it, so the calendar must not call a month empty then.
- * Earnings, origination, yield-share and managed deals have no read yet, so nothing is sent for
- * them and the page shows the design's empty states.
+ * Earnings are the partner's platform fee shares (BRS v2.0 FEE-R02), as `earnings()` presents them.
+ * Origination, yield-share, managed deals and the next payout have no read yet, so nothing is sent
+ * for them and the page shows the design's empty states.
  *
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type FiledReport from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type FiledReports from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type ConflictPage from \App\Application\Auditor\Contracts\AuditAssignmentStore
+ * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
  *
- * @phpstan-type Portfolio array{identity_context_revision: int, filter: string, reports: FiledReports, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, conflicts: ConflictPage}
+ * @phpstan-type Portfolio array{identity_context_revision: int, filter: string, reports: FiledReports, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, conflicts: ConflictPage, earnings: Earnings}
  */
 class AuditorPortfolioResource extends JsonResource
 {
@@ -70,9 +72,31 @@ class AuditorPortfolioResource extends JsonResource
             'owed' => $owed,
             'owed_complete' => $page['jobs']['next_cursor'] === null,
             'reports_complete' => $page['filter'] === self::FILTERS[0] && count($page['reports']['data']) >= $counts['all'],
+            'earnings' => self::earnings($page['earnings']),
+            'raising' => array_map(fn (array $raise): array => [...$raise, 'raised' => ['currency' => 'RWF', 'amount' => $raise['raised']],
+                'target' => ['currency' => 'RWF', 'amount' => $raise['target']]], $page['earnings']['raising']),
             'outcome' => null,
             'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => AuditorJobsResource::links($request)];
+    }
+
+    /**
+     * The partner's earnings statement as the Portfolio and Profile show it: the Kigali month it
+     * covers, what was credited in it and ever, and each of that month's credits with the raise and
+     * fee it was worked out from; then every deal the partner manages, newest first.
+     *
+     * @param  Earnings  $earnings
+     * @return array<string, mixed>
+     */
+    public static function earnings(array $earnings): array
+    {
+        $money = fn (string $amount): array => ['currency' => 'RWF', 'amount' => $amount];
+        $lines = fn (array $lines): array => array_map(fn (array $line): array => ['id' => $line['id'], 'business' => $line['business'], 'district' => $line['district'],
+            'raise' => $money($line['raise']), 'platform_fee' => $money($line['platform_fee']), 'amount' => $money($line['amount']),
+            'credited_at' => $line['credited_at']], $lines);
+
+        return ['month' => $earnings['month'].'-01', 'this_month' => $money($earnings['this_month']), 'total' => $money($earnings['total']),
+            'lines' => $lines($earnings['lines']), 'deals' => $earnings['deals'], 'managed' => $lines($earnings['managed'])];
     }
 
     /**

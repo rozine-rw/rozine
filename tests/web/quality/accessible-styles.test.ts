@@ -90,7 +90,12 @@ describe('Text contrast (WCAG 2.2 SC 1.4.3)', () => {
 
     it.each([
         ['light', light, 'rz-muted'],
+        ['light', light, 'rz-body'],
+        ['light', light, 'rz-faint'],
+        ['light', light, 'rz-group'],
+        ['light', light, 'rz-danger-text'],
         ['light', light, 'rz-business-text'],
+        ['light', light, 'rz-business-app-text'],
         ['light', light, 'rz-auditor-text'],
         ['dark', dark, 'rz-muted'],
         ['dark', dark, 'rz-faint'],
@@ -103,6 +108,118 @@ describe('Text contrast (WCAG 2.2 SC 1.4.3)', () => {
             ).toBeGreaterThanOrEqual(4.5);
         }
     });
+});
+
+describe('Literal text colours (WCAG 2.2 SC 1.4.3)', () => {
+    /**
+     * Files whose literal colours sit on a dark or tinted fill of their own, or are not text:
+     * the starter welcome page no route serves, the notice tiles' icon colour and the review
+     * drawer's kicker on its navy header.
+     */
+    const ALLOWED = new Set([
+        'pages/welcome.tsx',
+        'components/investor/notices/notices-panel.tsx',
+        'components/admin/applications/review-drawer.tsx',
+    ]);
+
+    it('draws every light-theme literal text colour at 4.5:1 or more on white', () => {
+        const root = path.resolve(__dirname, '../../../resources/js');
+        const failures = [
+            ...readdirSync(root, { recursive: true, encoding: 'utf8' }),
+        ]
+            .filter(
+                (file) =>
+                    file.endsWith('.tsx') &&
+                    !ALLOWED.has(file.split(path.sep).join('/')),
+            )
+            .flatMap((file) =>
+                readFileSync(path.join(root, file), 'utf8')
+                    .split('\n')
+                    /* A line that sets its own navy or translucent-white fill draws light text on dark. */
+                    .filter(
+                        (line) =>
+                            !/bg-\[(#0c1830|rgba\(255,255,255)/u.test(line),
+                    )
+                    .flatMap((line) => [
+                        ...line.matchAll(
+                            /(^|[\s'"`])text-\[(#[0-9a-f]{6})\]/giu,
+                        ),
+                    ])
+                    .filter(([, , colour]) => contrast(colour, '#ffffff') < 4.5)
+                    .map(([, , colour]) => `${file} ${colour}`),
+            );
+
+        expect(failures).toEqual([]);
+    });
+});
+
+describe('Audit oversight contrast in both themes (WCAG 2.2 SC 1.4.3)', () => {
+    const light = tokens(css('rozine.css'), ':root');
+    const dark = { ...light, ...tokens(css('rozine.css'), '.dark') };
+
+    it.each([
+        [
+            'licence rejection',
+            'components/admin/parties/review-queue.tsx',
+            '#b3352a',
+            'rz-surface',
+            'rz-surface',
+        ],
+        [
+            'licence metadata',
+            'components/admin/parties/review-queue.tsx',
+            '#7a5d33',
+            '#faf7f1',
+            'rz-surface-muted',
+        ],
+        [
+            'sealed report download',
+            'pages/admin/audit-reports.tsx',
+            '#7a5d33',
+            'rz-surface',
+            'rz-surface',
+        ],
+    ])(
+        'keeps %s readable on its actual light and dark fills',
+        (_, file, foreground, lightFill, darkFill) => {
+            const source = readFileSync(
+                path.resolve(__dirname, '../../../resources/js', file),
+                'utf8',
+            );
+            const classes = [...source.matchAll(/className="([^"]*)"/gu)]
+                .map((match) => match[1])
+                .find((className) =>
+                    className.split(/\s/u).includes(`text-[${foreground}]`),
+                );
+
+            if (classes === undefined) {
+                throw new Error(`Missing audited text colour in ${file}`);
+            }
+
+            const darkForeground =
+                /(?:^|\s)dark:text-\[(#[0-9a-f]{6})\]/u.exec(classes)?.[1] ??
+                foreground;
+            expect(source).toContain(
+                lightFill.startsWith('#')
+                    ? `bg-[${lightFill}]`
+                    : `bg-${lightFill}`,
+            );
+            expect(source).toContain(
+                lightFill === darkFill
+                    ? `bg-${darkFill}`
+                    : `dark:bg-${darkFill}`,
+            );
+            expect(
+                contrast(
+                    foreground,
+                    lightFill.startsWith('#') ? lightFill : light[lightFill],
+                ),
+            ).toBeGreaterThanOrEqual(4.5);
+            expect(
+                contrast(darkForeground, dark[darkFill]),
+            ).toBeGreaterThanOrEqual(4.5);
+        },
+    );
 });
 
 describe('Placeholder contrast (WCAG 2.2 SC 1.4.3)', () => {

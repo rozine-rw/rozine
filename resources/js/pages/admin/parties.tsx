@@ -1,7 +1,15 @@
 import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
+import { InviteOperator } from '@/components/admin/parties/invite-operator';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
+import { PendingStaffApprovals } from '@/components/admin/parties/pending-staff-approvals';
+import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
+import {
+    LicenceQueue,
+    RegistryHeading,
+} from '@/components/admin/parties/review-queue';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
@@ -11,6 +19,7 @@ import {
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { AdminPartiesProps, AdminSection, PartyKind } from '@/types/admin';
+import type { LicenceQueues } from '@/types/admin-audit';
 
 const SECTION: Record<PartyKind, AdminSection> = {
     business: 'businesses',
@@ -23,9 +32,10 @@ const SECTION: Record<PartyKind, AdminSection> = {
  * Parties (MVP-ADMIN-SCR-08): the four party types — businesses, investors, Audit Partners and
  * staff — each in its design directory (Business T419–502, Investor T504–564, CPA registry
  * T708–736, Operators T766–791), opening the party 360 with its history and reasoned controls.
+ * Audit Partners also see the licences waiting for review, queued above their directory.
  * Filtering and sorting are server queries; the page never re-sorts or re-counts rows itself.
  */
-export default function AdminParties(props: AdminPartiesProps) {
+export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
     const { t } = useTranslation();
     const format = useStatFormatter();
     const section = SECTION[props.kind];
@@ -48,6 +58,7 @@ export default function AdminParties(props: AdminPartiesProps) {
                 <PolicyPeek
                     title={t('admin.parties.policy_title')}
                     items={props.policy}
+                    link={props.nav.policies}
                 />
             )}
             {props.stats.length > 0 && (
@@ -62,6 +73,11 @@ export default function AdminParties(props: AdminPartiesProps) {
                     ))}
                 </div>
             )}
+            {props.requests && (
+                <LicenceQueue kind="requests" entries={props.requests} />
+            )}
+            {props.desk && <LicenceQueue kind="desk" entries={props.desk} />}
+            {props.kind === 'auditor' && <RegistryHeading />}
             <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
                 <SegmentedChips
                     label={t('admin.parties.filter')}
@@ -108,7 +124,24 @@ export default function AdminParties(props: AdminPartiesProps) {
                         {t('admin.parties.coverage_link')}
                     </Link>
                 )}
+                {props.kind === 'staff' && props.grant && (
+                    <InviteOperator action={props.grant} />
+                )}
             </div>
+            {props.kind === 'staff' && props.access && (
+                <p className="mb-3 text-[12px] text-rz-muted">
+                    <span className="mr-1.5 text-[10px] font-bold tracking-[.06em] text-rz-faint uppercase">
+                        {t('admin.staff.signed_in_as')}
+                    </span>
+                    <span className="font-semibold text-rz-ink">
+                        {t(`admin.role.${props.viewer.role}`)}
+                    </span>
+                    {' · '}
+                    {props.access.granted === props.access.total
+                        ? t('admin.staff.access_full')
+                        : t('admin.staff.access_count', props.access)}
+                </p>
+            )}
             <p className="mb-2.5 text-[12px] font-semibold text-rz-muted">
                 {props.shown < props.total
                     ? t(`admin.parties.showing.${props.kind}`, {
@@ -122,7 +155,19 @@ export default function AdminParties(props: AdminPartiesProps) {
             {props.directory.rows.length === 0 && props.search !== '' && (
                 <SearchEmpty section={section} term={props.search} />
             )}
+            {props.kind === 'staff' && props.pending_approvals && (
+                <PendingStaffApprovals requests={props.pending_approvals} />
+            )}
             <DirectoryTable directory={props.directory} />
+            {props.kind === 'staff' && props.permission_matrix && (
+                <PermissionMatrix rows={props.permission_matrix} />
+            )}
+            {props.kind === 'staff' && props.action_log && (
+                <ActionLog
+                    entries={props.action_log}
+                    serverTime={props.server_time}
+                />
+            )}
         </AdminFrame>
     );
 }

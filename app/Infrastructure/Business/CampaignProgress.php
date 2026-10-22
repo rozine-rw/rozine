@@ -20,8 +20,10 @@ final class CampaignProgress
      * Retained raise or funding-lock progress; this never dispatches or certifies payment.
      * Returned and overdue claims remain unavailable until ordinal recycling exists.
      *
+     * The funding lock read here comes back with a funded raise, so its holders need no second read.
+     *
      * @param  array<string, mixed>  $payload
-     * @return array{progress: array<string, mixed>, has_unreturned_holds: bool}
+     * @return array{progress: array<string, mixed>, has_unreturned_holds: bool, funding?: array<string, mixed>}
      */
     public function project(string $campaignId, array $payload): array
     {
@@ -37,7 +39,7 @@ final class CampaignProgress
         $hasUnreturnedHolds = $summary['held_principal'] !== '0' || $summary['expired_hold_principal'] !== '0';
         $funding = $this->fundings->find($campaignId);
         if ($funding !== null) {
-            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'progress' => ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
+            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'funding' => $funding, 'progress' => ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
                 'committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
                 'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))),
                 'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']]];

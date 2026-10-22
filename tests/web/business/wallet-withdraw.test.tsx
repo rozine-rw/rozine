@@ -169,7 +169,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         const list = screen.getByRole('region', { name: 'Withdrawals' });
         const [waiting, paid] = within(list).getAllByRole('listitem');
 
-        expect(waiting).toHaveTextContent('Withdrawal to Bank of Kigali');
+        expect(waiting).toHaveTextContent('Withdrawal · Bank of Kigali');
         expect(waiting).toHaveTextContent('Sending');
         expect(paid).toHaveTextContent('Paid out');
         expect(within(paid).getByRole('link')).toHaveAttribute(
@@ -190,7 +190,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
             name: 'Transaction receipt',
         });
 
-        expect(sheet).toHaveTextContent('Withdrawal to Bank of Kigali');
+        expect(sheet).toHaveTextContent('Withdrawal · Bank of Kigali');
         expect(sheet).toHaveTextContent('RWF 800,000');
         expect(sheet).toHaveTextContent('StatusPaid out');
         expect(sheet).toHaveTextContent('RZX-BWD0000000');

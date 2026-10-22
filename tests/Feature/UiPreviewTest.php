@@ -164,7 +164,7 @@ test('C3 fixtures cover every surface in the scaffold, each with a live-minimal 
         'investor-commitment-visibility-lost', 'investor-portfolio-awaiting-issue', 'investor-holding-issued',
         'investor-wallet-deposit-pending', 'investor-wallet-deposit-unknown', 'investor-wallet-policy-missing',
         'investor-wallet-internal', 'investor-wallet-paged',
-        'admin-disbursements-ready', 'admin-disbursements-awaiting-second', 'admin-disbursements-self',
+        'admin-disbursements-ready', 'admin-disbursements-awaiting-second',
         'admin-disbursements-on-hold', 'admin-disbursements-queued', 'admin-disbursements-dispatched-pending',
         'admin-disbursements-dispatched-unknown', 'admin-disbursements-verified-failure-unreconciled',
         'admin-disbursements-exception', 'admin-disbursements-failed-closing', 'admin-disbursements-succeeded',
@@ -362,7 +362,7 @@ test('the Investor bell previews its notices and a read that changes nothing', f
 
 test('the Business bell previews its notices and a read that changes nothing', function () {
     $this->get('/preview/business-notices')->assertOk()
-        ->assertJsonPath('data.unread', 1)->assertJsonCount(10, 'data.notices')
+        ->assertJsonPath('data.unread', 1)->assertJsonCount(11, 'data.notices')
         ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.4.kind', 'business.withdrawal_sent');
     $this->post('/preview/business-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
 });

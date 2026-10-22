@@ -1,4 +1,4 @@
-import { router, useHttp } from '@inertiajs/react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
@@ -26,7 +26,7 @@ const stroke = {
 const TONES: Record<InvestorNotice['kind'], Tone> = {
     'wallet.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'wallet.withdrawal_sent': {
@@ -46,7 +46,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.refunded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -56,7 +56,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.report_published': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: (
             <path
                 d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4.5"
@@ -66,7 +66,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'primary.holding_issued': {
@@ -121,22 +121,22 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.disbursement_sent': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
     },
     'business.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'business.application_approved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_sent': {
@@ -181,6 +181,23 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'business.reporting_window_open': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect
+                    x="4.5"
+                    y="5.5"
+                    width="15"
+                    height="14"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="M4.5 10h15M9 3.5v4M15 3.5v4" {...stroke} />
+            </>
+        ),
+    },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -203,10 +220,20 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'support.complaint_resolved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(23,121,90,.1)] text-[#17795a]',
+        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_renewal_due': {
+        bar: 'bg-[#0c1830] dark:bg-rz-slate',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        icon: (
+            <>
+                <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
+                <path d="M7 11.5V16c3 2 7 2 10 0v-4.5" {...stroke} />
+            </>
+        ),
+    },
+    'auditor.report_reminder': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
         icon: (
@@ -276,6 +303,51 @@ export function useNotices(href: RouteLink) {
  * record, marking it read on the way. The notices are the server's; wording comes from the
  * catalogs by kind.
  */
+/**
+ * "5 days ago" (design notifications panel), counted from the page's server clock. Without one the
+ * notice keeps its exact Kigali date and time.
+ */
+function useNoticeTime(): (at: string) => string {
+    const { t, locale } = useTranslation();
+    const serverTime: unknown = usePage().props.server_time;
+
+    return (at: string) => {
+        if (typeof serverTime !== 'string') {
+            return formatDateTime(at, locale);
+        }
+
+        const minutes = Math.floor(
+            Math.max(0, Date.parse(serverTime) - Date.parse(at)) / 60000,
+        );
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (minutes < 1) {
+            return t('investor.notices.ago.now');
+        }
+
+        if (hours < 1) {
+            return t('investor.notices.ago.minutes', { count: minutes });
+        }
+
+        if (days < 1) {
+            return t(
+                hours === 1
+                    ? 'investor.notices.ago.hour'
+                    : 'investor.notices.ago.hours',
+                { count: hours },
+            );
+        }
+
+        return t(
+            days === 1
+                ? 'investor.notices.ago.day'
+                : 'investor.notices.ago.days',
+            { count: days },
+        );
+    };
+}
+
 export function NoticesPanel({
     notices: { inbox, failed, load, send },
     onClose,
@@ -284,6 +356,7 @@ export function NoticesPanel({
     onClose: () => void;
 }) {
     const { t, locale } = useTranslation();
+    const noticeTime = useNoticeTime();
 
     const dialog = useModalDialog<HTMLElement>(onClose);
 
@@ -428,12 +501,13 @@ export function NoticesPanel({
                                         <span className="flex items-center justify-end gap-1.5">
                                             <time
                                                 dateTime={notice.created_at}
-                                                className="text-[10.5px] whitespace-nowrap text-rz-secondary"
-                                            >
-                                                {formatDateTime(
+                                                title={formatDateTime(
                                                     notice.created_at,
                                                     locale,
                                                 )}
+                                                className="text-[10.5px] whitespace-nowrap text-rz-secondary"
+                                            >
+                                                {noticeTime(notice.created_at)}
                                             </time>
                                             {!notice.read && (
                                                 <span
@@ -523,6 +597,30 @@ function body(
                 }),
             });
         case 'business.disbursement_sent':
+            // A payout opened before the BRS v2.0 platform fee carries no fee facts.
+            if (
+                notice.facts.principal !== undefined &&
+                notice.facts.platform_fee !== undefined &&
+                notice.facts.platform_fee !== '0'
+            ) {
+                return t(
+                    'investor.notices.business.disbursement_sent.body_fee',
+                    {
+                        amount: formatRwf(notice.facts),
+                        title: notice.facts.title,
+                        account: notice.facts.account,
+                        principal: formatRwf({
+                            currency: 'RWF',
+                            amount: notice.facts.principal,
+                        }),
+                        fee: formatRwf({
+                            currency: 'RWF',
+                            amount: notice.facts.platform_fee,
+                        }),
+                    },
+                );
+            }
+
             return t('investor.notices.business.disbursement_sent.body', {
                 amount: formatRwf(notice.facts),
                 title: notice.facts.title,
@@ -593,6 +691,14 @@ function body(
             return t('investor.notices.business.report_review_closing.body', {
                 time: formatDateTime(notice.facts.due_at, locale),
             });
+        case 'business.reporting_window_open':
+            return t('investor.notices.business.reporting_window_open.body', {
+                month: formatMonthYearLong(
+                    `${notice.facts.period}-01T00:00:00+02:00`,
+                    locale,
+                ),
+                date: formatDate(notice.facts.closes_at, locale),
+            });
         case 'auditor.accreditation_approved':
             return t('investor.notices.auditor.accreditation_approved.body', {
                 licence: notice.facts.licence,
@@ -613,6 +719,23 @@ function body(
                 {
                     licence: notice.facts.licence,
                     date: formatDate(notice.facts.expires_on, locale),
+                },
+            );
+        case 'auditor.report_reminder':
+            return t(
+                notice.facts.kind === 'monthly'
+                    ? 'investor.notices.auditor.report_reminder.body_monthly'
+                    : 'investor.notices.auditor.report_reminder.body_flash',
+                {
+                    business: notice.facts.business,
+                    month:
+                        notice.facts.period === ''
+                            ? ''
+                            : formatMonthYearLong(
+                                  `${notice.facts.period}-01`,
+                                  locale,
+                              ),
+                    date: formatDate(notice.facts.due_at, locale),
                 },
             );
         case 'auditor.job_offered':

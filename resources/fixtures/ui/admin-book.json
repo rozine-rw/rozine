@@ -233,7 +233,7 @@
                     "on": "2027-02-23",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "3465000"
+                        "amount": "3405000"
                     }
                 },
                 "servicing": "current",
@@ -256,7 +256,7 @@
                     "on": "2027-01-23",
                     "amount": {
                         "currency": "RWF",
-                        "amount": "2310000"
+                        "amount": "2270000"
                     }
                 },
                 "servicing": "due_today",

@@ -9,8 +9,8 @@ namespace App\Application\Business\Contracts;
  * the figures its own records hold. Reads only and never locks; the caller checks the permission.
  *
  * A note is active from publication until it closes unfunded; a funded note stays active through
- * repayment. Raised is the principal of the Business's funded notes and investors are the distinct
- * Investors whose commitments funded them, as the Business's own home counts them. The rating is
+ * repayment. Raised is the principal of the Business's funded notes. Investors are the distinct
+ * Investors committed to an active note, a live raise's included, as Primary market counts them. The rating is
  * the one its newest rated note published. No arrears, freeze or capacity read exists yet, so a
  * Business's health is not tracked: the directory offers no health chips and asserts no health.
  *
@@ -38,7 +38,7 @@ interface BusinessDirectoryStore
      * the only chip until a health read exists.
      *
      * @param  'all'  $chip
-     * @param  'raised'|'name'  $sort
+     * @param  'raised'|'active_notes'|'investors'|'name'  $sort
      * @return Directory
      */
     public function directory(string $chip, string $sort, string $sector, string $search, int $limit): array;

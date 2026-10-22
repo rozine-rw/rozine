@@ -55,6 +55,14 @@
                     "url": "/preview/investor-deals",
                     "method": "get"
                 }
+            },
+            {
+                "key": "in_cart",
+                "active": false,
+                "link": {
+                    "url": "/preview/investor-deals",
+                    "method": "get"
+                }
             }
         ],
         "industries": [
@@ -976,9 +984,21 @@
                 "url": "/preview/investor-wallet-deposit",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
             "checkout": {
                 "url": "/preview/investor-checkout",
                 "method": "get"
+            }
+        },
+        "cart": {
+            "campaign_ids": ["cmp_greenleaf", "cmp_volt"],
+            "add": null,
+            "remove": {
+                "url": "/preview/investor-cart",
+                "method": "post"
             }
         }
     }

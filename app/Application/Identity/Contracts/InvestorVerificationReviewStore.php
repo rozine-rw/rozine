@@ -17,7 +17,8 @@ namespace App\Application\Identity\Contracts;
  * }
  * @phpstan-type Queue array{
  *     tab: 'submitted'|'decided', search: string, limit: int, before: string|null, entries: list<QueueEntry>,
- *     next_cursor: string|null, counts: array{submitted: int, decided: int}
+ *     next_cursor: string|null, counts: array{submitted: int, decided: int},
+ *     stats: array{completion_pct: string|null, verified: int, total: int, turnaround_hours: string|null, approved_30d: int, rejected_30d: int}
  * }
  * @phpstan-type ReviewDocument array{
  *     id: string, slot: 'front'|'back'|'selfie', filename: string, media_type: string, size_bytes: int,

@@ -5,12 +5,19 @@ declare(strict_types=1);
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Underwriting\EngineScorecard;
 use App\Domain\Wallet\PayoutAccount;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
+use App\Models\BusinessApplication;
+use App\Models\BusinessApplicationQuote;
+use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessFundingMethod;
 use App\Models\Party;
 use App\Models\User;
+use Brick\Math\BigInteger;
+use Brick\Math\BigRational;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditSealingFixture;
@@ -29,7 +36,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route($route, $parameters))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component($component))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
     };
     $this->business = function (string $kind = 'organization', int $people = 2, string $code = 'COMPANY-001'): array {
         $authority = AuthorityFixture::make($kind, $people, $code, 1);
@@ -68,7 +75,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
     $banks = array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS);
 
-    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
+    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Kigali City, Gasabo', 'verified' => true, 'rating' => null],
         'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => []], 'legal' => null,
         'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
             'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
@@ -138,7 +145,7 @@ it('shows a sole trader without a company code, and the published rating once a 
         ->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
 });
 
-it('opens Rating over the real Home: pending before a published rating, then the published one, and computes nothing', function (): void {
+it('opens Rating over the real Home: pending before a published rating, then the published one with its statement financials', function (): void {
     [$authority, $business] = ($this->business)();
     $user = $authority['users'][0];
 
@@ -153,8 +160,43 @@ it('opens Rating over the real Home: pending before a published rating, then the
     $rating = $campaign->payload['public_evidence']['rating'];
     $published = ($this->props)(User::query()->findOrFail($campaign->actor_user_id), 'business.rating', ['business' => $campaign->business_id], 'business/rating');
 
+    $evidence = $campaign->payload['public_evidence'];
+    $months = $evidence['period']['months'];
+    $revenue = (int) $evidence['totals']['revenue']['amount'];
+    $net = (int) $evidence['totals']['net_profit']['amount'];
     expect($published['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']])
-        ->and($published['home']['rating'])->toBe($published['rating']);
+        ->and($published['home']['rating'])->toBe($published['rating'])
+        // The financials are the Business's own statement figures its rating was underwritten on.
+        ->and($published['financials'])->toBe(['avg_monthly_revenue' => ['currency' => 'RWF', 'amount' => (string) (int) round($revenue / $months)],
+            'net_cash_month' => ['currency' => 'RWF', 'amount' => (string) (int) round($net / $months)],
+            'net_margin_percent' => number_format($net * 100 / $revenue, 1, '.', ''), 'outstanding' => ['currency' => 'RWF', 'amount' => '0']]);
+
+    // The score breakdown and sizing are the Business's own, from the quote its rating was underwritten on.
+    $application = BusinessApplication::query()->findOrFail($campaign->business_application_id);
+    $quote = BusinessApplicationQuote::query()->findOrFail(BusinessApplicationSubmission::query()->findOrFail($application->current_submission_id)->business_application_quote_id);
+    $result = $quote->payload['result'];
+    $ratio = fn (array $ratio): BigRational => BigRational::of($ratio['numerator'].'/'.$ratio['denominator']);
+    $points = fn (string ...$names): int => array_reduce($names, fn (BigRational $sum, string $name): BigRational => $sum->plus($ratio($result['scorecard']['components'][$name])
+        ->multipliedBy(EngineScorecard::WEIGHTS[$name])), BigRational::zero())->dividedBy(array_sum(array_map(fn (string $name): int => EngineScorecard::WEIGHTS[$name], $names)))
+        ->toScale(0, RoundingMode::HalfUp)->toInt();
+    expect($published['factors'])->toBe([['key' => 'financial_health', 'score' => $points('coverage', 'cfads_margin')], ['key' => 'repayment_history', 'score' => $points('conduct')],
+        ['key' => 'statement_consistency', 'score' => $points('nocf_stability', 'positive_months')], ['key' => 'track_record', 'score' => $points('history_depth')]]);
+
+    $sizing = $published['sizing'];
+    $cashCarries = $ratio($result['maximum_capacity']['raw_capacity'])->toScale(0, RoundingMode::HalfUp)->toBigInteger();
+    $room = $ratio($result['cash_flow']['remaining_room'])->toScale(0, RoundingMode::Floor)->toBigInteger();
+    $ceiling = BigInteger::min($cashCarries, $room, 100000000);
+    expect($sizing)->toMatchArray(['cash_per_month' => ['currency' => 'RWF', 'amount' => (string) $ratio($result['cash_flow']['cfads'])->toScale(0, RoundingMode::HalfUp)],
+        'target_cover' => '1.50', 'term_months' => $application->draft['term_months'], 'rate_percent' => $result['pricing']['percent']])
+        ->and(array_column($sizing['limits'], 'key'))->toBe(['cash_flow', 'exposure', 'policy_max'])
+        ->and(array_map(fn (array $limit): string => $limit['value']['amount'], $sizing['limits']))->toBe([(string) $cashCarries, (string) $room, '100000000'])
+        ->and(array_column(array_filter($sizing['limits'], fn (array $limit): bool => $limit['binding']), 'value'))->toBe([['currency' => 'RWF', 'amount' => (string) $ceiling]])
+        ->and($sizing['limits'][1]['limit']['amount'])->toBe((string) $ratio($result['cash_flow']['exposure_limit'])->toScale(0, RoundingMode::Floor))
+        // The engine's own offer at that ceiling, in whole issuance units; the quote never counted its own raise, so headroom is what that leaves.
+        ->and(BigInteger::of($sizing['approved']['amount'])->isLessThanOrEqualTo($ceiling))->toBeTrue()
+        ->and(BigInteger::of($sizing['approved']['amount'])->isGreaterThan($ceiling->minus(5000)))->toBeTrue()
+        ->and($sizing['headroom']['amount'])->toBe((string) BigInteger::max(0, BigInteger::of($sizing['approved']['amount'])->minus($result['capacity']['offer']['principal']['amount'])))
+        ->and($published['home']['headroom'])->toBe($sizing['headroom']);
 });
 
 it('opens Repayments on its empty state over the real Home while no note is servicing, offering only a top-up', function (): void {

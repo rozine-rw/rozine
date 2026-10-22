@@ -21,7 +21,7 @@ export function TrailList({
 
     return (
         <section aria-label={title} className="mt-4">
-            <h3 className="text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
+            <h3 className="text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted">
                 {title}
             </h3>
             <ol className="mt-2.5 overflow-hidden rounded-[13px] border border-rz-hairline bg-rz-surface">

@@ -40,11 +40,11 @@
                         },
                         "total": {
                             "currency": "RWF",
-                            "amount": "20790000"
+                            "amount": "20430000"
                         },
                         "remaining": {
                             "currency": "RWF",
-                            "amount": "20790000"
+                            "amount": "20430000"
                         },
                         "repaid_pct": "0.0",
                         "payments_made": 0,

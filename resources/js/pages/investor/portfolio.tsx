@@ -159,6 +159,7 @@ export default function InvestorPortfolio(
                 concentration={props.concentration}
                 idle={props.idle}
                 deals={props.links.deals}
+                businesses={'totals' in props ? props.totals.businesses : null}
             />
             <div className="h-5" />
         </div>

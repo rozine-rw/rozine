@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Business\ListStaffApplications;
 use App\Application\Business\ManageBusinessCampaigns;
+use App\Application\Operations\PlatformPolicies;
 use App\Application\Operations\ReadChanges;
 use App\Http\Requests\Business\ListStaffApplicationsRequest;
 use App\Http\Requests\Business\ReleaseApplicationRequest;
@@ -26,7 +27,7 @@ class StaffApplicationReleaseController extends Controller
         $cursor = $changes->cursor((int) $request->user()?->getAuthIdentifier());
         $resource = new StaffApplicationsResource([...$action->handle((int) $request->user()?->getAuthIdentifier(),
             (string) $request->validated('tab', 'pending'), trim((string) $request->validated('search', '')),
-            $request->validated('before'), (int) $request->validated('limit', 20), $request->validated('application')), 'changes_cursor' => $cursor]);
+            $request->validated('before'), (int) $request->validated('limit', 20), $request->validated('application')), 'changes_cursor' => $cursor, 'policy' => PlatformPolicies::underwriting()]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/applications', $resource->resolve($request));
     }

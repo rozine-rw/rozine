@@ -19,6 +19,8 @@ type DealTopBarProps = {
     links: {
         wallet: RouteLink | null;
         deposit: RouteLink | null;
+        /** The wide bar's withdraw shortcut beside Deposit (design Investor Desktop); absent on older previews. */
+        withdraw?: RouteLink | null;
         /** The notices the bell opens; null where there are none to read, and the bell is not shown. */
         notifications: RouteLink | null;
     };
@@ -185,7 +187,7 @@ export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
                             {formatRwf(wallet.available)}
                         </span>
                         {payout !== null && (
-                            <span className="truncate text-[10px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
+                            <span className="truncate text-[10px] font-semibold text-[#157357] dark:text-[#3fcda0]">
                                 {payout}
                             </span>
                         )}
@@ -198,8 +200,8 @@ export function PhoneTopBar({ wallet, unread, links }: DealTopBarProps) {
 }
 
 /**
- * Wide-screen top bar (design L140–194): balance card with deposit, and the bell. Withdrawal stays
- * hidden until it has its own contract (C3 v2, H6).
+ * Wide-screen top bar (design L140–194): balance card with deposit and withdraw (LED-R04), and the
+ * bell.
  */
 export function DeskTopBar({
     wallet,
@@ -229,7 +231,7 @@ export function DeskTopBar({
                             {formatRwf(wallet.available)}
                         </span>
                         {payout !== null && (
-                            <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#17795a] dark:text-[#3fcda0]">
+                            <span className="mt-px block text-[10px] font-semibold whitespace-nowrap text-[#157357] dark:text-[#3fcda0]">
                                 {payout}
                             </span>
                         )}
@@ -256,6 +258,29 @@ export function DeskTopBar({
                             </svg>
                         </Link>
                     )}
+                    {links.withdraw !== undefined &&
+                        links.withdraw !== null && (
+                            <Link
+                                href={links.withdraw}
+                                aria-label={t('investor.wallet.withdraw')}
+                                className="flex size-9 shrink-0 items-center justify-center rounded-[10px] border border-rz-border bg-rz-surface text-rz-slate"
+                            >
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    aria-hidden
+                                    className="size-4"
+                                >
+                                    <path
+                                        d="M12 19V5M5 12l7-7 7 7"
+                                        stroke="currentColor"
+                                        strokeWidth="2.2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            </Link>
+                        )}
                 </div>
             )}
             {status}

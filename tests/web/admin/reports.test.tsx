@@ -59,6 +59,13 @@ describe('Reports', () => {
             'Pending: The 22 Jan 2027 day close has an open break of RWF 3,100 (STM-2027-0122).',
         );
 
+        /* The pending note sits in a cell of its own, so the row holds only cells. */
+        expect(
+            within(moving)
+                .getAllByRole('cell')
+                .some((cell) => within(cell).queryByRole('note') !== null),
+        ).toBe(true);
+
         const download = screen.getByRole('link', {
             name: 'Download Ledger export · 16–22 Jan 2027',
         });

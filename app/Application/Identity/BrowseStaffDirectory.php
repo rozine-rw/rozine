@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Identity\Contracts\StaffDirectoryStore;
+use App\Domain\Identity\StaffPermission;
 use App\Domain\Operations\CommandRejection;
 
 /**
  * Staff & Roles (`admin.open`): every operator with their roles and account state, and one
- * operator's access history. Read only: no staff command is reachable from here. Every read checks
- * the permission first.
+ * operator's access history, and the latest access changes. Read only: no staff command is
+ * reachable from here. Every read checks the permission first.
  *
  * @phpstan-import-type Directory from StaffDirectoryStore
  * @phpstan-import-type Member from StaffDirectoryStore
+ * @phpstan-import-type LogEntry from StaffDirectoryStore
  */
 final class BrowseStaffDirectory
 {
@@ -30,11 +32,39 @@ final class BrowseStaffDirectory
         return $this->store->directory($chip, $search);
     }
 
+    /**
+     * What each role may do: every capability with the roles that grant it.
+     *
+     * @return list<array{key: string, roles: list<string>, withheld?: string}>
+     */
+    public function permissions(int $actorId): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return StaffPermission::matrix();
+    }
+
     /** @return Member */
     public function member(int $actorId, int $userId): array
     {
         $this->staff->check($actorId, 'admin.open');
 
         return $this->store->member($userId) ?? throw new CommandRejection('STAFF_MEMBER_NOT_FOUND', 404);
+    }
+
+    /** @return list<LogEntry> */
+    public function log(int $actorId): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return $this->store->log(20);
+    }
+
+    /** @return list<array{id: string, recipient_id: int, requester_id: int, recipient: string, email: string, requester: string, operation: string, reason: string}> */
+    public function pending(int $actorId): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return in_array('staff.manage', $this->staff->permissions($actorId), true) ? $this->store->pending() : [];
     }
 }

@@ -11,19 +11,23 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Auditor Home (auditor-filing-v1, design L86–203) from the reads the Auditor app already serves:
  * the accreditation facts and dispatch availability the Profile shows, the engagement summary, the
  * partner's work as Jobs reads it, and their filed reports. A fact with no record yet stays null
- * and the page shows it as unavailable or leaves it out — the firm and professional body, the
- * quality score, earnings, active deals, variance and the wallet —
- * and destinations that do not exist yet (statement, withdraw) are null, so their controls stay
- * hidden. The bell opens the partner's own notices. Recent activity is the partner's own filings,
- * newest first. The on-time share and clock expiries are the partner's own track record.
+ * and the page shows it as unavailable or leaves it out — the firm and professional body and the
+ * quality score — and a destination that does not exist yet (withdraw) is null, so its control
+ * stays hidden. The bell opens the partner's own notices. Recent activity is the partner's own
+ * filings, newest first, each with its weighted variance. The on-time share, clock expiries and
+ * average variance are the partner's own track record; the variance is flagged once it is off the
+ * published tolerance of zero. The month's earnings are the Kigali month's platform fee shares from
+ * the earnings statement, deals are the funded raises that credited the partner, and the wallet is
+ * what is still owed to them, its statement the Profile's earnings section.
  *
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type FiledReports from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type Accreditation from AuditorProfileResource
  * @phpstan-import-type TrackRecord from \App\Application\Auditor\Contracts\AuditorFiledReportStore
+ * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
  *
- * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord}
+ * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord, earnings: Earnings}
  */
 class AuditorHomeResource extends JsonResource
 {
@@ -39,6 +43,7 @@ class AuditorHomeResource extends JsonResource
         $jobs = (new AuditorJobsResource([...$page['jobs'], 'identity_context_revision' => $facts['identity_context_revision'],
             'limit' => 25, 'engagement' => $page['engagement']]))->resolve($request);
         $open = AuditorJobsResource::openJobs($page['jobs']);
+        $variance = $page['track_record']['avg_variance_pct'] ?? null;
         $distances = array_filter(array_column($jobs['eligible'], 'distance_km'), fn (?string $distance): bool => $distance !== null);
 
         return [
@@ -50,20 +55,21 @@ class AuditorHomeResource extends JsonResource
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,
-            'earned_this_month' => null,
-            'active_deals' => null,
+            'earned_this_month' => AuditorPortfolioResource::earnings($page['earnings'])['this_month'],
+            'active_deals' => $page['earnings']['deals'],
             'licence_expires_on' => $accreditation['expires_on'],
             'availability' => [...$facts['availability'], 'update' => ['url' => route('auditor.availability.update', [], false), 'method' => 'post']],
             'nearby' => ['count' => $open, 'closest_km' => $open === 0 || $distances === [] ? null : min($distances)],
             'in_progress' => $jobs['assigned'],
-            'standing' => [...$facts['standing'], 'on_time_pct' => $page['track_record']['on_time_pct'] ?? null, 'avg_variance_pct' => null, 'variance_flagged' => false,
+            'standing' => [...$facts['standing'], 'on_time_pct' => $page['track_record']['on_time_pct'] ?? null, 'avg_variance_pct' => $variance,
+                'variance_flagged' => $page['track_record']['variance_flagged'] ?? false,
                 'jobs_done' => $page['reports']['counts']['all'], 'clock_expiries' => $page['track_record']['clock_expiries'] ?? null],
             'activity' => array_map(fn (array $report): array => ['kind' => 'report_filed', 'at' => $report['sealed_at'],
-                'business' => $report['business'], 'variance_pct' => null], $page['reports']['data']),
-            'wallet' => ['available' => null],
+                'business' => $report['business'], 'variance_pct' => $report['variance_pct']], $page['reports']['data']),
+            'wallet' => ['available' => AuditorJobsResource::money($page['earnings']['owed'])],
             'unread_notifications' => $page['unread_notifications'] ?? 0,
             'links' => [...AuditorJobsResource::links($request), 'operation' => AuditorProfileResource::operationLink('auditor.'),
-                'statement' => null, 'withdraw' => null, 'notifications' => ['url' => route('auditor.notices', [], false), 'method' => 'get']],
+                'statement' => ['url' => route('auditor.profile', ['section' => 'earnings'], false), 'method' => 'get'], 'withdraw' => null, 'notifications' => ['url' => route('auditor.notices', [], false), 'method' => 'get']],
         ];
     }
 }

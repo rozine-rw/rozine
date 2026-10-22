@@ -24,7 +24,7 @@ use RuntimeException;
  * @phpstan-import-type Card from HoldingFigures
  *
  * @phpstan-type Money array{currency: string, amount: string}
- * @phpstan-type Summary array{id: string, name: string, accent: string, industry: string, district: string, health: 'healthy', value: Money,
+ * @phpstan-type Summary array{id: string, name: string, accent: string, industry: string, district: string, health: 'healthy'|'watch', value: Money,
  *     invested: Money, gain: Money, gain_pct: string, repaid_pct: int, matures_on: string, payments_made: int, payments_total: int}
  * @phpstan-type PayoutMonth array{month: string, amount: Money, bar_pct: int, payers: list<array{name: string, accent: string, amount: Money}>}
  * @phpstan-type PortfolioFacts array{identity_context_revision: int, verified: bool, idle: Money|null, holdings: list<Summary>,
@@ -38,6 +38,9 @@ use RuntimeException;
 final class GetInvestorPortfolio
 {
     public const array TABS = ['active', 'matured', 'secondary', 'saved'];
+
+    /** @var array<string, array<string, mixed>|null> Each campaign's newest monthly update, read once per request. */
+    private array $latest = [];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue,
         private CampaignDisbursementProgress $disbursements) {}
@@ -61,7 +64,7 @@ final class GetInvestorPortfolio
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => $viewer['wallet'] !== null,
             'idle' => $available === null || $available['amount'] === '0' ? null : $available,
-            'holdings' => array_map(fn (array $position): array => self::summary($position), $positions),
+            'holdings' => array_map(fn (array $position): array => self::summary($position, $this->latestUpdate($position['holding']['campaign_id'])), $positions),
             'totals' => ['businesses' => count(array_unique(array_map(fn (array $position): string => $position['holding']['campaign_id'], $positions))),
                 'value' => HoldingFigures::money($invested), 'invested' => HoldingFigures::money($invested), 'gain' => $zero, 'this_month' => $zero,
                 'projected_3m' => HoldingFigures::money($projected),
@@ -73,19 +76,21 @@ final class GetInvestorPortfolio
     }
 
     /**
-     * One Holding as the Portfolio and the Holding page list it.
+     * One Holding as the Portfolio and the Holding page list it. Its health follows the business's
+     * newest published monthly report: on watch when that report is, healthy otherwise.
      *
      * @param  HeldPosition  $position
+     * @param  array<string, mixed>|null  $latest  The newest published monthly update, if any.
      * @return Summary
      */
-    public static function summary(array $position): array
+    public static function summary(array $position, ?array $latest = null): array
     {
         $holding = $position['holding'];
         $card = $position['card'];
         $schedule = $holding['schedule'];
 
         return ['id' => $holding['id'], 'name' => $card['name'], 'accent' => $card['accent'], 'industry' => $card['industry'], 'district' => $card['district'],
-            'health' => 'healthy', 'value' => $holding['principal'], 'invested' => $holding['principal'], 'gain' => HoldingFigures::money('0'), 'gain_pct' => '0.0',
+            'health' => ($latest['status'] ?? null) === 'watch' ? 'watch' : 'healthy', 'value' => $holding['principal'], 'invested' => $holding['principal'], 'gain' => HoldingFigures::money('0'), 'gain_pct' => '0.0',
             'repaid_pct' => 0, 'matures_on' => HoldingFigures::kigaliMidnight($schedule[count($schedule) - 1]['due_on']), 'payments_made' => 0,
             'payments_total' => count($schedule)];
     }
@@ -118,6 +123,20 @@ final class GetInvestorPortfolio
                     default => ['stage' => 'in_flight', 'provider' => $inFlight],
                 }];
         }, $this->holdings->awaitingIssue($userId));
+    }
+
+    /**
+     * The campaign's Business's newest published monthly update, read once per campaign.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function latestUpdate(string $campaignId): ?array
+    {
+        if (! array_key_exists($campaignId, $this->latest)) {
+            $this->latest[$campaignId] = $this->catalogue->updates($campaignId)[0] ?? null;
+        }
+
+        return $this->latest[$campaignId];
     }
 
     /** @return list<HeldPosition> */

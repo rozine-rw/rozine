@@ -19,7 +19,7 @@ use Tests\TestCase;
  * The checkpoint 3 chain end to end in a real browser, on one published campaign:
  *
  *   Business Publish → Investor deposits credited (local:wallet) → reserve and confirm → full
- *   funding → staff authorize, then approve with step-up → synthetic payout succeeded → Holdings
+ *   funding → automatic disbursement (BRS v2.0 SVC-R01) → synthetic payout succeeded → Holdings
  *   issued, in the Investor portfolio and on the Business campaign.
  *
  *   Failure branch: synthetic payout failed → failed closing → full refund to each wallet.
@@ -35,8 +35,7 @@ uses(TestCase::class, DatabaseTruncation::class);
 
 const C3_PASSWORD = 'Synthetic-c3-chain-browser-42!';
 const C3_PORT = 8037;
-const C3_MAKER_SECRET = 'JBSWY3DPEHPK3PXP';
-const C3_CHECKER_SECRET = 'KRSXG5CTMVRXEZLU';
+const C3_STAFF_SECRET = 'JBSWY3DPEHPK3PXP';
 /** The synthetic deposit policy's maximum per deposit (local:wallet). */
 const C3_DEPOSIT_MAXIMUM = '5000000';
 
@@ -44,7 +43,7 @@ const C3_AWAITS_RESERVE = 'awaiting activation of the Investor reserve/confirm H
 
 const C3_AWAITS_FUNDING = 'awaiting the gated Investor reserve/confirm routes (see C3_AWAITS_RESERVE): #175\'s full-funding transition and funded lock are merged, but no browser path reaches them yet';
 
-const C3_AWAITS_APPROVAL = 'awaiting #194: #176\'s staff.disbursements.* routes and step-up are merged, but a disbursement only opens for a funded campaign through the concrete FundedCampaigns adapter (UnavailableFundedCampaigns is still bound)';
+const C3_AWAITS_APPROVAL = 'awaiting #194: #176\'s staff.disbursements.* routes and automatic disbursement are merged, but a disbursement only opens for a funded campaign through the concrete FundedCampaigns adapter (UnavailableFundedCampaigns is still bound)';
 
 const C3_AWAITS_PAYOUT = 'awaiting #194: #176\'s local:disbursement hooks, disbursements:dispatch and disbursements:reconcile are merged; FundedCampaigns::issue on the concrete adapter is not';
 
@@ -146,9 +145,9 @@ function c3Credit(BrowserJourney $journey, string $session, string $email, strin
             await form.getByRole("button", {name:"Confirm deposit", exact:true}).click({timeout: 10000});
             const recorded = await (await answered).json();
             if (recorded.code !== "DEPOSIT_INTENT_RECORDED") throw new Error("Deposit not recorded: " + recorded.code);
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText('.json_encode(c3Rwf($amount).' not yet confirmed — not in the total').').waitFor();
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($credited)).')) throw new Error("Credited before confirmation");'.c3NoPreview().'
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($credited)).')) throw new Error("Credited before confirmation");'.c3NoPreview().'
             return recorded.data.receipt.request_id;');
         expect($request)->toBeString()
             ->and(Artisan::call('local:wallet', ['--event' => $request, '--state' => 'succeeded']))->toBe(0)
@@ -159,9 +158,9 @@ function c3Credit(BrowserJourney $journey, string $session, string $email, strin
             const requested = [];
             page.on("request", (request) => requested.push(request.url()));
             await page.reload();
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            await balance.getByText("No deposits waiting").waitFor();
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($total)).')) throw new Error("Not credited: " + await balance.textContent());
+            const balance = page.getByRole("region", {name:"Available balance"});
+            await balance.getByText("Instantly available to invest").waitFor();
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($total)).')) throw new Error("Not credited: " + await balance.textContent());
             await noOverflow();
             await shot('.$journey->shot($session.'-credited-desktop').');'.c3NoPreview());
 }
@@ -208,7 +207,7 @@ function c3ReserveAndConfirm(BrowserJourney $journey, string $session, int $unit
             await page.getByRole("button", {name:/^Reserve · /}).click();
             await page.getByRole("checkbox").check();
             const confirmed = page.waitForResponse((response) => response.url().includes("/confirm") && response.request().method() === "POST");
-            await page.getByRole("button", {name:/^Confirm · /}).click();
+            await page.getByRole("button", {name:/^Confirm investment · /}).click();
             const response = await confirmed;
             const sent = response.request().postDataJSON();
             const body = await response.json();
@@ -228,67 +227,38 @@ function c3Fund(BrowserJourney $journey, int $units): void
 }
 
 /**
- * Opens the funded campaign's disbursement, authorizes it as a treasury maker and approves it with
- * step-up as a different approver, returning the recorded payout intent's id.
+ * Pays the funded campaign automatically: the scheduled reconciler opens its disbursement and
+ * records the system intent, which the synthetic provider acknowledges once sent. A treasury staff
+ * member then reads it in the drawer, where nothing asks for an approval. Returns the intent's id.
  */
-function c3Approve(BrowserJourney $journey): string
+function c3Pay(BrowserJourney $journey): string
 {
-    $maker = User::factory()->create(['email' => 'c3-maker@example.test', 'password' => C3_PASSWORD,
-        'two_factor_secret' => encrypt(C3_MAKER_SECRET), 'two_factor_confirmed_at' => now()->subMinute()]);
-    $checker = User::factory()->create(['email' => 'c3-checker@example.test', 'password' => C3_PASSWORD,
-        'two_factor_secret' => encrypt(C3_CHECKER_SECRET), 'two_factor_confirmed_at' => now()->subMinute()]);
-    expect(Artisan::call('identity:staff', ['user' => $maker->id, '--role' => ['treasury'], '--reason' => 'Synthetic C3 maker.']))->toBe(0)
-        ->and(Artisan::call('identity:staff', ['user' => $checker->id, '--role' => ['approver'], '--reason' => 'Synthetic C3 checker.']))->toBe(0)
-        /* The scheduled reconciler also opens newly funded campaigns (#176). */
+    $staff = User::factory()->create(['email' => 'c3-treasury@example.test', 'password' => C3_PASSWORD,
+        'two_factor_secret' => encrypt(C3_STAFF_SECRET), 'two_factor_confirmed_at' => now()->subMinute()]);
+    expect(Artisan::call('identity:staff', ['user' => $staff->id, '--role' => ['treasury'], '--reason' => 'Synthetic C3 treasury.']))->toBe(0)
+        ->and(Artisan::call('local:disbursement', ['--script-send' => 'ack']))->toBe(0)
+        /* The scheduled reconciler opens newly funded campaigns and pays them (#176, SVC-R01). */
         ->and(Artisan::call('disbursements:reconcile'))->toBe(0);
-    $journey->login('c3m', 'c3-maker@example.test', C3_PASSWORD, landing: '**/admin/dashboard', secret: C3_MAKER_SECRET);
-    $authorized = $journey->code('c3m', '
+    $journey->login('c3t', 'c3-treasury@example.test', C3_PASSWORD, landing: '**/admin/dashboard', secret: C3_STAFF_SECRET);
+    $journey->code('c3t', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/admin/disbursements').');
             await page.getByRole("link", {name:/Synthetic equipment purchase/}).first().click();
             const drawer = page.getByRole("dialog");
-            await drawer.getByRole("button", {name:"Authorize release", exact:true}).click();
-            await drawer.getByRole("checkbox").check();
-            await drawer.getByRole("textbox").fill("Funded raise checked against the published terms.");
-            const answered = page.waitForResponse((response) => response.url().endsWith("/authorize") && response.request().method() === "POST");
-            await page.getByRole("button", {name:"Authorize", exact:true}).click();
-            const body = await (await answered).json();
+            await drawer.getByRole("region", {name:"Automatic payment"}).waitFor();
+            if (await drawer.getByRole("button", {name:/Approve|Authorize/}).count() !== 0) throw new Error("An approval is offered on an automatic payment");
             await noOverflow();
-            await shot('.$journey->shot('authorized-desktop').');
-            return body.code;');
-    $journey->login('c3c', 'c3-checker@example.test', C3_PASSWORD, landing: '**/admin/dashboard', secret: C3_CHECKER_SECRET);
-    /* The login consumed this window's code: step-up needs the next one. */
-    sleep(30 - (time() % 30) + 1);
-    $approved = $journey->code('c3c', '
-            await page.setViewportSize('.BrowserJourney::DESKTOP.');
-            await page.goto('.json_encode($journey->base.'/admin/disbursements').');
-            await page.getByRole("link", {name:/Synthetic equipment purchase/}).first().click();
-            const drawer = page.getByRole("dialog");
-            await drawer.getByRole("button", {name:"Approve release", exact:true}).click();
-            await drawer.getByLabel("Six-digit authenticator code").fill('.json_encode($journey->otp(C3_CHECKER_SECRET)).');
-            await drawer.getByRole("button", {name:"Confirm code", exact:true}).click();
-            await drawer.getByRole("checkbox").check();
-            await drawer.getByRole("textbox").last().fill("Second approver: amount and destination match.");
-            const answered = page.waitForResponse((response) => response.url().endsWith("/approve") && response.request().method() === "POST");
-            await drawer.getByRole("button", {name:"Approve and record intent", exact:true}).click();
-            const response = await answered;
-            if (!response.request().postDataJSON().step_up_proof) throw new Error("Approve sent without its step-up proof");
-            const body = await response.json();
-            await noOverflow();
-            await shot('.$journey->shot('approved-desktop').');
-            return body.code;');
-    expect($authorized)->toBe('DISBURSEMENT_AUTHORIZED')->and($approved)->toBe('DISBURSEMENT_INTENT_RECORDED')
-        ->and(DB::table('disbursement_intents')->count())->toBe(1);
+            await shot('.$journey->shot('automatic-desktop').');');
+    expect(DB::table('disbursement_intents')->count())->toBe(1)
+        ->and(DB::table('disbursement_intents')->value('rule_version'))->toBe('brs-2.0-svc-r01');
 
     return (string) DB::table('disbursement_intents')->value('id');
 }
 
-/** Sends the approved payout through the synthetic provider and reconciles a final outcome. */
+/** Records the synthetic provider's final outcome for the sent payout and reconciles it. */
 function c3Payout(string $intent, string $state): void
 {
-    expect(Artisan::call('local:disbursement', ['--script-send' => 'ack']))->toBe(0)
-        ->and(Artisan::call('disbursements:dispatch', ['--intent' => $intent]))->toBe(0)
-        ->and(Artisan::call('local:disbursement', ['--event' => $intent, '--state' => $state]))->toBe(0)
+    expect(Artisan::call('local:disbursement', ['--event' => $intent, '--state' => $state]))->toBe(0)
         ->and(Artisan::call('disbursements:reconcile'))->toBe(0);
 }
 
@@ -313,8 +283,8 @@ it('reserves and confirms each Investor\'s half of the raise, leaving it committ
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');
             await page.getByText("Awaiting issue", {exact:true}).waitFor();
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            if (!(await balance.textContent()).includes("AvailableRWF 0")) throw new Error("Committed cash still available");');
+            const balance = page.getByRole("region", {name:"Available balance"});
+            if (!(await balance.textContent()).includes("Available balanceRWF 0")) throw new Error("Committed cash still available");');
     });
 })->skip(C3_AWAITS_RESERVE);
 
@@ -334,23 +304,23 @@ it('funds the raise with the last confirm and locks it against cancel and furthe
     });
 })->skip(C3_AWAITS_FUNDING);
 
-it('authorizes the funded disbursement as the maker and approves it with step-up as a different checker', function (): void {
-    (new BrowserJourney('c3-approve', C3_PORT))->within(function (BrowserJourney $journey): void {
+it('pays the funded disbursement automatically and shows staff no approval step', function (): void {
+    (new BrowserJourney('c3-automatic', C3_PORT))->within(function (BrowserJourney $journey): void {
         ['units' => $units] = c3Prefix($this, $journey);
         c3Fund($journey, $units);
-        c3Approve($journey);
+        c3Pay($journey);
     });
 
-    /* Queued, not paid: nothing is dispatched, issued or refunded before the worker's recheck. */
-    expect(DB::table('disbursement_provider_calls')->count())->toBe(0)
+    /* Sent once, not yet paid: nothing is issued or refunded before the provider's outcome. */
+    expect(DB::table('disbursement_provider_calls')->where('kind', 'send')->count())->toBe(1)
         ->and(DB::table('primary_holdings')->count())->toBe(0);
 })->skip(C3_AWAITS_APPROVAL);
 
-it('dispatches the approved payout, reconciles a synthetic success and issues each Holding once', function (): void {
+it('reconciles the automatic payout\'s synthetic success and issues each Holding once', function (): void {
     (new BrowserJourney('c3-payout', C3_PORT))->within(function (BrowserJourney $journey): void {
         ['units' => $units] = c3Prefix($this, $journey);
         c3Fund($journey, $units);
-        c3Payout(c3Approve($journey), 'succeeded');
+        c3Payout(c3Pay($journey), 'succeeded');
     });
 
     expect(DB::table('disbursement_provider_calls')->where('kind', 'send')->count())->toBe(1)
@@ -362,7 +332,7 @@ it('shows the issued Holdings in each Investor portfolio and the disbursement on
     (new BrowserJourney('c3-holdings', C3_PORT))->within(function (BrowserJourney $journey): void {
         ['units' => $units, 'campaign' => $campaign] = c3Prefix($this, $journey);
         c3Fund($journey, $units);
-        c3Payout(c3Approve($journey), 'succeeded');
+        c3Payout(c3Pay($journey), 'succeeded');
         foreach (['c3i1', 'c3i2'] as $session) {
             $journey->code($session, '
             const requested = [];
@@ -387,7 +357,7 @@ it('closes a raise whose payout failed and refunds every commitment in full to t
     (new BrowserJourney('c3-failed', C3_PORT))->within(function (BrowserJourney $journey): void {
         ['units' => $units, 'campaign' => $campaign, 'half' => $half] = c3Prefix($this, $journey);
         c3Fund($journey, $units);
-        c3Payout(c3Approve($journey), 'failed');
+        c3Payout(c3Pay($journey), 'failed');
         $journey->code('c3b', '
             await page.goto('.json_encode($journey->base.$campaign).');
             await page.getByText("This raise closed without paying out").waitFor();
@@ -399,8 +369,8 @@ it('closes a raise whose payout failed and refunds every commitment in full to t
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');
             await page.getByText("Closed — refunded").first().waitFor();
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($half)).')) throw new Error("Not refunded in full");
+            const balance = page.getByRole("region", {name:"Available balance"});
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($half)).')) throw new Error("Not refunded in full");
             await noOverflow();
             await shot('.$journey->shot($session.'-refunded-phone').');');
         }

@@ -70,7 +70,7 @@ export function BalanceCard({
                 <span className="flex flex-col text-[11.5px] text-white">
                     <span>
                         {wallet.pending_deposits.amount === '0'
-                            ? t('business.servicing.wallet.no_pending')
+                            ? t('business.wallet.caption')
                             : t('business.servicing.wallet.pending', {
                                   amount: formatRwf(wallet.pending_deposits),
                               })}

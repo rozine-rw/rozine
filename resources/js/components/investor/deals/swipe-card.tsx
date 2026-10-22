@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import {
     AuditedBadge,
     JustListedBadge,
@@ -23,6 +24,8 @@ type SwipeCardProps = {
     serverTime: string;
     /** Only the front card is interactive; the fanned cards behind are decoration. */
     front: boolean;
+    /** The front card's Add to cart, beside what is left to fill; none on the cards behind. */
+    cart?: ReactNode;
 };
 
 /**
@@ -30,9 +33,14 @@ type SwipeCardProps = {
  * and rating badges and the business identity; then raised against target, average monthly
  * revenue, funding, time left, investors, the pitch and what is left to fill. The design's
  * investor face avatars (random stock portraits) and save button (the watchlist, outside the MVP)
- * are left out.
+ * are left out. The front card carries the cart button its deck hands it.
  */
-export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
+export function SwipeCard({
+    deal,
+    serverTime,
+    front,
+    cart = null,
+}: SwipeCardProps) {
     const { t } = useTranslation();
     const clock = useTimeLeft(deal.clock.expires_at, serverTime);
 
@@ -41,7 +49,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
             aria-label={deal.name}
             className="flex size-full flex-col overflow-hidden rounded-[20px] border border-rz-border bg-rz-surface shadow-[0_26px_50px_-22px_rgba(20,45,95,.30),0_8px_20px_-12px_rgba(20,45,95,.10)] select-none"
         >
-            <div className="relative min-h-0 flex-[0_0_46%] overflow-hidden bg-[#0b1c3a]">
+            <div className="relative min-h-0 flex-[1_0_46%] overflow-hidden bg-[#0b1c3a]">
                 <PhotoStrip
                     photos={deal.photos}
                     accent={deal.accent}
@@ -77,7 +85,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                 </div>
             </div>
 
-            <div className="relative flex min-h-0 flex-1 flex-col px-[15px] pt-[13px] pb-3">
+            <div className="relative flex min-h-0 flex-[0_1_197px] flex-col px-[15px] pt-[13px] pb-3">
                 {front && (
                     <Link
                         href={deal.links.detail}
@@ -153,8 +161,12 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             <span className="text-[11px] font-bold text-rz-ink">
                                 {formatCount(deal.investors)}
                             </span>
-                            <span className="text-[11px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
-                                {t('investor.deals.investors')}
+                            <span className="text-[11px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                {t(
+                                    deal.investors === 1
+                                        ? 'investor.deals.investors_one'
+                                        : 'investor.deals.investors',
+                                )}
                             </span>
                         </span>
                     </div>
@@ -164,7 +176,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                     {deal.story}
                 </p>
 
-                <div className="mt-[9px] grid grid-cols-2 items-end gap-2.5 border-t border-[#eef2f8] pt-2 dark:border-rz-divider">
+                <div className="mt-[9px] grid grid-cols-[1fr_1fr_auto] items-end gap-2.5 border-t border-[#eef2f8] pt-2 dark:border-rz-divider">
                     <div className="min-w-0">
                         <p className="text-[10px] font-bold tracking-[.05em] whitespace-nowrap text-rz-slate uppercase">
                             {t('investor.deals.left_to_fill')}
@@ -186,6 +198,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             </span>
                         </p>
                     </div>
+                    {cart}
                 </div>
             </div>
         </article>

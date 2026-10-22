@@ -135,6 +135,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $riskAcknowledgements = require database_path('migrations/2026_10_13_141829_create_investor_risk_acknowledgements_table.php');
     $businessContacts = require database_path('migrations/2026_10_15_022904_create_business_contact_versions_table.php');
     $complaints = require database_path('migrations/2026_10_15_053241_create_complaints_tables.php');
+    $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
+    // The platform fee migration's Audit Partner credits reference disbursements and audit reports, so it comes off first and goes back last.
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     $dependentShape = fn (): array => [
         DB::select("SELECT table_name, column_name, data_type, udt_name, is_nullable, column_default,
             character_maximum_length, numeric_precision, numeric_scale, datetime_precision, is_identity, identity_generation,
@@ -154,6 +158,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         'complaints_party_id_foreign', 'complaints_opened_by_user_id_foreign', 'complaint_messages_complaint_id_foreign', 'complaint_messages_author_user_id_foreign')
         ->and(array_column($originalDependentShape[2], 'tgname'))->toBe(['business_contact_versions_immutable', 'complaint_messages_immutable', 'complaints_immutable'])
         ->and(array_column($originalDependentShape[2], 'tgenabled'))->toBe(['O', 'O', 'O']);
+    $cartLines->down();
+    expect(Schema::hasTable('investor_cart_lines'))->toBeFalse();
+    $automaticDisbursement->down();
+    $platformFee->down();
+    expect(Schema::hasTable('audit_partner_credits'))->toBeFalse();
     $complaints->down();
     $businessContacts->down();
     expect(Schema::hasTable('business_contact_versions'))->toBeFalse()
@@ -407,6 +416,11 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $loginAlerts->up();
     $businessContacts->up();
     $complaints->up();
+    $platformFee->up();
+    $automaticDisbursement->up();
+    $cartLines->up();
+    expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
+        ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);
     expect(Schema::hasTable('business_contact_versions'))->toBeTrue()->and(Schema::hasTable('complaints'))->toBeTrue()
         ->and(Schema::hasTable('complaint_messages'))->toBeTrue()->and($dependentShape())->toEqual($originalDependentShape)
         ->and(DB::select($foreignKeyQuery))->toEqual($originalForeignKeys);

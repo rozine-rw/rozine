@@ -72,7 +72,12 @@ function describe(
             return {
                 value: String(signal.facts.pending),
                 detail: t('admin.health.queue.detail'),
-                rec: t(`admin.health.queue.rec.${signal.status}`),
+                /* Healthy only means within tolerance: "clear" is said when nothing waits. */
+                rec: t(
+                    signal.status === 'healthy' && signal.facts.pending > 0
+                        ? 'admin.health.queue.rec.within'
+                        : `admin.health.queue.rec.${signal.status}`,
+                ),
                 action: t('admin.health.queue.action'),
             };
         case 'events':
@@ -85,6 +90,15 @@ function describe(
                 }),
                 rec: t(`admin.health.events.rec.${signal.status}`),
                 action: '',
+            };
+        case 'frozen':
+            return {
+                value: String(signal.facts.accounts),
+                detail: t('admin.health.frozen.detail'),
+                rec: t(`admin.health.frozen.rec.${signal.status}`, {
+                    count: signal.facts.accounts,
+                }),
+                action: t('admin.health.frozen.action'),
             };
         default:
             return {
@@ -116,7 +130,7 @@ function SignalCard({ signal }: { signal: HealthSignal }) {
                 )}
             />
             <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 truncate text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
+                <span className="min-w-0 truncate text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
                     {t(`admin.health.${signal.key}.label`)}
                 </span>
                 <Chip tone={STATUS_TONE[signal.status]}>
@@ -133,7 +147,7 @@ function SignalCard({ signal }: { signal: HealthSignal }) {
             >
                 {value}
             </div>
-            <div className="mt-[3px] truncate text-[11.5px] text-[#8a94a8] dark:text-rz-muted">
+            <div className="mt-[3px] truncate text-[11.5px] text-[#636e86] dark:text-rz-muted">
                 {detail}
             </div>
             {rec !== null && (

@@ -2,7 +2,9 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import {
+    AcademyNudge,
     DeskDeck,
+    EXTRA_AT,
     PhoneDeck,
     wrapIndex,
 } from '@/components/investor/deals/deal-deck';
@@ -15,8 +17,14 @@ import {
     DeskTopBar,
     PhoneTopBar,
 } from '@/components/investor/deals/deal-top-bar';
-import { canReserve, InvestBar } from '@/components/investor/deals/invest-bar';
+import {
+    canReserve,
+    CartToggle,
+    InvestBar,
+} from '@/components/investor/deals/invest-bar';
+import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
+import { useAcademyNudge } from '@/components/investor/profile/academy';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
@@ -124,8 +132,18 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             (deal) => deal.campaign_id === props.focus?.campaign_id,
         ),
     );
-    const [index, setIndex] = useState(start);
-    const current = props.deals.length > 0 ? props.deals[index] : null;
+    const [selected, setSelected] = useState(
+        props.deals[start]?.campaign_id ?? null,
+    );
+    const academy = useAcademyNudge();
+    const [nudgeFront, setNudgeFront] = useState(false);
+    const [nudgeLater, setNudgeLater] = useState(false);
+    // A cart removal can shorten or reorder the deck while this component stays mounted.
+    const index = Math.max(
+        0,
+        props.deals.findIndex((deal) => deal.campaign_id === selected),
+    );
+    const current = props.deals[index] ?? null;
     /* Only read beside a deck: an empty list has its own "no deals open" state. */
     const allClosed = !props.deals.some(
         (deal) => deal.lifecycle === 'live' && deal.restriction === null,
@@ -144,16 +162,56 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const move = (next: number) => {
         const at = wrapIndex(next, props.deals.length);
 
-        setIndex(at);
+        const target = props.deals[at];
+        const destination =
+            props.sorts.find((sort) => sort.active)?.link ??
+            target.links.detail;
+
+        setSelected(target.campaign_id);
         quoted.resetUnits();
-        router.reload({
-            only: ['focus', 'quote'],
-            data: { deal: props.deals[at].campaign_id },
+        // The deck route honors ?deal; a detail or checkout route is bound to its path campaign.
+        // Refresh the complete contract together, including campaign-bound cart and checkout URLs.
+        router.visit(withQuery(destination, { deal: target.campaign_id }), {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
         });
     };
 
+    /* The phone deck deals the Academy nudge after the first deal while the Academy is under way. */
+    const nudge =
+        !wide && academy !== null && !nudgeLater && props.links.profile !== null
+            ? {
+                  ...academy,
+                  href: {
+                      ...props.links.profile,
+                      url: `${props.links.profile.url}#academy`,
+                  },
+              }
+            : null;
+    const position = nudgeFront
+        ? EXTRA_AT
+        : nudge !== null && index >= EXTRA_AT
+          ? index + 1
+          : index;
+    const moveDeck = (next: number) => {
+        const at = wrapIndex(
+            next,
+            props.deals.length + (nudge === null ? 0 : 1),
+        );
+
+        setNudgeFront(nudge !== null && at === EXTRA_AT);
+
+        if (nudge === null || at !== EXTRA_AT) {
+            move(nudge !== null && at > EXTRA_AT ? at - 1 : at);
+        }
+    };
+    const dealInFront = !(nudge !== null && nudgeFront);
+
+    /* The checkout link is the focused deal's, so another card in front waits for its focus. */
     const checkout =
         current !== null &&
+        props.focus?.campaign_id === current.campaign_id &&
         props.links.checkout !== null &&
         canReserve({
             deal: current,
@@ -166,6 +224,26 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                   units: quoted.units,
               })
             : null;
+
+    /* Like checkout, the cart command is the focused deal's; another card in front waits for it. */
+    const inCart =
+        current !== null &&
+        props.cart !== null &&
+        props.cart.campaign_ids.includes(current.campaign_id);
+    const focused =
+        current !== null && props.focus?.campaign_id === current.campaign_id;
+    const cart: CartToggleState | null =
+        props.cart === null
+            ? null
+            : {
+                  inCart,
+                  action: !focused
+                      ? null
+                      : inCart
+                        ? props.cart.remove
+                        : props.cart.add,
+                  identityRevision: props.identity_context_revision,
+              };
 
     const bar = (size: 'phone' | 'desk') =>
         current !== null && (
@@ -202,18 +280,43 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         )}
                         <PhoneDeck
                             deals={props.deals}
-                            index={index}
+                            index={position}
                             serverTime={props.server_time}
-                            onMove={move}
+                            onMove={moveDeck}
+                            extra={
+                                nudge === null ? null : (
+                                    <AcademyNudge
+                                        done={nudge.done}
+                                        total={nudge.total}
+                                        href={nudge.href}
+                                        onLater={() => {
+                                            setNudgeLater(true);
+                                            setNudgeFront(false);
+                                        }}
+                                    />
+                                )
+                            }
+                            cart={
+                                cart !== null && (
+                                    <CartToggle
+                                        deal={current}
+                                        cart={cart}
+                                        units={quoted.units}
+                                        size="card"
+                                    />
+                                )
+                            }
                         />
-                        <IndustryTabs
-                            industries={props.industries}
-                            className="shrink-0 gap-4 px-[22px] pt-[26px] pb-px"
-                        />
+                        {dealInFront && (
+                            <IndustryTabs
+                                industries={props.industries}
+                                className="shrink-0 gap-4 px-[22px] pt-[26px] pb-px"
+                            />
+                        )}
                     </>
                 )}
                 <div className="min-h-3 flex-auto" />
-                {bar('phone')}
+                {dealInFront && bar('phone')}
                 {overlay}
             </div>
         );
@@ -242,7 +345,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         }
                     />
                     <div className="flex min-h-0 flex-1 items-stretch gap-[26px]">
-                        <div className="relative flex min-h-0 min-w-0 flex-[0_0_508px] flex-col">
+                        <div className="relative flex min-h-0 min-w-[420px] flex-[0_1_508px] flex-col">
                             <SortChips sorts={props.sorts} size="desk" />
                             {current === null ? (
                                 <EmptyDeals gate={props.gate} />
@@ -270,6 +373,8 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                     key={props.focus.campaign_id}
                                     deal={props.focus}
                                     serverTime={props.server_time}
+                                    cart={cart}
+                                    units={quoted.units}
                                 />
                             ) : (
                                 <DealPanelLoading />

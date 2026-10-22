@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Business\GetBusinessHome;
 use App\Application\Business\ManageBusinessCampaigns;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\ReadChanges;
@@ -11,6 +12,7 @@ use App\Http\Requests\Business\CancelCampaignRequest;
 use App\Http\Requests\Business\PublishApplicationRequest;
 use App\Http\Requests\Business\ShowApplicationRequest;
 use App\Http\Resources\BusinessCampaignResource;
+use App\Http\Resources\BusinessHomeResource;
 use App\Http\Resources\BusinessPublicationResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
@@ -19,14 +21,14 @@ use Inertia\Response;
 
 class BusinessPublicationController extends Controller
 {
-    public function __construct(private ManageBusinessCampaigns $campaigns, private AuthorizeActiveRole $identity) {}
+    public function __construct(private ManageBusinessCampaigns $campaigns, private AuthorizeActiveRole $identity, private GetBusinessHome $home) {}
 
     public function show(ShowApplicationRequest $request): Response|BusinessPublicationResource
     {
         $resource = new BusinessPublicationResource($this->campaigns->publishPage((int) $request->user()?->getAuthIdentifier(), $this->context($request),
             (string) $request->route('business'), (string) $request->route('application')));
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('business/publish', $resource->resolve($request));
+        return $request->routeIs('api.*') ? $resource : Inertia::render('business/publish', $this->overHome($request, $resource->resolve($request)));
     }
 
     public function publish(PublishApplicationRequest $request): OperationResource
@@ -45,7 +47,7 @@ class BusinessPublicationController extends Controller
         $resource = new BusinessCampaignResource([...$this->campaigns->campaign((int) $request->user()?->getAuthIdentifier(), $this->context($request),
             (string) $request->route('business'), (string) $request->route('campaign')), 'changes_cursor' => $cursor]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('business/campaign', $resource->resolve($request));
+        return $request->routeIs('api.*') ? $resource : Inertia::render('business/campaign', $this->overHome($request, $resource->resolve($request)));
     }
 
     public function cancel(CancelCampaignRequest $request): OperationResource
@@ -89,6 +91,18 @@ class BusinessPublicationController extends Controller
 
         return new OperationResource([...$result, 'data' => ['receipt' => $data['receipt'] ?? null, 'current' => $current, 'next' => $next],
             'allowed_actions' => $current['allowed_actions'] ?? []]);
+    }
+
+    /**
+     * A web sheet is drawn over the business's real Home, as the design does; the bearer read stays Home-free.
+     *
+     * @param  array<string, mixed>  $page
+     * @return array<string, mixed>
+     */
+    private function overHome(ShowApplicationRequest $request, array $page): array
+    {
+        return [...$page, 'home' => (new BusinessHomeResource($this->home->handle((int) $request->user()?->getAuthIdentifier(), $this->context($request),
+            (string) $request->route('business'))))->toArray($request)];
     }
 
     private function context(ShowApplicationRequest $request): int

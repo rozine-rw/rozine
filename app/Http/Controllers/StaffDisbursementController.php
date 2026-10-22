@@ -5,21 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Disbursement\ManageDisbursements;
-use App\Http\Requests\Disbursement\ConfirmDisbursementStepUpRequest;
 use App\Http\Requests\Disbursement\DisbursementCommandRequest;
 use App\Http\Requests\Disbursement\ListDisbursementsRequest;
 use App\Http\Requests\Disbursement\ShowDisbursementOperationRequest;
 use App\Http\Resources\OperationResource;
 use App\Http\Resources\StaffDisbursementsResource;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * The staff disbursement console (C3 v2 §2e). Every command goes through the operation journal
- * under the staff actor; the step-up exchange answers `{proof, expires_at}` directly, is never
- * journaled and is never cached.
+ * The staff disbursement console (C3 v2 §2e). Funded campaigns pay automatically (BRS v2.0
+ * SVC-R01); staff hold, release and requery through the operation journal under the staff actor.
  */
 class StaffDisbursementController extends Controller
 {
@@ -37,20 +34,9 @@ class StaffDisbursementController extends Controller
 
     public function command(DisbursementCommandRequest $request): OperationResource
     {
-        $proof = $request->validated('step_up_proof');
-
         return $this->present($request, (string) $request->route('command'), $this->disbursements->command((int) $request->user()?->getAuthIdentifier(),
             (string) $request->route('disbursement'), (string) $request->route('command'), (int) $request->validated('expected_revision'),
-            (string) $request->validated('reason'), (string) $request->validated('request_id'), is_string($proof) ? $proof : null,
-            $request->boolean('independence_declared')));
-    }
-
-    public function stepUp(ConfirmDisbursementStepUpRequest $request): JsonResponse
-    {
-        $proof = $this->disbursements->stepUp((int) $request->user()?->getAuthIdentifier(), (string) $request->route('disbursement'),
-            (int) $request->validated('expected_revision'), (string) $request->validated('intent_digest'), (string) $request->validated('code'));
-
-        return response()->json($proof)->header('Cache-Control', 'no-store, private');
+            (string) $request->validated('reason'), (string) $request->validated('request_id')));
     }
 
     public function operation(ShowDisbursementOperationRequest $request): OperationResource

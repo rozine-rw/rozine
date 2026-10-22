@@ -115,7 +115,7 @@ final class EloquentWalletStore implements WalletStore
     }
 
     /**
-     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, period?: string|null, before?: string|null, receipt?: string|null}  $query
      * @return array<string, mixed>
      */
     public function page(int $userId, ?int $contextRevision, array $query): array
@@ -132,10 +132,12 @@ final class EloquentWalletStore implements WalletStore
             $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
             $deposits = $wallet === null ? [] : $this->deposits($wallet);
             $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
+            $period = in_array($query['period'] ?? null, WalletStore::HISTORY_PERIODS, true) ? (string) $query['period'] : 'all';
+            $since = self::since($period);
             $history = match (true) {
                 $wallet === null => ['items' => [], 'next_before' => null],
-                $movement === 'internal' => $this->internalHistory($wallet, $query['before'] ?? null),
-                default => $this->history($wallet, $query['before'] ?? null),
+                $movement === 'internal' => $this->internalHistory($wallet, $query['before'] ?? null, $since),
+                default => $this->history($wallet, $query['before'] ?? null, $since),
             };
 
             return ['identity_context_revision' => $identity['context_revision'],
@@ -150,7 +152,7 @@ final class EloquentWalletStore implements WalletStore
                         'maximum' => $terms->maximum()->money(), 'charge' => $terms->providerCharge->money(),
                         'quote' => $kind === 'withdraw' ? $this->withdrawalQuote($terms, $wallet, $methods->isNotEmpty(), $query['amount'] ?? null) : null]],
                 'holds' => $this->purchases->activeHolds($partyId), 'deposits' => $deposits,
-                'withdrawals' => $wallet === null ? [] : $this->withdrawals($wallet), 'history' => ['movement' => $movement, ...$history],
+                'withdrawals' => $wallet === null ? [] : $this->withdrawals($wallet), 'history' => ['movement' => $movement, 'period' => $period, ...$history],
                 'receipt' => $wallet === null ? null : $this->openedReceipt($wallet, $query['receipt'] ?? null)];
         });
     }
@@ -407,17 +409,30 @@ final class EloquentWalletStore implements WalletStore
         return array_values($deposits->sortBy(fn (array $deposit): int => DepositOutcome::isFinal($deposit['state']) ? 1 : 0)->values()->all());
     }
 
+    private static function since(string $period): ?CarbonImmutable
+    {
+        // Days are Kigali days; the bound is sent in UTC, the database session's zone.
+        $midnight = CarbonImmutable::now('Africa/Kigali')->startOfDay();
+
+        $since = match ($period) {
+            'today' => $midnight, '7d' => $midnight->subDays(6), '30d' => $midnight->subDays(29), default => null,
+        };
+
+        return $since?->utc();
+    }
+
     /**
      * External cash movements: each credited deposit and each paid withdrawal, newest first, twenty
-     * to a page.
+     * to a page, from `since` when a period is chosen.
      *
      * @return array{items: list<array<string, mixed>>, next_before: string|null}
      */
-    private function history(InvestorWallet $wallet, ?string $before): array
+    private function history(InvestorWallet $wallet, ?string $before, ?CarbonImmutable $since): array
     {
         $credits = WalletDepositCredit::query()->where('wallet_id', $wallet->id)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
-            ->orderByDesc('id')->limit(21)->get();
-        $payouts = $this->payouts($wallet)->when($before !== null, fn ($query) => $query->where('id', '<', $before))->orderByDesc('id')->limit(21)->get();
+            ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))->orderByDesc('id')->limit(21)->get();
+        $payouts = $this->payouts($wallet)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))->orderByDesc('id')->limit(21)->get();
         $movements = [...$credits->all(), ...$payouts->all()];
         usort($movements, fn (Model $left, Model $right): int => strcmp((string) $right->getKey(), (string) $left->getKey()));
         $page = array_slice($movements, 0, 20);
@@ -429,14 +444,16 @@ final class EloquentWalletStore implements WalletStore
 
     /**
      * Internal transfers between the Investor's own buckets: each purchase hold, its release, its
-     * commitment and its refund, newest first, twenty to a page, named by the deal it was for.
+     * commitment and its refund, newest first, twenty to a page, named by the deal it was for, from
+     * `since` when a period is chosen.
      *
      * @return array{items: list<array<string, mixed>>, next_before: string|null}
      */
-    private function internalHistory(InvestorWallet $wallet, ?string $before): array
+    private function internalHistory(InvestorWallet $wallet, ?string $before, ?CarbonImmutable $since): array
     {
         $entries = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
             ->where('source_type', 'primary_reservation')->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))
             ->orderByDesc('id')->limit(21)->get();
         $page = $entries->take(20);
         $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($page->pluck('source_id')->all())));

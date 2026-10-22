@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
@@ -23,14 +24,15 @@ use RuntimeException;
  * source does not carry for that Party, or any native/envelope disagreement, fails closed. Also
  * lists the confirmed purchases still awaiting one: no Holding, no refund entry and no closure.
  * The issue receipt's operation is the disbursement intent's, with the request id that operation
- * was recorded under.
+ * was recorded under: a staff command's from the operation journal, an automatic intent's from the
+ * intent itself.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  */
 final readonly class EloquentInvestorHoldings implements InvestorHoldings
 {
     public function __construct(private OperationRecords $operations, private PrimaryCampaignSource $campaigns,
-        private RetainedNoteSchedules $schedules) {}
+        private RetainedNoteSchedules $schedules, private DisbursementClosingEvidence $closings) {}
 
     public function forInvestor(int $userId): array
     {
@@ -125,6 +127,7 @@ final readonly class EloquentInvestorHoldings implements InvestorHoldings
             'issued_at' => $holding->issued_at->utc()->toIso8601String(), 'disbursement_effective_at' => $holding->disbursement_effective_at->utc()->toIso8601String(),
             'effective_date' => $snapshot->closing->effectiveDate ?? throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED'),
             'receipt' => ['receipt_id' => $holding->receipt_id, 'operation_id' => $payload['receipt']['operation_id'],
-                'request_id' => $this->operations->requestOf($payload['receipt']['operation_id']) ?? throw new RuntimeException('HOLDING_ISSUE_RECEIPT_UNAVAILABLE')]];
+                'request_id' => $this->operations->requestOf($payload['receipt']['operation_id'])
+                    ?? $this->closings->intentRequest($snapshot->closing->closingId) ?? throw new RuntimeException('HOLDING_ISSUE_RECEIPT_UNAVAILABLE')]];
     }
 }
