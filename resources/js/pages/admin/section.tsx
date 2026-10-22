@@ -111,7 +111,9 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                     {design.blocks
                         .filter(
                             (block) =>
-                                block.tab === undefined || block.tab === tab,
+                                design.tabs === undefined ||
+                                block.tab === undefined ||
+                                block.tab === tab,
                         )
                         .map((block) => (
                             <Block
