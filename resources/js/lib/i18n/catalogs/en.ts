@@ -1522,7 +1522,7 @@ const en = {
     'admin.kyc.col.applicant': 'Applicant',
     'admin.kyc.col.checks': 'Automated checks',
     'admin.kyc.submitted_ago': 'Submitted {ago}',
-    'admin.kyc.checks.passed': 'All {count} checks passed',
+    'admin.kyc.checks.passed': 'All automated KYC checks passed',
     'admin.kyc.checks.screening':
         'Age, ID number, documents, selfie · no screening yet',
     'admin.kyc.check.age': 'Age 18 or over',
@@ -2281,12 +2281,12 @@ const en = {
     'admin.permission.businesses.verify': 'Verify businesses',
     'admin.permission_detail.businesses.verify':
         'Decide business verification, with a recorded reason.',
-    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission.investors.verify': 'KYC decisions',
     'admin.permission_detail.investors.verify':
-        'Decide investor identity checks and read Activity & Audit.',
-    'admin.permission.applications.review': 'Review applications',
+        'Verify or reject investor identity documents, and read Activity & Audit.',
+    'admin.permission.applications.review': 'Approvals',
     'admin.permission_detail.applications.review':
-        'Review raise applications and release them for publishing.',
+        'Approve applications: release them for listing once every check passes.',
     'admin.permission.audit.partners.verify': 'Verify Audit Partners',
     'admin.permission_detail.audit.partners.verify':
         'Approve CPA firms and read partner coverage.',
@@ -2318,7 +2318,7 @@ const en = {
         "Add an operator, or suspend or reactivate another operator's access, with a reason.",
     'admin.permission.accounts.freeze': 'Freeze / suspend',
     'admin.permission_detail.accounts.freeze':
-        "Pause an investor's or business's access to their app.",
+        'Pause an account’s access to either app.',
     'admin.permission.capacity.adjust': 'Adjust capacity',
     'admin.permission_detail.capacity.adjust':
         'Change how much a business may raise.',
@@ -6508,20 +6508,20 @@ const en = {
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
-    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.healthy': 'Queue is clear.',
     'admin.health.queue.rec.within':
         'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',
     'admin.health.events.detail': {
-        one: '{count} action recorded in total',
-        other: '{count} actions recorded in total',
+        one: '{count} event total',
+        other: '{count} events total',
     },
     'admin.health.events.rec.healthy':
         'Actions are being recorded and propagated.',
     'admin.health.events.rec.watch':
-        'No actions were recorded in the last hour.',
+        'No events in the last hour. Act in the apps to generate activity.',
     'admin.health.default_rate.label': 'Default rate',
     'admin.health.default_rate.detail': 'Starts when repayments are serviced',
     'admin.health.arrears.label': 'Arrears ratio',

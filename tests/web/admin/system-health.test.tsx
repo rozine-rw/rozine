@@ -95,15 +95,13 @@ describe('Admin System Health', () => {
             'Within tolerance. No backlog is building.',
         );
         expect(card('Underwriting queue')).not.toHaveTextContent(
-            'The queue is clear.',
+            'Queue is clear.',
         );
         expect(card('Capital in flight')).toHaveTextContent(
             'Liquidity is flowing. Ensure disbursement queue stays clear.',
         );
         expect(card('Event throughput')).toHaveTextContent('7/h');
-        expect(card('Event throughput')).toHaveTextContent(
-            '90 actions recorded in total',
-        );
+        expect(card('Event throughput')).toHaveTextContent('90 events total');
         expect(card('Frozen accounts')).toHaveTextContent(
             '0accounts with access paused',
         );
@@ -132,9 +130,7 @@ describe('Admin System Health', () => {
             />,
         );
 
-        expect(card('Underwriting queue')).toHaveTextContent(
-            'The queue is clear.',
-        );
+        expect(card('Underwriting queue')).toHaveTextContent('Queue is clear.');
     });
 
     it('leads with a critical ledger and links what needs a look', () => {
@@ -204,7 +200,7 @@ describe('Admin System Health', () => {
             within(queue).getByRole('link', { name: /Open the queue/ }),
         ).toHaveAttribute('href', '/admin/applications');
         expect(card('Event throughput')).toHaveTextContent(
-            'No actions were recorded in the last hour.',
+            'No events in the last hour. Act in the apps to generate activity.',
         );
     });
 

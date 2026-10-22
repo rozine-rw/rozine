@@ -1620,7 +1620,7 @@ const fr: Catalog = {
     'admin.kyc.col.applicant': 'Demandeur',
     'admin.kyc.col.checks': 'Contrôles automatiques',
     'admin.kyc.submitted_ago': 'Envoyé {ago}',
-    'admin.kyc.checks.passed': 'Les {count} contrôles réussis',
+    'admin.kyc.checks.passed': 'Tous les contrôles KYC automatiques réussis',
     'admin.kyc.checks.screening':
         "Âge, numéro d'identité, documents, selfie · pas encore de filtrage",
     'admin.kyc.check.age': '18 ans ou plus',
@@ -2407,10 +2407,10 @@ const fr: Catalog = {
     'admin.permission.businesses.verify': 'Vérifier les entreprises',
     'admin.permission_detail.businesses.verify':
         'Décider de la vérification des entreprises, avec un motif consigné.',
-    'admin.permission.investors.verify': 'Vérifier les investisseurs',
+    'admin.permission.investors.verify': 'Décisions KYC',
     'admin.permission_detail.investors.verify':
         "Décider des contrôles d'identité des investisseurs et consulter Activité et audit.",
-    'admin.permission.applications.review': 'Examiner les demandes',
+    'admin.permission.applications.review': 'Approbations',
     'admin.permission_detail.applications.review':
         'Examiner les demandes de levée et les libérer pour publication.',
     'admin.permission.audit.partners.verify':
