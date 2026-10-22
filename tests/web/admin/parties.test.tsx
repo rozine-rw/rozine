@@ -198,6 +198,15 @@ describe('Party directories', () => {
         expect(
             within(desk).getByRole('link', { name: 'Reject' }),
         ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+        expect(within(desk).getByRole('link', { name: 'Reject' })).toHaveClass(
+            'bg-rz-surface',
+            'text-[#b3352a]',
+            'dark:text-[#ff6b6f]',
+        );
+        expect(within(desk).getByText('Licence')).toHaveClass(
+            'text-[#7a5d33]',
+            'dark:text-[#f0a060]',
+        );
     });
 
     it('keeps a licence awaiting a name identifiable and reviewable', () => {

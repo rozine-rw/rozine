@@ -153,6 +153,75 @@ describe('Literal text colours (WCAG 2.2 SC 1.4.3)', () => {
     });
 });
 
+describe('Audit oversight contrast in both themes (WCAG 2.2 SC 1.4.3)', () => {
+    const light = tokens(css('rozine.css'), ':root');
+    const dark = { ...light, ...tokens(css('rozine.css'), '.dark') };
+
+    it.each([
+        [
+            'licence rejection',
+            'components/admin/parties/review-queue.tsx',
+            '#b3352a',
+            'rz-surface',
+            'rz-surface',
+        ],
+        [
+            'licence metadata',
+            'components/admin/parties/review-queue.tsx',
+            '#7a5d33',
+            '#faf7f1',
+            'rz-surface-muted',
+        ],
+        [
+            'sealed report download',
+            'pages/admin/audit-reports.tsx',
+            '#7a5d33',
+            'rz-surface',
+            'rz-surface',
+        ],
+    ])(
+        'keeps %s readable on its actual light and dark fills',
+        (_, file, foreground, lightFill, darkFill) => {
+            const source = readFileSync(
+                path.resolve(__dirname, '../../../resources/js', file),
+                'utf8',
+            );
+            const classes = [...source.matchAll(/className="([^"]*)"/gu)]
+                .map((match) => match[1])
+                .find((className) =>
+                    className.split(/\s/u).includes(`text-[${foreground}]`),
+                );
+
+            if (classes === undefined) {
+                throw new Error(`Missing audited text colour in ${file}`);
+            }
+
+            const darkForeground =
+                /(?:^|\s)dark:text-\[(#[0-9a-f]{6})\]/u.exec(classes)?.[1] ??
+                foreground;
+            expect(source).toContain(
+                lightFill.startsWith('#')
+                    ? `bg-[${lightFill}]`
+                    : `bg-${lightFill}`,
+            );
+            expect(source).toContain(
+                lightFill === darkFill
+                    ? `bg-${darkFill}`
+                    : `dark:bg-${darkFill}`,
+            );
+            expect(
+                contrast(
+                    foreground,
+                    lightFill.startsWith('#') ? lightFill : light[lightFill],
+                ),
+            ).toBeGreaterThanOrEqual(4.5);
+            expect(
+                contrast(darkForeground, dark[darkFill]),
+            ).toBeGreaterThanOrEqual(4.5);
+        },
+    );
+});
+
 describe('Placeholder contrast (WCAG 2.2 SC 1.4.3)', () => {
     it('keeps the Pulse input placeholder at 4.5:1 or more on its input and page', () => {
         const pulse = css('pulse.css');

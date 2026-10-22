@@ -145,7 +145,7 @@ function Row({ row }: { row: AuditRegisterRow }) {
                         aria-label={t('admin.audit_reports.pdf_named', {
                             business: row.business,
                         })}
-                        className="rounded-lg border border-[#e8d69f] bg-rz-surface px-2.5 py-1.5 text-[11px] font-bold text-[#7a5d33]"
+                        className="rounded-lg border border-[#e8d69f] bg-rz-surface px-2.5 py-1.5 text-[11px] font-bold text-[#7a5d33] dark:text-[#f0a060]"
                     >
                         {t('admin.audit_reports.pdf')}
                     </a>

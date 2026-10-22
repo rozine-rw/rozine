@@ -96,6 +96,11 @@ describe('Audit reports register', () => {
                 name: 'Download the sealed report for Musanze Agro Traders (PDF)',
             }),
         ).toHaveAttribute('href', '/preview/admin-audit-reports');
+        expect(
+            within(awaiting).getByRole('link', {
+                name: 'Download the sealed report for Musanze Agro Traders (PDF)',
+            }),
+        ).toHaveClass('bg-rz-surface', 'text-[#7a5d33]', 'dark:text-[#f0a060]');
 
         const overdue = rowOf('Huye Hardware Supplies');
         expect(overdue).toHaveTextContent('Overdue');
