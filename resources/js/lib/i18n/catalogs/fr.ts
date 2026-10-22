@@ -1383,6 +1383,8 @@ const fr: Catalog = {
         'Le partenaire d’audit scelle le rapport mensuel',
     'admin.messaging.trigger.business.report_review_closing':
         'Le délai pour cosigner ou contester un rapport se termine',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -6013,6 +6015,10 @@ const fr: Catalog = {
         'Fin du délai de revue',
     'investor.notices.business.report_review_closing.body':
         "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
+    'investor.notices.business.reporting_window_open.title':
+        'Audit mensuel ouvert',
+    'investor.notices.business.reporting_window_open.body':
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

@@ -1370,6 +1370,8 @@ const rw: Catalog = {
         'Umugenzuzi afunze raporo y’ukwezi',
     'admin.messaging.trigger.business.report_review_closing':
         'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'Igenzura ry’ukwezi ritangiye ku kigo gifite inoti ikora',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Uruhushya rwemejwe',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -5977,6 +5979,10 @@ const rw: Catalog = {
         'Igihe cyo gusuzuma kirarangiye vuba',
     'investor.notices.business.report_review_closing.body':
         "Igihe cyo gusinya cyangwa kujurira raporo y'igenzura kirangira saa {time}. Nutagira icyo ukora, izatangazwa uko yashyizweho kashe.",
+    'investor.notices.business.reporting_window_open.title':
+        "Igenzura ry'ukwezi ryatangiye",
+    'investor.notices.business.reporting_window_open.body':
+        "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

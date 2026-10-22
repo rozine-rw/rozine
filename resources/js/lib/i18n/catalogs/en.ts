@@ -1302,6 +1302,8 @@ const en = {
         'The Audit Partner seals the monthly report',
     'admin.messaging.trigger.business.report_review_closing':
         'The window to co-sign or dispute a report is closing',
+    'admin.messaging.trigger.business.reporting_window_open':
+        'A monthly audit opens for a business with a live note',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -5718,6 +5720,10 @@ const en = {
         'Review window closing',
     'investor.notices.business.report_review_closing.body':
         'Your window to co-sign or dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
+    'investor.notices.business.reporting_window_open.title':
+        'Monthly audit open',
+    'investor.notices.business.reporting_window_open.body':
+        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

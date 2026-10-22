@@ -23,7 +23,7 @@ class ReportingWindowOpen extends RozineMail
         $closesOn = $this->day($this->closesOn);
 
         return (new MailMessage)
-            ->subject(__('Your :period report is due by :date', ['period' => $this->period, 'date' => $closesOn]))
+            ->subject(__('Your :period audit has started and is sealed by :date', ['period' => $this->period, 'date' => $closesOn]))
             ->markdown('mail.business.reporting-window-open', [
                 'businessName' => $this->businessName,
                 'period' => $this->period,
