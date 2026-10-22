@@ -11,6 +11,7 @@ use App\Models\BusinessApplicationSubmission;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\Support\BusinessQuoteFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -84,3 +85,24 @@ it('refuses rollback once a Business holds a repeat submission, and restores the
 
     expect(fn () => $migration->down())->toThrow(QueryException::class, 'Repeat business applications require a forward migration; rollback is refused');
 });
+
+it('refuses direct edits to the pending slot so a second submission stays blocked', function (string $change): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $businessId = $fixture['audit']['business'];
+    $draft = BusinessApplication::factory()->create(['business_id' => $businessId]);
+    $other = BusinessApplication::factory()->create();
+    $slots = fn () => DB::table('business_application_pending_slots');
+
+    expect(fn () => DB::transaction(fn (): mixed => match ($change) {
+        'delete' => $slots()->where('business_id', $businessId)->delete(),
+        'repoint' => $slots()->where('business_id', $businessId)->update(['business_application_id' => $draft->id]),
+        'move' => $slots()->where('business_id', $businessId)->update(['business_id' => $other->business_id]),
+        'forge' => $slots()->insert(['business_id' => $other->business_id, 'business_application_id' => $other->id]),
+        default => throw new LogicException('Unknown slot change.'),
+    }))->toThrow(QueryException::class, 'Pending application slots change only through application submission');
+
+    expect($slots()->get()->map(fn (object $slot): array => (array) $slot)->all())
+        ->toBe([['business_id' => $businessId, 'business_application_id' => $fixture['application']->id]])
+        ->and(fn () => submitAnotherApplication($businessId))->toThrow(QueryException::class, 'A business may have only one pending application');
+})->with(['delete', 'repoint', 'move', 'forge']);
