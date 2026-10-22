@@ -489,7 +489,10 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
 }
 
 type WithdrawPanelProps<Name extends string> = {
-    funding: Pick<C3InvestorWalletProps['funding'], 'withdrawal' | 'methods'>;
+    funding: Pick<
+        C3InvestorWalletProps['funding'],
+        'withdrawal' | 'methods' | 'picks'
+    >;
     action: RouteAction;
     available: Money;
     allowed_actions: readonly string[];
