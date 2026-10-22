@@ -76,6 +76,15 @@ function ListDetail({ detail }: { detail: PartyListRow['detail'] }) {
             return <>{formatRwfShort(detail.value)}</>;
         case 'text':
             return <>{detail.value}</>;
+        case 'holding':
+            return (
+                <>
+                    {t('admin.parties.holding_detail', {
+                        amount: formatRwfShort(detail.value),
+                        count: detail.notes,
+                    })}
+                </>
+            );
     }
 }
 
