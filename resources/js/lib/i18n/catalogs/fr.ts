@@ -5996,7 +5996,7 @@ const fr: Catalog = {
     'investor.notices.business.reporting_window_open.title':
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
-        "Votre audit de {month} a commencé. Téléversez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}.",
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

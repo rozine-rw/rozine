@@ -5959,7 +5959,7 @@ const rw: Catalog = {
     'investor.notices.business.reporting_window_open.title':
         "Igenzura ry'ukwezi ryatangiye",
     'investor.notices.business.reporting_window_open.body':
-        "Igenzura rya {month} ryatangiye. Shyiraho inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}.",
+        "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

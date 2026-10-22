@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\GetBusinessHome;
 use App\Models\BusinessApplication;
@@ -53,6 +54,23 @@ it('lets a Business apply again once its earlier raise has funded, and only then
         ->and(BusinessApplication::query()->where('business_id', $businessId)->where('status', 'submitted')->count())->toBe(2)
         ->and(app(GetBusinessHome::class)->handle($user->id, 1, $businessId)['entry'])->toMatchArray(['allowed_actions' => [],
             'application' => ['id' => $repeat->id, 'status' => 'submitted', 'step' => 'submitted', 'revision' => $repeat->revision]]);
+});
+
+it('lets a Business apply again once its earlier raise was cancelled and closed', function (): void {
+    $sealed = null;
+    $campaign = PrimaryReservationFixture::campaign(sealing: function (array $fixture) use (&$sealed): mixed {
+        $sealed = $fixture;
+
+        return $fixture['code'];
+    });
+    $user = $sealed['audit']['authority']['users'][0];
+    expect(fn () => submitAnotherApplication($campaign->business_id))->toThrow(QueryException::class, 'A business may have only one pending application');
+
+    expect(app(BusinessCampaignStore::class)->cancel($user->id, 1, $campaign->business_id, $campaign->id, 1, 'Changed plans.', (string) Str::uuid())['code'])
+        ->toBe('CAMPAIGN_CANCELLED')
+        ->and(app(CreateBusinessApplication::class)->handle($user->id, 1, $campaign->business_id, 0, (string) Str::uuid())['code'])->toBe('APPLICATION_CREATED')
+        ->and(submitAnotherApplication($campaign->business_id)->status)->toBe('submitted')
+        ->and(DB::table('business_application_pending_slots')->where('business_id', $campaign->business_id)->count())->toBe(1);
 });
 
 it('refuses rollback once a Business holds a repeat submission, and restores the unique index otherwise', function (): void {
