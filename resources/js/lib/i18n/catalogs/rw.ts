@@ -4062,7 +4062,8 @@ const rw: Catalog = {
     'support.help.still_action': 'Andikira ubufasha',
     'investor.deals.nudge.tag': 'Komeza kwiga',
     'investor.deals.nudge.title': 'Komeza Ishuri ry’Umushoramari',
-    'investor.deals.nudge.body': 'Wasoje amasomo {done} kuri {total}. Komereza aho wari ugeze.',
+    'investor.deals.nudge.body':
+        'Wasoje amasomo {done} kuri {total}. Komereza aho wari ugeze.',
     'investor.deals.nudge.later': 'Nyuma',
     'investor.deals.nudge.continue': 'Komeza',
     'investor.academy.title': 'Ishuri ry’Umushoramari',
