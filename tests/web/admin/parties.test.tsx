@@ -243,7 +243,7 @@ describe('Party directories', () => {
         render(<AdminParties {...fixture} />);
 
         expect(
-            screen.getByText('No licences waiting for verification.'),
+            screen.getByText('No auditor applications awaiting verification.'),
         ).toBeInTheDocument();
         const requests = screen.getByRole('region', {
             name: 'Partner change requests',

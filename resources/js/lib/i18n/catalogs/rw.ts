@@ -2360,13 +2360,14 @@ const rw: Catalog = {
     'admin.parties.queue.desk.title': 'Ibiro byo kugenzura ICPAR',
     'admin.parties.queue.desk.caption':
         'Emeza uruhushya mu gitabo cya ICPAR, hanyuma wemeze kugira ngo umufatanyabikorwa ashobore gufata igenzura.',
-    'admin.parties.queue.desk.empty': 'Nta mpushya zitegereje kugenzurwa.',
+    'admin.parties.queue.desk.empty':
+        "Nta busabe bw'abagenzuzi butegereje kugenzurwa.",
     'admin.parties.queue.desk.chip': 'BITEGEREJE KUGENZURWA',
     'admin.parties.queue.approve': 'Emeza',
     'admin.parties.queue.reject': 'Wanga',
     'admin.parties.queue.review': 'Suzuma',
     'admin.parties.queue.field.licence': 'Uruhushya',
-    'admin.parties.queue.field.expires_on': 'Birangira',
+    'admin.parties.queue.field.expires_on': 'Uruhushya rurangira',
     'admin.parties.queue.field.submitted_at': 'Byoherejwe',
     'admin.parties.chip.all': 'Byose',
     'admin.parties.chip.healthy': 'Bimeze neza',

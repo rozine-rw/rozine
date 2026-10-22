@@ -2244,13 +2244,14 @@ const en = {
     'admin.parties.queue.desk.title': 'ICPAR verification desk',
     'admin.parties.queue.desk.caption':
         'Confirm the licence on the ICPAR register, then approve so the partner can take audits.',
-    'admin.parties.queue.desk.empty': 'No licences waiting for verification.',
+    'admin.parties.queue.desk.empty':
+        'No auditor applications awaiting verification.',
     'admin.parties.queue.desk.chip': 'PENDING VERIFICATION',
     'admin.parties.queue.approve': 'Approve',
     'admin.parties.queue.reject': 'Reject',
     'admin.parties.queue.review': 'Review',
     'admin.parties.queue.field.licence': 'Licence',
-    'admin.parties.queue.field.expires_on': 'Expires',
+    'admin.parties.queue.field.expires_on': 'Licence expires',
     'admin.parties.queue.field.submitted_at': 'Submitted',
     'admin.parties.chip.all': 'All',
     'admin.parties.chip.healthy': 'Healthy',

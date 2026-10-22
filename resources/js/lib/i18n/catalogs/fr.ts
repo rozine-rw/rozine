@@ -2371,13 +2371,13 @@ const fr: Catalog = {
     'admin.parties.queue.desk.caption':
         "Confirmez la licence au registre de l'ICPAR, puis approuvez pour que le partenaire puisse prendre des audits.",
     'admin.parties.queue.desk.empty':
-        'Aucune licence en attente de vérification.',
+        "Aucune demande d'auditeur en attente de vérification.",
     'admin.parties.queue.desk.chip': 'VÉRIFICATION EN ATTENTE',
     'admin.parties.queue.approve': 'Approuver',
     'admin.parties.queue.reject': 'Rejeter',
     'admin.parties.queue.review': 'Examiner',
     'admin.parties.queue.field.licence': 'Licence',
-    'admin.parties.queue.field.expires_on': 'Expire le',
+    'admin.parties.queue.field.expires_on': 'Licence expire le',
     'admin.parties.queue.field.submitted_at': 'Soumise le',
     'admin.parties.chip.all': 'Tous',
     'admin.parties.chip.healthy': 'Sains',
