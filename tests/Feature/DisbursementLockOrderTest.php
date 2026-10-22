@@ -161,7 +161,7 @@ it('detects a source called under a disbursement lock, so its silence means some
     ['disbursement' => $disbursement] = DisbursementFixture::funded();
     DB::transaction(function () use ($disbursement): void {
         Disbursement::query()->whereKey($disbursement->id)->lockForUpdate()->sole();
-        app(PayoutDestinations::class)->verified($disbursement->business_id, $disbursement->environment);
+        expect(app(PayoutDestinations::class)->verified($disbursement->business_id, $disbursement->environment))->toBeNull();
     });
     expect($probe->violations)->toBe(['verified under a disbursement lock without the Business lock', 'verified under a disbursement lock']);
 });

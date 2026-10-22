@@ -14,6 +14,7 @@ use LogicException;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\ConsentFixture;
+use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -38,6 +39,8 @@ class CheckpointThreeSeeder extends Seeder
     public const string DIRECTORY = 'manual-tests/checkpoint-three';
 
     public const string MANIFEST = self::DIRECTORY.'/manifest.json';
+
+    public const string PENDING = self::DIRECTORY.'/pending.json';
 
     private const string DOMAIN = '@c3.rozine.invalid';
 
@@ -76,27 +79,57 @@ class CheckpointThreeSeeder extends Seeder
     /**
      * Stages the pack in two transactions around the payout. A funded raise is paid out after the
      * transaction that opens its disbursement commits, so its closing cannot be observed inside one
-     * transaction with the rest. If the payout step fails, the first transaction's data stays and
-     * no manifest is written; the error says so.
+     * transaction with the rest. A pending checkpoint names every committed scenario, so retries
+     * resume that campaign without creating purchases or paying an issued closing again.
      *
      * @return Pack
      */
     private function stage(): array
     {
-        $staged = DB::transaction(function (): ?array {
-            if (Storage::disk('local')->exists(self::MANIFEST)) {
-                return null;
+        $disk = Storage::disk('local');
+        if ($disk->exists(self::PENDING) && ! User::query()->where('email', 'like', '%'.self::DOMAIN)->exists()) {
+            // The checkpoint was written before an initial transaction that rolled back.
+            if (! $disk->delete(self::PENDING)) {
+                throw new LogicException('C3_PENDING_DELETE_FAILED: no C3 accounts exist; remove the pending file and retry.');
             }
+        }
+        if ($disk->exists(self::PENDING)) {
+            $pack = $this->readManifest(self::PENDING);
+        } elseif ($disk->exists(self::MANIFEST)) {
+            $pack = $this->readManifest();
+            $this->writeGuide($pack);
+
+            return $pack;
+        } else {
+            $pack = $this->stageScenarios();
+        }
+
+        $campaign = $pack['scenarios']['funded']['campaign'];
+        try {
+            PrimaryIssuanceFixture::finishFunded((string) $campaign, $pack['created_at']);
+        } catch (Throwable $exception) {
+            throw new LogicException('C3_PAYOUT_FAILED: progress is saved; rerun to resume the same campaign. '.$exception->getMessage(), 0, $exception);
+        }
+        $this->writeGuide($pack);
+        $disk->delete(self::PENDING);
+
+        return $pack;
+    }
+
+    /** @return Pack */
+    private function stageScenarios(): array
+    {
+        return DB::transaction(function (): array {
             if (User::query()->where('email', 'like', '%'.self::DOMAIN)->exists()) {
                 throw new LogicException('C3_RESERVED_ACCOUNT_COLLISION: restore the original manifest; existing accounts were not changed.');
             }
+            $makeInvestor = InvestorWalletFixture::packInvestorFactory();
             if (! DB::table('consent_releases')->exists()) {
                 $this->requireCode(ConsentFixture::record(ConsentFixture::staff()), 'CONSENT_RELEASE_RECORDED');
             }
-
             $accounts = [];
             $live = $this->listed('live', $accounts);
-            PrimaryHoldingFixture::committed(units: ['540'], fund: false, live: $live);
+            PrimaryHoldingFixture::committed(units: ['540'], fund: false, live: $live, makeInvestor: $makeInvestor);
             $accounts[] = $this->account($this->investors($live)[0], 'investor-live', false);
             $funded = $this->listed('funded', $accounts);
 
@@ -106,36 +139,24 @@ class CheckpointThreeSeeder extends Seeder
             $monthly['code'] = (new Google2FA)->getCurrentOtp(decrypt($monthly['user']->refresh()->two_factor_secret));
             $this->requireCode(AuditSealingFixture::seal($monthly), 'AUDIT_SEALED');
 
-            return ['accounts' => $accounts, 'live' => $live, 'funded' => $funded, 'monthly' => ['business' => $monthly['audit']['business'], 'report' => $monthly['report']->id]];
-        });
-        if ($staged === null) {
-            $pack = $this->readManifest();
-            $this->writeGuide($pack);
-
-            return $pack;
-        }
-        try {
-            PrimaryIssuanceFixture::close(now('UTC')->startOfSecond()->toIso8601String(), live: $staged['funded']);
-        } catch (Throwable $exception) {
-            throw new LogicException('C3_PAYOUT_FAILED: the listed raise, the purchase and the monthly report were kept; no manifest was written. '.$exception->getMessage(), 0, $exception);
-        }
-
-        return DB::transaction(function () use ($staged): array {
-            $accounts = $staged['accounts'];
-            foreach ($this->investors($staged['funded']) as $index => $investor) {
+            PrimaryHoldingFixture::committed(requoted: [0], live: $funded, makeInvestor: $makeInvestor);
+            foreach ($this->investors($funded) as $index => $investor) {
                 $accounts[] = $this->account($investor, 'investor-funded-'.($index + 1), false);
             }
             $scenarios = [];
-            foreach (['live' => $staged['live'], 'funded' => $staged['funded']] as $name => $campaign) {
+            foreach (['live' => $live, 'funded' => $funded] as $name => $campaign) {
                 $business = (string) DB::table('business_campaigns')->where('id', $campaign)->value('business_id');
                 $scenarios[$name] = ['business' => $business, 'campaign' => $campaign, 'report' => null,
                     'business_path' => route('business.show', ['business' => $business], false)];
             }
-            ['business' => $business, 'report' => $report] = $staged['monthly'];
+            $business = $monthly['audit']['business'];
+            $report = $monthly['report']->id;
             $scenarios['monthly'] = ['business' => $business, 'campaign' => null, 'report' => $report,
                 'business_path' => route('business.audit-reports.show', ['business' => $business, 'report' => $report], false)];
-            $pack = ['version' => 1, 'created_at' => now('UTC')->toIso8601String(), 'accounts' => $accounts, 'scenarios' => $scenarios];
-            $this->writeGuide($pack);
+            $pack = ['version' => 1, 'created_at' => now('UTC')->startOfSecond()->toIso8601String(), 'accounts' => $accounts, 'scenarios' => $scenarios];
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+            DB::statement('SET CONSTRAINTS ALL DEFERRED');
+            $this->writePack(self::PENDING, $pack);
 
             return $pack;
         });
@@ -192,17 +213,17 @@ class CheckpointThreeSeeder extends Seeder
     }
 
     /** @return Pack */
-    private function readManifest(): array
+    private function readManifest(string $path = self::MANIFEST): array
     {
         try {
-            $decoded = json_decode(Storage::disk('local')->get(self::MANIFEST) ?? '{}', true, flags: JSON_THROW_ON_ERROR);
+            $decoded = json_decode(Storage::disk('local')->get($path) ?? '{}', true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             throw new LogicException('C3_MANIFEST_INVALID');
         }
         if (! is_array($decoded) || Validator::make($decoded, [
             'version' => ['required', 'integer', 'in:1'], 'created_at' => ['required', 'string'],
-            'accounts' => ['required', 'array', 'size:9'], 'accounts.*.id' => ['required', 'integer'],
-            'accounts.*.label' => ['required', 'string'], 'accounts.*.email' => ['required', 'string', 'ends_with:'.self::DOMAIN],
+            'accounts' => ['required', 'array', 'size:9'], 'accounts.*.id' => ['required', 'integer', 'distinct'],
+            'accounts.*.label' => ['required', 'string', 'distinct'], 'accounts.*.email' => ['required', 'string', 'ends_with:'.self::DOMAIN],
             'accounts.*.mfa' => ['required', 'boolean'], 'scenarios' => ['required', 'array', 'size:3'],
             'scenarios.*.business' => ['required', 'ulid'], 'scenarios.*.campaign' => ['present', 'nullable', 'ulid'],
             'scenarios.*.report' => ['present', 'nullable', 'ulid'], 'scenarios.*.business_path' => ['required', 'string'],
@@ -217,7 +238,24 @@ class CheckpointThreeSeeder extends Seeder
             }
         }
 
+        foreach (['live', 'funded'] as $name) {
+            $scenario = $pack['scenarios'][$name] ?? null;
+            $owner = array_find($pack['accounts'], fn (array $account): bool => $account['label'] === 'business-'.$name);
+            if ($scenario === null || $owner === null || ! DB::table('business_campaigns')->where('id', $scenario['campaign'])
+                ->where('business_id', $scenario['business'])->where('actor_user_id', $owner['id'])->exists()) {
+                throw new LogicException('C3_MANIFEST_DATABASE_MISMATCH: no accounts were reset.');
+            }
+        }
+
         return $pack;
+    }
+
+    /** @param Pack $pack */
+    private function writePack(string $path, array $pack): void
+    {
+        if (! Storage::disk('local')->put($path, json_encode($pack, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n")) {
+            throw new LogicException('C3_FILES_WRITE_FAILED: rerun to resume any saved progress.');
+        }
     }
 
     /** @param Pack $pack */
@@ -232,9 +270,9 @@ class CheckpointThreeSeeder extends Seeder
             .' sees the platform fee share on Portfolio and Profile. [Business home]('.url($pack['scenarios']['funded']['business_path']).")\n";
         $guide .= '- **Monthly report:** `business-monthly'.self::DOMAIN.'` co-signs or disputes it inside the 24-hour window. [Report]('
             .url($pack['scenarios']['monthly']['business_path']).")\n";
-        if (! Storage::disk('local')->put(self::DIRECTORY.'/START-HERE.md', $guide)
-            || ! Storage::disk('local')->put(self::MANIFEST, json_encode($pack, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n")) {
-            throw new LogicException('C3_FILES_WRITE_FAILED: database changes rolled back.');
+        if (! Storage::disk('local')->put(self::DIRECTORY.'/START-HERE.md', $guide)) {
+            throw new LogicException('C3_FILES_WRITE_FAILED: rerun to resume any saved progress.');
         }
+        $this->writePack(self::MANIFEST, $pack);
     }
 }

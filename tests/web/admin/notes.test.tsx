@@ -140,4 +140,25 @@ describe('Admin Notes', () => {
             screen.getByRole('link', { name: 'More notes' }),
         ).toHaveAttribute('href', '/admin/notes?limit=500');
     });
+
+    it('explains an empty search result without claiming the register has no notes', () => {
+        render(
+            <AdminNotes {...props({ notes: [], search: 'Missing issuer' })} />,
+        );
+
+        const status = screen.getByRole('status');
+        expect(status).toHaveTextContent('No matches on this page');
+        expect(status).toHaveTextContent(
+            'Nothing in Notes matches “Missing issuer”. This search only looks inside the current page.',
+        );
+        expect(
+            screen.getByRole('searchbox', { name: 'Search this page' }),
+        ).toHaveValue('Missing issuer');
+        expect(
+            screen.queryByText('No notes to show yet.'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('table', { name: 'Notes' }),
+        ).toBeInTheDocument();
+    });
 });

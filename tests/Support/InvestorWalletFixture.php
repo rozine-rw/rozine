@@ -19,8 +19,10 @@ use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\WalletDepositIntent;
 use App\Models\WalletWithdrawal;
+use Closure;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use LogicException;
 
 /**
  * Synthetic Investor wallet scenarios: a verified Party with the investor role active (identity
@@ -50,6 +52,48 @@ final class InvestorWalletFixture
         return InvestorFundingMethod::factory()->create(['party_id' => $party->id, 'kind' => $kind,
             'label' => ['mtn' => 'MTN MoMo', 'airtel' => 'Airtel Money', 'bank' => 'Bank of Kigali'][$kind],
             'masked' => $kind === 'bank' ? '···· 4417' : '+250 788 ···· 456']);
+    }
+
+    /**
+     * Buyers for an additive manual pack, funded under the existing policy without replacing it.
+     *
+     * @return Closure(): array{user: User, party: Party}
+     */
+    public static function packInvestorFactory(): Closure
+    {
+        $policy = DepositPolicy::query()->where('effective_at', '<=', now())->orderByDesc('effective_at')->orderByDesc('id')->first();
+        if ($policy === null && DepositPolicy::query()->exists()) {
+            throw new LogicException('C3_DEPOSIT_POLICY_UNAVAILABLE: existing policies were not changed.');
+        }
+        $policy ??= self::policy(maximum: null);
+        if ($policy->status !== 'active' || (int) ($policy->maximum ?? '10000000') - (int) $policy->fee < 10000) {
+            throw new LogicException('C3_DEPOSIT_POLICY_UNAVAILABLE: the current policy cannot fund this pack; existing policies were not changed.');
+        }
+
+        return fn (): array => self::packInvestor($policy);
+    }
+
+    /** @return array{user: User, party: Party} */
+    private static function packInvestor(DepositPolicy $policy): array
+    {
+        $investor = self::investor();
+        $fixture = [...$investor, 'method' => self::method($investor['party'])];
+        $fee = (int) $policy->fee;
+        $maximum = (int) ($policy->maximum ?? '10000000');
+        for ($left = 10000000; $left > 0;) {
+            $gross = max(min($left, $maximum - $fee) + $fee, (int) ($policy->minimum ?? '1'));
+            $deposit = self::deposit($fixture, (string) $gross);
+            if (($deposit['code'] ?? null) !== 'DEPOSIT_INTENT_RECORDED') {
+                throw new LogicException('C3_DEPOSIT_NOT_RECORDED');
+            }
+            $settled = self::settle($deposit['data']['intent_id']);
+            if (! $settled['credited']) {
+                throw new LogicException('C3_DEPOSIT_NOT_CREDITED');
+            }
+            $left -= $gross - $fee;
+        }
+
+        return $investor;
     }
 
     /**

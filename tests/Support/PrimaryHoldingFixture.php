@@ -18,6 +18,7 @@ use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\Disbursement;
+use App\Models\Party;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -41,11 +42,14 @@ final class PrimaryHoldingFixture
      * @param  list<int>  $requoted  indexes of purchases that are requoted once before confirming
      * @param  array<int, string>  $buyers  purchase index to a buyer key; purchases sharing a key share one Investor
      * @param  string|null  $live  the ID of a campaign already listed, used instead of a new one
+     * @param  (Closure(): array{user: User, party: Party})|null  $makeInvestor  An isolated pack may fund its own buyers without changing global policy.
      * @return array{campaign: BusinessCampaign, commitments: list<PrimaryCommitment>}
      */
-    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = [], ?string $live = null): array
+    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = [], ?string $live = null, ?Closure $makeInvestor = null): array
     {
-        InvestorWalletFixture::policy(maximum: null);
+        if ($makeInvestor === null) {
+            InvestorWalletFixture::policy(maximum: null);
+        }
         if ($live === null) {
             // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
             Cache::flush();
@@ -55,7 +59,7 @@ final class PrimaryHoldingFixture
         $commitments = [];
         $investors = [];
         foreach ($units as $index => $quantity) {
-            $investor = $investors[$buyers[$index] ?? 'purchase-'.$index] ??= PrimaryReservationFixture::investor();
+            $investor = $investors[$buyers[$index] ?? 'purchase-'.$index] ??= $makeInvestor === null ? PrimaryReservationFixture::investor() : $makeInvestor();
             $held = $checkout->reserve($investor['user']->id, 1, $campaign->id, $quantity, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
             $root = PrimaryReservationRecord::query()->whereKey($held['data']['reservation_id'])->sole();
             $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
