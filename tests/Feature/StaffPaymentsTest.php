@@ -98,11 +98,11 @@ it('counts a disbursement that closed with issued notes, and leaves out movement
     $props = ($this->page)(paymentsStaff(['treasury']));
     expect(array_column(array_column($props['stats'], 'value'), 'amount'))->toBe(['0', '0', '0'])
         ->and($props['bars'])->toBe([])->and($props['payouts'])->toBe([])
-        ->and($props['trend'])->toBe(['from' => now('Africa/Kigali')->startOfDay()->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day']);
+        ->and($props['trend'])->toBe(['from' => now('Africa/Kigali')->startOfDay()->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day', 'custom' => false]);
 
     $start = now('Africa/Kigali')->startOfDay()->subDays(20);
     $chosen = ($this->page)(paymentsStaff(['treasury']), ['from' => $start->format('Y-m-d'), 'to' => now('Africa/Kigali')->subDays(10)->format('Y-m-d')]);
-    expect($chosen['trend'])->toBe(['from' => $start->toIso8601String(), 'to' => now('Africa/Kigali')->startOfDay()->subDays(10)->toIso8601String(), 'grain' => 'day'])
+    expect($chosen['trend'])->toBe(['from' => $start->toIso8601String(), 'to' => now('Africa/Kigali')->startOfDay()->subDays(10)->toIso8601String(), 'grain' => 'day', 'custom' => true])
         ->and($chosen['bars'])->toHaveCount(1)
         ->and(array_column($chosen['stats'], 'count'))->toBe([0, 0, 0])
         ->and(($this->page)(paymentsStaff(['treasury']), ['to' => now('Africa/Kigali')->subDays(16)->format('Y-m-d')])['bars'])->toBe([]);

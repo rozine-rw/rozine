@@ -1821,6 +1821,7 @@ const en = {
     'admin.today.capital.to_date': 'To date',
     'admin.today.capital.to_time': 'To time',
     'admin.today.capital.clear': 'Clear',
+    'admin.trend.refused': 'Choose a To date on or after the From date.',
     'admin.today.capital.all_time': 'All time',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · grouped by {grain}',

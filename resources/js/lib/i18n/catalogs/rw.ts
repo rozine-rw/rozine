@@ -1924,6 +1924,8 @@ const rw: Catalog = {
     'admin.today.capital.to_date': 'Itariki yo kurangiza',
     'admin.today.capital.to_time': 'Isaha yo kurangiza',
     'admin.today.capital.clear': 'Siba',
+    'admin.trend.refused':
+        "Hitamo itariki yo kurangiza ingana cyangwa iri nyuma y'itariki yo gutangira.",
     'admin.today.capital.all_time': 'Ibihe byose',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · bishyizwe hamwe ku {grain}',

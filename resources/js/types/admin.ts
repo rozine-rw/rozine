@@ -1543,10 +1543,7 @@ export type AdminPrimaryMarketProps = AdminFrameShellProps &
          * dates (`to` set, both ends included; by month over a long window). Buckets with none are
          * left out.
          */
-        trend: {
-            from: string;
-            to: string | null;
-            grain: 'day' | 'month';
+        trend: TrendWindow & {
             bars: { label: string; amount: Money; height_pct: number }[];
         };
         raises: PrimaryMarketRaise[];
@@ -1582,6 +1579,8 @@ export type TrendWindow = {
     from: string;
     to: string | null;
     grain: 'day' | 'month';
+    /** Whether the viewer chose either end; otherwise it is the last fourteen days. */
+    custom: boolean;
 };
 
 export type AdminPaymentsProps = AdminFrameShellProps &

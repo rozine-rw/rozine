@@ -27,7 +27,7 @@ class StaffPaymentsResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{from: string, movements: Movements, trend: array{from: string, to: string|null, grain: 'day'|'month'}, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
+        /** @var array{from: string, movements: Movements, trend: array{from: string, to: string|null, grain: 'day'|'month', custom: bool}, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
         $resource = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $route = fn (array $query = []): array => ['url' => route($prefix.'staff.payments.index', $query, false), 'method' => 'get'];

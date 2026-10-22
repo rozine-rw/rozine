@@ -35,7 +35,7 @@ final readonly class BrowsePayments
     /**
      * @param  string|null  $first  the window's first Kigali date (Y-m-d), or null for fourteen days before `$last`
      * @param  string|null  $last  the window's last Kigali date (Y-m-d), or null for today
-     * @return array{from: string, movements: Movements, trend: array{from: string, to: string|null, grain: 'day'|'month'}, bars: list<Bar>, payouts: list<Payout>}
+     * @return array{from: string, movements: Movements, trend: array{from: string, to: string|null, grain: 'day'|'month', custom: bool}, bars: list<Bar>, payouts: list<Payout>}
      */
     public function handle(int $actorId, ?string $first = null, ?string $last = null): array
     {
@@ -48,7 +48,7 @@ final readonly class BrowsePayments
         $grain = $start->diffInDays($end ?? $today, true) >= self::DAILY_DAYS ? 'month' : 'day';
 
         return ['from' => $from->toIso8601String(), 'movements' => $this->dashboard->movements($utc),
-            'trend' => ['from' => $start->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain],
+            'trend' => ['from' => $start->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain, 'custom' => $first !== null || $last !== null],
             'bars' => $this->dashboard->moved($grain, $start->utc()->toIso8601String(), $end?->addDay()->utc()->toIso8601String()),
             'payouts' => $this->dashboard->payoutsInFlight()];
     }

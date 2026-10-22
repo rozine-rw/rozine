@@ -72,7 +72,7 @@ it('lists a live publication with its fill, terms and days left, and offers no m
         ->and($props['stats'])->toBe([['key' => 'active', 'value' => ['kind' => 'count', 'value' => 1]],
             ['key' => 'in_flight', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '15000']]],
             ['key' => 'fill', 'value' => ['kind' => 'percent', 'value' => $props['stats'][2]['value']['value']]], ['key' => 'completion', 'value' => ['kind' => 'percent', 'value' => '0']]])
-        ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day',
+        ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day', 'custom' => false,
             'bars' => [['label' => $today->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'height_pct' => 100]]])
         ->and($props['raises'])->toBe([['id' => $campaign->id, 'reference' => 'RSE-'.Str::upper(Str::substr($campaign->id, -6)),
             'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
@@ -105,7 +105,7 @@ it('measures fill and completion across raises, leaves funded raises out, search
     expect(array_column($props['stats'], 'value', 'key'))->toBe(['active' => ['kind' => 'count', 'value' => 2],
         'in_flight' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '4000000']],
         'fill' => ['kind' => 'percent', 'value' => '40'], 'completion' => ['kind' => 'percent', 'value' => '75']])
-        ->and($props['trend'])->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => null, 'grain' => 'day',
+        ->and($props['trend'])->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => null, 'grain' => 'day', 'custom' => false,
             'bars' => [['label' => '10-15', 'amount' => ['currency' => 'RWF', 'amount' => '250000'], 'height_pct' => 100]]])
         ->and(array_column($props['raises'], 'reference'))->toBe(['RSE-00AAAA', 'RSE-00BBBB'])
         ->and(array_column($props['raises'], 'days_left'))->toBe([5, 0])
@@ -131,7 +131,7 @@ it('reads the funding trend over a chosen window of Kigali dates, by month once 
     $staff = primaryMarketStaff(['analyst']);
 
     expect(($this->page)($staff, ['from' => '2026-10-02', 'to' => '2026-10-05'])['trend'])
-        ->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => '2026-10-05T00:00:00+02:00', 'grain' => 'day', 'bars' => []])
+        ->toBe(['from' => '2026-10-02T00:00:00+02:00', 'to' => '2026-10-05T00:00:00+02:00', 'grain' => 'day', 'custom' => true, 'bars' => []])
         ->and(($this->page)($staff, ['from' => '2026-05-01'])['trend']['grain'])->toBe('month')
         ->and(($this->page)($staff, ['to' => '2026-10-06'])['trend']['from'])->toBe('2026-09-23T00:00:00+02:00');
     expect($windows)->toBe([['day', '2026-10-01T22:00:00+00:00', '2026-10-05T22:00:00+00:00'],

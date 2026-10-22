@@ -1930,6 +1930,8 @@ const fr: Catalog = {
     'admin.today.capital.to_date': 'Date de fin',
     'admin.today.capital.to_time': 'Heure de fin',
     'admin.today.capital.clear': 'Effacer',
+    'admin.trend.refused':
+        'Choisissez une date de fin égale ou postérieure à la date de début.',
     'admin.today.capital.all_time': 'Depuis le début',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · regroupé par {grain}',
