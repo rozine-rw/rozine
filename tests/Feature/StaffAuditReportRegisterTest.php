@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\Contracts\MonthlyAuditBusinesses;
 use App\Application\Auditor\DecideAuditReport;
+use App\Application\Auditor\RequestMonthlyAudits;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Auditor\AuditReportWindow;
@@ -235,3 +237,38 @@ it('refuses a Business reminder once its pending review window has closed', func
     actingAs($staff)->postJson(route('staff.reports.remind', $fixture['report']->assignment_id))->assertConflict();
     expect(PartyNotice::query()->where('kind', 'business.report_review_closing')->count())->toBe(0);
 })->with([0, 1]);
+
+it('retains the original published report when the next audit completes its assignment', function (bool $monthly): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    $report = $fixture['report'];
+    $staff = $fixture['audit']['staff'];
+    $seal = AuditReportSeal::query()->where('audit_report_id', $report->id)->sole();
+    if ($monthly) {
+        $this->travelTo(now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
+        app()->instance(MonthlyAuditBusinesses::class, new readonly class($fixture['audit']['business']) implements MonthlyAuditBusinesses
+        {
+            public function __construct(private string $businessId) {}
+
+            public function due(DateTimeImmutable $now): array
+            {
+                return [$this->businessId];
+            }
+        });
+        expect(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(1);
+    } else {
+        AuditAssignmentFixture::request($fixture['audit'], 'routine');
+    }
+    expect($fixture['assignment']->refresh()->status)->toBe('completed')
+        ->and($fixture['assignment']->revision)->toBe($report->assignment_revision + 1);
+    $page = auditRegister($staff);
+    $row = collect($page['rows'])->firstWhere('id', $report->assignment_id);
+    expect($row)->toMatchArray(['status' => 'published', 'owes' => null, 'digest' => substr($seal->digest, 0, 12),
+        'links' => ['pdf' => ['url' => '/admin/reports/'.$report->id.'/pdf', 'method' => 'get'], 'remind' => null]])
+        ->and($page['chips'][3]['count'])->toBe(1)
+        ->and($page['stats'][0]['value'])->toBe(['kind' => 'count', 'value' => 1]);
+    actingAs($staff)->get(route('staff.reports.pdf', $report->id))->assertOk()->assertHeader('Content-Type', 'application/pdf');
+    actingAs($staff)->postJson(route('staff.reports.remind', $report->assignment_id))->assertConflict();
+    expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->count())->toBe(0);
+})->with(['manual request' => false, 'monthly scheduler' => true]);

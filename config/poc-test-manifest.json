@@ -27,6 +27,7 @@
     "tests/Feature/AuditAssignmentCompletionTest.php",
     "tests/Feature/MonthlyAuditSchedulerTest.php",
     "tests/Feature/AuditStatementAccessTest.php",
+    "tests/Feature/StaffAuditReportRegisterTest.php",
     "tests/Feature/OrganizationIdentityTest.php",
     "tests/Concurrency/StaffSuperadminApprovalConcurrencyTest.php",
     "tests/Concurrency/StaffRecoveryConcurrencyTest.php",

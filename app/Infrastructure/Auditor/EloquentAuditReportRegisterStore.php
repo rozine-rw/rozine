@@ -78,8 +78,15 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
     {
         $reports = AuditReport::query()->join('audit_assignments as current_assignment', fn (JoinClause $join): JoinClause => $join
             ->on('current_assignment.id', '=', 'audit_reports.assignment_id')
-            ->on('current_assignment.revision', '=', 'audit_reports.assignment_revision')
-            ->on('current_assignment.party_id', '=', 'audit_reports.author_party_id'))
+            ->on('current_assignment.party_id', '=', 'audit_reports.author_party_id')
+            // Completion increments the assignment revision; reports retain their accepted revision.
+            ->whereRaw(<<<'SQL'
+                audit_reports.assignment_revision = CASE WHEN current_assignment.status = 'completed' THEN (
+                    SELECT max(accepted.revision) FROM audit_assignment_versions AS accepted
+                    WHERE accepted.assignment_id = current_assignment.id
+                        AND accepted.party_id = current_assignment.party_id AND accepted.status = 'accepted'
+                ) ELSE current_assignment.revision END
+                SQL))
             ->whereIn('audit_reports.assignment_id', $assignments->modelKeys())->orderBy('audit_reports.created_at')->orderBy('audit_reports.id')
             ->get(['audit_reports.id', 'audit_reports.assignment_id', 'audit_reports.status', 'audit_reports.kind'])->keyBy('assignment_id');
         $seals = AuditReportSeal::query()->whereIn('audit_report_id', $reports->pluck('id')->all())->get()->keyBy('audit_report_id');

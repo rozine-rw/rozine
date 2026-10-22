@@ -11,6 +11,7 @@ import overdueFixture from '../../../resources/fixtures/ui/admin-investors-kyc-o
 import investorsFixture from '../../../resources/fixtures/ui/admin-investors.json';
 import staffFixture from '../../../resources/fixtures/ui/admin-staff.json';
 import { renderWithUser } from '../helpers/render-with-user';
+import { textContrastOnSurface } from '../helpers/text-contrast';
 import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
@@ -31,6 +32,30 @@ const party = (fixture: { props: unknown }): PartyDetail => {
 beforeEach(resetInertia);
 
 describe('Party directories', () => {
+    it.each(['light', 'dark'] as const)(
+        'keeps the rendered licence queue buttons and translucent chips readable in %s mode',
+        (theme) => {
+            render(<AdminParties {...props(auditorsFixture)} />);
+            const surface = theme === 'light' ? '#ffffff' : '#101a2e';
+
+            for (const [name, chip] of [
+                ['Partner change requests', 'RENEWAL'],
+                ['ICPAR verification desk', 'PENDING VERIFICATION'],
+            ]) {
+                const queue = within(screen.getByRole('region', { name }));
+
+                for (const control of [
+                    queue.getByRole('link', { name: 'Approve' }),
+                    queue.getByText(chip),
+                ]) {
+                    expect(
+                        textContrastOnSurface(control, theme, surface),
+                    ).toBeGreaterThanOrEqual(4.5);
+                }
+            }
+        },
+    );
+
     it('lists businesses with their state badges, filters and eligibility policy', () => {
         render(<AdminParties {...props(businessesFixture)} />);
 

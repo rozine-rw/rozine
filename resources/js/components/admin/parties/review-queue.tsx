@@ -21,6 +21,7 @@ export function LicenceQueue({
 }) {
     const { t, locale } = useTranslation();
     const accent = kind === 'desk' ? '#c2661f' : '#1e3aff';
+    const buttonFill = kind === 'desk' ? '#a3480a' : accent;
 
     return (
         <section
@@ -71,9 +72,13 @@ export function LicenceQueue({
                                                 : entry.name}
                                         </span>
                                         <span
-                                            className="rounded-md px-2 py-0.5 text-[10px] font-bold whitespace-nowrap"
+                                            className={cn(
+                                                'rounded-md px-2 py-0.5 text-[10px] font-bold whitespace-nowrap',
+                                                kind === 'desk'
+                                                    ? 'text-[#a3480a] dark:text-[#f0a060]'
+                                                    : 'text-[#1e3aff] dark:text-[#8da2ff]',
+                                            )}
                                             style={{
-                                                color: accent,
                                                 background: `${accent}24`,
                                             }}
                                         >
@@ -96,7 +101,7 @@ export function LicenceQueue({
                                         <Link
                                             href={entry.links.approve}
                                             className="flex-1 rounded-[10px] px-4 py-[9px] text-center text-[12.5px] font-bold text-white sm:flex-none"
-                                            style={{ background: accent }}
+                                            style={{ background: buttonFill }}
                                         >
                                             {t('admin.parties.queue.approve')}
                                         </Link>
