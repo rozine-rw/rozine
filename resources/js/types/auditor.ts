@@ -1209,7 +1209,7 @@ export type AuditorEarnings = {
     this_month: Money;
     total: Money;
     lines: EarningLine[];
-    /** How many funded raises have credited the partner. */
+    /** How many funded raises have credited the partner; none has closed while repayment is unrecorded. */
     deals: number;
     /** Every credit, newest first: the raises the partner manages. */
     managed: EarningLine[];
