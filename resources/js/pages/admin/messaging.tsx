@@ -45,6 +45,20 @@ const AUDIENCES: readonly MessageAudience[] = [
     'everyone',
 ];
 
+/** Rules the design names differently from the notice the party reads (Admin.dc.html L4020–4050). */
+const DESIGN_RULE_NAMES: Partial<
+    Record<
+        string,
+        | 'admin.messaging.rule.funds_disbursed'
+        | 'admin.messaging.rule.verification_approved'
+        | 'admin.messaging.rule.raise_fully_funded'
+    >
+> = {
+    'business.disbursement_sent': 'admin.messaging.rule.funds_disbursed',
+    'verification.approved': 'admin.messaging.rule.verification_approved',
+    'business.raise_funded': 'admin.messaging.rule.raise_fully_funded',
+};
+
 const RULE_GRID =
     'grid grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)_minmax(0,1.5fr)_56px] items-center gap-4';
 
@@ -311,7 +325,8 @@ function Automations({
                                         />
                                         <span className="truncate text-[13px] font-bold text-rz-ink">
                                             {t(
-                                                `investor.notices.${rule.kind}.title`,
+                                                DESIGN_RULE_NAMES[rule.kind] ??
+                                                    `investor.notices.${rule.kind}.title`,
                                             )}
                                         </span>
                                     </span>

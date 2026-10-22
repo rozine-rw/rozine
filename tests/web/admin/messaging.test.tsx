@@ -214,11 +214,11 @@ describe('Messaging History', () => {
                 .map((cell) => cell.textContent),
         ).toEqual(['Rule', 'Fires when', 'Timing & channels', 'On']);
         expect(
-            within(rowOf('You are verified'))
+            within(rowOf('Verification approved'))
                 .getAllByRole('cell')
                 .map((cell) => cell.textContent),
         ).toEqual([
-            'You are verified',
+            'Verification approved',
             'Compliance approves an identity check',
             'As it happens · In-app, Email',
             'Live',
