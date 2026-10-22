@@ -77,6 +77,38 @@ export function IdentityCard({
     );
 }
 
+/**
+ * The support card above the menu (design L2760–2790). The design draws the Plus priority queue
+ * (deferred, D-61); every Investor gets the plain card instead, whose Message opens the Help
+ * center, where the support chat keeps their complaints (CMP-R03).
+ */
+export function SupportCard({ help }: { help: RouteLink }) {
+    const { t } = useTranslation();
+
+    return (
+        <section
+            aria-label={t('investor.profile.support.label')}
+            className="mt-3.5 rounded-2xl border border-rz-border bg-rz-surface p-4"
+        >
+            <p className="text-[10.5px] font-bold tracking-[.08em] text-rz-secondary uppercase">
+                {t('investor.profile.support.label')}
+            </p>
+            <p className="mt-[5px] text-[14.5px] font-bold text-rz-ink">
+                {t('investor.profile.support.title')}
+            </p>
+            <p className="mt-0.5 text-xs text-rz-slate">
+                {t('investor.profile.support.sub')}
+            </p>
+            <Link
+                href={help}
+                className="mt-3 flex w-full items-center justify-center rounded-xl border border-rz-border bg-rz-page py-2.5 text-xs font-bold text-rz-ink"
+            >
+                {t('investor.profile.support.message')}
+            </Link>
+        </section>
+    );
+}
+
 type MenuKey = Exclude<
     InvestorProfileProps['section'],
     'overview' | 'automation'

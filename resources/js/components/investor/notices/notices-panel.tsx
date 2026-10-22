@@ -1,4 +1,4 @@
-import { router, useHttp } from '@inertiajs/react';
+import { router, useHttp, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
@@ -276,6 +276,51 @@ export function useNotices(href: RouteLink) {
  * record, marking it read on the way. The notices are the server's; wording comes from the
  * catalogs by kind.
  */
+/**
+ * "5 days ago" (design notifications panel), counted from the page's server clock. Without one the
+ * notice keeps its exact Kigali date and time.
+ */
+function useNoticeTime(): (at: string) => string {
+    const { t, locale } = useTranslation();
+    const serverTime: unknown = usePage().props.server_time;
+
+    return (at: string) => {
+        if (typeof serverTime !== 'string') {
+            return formatDateTime(at, locale);
+        }
+
+        const minutes = Math.floor(
+            Math.max(0, Date.parse(serverTime) - Date.parse(at)) / 60000,
+        );
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (minutes < 1) {
+            return t('investor.notices.ago.now');
+        }
+
+        if (hours < 1) {
+            return t('investor.notices.ago.minutes', { count: minutes });
+        }
+
+        if (days < 1) {
+            return t(
+                hours === 1
+                    ? 'investor.notices.ago.hour'
+                    : 'investor.notices.ago.hours',
+                { count: hours },
+            );
+        }
+
+        return t(
+            days === 1
+                ? 'investor.notices.ago.day'
+                : 'investor.notices.ago.days',
+            { count: days },
+        );
+    };
+}
+
 export function NoticesPanel({
     notices: { inbox, failed, load, send },
     onClose,
@@ -284,6 +329,7 @@ export function NoticesPanel({
     onClose: () => void;
 }) {
     const { t, locale } = useTranslation();
+    const noticeTime = useNoticeTime();
 
     const dialog = useModalDialog<HTMLElement>(onClose);
 
@@ -428,12 +474,13 @@ export function NoticesPanel({
                                         <span className="flex items-center justify-end gap-1.5">
                                             <time
                                                 dateTime={notice.created_at}
-                                                className="text-[10.5px] whitespace-nowrap text-rz-secondary"
-                                            >
-                                                {formatDateTime(
+                                                title={formatDateTime(
                                                     notice.created_at,
                                                     locale,
                                                 )}
+                                                className="text-[10.5px] whitespace-nowrap text-rz-secondary"
+                                            >
+                                                {noticeTime(notice.created_at)}
                                             </time>
                                             {!notice.read && (
                                                 <span

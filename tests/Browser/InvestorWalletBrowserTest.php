@@ -90,10 +90,10 @@ it('records a deposit without crediting it and credits it once after a verified 
             page.on("request", (request) => requested.push(request.url()));
             await page.reload();
             const balance = page.getByRole("region", {name:"Available balance"});
-            await balance.getByText("No deposits waiting").waitFor();
+            await balance.getByText("Instantly available to invest").waitFor();
             const text = await balance.textContent();
             if (!text.includes("RWF 50,000") || !text.includes("Available balanceRWF 50,000")) throw new Error("Not credited: " + text);
-            await page.getByRole("region", {name:"Deposits"}).getByRole("link", {name:/Deposit from MTN MoMo/}).click();
+            await page.getByRole("region", {name:"Deposits"}).getByRole("link", {name:/Deposit · MTN MoMo/}).click();
             await page.getByText("Credit receipt").waitFor();
             await noOverflow();
             await shot('.$journey->shot('credited-phone').');
@@ -160,7 +160,7 @@ it('keeps unknown outcomes not yet confirmed and shows a verified failure as not
             await page.reload();
             await page.getByRole("region", {name:"Deposits"}).getByText("Didn\'t go through — nothing credited").waitFor();
             const balance = page.getByRole("region", {name:"Available balance"});
-            await balance.getByText("No deposits waiting").waitFor();
+            await balance.getByText("Instantly available to invest").waitFor();
             if (!(await balance.textContent()).includes("Available balanceRWF 0")) throw new Error("A failure credited money");
             await noOverflow();
             await shot('.$journey->shot('failed-phone').');'.iwNoPreview());

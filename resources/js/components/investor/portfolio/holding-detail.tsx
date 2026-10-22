@@ -15,7 +15,12 @@ import {
 } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatAmount, formatDate, formatRwf } from '@/lib/rozine/format';
+import {
+    formatAmount,
+    formatDate,
+    formatMonthYearLong,
+    formatRwf,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { C3HoldingDetail, MonthlyUpdateSummary } from '@/types/investor';
@@ -178,12 +183,84 @@ export function HoldingBanner({
 }
 
 /**
+ * Whether the business is on plan, from its newest published monthly report (design: "On plan ·
+ * coupon repaid on time" or "Watchlist"). The report sets the Holding's health.
+ */
+function LatestReport({
+    report,
+}: {
+    report: NonNullable<C3HoldingDetail['latest_report']>;
+}) {
+    const { t, locale } = useTranslation();
+    const onPlan = report.status === 'healthy';
+
+    return (
+        <section
+            aria-label={t('investor.holding.latest_report')}
+            className={cn(
+                'mt-3.5 flex items-start gap-3 rounded-2xl border p-3.5',
+                onPlan
+                    ? 'border-[#cfe9d8] bg-[#f0f9f3] dark:border-[rgba(63,205,160,.25)] dark:bg-[rgba(63,205,160,.08)]'
+                    : 'border-[#f3dfbf] bg-[#fff8ee] dark:border-[rgba(240,160,96,.3)] dark:bg-[rgba(240,160,96,.08)]',
+            )}
+        >
+            <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold tracking-[.05em] text-rz-secondary uppercase">
+                    {t('investor.holding.latest_report_month', {
+                        month: formatMonthYearLong(report.month, locale),
+                    })}
+                </p>
+                <p className="mt-1 text-[13.5px] font-semibold text-rz-ink">
+                    {t(
+                        onPlan
+                            ? 'investor.holding.on_plan'
+                            : 'investor.holding.on_watch',
+                    )}
+                </p>
+                {report.summary !== '' && (
+                    <p className="mt-1 text-[12.5px] leading-normal text-rz-slate">
+                        {report.summary}
+                    </p>
+                )}
+            </div>
+        </section>
+    );
+}
+
+/**
  * The holding's own figures (design L1324–1398): money tiles, the payment metrics, a rating change,
  * a declared recovery plan and an arrears or default timeline (crosswalk SCR-05-ST-01..03), then
  * the photos the business filed. The design's "Sell on the market" card is secondary trading,
  * outside the MVP.
  */
-export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
+/** "in 12 days" (design note detail): whole Kigali days from the server's clock to the due day. */
+function dueIn(
+    t: ReturnType<typeof useTranslation>['t'],
+    now: string,
+    due: string,
+): string {
+    const days = Math.max(
+        0,
+        Math.ceil((Date.parse(due) - Date.parse(now)) / 86_400_000),
+    );
+
+    if (days === 0) {
+        return t('investor.holding.due.today');
+    }
+
+    return days === 1
+        ? t('investor.holding.due.tomorrow')
+        : t('investor.holding.due.in_days', { count: days });
+}
+
+export function HoldingFigures({
+    holding,
+    now,
+}: {
+    holding: C3HoldingDetail;
+    /** The server's clock, which the next payment counts its days from. */
+    now: string;
+}) {
     const { t, locale } = useTranslation();
     const rating = RATING_STYLE[holding.rating.band];
 
@@ -217,6 +294,10 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
                 />
             </div>
 
+            {holding.latest_report && (
+                <LatestReport report={holding.latest_report} />
+            )}
+
             <div className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-[15px]">
                 <Metric
                     label={t('investor.holding.next_payment')}
@@ -230,7 +311,7 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
                             ? t(
                                   `investor.holding.no_next.${holding.health === 'matured' ? 'matured' : 'paused'}`,
                               )
-                            : formatDate(holding.next_payment.due_on, locale)
+                            : dueIn(t, now, holding.next_payment.due_on)
                     }
                 />
                 <Metric
@@ -534,16 +615,22 @@ export function HoldingFigures({ holding }: { holding: C3HoldingDetail }) {
 }
 
 /**
- * How the Holding was issued, its repayment progress and the audited monthly updates (design
+ * The Holding's repayment progress and audited monthly updates, then how it was issued (design
  * L1583–1642; C3 v2 §2d). Servicing figures keep their empty states until C4.
  */
-export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
-    const { t, locale } = useTranslation();
+export function HoldingSchedule({
+    holding,
+    now,
+}: {
+    holding: C3HoldingDetail;
+    /** The server's clock, which the next payment counts its days from. */
+    now: string;
+}) {
+    const { t } = useTranslation();
     const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
 
     return (
         <>
-            <IssueRecord issue={holding.issue} />
             <h2 className={cn(HEADING, 'mt-[18px]')}>
                 {t('investor.holding.progress')}
             </h2>
@@ -587,7 +674,7 @@ export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
                     </div>
                     {holding.next_payment !== null && (
                         <span className="text-[12.5px] font-semibold text-rz-ink">
-                            {formatDate(holding.next_payment.due_on, locale)}
+                            {dueIn(t, now, holding.next_payment.due_on)}
                         </span>
                     )}
                 </div>
@@ -606,6 +693,7 @@ export function HoldingSchedule({ holding }: { holding: C3HoldingDetail }) {
             {update !== null && (
                 <UpdateSheet update={update} onClose={() => setUpdate(null)} />
             )}
+            <IssueRecord issue={holding.issue} />
         </>
     );
 }

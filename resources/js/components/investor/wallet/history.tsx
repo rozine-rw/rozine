@@ -6,6 +6,7 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName, IconTone } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
+import { useWide } from '@/lib/investor/use-wide';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
@@ -379,8 +380,12 @@ function StatementExport({
 /**
  * The wallet history (design L2981–3095), with external cash movements and internal transfers
  * (holds, commitments, refunds) as separate views (H5). Amounts are shown as a magnitude with a
- * direction, never as a sign the client computed. Newest first; older entries page on.
+ * direction, never as a sign the client computed. Newest first; the first three show until
+ * "Show more" opens the rest of the page (design L1071), and older entries page on.
  */
+/** How many entries the history shows before "Show more" (design L1071). */
+const HISTORY_PREVIEW = 3;
+
 export function WalletHistory({
     history,
     exports = null,
@@ -389,13 +394,22 @@ export function WalletHistory({
     exports?: C3InvestorWalletProps['exports'];
 }) {
     const { t, locale } = useTranslation();
+    /* The wide design titles it Transactions with an All chip; the phone, Transaction history and All time. */
+    const wide = useWide();
+    const title = t(
+        wide ? 'investor.wallet.tx.title_short' : 'investor.wallet.tx.title',
+    );
+    const [expanded, setExpanded] = useState(false);
+    const collapsible = history.items.length > HISTORY_PREVIEW;
+    const items =
+        collapsible && !expanded
+            ? history.items.slice(0, HISTORY_PREVIEW)
+            : history.items;
 
     return (
-        <section aria-label={t('investor.wallet.tx.title')} className="mt-5">
+        <section aria-label={title} className="mt-5">
             <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-rz-ink">
-                    {t('investor.wallet.tx.title')}
-                </h2>
+                <h2 className="text-sm font-semibold text-rz-ink">{title}</h2>
                 {exports !== null && <StatementExport exports={exports} />}
             </div>
             <nav
@@ -419,8 +433,33 @@ export function WalletHistory({
                     </Link>
                 ))}
             </nav>
+            <nav
+                aria-label={t('investor.wallet.c3.period')}
+                className="mt-2 flex shrink-0 gap-[7px]"
+            >
+                {history.periods.map((period) => (
+                    <Link
+                        key={period.key}
+                        href={period.link}
+                        preserveScroll
+                        aria-current={period.active ? 'true' : undefined}
+                        className={cn(
+                            'shrink-0 rounded-[10px] border px-[11px] py-[5px] text-[11.5px] font-semibold whitespace-nowrap',
+                            period.active
+                                ? 'border-[#d6e4ff] bg-rz-accent-fill text-white dark:border-rz-investor'
+                                : 'border-rz-border bg-rz-surface text-rz-slate',
+                        )}
+                    >
+                        {t(
+                            wide && period.key === 'all'
+                                ? 'investor.wallet.c3.range.all_short'
+                                : `investor.wallet.c3.range.${period.key}`,
+                        )}
+                    </Link>
+                ))}
+            </nav>
             <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
-                {history.items.map((entry) => (
+                {items.map((entry) => (
                     <li
                         key={entry.id}
                         className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider"
@@ -459,17 +498,34 @@ export function WalletHistory({
                         {t('investor.wallet.tx.empty')}
                     </li>
                 )}
-                {history.pagination.next !== null && (
-                    <li>
-                        <Link
-                            href={history.pagination.next}
-                            preserveScroll
+                {collapsible && (
+                    <li className="border-b border-[#eef2f9] last:border-0 dark:border-rz-divider">
+                        <button
+                            type="button"
+                            aria-expanded={expanded}
+                            onClick={() => setExpanded(!expanded)}
                             className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
                         >
-                            {t('investor.wallet.c3.older')}
-                        </Link>
+                            {t(
+                                expanded
+                                    ? 'investor.updates.show_less'
+                                    : 'investor.updates.show_more',
+                            )}
+                        </button>
                     </li>
                 )}
+                {(expanded || !collapsible) &&
+                    history.pagination.next !== null && (
+                        <li>
+                            <Link
+                                href={history.pagination.next}
+                                preserveScroll
+                                className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
+                            >
+                                {t('investor.wallet.c3.older')}
+                            </Link>
+                        </li>
+                    )}
             </ul>
         </section>
     );

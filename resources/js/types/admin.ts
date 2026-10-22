@@ -1802,10 +1802,51 @@ export type MessageHistoryRow = {
     at: string;
 };
 
+/** Who an automation or email template reaches. */
+export type MessageAudience = 'investor' | 'business' | 'auditor' | 'everyone';
+
+/** One notice the platform sends as its event happens, on these channels. */
+export type MessageAutomation = {
+    kind:
+        | InvestorNotice['kind']
+        | 'security.payout_account_linked'
+        | 'security.payout_account_unlinked'
+        | 'support.complaint_resolved';
+    category: MessageCategory;
+    audience: MessageAudience;
+    channels: ('in_app' | 'mail')[];
+};
+
+/** One transactional email template, by folder and name. */
+export type MessageTemplate = {
+    key:
+        | 'account.new_device_sign_in'
+        | 'account.one_time_code'
+        | 'account.reset_password'
+        | 'account.verify_email'
+        | 'auditor.accreditation_decided'
+        | 'auditor.job_offered'
+        | 'business.application_decided'
+        | 'business.disbursement_sent'
+        | 'business.raise_expired'
+        | 'business.repayment_reminder'
+        | 'business.reporting_window_open'
+        | 'investor.investment_confirmed'
+        | 'investor.payment_delayed'
+        | 'investor.payout_received'
+        | 'investor.raise_expired'
+        | 'investor.report_published'
+        | 'investor.verification_decided'
+        | 'investor.wallet_transfer_completed';
+    audience: MessageAudience;
+};
+
 export type AdminMessagingProps = AdminFrameShellProps & {
     contract_version: 'staff-messaging-v1';
     server_time: string;
     history: MessageHistoryRow[];
+    automations: MessageAutomation[];
+    templates: MessageTemplate[];
     /** The next page of older receipts, or null when this page holds the oldest. */
     older: RouteLink | null;
     /** Back to the newest receipts, sent only on an older page. */

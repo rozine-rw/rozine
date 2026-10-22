@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AdminAcademies } from '@/components/admin/academies';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
 import type { DesignBlock } from '@/components/admin/section-designs';
@@ -33,9 +34,18 @@ const NO_FIGURE = '—';
  * tiles, tabs and tables, every figure blank and every table at its empty state unless the server
  * sends it (Policies' rules, Finance's fee revenue). Nothing is invented and no action is offered,
  * because no server read or command backs them yet. A section
- * the design layout does not cover keeps the plain empty state.
+ * the design layout does not cover keeps the plain empty state. Academies has its own screen over
+ * the lesson catalogue the apps ship.
  */
 export default function AdminPendingSection(props: AdminPendingSectionProps) {
+    return props.section === 'academies' ? (
+        <AdminAcademies {...props} />
+    ) : (
+        <DesignedSection {...props} />
+    );
+}
+
+function DesignedSection(props: AdminPendingSectionProps) {
     const { t } = useTranslation();
     const design = SECTION_DESIGNS[props.section];
     const [tab, setTab] = useState(design?.tabs?.[0]?.key);

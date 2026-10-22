@@ -27,6 +27,7 @@ vi.mock('@inertiajs/react', () => ({
         </a>
     ),
     router: { visit: vi.fn(), reload: vi.fn() },
+    usePage: () => ({ props: {} }),
     useHttp: () => ({
         errors: {},
         clearErrors: () => undefined,
