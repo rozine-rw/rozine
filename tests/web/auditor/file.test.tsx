@@ -464,7 +464,7 @@ describe('Auditor business file on the live S-C projection', () => {
     });
 
     it('leaves the brief out when the server names none', () => {
-        render(<AuditorFile {...live()} blocked={null} />);
+        render(<AuditorFile {...live()} />);
 
         const sheet = liveSheet();
 

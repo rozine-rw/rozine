@@ -74,6 +74,74 @@ describe('Audit reports register', () => {
         expect(within(overdue).queryByRole('link')).not.toBeInTheDocument();
     });
 
+    it('shows an unstarted Flash Audit without inventing a period, deadline or partner', () => {
+        const fixture = props();
+        const row = {
+            ...fixture.rows[0],
+            business: 'New Flash Audit',
+            kind: 'flash' as const,
+            period: null,
+            due_at: null,
+            cosign_by: null,
+            auditor: null,
+            licence: null,
+            sealed_at: null,
+            digest: null,
+            variance_pct: null,
+            status: 'not_started' as const,
+            owes: 'auditor' as const,
+            links: {
+                pdf: null,
+                remind: {
+                    url: '/admin/reports/new/remind',
+                    method: 'post' as const,
+                },
+            },
+        };
+
+        render(<AdminAuditReports {...fixture} rows={[row]} published={[]} />);
+
+        const audit = rowOf('New Flash Audit');
+
+        expect(audit).toHaveTextContent('Flash Audit');
+        expect(audit).toHaveTextContent('Audit not opened');
+        expect(within(audit).getAllByText('—')).toHaveLength(4);
+        expect(audit).not.toHaveTextContent(/Due|sha256/u);
+        expect(
+            within(audit).getByRole('button', { name: 'Remind' }),
+        ).toHaveAttribute('data-href', '/admin/reports/new/remind');
+        expect(
+            within(audit).getByRole('button', { name: 'Remind' }),
+        ).toHaveAttribute('data-method', 'post');
+        expect(
+            screen.getByText('No monthly reports audited yet.'),
+        ).toBeInTheDocument();
+    });
+
+    it('labels a published Flash Audit and tolerates unavailable seal metadata', () => {
+        const fixture = props();
+        const row = {
+            ...fixture.published[0],
+            business: 'Historical Flash Audit',
+            kind: 'flash' as const,
+            period: null,
+            auditor: null,
+            licence: null,
+            digest: null,
+        };
+
+        render(
+            <AdminAuditReports {...fixture} rows={[row]} published={[row]} />,
+        );
+
+        expect(rowOf(row.business)).toHaveTextContent('sha256:');
+        expect(rowOf(row.business)).not.toHaveTextContent('sha256:undefined');
+        expect(screen.getAllByText('Flash Audit')).toHaveLength(2);
+        expect(
+            screen.getByText('✓ Audited on site by — · —'),
+        ).toBeInTheDocument();
+    });
+
     it('says so when no audit matches the filter', () => {
         render(<AdminAuditReports {...props()} rows={[]} />);
 

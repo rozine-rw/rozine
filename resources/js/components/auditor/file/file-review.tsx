@@ -353,9 +353,7 @@ export function FileReview({
                                 AMBER_TEXT,
                             )}
                         >
-                            {hasReason
-                                ? t('auditor.file.why')
-                                : t('auditor.file.mandate')}
+                            {t('auditor.file.why')}
                         </h3>
                     </div>
                     {hasReason && (

@@ -162,6 +162,29 @@ describe('Party directories', () => {
         ).toHaveAttribute('href', '/preview/admin-auditors-licence');
     });
 
+    it('keeps a licence awaiting a name identifiable and reviewable', () => {
+        const fixture = props(auditorsFixture);
+
+        fixture.desk = fixture.desk?.map((entry) => ({ ...entry, name: ' ' }));
+        render(<AdminParties {...fixture} />);
+
+        const desk = screen.getByRole('region', {
+            name: 'ICPAR verification desk',
+        });
+
+        expect(within(desk).getByText('Name pending')).toBeInTheDocument();
+        expect(within(desk).getByText('?')).toHaveAttribute(
+            'aria-hidden',
+            'true',
+        );
+        expect(
+            within(desk).getByText('PENDING VERIFICATION'),
+        ).toBeInTheDocument();
+        expect(
+            within(desk).getByRole('link', { name: 'Approve' }),
+        ).toHaveAttribute('href', '/preview/admin-auditors-licence');
+    });
+
     it('offers only Review to a viewer who may not decide, and says when a queue is empty', () => {
         const fixture = props(auditorsFixture);
 
