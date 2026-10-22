@@ -28,6 +28,50 @@ budget = module("check-poc-budget.py")
 lint = module("check-workflow-lint.py")
 
 
+class ApiFailureDiagnosticTests(unittest.TestCase):
+    def test_api_failure_reports_only_bounded_status_and_preserves_original_exception(self):
+        for status in (401, 403, 429, 503, None):
+            secret = "Authorization: Bearer ghp_private_secret https://private.example/secret-endpoint"
+            stderr = secret + (f" (HTTP {status})" if status else " transport failed") + "x" * 10000
+            error = subprocess.CalledProcessError(7, ["gh", "api", "private-endpoint"], stderr=stderr)
+            output = io.StringIO()
+            stdout = io.StringIO()
+            with self.subTest(status=status), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            self.assertEqual(caught.exception.returncode, 7)
+            call.assert_called_once()
+            self.assertEqual(output.getvalue(), "CI coordination: gh_api_failed " + json.dumps({
+                "classification": "http_error" if status else "unclassified", "http_status": status, "returncode": 7,
+            }, sort_keys=True) + "\n")
+            self.assertLess(len(output.getvalue()), 160)
+            self.assertNotIn(secret, output.getvalue())
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_successful_command_is_unchanged_and_silent(self):
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", return_value="  success\n") as call, contextlib.redirect_stderr(output):
+            self.assertEqual(policy.command("gh", "api", "private-endpoint", timeout=12), "success")
+        call.assert_called_once_with(("gh", "api", "private-endpoint"), text=True, stderr=subprocess.PIPE, timeout=12)
+        self.assertEqual(output.getvalue(), "")
+
+    def test_other_command_failures_remain_unchanged_and_silent(self):
+        error = subprocess.CalledProcessError(3, ["gh", "run", "download"], stderr="private secret")
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", side_effect=error), contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+            policy.command("gh", "run", "download")
+        self.assertIs(caught.exception, error)
+        self.assertEqual(output.getvalue(), "")
+
+    def test_unavailable_diagnostic_output_does_not_replace_api_failure(self):
+        for stderr in (None, b"secret bytes", "secret text"):
+            for failure in (OSError("unavailable"), ValueError("closed")):
+                error = subprocess.CalledProcessError(2, ["gh", "api"], stderr=stderr)
+                with self.subTest(stderr=stderr, failure=failure), patch.object(policy.subprocess, "check_output", side_effect=error), patch.object(policy, "diagnostic", side_effect=failure), self.assertRaises(subprocess.CalledProcessError) as caught:
+                    policy.command("gh", "api", "private-endpoint")
+                self.assertIs(caught.exception, error)
+
+
 class ScopeTests(unittest.TestCase):
     def test_only_poc_branches_use_poc(self):
         for env, expected in [

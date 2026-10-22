@@ -67,6 +67,17 @@ def command(*args, timeout=45):
         timeout = min(timeout, remaining)
     try:
         result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
+    except subprocess.CalledProcessError as error:
+        if args[:2] == ("gh", "api"):
+            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", error.stderr if isinstance(error.stderr, str) else "")
+            try:
+                diagnostic("gh_api_failed " + json.dumps({
+                    "classification": "http_error" if status else "unclassified",
+                    "http_status": int(status[1]) if status else None, "returncode": error.returncode,
+                }, sort_keys=True))
+            except (OSError, ValueError):
+                pass
+        raise
     except subprocess.TimeoutExpired:
         if deadline is not None and time.monotonic() >= deadline:
             raise CoordinationRefusal("follower_decision_publication_timeout") from None
