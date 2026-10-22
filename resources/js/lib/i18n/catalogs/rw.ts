@@ -2811,6 +2811,18 @@ const rw: Catalog = {
     'auditor.portfolio.yield.empty':
         "Ubwishyu bw'umugabane ku nyungu bugaragara hano bumaze kwishyurwa.",
     'auditor.portfolio.managed.title': 'Imishinga ucunga',
+    'auditor.portfolio.managed.groups': "Amatsinda y'amasezerano ucunga",
+    'auditor.portfolio.managed.group.active': 'Ishoramari rikora',
+    'auditor.portfolio.managed.group.raising': 'Ikusanya',
+    'auditor.portfolio.managed.filter': 'Uko ikusanya rihagaze',
+    'auditor.portfolio.managed.chip.all': 'Byose',
+    'auditor.portfolio.managed.chip.live': 'Birakomeje',
+    'auditor.portfolio.managed.chip.failed': 'Byanze',
+    'auditor.portfolio.managed.raising_empty':
+        "Nta ikusanya ry'ubucuruzi wagenzuye riri muri iki gice.",
+    'auditor.portfolio.managed.raised': 'Ayakusanyijwe',
+    'auditor.portfolio.managed.target': 'Intego',
+    'auditor.portfolio.managed.investors': 'Abashoramari',
     'auditor.portfolio.managed.count': '{count} zose',
     'auditor.portfolio.managed.sub': '{district} · yishyuwe {date}',
     'auditor.portfolio.managed.funded': 'Byatewe inkunga',
