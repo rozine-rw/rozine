@@ -7,6 +7,7 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
@@ -140,6 +141,15 @@ it('narrows history to today, the last 7 or 30 Kigali days, keeping the period o
         ->and($history['filters'][0]['link']['url'])->toBe('/investor/wallet?movement=external&period=7d')
         ->and(internalWalletPage($this->get(route('investor.wallet')))['history']['filters'][1]['link']['url'])->toBe('/investor/wallet?movement=internal');
     $this->get(route('investor.wallet', ['period' => 'year']))->assertSessionHasErrors('period');
+});
+
+it('counts a movement in the first Kigali hours of the day as today', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-11-05 00:30:00', 'Africa/Kigali'));
+    ($this->reserve)('1', (string) Str::uuid());
+    $this->travel(1)->hours();
+    $this->actingAs($this->investor['user']);
+
+    expect(internalWalletPage($this->get(route('investor.wallet', ['movement' => 'internal', 'period' => 'today'])))['history']['items'])->toHaveCount(1);
 });
 
 it('keeps the period on the next page of history', function (): void {

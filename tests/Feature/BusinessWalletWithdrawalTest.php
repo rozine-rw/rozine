@@ -348,9 +348,9 @@ it('downloads the Business wallet statement with its deposit and paid withdrawal
     businessWithdrawalOutcome(BusinessWithdrawal::query()->sole()->id);
     businessWithdrawalCommits();
     $payout = LedgerEntry::query()->where('kind', 'business_withdrawal_payout')->sole();
-    $zone = (string) config('app.timezone');
-    $day = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-d');
-    $time = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone($zone)->format('Y-m-d H:i');
+    // A date range names Kigali days; statement rows print their time in the application's zone.
+    $day = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone('Africa/Kigali')->format('Y-m-d');
+    $time = fn (mixed $instant): string => CarbonImmutable::parse((string) $instant)->setTimezone((string) config('app.timezone'))->format('Y-m-d H:i');
     $withdrawalRow = '"'.$time($payout->payload['recorded_at']).'","Withdrawal to MTN MoMo +250 788 ···· 456","Cash","100000","out","RZW-'.strtoupper(substr($payout->id, -10)).'"';
     $depositRow = '"'.$time($credit->payload['recorded_at']).'","Deposit from MTN MoMo +250 788 ···· 456","Cash","500000","in","RZC-'.strtoupper(substr($credit->id, -10)).'"';
 

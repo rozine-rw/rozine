@@ -2718,7 +2718,10 @@ const en = {
     'auditor.profile.earnings.earnings_fee_rule':
         '25% of the earnings fee on each monthly payout to investors. Starts with the first payout.',
     'auditor.profile.earnings.lines': 'Every line this month',
-    'auditor.profile.earnings.line_count': '{count} lines',
+    'auditor.profile.earnings.line_count': {
+        one: '{count} line',
+        other: '{count} lines',
+    },
     'auditor.profile.earnings.empty':
         'Nothing earned yet this month. A line appears the moment a raise you audited is paid out.',
     'auditor.profile.earnings.basis':

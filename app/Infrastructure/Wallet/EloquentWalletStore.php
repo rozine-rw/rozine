@@ -411,11 +411,14 @@ final class EloquentWalletStore implements WalletStore
 
     private static function since(string $period): ?CarbonImmutable
     {
+        // Days are Kigali days; the bound is sent in UTC, the database session's zone.
         $midnight = CarbonImmutable::now('Africa/Kigali')->startOfDay();
 
-        return match ($period) {
+        $since = match ($period) {
             'today' => $midnight, '7d' => $midnight->subDays(6), '30d' => $midnight->subDays(29), default => null,
         };
+
+        return $since?->utc();
     }
 
     /**

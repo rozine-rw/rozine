@@ -2828,7 +2828,10 @@ const fr: Catalog = {
     'auditor.profile.earnings.earnings_fee_rule':
         '25 % des frais sur les gains à chaque versement mensuel aux investisseurs. Commence au premier versement.',
     'auditor.profile.earnings.lines': 'Toutes les lignes du mois',
-    'auditor.profile.earnings.line_count': '{count} lignes',
+    'auditor.profile.earnings.line_count': {
+        one: '{count} ligne',
+        other: '{count} lignes',
+    },
     'auditor.profile.earnings.empty':
         "Rien de gagné ce mois-ci. Une ligne apparaît dès qu'une levée que vous avez auditée est décaissée.",
     'auditor.profile.earnings.basis':

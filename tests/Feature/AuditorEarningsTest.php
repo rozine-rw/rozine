@@ -59,3 +59,14 @@ it('states the platform fee share credited to the partner who sealed the report,
     $this->travelTo(now()->subSecond());
     expect(auditorEarnings($auditor, 'auditor.portfolio.index'))->toBe($statement);
 });
+
+it('counts a credit made in the first Kigali hours of a month in that month', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-09-30T22:30:00+00:00'));
+    PrimaryIssuanceFixture::close('2026-09-30T22:30:00+00:00');
+    $credit = AuditPartnerCredit::query()->sole();
+    $auditor = User::query()->where('party_id', $credit->auditor_party_id)->sole();
+    $this->travelTo(CarbonImmutable::parse($credit->created_at)->addHour());
+
+    expect($credit->created_at->setTimezone('Africa/Kigali')->format('Y-m-d'))->toBe('2026-10-01')
+        ->and(auditorEarnings($auditor, 'auditor.profile')['this_month'])->toBe(['currency' => 'RWF', 'amount' => '129600']);
+});

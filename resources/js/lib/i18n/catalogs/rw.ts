@@ -2819,7 +2819,10 @@ const rw: Catalog = {
     'auditor.profile.earnings.earnings_fee_rule':
         "25% by'amafaranga ku nyungu kuri buri bwishyu bwa buri kwezi bw'abashoramari. Bitangirana n'ubwishyu bwa mbere.",
     'auditor.profile.earnings.lines': "Imirongo yose y'uku kwezi",
-    'auditor.profile.earnings.line_count': 'Imirongo {count}',
+    'auditor.profile.earnings.line_count': {
+        one: 'Umurongo {count}',
+        other: 'Imirongo {count}',
+    },
     'auditor.profile.earnings.empty':
         'Nta cyo urinjiza uku kwezi. Umurongo ugaragara ako kanya inkunga wagenzuye yishyuwe.',
     'auditor.profile.earnings.basis':

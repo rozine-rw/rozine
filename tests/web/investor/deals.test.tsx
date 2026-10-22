@@ -1330,10 +1330,12 @@ describe('Add to cart', () => {
                 body: { identity_context_revision: 5 },
             },
         ]);
-        expect(inertia.reload).toHaveBeenCalledWith({
-            only: ['cart', 'deals'],
-            data: { deal: 'cmp_greenleaf' },
-        });
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                only: ['cart', 'deals'],
+                data: { deal: 'cmp_greenleaf' },
+            }),
+        );
     });
 
     it('adds the chosen notes, and says when the cart could not be changed', async () => {
@@ -1376,6 +1378,14 @@ describe('Add to cart', () => {
 
         expect(within(bar).queryByRole('alert')).not.toBeInTheDocument();
         expect(inertia.reload).toHaveBeenCalledTimes(1);
+        // Until the reload brings the new cart, the toggle cannot repeat the change.
+        expect(toggle).toBeDisabled();
+        act(() =>
+            (
+                inertia.reload.mock.calls[0][0] as { onFinish: () => void }
+            ).onFinish(),
+        );
+        expect(toggle).toBeEnabled();
 
         await userEvent.click(toggle);
 
@@ -1478,9 +1488,11 @@ describe('Add to cart', () => {
         await userEvent.click(toggles[0]);
 
         expect(inertia.calls).toHaveLength(1);
-        expect(inertia.reload).toHaveBeenCalledWith({
-            only: ['cart', 'deals'],
-            data: { deal: 'cmp_greenleaf' },
-        });
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                only: ['cart', 'deals'],
+                data: { deal: 'cmp_greenleaf' },
+            }),
+        );
     });
 });
