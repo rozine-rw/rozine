@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowsePayments;
+use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Staff\ListPaymentsRequest;
 use App\Http\Resources\StaffPaymentsResource;
 use Inertia\Inertia;
@@ -27,7 +28,7 @@ class StaffPaymentsController extends Controller
         $page = $payments->handle($actorId);
         $staff = $access->handle($actorId);
 
-        $resource = new StaffPaymentsResource([...$page, 'search' => trim((string) $request->validated('q', '')),
+        $resource = new StaffPaymentsResource([...$page, 'policy' => PlatformPolicies::fees(), 'search' => trim((string) $request->validated('q', '')),
             'limit' => (int) $request->validated('limit', self::LIMIT), 'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/payments', $resource->resolve($request));

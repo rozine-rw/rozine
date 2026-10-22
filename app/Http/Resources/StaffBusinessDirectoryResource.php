@@ -23,7 +23,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
  *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null,
- *     roles: list<string>, permissions: list<string>
+ *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>
  * }
  */
 class StaffBusinessDirectoryResource extends JsonResource
@@ -60,9 +60,9 @@ class StaffBusinessDirectoryResource extends JsonResource
 
         return ['contract_version' => 'staff-business-directory-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'analyst'],
+                'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $page['roles'])) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'business', 'policy' => [],
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'], 'kind' => 'business', 'policy' => $page['policy'],
             'stats' => [['key' => 'total_businesses', 'value' => ['kind' => 'count', 'value' => $counts['all']]],
                 ['key' => 'avg_rating', 'value' => ['kind' => 'text', 'value' => $page['average_score'] === null ? '—' : $page['average_score'].' / 5']],
                 ['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $page['active_notes']]],

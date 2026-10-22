@@ -12,7 +12,7 @@ final class GetInvestorWallet
     public function __construct(private WalletStore $store) {}
 
     /**
-     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null}  $query
+     * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, period?: string|null, before?: string|null, receipt?: string|null}  $query
      * @return array<string, mixed>
      */
     public function handle(int $userId, ?int $contextRevision, array $query = []): array

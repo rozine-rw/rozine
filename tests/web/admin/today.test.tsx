@@ -150,6 +150,22 @@ describe('Admin frame', () => {
 });
 
 describe('Admin Today', () => {
+    it('lets every panel row shrink to a phone width instead of widening the page', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+        const rows = screen.getAllByTestId('panel-row');
+
+        expect(rows.length).toBeGreaterThan(0);
+        rows.forEach((row) => expect(row).toHaveClass('grid-cols-1'));
+    });
+
+    it('keeps each capital-raised bar to one bar wide, however few there are', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+
+        screen
+            .getAllByTestId('chart-bar')
+            .forEach((bar) => expect(bar).toHaveClass('max-w-14'));
+    });
+
     it('shows the headline figures without a second score', () => {
         render(<AdminToday {...props(todayFixture)} />);
 

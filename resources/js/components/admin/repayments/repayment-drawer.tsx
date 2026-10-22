@@ -93,14 +93,17 @@ export function RepaymentDrawer({
                             </h2>
                             <RepaymentStateChip state={repayment.state} />
                         </div>
-                        <p className="mt-0.5 truncate text-[12px] text-[#7b8699] dark:text-rz-muted">
+                        <p className="mt-0.5 truncate text-[12px] text-[#636e86] dark:text-rz-muted">
                             {repayment.business} · {repayment.note_title}
                         </p>
                     </div>
                     <DrawerClose close={repayment.links.close} />
                 </div>
             </div>
-            <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]">
+            <div
+                tabIndex={0}
+                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
+            >
                 <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {tile(
                         t('admin.repayments.amount'),

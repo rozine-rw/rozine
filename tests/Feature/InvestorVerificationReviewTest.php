@@ -91,7 +91,8 @@ test('the queue lists submitted cases oldest first and pages by cursor', functio
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['limit' => 1]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('contract_version', 'staff-investor-verifications-v1')
-            ->where('active_tab', 'submitted')->where('tabs.0.count', 2)->where('tabs.1.count', 0)
+            ->where('active_tab', 'submitted')->where('policy', [['key' => 'minimum_age', 'value' => '18'], ['key' => 'identity_evidence', 'value' => '3'],
+                ['key' => 'complaint_acknowledge', 'value' => '4 h'], ['key' => 'complaint_resolve', 'value' => '48 h']])->where('tabs.0.count', 2)->where('tabs.1.count', 0)
             ->where('nav.investors.url', '/admin/investors')->where('nav.compliance.url', '/admin/investor-verifications')->where('nav.applications', null)
             ->has('entries', 1)->where('entries.0.id', $first->id)->where('entries.0.name', 'Aline Uwase')
             ->where('entries.0.email', $this->person->email)->where('entries.0.id_type', 'national_id')->where('entries.0.selected', false)

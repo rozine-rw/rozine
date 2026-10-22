@@ -63,7 +63,10 @@ export function DetailSheet({
                 <div className="border-b border-rz-border bg-rz-surface px-[18px] pt-[calc(env(safe-area-inset-top)+14px)] pb-3.5 lg:pt-4">
                     {header}
                 </div>
-                <div className="rz-scroll flex-1 px-5 pt-[18px] pb-5 lg:min-h-0 lg:overflow-y-auto">
+                <div
+                    tabIndex={0}
+                    className="rz-scroll flex-1 px-5 pt-[18px] pb-5 lg:min-h-0 lg:overflow-y-auto"
+                >
                     {children}
                 </div>
                 {footer && (

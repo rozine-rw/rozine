@@ -7,17 +7,21 @@ namespace App\Http\Controllers;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Wallet\FindBusinessWalletOperation;
 use App\Application\Wallet\GetBusinessWallet;
+use App\Application\Wallet\GetBusinessWalletStatement;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Application\Wallet\RecordBusinessWithdrawal;
 use App\Http\Requests\Business\BusinessDepositRequest;
 use App\Http\Requests\Business\BusinessWithdrawRequest;
 use App\Http\Requests\Business\ShowBusinessWalletOperationRequest;
 use App\Http\Requests\Business\ShowBusinessWalletRequest;
+use App\Http\Requests\Business\ShowBusinessWalletStatementRequest;
 use App\Http\Resources\BusinessWalletResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class BusinessWalletController extends Controller
 {
@@ -28,9 +32,27 @@ class BusinessWalletController extends Controller
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = $request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision'];
         $resource = new BusinessWalletResource($this->wallet->handle($userId, (int) $revision, (string) $request->route('business'),
-            $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt'])));
+            $request->safe()->only(['kind', 'amount', 'movement', 'before', 'receipt', 'from', 'to'])));
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('business/wallet', $resource->resolve($request));
+    }
+
+    /** The wallet statement as a private, never-cached download (design wallet history "Download"). */
+    public function statement(ShowBusinessWalletStatementRequest $request, GetBusinessWalletStatement $action, string $business, string $format): HttpResponse
+    {
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $revision = $request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision'];
+        $from = $request->validated('from');
+        $to = $request->validated('to');
+        $document = $action->handle($userId, (int) $revision, $business, is_string($from) ? $from : null, is_string($to) ? $to : null);
+        $response = new HttpResponse($format === 'pdf' ? $document->pdf() : $document->csv(), 200, [
+            'Content-Type' => $format === 'pdf' ? 'application/pdf' : 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition('attachment', 'rozine-business-wallet-statement.'.$format));
+
+        return $response;
     }
 
     public function deposit(BusinessDepositRequest $request, RecordBusinessDeposit $action): OperationResource

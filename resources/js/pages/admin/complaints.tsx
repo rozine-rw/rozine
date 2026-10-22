@@ -100,7 +100,7 @@ function Row({ row }: { row: ComplaintRow }) {
                 className={cn(
                     'text-[12px] font-semibold',
                     clock.late
-                        ? 'text-[#e5484d] dark:text-[#ff6b6f]'
+                        ? 'text-[#b3352a] dark:text-[#ff6b6f]'
                         : 'text-rz-slate',
                 )}
             >
@@ -165,7 +165,7 @@ function AnswerForm({ action }: { action: { url: string } }) {
             {form.errors.body !== undefined && (
                 <p
                     role="alert"
-                    className="mt-1 text-[12px] font-semibold text-[#e5484d]"
+                    className="mt-1 text-[12px] font-semibold text-[#b3352a]"
                 >
                     {form.errors.body}
                 </p>
@@ -225,7 +225,7 @@ function ComplaintDrawer({ complaint }: { complaint: ComplaintDetail }) {
                             className={cn(
                                 'text-[11.5px] font-semibold',
                                 clock.late
-                                    ? 'text-[#e5484d] dark:text-[#ff6b6f]'
+                                    ? 'text-[#b3352a] dark:text-[#ff6b6f]'
                                     : 'text-rz-slate',
                             )}
                         >

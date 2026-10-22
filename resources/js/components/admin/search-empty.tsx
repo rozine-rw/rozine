@@ -47,7 +47,7 @@ export function SearchEmpty({
                 <div className="text-[14px] font-semibold text-rz-ink">
                     {t('admin.search.empty_title')}
                 </div>
-                <div className="text-[12.5px] text-[#7b8699] dark:text-rz-muted">
+                <div className="text-[12.5px] text-[#636e86] dark:text-rz-muted">
                     {t('admin.search.empty_body', {
                         section: t(`admin.section.${section}.title`),
                         term,

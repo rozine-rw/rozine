@@ -52,9 +52,18 @@ final class PrimaryReservationFixture
         return $version;
     }
 
-    public static function campaign(): BusinessCampaign
+    /**
+     * A sealed, co-signed, released and listed raise. `$sealing` may replace the authenticator code
+     * the seal is confirmed with, as a pack whose partners have their own secrets needs.
+     *
+     * @param  (\Closure(array<string, mixed>): string)|null  $sealing
+     */
+    public static function campaign(bool $recordConsent = true, ?\Closure $sealing = null): BusinessCampaign
     {
-        $fixture = AuditSealingFixture::ready();
+        $fixture = AuditSealingFixture::ready(recordConsent: $recordConsent);
+        if ($sealing !== null) {
+            $fixture['code'] = $sealing($fixture);
+        }
         AuditSealingFixture::seal($fixture);
         AuditSealingFixture::cosign($fixture);
         $campaigns = app(BusinessCampaignStore::class);

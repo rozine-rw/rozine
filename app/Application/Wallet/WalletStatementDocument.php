@@ -81,6 +81,7 @@ final readonly class WalletStatementDocument
             'hold' => 'Held for '.$row['deal_name'],
             'hold_release' => 'Hold released - '.$row['deal_name'],
             'commitment' => 'Committed to '.$row['deal_name'],
+            'repayment' => 'Note repayment',
             default => 'Refund - '.$row['deal_name'],
         };
     }

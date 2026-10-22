@@ -62,13 +62,22 @@ function CreateApplication({ entry }: { entry: CreateApplicationEntry }) {
     );
 }
 
-/** "Grow" — headroom and the way into a new raise (design L331–341). */
+/**
+ * "Grow" — headroom and the way into a new raise (design L331–341). With no headroom read and no
+ * way to apply right now (a raise or application already open), there is nothing to show under
+ * the heading, so the section is left out rather than drawn empty.
+ */
 export function GrowSection({
     headroom,
     links,
     createApplication,
 }: GrowSectionProps) {
     const { t } = useTranslation();
+    const showsHeadroom = headroom !== null && links.rating !== null;
+
+    if (!showsHeadroom && links.apply === null && createApplication === null) {
+        return null;
+    }
 
     return (
         <section
@@ -85,7 +94,7 @@ export function GrowSection({
                 {t('business.grow.subtitle')}
             </p>
 
-            {headroom !== null && links.rating !== null && (
+            {showsHeadroom && links.rating !== null && (
                 <Link
                     href={links.rating}
                     className="mt-[11px] flex w-full items-center gap-3.5 rounded-2xl border border-rz-border bg-rz-surface p-[17px] text-left lg:px-[15px] lg:py-[13px]"

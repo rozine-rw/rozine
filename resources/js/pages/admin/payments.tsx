@@ -6,6 +6,7 @@ import {
     HeadCell,
     KpiTile,
     Panel,
+    PolicyPeek,
     ROW_RULE,
     ShowMoreLink,
     TABLE_HEAD,
@@ -52,7 +53,8 @@ function MovementPanel({ bars }: { bars: AdminPaymentsProps['bars'] }) {
                 {bars.map((bar) => (
                     <div
                         key={bar.label}
-                        className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                        data-testid="chart-bar"
+                        className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
                             {formatRwfShort(bar.amount).replace('RWF ', '')}
@@ -112,7 +114,7 @@ function Row({ payout }: { payout: PayoutInFlight }) {
                 className={cn(
                     'text-[11.5px] font-semibold',
                     payout.state === 'unknown'
-                        ? 'text-[#c2661f]'
+                        ? 'text-[#a4521a]'
                         : 'text-rz-muted',
                 )}
             >
@@ -133,6 +135,10 @@ export default function AdminPayments(props: AdminPaymentsProps) {
 
     return (
         <AdminFrame section="payments" {...props}>
+            <PolicyPeek
+                title={t('admin.payments.policy_title')}
+                items={props.policy}
+            />
             <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                 {props.stats.map((stat) => (
                     <KpiTile

@@ -88,7 +88,7 @@ export function CapitalRaisedPanel({
                 <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap">
                     {(['from', 'to'] as const).map((end) => (
                         <div key={end} className="flex items-center gap-[5px]">
-                            <span className="text-[10px] font-semibold text-[#7b8699] uppercase dark:text-rz-muted">
+                            <span className="text-[10px] font-semibold text-[#636e86] uppercase dark:text-rz-muted">
                                 {t(`admin.today.capital.${end}`)}
                             </span>
                             <input
@@ -141,7 +141,8 @@ export function CapitalRaisedPanel({
                 {chart.bars.map((bar) => (
                     <div
                         key={bar.label}
-                        className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                        data-testid="chart-bar"
+                        className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
                             {short(bar.amount)}
@@ -186,19 +187,19 @@ export function PortfolioHealthPanel({
             'healthy',
             health.healthy,
             'bg-[#1d9e75]',
-            'text-[#1d9e75] dark:text-[#3fcda0]',
+            'text-[#157357] dark:text-[#3fcda0]',
         ],
         [
             'watch',
             health.watch,
             'bg-[#c2661f]',
-            'text-[#c2661f] dark:text-[#f0a060]',
+            'text-[#a4521a] dark:text-[#f0a060]',
         ],
         [
             'distressed',
             health.distressed,
             'bg-[#e5484d]',
-            'text-[#e5484d] dark:text-[#ff6b6f]',
+            'text-[#b3352a] dark:text-[#ff6b6f]',
         ],
     ] as const;
 
@@ -220,10 +221,10 @@ export function PortfolioHealthPanel({
                     }}
                 >
                     <div className="absolute inset-[18px] flex flex-col items-center justify-center rounded-full bg-[#eef3fb] dark:bg-rz-surface-muted">
-                        <span className="text-[28px] font-bold text-[#1d9e75] dark:text-[#3fcda0]">
+                        <span className="text-[28px] font-bold text-[#157357] dark:text-[#3fcda0]">
                             {health.healthy.pct}%
                         </span>
-                        <span className="text-[11px] text-[#7b8699] dark:text-rz-muted">
+                        <span className="text-[11px] text-[#636e86] dark:text-rz-muted">
                             {t('admin.today.health.healthy_caption')}
                         </span>
                     </div>
@@ -424,7 +425,7 @@ export function PendingApplicationsPanel({
                             <div className="truncate text-[13px] font-semibold text-rz-ink">
                                 {item.business}
                             </div>
-                            <div className="text-[11px] text-[#7b8699] dark:text-rz-muted">
+                            <div className="text-[11px] text-[#636e86] dark:text-rz-muted">
                                 {formatRwfShort(item.requested)} ·{' '}
                                 {item.rating === null ? (
                                     <span className="font-semibold">
@@ -487,7 +488,7 @@ export function SectorPanel({
                         className={cn(
                             'rounded-[10px] px-[11px] py-[13px]',
                             sector.at_risk
-                                ? 'bg-[#c85a2a]'
+                                ? 'bg-[#a8461c]'
                                 : 'bg-[#1e3aff] dark:bg-[#3d57ff]',
                         )}
                     >
@@ -497,7 +498,7 @@ export function SectorPanel({
                         <div className="mt-[5px] text-[15px] font-bold text-white">
                             {formatRwfShort(sector.outstanding)}
                         </div>
-                        <div className="mt-0.5 text-[10.5px] text-white/75">
+                        <div className="mt-0.5 text-[10.5px] text-white/90">
                             {t('admin.today.sectors.notes', {
                                 count: sector.notes,
                             })}
@@ -521,7 +522,7 @@ export function TreasuryPanel({
         [
             'platform_net',
             treasury.platform_net,
-            'text-[#1d9e75] dark:text-[#3fcda0]',
+            'text-[#157357] dark:text-[#3fcda0]',
         ],
         [
             'paid_to_investors',
@@ -539,7 +540,7 @@ export function TreasuryPanel({
                         key={key}
                         className="rounded-xl border border-rz-hairline bg-rz-surface px-[15px] py-3.5"
                     >
-                        <dt className="text-[11.5px] font-semibold text-[#7b8699] dark:text-rz-muted">
+                        <dt className="text-[11.5px] font-semibold text-[#636e86] dark:text-rz-muted">
                             {t(`admin.today.treasury.${key}`)}
                         </dt>
                         <dd
@@ -575,19 +576,19 @@ export function CollectionsPanel({
             'on_track',
             collections.on_track,
             'bg-[#1d9e75]',
-            'text-[#1d9e75] dark:text-[#3fcda0]',
+            'text-[#157357] dark:text-[#3fcda0]',
         ],
         [
             'late',
             collections.late,
             'bg-[#c2661f]',
-            'text-[#c2661f] dark:text-[#f0a060]',
+            'text-[#a4521a] dark:text-[#f0a060]',
         ],
         [
             'default_risk',
             collections.default_risk,
             'bg-[#e5484d]',
-            'text-[#e5484d] dark:text-[#ff6b6f]',
+            'text-[#b3352a] dark:text-[#ff6b6f]',
         ],
     ] as const;
 
@@ -601,7 +602,7 @@ export function CollectionsPanel({
             </p>
             <dl className="mt-[15px] flex flex-col gap-[11px]">
                 <div className="flex items-center justify-between">
-                    <dt className="text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
+                    <dt className="text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
                         {t('admin.today.collections.outstanding')}
                     </dt>
                     <dd className="text-[14px] font-bold text-rz-ink">
@@ -609,7 +610,7 @@ export function CollectionsPanel({
                     </dd>
                 </div>
                 <div className="flex items-center justify-between">
-                    <dt className="text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
+                    <dt className="text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
                         {t('admin.today.collections.next_due')}
                     </dt>
                     <dd className="text-[14px] font-bold text-rz-accent-app-text">

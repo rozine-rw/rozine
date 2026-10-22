@@ -75,57 +75,61 @@ export default function AdminLedger(props: AdminLedgerProps) {
                         </>
                     )
                 }
-            >
-                <div className="border-b border-[#e3e9f4] bg-[#f8fafd] px-5 pt-[18px] pb-[15px] dark:border-rz-border dark:bg-rz-surface-sunken">
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                        <div>
-                            <CardTitle>{t('admin.ledger.title')}</CardTitle>
-                            <p className="mt-[3px] text-[12px] text-rz-muted">
-                                {t('admin.ledger.caption')}
-                            </p>
+                header={
+                    <div className="border-b border-[#e3e9f4] bg-[#f8fafd] px-5 pt-[18px] pb-[15px] dark:border-rz-border dark:bg-rz-surface-sunken">
+                        <div className="flex flex-wrap items-baseline justify-between gap-3">
+                            <div>
+                                <CardTitle>{t('admin.ledger.title')}</CardTitle>
+                                <p className="mt-[3px] text-[12px] text-rz-muted">
+                                    {t('admin.ledger.caption')}
+                                </p>
+                            </div>
+                            <span className="text-[12px] font-semibold text-[#636e86] dark:text-rz-muted">
+                                {t('admin.ledger.count', {
+                                    count: formatCount(props.total),
+                                })}
+                            </span>
                         </div>
-                        <span className="text-[12px] font-semibold text-[#7b8699] dark:text-rz-muted">
-                            {t('admin.ledger.count', {
-                                count: formatCount(props.total),
-                            })}
-                        </span>
-                    </div>
-                    <form
-                        onSubmit={search}
-                        role="search"
-                        className="mt-[13px] flex h-[34px] min-w-[190px] flex-1 items-center gap-[7px] rounded-[9px] border border-[#dbe3f0] bg-rz-surface px-[11px] dark:border-rz-border"
-                    >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            aria-hidden
+                        <form
+                            onSubmit={search}
+                            role="search"
+                            className="mt-[13px] flex h-[34px] min-w-[190px] flex-1 items-center gap-[7px] rounded-[9px] border border-[#dbe3f0] bg-rz-surface px-[11px] dark:border-rz-border"
                         >
-                            <circle
-                                cx="11"
-                                cy="11"
-                                r="7"
-                                stroke="#9aa3b5"
-                                strokeWidth="1.8"
+                            <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                            >
+                                <circle
+                                    cx="11"
+                                    cy="11"
+                                    r="7"
+                                    stroke="#9aa3b5"
+                                    strokeWidth="1.8"
+                                />
+                                <path
+                                    d="m20 20-3.2-3.2"
+                                    stroke="#9aa3b5"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            <input
+                                type="search"
+                                name="q"
+                                defaultValue={props.search}
+                                aria-label={t('admin.ledger.search_label')}
+                                placeholder={t(
+                                    'admin.ledger.search_placeholder',
+                                )}
+                                className="min-w-0 flex-1 border-none bg-transparent text-[12.5px] text-rz-ink outline-none placeholder:text-rz-muted"
                             />
-                            <path
-                                d="m20 20-3.2-3.2"
-                                stroke="#9aa3b5"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                            />
-                        </svg>
-                        <input
-                            type="search"
-                            name="q"
-                            defaultValue={props.search}
-                            aria-label={t('admin.ledger.search_label')}
-                            placeholder={t('admin.ledger.search_placeholder')}
-                            className="min-w-0 flex-1 border-none bg-transparent text-[12.5px] text-rz-ink outline-none placeholder:text-rz-muted"
-                        />
-                    </form>
-                </div>
+                        </form>
+                    </div>
+                }
+            >
                 <div
                     role="row"
                     className={cn(
@@ -150,7 +154,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
                     >
                         <span
                             role="cell"
-                            className="text-[12px] text-[#7b8699] tabular-nums dark:text-rz-muted"
+                            className="text-[12px] text-[#636e86] tabular-nums dark:text-rz-muted"
                         >
                             {formatTimestamp(row.at)}
                         </span>

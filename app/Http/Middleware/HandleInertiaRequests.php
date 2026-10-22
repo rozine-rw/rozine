@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Primary\GetInvestorCart;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
@@ -47,6 +48,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
+            // The Investor app's Cart tab badge; every other page has no cart.
+            'cart_count' => fn (): ?int => $request->routeIs('investor.*') && $request->user() !== null
+                ? app(GetInvestorCart::class)->count((int) $request->user()->getAuthIdentifier()) : null,
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
                 : null),

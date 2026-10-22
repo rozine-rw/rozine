@@ -14,10 +14,10 @@ import { cn } from '@/lib/utils';
 import type { BusinessFile, FileDocument } from '@/types/auditor';
 
 const DOC_STROKE: Record<FileDocument['kind'], string> = {
-    statement: 'text-[#c2661f]',
+    statement: 'text-[#a4521a]',
     registry: 'text-rz-positive',
     identity: 'text-rz-ink',
-    pitch: 'text-[#c2661f]',
+    pitch: 'text-[#a4521a]',
     photos: 'text-[#6425c9] dark:text-[#b199fb]',
 };
 
@@ -496,7 +496,7 @@ export function FileReview({
                                 >
                                     <span
                                         aria-hidden
-                                        className="text-[12px] text-[#c2661f]"
+                                        className="text-[12px] text-[#a4521a]"
                                     >
                                         ●
                                     </span>

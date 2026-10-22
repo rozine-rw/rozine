@@ -36,6 +36,8 @@ export const inertia = {
     queue: [] as Responder[],
     /** Field errors `useHttp` reports after a 422. */
     httpErrors: {} as Record<string, string>,
+    /** The shared page props `usePage` returns, such as the Cart tab's count. */
+    shared: {} as Record<string, unknown>,
 };
 
 export function resetInertia(): void {
@@ -47,6 +49,7 @@ export function resetInertia(): void {
     inertia.calls = [];
     inertia.queue = [];
     inertia.httpErrors = {};
+    inertia.shared = {};
     inertia.reload.mockReset();
     inertia.visit.mockReset();
     inertia.routerPost.mockReset();
@@ -120,6 +123,10 @@ export function useHttp() {
             return result;
         },
     };
+}
+
+export function usePage() {
+    return { props: inertia.shared };
 }
 
 export function Head({ title }: { title: string }) {

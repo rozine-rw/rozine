@@ -12,18 +12,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * the accreditation facts and dispatch availability the Profile shows, the engagement summary, the
  * partner's work as Jobs reads it, and their filed reports. A fact with no record yet stays null
  * and the page shows it as unavailable or leaves it out — the firm and professional body, the
- * quality score, earnings, active deals, variance and the wallet —
+ * quality score, active deals, variance and the wallet —
  * and destinations that do not exist yet (statement, withdraw) are null, so their controls stay
  * hidden. The bell opens the partner's own notices. Recent activity is the partner's own filings,
- * newest first. The on-time share and clock expiries are the partner's own track record.
+ * newest first. The on-time share and clock expiries are the partner's own track record. The
+ * month's earnings are the Kigali month's platform fee shares from the earnings statement.
  *
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type FiledReports from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type Accreditation from AuditorProfileResource
  * @phpstan-import-type TrackRecord from \App\Application\Auditor\Contracts\AuditorFiledReportStore
+ * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
  *
- * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord}
+ * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord, earnings: Earnings}
  */
 class AuditorHomeResource extends JsonResource
 {
@@ -50,7 +52,7 @@ class AuditorHomeResource extends JsonResource
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,
-            'earned_this_month' => null,
+            'earned_this_month' => AuditorPortfolioResource::earnings($page['earnings'])['this_month'],
             'active_deals' => null,
             'licence_expires_on' => $accreditation['expires_on'],
             'availability' => [...$facts['availability'], 'update' => ['url' => route('auditor.availability.update', [], false), 'method' => 'post']],

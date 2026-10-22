@@ -12,6 +12,7 @@ import {
     vi,
 } from 'vite-plus/test';
 import { clearCarriedRefusal } from '@/components/business/apply/carried-refusal';
+import { formatRwf } from '@/lib/rozine/format';
 import BusinessApply from '@/pages/business/apply';
 import type {
     ApplicationQuote,
@@ -318,6 +319,21 @@ afterEach(() => {
 });
 
 describe('Apply — step 1, business & finances', () => {
+    it('labels a mandate person by their most senior role when the record holds roles, not titles', () => {
+        const page = props(businessStep);
+        page.evidence.business.officers = [
+            { name: 'Eric Ntwari', role: 'controller, owner, signatory' },
+            { name: 'Aline Uwase', role: 'signatory' },
+        ];
+        render(<BusinessApply {...page} />);
+
+        expect(screen.getByText('Owner')).toBeInTheDocument();
+        expect(screen.getByText('Signatory')).toBeInTheDocument();
+        expect(
+            screen.queryByText('controller, owner, signatory'),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows the verified record read-only and saves the draft to move on to step 2', async () => {
         const user = userEvent.setup();
         const page = props(businessStep);
@@ -1199,7 +1215,9 @@ describe('Apply — step 2, the quote', () => {
         render(<BusinessApply {...props(raiseStep)} />);
 
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
 
         const rate = screen.getByRole('tooltip');
@@ -1242,8 +1260,15 @@ describe('Apply — step 2, the quote', () => {
             screen.getByText('Investor protection reserve'),
         ).toBeInTheDocument();
         expect(screen.getByText('RWF 369,673')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `${formatRwf((pending.quote as ReadyQuote).schedule[0].amount)} / month`,
+            ),
+        ).toBeInTheDocument();
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
         expect(screen.getByRole('tooltip')).toHaveTextContent('Pending audit');
 
@@ -1307,7 +1332,9 @@ describe('Apply — step 2, the quote', () => {
         render(<BusinessApply {...props(raiseStep)} />);
 
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
         await user.click(screen.getAllByRole('button', { name: 'Close' })[0]);
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
@@ -2454,6 +2481,58 @@ describe('Apply — submitted', () => {
         render(<BusinessApply {...page} />);
 
         expect(screen.getByText('Note ID · RNP-2026-0412')).toBeInTheDocument();
+    });
+
+    it('says an approved application is ready to publish and links its publish page', () => {
+        const page = props(submittedStep);
+
+        page.submission = {
+            ...page.submission!,
+            timeline: page.submission!.timeline.map((stage, index) => ({
+                ...stage,
+                state: index < 2 ? 'done' : index === 2 ? 'current' : 'pending',
+            })),
+            publish: {
+                url: '/business/b/applications/a/publish',
+                method: 'get',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('heading', {
+                name: 'Your application is approved',
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Publish to the investor feed' }),
+        ).toHaveAttribute('href', '/business/b/applications/a/publish');
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says a listed application is published, with nothing left to publish', () => {
+        const page = props(submittedStep);
+
+        page.submission = {
+            ...page.submission!,
+            timeline: page.submission!.timeline.map((stage) => ({
+                ...stage,
+                state: 'done',
+            })),
+            publish: null,
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Your raise is published' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Publish to the investor feed',
+            }),
+        ).not.toBeInTheDocument();
     });
 
     it('renders nothing in the sheet body without a submission record', () => {

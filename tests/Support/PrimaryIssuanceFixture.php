@@ -9,11 +9,13 @@ use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
+use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Disbursement\RecordPayoutEvent;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Primary\EloquentFundedCampaigns;
+use App\Models\BusinessCampaign;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
@@ -27,16 +29,52 @@ final class PrimaryIssuanceFixture
      * @param  array<int, string>  $buyers
      * @return array{campaign: FundedCampaign, intent: DisbursementIntent, observe: \Closure(string): IssueInstruction}
      */
-    public static function approved(bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
+    public static function approved(bool $settle = true, array $units = ['1080', '1080'], array $buyers = [], ?string $live = null): array
     {
-        ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: $units, requoted: [0], buyers: $buyers);
-        $adapter = new class(app(EloquentFundedCampaigns::class), app(SyntheticDisbursementSources::class), $settle) implements FundedCampaigns
+        ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: $units, requoted: [0], buyers: $buyers, live: $live);
+
+        return self::fromFunded($publication->id, $settle);
+    }
+
+    /** Completes only the retained campaign, skipping any payout already issued. */
+    public static function finishFunded(string $campaignId, string $effectiveAt): void
+    {
+        $disbursement = Disbursement::query()->where('business_campaign_id', $campaignId)->first();
+        $closing = $disbursement === null ? null : DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->first();
+        if ($closing !== null) {
+            if ($closing->kind !== 'issued') {
+                throw new \LogicException('C3_CAMPAIGN_CLOSED_WITHOUT_ISSUE');
+            }
+            DB::transaction(fn () => app(DisbursementClosingEvidence::class)->find($closing->id));
+
+            return;
+        }
+        $approved = self::fromFunded($campaignId);
+        $approved['observe']($effectiveAt);
+    }
+
+    /**
+     * Opens only this already-funded campaign; retrying does not create any purchases.
+     *
+     * @return array{campaign: FundedCampaign, intent: DisbursementIntent, observe: \Closure(string): IssueInstruction}
+     */
+    public static function fromFunded(string $campaignId, bool $settle = true): array
+    {
+        $publication = BusinessCampaign::query()->findOrFail($campaignId);
+        $campaign = DB::transaction(function () use ($publication): FundedCampaign {
+            $retained = app(EloquentFundedCampaigns::class);
+            $retained->lockBusiness($publication->business_id);
+
+            return $retained->lockFunded($publication->id);
+        });
+        $reference = new FundedCampaignRef($campaign->campaignId, $campaign->businessId, $campaign->fundedAt);
+        $adapter = new class(app(EloquentFundedCampaigns::class), app(SyntheticDisbursementSources::class), $settle, $reference) implements FundedCampaigns
         {
-            public function __construct(private FundedCampaigns $retained, private FundedCampaigns $current, private bool $settle) {}
+            public function __construct(private FundedCampaigns $retained, private FundedCampaigns $current, private bool $settle, private FundedCampaignRef $reference) {}
 
             public function funded(?string $before, int $limit): array
             {
-                return $this->retained->funded($before, $limit);
+                return $limit > 0 && ($before === null || $this->reference->campaignId < $before) ? [$this->reference] : [];
             }
 
             public function lockBusiness(string $businessId): void
@@ -96,9 +134,10 @@ final class PrimaryIssuanceFixture
      * @param  array<int, string>  $buyers
      * @return array{campaign: FundedCampaign, instruction: IssueInstruction}
      */
-    public static function close(string $effectiveAt = '2026-01-30T22:30:00+00:00', bool $settle = true, array $units = ['1080', '1080'], array $buyers = []): array
+    public static function close(string $effectiveAt = '2026-01-30T22:30:00+00:00', bool $settle = true, array $units = ['1080', '1080'], array $buyers = [],
+        ?string $live = null): array
     {
-        $approved = self::approved($settle, $units, $buyers);
+        $approved = self::approved($settle, $units, $buyers, $live);
 
         return ['campaign' => $approved['campaign'], 'instruction' => $approved['observe']($effectiveAt)];
     }

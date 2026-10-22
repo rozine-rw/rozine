@@ -787,13 +787,13 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
      * @param  Closure(AuditReportPublication, string): TResult  $operation
      * @return TResult
      */
-    private function auditorScope(int $userId, int $contextRevision, string $reportId, Closure $operation): mixed
+    private function auditorScope(int $userId, int $contextRevision, string $reportId, Closure $operation, bool $read = false): mixed
     {
         $partyId = $this->identities->forUser($userId)['party']['id'] ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
         $report = AuditReport::query()->whereKey($reportId)->where('author_party_id', $partyId)->first()
             ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
 
-        return $this->assignments->withAccepted($userId, $contextRevision, $report->assignment_id, function (array $assignment) use ($reportId, $partyId, $operation): mixed {
+        $within = function (array $assignment) use ($reportId, $partyId, $operation): mixed {
             $report = AuditReport::query()->whereKey($reportId)->where('assignment_revision', $assignment['revision'])->where('author_party_id', $partyId)->sharedLock()->first()
                 ?? throw new CommandRejection('AUDIT_REPORT_NOT_FOUND', 404);
             $publication = AuditReportPublication::query()->where('audit_report_id', $report->id)->lockForUpdate()->first()
@@ -801,7 +801,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             $this->reviewData($publication);
 
             return $operation($publication, $partyId);
-        });
+        };
+
+        return $read ? $this->assignments->withAssigned($userId, $contextRevision, $report->assignment_id, $within)
+            : $this->assignments->withAccepted($userId, $contextRevision, $report->assignment_id, $within);
     }
 
     /** @template TResult
@@ -866,7 +869,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
         return match ($role) {
             'business' => $this->scope($userId, $contextRevision ?? 0, $scopeId, $reportId, 'business.view', $read),
-            'auditor' => $this->auditorScope($userId, $contextRevision ?? 0, $reportId, $read),
+            'auditor' => $this->auditorScope($userId, $contextRevision ?? 0, $reportId, $read, true),
             'staff' => $this->staffScope($userId, $scopeId, $reportId, $read),
             default => throw new CommandRejection('ACTION_FORBIDDEN', 403),
         };
@@ -892,7 +895,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     $assignmentId = AuditReport::query()->findOrFail($publication->audit_report_id)->assignment_id;
                     $this->staffScope($userId, $assignmentId, $publication->audit_report_id, function (): void {});
                 } else {
-                    $this->auditorScope($userId, $contextRevision ?? 0, $publication->audit_report_id, function (): void {});
+                    $this->auditorScope($userId, $contextRevision ?? 0, $publication->audit_report_id, function (): void {}, true);
                 }
             });
     }

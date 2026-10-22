@@ -37,7 +37,7 @@ class BusinessApplicationResource extends JsonResource
             'step' => $step, 'application' => self::draft($record), 'evidence' => $page['evidence'],
             'pending_application' => $page['pending_application'] === null ? null : ['id' => $page['pending_application']['id'],
                 'link' => self::link(self::prefix($request).'show', ['business' => $record['business_id'], 'application' => $page['pending_application']['id']])],
-            'quote' => $review['quote'], 'acceptance' => $review['acceptance'], 'submission' => $review['submission'], 'home' => null,
+            'quote' => $review['quote'], 'acceptance' => $review['acceptance'], 'submission' => self::submission($request, $review['submission'], $page['stage'] ?? null, $parameters), 'home' => null,
             'shell_links' => ['home' => $home, 'launcher' => self::link($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard'), ...BusinessHomeResource::tabs($request, $record['business_id'])],
             'links' => ['close' => $home, 'back' => $back, 'operation' => $lookup], 'actions' => $actions];
     }
@@ -56,6 +56,27 @@ class BusinessApplicationResource extends JsonResource
         }
 
         return $result;
+    }
+
+    /**
+     * The submission as recorded, with its timeline moved on to where review stands now: approved
+     * once staff release it, with the link to publish it, and published once its raise is listed.
+     *
+     * @param  array<string, mixed>|null  $submission
+     * @param  array<string, string>  $parameters
+     * @return array<string, mixed>|null
+     */
+    private static function submission(Request $request, ?array $submission, ?string $stage, array $parameters): ?array
+    {
+        if ($submission === null) {
+            return null;
+        }
+        $reached = ['review' => 1, 'approved' => 2, 'published' => 4][$stage ?? 'review'];
+        $order = ['submitted' => 0, 'under_review' => 1, 'approved' => 2, 'published' => 3];
+        $submission['timeline'] = array_map(fn (array $item): array => [...$item,
+            'state' => $order[$item['stage']] < $reached ? 'done' : ($order[$item['stage']] === $reached ? 'current' : 'pending')], $submission['timeline']);
+
+        return [...$submission, 'publish' => $stage === 'approved' ? self::link(self::prefix($request).'publish.show', $parameters) : null];
     }
 
     /**

@@ -200,20 +200,24 @@ export function PersonalInformation({
     const idType = personal.id_type ?? 'national_id';
 
     return (
-        <dl className="mt-5 flex flex-col gap-3.5">
-            <Field
-                label={t('investor.profile.personal.name')}
-                value={personal.name}
-            />
-            <Field
-                label={t('investor.profile.personal.email')}
-                value={personal.email}
-            />
-            <Field
-                label={t('investor.profile.personal.phone')}
-                value={personal.phone}
-            />
-            <div className="flex gap-3">
+        <>
+            {/* Each field is one direct child of its list, so every term keeps its description. */}
+            <dl className="mt-5 grid grid-cols-10 gap-x-3 gap-y-3.5">
+                <Field
+                    label={t('investor.profile.personal.name')}
+                    value={personal.name}
+                    className="col-span-10"
+                />
+                <Field
+                    label={t('investor.profile.personal.email')}
+                    value={personal.email}
+                    className="col-span-10"
+                />
+                <Field
+                    label={t('investor.profile.personal.phone')}
+                    value={personal.phone}
+                    className="col-span-10"
+                />
                 <Field
                     label={t('investor.profile.personal.id_type')}
                     value={
@@ -221,7 +225,7 @@ export function PersonalInformation({
                             ? null
                             : t(`investor.signup.id.${personal.id_type}`)
                     }
-                    className="flex-[0_0_40%]"
+                    className="col-span-4"
                 />
                 <Field
                     label={t(
@@ -230,42 +234,41 @@ export function PersonalInformation({
                             : 'investor.profile.personal.id_number',
                     )}
                     value={personal.id_number}
-                    className="min-w-0 flex-1"
+                    className="col-span-6 min-w-0"
                 />
-            </div>
-            <p className="mt-1.5 text-xs font-semibold tracking-[.05em] text-rz-secondary">
+            </dl>
+            <p className="mt-5 text-xs font-semibold tracking-[.05em] text-rz-secondary">
                 {t('investor.profile.personal.address')}
             </p>
-            <Field
-                label={t('investor.profile.personal.country')}
-                value={personal.country}
-                empty={t('investor.profile.personal.country_unknown')}
-            />
-            <div className="flex gap-3">
+            <dl className="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-3.5">
+                <Field
+                    label={t('investor.profile.personal.country')}
+                    value={personal.country}
+                    empty={t('investor.profile.personal.country_unknown')}
+                    className="col-span-2"
+                />
                 <Field
                     label={t('investor.profile.personal.province')}
                     value={personal.address}
-                    className="flex-1"
+                    className="min-w-0"
                 />
                 <Field
                     label={t('investor.profile.personal.district')}
                     value={personal.address}
-                    className="flex-1"
+                    className="min-w-0"
                 />
-            </div>
-            <div className="flex gap-3">
                 <Field
                     label={t('investor.profile.personal.sector')}
                     value={personal.address}
-                    className="flex-1"
+                    className="min-w-0"
                 />
                 <Field
                     label={t('investor.profile.personal.cell')}
                     value={personal.address}
-                    className="flex-1"
+                    className="min-w-0"
                 />
-            </div>
-        </dl>
+            </dl>
+        </>
     );
 }
 

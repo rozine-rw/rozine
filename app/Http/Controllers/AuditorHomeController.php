@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetAuditorAccreditation;
+use App\Application\Auditor\GetAuditorEarnings;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListAuditorFiledReports;
 use App\Application\Identity\AuthorizeActiveRole;
@@ -20,7 +21,7 @@ use Inertia\Response;
  * actions. The identity context is authorized first, exactly as every Auditor page is, so a login
  * without the active Auditor role or without two-factor authentication gets the access page
  * instead; the engagement summary and dispatch standing are shown on the page itself. The bell
- * counts the partner's own unread notices.
+ * counts the partner's own unread notices, and the month's earnings are their FEE-R02 credits.
  */
 class AuditorHomeController extends Controller
 {
@@ -28,7 +29,8 @@ class AuditorHomeController extends Controller
     private const RECENT_FILINGS = 5;
 
     public function __invoke(Request $request, AuthorizeActiveRole $identity, GetAuditorAccreditation $accreditation,
-        GetAuditEngagementSummary $engagements, ListAuditJobs $jobs, ListAuditorFiledReports $reports, ReadPartyNotices $notices): Response
+        GetAuditEngagementSummary $engagements, ListAuditJobs $jobs, ListAuditorFiledReports $reports, ReadPartyNotices $notices,
+        GetAuditorEarnings $earnings): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = (int) $identity->context($userId, 'auditor')['context_revision'];
@@ -41,6 +43,7 @@ class AuditorHomeController extends Controller
             'reports' => $reports->handle($userId, $revision, limit: self::RECENT_FILINGS),
             'track_record' => $reports->trackRecord($userId, $revision),
             'unread_notifications' => $notices->unread($userId),
+            'earnings' => $earnings->handle($userId, $revision),
         ]))->resolve($request));
     }
 }

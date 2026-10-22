@@ -147,10 +147,18 @@ export function HoldsList({
 
 /**
  * Recorded deposit intents. `pending` and `unknown` read "not yet confirmed" and are never shown as
- * credited or failed; the Investor sees no provider reference (H15).
+ * credited or failed; the Investor sees no provider reference (H15). A credited deposit is left to
+ * the history, where its credit already shows, so it is not listed twice.
  */
-export function DepositIntents({ deposits }: { deposits: DepositIntent[] }) {
+export function DepositIntents({
+    deposits: recorded,
+}: {
+    deposits: DepositIntent[];
+}) {
     const { t, locale } = useTranslation();
+    const deposits = recorded.filter(
+        (deposit) => deposit.state !== 'succeeded',
+    );
 
     if (deposits.length === 0) {
         return null;
@@ -193,14 +201,7 @@ export function DepositIntents({ deposits }: { deposits: DepositIntent[] }) {
                                     </span>
                                 </span>
                             </span>
-                            <span
-                                className={cn(
-                                    'text-[12.5px] font-semibold whitespace-nowrap',
-                                    deposit.credit_receipt === null
-                                        ? 'text-rz-secondary'
-                                        : POSITIVE_TEXT,
-                                )}
-                            >
+                            <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-secondary">
                                 {formatRwf(deposit.amount)}
                             </span>
                         </Link>
@@ -315,7 +316,7 @@ function StatementExport({
             key: 'csv',
             link: exports.csv,
             label: t('investor.wallet.tx.csv'),
-            tint: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         },
     ];
 

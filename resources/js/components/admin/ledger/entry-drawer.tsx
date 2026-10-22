@@ -52,14 +52,17 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                         <h2 className="text-[19px] font-bold text-rz-ink tabular-nums">
                             {formatRwf(entry.amount)}
                         </h2>
-                        <p className="mt-0.5 truncate text-[12px] text-[#7b8699] tabular-nums dark:text-rz-muted">
+                        <p className="mt-0.5 truncate text-[12px] text-[#636e86] tabular-nums dark:text-rz-muted">
                             {formatTimestamp(entry.at)} · {entry.id}
                         </p>
                     </div>
                     <DrawerClose close={entry.links.close} />
                 </div>
             </div>
-            <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]">
+            <div
+                tabIndex={0}
+                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
+            >
                 <dl className="grid grid-cols-2 gap-2">
                     {facts.map(([key, value]) => (
                         <div
@@ -103,7 +106,7 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                           })}
                 </p>
 
-                <h3 className="mt-5 text-[12px] font-bold tracking-[.05em] text-[#7b8699] uppercase dark:text-rz-muted">
+                <h3 className="mt-5 text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted">
                     {t('admin.ledger.postings')}
                 </h3>
                 <div
@@ -197,8 +200,8 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                                 className={cn(
                                     'rounded-md px-2 py-0.5 text-[10px] font-bold',
                                     entry.balanced
-                                        ? 'bg-[rgba(29,158,117,.12)] text-[#1d9e75] dark:text-[#3fcda0]'
-                                        : 'bg-[rgba(255,77,79,.12)] text-[#e5484d] dark:text-[#ff6b6f]',
+                                        ? 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#3fcda0]'
+                                        : 'bg-[rgba(255,77,79,.12)] text-[#b3352a] dark:text-[#ff6b6f]',
                                 )}
                             >
                                 {t(
@@ -245,7 +248,7 @@ export function EntryDrawer({ entry }: { entry: LedgerEntryDetail }) {
                         </Link>
                     </p>
                 )}
-                <p className="mt-3.5 flex items-center gap-2 rounded-xl border border-[#dde6f3] bg-[rgba(30,58,255,.07)] px-3.5 py-2.5 text-[12.5px] text-[#5f6fc8] dark:border-rz-border dark:text-[#99a3ff]">
+                <p className="mt-3.5 flex items-center gap-2 rounded-xl border border-[#dde6f3] bg-[rgba(30,58,255,.07)] px-3.5 py-2.5 text-[12.5px] text-[#4f5fb8] dark:border-rz-border dark:text-[#99a3ff]">
                     {t('admin.ledger.immutable')}
                 </p>
                 <Link

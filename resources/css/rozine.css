@@ -49,12 +49,12 @@
     /* Ink and text */
     --rz-ink: #0c1830;
     --rz-slate: #3a465e;
-    --rz-body: #69748a;
+    --rz-body: #636e86;
     --rz-secondary: #5b6578;
     --rz-muted: #647087;
-    --rz-faint: #9aa3b5;
+    --rz-faint: #636e86;
     --rz-placeholder: #687286;
-    --rz-group: #aab4c6;
+    --rz-group: #636e86;
 
     /* Lines */
     --rz-hairline: #e7ecf4;
@@ -67,12 +67,12 @@
     --rz-investor-tint: rgba(30, 58, 255, 0.14);
     --rz-investor-glow: rgba(30, 58, 255, 0.55);
     --rz-business: #1d9e75;
-    --rz-business-text: #177e5d;
+    --rz-business-text: #157357;
     --rz-business-strong: #17795a;
     --rz-business-tint: rgba(29, 158, 117, 0.14);
     --rz-business-glow: rgba(29, 158, 117, 0.5);
     --rz-auditor: #c2661f;
-    --rz-auditor-text: #ac5a1b;
+    --rz-auditor-text: #9c5016;
     --rz-auditor-strong: #7d420f;
     --rz-auditor-tint: rgba(194, 102, 31, 0.14);
     --rz-auditor-glow: rgba(194, 102, 31, 0.5);
@@ -85,7 +85,7 @@
     --rz-positive: #17795a;
     --rz-positive-tint: rgba(29, 158, 117, 0.12);
     --rz-danger: #e5484d;
-    --rz-danger-text: #c0392b;
+    --rz-danger-text: #b3352a;
     --rz-danger-tint: rgba(229, 72, 77, 0.12);
     --rz-warning-text: #a55418;
     --rz-warning-tint: rgba(194, 102, 31, 0.13);
@@ -95,7 +95,7 @@
     --rz-investor-soft: rgba(30, 58, 255, 0.1);
     --rz-business-fill: #17795a;
     --rz-business-soft: rgba(29, 158, 117, 0.1);
-    --rz-business-app-text: #17795a;
+    --rz-business-app-text: #157357;
     --rz-auditor-fill: #7d420f;
     --rz-auditor-soft: rgba(194, 102, 31, 0.1);
     --rz-admin-fill: #1e3aff;
@@ -118,8 +118,8 @@
     --rz-shadow-resting: 0 3px 10px -4px rgba(20, 45, 95, 0.14);
     --rz-shadow-lifted: 0 14px 34px -14px rgba(20, 45, 95, 0.32);
 
-    /* Widest the desktop apps grow before extra space becomes page background */
-    --rz-desktop-max: 1440px;
+    /* The desktop apps' frame: the design's 1113px canvas, centred, with the page background around it */
+    --rz-desktop-max: 1113px;
 }
 
 .dark {

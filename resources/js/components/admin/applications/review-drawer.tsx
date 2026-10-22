@@ -50,7 +50,7 @@ const TILE =
     'rounded-[13px] border border-[#eaeef6] bg-rz-surface dark:border-rz-border';
 
 const APPROVE =
-    'h-[46px] flex-1 rounded-xl bg-[#1d9e75] text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45';
+    'h-[46px] flex-1 rounded-xl bg-[#157357] text-[14px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45';
 
 const TONAL_BUTTON =
     'h-10 flex-1 rounded-[11px] border border-rz-hairline bg-[#eef3fb] text-[12.5px] font-bold dark:bg-rz-surface-muted';
@@ -192,7 +192,7 @@ export function ReviewDrawer({
                                 />
                             </svg>
                             <div>
-                                <div className="text-[13px] font-bold text-[#e5484d] dark:text-[#ff6b6f]">
+                                <div className="text-[13px] font-bold text-[#b3352a] dark:text-[#ff6b6f]">
                                     {t(`admin.review.audit.${auditGap}_title`)}
                                 </div>
                                 <p
@@ -278,7 +278,7 @@ export function ReviewDrawer({
                             >
                                 {t('admin.review.yield')}
                             </dt>
-                            <dd className="mt-1 text-[15px] font-bold text-[#1d9e75] dark:text-[#3fcda0]">
+                            <dd className="mt-1 text-[15px] font-bold text-[#157357] dark:text-[#3fcda0]">
                                 {t('admin.review.yield_value', {
                                     rate: review.rate_pct,
                                 })}
@@ -501,7 +501,7 @@ export function ReviewDrawer({
                                                 action: reject,
                                             })
                                         }
-                                        className="h-[46px] flex-1 rounded-xl border border-[#fdd9da] bg-rz-surface text-[14px] font-bold text-[#e5484d] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
+                                        className="h-[46px] flex-1 rounded-xl border border-[#fdd9da] bg-rz-surface text-[14px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]"
                                     >
                                         {t('admin.review.reject')}
                                     </button>

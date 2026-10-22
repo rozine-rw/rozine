@@ -61,9 +61,11 @@ export function TotalCard({
                     {t('investor.portfolio.total_value')}
                 </span>
                 <span className="inline-flex shrink-0 items-center rounded-[10px] bg-white/[.16] px-2.5 py-[5px] text-[11.5px] font-semibold whitespace-nowrap text-white">
-                    {t('investor.portfolio.businesses', {
-                        count: totals.businesses,
-                    })}
+                    {totals.businesses === 1
+                        ? t('investor.portfolio.businesses_one')
+                        : t('investor.portfolio.businesses', {
+                              count: totals.businesses,
+                          })}
                 </span>
             </div>
             <p className="mt-[5px] text-[26px] font-bold tracking-[-.5px] whitespace-nowrap text-white">
@@ -178,7 +180,7 @@ export function PayoutChart({
                                         'shrink-0 text-[10.5px] font-bold whitespace-nowrap',
                                         on
                                             ? 'text-rz-accent-app-text'
-                                            : 'text-rz-secondary opacity-55',
+                                            : 'text-rz-muted',
                                     )}
                                 >
                                     {formatCompactBare(entry.amount)}
@@ -197,9 +199,7 @@ export function PayoutChart({
                                 <span
                                     className={cn(
                                         'shrink-0 text-[10px] font-semibold',
-                                        on
-                                            ? 'text-rz-ink'
-                                            : 'text-rz-secondary opacity-55',
+                                        on ? 'text-rz-ink' : 'text-rz-muted',
                                     )}
                                 >
                                     {monthShort(entry.month, locale)}
@@ -254,7 +254,7 @@ export function PayoutChart({
                         viewBox="0 0 24 24"
                         fill="none"
                         aria-hidden
-                        className="mt-px size-[13px] shrink-0 text-[#a9b4c6]"
+                        className="mt-px size-[13px] shrink-0 text-rz-faint"
                     >
                         <circle
                             cx="12"
@@ -449,7 +449,7 @@ export function Exposure({
                         className={cn(
                             'shrink-0 rounded-xl bg-white px-4 py-3 text-[13.5px] font-bold',
                             POSITIVE_TEXT,
-                            'dark:text-[#17795a]',
+                            'dark:text-[#157357]',
                         )}
                     >
                         {t('investor.portfolio.reinvest')}

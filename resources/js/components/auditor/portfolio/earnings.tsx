@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { Eyebrow, EmptyState } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatAmount } from '@/lib/rozine/format';
+import type { AuditorEarnings } from '@/types/auditor';
 import type { RouteLink } from '@/types/routing';
 
 /**
@@ -46,7 +48,7 @@ export function SourcedDeals() {
                 >
                     {t('auditor.portfolio.sourced.title')}
                 </h2>
-                <span className="shrink-0 text-[10px] font-bold tracking-[.06em] text-[#c2661f] uppercase dark:text-[#e3b56a]">
+                <span className="shrink-0 text-[10px] font-bold tracking-[.06em] text-[#a4521a] uppercase dark:text-[#e3b56a]">
                     {t('auditor.portfolio.sourced.tag')}
                 </span>
             </div>
@@ -58,10 +60,11 @@ export function SourcedDeals() {
 }
 
 /**
- * This month's verification earnings, managed deals and next payout (design L416–424). None has a
- * read yet, so each reads as a dash.
+ * This month's earnings, managed deals and next payout (design L416–424). Earnings are the
+ * partner's platform fee shares credited this Kigali month. Managed deals and the next payout have
+ * no read yet, so each reads as a dash.
  */
-export function EarningsSummary() {
+export function EarningsSummary({ earnings }: { earnings: AuditorEarnings }) {
     const { t } = useTranslation();
 
     return (
@@ -75,14 +78,21 @@ export function EarningsSummary() {
             >
                 {t('auditor.portfolio.earnings.title')}
             </h2>
-            <p className="mt-[5px] text-[30px] font-bold tracking-[-.5px]">—</p>
+            <p className="mt-[5px] flex items-baseline gap-1.5">
+                <span className="text-[14px] font-bold text-white/80">
+                    {earnings.this_month.currency}
+                </span>
+                <span className="text-[30px] font-bold tracking-[-.5px]">
+                    {formatAmount(earnings.this_month)}
+                </span>
+            </p>
             <dl className="mt-3 flex gap-2">
                 {(['managed', 'next_payout'] as const).map((key) => (
                     <div
                         key={key}
                         className="min-w-0 flex-1 rounded-[10px] bg-white/15 px-[11px] py-[9px]"
                     >
-                        <dt className="text-[10px] font-bold whitespace-nowrap text-white/75 uppercase">
+                        <dt className="text-[10px] font-bold whitespace-nowrap text-white uppercase">
                             {t(`auditor.portfolio.earnings.${key}`)}
                         </dt>
                         <dd className="mt-[3px] text-[14px] font-bold">—</dd>

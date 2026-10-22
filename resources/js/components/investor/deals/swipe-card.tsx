@@ -41,7 +41,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
             aria-label={deal.name}
             className="flex size-full flex-col overflow-hidden rounded-[20px] border border-rz-border bg-rz-surface shadow-[0_26px_50px_-22px_rgba(20,45,95,.30),0_8px_20px_-12px_rgba(20,45,95,.10)] select-none"
         >
-            <div className="relative min-h-0 flex-[0_0_46%] overflow-hidden bg-[#0b1c3a]">
+            <div className="relative min-h-0 flex-[1_0_46%] overflow-hidden bg-[#0b1c3a]">
                 <PhotoStrip
                     photos={deal.photos}
                     accent={deal.accent}
@@ -77,7 +77,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                 </div>
             </div>
 
-            <div className="relative flex min-h-0 flex-1 flex-col px-[15px] pt-[13px] pb-3">
+            <div className="relative flex min-h-0 flex-[0_1_197px] flex-col px-[15px] pt-[13px] pb-3">
                 {front && (
                     <Link
                         href={deal.links.detail}
@@ -153,8 +153,12 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             <span className="text-[11px] font-bold text-rz-ink">
                                 {formatCount(deal.investors)}
                             </span>
-                            <span className="text-[11px] font-semibold text-[#17795a] dark:text-[#3fcda0]">
-                                {t('investor.deals.investors')}
+                            <span className="text-[11px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                {t(
+                                    deal.investors === 1
+                                        ? 'investor.deals.investors_one'
+                                        : 'investor.deals.investors',
+                                )}
                             </span>
                         </span>
                     </div>

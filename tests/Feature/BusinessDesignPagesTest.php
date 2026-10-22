@@ -29,7 +29,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route($route, $parameters))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component($component))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
     };
     $this->business = function (string $kind = 'organization', int $people = 2, string $code = 'COMPANY-001'): array {
         $authority = AuthorityFixture::make($kind, $people, $code, 1);
@@ -68,7 +68,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $props = ($this->props)($user, 'business.profile', ['business' => $business], 'business/profile');
     $banks = array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS);
 
-    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Gasabo', 'verified' => true, 'rating' => null],
+    expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Kigali City, Gasabo', 'verified' => true, 'rating' => null],
         'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => []], 'legal' => null,
         'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
             'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
@@ -138,7 +138,7 @@ it('shows a sole trader without a company code, and the published rating once a 
         ->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
 });
 
-it('opens Rating over the real Home: pending before a published rating, then the published one, and computes nothing', function (): void {
+it('opens Rating over the real Home: pending before a published rating, then the published one with its statement financials', function (): void {
     [$authority, $business] = ($this->business)();
     $user = $authority['users'][0];
 
@@ -153,8 +153,16 @@ it('opens Rating over the real Home: pending before a published rating, then the
     $rating = $campaign->payload['public_evidence']['rating'];
     $published = ($this->props)(User::query()->findOrFail($campaign->actor_user_id), 'business.rating', ['business' => $campaign->business_id], 'business/rating');
 
+    $evidence = $campaign->payload['public_evidence'];
+    $months = $evidence['period']['months'];
+    $revenue = (int) $evidence['totals']['revenue']['amount'];
+    $net = (int) $evidence['totals']['net_profit']['amount'];
     expect($published['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']])
-        ->and($published['home']['rating'])->toBe($published['rating']);
+        ->and($published['home']['rating'])->toBe($published['rating'])
+        // The financials are the Business's own statement figures its rating was underwritten on.
+        ->and($published['financials'])->toBe(['avg_monthly_revenue' => ['currency' => 'RWF', 'amount' => (string) (int) round($revenue / $months)],
+            'net_cash_month' => ['currency' => 'RWF', 'amount' => (string) (int) round($net / $months)],
+            'net_margin_percent' => number_format($net * 100 / $revenue, 1, '.', ''), 'outstanding' => ['currency' => 'RWF', 'amount' => '0']]);
 });
 
 it('opens Repayments on its empty state over the real Home while no note is servicing, offering only a top-up', function (): void {

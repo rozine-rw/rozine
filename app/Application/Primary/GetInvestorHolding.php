@@ -13,7 +13,8 @@ use Brick\Math\BigInteger;
  * One issued Holding for the authenticated Investor (C3 v2 §2e), read under current Investor
  * authority. It carries the issue as recorded (`IssuedHolding`) and the figures the issue alone
  * supports: the expected return, the maturity value net of the payout fee and the next scheduled
- * instalment, and the business's published monthly audit reports. Nothing has been received or
+ * instalment, and the business's published monthly audit reports, the newest of which sets the
+ * Holding's health and its on-plan strip (`latest_report`). Nothing has been received or
  * serviced yet, so the payment record, recovery plan, arrears and photos are empty.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
@@ -38,13 +39,16 @@ final class GetInvestorHolding
         $card = $this->portfolio->card($holding['campaign_id']);
         $position = ['holding' => $holding, 'card' => $card];
         $upcoming = HoldingFigures::upcoming([$position], now());
+        $updates = $this->catalogue->updates($holding['campaign_id']);
+        $latest = $updates[0] ?? null;
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => true, 'issue' => $holding,
-            'holding' => [...GetInvestorPortfolio::summary($position), 'rating' => $card['rating'], 'rate_pct' => $holding['terms']['rate_pct'],
+            'holding' => [...GetInvestorPortfolio::summary($position, $latest), 'rating' => $card['rating'], 'rate_pct' => $holding['terms']['rate_pct'],
                 'expected_profit' => $holding['rights']['total_return'], 'maturity_value' => HoldingFigures::maturityValue($holding),
                 'received' => HoldingFigures::money(BigInteger::zero()),
                 'next_payment' => $upcoming === [] ? null : ['amount' => $upcoming[0]['amount'], 'due_on' => HoldingFigures::kigaliMidnight($upcoming[0]['due_on'])],
                 'months_left' => count($upcoming), 'investors' => $card['investors'],
-                'updates' => $this->catalogue->updates($holding['campaign_id'])]];
+                'updates' => $updates,
+                'latest_report' => $latest === null ? null : ['month' => $latest['month'], 'status' => $latest['status'], 'summary' => $latest['summary']]]];
     }
 }

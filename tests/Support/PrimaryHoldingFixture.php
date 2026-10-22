@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
@@ -17,6 +18,7 @@ use App\Domain\Wallet\WalletMoney;
 use App\Models\BusinessCampaign;
 use App\Models\CommandOperation;
 use App\Models\Disbursement;
+use App\Models\Party;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -39,19 +41,25 @@ final class PrimaryHoldingFixture
      * @param  list<string>  $units  one real purchase per entry, in order
      * @param  list<int>  $requoted  indexes of purchases that are requoted once before confirming
      * @param  array<int, string>  $buyers  purchase index to a buyer key; purchases sharing a key share one Investor
+     * @param  string|null  $live  the ID of a campaign already listed, used instead of a new one
+     * @param  (Closure(): array{user: User, party: Party})|null  $makeInvestor  An isolated pack may fund its own buyers without changing global policy.
      * @return array{campaign: BusinessCampaign, commitments: list<PrimaryCommitment>}
      */
-    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = []): array
+    public static function committed(array $units = ['1080', '1080'], array $requoted = [], bool $fund = true, array $buyers = [], ?string $live = null, ?Closure $makeInvestor = null): array
     {
-        InvestorWalletFixture::policy(maximum: null);
-        // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
-        Cache::flush();
-        $campaign = PrimaryReservationFixture::campaign();
+        if ($makeInvestor === null) {
+            InvestorWalletFixture::policy(maximum: null);
+        }
+        if ($live === null) {
+            // A second campaign in one test would replay the sealing fixture's authenticator code inside Fortify's reuse window.
+            Cache::flush();
+        }
+        $campaign = $live === null ? PrimaryReservationFixture::campaign() : BusinessCampaign::query()->findOrFail($live);
         $checkout = app(PrimaryCheckout::class);
         $commitments = [];
         $investors = [];
         foreach ($units as $index => $quantity) {
-            $investor = $investors[$buyers[$index] ?? 'purchase-'.$index] ??= PrimaryReservationFixture::investor();
+            $investor = $investors[$buyers[$index] ?? 'purchase-'.$index] ??= $makeInvestor === null ? PrimaryReservationFixture::investor() : $makeInvestor();
             $held = $checkout->reserve($investor['user']->id, 1, $campaign->id, $quantity, (string) Str::uuid(), PrimaryReservationFixture::terms(...));
             $root = PrimaryReservationRecord::query()->whereKey($held['data']['reservation_id'])->sole();
             $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $root->id)->sole();
@@ -119,7 +127,7 @@ final class PrimaryHoldingFixture
         [$observation, $reconciliation] = [self::id(), self::id()];
         DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
             'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'callback', 'state' => 'succeeded',
-            'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+            'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now(), 'observed_operation_id' => $operation,
             'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => '2027-01-31T08:00:00Z',
             'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
         DB::table('disbursement_reconciliations')->insert(['id' => $reconciliation, 'intent_id' => $intent, 'provider_event_id' => $observation,
@@ -149,7 +157,7 @@ final class PrimaryHoldingFixture
                 $observation = self::id();
                 DB::table('disbursement_provider_events')->insert(['id' => $observation, 'intent_id' => $intent, 'provider' => 'synthetic',
                     'provider_event_id' => 'evt-'.$observation, 'content_sha256' => hash('sha256', $observation), 'source' => 'query', 'state' => $observed,
-                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now(), 'observed_operation_id' => $operation,
+                    'amount' => $disbursement->amount, 'currency' => 'RWF', 'environment' => app(EnvironmentIsolation::class)->profile(), 'observed_at' => now(), 'observed_operation_id' => $operation,
                     'provider_reference_sha256' => hash('sha256', $intent), 'destination_sha256' => str_repeat('d', 64), 'effective_at' => null,
                     'disposition' => 'applied', 'mismatches' => '[]', 'evidence' => 'x', 'created_at' => now()]);
             }
@@ -167,7 +175,7 @@ final class PrimaryHoldingFixture
             'request_id' => (string) Str::uuid(), 'revision' => 1, 'amount' => $disbursement->amount, 'currency' => 'RWF', 'destination_id' => 'dest-1',
             'destination_revision' => 1, 'destination_sha256' => str_repeat('d', 64), 'commitments_digest' => $disbursement->commitments_digest,
             'binding_sha256' => str_repeat('b', 64), 'intent_digest' => str_repeat('i', 64), 'provider' => 'synthetic', 'provider_reference' => 'x',
-            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => 'testing', 'idempotent_sends' => false, 'maker_user_id' => $maker,
+            'provider_reference_sha256' => hash('sha256', $intent), 'environment' => app(EnvironmentIsolation::class)->profile(), 'idempotent_sends' => false, 'maker_user_id' => $maker,
             'checker_user_id' => $checker, 'payload' => 'x', 'sha256' => str_repeat('0', 64), 'created_at' => now()]);
         $event(2, 'intent_recorded', $checker, $operation);
         foreach (['queued', 'claimed', $sent ? 'sent' : 'unsent'] as $phase) {

@@ -130,64 +130,76 @@ export default function BusinessReports({
                                 </button>
                             ))}
                         </div>
-                        <ul
+                        <div
                             role="tabpanel"
                             aria-label={t(`business.reports.tab.${tab}`)}
-                            className="mt-4 flex flex-col gap-3"
                         >
-                            {reports[tab].map((row) => {
-                                const style = ROW_STYLE[row.status];
-                                const tile =
-                                    row.status === 'verified' &&
-                                    row.health !== 'healthy'
-                                        ? ROW_STYLE.in_audit.tile
-                                        : style.tile;
+                            <ul className="mt-4 flex flex-col gap-3">
+                                {reports[tab].map((row) => {
+                                    const style = ROW_STYLE[row.status];
+                                    const tile =
+                                        row.status === 'verified' &&
+                                        row.health !== 'healthy'
+                                            ? ROW_STYLE.in_audit.tile
+                                            : style.tile;
 
-                                return (
-                                    <li key={row.id}>
-                                        <Link
-                                            href={row.link}
-                                            className="flex w-full items-center gap-[13px] rounded-2xl border border-rz-border bg-rz-surface p-[15px] text-left"
-                                        >
-                                            <span
-                                                className={cn(
-                                                    'flex size-[42px] shrink-0 items-center justify-center rounded-xl text-lg',
-                                                    tile,
-                                                )}
+                                    return (
+                                        <li key={row.id}>
+                                            <Link
+                                                href={row.link}
+                                                className="flex w-full items-center gap-[13px] rounded-2xl border border-rz-border bg-rz-surface p-[15px] text-left"
                                             >
-                                                <Icon name={style.icon} />
-                                            </span>
-                                            <span className="min-w-0 flex-1">
-                                                <span className="block text-sm font-semibold text-rz-ink">
-                                                    {periodLabel(
-                                                        row.period,
-                                                        locale,
-                                                        t,
+                                                <span
+                                                    className={cn(
+                                                        'flex size-[42px] shrink-0 items-center justify-center rounded-xl text-lg',
+                                                        tile,
+                                                    )}
+                                                >
+                                                    <Icon name={style.icon} />
+                                                </span>
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block text-sm font-semibold text-rz-ink">
+                                                        {periodLabel(
+                                                            row.period,
+                                                            locale,
+                                                            t,
+                                                        )}
+                                                    </span>
+                                                    <span className="mt-0.5 block text-xs text-rz-secondary">
+                                                        {detail(row)}
+                                                    </span>
+                                                </span>
+                                                <span
+                                                    className={cn(
+                                                        'inline-flex shrink-0 items-center gap-[5px] rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
+                                                        style.pill,
+                                                    )}
+                                                >
+                                                    {t(
+                                                        `business.reports.status.${row.status}`,
                                                     )}
                                                 </span>
-                                                <span className="mt-0.5 block text-xs text-rz-secondary">
-                                                    {detail(row)}
-                                                </span>
-                                            </span>
-                                            <span
-                                                className={cn(
-                                                    'inline-flex shrink-0 items-center gap-[5px] rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
-                                                    style.pill,
-                                                )}
-                                            >
-                                                {t(
-                                                    `business.reports.status.${row.status}`,
-                                                )}
-                                            </span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
                         {reports[tab].length === 0 && (
-                            <p className="mt-6 text-center text-[13px] text-rz-secondary">
-                                {t('business.reports.empty')}
-                            </p>
+                            <div className="mt-3 flex flex-col items-center rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-10 text-center dark:border-rz-border">
+                                <span
+                                    aria-hidden
+                                    className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]"
+                                >
+                                    <Icon name={ROW_STYLE[tab].icon} />
+                                </span>
+                                <p className="mt-4 text-[15px] font-semibold text-rz-ink">
+                                    {t('business.reports.empty')}
+                                </p>
+                                <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
+                                    {t('business.reports.empty_body')}
+                                </p>
+                            </div>
                         )}
                     </div>
                     {report !== null && (

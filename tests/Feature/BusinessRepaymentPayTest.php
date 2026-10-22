@@ -192,3 +192,14 @@ it('refuses a Business with no wallet before asking servicing for its note', fun
         ->assertStatus(422)->assertJsonPath('code', 'INSUFFICIENT_AVAILABLE_FUNDS');
     expect($servicing->statementsBeforeNoteLock)->toBeNull()->and(BusinessRepayment::query()->count())->toBe(0);
 });
+
+it('lists a repayment paid from the wallet on the Business wallet statement', function (): void {
+    $fixture = repaymentPayFixture();
+    repaymentPayServicing($fixture['note']);
+    $this->actingAs($fixture['payer'])->postJson(route('business.repayments.pay', $fixture['business']->id), repaymentPayBody($fixture['note']))->assertOk();
+    $repayment = BusinessRepayment::query()->sole();
+
+    $csv = (string) $this->get(route('business.wallet.statement', ['business' => $fixture['business']->id, 'format' => 'csv']))->assertOk()->getContent();
+    expect($csv)->toContain('"Note repayment","Internal","112500","out","RZR-'.strtoupper(substr($repayment->id, -10)).'"')
+        ->and(substr_count($csv, "\r\n"))->toBe(3);
+});

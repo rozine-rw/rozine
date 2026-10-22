@@ -16,6 +16,7 @@ import {
     PhoneTopBar,
 } from '@/components/investor/deals/deal-top-bar';
 import { canReserve, InvestBar } from '@/components/investor/deals/invest-bar';
+import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -124,8 +125,15 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             (deal) => deal.campaign_id === props.focus?.campaign_id,
         ),
     );
-    const [index, setIndex] = useState(start);
-    const current = props.deals.length > 0 ? props.deals[index] : null;
+    const [selected, setSelected] = useState(
+        props.deals[start]?.campaign_id ?? null,
+    );
+    // A cart removal can shorten or reorder the deck while this component stays mounted.
+    const index = Math.max(
+        0,
+        props.deals.findIndex((deal) => deal.campaign_id === selected),
+    );
+    const current = props.deals[index] ?? null;
     /* Only read beside a deck: an empty list has its own "no deals open" state. */
     const allClosed = !props.deals.some(
         (deal) => deal.lifecycle === 'live' && deal.restriction === null,
@@ -144,16 +152,26 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const move = (next: number) => {
         const at = wrapIndex(next, props.deals.length);
 
-        setIndex(at);
+        const target = props.deals[at];
+        const destination =
+            props.sorts.find((sort) => sort.active)?.link ??
+            target.links.detail;
+
+        setSelected(target.campaign_id);
         quoted.resetUnits();
-        router.reload({
-            only: ['focus', 'quote'],
-            data: { deal: props.deals[at].campaign_id },
+        // The deck route honors ?deal; a detail or checkout route is bound to its path campaign.
+        // Refresh the complete contract together, including campaign-bound cart and checkout URLs.
+        router.visit(withQuery(destination, { deal: target.campaign_id }), {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
         });
     };
 
+    /* The checkout link is the focused deal's, so another card in front waits for its focus. */
     const checkout =
         current !== null &&
+        props.focus?.campaign_id === current.campaign_id &&
         props.links.checkout !== null &&
         canReserve({
             deal: current,
@@ -167,9 +185,30 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
               })
             : null;
 
+    /* Like checkout, the cart command is the focused deal's; another card in front waits for it. */
+    const inCart =
+        current !== null &&
+        props.cart !== null &&
+        props.cart.campaign_ids.includes(current.campaign_id);
+    const focused =
+        current !== null && props.focus?.campaign_id === current.campaign_id;
+    const cart: CartToggleState | null =
+        props.cart === null
+            ? null
+            : {
+                  inCart,
+                  action: !focused
+                      ? null
+                      : inCart
+                        ? props.cart.remove
+                        : props.cart.add,
+                  identityRevision: props.identity_context_revision,
+              };
+
     const bar = (size: 'phone' | 'desk') =>
         current !== null && (
             <InvestBar
+                cart={cart}
                 deal={current}
                 quote={quote}
                 units={quoted.units}
@@ -242,7 +281,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         }
                     />
                     <div className="flex min-h-0 flex-1 items-stretch gap-[26px]">
-                        <div className="relative flex min-h-0 min-w-0 flex-[0_0_508px] flex-col">
+                        <div className="relative flex min-h-0 min-w-[420px] flex-[0_1_508px] flex-col">
                             <SortChips sorts={props.sorts} size="desk" />
                             {current === null ? (
                                 <EmptyDeals gate={props.gate} />
@@ -270,6 +309,8 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                                     key={props.focus.campaign_id}
                                     deal={props.focus}
                                     serverTime={props.server_time}
+                                    cart={cart}
+                                    units={quoted.units}
                                 />
                             ) : (
                                 <DealPanelLoading />

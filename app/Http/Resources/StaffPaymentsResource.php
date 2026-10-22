@@ -27,7 +27,7 @@ class StaffPaymentsResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{from: string, movements: Movements, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>} $resource */
+        /** @var array{from: string, movements: Movements, bars: list<Bar>, payouts: list<Payout>, search: string, limit: int, roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>} $resource */
         $resource = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $route = fn (array $query = []): array => ['url' => route($prefix.'staff.payments.index', $query, false), 'method' => 'get'];
@@ -45,7 +45,7 @@ class StaffPaymentsResource extends JsonResource
         return ['contract_version' => 'staff-payments-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'viewer' => (new StaffViewerResource($resource['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($resource['permissions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'],
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search, 'from' => $resource['from'], 'policy' => $resource['policy'],
             'stats' => [['key' => 'deposits', 'value' => $money($movements['deposits']['amount']), 'count' => $movements['deposits']['count']],
                 ['key' => 'withdrawals', 'value' => $money($movements['withdrawals']['amount']), 'count' => $movements['withdrawals']['count']],
                 ['key' => 'disbursed', 'value' => $money($movements['disbursed']['amount']), 'count' => $movements['disbursed']['count']]],

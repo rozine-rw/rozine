@@ -1,8 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { Icon, IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard, home } from '@/routes';
+import { verification as investorVerification } from '@/routes/investor';
 
 type Props = {
     /** The server's reason code; kept for support, never shown. */
@@ -13,6 +15,72 @@ type Props = {
      */
     status?: number;
 };
+
+/**
+ * The branded frame every answer of this page shares: the Rozine lockup, one card with a warning
+ * mark, the title and the body, then the recovery actions. It draws its own surface, so a refusal
+ * no longer sits inside the generic app shell.
+ */
+function ErrorFrame({
+    headTitle,
+    title,
+    body,
+    alert,
+    children,
+}: {
+    /** The browser tab title; the card title when left out. */
+    headTitle?: string;
+    title: string;
+    body: string;
+    /** Whether the card announces itself; the not-found answer is not an alert. */
+    alert: 'card' | 'body' | 'none';
+    children: ReactNode;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <main
+            data-audience="investor"
+            className="rz-surface min-h-svh bg-rz-page"
+        >
+            <Head title={headTitle ?? title} />
+            <IconGradients />
+            <div className="mx-auto w-full max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-10 sm:pt-12">
+                <LogoLockup
+                    title={t('common.brand.name')}
+                    className="h-7 w-auto text-rz-accent-lockup"
+                />
+                <section
+                    role={alert === 'card' ? 'alert' : undefined}
+                    className="mt-7 flex items-start gap-3 rounded-2xl border border-rz-border bg-rz-surface p-4"
+                >
+                    <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
+                        <Icon name="warning" tone="amber" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-[17px] font-bold text-rz-ink">
+                            {title}
+                        </h1>
+                        <p
+                            role={alert === 'body' ? 'alert' : undefined}
+                            className="mt-1 text-[13px] leading-[1.55] text-rz-secondary"
+                        >
+                            {body}
+                        </p>
+                    </div>
+                </section>
+                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+                    {children}
+                </div>
+            </div>
+        </main>
+    );
+}
+
+const PRIMARY =
+    'inline-flex h-11 items-center justify-center rounded-xl bg-rz-accent-fill px-5 text-[14px] font-bold text-white';
+const SECONDARY =
+    'inline-flex min-h-11 items-center text-[14px] font-semibold text-rz-accent-text underline underline-offset-4';
 
 /**
  * A browser read found nothing (404): an unknown or withdrawn report, offer or document. It is no
@@ -26,40 +94,18 @@ function NotFound() {
     const signedIn = Boolean(usePage().props.auth.user);
 
     return (
-        <main
-            data-audience="investor"
-            className="rz-surface min-h-svh bg-rz-page"
+        <ErrorFrame
+            headTitle={t('errors.not_found.head_title')}
+            title={t('errors.not_found.title')}
+            body={t('errors.not_found.body')}
+            alert="none"
         >
-            <Head title={t('errors.not_found.head_title')} />
-            <IconGradients />
-            <div className="mx-auto w-full max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-10 sm:pt-12">
-                <LogoLockup
-                    title={t('common.brand.name')}
-                    className="h-7 w-auto text-rz-accent-lockup"
-                />
-                <section className="mt-7 flex items-start gap-3 rounded-2xl border border-rz-border bg-rz-surface p-4">
-                    <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
-                        <Icon name="warning" tone="amber" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <h1 className="text-[17px] font-bold text-rz-ink">
-                            {t('errors.not_found.title')}
-                        </h1>
-                        <p className="mt-1 text-[13px] leading-[1.55] text-rz-secondary">
-                            {t('errors.not_found.body')}
-                        </p>
-                    </div>
-                </section>
-                <Link
-                    href={signedIn ? dashboard() : home()}
-                    className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-rz-accent-fill px-5 text-[14px] font-bold text-white"
-                >
-                    {signedIn
-                        ? t('identity.home.back')
-                        : t('errors.not_found.home')}
-                </Link>
-            </div>
-        </main>
+            <Link href={signedIn ? dashboard() : home()} className={PRIMARY}>
+                {signedIn
+                    ? t('identity.home.back')
+                    : t('errors.not_found.home')}
+            </Link>
+        </ErrorFrame>
     );
 }
 
@@ -74,41 +120,16 @@ function ServiceUnavailable() {
     const { url } = usePage();
 
     return (
-        <main
-            data-audience="investor"
-            className="rz-surface min-h-svh bg-rz-page"
+        <ErrorFrame
+            headTitle={t('errors.unavailable.head_title')}
+            title={t('errors.unavailable.title')}
+            body={t('errors.unavailable.body')}
+            alert="card"
         >
-            <Head title={t('errors.unavailable.head_title')} />
-            <IconGradients />
-            <div className="mx-auto w-full max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-10 sm:pt-12">
-                <LogoLockup
-                    title={t('common.brand.name')}
-                    className="h-7 w-auto text-rz-accent-lockup"
-                />
-                <section
-                    role="alert"
-                    className="mt-7 flex items-start gap-3 rounded-2xl border border-rz-border bg-rz-surface p-4"
-                >
-                    <span className="flex size-[34px] shrink-0 items-center justify-center rounded-xl bg-rz-accent-soft text-base">
-                        <Icon name="warning" tone="amber" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                        <h1 className="text-[17px] font-bold text-rz-ink">
-                            {t('errors.unavailable.title')}
-                        </h1>
-                        <p className="mt-1 text-[13px] leading-[1.55] text-rz-secondary">
-                            {t('errors.unavailable.body')}
-                        </p>
-                    </div>
-                </section>
-                <a
-                    href={url}
-                    className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-rz-accent-fill px-5 text-[14px] font-bold text-white"
-                >
-                    {t('errors.unavailable.retry')}
-                </a>
-            </div>
-        </main>
+            <a href={url} className={PRIMARY}>
+                {t('errors.unavailable.retry')}
+            </a>
+        </ErrorFrame>
     );
 }
 
@@ -138,17 +159,28 @@ export default function AccessDenied({ code, status }: Props) {
           : t('identity.denied.title');
 
     return (
-        <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-            <Head title={title} />
-            <h1 className="text-2xl font-semibold">{title}</h1>
-            <p role="alert">
-                {expired
+        <ErrorFrame
+            title={title}
+            body={
+                expired
                     ? t('identity.denied.expired_offer.body')
                     : verificationRequired
                       ? t('identity.denied.verification_required.body')
-                      : t('identity.denied.body')}
-            </p>
-            <Link href={dashboard()}>{t('identity.home.back')}</Link>
-        </main>
+                      : t('identity.denied.body')
+            }
+            alert="body"
+        >
+            {verificationRequired && (
+                <Link href={investorVerification()} className={PRIMARY}>
+                    {t('identity.denied.verification_required.action')}
+                </Link>
+            )}
+            <Link
+                href={dashboard()}
+                className={verificationRequired ? SECONDARY : PRIMARY}
+            >
+                {t('identity.home.back')}
+            </Link>
+        </ErrorFrame>
     );
 }

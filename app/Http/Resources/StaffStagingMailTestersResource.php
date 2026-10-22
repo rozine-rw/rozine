@@ -29,7 +29,7 @@ class StaffStagingMailTestersResource extends JsonResource
         return ['contract_version' => 'staff-staging-mail-testers-v1', 'server_time' => now()->toIso8601String(),
             // Only superadmin holds staging.mail.testers.manage.
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => 'superadmin'],
+                'initials' => StaffViewerResource::initials($name), 'role' => 'superadmin'],
             'nav' => [...(new StaffNavigationResource($page['permissions']))->resolve($request), 'mail_testers' => $link('index')],
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'server_recipients' => $page['server_recipients'],

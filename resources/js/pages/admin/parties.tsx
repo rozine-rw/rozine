@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
+import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
@@ -123,6 +124,9 @@ export default function AdminParties(props: AdminPartiesProps) {
                 <SearchEmpty section={section} term={props.search} />
             )}
             <DirectoryTable directory={props.directory} />
+            {props.kind === 'staff' && props.permission_matrix && (
+                <PermissionMatrix rows={props.permission_matrix} />
+            )}
         </AdminFrame>
     );
 }

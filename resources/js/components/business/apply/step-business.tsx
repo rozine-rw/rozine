@@ -1,4 +1,5 @@
 import { StepHeading } from '@/components/business/apply/step-heading';
+import { bareCompanyCode } from '@/components/business/home/business-hero';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -7,10 +8,41 @@ import {
     formatRwfShort,
 } from '@/lib/rozine/format';
 import type { Money } from '@/types';
-import type { ApplicationEvidence, EvidencePeriod } from '@/types/business';
+import type {
+    ApplicationEvidence,
+    EvidencePeriod,
+    MandateRole,
+} from '@/types/business';
 
 /** A full calendar year of evidence; any fewer months is labelled with its count. */
 const FULL_YEAR = 12;
+
+/** Mandate roles, most senior first: an officer is labelled by the first one they hold. */
+const ROLE_ORDER: MandateRole[] = [
+    'owner',
+    'director',
+    'controller',
+    'beneficial_owner',
+    'representative',
+    'signatory',
+];
+
+/**
+ * The server sends a mandate person's roles as a comma list of role keys (no job titles are
+ * recorded). Show the most senior one, translated; anything else is printed as sent.
+ */
+function useOfficerRole() {
+    const { t } = useTranslation();
+
+    return (role: string): string => {
+        const held = role.split(',').map((part) => part.trim());
+        const senior = ROLE_ORDER.find((key) => held.includes(key));
+
+        return senior === undefined
+            ? role
+            : t(`business.profile.registration.role.${senior}`);
+    };
+}
 
 /** "Oct 2023" from the server's `YYYY-MM` month. */
 const monthLabel = (month: string, locale: string): string =>
@@ -21,7 +53,7 @@ function PeriodLabel({ period }: { period: EvidencePeriod }) {
     const { t, locale } = useTranslation();
 
     return (
-        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/70">
+        <p className="text-[10.5px] font-bold tracking-[.05em] text-white/90">
             {t('business.apply.business.period', {
                 from: monthLabel(period.from_month, locale),
                 through: monthLabel(period.through_month, locale),
@@ -107,6 +139,7 @@ function IneligibleNotice({ message }: { message: string }) {
 export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
     const { t } = useTranslation();
     const figure = useFigure();
+    const officerRole = useOfficerRole();
     const { business, eligibility } = evidence;
     const degrees =
         evidence.rating === null
@@ -150,7 +183,9 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             {business.company_code !== null && (
                                 <p className="mt-1 inline-flex items-center gap-[5px] rounded-[10px] border border-rz-border bg-rz-surface px-2 py-0.5 text-[11px] font-bold tracking-[.02em] text-rz-accent-app-text">
                                     {t('business.home.company_code', {
-                                        code: business.company_code,
+                                        code: bareCompanyCode(
+                                            business.company_code,
+                                        ),
                                     })}
                                 </p>
                             )}
@@ -176,7 +211,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                             {business.officers.map((officer) => (
                                 <div key={`${officer.role}-${officer.name}`}>
                                     <p className="text-[10px] font-bold tracking-[.02em] text-rz-slate uppercase">
-                                        {officer.role}
+                                        {officerRole(officer.role)}
                                     </p>
                                     <p className="mt-0.5 text-[13px] font-semibold text-rz-ink">
                                         {officer.name}
@@ -251,7 +286,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                                         {t(`business.apply.business.${key}`)}
                                     </p>
                                     <p
-                                        className={`mt-[3px] text-[13px] font-bold whitespace-nowrap ${value === null ? 'text-white/70' : tone}`}
+                                        className={`mt-[3px] text-[13px] font-bold whitespace-nowrap ${value === null ? 'text-white/90' : tone}`}
                                     >
                                         {figure(value)}
                                     </p>
@@ -331,7 +366,7 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
                 <div className="mt-3 rounded-2xl border border-[#cdeddb] bg-rz-surface p-4 dark:border-rz-border">
                     <p className="text-[11px] font-bold tracking-[.02em] text-[#3d7a68] uppercase dark:text-rz-accent-app-text">
                         {t('business.apply.business.capacity')}{' '}
-                        <span className="text-[10.5px] opacity-80">
+                        <span className="text-[10.5px]">
                             {t('business.apply.business.capacity_basis')}
                         </span>
                     </p>

@@ -17,12 +17,12 @@ import type { PolicyItem, Rating, StatValue, Tone } from '@/types/admin';
  * Gradient fills behind content are flattened to their dominant stop (brand rule 08).
  */
 
-/** #7b8699 — column headers and labels. */
-export const LABEL = 'text-[#7b8699] dark:text-rz-muted';
-/** #8895ab — small captions inside cards. */
-export const CAPTION = 'text-[#8895ab] dark:text-rz-muted';
+/** #636e86 — column headers and labels (the design's #7b8699, darkened to meet WCAG AA). */
+export const LABEL = 'text-[#636e86] dark:text-rz-muted';
+/** #636e86 — small captions inside cards (the design's #8895ab, darkened to meet WCAG AA). */
+export const CAPTION = 'text-[#636e86] dark:text-rz-muted';
 /** #5a6a86 — explanatory body copy in drawers. */
-export const EXPLAIN = 'text-[#5a6a86] dark:text-rz-secondary';
+export const EXPLAIN = 'text-[#4f5d77] dark:text-rz-secondary';
 /** The white card with the design's #edf1f8 edge. */
 export const CARD =
     'border border-[#edf1f8] bg-rz-surface dark:border-rz-border';
@@ -39,20 +39,20 @@ export const ROW_RULE = 'border-b border-[#f0f4fa] dark:border-rz-divider';
 
 export const TONE_TEXT: Record<Tone, string> = {
     blue: 'text-rz-accent-app-text',
-    green: 'text-[#1d9e75] dark:text-[#3fcda0]',
-    amber: 'text-[#c2661f] dark:text-[#f0a060]',
-    red: 'text-[#e5484d] dark:text-[#ff6b6f]',
+    green: 'text-[#157357] dark:text-[#3fcda0]',
+    amber: 'text-[#a4521a] dark:text-[#f0a060]',
+    red: 'text-[#b3352a] dark:text-[#ff6b6f]',
     purple: 'text-[#7c3aed] dark:text-[#b199fb]',
     grey: 'text-rz-body',
 };
 
 export const TONE_CHIP: Record<Tone, string> = {
     blue: 'bg-[rgba(30,58,255,.12)] text-rz-accent-app-text dark:bg-[rgba(99,120,255,.18)]',
-    green: 'bg-[rgba(29,158,117,.12)] text-[#1d9e75] dark:text-[#3fcda0]',
-    amber: 'bg-[rgba(210,120,45,.14)] text-[#c2661f] dark:text-[#f0a060]',
-    red: 'bg-[rgba(255,77,79,.12)] text-[#e5484d] dark:text-[#ff6b6f]',
+    green: 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#3fcda0]',
+    amber: 'bg-[rgba(210,120,45,.14)] text-[#a4521a] dark:text-[#f0a060]',
+    red: 'bg-[rgba(255,77,79,.12)] text-[#b3352a] dark:text-[#ff6b6f]',
     purple: 'bg-[rgba(124,58,237,.12)] text-[#7c3aed] dark:text-[#b199fb]',
-    grey: 'bg-[rgba(105,116,138,.12)] text-rz-body',
+    grey: 'bg-[rgba(105,116,138,.12)] text-rz-secondary',
 };
 
 export const TONE_DOT: Record<Tone, string> = {
@@ -67,10 +67,10 @@ export const TONE_DOT: Record<Tone, string> = {
 /** The eight-accent KPI palette (design `_KPI_TINTS`): rail colour, tile edge and label colour. */
 const KPI_ACCENTS = [
     ['bg-[#1e3aff]', 'border-[#e2ebfd]', 'text-[#5b7099]'],
-    ['bg-[#1d9e75]', 'border-[#dbf0e3]', 'text-[#5a8570]'],
+    ['bg-[#1d9e75]', 'border-[#dbf0e3]', 'text-[#3f6b56]'],
     ['bg-[#5b2bd9]', 'border-[#e7e1fb]', 'text-[#6f6396]'],
-    ['bg-[#c2661f]', 'border-[#f6e6cc]', 'text-[#96774a]'],
-    ['bg-[#0891b2]', 'border-[#d8eef4]', 'text-[#4f7f8c]'],
+    ['bg-[#c2661f]', 'border-[#f6e6cc]', 'text-[#7a5d33]'],
+    ['bg-[#0891b2]', 'border-[#d8eef4]', 'text-[#3d6b77]'],
     ['bg-[#db2777]', 'border-[#f8dfe9]', 'text-[#95637a]'],
     ['bg-[#0c1830] dark:bg-[#93a1bd]', 'border-[#e6ecf5]', 'text-[#6b7688]'],
     ['bg-[#e5484d]', 'border-[#f7dcdd]', 'text-[#96666a]'],
@@ -162,14 +162,14 @@ export function useStatFormatter(): (stat: StatValue) => string {
 }
 
 const RATING_TONE = {
-    strong: 'bg-[rgba(29,158,117,.12)] text-[#17795a] dark:text-[#3fcda0]',
+    strong: 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#3fcda0]',
     stable: 'bg-[rgba(30,58,255,.1)] text-[#1832c8] dark:text-[#99a3ff]',
     weak: 'bg-[rgba(194,102,31,.13)] text-[#a55418] dark:text-[#f0a060]',
     distressed: 'bg-[rgba(229,72,77,.12)] text-[#9c3a0a] dark:text-[#ff8285]',
 } as const;
 
 export const RATING_TEXT = {
-    strong: 'text-[#17795a] dark:text-[#3fcda0]',
+    strong: 'text-[#157357] dark:text-[#3fcda0]',
     stable: 'text-[#1832c8] dark:text-[#99a3ff]',
     weak: 'text-[#a55418] dark:text-[#f0a060]',
     distressed: 'text-[#9c3a0a] dark:text-[#ff8285]',
@@ -225,7 +225,7 @@ export function Chip({
 /** FROZEN / RESTRICTED micro-badge: 9.5px/800, red on 12% red. */
 export function MicroBadge({ children }: { children: ReactNode }) {
     return (
-        <span className="shrink-0 rounded-[5px] bg-[rgba(255,77,79,.12)] px-[7px] py-0.5 text-[9.5px] font-extrabold tracking-[.05em] text-[#e5484d] uppercase dark:text-[#ff6b6f]">
+        <span className="shrink-0 rounded-[5px] bg-[rgba(255,77,79,.12)] px-[7px] py-0.5 text-[9.5px] font-extrabold tracking-[.05em] text-[#b3352a] uppercase dark:text-[#ff6b6f]">
             {children}
         </span>
     );
@@ -242,7 +242,7 @@ export function EmptyState({
     action?: ReactNode;
 }) {
     return (
-        <div className="p-[50px] text-center text-[#7b8699] dark:text-rz-muted">
+        <div className="p-[50px] text-center text-[#636e86] dark:text-rz-muted">
             <div className="flex justify-center">
                 <svg
                     width="34"
@@ -301,7 +301,7 @@ export function InfoTip({
             tabIndex={0}
             role="button"
             aria-label={label}
-            className="group relative inline-flex size-[15px] shrink-0 cursor-help items-center justify-center rounded-full bg-[#e5eaf2] align-middle text-[9.5px] leading-none font-extrabold text-[#7b8699] not-italic transition-colors outline-none hover:bg-[#1e3aff] hover:text-white focus:bg-[#1e3aff] focus:text-white dark:bg-rz-surface-muted dark:text-rz-muted"
+            className="group relative inline-flex size-[15px] shrink-0 cursor-help items-center justify-center rounded-full bg-[#e5eaf2] align-middle text-[9.5px] leading-none font-extrabold text-[#636e86] not-italic transition-colors outline-none hover:bg-[#1e3aff] hover:text-white focus:bg-[#1e3aff] focus:text-white dark:bg-rz-surface-muted dark:text-rz-muted"
         >
             <span aria-hidden>i</span>
             <span
@@ -426,7 +426,7 @@ export function PillTabs({
                     {tab.count !== null && (
                         <>
                             {' '}
-                            <span className="opacity-70">{tab.count}</span>
+                            <span className="opacity-90">{tab.count}</span>
                         </>
                     )}
                 </Link>
@@ -470,7 +470,7 @@ export function SegmentedChips({
                     )}
                 >
                     {chip.label}{' '}
-                    <span className="font-semibold opacity-55">
+                    <span className="font-semibold opacity-80">
                         {chip.count}
                     </span>
                 </Link>
@@ -505,6 +505,7 @@ export function HeadCell({
 export function TableCard({
     label,
     minWidth,
+    header,
     children,
     empty,
     footer,
@@ -512,6 +513,8 @@ export function TableCard({
 }: {
     label: string;
     minWidth: string;
+    /** The card's title bar and filters: scrolled with the table but kept outside its rows. */
+    header?: ReactNode;
     children: ReactNode;
     /** An empty state, set outside the horizontal scroller so it stays centred on a phone. */
     empty?: ReactNode;
@@ -527,13 +530,18 @@ export function TableCard({
                 className,
             )}
         >
-            <div className="rz-hscroll overflow-x-auto">
-                <div
-                    role="table"
-                    aria-label={label}
-                    className={cn(minWidth, 'lg:min-w-0')}
-                >
-                    {children}
+            {/* Focusable so a keyboard can scroll a table wider than a phone (WCAG 2.1.1). */}
+            <div
+                role="group"
+                aria-label={label}
+                tabIndex={0}
+                className="rz-hscroll overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rz-focus-border"
+            >
+                <div className={cn(minWidth, 'lg:min-w-0')}>
+                    {header}
+                    <div role="table" aria-label={label}>
+                        {children}
+                    </div>
                 </div>
             </div>
             {empty}

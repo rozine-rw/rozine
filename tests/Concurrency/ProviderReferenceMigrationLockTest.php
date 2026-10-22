@@ -13,22 +13,30 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     $migration = require database_path('migrations/2026_10_03_110000_create_provider_reference_registry.php');
     $shape = fn (): array => [
         DB::select("SELECT conname, pg_get_constraintdef(oid) AS definition FROM pg_constraint WHERE conrelid IN ('wallet_deposit_intents'::regclass,
-            'provider_references'::regclass) ORDER BY conname"),
+            'provider_references'::regclass, 'ledger_entries'::regclass, 'ledger_accounts'::regclass) ORDER BY conname"),
         DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
             AND tgrelid IN ('wallet_deposit_intents'::regclass, 'provider_references'::regclass) ORDER BY tgname"),
+        DB::select("SELECT proname, pg_get_functiondef(oid) AS definition FROM pg_proc WHERE pronamespace = current_schema()::regnamespace
+            AND proname IN ('ledger_entry_wallet_owner', 'ledger_account_wallet_owner') ORDER BY proname"),
     ];
     $installed = $shape();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
-    $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals): void {
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
         $businessDeposits->up();
         $businessRepayments->up();
         $businessWithdrawals->up();
+        $platformFee->up();
+        $automaticDisbursement->up();
     };
+    $automaticDisbursement->down();
+    $platformFee->down();
     $businessWithdrawals->down();
     $businessRepayments->down();
     $businessDeposits->down();

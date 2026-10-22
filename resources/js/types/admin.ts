@@ -97,6 +97,73 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
         | 'auditors'
         | 'staff'
         | 'events';
+    /** Policies only: each rule the platform enforces, under its design tab. */
+    rules?: PolicyRule[];
+    /** A KPI tile's figure by its design key, where the server reads one (Finance). */
+    figures?: Partial<Record<string, Money>>;
+    /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
+    streams?: FinanceStream[];
+    /** Engines and Ratings, for underwriters: the engine's settings and the rating scorecard. */
+    engine?: EngineRow[];
+    /** A KPI tile's count by its design key, where the server reads one (Ratings). */
+    counts?: Partial<Record<string, number>>;
+    /** Ratings only, for whoever may view Businesses: every Business with a published rating. */
+    book?: RatingBookRow[];
+};
+
+/** One rated Business in the rating book. */
+export type RatingBookRow = {
+    key: string;
+    business: string;
+    sector: string;
+    rating: Rating;
+};
+
+/** One engine setting under its design tab, with the rule set version it comes from. */
+export type EngineRow = {
+    tab: string;
+    key:
+        | 'target_dscr'
+        | 'minimum_dscr'
+        | 'repeat_monthly_dscr'
+        | 'min_principal'
+        | 'max_principal'
+        | 'issuance_unit'
+        | 'first_issue_months'
+        | 'repeat_issue_months'
+        | 'tenors'
+        | 'rate_band'
+        | 'platform_fee'
+        | 'cpa_share'
+        | 'coverage'
+        | 'cfads_margin'
+        | 'nocf_stability'
+        | 'positive_months'
+        | 'history_depth'
+        | 'conduct'
+        | 'new_issuer_conduct'
+        | 'instalment_conduct'
+        | 'report_conduct'
+        | 'adverse_conduct_cap'
+        | 'default_cap'
+        | 'strong'
+        | 'stable'
+        | 'weak'
+        | 'distressed';
+    value: string;
+    source: string;
+};
+
+export type FinanceStream = {
+    key: 'platform_fee' | 'audit_partner_share' | 'deposit_fees';
+    paid_by: 'business' | 'investor';
+    collected: Money;
+};
+
+/** One rule in effect, with the policy version it comes from when the rule carries one. */
+export type PolicyRule = PolicyItem & {
+    tab: string;
+    version: string | null;
 };
 
 /** Every section the frame can mark as current. */
@@ -161,7 +228,22 @@ export type PolicyItem = {
         | 'min_statement_years'
         | 'rdb_certificate'
         | 'max_notes'
-        | 'dual_control_threshold';
+        | 'dual_control_threshold'
+        | 'platform_fee'
+        | 'cpa_share'
+        | 'listing_fee'
+        | 'repayment_fee'
+        | 'minimum_age'
+        | 'identity_evidence'
+        | 'complaint_acknowledge'
+        | 'complaint_resolve'
+        | 'min_principal'
+        | 'max_principal'
+        | 'tenors'
+        | 'first_issue_months'
+        | 'repeat_issue_months'
+        | 'withdrawal_min'
+        | 'withdrawal_max';
     value: string;
 };
 
@@ -552,9 +634,41 @@ export type StaffPartyRow = {
     initials: string;
     /** The operator's most privileged role; null when they hold none. */
     role: StaffRole | null;
+    /** Every role the operator holds, most privileged first. */
+    roles: StaffRole[];
     frozen: boolean;
     you: boolean;
     link: RouteLink;
+};
+
+/** A capability a staff role can grant (`StaffPermission`); every operator may open the console. */
+export type StaffPermissionKey =
+    | 'admin.open'
+    | 'businesses.view'
+    | 'businesses.verify'
+    | 'investors.verify'
+    | 'applications.review'
+    | 'audit.partners.verify'
+    | 'audit.assignments.manage'
+    | 'audit.reports.view'
+    | 'consent.documents.record'
+    | 'ledger.view'
+    | 'disbursements.view'
+    | 'disbursements.hold'
+    | 'disbursements.requery'
+    | 'staging.mail.testers.manage'
+    | 'reconciliation.view'
+    | 'exceptions.view'
+    | 'messaging.view'
+    | 'primary.view'
+    | 'payments.view'
+    | 'complaints.answer'
+    | 'health.view';
+
+/** One row of the Staff & Roles permission matrix: a capability and the roles that grant it. */
+export type PermissionMatrixRow = {
+    key: StaffPermissionKey;
+    roles: StaffRole[];
 };
 
 export type PartyDirectory =
@@ -695,6 +809,8 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     total: number;
     directory: PartyDirectory;
     party: PartyDetail | null;
+    /** Staff & Roles only: what each role may do. */
+    permission_matrix?: PermissionMatrixRow[];
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1262,6 +1378,53 @@ export type PrimaryMarketRaise = {
     days_left: number;
 };
 
+/** The Notes register offers no command; `allowed_actions` is always empty. */
+export type StaffNotesPageContract = {
+    contract_version: 'staff-notes-v1';
+    staff_access_version: 'staff-access-v1';
+    server_time: string;
+    allowed_actions: never[];
+};
+
+export type NotesStatKey = 'total' | 'live' | 'repaying' | 'raised';
+
+/**
+ * Where a note sits now, as the dashboard counts it: `live` while it raises, `funded` once full and
+ * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
+ * its payout failed. `matured` is a tab only: servicing records no final repayment yet.
+ */
+export type NoteState = 'live' | 'funded' | 'repaying' | 'failed';
+
+export type NotesTabKey = 'all' | 'live' | 'repaying' | 'matured' | 'failed';
+
+export type NoteRegisterRow = {
+    id: string;
+    reference: string;
+    business: string;
+    sector: string;
+    state: NoteState;
+    rate_pct: string;
+    term_months: number;
+    funded_pct: string;
+    raised: Money;
+    target: Money;
+    investors: number;
+    listed_at: string;
+};
+
+export type AdminNotesProps = AdminFrameShellProps &
+    StaffNotesPageContract & {
+        stats: { key: NotesStatKey; value: StatValue }[];
+        tabs: {
+            key: NotesTabKey;
+            count: number;
+            link: RouteLink;
+            active: boolean;
+        }[];
+        notes: NoteRegisterRow[];
+        pagination: Pagination;
+    };
+
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
     StaffPrimaryMarketPageContract & {
         stats: { key: PrimaryMarketStatKey; value: StatValue }[];
@@ -1304,6 +1467,8 @@ export type AdminPaymentsProps = AdminFrameShellProps &
         from: string;
         stats: { key: PaymentsStatKey; value: Money; count: number }[];
         in_flight: number;
+        /** The fee schedule money moves under. */
+        policy: PolicyItem[];
         /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
         bars: { label: string; amount: Money; height_pct: number }[];
         payouts: PayoutInFlight[];
@@ -1573,6 +1738,8 @@ export type InvestorVerificationReview = {
 export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
     contract_version: 'staff-investor-verifications-v1';
     active_tab: 'submitted' | 'decided';
+    /** The compliance rules the queue is decided under. */
+    policy: PolicyItem[];
     tabs: {
         key: 'submitted' | 'decided';
         count: number;

@@ -270,6 +270,10 @@ arch('account devices are only accessed by their adapter')
     ->expect('App\Models\AccountDevice')
     ->toOnlyBeUsedIn(['App\Infrastructure\Identity\EloquentAccountDevices', 'App\Models']);
 
+arch('Investor cart lines are only accessed by their adapter')
+    ->expect('App\Models\InvestorCartLine')
+    ->toOnlyBeUsedIn(['App\Infrastructure\Primary\EloquentInvestorCart', 'App\Models']);
+
 arch('command outcomes are only accessed by the journal adapter')
     ->expect('App\Models\CommandOperation')
     ->toOnlyBeUsedIn(['App\Infrastructure\Operations', 'App\Models', 'Database\Factories']);
@@ -470,7 +474,7 @@ arch('the named wallet testers are reached only by the deposit admission, the st
         'App\Console\Commands\PrepareStagingWallet']);
 
 it('has concrete targets for the disbursement boundary', function (): void {
-    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent',
+    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\PrimaryHolding',
         'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
@@ -482,7 +486,7 @@ it('has concrete targets for the disbursement boundary', function (): void {
 })->group('arch');
 
 arch('disbursement records are only accessed by the disbursement adapters')
-    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent',
+    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);

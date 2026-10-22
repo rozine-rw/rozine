@@ -41,6 +41,18 @@
                 "method": "post"
             }
         },
+        "earnings": {
+            "month": "2026-10-01",
+            "this_month": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "total": {
+                "currency": "RWF",
+                "amount": "0"
+            },
+            "lines": []
+        },
         "owed": [],
         "owed_complete": true,
         "reports_complete": true,

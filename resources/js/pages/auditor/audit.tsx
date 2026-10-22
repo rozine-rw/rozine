@@ -221,7 +221,7 @@ function AuditSheet(props: AuditProcedureProps) {
                 serverTime={props.server_time}
                 dueAt={audit.deadline.due_at}
                 steps={steps}
-                clock={!blocked}
+                clock={!terminal}
             />
         ) : (
             <>

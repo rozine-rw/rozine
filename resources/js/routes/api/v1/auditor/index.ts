@@ -90,7 +90,7 @@ notices.form = noticesForm
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ profile.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 profile.url = (options?: RouteQueryOptions) => {
@@ -114,7 +114,7 @@ profile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -124,7 +124,7 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -134,7 +134,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -144,7 +144,7 @@ const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -154,7 +154,7 @@ profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Api\V1\AuditorProfileController::profile
-* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:41
+* @see app/Http/Controllers/Api/V1/AuditorProfileController.php:42
 * @route '/api/v1/auditor/profile'
 */
 profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

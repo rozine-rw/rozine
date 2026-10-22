@@ -19,7 +19,7 @@ type NoteFilter = (typeof FILTERS)[number];
 const FILTER_OF: Record<NoteStatus, NoteFilter> = {
     draft: 'draft',
     active: 'active',
-    funded: 'repaying',
+    funded: 'active',
     repaying: 'repaying',
     completed: 'archived',
     failed: 'failed',
@@ -64,7 +64,10 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
     return (
         <article className="overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
             <div className="relative h-[138px] lg:hidden">
-                <div className="rz-hscroll absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden">
+                <div
+                    tabIndex={0}
+                    className="rz-hscroll absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+                >
                     {BANNERS.map((banner) => (
                         <div
                             key={banner.glyph}
@@ -78,20 +81,23 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
                     ))}
                 </div>
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(8,11,20,.3)_0%,rgba(8,11,20,0)_34%,rgba(8,11,20,.93)_100%)]" />
-                <span
-                    className={cn(
-                        'pointer-events-none absolute top-[11px] right-3 inline-flex items-center gap-[5px] rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
-                        STATUS_TONE[note.status],
-                    )}
-                >
-                    {status}
+                {/* An opaque backing keeps the tinted chip legible over the photo. */}
+                <span className="pointer-events-none absolute top-[11px] right-3 rounded-[10px] bg-white dark:bg-rz-surface">
+                    <span
+                        className={cn(
+                            'inline-flex items-center gap-[5px] rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
+                            STATUS_TONE[note.status],
+                        )}
+                    >
+                        {status}
+                    </span>
                 </span>
                 <div className="pointer-events-none absolute right-[13px] bottom-[11px] left-[13px]">
                     <h3 className="text-[15.5px] font-semibold text-white [text-shadow:0_1px_4px_rgba(0,0,0,.5)]">
                         {note.title}
                     </h3>
                     <p className="mt-0.5 text-[11px] text-white [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">
-                        {note.id} · {created}
+                        {created}
                     </p>
                 </div>
             </div>
@@ -112,7 +118,7 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
                                 {note.title}
                             </span>
                             <span className="block truncate text-[10.5px] text-rz-secondary">
-                                {note.id} · {created}
+                                {created}
                             </span>
                         </span>
                         <span

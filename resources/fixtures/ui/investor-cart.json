@@ -1,7 +1,10 @@
 {
     "component": "investor/cart",
     "props": {
+        "contract_version": "investor-primary-v1",
         "identity_context_revision": 3,
+        "server_time": "2026-09-23T09:00:00+02:00",
+        "allowed_actions": [],
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -35,6 +38,328 @@
                 "url": "/preview/launcher-ready",
                 "method": "get"
             }
+        },
+        "cart": {
+            "lines": [
+                {
+                    "campaign_id": "cmp_greenleaf",
+                    "deal": {
+                        "campaign_id": "cmp_greenleaf",
+                        "revision": 3,
+                        "name": "GreenLeaf Agro",
+                        "accent": "green",
+                        "industry": "Agriculture",
+                        "district": "Gasabo",
+                        "rating": {
+                            "band": "strong",
+                            "score": "4.2"
+                        },
+                        "audited": true,
+                        "just_listed": false,
+                        "photos": [
+                            {
+                                "url": null,
+                                "caption": "Storefront"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Operations"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Warehouse"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Team"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Products"
+                            }
+                        ],
+                        "raised": {
+                            "currency": "RWF",
+                            "amount": "32800000"
+                        },
+                        "target": {
+                            "currency": "RWF",
+                            "amount": "42000000"
+                        },
+                        "funded_pct": "78.1",
+                        "left_to_fill": {
+                            "currency": "RWF",
+                            "amount": "9200000"
+                        },
+                        "avg_monthly_revenue": {
+                            "currency": "RWF",
+                            "amount": "32000000"
+                        },
+                        "units": {
+                            "total": "8400",
+                            "available": "1840",
+                            "reserved": "0",
+                            "committed": "6560"
+                        },
+                        "unit_price": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "investors": 647,
+                        "lifecycle": "live",
+                        "restriction": null,
+                        "clock": {
+                            "starts_at": "2026-09-05T09:00:00+02:00",
+                            "expires_at": "2026-10-05T09:00:00+02:00"
+                        },
+                        "listing_fee": {
+                            "currency": "RWF",
+                            "amount": "0"
+                        },
+                        "story": "GreenLeaf Agro is a vertically integrated agriculture business supplying maize, beans and horticulture across the Eastern Province. Profitable for 6 consecutive years, the company is raising to expand cold-storage capacity and double export volumes.",
+                        "rate_pct": "13.5",
+                        "term_months": 6,
+                        "links": {
+                            "detail": {
+                                "url": "/preview/investor-deal",
+                                "method": "get"
+                            }
+                        }
+                    },
+                    "units": "10",
+                    "max_units": "1840",
+                    "binding": "availability",
+                    "filled": false,
+                    "unit_return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "checkout": {
+                        "url": "/preview/investor-checkout",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "units": {
+                            "url": "/preview/investor-cart",
+                            "method": "post"
+                        },
+                        "remove": {
+                            "url": "/preview/investor-cart",
+                            "method": "post"
+                        }
+                    }
+                },
+                {
+                    "campaign_id": "cmp_volt",
+                    "deal": {
+                        "campaign_id": "cmp_volt",
+                        "revision": 3,
+                        "name": "Volt Energy Rwanda",
+                        "accent": "amber",
+                        "industry": "Energy",
+                        "district": "Rubavu",
+                        "rating": {
+                            "band": "stable",
+                            "score": "3.9"
+                        },
+                        "audited": false,
+                        "just_listed": false,
+                        "photos": [
+                            {
+                                "url": null,
+                                "caption": "Storefront"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Operations"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Warehouse"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Team"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Products"
+                            }
+                        ],
+                        "raised": {
+                            "currency": "RWF",
+                            "amount": "21100000"
+                        },
+                        "target": {
+                            "currency": "RWF",
+                            "amount": "34000000"
+                        },
+                        "funded_pct": "62.1",
+                        "left_to_fill": {
+                            "currency": "RWF",
+                            "amount": "12900000"
+                        },
+                        "avg_monthly_revenue": {
+                            "currency": "RWF",
+                            "amount": "26000000"
+                        },
+                        "units": {
+                            "total": "6800",
+                            "available": "2580",
+                            "reserved": "0",
+                            "committed": "4220"
+                        },
+                        "unit_price": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "investors": 418,
+                        "lifecycle": "live",
+                        "restriction": null,
+                        "clock": {
+                            "starts_at": "2026-09-05T09:00:00+02:00",
+                            "expires_at": "2026-10-14T09:00:00+02:00"
+                        },
+                        "listing_fee": {
+                            "currency": "RWF",
+                            "amount": "0"
+                        },
+                        "story": "Volt Energy installs and operates solar mini-grids for rural cooperatives. Recurring revenue from 9,000+ connections underpins a stable repayment profile.",
+                        "rate_pct": "14.0",
+                        "term_months": 6,
+                        "links": {
+                            "detail": {
+                                "url": "/preview/investor-deal",
+                                "method": "get"
+                            }
+                        }
+                    },
+                    "units": "4",
+                    "max_units": "2580",
+                    "binding": "availability",
+                    "filled": false,
+                    "unit_return": {
+                        "currency": "RWF",
+                        "amount": "700"
+                    },
+                    "checkout": {
+                        "url": "/preview/investor-checkout",
+                        "method": "get"
+                    },
+                    "actions": {
+                        "units": {
+                            "url": "/preview/investor-cart",
+                            "method": "post"
+                        },
+                        "remove": {
+                            "url": "/preview/investor-cart",
+                            "method": "post"
+                        }
+                    }
+                },
+                {
+                    "campaign_id": "cmp_sebeya",
+                    "deal": {
+                        "campaign_id": "cmp_sebeya",
+                        "revision": 3,
+                        "name": "Sebeya Logistics",
+                        "accent": "blue",
+                        "industry": "Logistics",
+                        "district": "Musanze",
+                        "rating": {
+                            "band": "strong",
+                            "score": "4.4"
+                        },
+                        "audited": true,
+                        "just_listed": false,
+                        "photos": [
+                            {
+                                "url": null,
+                                "caption": "Storefront"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Operations"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Warehouse"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Team"
+                            },
+                            {
+                                "url": null,
+                                "caption": "Products"
+                            }
+                        ],
+                        "raised": {
+                            "currency": "RWF",
+                            "amount": "60000000"
+                        },
+                        "target": {
+                            "currency": "RWF",
+                            "amount": "60000000"
+                        },
+                        "funded_pct": "100.0",
+                        "left_to_fill": {
+                            "currency": "RWF",
+                            "amount": "0"
+                        },
+                        "avg_monthly_revenue": {
+                            "currency": "RWF",
+                            "amount": "43000000"
+                        },
+                        "units": {
+                            "total": "12000",
+                            "available": "0",
+                            "reserved": "0",
+                            "committed": "12000"
+                        },
+                        "unit_price": {
+                            "currency": "RWF",
+                            "amount": "5000"
+                        },
+                        "investors": 1203,
+                        "lifecycle": "sold_out_pending_settlement",
+                        "restriction": null,
+                        "clock": {
+                            "starts_at": "2026-09-05T09:00:00+02:00",
+                            "expires_at": "2026-09-23T23:08:21+02:00"
+                        },
+                        "listing_fee": {
+                            "currency": "RWF",
+                            "amount": "0"
+                        },
+                        "story": "Sebeya Logistics operates a modern fleet serving cross-border trade between Rwanda, Uganda and DRC. The raise funds fleet expansion and a new Musanze distribution hub.",
+                        "rate_pct": "12.5",
+                        "term_months": 5,
+                        "links": {
+                            "detail": {
+                                "url": "/preview/investor-deal",
+                                "method": "get"
+                            }
+                        }
+                    },
+                    "units": "6",
+                    "max_units": "0",
+                    "binding": "availability",
+                    "filled": true,
+                    "unit_return": {
+                        "currency": "RWF",
+                        "amount": "625"
+                    },
+                    "checkout": null,
+                    "actions": {
+                        "units": null,
+                        "remove": {
+                            "url": "/preview/investor-cart",
+                            "method": "post"
+                        }
+                    }
+                }
+            ]
         }
     }
 }

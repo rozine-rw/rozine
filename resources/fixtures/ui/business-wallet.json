@@ -221,6 +221,24 @@
             ],
             "pagination": {
                 "next": null
+            },
+            "range": {
+                "from": null,
+                "to": null,
+                "base": {
+                    "url": "/preview/business-wallet",
+                    "method": "get"
+                }
+            }
+        },
+        "exports": {
+            "pdf": {
+                "url": "/preview/business-wallet-statement.pdf",
+                "method": "get"
+            },
+            "csv": {
+                "url": "/preview/business-wallet-statement.csv",
+                "method": "get"
             }
         },
         "receipt": null,

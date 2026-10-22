@@ -1,12 +1,16 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorCart from '@/pages/investor/cart';
 import InvestorMarket from '@/pages/investor/market';
-import type { InvestorShellPageProps } from '@/types/investor';
+import type {
+    C3InvestorCartProps,
+    InvestorShellPageProps,
+} from '@/types/investor';
+import emptyCartFixture from '../../../resources/fixtures/ui/investor-cart-empty.json';
 import cartFixture from '../../../resources/fixtures/ui/investor-cart.json';
 import marketFixture from '../../../resources/fixtures/ui/investor-market.json';
-import { resetInertia, setWide } from './inertia-mock';
+import { answers, fails, inertia, resetInertia, setWide } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -14,6 +18,8 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const props = (fixture: { props: unknown }) =>
     structuredClone(fixture.props) as InvestorShellPageProps;
+const cart = (fixture: { props: unknown } = cartFixture) =>
+    structuredClone(fixture.props) as C3InvestorCartProps;
 
 beforeEach(() => {
     resetInertia();
@@ -49,7 +55,7 @@ describe('Investor tabs', () => {
     });
 
     it('leaves out a tab the server does not link', () => {
-        const page = props(cartFixture);
+        const page = cart(emptyCartFixture);
         page.links.market = null;
 
         render(<InvestorCart {...page} />);
@@ -60,6 +66,31 @@ describe('Investor tabs', () => {
         expect(
             screen.getAllByRole('link', { name: 'Cart' })[0],
         ).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('counts the cart lines on the Cart tab, and draws no badge for an empty cart', () => {
+        inertia.shared = { cart_count: 3 };
+        const { unmount } = render(
+            <InvestorCart {...cart(emptyCartFixture)} />,
+        );
+
+        const tabs = screen
+            .getAllByRole('link')
+            .filter((link) => link.textContent.includes('Cart'));
+        expect(tabs.map((link) => link.textContent)).toEqual([
+            '3Cart (3)',
+            '3Cart (3)',
+        ]);
+        unmount();
+
+        inertia.shared = { cart_count: 0 };
+        render(<InvestorCart {...cart(emptyCartFixture)} />);
+        expect(
+            screen
+                .getAllByRole('link')
+                .filter((link) => link.textContent.includes('Cart'))
+                .map((link) => link.textContent),
+        ).toEqual(['Cart', 'Cart']);
     });
 });
 
@@ -234,7 +265,7 @@ describe('Market', () => {
 
 describe('Cart', () => {
     it('shows the design empty cart and its way back to Deals on a phone', () => {
-        render(<InvestorCart {...props(cartFixture)} />);
+        render(<InvestorCart {...cart(emptyCartFixture)} />);
 
         expect(screen.getByRole('heading', { name: 'Cart' })).toHaveClass(
             'text-2xl',
@@ -252,7 +283,7 @@ describe('Cart', () => {
 
     it('draws the desktop header and offers no way to Deals the server does not link', () => {
         setWide(true);
-        const page = props(cartFixture);
+        const page = cart(emptyCartFixture);
         page.links.deals = null;
 
         render(<InvestorCart {...page} />);
@@ -263,5 +294,298 @@ describe('Cart', () => {
         expect(
             screen.queryByRole('link', { name: 'Browse deals' }),
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('Cart with notes', () => {
+    it('saves successive quantities in order even when an earlier request is slow', async () => {
+        vi.useFakeTimers();
+        let finishFirst!: (answer: unknown) => void;
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    finishFirst = resolve;
+                }),
+        );
+        inertia.queue.push(answers({ data: { units: 30 } }));
+        render(<InvestorCart {...cart()} />);
+        const slider = screen.getByRole('slider', {
+            name: 'Number of notes in GreenLeaf Agro',
+        });
+
+        fireEvent.change(slider, { target: { value: '20' } });
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        fireEvent.change(slider, { target: { value: '30' } });
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        expect(inertia.calls).toHaveLength(1);
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('170,000');
+
+        await act(async () => {
+            finishFirst({ data: { units: 20 } });
+        });
+        expect(inertia.calls.map((call) => call.body)).toEqual([
+            { identity_context_revision: 3, units: 20 },
+            { identity_context_revision: 3, units: 30 },
+        ]);
+        vi.useRealTimers();
+    });
+
+    it('waits for an in-flight save before removing that line and refreshes the badge with the cart', async () => {
+        vi.useFakeTimers();
+        let finishSave!: (answer: unknown) => void;
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    finishSave = resolve;
+                }),
+        );
+        inertia.queue.push(answers({ data: { removed: true } }));
+        inertia.shared = { cart_count: 3 };
+        const page = cart();
+        const { rerender } = render(<InvestorCart {...page} />);
+
+        fireEvent.change(
+            screen.getByRole('slider', {
+                name: 'Number of notes in GreenLeaf Agro',
+            }),
+            { target: { value: '20' } },
+        );
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Remove GreenLeaf Agro from cart',
+            }),
+        );
+        expect(
+            screen.getByRole('slider', {
+                name: 'Number of notes in GreenLeaf Agro',
+            }),
+        ).toBeDisabled();
+        expect(inertia.calls).toHaveLength(1);
+
+        await act(async () => {
+            finishSave({ data: { units: 20 } });
+        });
+        expect(inertia.calls.map((call) => call.body)).toEqual([
+            { identity_context_revision: 3, units: 20 },
+            { identity_context_revision: 3 },
+        ]);
+        const reload = inertia.reload.mock.lastCall![0];
+        expect(reload).not.toHaveProperty('only');
+        const refreshed = structuredClone(page);
+        refreshed.cart!.lines.shift();
+        inertia.shared = { cart_count: 2 };
+        rerender(<InvestorCart {...refreshed} />);
+        await act(async () => reload.onFinish());
+        expect(
+            screen.queryByTestId('cart-line-cmp_greenleaf'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByRole('link', { name: /^Cart\s*\(2\)$/u }),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
+
+    it('shows each line with the deal facts and its return, and a total of the open lines only', () => {
+        render(<InvestorCart {...cart()} />);
+
+        expect(screen.getByText('2 notes')).toBeInTheDocument();
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('70,000');
+        expect(screen.getByTestId('cart-get-back')).toHaveTextContent(
+            'RWF 79,550',
+        );
+        expect(
+            screen.getByText(
+                "1 note is fully funded and won't be checked out.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Each note checks out on its own for now: open its checkout to reserve and pay.',
+            ),
+        ).toBeInTheDocument();
+
+        const greenleaf = within(screen.getByTestId('cart-line-cmp_greenleaf'));
+
+        expect(
+            greenleaf.getByRole('link', { name: 'GreenLeaf Agro' }),
+        ).toHaveAttribute('href', '/preview/investor-deal');
+        expect(greenleaf.getByText('Agriculture · Gasabo')).toBeInTheDocument();
+        expect(greenleaf.getByText('RWF 32,800,000')).toBeInTheDocument();
+        expect(greenleaf.getByText('of RWF 42M')).toBeInTheDocument();
+        expect(greenleaf.getByText('RWF 32,000,000')).toBeInTheDocument();
+        expect(greenleaf.getByText('RWF 9,200,000')).toBeInTheDocument();
+        expect(greenleaf.getByText('6,560')).toBeInTheDocument();
+        expect(greenleaf.getByText('13.5%')).toBeInTheDocument();
+        expect(greenleaf.getByTestId('line-invest')).toHaveTextContent(
+            '50,000',
+        );
+        expect(greenleaf.getByTestId('line-get-back')).toHaveTextContent(
+            '56,750',
+        );
+        expect(
+            greenleaf.getByRole('slider', {
+                name: 'Number of notes in GreenLeaf Agro',
+            }),
+        ).toHaveValue('10');
+        expect(
+            greenleaf.getByRole('link', { name: 'Check out' }),
+        ).toHaveAttribute('href', '/preview/investor-checkout?units=10');
+
+        const sebeya = within(screen.getByTestId('cart-line-cmp_sebeya'));
+
+        expect(sebeya.queryByRole('slider')).not.toBeInTheDocument();
+        expect(
+            sebeya.queryByRole('link', { name: 'Check out' }),
+        ).not.toBeInTheDocument();
+        expect(
+            sebeya.getByRole('button', { name: 'Fully funded · Remove' }),
+        ).toBeInTheDocument();
+        expect(sebeya.getByText('Fully funded')).toBeInTheDocument();
+    });
+
+    it('moves the total but saves nothing for a line the server offers no change for', () => {
+        vi.useFakeTimers();
+        const page = cart();
+        const line = page.cart?.lines?.find(
+            (entry) => entry.campaign_id === 'cmp_greenleaf',
+        );
+
+        if (line !== undefined) {
+            line.actions.units = null;
+        }
+
+        render(<InvestorCart {...page} />);
+
+        const slider = within(
+            screen.getByTestId('cart-line-cmp_greenleaf'),
+        ).getByRole('slider', { name: 'Number of notes in GreenLeaf Agro' });
+        fireEvent.change(slider, { target: { value: '20' } });
+        act(() => {
+            vi.advanceTimersByTime(400);
+        });
+
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('120,000');
+        expect(inertia.calls).toHaveLength(0);
+        vi.useRealTimers();
+    });
+
+    it('moves the total at once with a slider, saves the quantity once it rests and names the cap at the most allowed', () => {
+        vi.useFakeTimers();
+        inertia.queue.push(answers({ data: { units: 20 } }));
+        render(<InvestorCart {...cart()} />);
+
+        const greenleaf = within(screen.getByTestId('cart-line-cmp_greenleaf'));
+        const slider = greenleaf.getByRole('slider', {
+            name: 'Number of notes in GreenLeaf Agro',
+        });
+
+        fireEvent.change(slider, { target: { value: '20' } });
+
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('120,000');
+        expect(greenleaf.getByTestId('line-invest')).toHaveTextContent(
+            '100,000',
+        );
+        expect(
+            greenleaf.getByRole('link', { name: 'Check out' }),
+        ).toHaveAttribute('href', '/preview/investor-checkout?units=20');
+        expect(inertia.calls).toHaveLength(0);
+
+        fireEvent.change(slider, { target: { value: '1840' } });
+        fireEvent.change(slider, { target: { value: '20' } });
+        act(() => {
+            vi.advanceTimersByTime(400);
+        });
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/investor-cart',
+                method: 'post',
+                body: { identity_context_revision: 3, units: 20 },
+            },
+        ]);
+
+        fireEvent.change(slider, { target: { value: '1840' } });
+
+        expect(
+            greenleaf.getByText(
+                "Up to 1840 notes: that's every note still available.",
+            ),
+        ).toBeInTheDocument();
+        vi.useRealTimers();
+    });
+
+    it('takes a line out and reloads the cart, or says when a change did not land', async () => {
+        inertia.queue.push(answers({ data: { removed: true } }));
+        render(<InvestorCart {...cart()} />);
+
+        await userEvent.click(
+            screen.getByRole('button', {
+                name: 'Remove Volt Energy Rwanda from cart',
+            }),
+        );
+
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/investor-cart',
+            method: 'post',
+            body: { identity_context_revision: 3 },
+        });
+        expect(inertia.reload).toHaveBeenCalledWith({
+            onFinish: expect.any(Function),
+        });
+
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Fully funded · Remove' }),
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            "We couldn't update your cart. Refresh and try again.",
+        );
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('names the cap instead of a slider when no note may be taken, and keeps the total in the side column on a wide screen', () => {
+        setWide(true);
+        const page = cart();
+        const [line] = page.cart?.lines ?? [];
+
+        line.max_units = '0';
+        line.binding = 'raise_cap';
+        line.checkout = null;
+        line.actions.units = null;
+
+        render(<InvestorCart {...page} />);
+
+        const greenleaf = within(screen.getByTestId('cart-line-cmp_greenleaf'));
+
+        expect(greenleaf.queryByRole('slider')).not.toBeInTheDocument();
+        expect(
+            greenleaf.getByText(
+                "You can't take any more notes here: your single-investor limit for this raise.",
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('20,000');
+        expect(screen.getByText('1 note')).toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'CART TOTAL' }),
+        ).toBeInTheDocument();
+    });
+
+    it('shows the empty cart to a person with no cart yet', () => {
+        const page = cart();
+
+        page.cart = null;
+        render(<InvestorCart {...page} />);
+
+        expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
+        expect(screen.queryByTestId('cart-total')).not.toBeInTheDocument();
     });
 });

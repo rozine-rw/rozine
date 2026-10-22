@@ -161,6 +161,27 @@ describe('Primary Market Monitor', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('keeps a single day of commitments to one bar wide', () => {
+        render(
+            <AdminPrimaryMarket
+                {...props({
+                    trend: {
+                        from: '2026-10-14T00:00:00+02:00',
+                        bars: [
+                            {
+                                label: '10-14',
+                                amount: { currency: 'RWF', amount: '1000000' },
+                                height_pct: 100,
+                            },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByTestId('chart-bar')).toHaveClass('max-w-14');
+    });
+
     it('shows one day left in the singular and offers a further page', () => {
         render(
             <AdminPrimaryMarket

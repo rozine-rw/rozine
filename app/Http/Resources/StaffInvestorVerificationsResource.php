@@ -22,7 +22,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * }
  * @phpstan-type Page array{
  *     tab: string, search: string, limit: int, before: string|null, entries: list<Entry>, next_cursor: string|null,
- *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>
+ *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>,
+ *     policy: list<array{key: string, value: string}>
  * }
  */
 class StaffInvestorVerificationsResource extends JsonResource
@@ -42,10 +43,10 @@ class StaffInvestorVerificationsResource extends JsonResource
 
         return ['contract_version' => 'staff-investor-verifications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => $role],
+                'initials' => StaffViewerResource::initials($name), 'role' => $role],
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
-            'active_tab' => $page['tab'],
+            'active_tab' => $page['tab'], 'policy' => $page['policy'],
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['submitted', 'decided']),
             'entries' => array_map(fn (array $entry): array => [...$entry, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),

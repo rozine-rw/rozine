@@ -282,16 +282,15 @@ export function DisputeSheet({
                             })}
                         </p>
                         {problems.length > 0 && (
-                            <ul
-                                role="alert"
-                                className="mt-1.5 text-xs leading-[1.45] font-medium text-rz-danger-text"
-                            >
-                                {problems.map((problem, index) => (
-                                    <li key={`${index}-${problem}`}>
-                                        {problem}
-                                    </li>
-                                ))}
-                            </ul>
+                            <div role="alert">
+                                <ul className="mt-1.5 text-xs leading-[1.45] font-medium text-rz-danger-text">
+                                    {problems.map((problem, index) => (
+                                        <li key={`${index}-${problem}`}>
+                                            {problem}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         )}
                         <FieldError id="dispute-files-error">
                             {serverFileError}

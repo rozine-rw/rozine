@@ -8,6 +8,7 @@ use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\FindBusinessOperation;
 use App\Application\Business\GetBusinessApplicationPage;
+use App\Application\Business\GetBusinessHome;
 use App\Application\Business\ListBusinessApplications;
 use App\Application\Business\ProjectBusinessApplicationOperation;
 use App\Application\Business\SaveBusinessApplication;
@@ -22,6 +23,7 @@ use App\Http\Requests\Business\ShowApplicationRequest;
 use App\Http\Requests\Business\SubmitApplicationRequest;
 use App\Http\Resources\BusinessApplicationResource;
 use App\Http\Resources\BusinessApplicationsResource;
+use App\Http\Resources\BusinessHomeResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,13 +43,19 @@ class BusinessApplicationController extends Controller
             $request->validated('before'), (int) ($request->validated('limit') ?? 20)));
     }
 
-    public function show(ShowApplicationRequest $request, GetBusinessApplicationPage $page): Response|BusinessApplicationResource
+    /** The web page draws the wizard over the business's real Home, as the design does; the bearer read stays Home-free. */
+    public function show(ShowApplicationRequest $request, GetBusinessApplicationPage $page, GetBusinessHome $home): Response|BusinessApplicationResource
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
-        $revision = $request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision'];
-        $resource = new BusinessApplicationResource($page->handle($userId, (int) $revision, (string) $request->route('business'), (string) $request->route('application')));
+        $revision = (int) ($request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision']);
+        $business = (string) $request->route('business');
+        $resource = new BusinessApplicationResource($page->handle($userId, $revision, $business, (string) $request->route('application')));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('business/apply', $resource->resolve($request));
+        return Inertia::render('business/apply', [...$resource->resolve($request),
+            'home' => (new BusinessHomeResource($home->handle($userId, $revision, $business)))->toArray($request)]);
     }
 
     public function create(CreateApplicationRequest $request, CreateBusinessApplication $action): OperationResource

@@ -51,7 +51,7 @@ test('every staff role may open the Business directory; participants and guests 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/parties')->where('kind', 'business')->where('viewer.role', 'analyst')
             ->where('contract_version', 'staff-business-directory-v1')->where('nav.businesses.url', '/admin/businesses')
-            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [])->where('party', null));
+            ->where('nav.auditors', null)->where('nav.investors', null)->where('policy', [['key' => 'min_statement_years', 'value' => '3']])->where('party', null));
     $this->actingAs(businessDirectoryStaff(['superadmin']))->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')->where('nav.auditors.url', '/admin/auditors'));
     $this->actingAs(businessDirectoryStaff(['treasury']))->get(route('staff.businesses.index'))->assertOk()
@@ -229,6 +229,15 @@ test('a funded Business counts its funded principal, its distinct Investors and 
             ->where('party.list.rows.0', ['id' => $campaign->id, 'title' => $campaign->payload['title'], 'tone' => 'blue', 'detail' => ['kind' => 'note_status', 'value' => 'funded']])
             ->where('party.history', fn (Collection $history): bool => $history->pluck('action.code')->contains('business.authority.configure')
                 && $history->firstWhere('action.code', 'business.authority.configure')['reason'] === 'Reviewed complete authority evidence.'));
+});
+
+test('a live raise counts the Investors committed to it before it funds, as Primary market does', function (): void {
+    // One Investor makes two purchases and another buys once; the raise is still live.
+    ['campaign' => $campaign] = PrimaryHoldingFixture::committed(['540', '540', '1080'], fund: false, buyers: [0 => 'same', 1 => 'same']);
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $campaign->business_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.id', $campaign->business_id)->where('directory.rows.0.investors', 2)
+            ->where('directory.rows.0.raised', ['currency' => 'RWF', 'amount' => '0'])->where('directory.rows.0.active_notes', 1));
 });
 
 test('the directory answers over the API with the read ability and links API routes', function (): void {

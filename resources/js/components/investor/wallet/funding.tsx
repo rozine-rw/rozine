@@ -49,11 +49,11 @@ export function MethodMark({
     );
 }
 
-const BUCKETS = ['available', 'held', 'committed'] as const;
+const BUCKETS = ['held', 'committed'] as const;
 
 /**
- * The blue balance card (design L2846–2860), in C3's ledger terms (H5): the total, then its
- * breakdown, where only "available" is spendable. Pending deposits are listed beneath and are not
+ * The blue balance card (design L3006–3016), in C3's ledger terms (H5): it leads with the
+ * available balance, the only spendable part, then held, committed and the total. Pending deposits are listed beneath and are not
  * part of the total: nothing is credited before a verified success. A restriction says whether
  * deposits still work from `depositOffered` (the page's `allowed_actions`), never on its own.
  */
@@ -68,14 +68,12 @@ export function BalanceCard({
 
     return (
         <section
-            aria-label={t('investor.wallet.c3.total')}
+            aria-label={t('investor.wallet.c3.available_balance')}
             className="relative mt-3.5 shrink-0 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#2440ff_0%,#1e3aff_58%,#10228a_100%)] p-5"
         >
             <span className="pointer-events-none absolute -top-[42px] -right-8 size-[150px] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,.16),rgba(255,255,255,0)_70%)]" />
-            <div className="relative flex items-center justify-between">
-                <span className="text-[10.5px] font-bold tracking-[.08em] text-white uppercase">
-                    {t('investor.wallet.c3.total')}
-                </span>
+            {/* The status reads first so the label sits right beside the figure it names. */}
+            <div className="relative flex flex-row-reverse items-center justify-between">
                 <span className="inline-flex items-center gap-[5px] rounded-[10px] bg-white/[.14] px-[9px] py-1 text-[10px] font-semibold text-white">
                     <span
                         className={cn(
@@ -87,9 +85,12 @@ export function BalanceCard({
                     />
                     {t(`investor.wallet.status.${wallet.status}`)}
                 </span>
+                <span className="text-[10.5px] font-bold tracking-[.08em] text-white uppercase">
+                    {t('investor.wallet.c3.available_balance')}
+                </span>
             </div>
             <p className="relative mt-2.5 text-[30px] font-bold tracking-[-.6px] text-white">
-                {formatRwf(wallet.total)}
+                {formatRwf(wallet.breakdown.available)}
             </p>
             <dl className="relative mt-3 grid grid-cols-3 gap-2 border-t border-white/[.16] pt-3">
                 {BUCKETS.map((bucket) => (
@@ -97,11 +98,19 @@ export function BalanceCard({
                         <dt className="text-[10px] font-semibold text-white/80">
                             {t(`investor.wallet.c3.bucket.${bucket}`)}
                         </dt>
-                        <dd className="mt-0.5 truncate text-[13px] font-bold text-white">
+                        <dd className="mt-0.5 text-[13px] leading-tight font-bold text-white">
                             {formatRwf(wallet.breakdown[bucket])}
                         </dd>
                     </div>
                 ))}
+                <div className="min-w-0">
+                    <dt className="text-[10px] font-semibold text-white/80">
+                        {t('investor.wallet.c3.total')}
+                    </dt>
+                    <dd className="mt-0.5 text-[13px] leading-tight font-bold text-white">
+                        {formatRwf(wallet.total)}
+                    </dd>
+                </div>
             </dl>
             <p className="relative mt-2 text-[11px] text-white/85">
                 {t('investor.wallet.c3.spendable')}
@@ -427,7 +436,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     <dt className="text-xs text-rz-secondary">
                         {t('investor.wallet.c3.credited_on_success')}
                     </dt>
-                    <dd className="text-xs font-bold text-[#17795a] dark:text-[#3fcda0]">
+                    <dd className="text-xs font-bold text-[#157357] dark:text-[#3fcda0]">
                         {quote === null ? '—' : formatRwf(quote.credited)}
                     </dd>
                 </div>

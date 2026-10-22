@@ -262,8 +262,10 @@
             ],
             "pagination": {
                 "next": null
-            }
+            },
+            "range": null
         },
+        "exports": null,
         "receipt": null,
         "bases": {
             "available": {

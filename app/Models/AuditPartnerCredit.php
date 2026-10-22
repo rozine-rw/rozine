@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * The Audit Partner's share of one disbursement's platform fee (BRS v2.0 FEE-R02), bound to the
  * ledger entry that credited it. A credit with no report or party is unattributed.
  *
+ * @property string $id
  * @property string $disbursement_id
  * @property string $ledger_entry_id
  * @property string|null $audit_report_id

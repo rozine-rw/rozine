@@ -24,6 +24,7 @@ class BusinessWalletResource extends JsonResource
         $business = (string) $data['business']['id'];
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
         $movement = $data['history']['movement'];
+        $range = array_filter($data['history']['range'], fn (?string $day): bool => $day !== null);
         $home = ['url' => $request->routeIs('api.*') ? route('api.v1.business.index', [], false) : route('business.show', ['business' => $business], false), 'method' => 'get'];
 
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
@@ -32,9 +33,12 @@ class BusinessWalletResource extends JsonResource
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $business, $context, $deposit), $data['deposits']),
             'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $business, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,
-                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key])], ['external', 'internal']),
+                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key, ...$range])], ['external', 'internal']),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
-                'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, 'before' => $data['history']['next_before']])]],
+                'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, ...$range, 'before' => $data['history']['next_before']])],
+                'range' => ['from' => $range['from'] ?? null, 'to' => $range['to'] ?? null, 'base' => $wallet(['movement' => $movement])]],
+            'exports' => ['pdf' => self::link($request, 'business.wallet.statement', ['business' => $business, 'format' => 'pdf', ...$range]),
+                'csv' => self::link($request, 'business.wallet.statement', ['business' => $business, 'format' => 'csv', ...$range])],
             'receipt' => self::receipt($request, $business, $context, $data['receipt']), 'bases' => (object) [],
             'shell_links' => ['home' => $home, 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
                 ...BusinessHomeResource::tabs($request, $business)],

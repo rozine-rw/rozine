@@ -40,7 +40,7 @@ function auditorPortfolioProps(User $user, array $query = []): array
             return $page->component('auditor/portfolio');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /**
@@ -87,7 +87,9 @@ it('renders an empty Portfolio in the live contract shape with its empty states 
             'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(), 'allowed_actions' => [],
             'reports' => [], 'filter' => 'all', 'filters' => auditorPortfolioFilters(0, 0, 0),
             'conflicts' => ['files' => [], 'record' => [], 'declare' => ['url' => '/auditor/jobs/{assignment}/conflict', 'method' => 'post']],
-            'owed' => [], 'owed_complete' => true, 'reports_complete' => true, 'outcome' => null, 'open_jobs' => 0,
+            'owed' => [], 'owed_complete' => true, 'reports_complete' => true,
+            'earnings' => ['month' => '2026-10-01', 'this_month' => ['currency' => 'RWF', 'amount' => '0'], 'total' => ['currency' => 'RWF', 'amount' => '0'], 'lines' => []],
+            'outcome' => null, 'open_jobs' => 0,
             'links' => ['home' => ['url' => '/auditor', 'method' => 'get'], 'jobs' => ['url' => '/auditor/jobs', 'method' => 'get'],
                 'portfolio' => ['url' => '/auditor/portfolio', 'method' => 'get'], 'profile' => ['url' => '/auditor/profile', 'method' => 'get'],
                 'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'conflicts' => ['url' => '/auditor/conflicts', 'method' => 'get'],

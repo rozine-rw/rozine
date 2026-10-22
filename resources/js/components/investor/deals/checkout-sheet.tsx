@@ -229,7 +229,10 @@ export function CheckoutSheet({
         return shell(
             t('investor.checkout.c3.committed'),
             <>
-                <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-4">
+                <div
+                    tabIndex={0}
+                    className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-4"
+                >
                     <p
                         role="status"
                         className="mb-3 rounded-xl bg-rz-accent-soft px-3 py-2.5 text-[12.5px] leading-[1.5] text-rz-accent-app-text"
@@ -351,7 +354,7 @@ export function CheckoutSheet({
             <span className="text-xs">
                 <Icon name="warning" tone="red" />
             </span>
-            <span className="flex-1 text-[11.5px] leading-[1.4] text-[#c0464b] dark:text-rz-danger-text">
+            <span className="flex-1 text-[11.5px] leading-[1.4] text-[#b3352a] dark:text-rz-danger-text">
                 {t('investor.checkout.insufficient')}
             </span>
             <Link
@@ -424,7 +427,10 @@ export function CheckoutSheet({
         return shell(
             t('investor.checkout.c3.reserved_title'),
             <form onSubmit={confirm} className="flex min-h-0 flex-1 flex-col">
-                <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
+                <div
+                    tabIndex={0}
+                    className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1"
+                >
                     <C3Notice command={command} />
                     {dealLine}
                     <div className="mt-[11px]">
@@ -549,7 +555,10 @@ export function CheckoutSheet({
     return shell(
         t('investor.checkout.title'),
         <div className="flex min-h-0 flex-1 flex-col">
-            <div className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1">
+            <div
+                tabIndex={0}
+                className="rz-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2.5 pb-1"
+            >
                 <C3Notice command={command} />
                 <DealStatusNotice deal={deal} className="mb-[11px]" />
                 {risks?.action && (
@@ -674,7 +683,11 @@ export function CheckoutSheet({
                             role="status"
                             className="text-center text-[12px] text-rz-secondary"
                         >
-                            {t('investor.checkout.c3.reserve_unavailable')}
+                            {t(
+                                risks?.acknowledged === false
+                                    ? 'investor.checkout.c3.reserve_after_risks'
+                                    : 'investor.checkout.c3.reserve_unavailable',
+                            )}
                         </p>
                     )}
                     <p className="mt-2 text-center text-[10px] leading-[1.4] text-rz-secondary">

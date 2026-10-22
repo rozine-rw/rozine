@@ -240,7 +240,11 @@ export function FundingProgress({
                     >
                         {formatCount(deal.investors)}
                     </span>{' '}
-                    {t('investor.deals.investors')}
+                    {t(
+                        deal.investors === 1
+                            ? 'investor.deals.investors_one'
+                            : 'investor.deals.investors',
+                    )}
                 </span>
                 <span>
                     {t(
@@ -286,6 +290,7 @@ export function PhotosRow({
             }
         >
             <div
+                tabIndex={0}
                 className={cn(
                     'rz-hscroll flex overflow-x-auto',
                     variant === 'phone'
@@ -294,7 +299,7 @@ export function PhotosRow({
                 )}
             >
                 {deal.photos.length === 0 && (
-                    <p className="rounded-xl border border-dashed border-rz-border px-3 py-4 text-center text-[11.5px] text-rz-secondary">
+                    <p className="flex-1 rounded-xl border border-dashed border-rz-border px-3 py-4 text-center text-[11.5px] text-rz-secondary">
                         {t('investor.deal.photos_none')}
                     </p>
                 )}

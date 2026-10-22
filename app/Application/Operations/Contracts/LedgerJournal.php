@@ -30,4 +30,13 @@ interface LedgerJournal
 
     /** @return Entry|null */
     public function entry(string $id): ?array;
+
+    /**
+     * Each named platform account's balance in whole RWF: its credits less its debits, so revenue
+     * and payables read positive. An account with no posting reads "0".
+     *
+     * @param  list<string>  $kinds
+     * @return array<string, string>
+     */
+    public function credits(array $kinds): array;
 }

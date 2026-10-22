@@ -227,6 +227,220 @@ describe('The title ⓘ', () => {
     });
 });
 
+describe('Policies', () => {
+    it("lists the rules in effect under the selected tab, with each rule's version", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'policies',
+                    rules: [
+                        {
+                            tab: 'fees',
+                            key: 'platform_fee',
+                            value: '3%',
+                            version: 'brs-2.0-fee-r01',
+                        },
+                        {
+                            tab: 'kyc',
+                            key: 'minimum_age',
+                            value: '18',
+                            version: null,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rules = screen.getByRole('table', { name: 'Rules' });
+        expect(within(rules).getAllByRole('row')).toHaveLength(2);
+        expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · at disbursement3%brs-2.0-fee-r01',
+        );
+        expect(
+            screen.queryByText('No rules to show yet.'),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
+        expect(
+            within(screen.getByRole('table', { name: 'Rules' })).getAllByRole(
+                'row',
+            )[1],
+        ).toHaveTextContent('Minimum investor age18—');
+
+        fireEvent.click(
+            screen.getByRole('tab', { name: 'Investor eligibility' }),
+        );
+        expect(screen.getByText('No rules to show yet.')).toBeVisible();
+    });
+});
+
+describe('Finance', () => {
+    it('shows the fee revenue the ledger holds, stream by stream, and leaves uncharged fees blank', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'finance',
+                    figures: {
+                        revenue: { currency: 'RWF', amount: '1950000' },
+                        primary: { currency: 'RWF', amount: '1800000' },
+                    },
+                    streams: [
+                        {
+                            key: 'platform_fee',
+                            paid_by: 'business',
+                            collected: { currency: 'RWF', amount: '1800000' },
+                        },
+                        {
+                            key: 'deposit_fees',
+                            paid_by: 'investor',
+                            collected: { currency: 'RWF', amount: '150000' },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const region = screen.getByRole('region', {
+            name: 'Finance Dashboard',
+        });
+        expect(within(region).getAllByText('—')).toHaveLength(2);
+        expect(region).toHaveTextContent('All revenueRWF 2M');
+        expect(region).toHaveTextContent('Primary marketRWF 1.8M');
+
+        const streams = screen.getByRole('table', { name: 'Revenue streams' });
+        expect(within(streams).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · Rozine shareBusinessesRWF 1,800,000',
+        );
+        expect(within(streams).getAllByRole('row')[2]).toHaveTextContent(
+            'Deposit feesInvestorsRWF 150,000',
+        );
+    });
+});
+
+describe('Engines and Ratings', () => {
+    it("lists the engine's settings under their tab, with the rule set each comes from", () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'engines',
+                    engine: [
+                        {
+                            tab: 'sizing',
+                            key: 'target_dscr',
+                            value: '1.50×',
+                            source: 'loan-capacity-v1',
+                        },
+                        {
+                            tab: 'cpa',
+                            key: 'cpa_share',
+                            value: '40%',
+                            source: 'brs-2.0-fee-r01',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const sizing = screen.getByRole('table', { name: 'Sizing' });
+        expect(within(sizing).getAllByRole('row')).toHaveLength(2);
+        expect(within(sizing).getAllByRole('row')[1]).toHaveTextContent(
+            'Target DSCR1.50×loan-capacity-v1',
+        );
+
+        fireEvent.click(screen.getByRole('tab', { name: 'CPA split' }));
+        expect(
+            within(
+                screen.getByRole('table', { name: 'CPA split' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Audit Partner share of the fee40%brs-2.0-fee-r01');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Refinance' }));
+        expect(
+            screen.getByText('No refinance inputs to show yet.'),
+        ).toBeVisible();
+    });
+
+    it('explains how a rating is computed: the weights, the caps and the bands', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    engine: [
+                        {
+                            tab: 'weights',
+                            key: 'coverage',
+                            value: '30% · 1.00×–1.50×',
+                            source: 'scorecard-v1',
+                        },
+                        {
+                            tab: 'movers',
+                            key: 'default_cap',
+                            value: '1.9',
+                            source: 'scorecard-v1',
+                        },
+                        {
+                            tab: 'bands',
+                            key: 'distressed',
+                            value: '< 2.0',
+                            source: 'scorecard-v1',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('table', { name: 'How a rating is computed' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Debt coverage30% · 1.00×–1.50×scorecard-v1');
+        expect(
+            within(screen.getByRole('table', { name: 'Bands' })).getAllByRole(
+                'row',
+            )[1],
+        ).toHaveTextContent('Distressed< 2.0scorecard-v1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'What moves a rating' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Rating cap · default1.9scorecard-v1');
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
+describe('The rating book', () => {
+    it('lists every rated Business under All, counts them, and keeps band changes empty', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'ratings',
+                    counts: { rated: 1 },
+                    book: [
+                        {
+                            key: 'b-1',
+                            business: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.6' },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(
+            screen.getByRole('region', { name: 'Ratings' }),
+        ).toHaveTextContent('Businesses rated1');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'The rating book' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('GreenLeaf AgroAgricultureStrong · 4.6——');
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Band changed' }));
+        expect(screen.getByText('No ratings to show yet.')).toBeVisible();
+    });
+});
+
 describe('A designed screen whose live data is wired elsewhere', () => {
     it('opens the console frame with its title, its sidebar entry lit and the plain empty state', () => {
         render(<AdminPendingSection {...props({ section: 'businesses' })} />);

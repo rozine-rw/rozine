@@ -472,7 +472,7 @@ describe('Checkout: the reserved step', () => {
         render(<InvestorCheckout {...props(reservedFixture)} />);
 
         const confirm = screen.getByRole('button', {
-            name: 'Confirm · RWF 30,000',
+            name: 'Confirm investment · RWF 30,000',
         });
 
         expect(confirm).toBeDisabled();
@@ -523,7 +523,9 @@ describe('Checkout: the reserved step', () => {
         expect(screen.getByText('Not yet confirmed')).toBeInTheDocument();
         await user.click(screen.getByRole('checkbox'));
         expect(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         ).toBeDisabled();
         expect(
             screen.getByRole('button', { name: 'Release these notes' }),
@@ -676,7 +678,9 @@ describe('Checkout: refusals the server records', () => {
             inertia.queue.push(respond);
             await user.click(screen.getByRole('checkbox'));
             await user.click(
-                screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+                screen.getByRole('button', {
+                    name: 'Confirm investment · RWF 30,000',
+                }),
             );
 
             expect(await screen.findByText(text)).toBeInTheDocument();
@@ -701,7 +705,9 @@ describe('Checkout: refusals the server records', () => {
         inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
         fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         await flush();
 
@@ -723,7 +729,9 @@ describe('Checkout: refusals the server records', () => {
         inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         expect(
             await screen.findByText(
@@ -743,12 +751,16 @@ describe('Checkout: refusals the server records', () => {
 
         expect(screen.getByRole('checkbox')).not.toBeChecked();
         expect(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         ).toBeDisabled();
 
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         const [first, second] = inertia.calls.map(
@@ -802,7 +814,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         await screen.findByText(
             'The disclosure changed. Read the current version and acknowledge it again.',
@@ -824,7 +838,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
 
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         const [stale, fresh] = confirmBodies();
@@ -854,7 +870,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         await screen.findByText(
             'The disclosure changed. Read the current version and acknowledge it again.',
@@ -872,7 +890,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         rerender(<InvestorCheckout {...refreshedDisclosure()} />);
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         expect(inertia.calls).toHaveLength(3);
@@ -897,7 +917,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         expect(
@@ -935,7 +957,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         await screen.findByText(
             'Your 5-minute hold ended and its notes were released. Reserve again to continue.',
@@ -972,7 +996,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
         fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         /* The answer is lost, and the browser's hold clock runs out before the lookup answers. */
         act(() => vi.advanceTimersByTime(300_000));
@@ -1005,7 +1031,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         expect(
@@ -1052,7 +1080,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
         await screen.findByText('Nothing was recorded');
 
@@ -1107,7 +1137,9 @@ describe('Checkout: the server clock and lost answers', () => {
         );
         await user.click(screen.getByRole('checkbox'));
         await user.click(
-            screen.getByRole('button', { name: 'Confirm · RWF 30,000' }),
+            screen.getByRole('button', {
+                name: 'Confirm investment · RWF 30,000',
+            }),
         );
 
         await vi.waitFor(() =>
@@ -1204,6 +1236,22 @@ describe('Checkout: the risk statements (BRS KYC-R05)', () => {
 
         return page;
     };
+
+    it('says the statements come before reserving while the server offers no reserve yet', () => {
+        const page = withRisks();
+
+        page.allowed_actions = page.allowed_actions.filter(
+            (action) => action !== 'primary.reserve',
+        );
+        render(<InvestorCheckout {...page} />);
+
+        expect(
+            screen.getByText('Confirm the risk statements above to reserve.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText("Reserving isn't available right now."),
+        ).not.toBeInTheDocument();
+    });
 
     it('shows nothing once the statements are acknowledged', () => {
         render(<InvestorCheckout {...withRisks(true)} />);

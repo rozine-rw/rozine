@@ -380,7 +380,7 @@ describe('Suite launcher', () => {
             'mailto:hello@rozine.rw',
         );
         expect(screen.getByRole('status')).toHaveTextContent(
-            'Your identity is being verified',
+            'Ready to invest?',
         );
         expect(
             screen.getByRole('link', { name: 'Verify your identity →' }),

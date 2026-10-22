@@ -145,9 +145,9 @@ function c3Credit(BrowserJourney $journey, string $session, string $email, strin
             await form.getByRole("button", {name:"Confirm deposit", exact:true}).click({timeout: 10000});
             const recorded = await (await answered).json();
             if (recorded.code !== "DEPOSIT_INTENT_RECORDED") throw new Error("Deposit not recorded: " + recorded.code);
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText('.json_encode(c3Rwf($amount).' not yet confirmed — not in the total').').waitFor();
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($credited)).')) throw new Error("Credited before confirmation");'.c3NoPreview().'
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($credited)).')) throw new Error("Credited before confirmation");'.c3NoPreview().'
             return recorded.data.receipt.request_id;');
         expect($request)->toBeString()
             ->and(Artisan::call('local:wallet', ['--event' => $request, '--state' => 'succeeded']))->toBe(0)
@@ -158,9 +158,9 @@ function c3Credit(BrowserJourney $journey, string $session, string $email, strin
             const requested = [];
             page.on("request", (request) => requested.push(request.url()));
             await page.reload();
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("No deposits waiting").waitFor();
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($total)).')) throw new Error("Not credited: " + await balance.textContent());
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($total)).')) throw new Error("Not credited: " + await balance.textContent());
             await noOverflow();
             await shot('.$journey->shot($session.'-credited-desktop').');'.c3NoPreview());
 }
@@ -207,7 +207,7 @@ function c3ReserveAndConfirm(BrowserJourney $journey, string $session, int $unit
             await page.getByRole("button", {name:/^Reserve · /}).click();
             await page.getByRole("checkbox").check();
             const confirmed = page.waitForResponse((response) => response.url().includes("/confirm") && response.request().method() === "POST");
-            await page.getByRole("button", {name:/^Confirm · /}).click();
+            await page.getByRole("button", {name:/^Confirm investment · /}).click();
             const response = await confirmed;
             const sent = response.request().postDataJSON();
             const body = await response.json();
@@ -283,8 +283,8 @@ it('reserves and confirms each Investor\'s half of the raise, leaving it committ
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');
             await page.getByText("Awaiting issue", {exact:true}).waitFor();
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            if (!(await balance.textContent()).includes("AvailableRWF 0")) throw new Error("Committed cash still available");');
+            const balance = page.getByRole("region", {name:"Available balance"});
+            if (!(await balance.textContent()).includes("Available balanceRWF 0")) throw new Error("Committed cash still available");');
     });
 })->skip(C3_AWAITS_RESERVE);
 
@@ -369,8 +369,8 @@ it('closes a raise whose payout failed and refunds every commitment in full to t
             await page.goto('.json_encode($journey->base.'/investor/portfolio').');
             await page.getByText("Closed — refunded").first().waitFor();
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            const balance = page.getByRole("region", {name:"Wallet total"});
-            if (!(await balance.textContent()).includes('.json_encode('Available'.c3Rwf($half)).')) throw new Error("Not refunded in full");
+            const balance = page.getByRole("region", {name:"Available balance"});
+            if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($half)).')) throw new Error("Not refunded in full");
             await noOverflow();
             await shot('.$journey->shot($session.'-refunded-phone').');');
         }

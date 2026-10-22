@@ -119,20 +119,7 @@ export function AuditGuide({
                                         </>
                                     ))}
                                 {key === 'cosign' &&
-                                    (policy === null
-                                        ? t(
-                                              'business.reports.guide.cosign.body_undated',
-                                          )
-                                        : t(
-                                              'business.reports.guide.cosign.body',
-                                              {
-                                                  day: formatOrdinal(
-                                                      policy.cosign_day,
-                                                      locale,
-                                                      t,
-                                                  ),
-                                              },
-                                          ))}
+                                    t('business.reports.guide.cosign.body')}
                             </p>
                         </div>
                     </li>

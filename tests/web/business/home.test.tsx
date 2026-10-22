@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
+import { bareCompanyCode } from '@/components/business/home/business-hero';
 import BusinessHome from '@/pages/business/home';
 import type { BusinessHomeProps, BusinessTodo } from '@/types/business';
 import inbox from '../../../resources/fixtures/business-notices.json';
@@ -121,6 +122,18 @@ describe('Business Home', () => {
             'href',
             '/preview/launcher-ready',
         );
+    });
+
+    it('prints the RDB prefix once when the recorded code already carries it', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                business={{ ...fixture.business, company_code: 'RDB-0048213' }}
+            />,
+        );
+
+        expect(screen.getByText('RDB 0048213')).toBeInTheDocument();
+        expect(screen.queryByText(/RDB RDB/u)).not.toBeInTheDocument();
     });
 
     it('shows a verified sole trader with no company line, never a stand-in number', () => {
@@ -425,12 +438,22 @@ describe('Business Home', () => {
             />,
         );
 
-        await user.click(screen.getByRole('button', { name: 'Repaying' }));
+        // A funded note is counted as active, so it sits under the Active tab.
+        await user.click(screen.getByRole('button', { name: 'Active' }));
         expect(screen.getAllByText('Funded')).toHaveLength(2);
+        expect(screen.queryByText(/N-1/u)).not.toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'Failed' }));
         expect(
             screen.getByRole('heading', { name: 'Failed note' }),
         ).toBeInTheDocument();
+    });
+});
+
+describe('The RDB company code', () => {
+    it('drops a recorded RDB prefix once, and keeps a code that is nothing but the prefix', () => {
+        expect(bareCompanyCode('RDB-2016-196807')).toBe('2016-196807');
+        expect(bareCompanyCode('103847291')).toBe('103847291');
+        expect(bareCompanyCode('RDB')).toBe('RDB');
     });
 });

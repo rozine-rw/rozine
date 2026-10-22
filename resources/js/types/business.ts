@@ -511,6 +511,8 @@ export type ApplicationSubmission = {
     exposure_reservation_id?: string;
     note_id: string | null;
     timeline: TimelineStage[];
+    /** Once staff approve (release) the application, the page that publishes it; null otherwise. */
+    publish?: RouteLink | null;
 };
 
 export type ApplicationCommandName = 'save' | 'evaluate' | 'submit';
@@ -567,8 +569,8 @@ export type BusinessApplyProps = {
     acceptance: ApplicationAcceptance;
     submission: ApplicationSubmission | null;
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
@@ -854,11 +856,11 @@ export type BusinessReportsProps = {
     /** The report open in the sheet, addressed by URL. */
     report: ReportDetail | null;
     /**
-     * Audit-cycle policy the guide quotes: the day audits seal by and the co-sign window. Null when
-     * no such day is published (the live monthly review closes a fixed time after delivery): the
-     * guide then names no day.
+     * Audit-cycle policy the guide quotes: the day audits seal by. Null when no such day is
+     * published: the guide then names no day. The co-sign window is always the BRS's 24 hours
+     * after sealing (OD-07), so it is not a policy field.
      */
-    policy: { seal_day: number; cosign_day: number } | null;
+    policy: { seal_day: number } | null;
     links: BusinessAppLinks & { close: RouteLink };
 };
 
@@ -1109,7 +1111,18 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
         }[];
         items: BusinessWalletEntry[];
         pagination: Pagination;
+        /**
+         * The inclusive calendar days the history is narrowed to, and the unnarrowed view to apply
+         * a new range to. Null where no range can be chosen (a preview state).
+         */
+        range: {
+            from: string | null;
+            to: string | null;
+            base: RouteLink;
+        } | null;
     };
+    /** The statement downloads for the same range; null where none is served (a preview state). */
+    exports: { pdf: RouteLink; csv: RouteLink } | null;
     /** The opened receipt: a history entry with its receipt, a deposit intent or a withdrawal. */
     receipt:
         | (BusinessWalletEntry & { receipt: Receipt })
@@ -1196,7 +1209,8 @@ export type BusinessRatingProps = {
     /** Audited financials the rating rests on; null while none is published, and none is shown. */
     financials: {
         avg_monthly_revenue: Money;
-        ebitda_month: Money;
+        /** Net operating cash per month over the statement window; not accounting profit. */
+        net_cash_month: Money;
         net_margin_percent: string;
         outstanding: Money;
     } | null;
@@ -1452,8 +1466,8 @@ export type C3BusinessPublishProps = {
         review: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home, in
-     * which case the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
@@ -1541,9 +1555,8 @@ export type BusinessCampaignProps = Omit<
         changes?: RouteLink | null;
     };
     /**
-     * Home, drawn beneath the sheet on a wide screen; null when the server sends no Home (the
-     * live Business Home is the application directory, not the preview dashboard), in which case
-     * the sheet opens over an empty backdrop with no stand-in balances.
+     * Home, drawn beneath the sheet on a wide screen. The web page always sends it; null (the
+     * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
     /** The shell's navigation for this page, read instead of `home.links`. */

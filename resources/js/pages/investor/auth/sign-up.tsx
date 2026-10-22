@@ -734,7 +734,7 @@ export default function InvestorSignUp({
                             {draft.otp_sent && (
                                 <p
                                     role="status"
-                                    className="mt-2.5 text-xs font-semibold text-[#17795a] dark:text-[#3fcda0]"
+                                    className="mt-2.5 text-xs font-semibold text-[#157357] dark:text-[#3fcda0]"
                                 >
                                     {t('investor.signup.payment.otp_sent')}
                                 </p>

@@ -130,7 +130,13 @@ export type DealCard = {
     };
 };
 
-export type DealSortKey = 'all' | 'top_interest' | 'top_rated' | 'top_picks';
+/** `in_cart` narrows the deck to the deals already in the Investor's cart (BRS v2.0 INV-R02). */
+export type DealSortKey =
+    | 'all'
+    | 'top_interest'
+    | 'top_rated'
+    | 'top_picks'
+    | 'in_cart';
 
 export type DealSort = {
     key: DealSortKey;
@@ -1309,11 +1315,48 @@ export type C3InvestorDealsProps = InvestorPageContract & {
     deals: C3DealCard[];
     focus: C3DealDetail | null;
     quote: PrimaryQuote | null;
+    /** The Investor's cart; null before verification, while restricted and in previews without one. */
+    cart: InvestorDealsCart | null;
     /** A destination with no live route yet is null (C3InvestorShellLinks). */
     links: C3InvestorShellLinks & {
         deposit: RouteLink | null;
         checkout: RouteLink | null;
     };
+};
+
+/**
+ * The cart as Deals sees it (BRS v2.0 INV-R02): which deals are in it, and the focused deal's
+ * command. `add` takes `units` and is null on a deal that is fully funded, closed or already in
+ * the cart; `remove` is set only while the focused deal is in the cart.
+ */
+export type InvestorDealsCart = {
+    campaign_ids: string[];
+    add: RouteAction | null;
+    remove: RouteAction | null;
+};
+
+/**
+ * One cart line: its deal's card, the units chosen, the most this Investor may take there now and
+ * one unit's flat return, so the page computes invest + interest = get back for any quantity
+ * without a fee. A `filled` deal (fully funded, closed or no longer listed) stays visible and is
+ * left out of the total. `checkout` opens the deal's own checkout (the client adds `units`).
+ */
+export type InvestorCartLine = {
+    campaign_id: string;
+    deal: C3DealCard;
+    units: Units;
+    max_units: Units;
+    binding: CapacityBinding;
+    filled: boolean;
+    unit_return: Money;
+    checkout: RouteLink | null;
+    actions: { units: RouteAction | null; remove: RouteAction };
+};
+
+/** The Cart page (web only). `cart` is null until the identity is verified. */
+export type C3InvestorCartProps = InvestorPageContract & {
+    links: C3InvestorShellLinks;
+    cart: { lines: InvestorCartLine[] } | null;
 };
 
 /** The phone deal page; a wide screen shows the same deal in the Deals panel over `home`. */
@@ -1655,6 +1698,8 @@ export type C3InvestorPortfolioProps = Omit<InvestorPortfolioProps, 'links'> &
 /** Servicing fields keep their C3 empty states; they are C4 facts. */
 export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
     updates: MonthlyUpdateSummary[];
+    /** The newest published monthly report, which sets the Holding's health; null before the first. */
+    latest_report?: Pick<MonthlyUpdate, 'month' | 'status' | 'summary'> | null;
     issue: IssuedHolding;
 };
 

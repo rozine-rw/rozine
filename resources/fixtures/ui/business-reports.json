@@ -103,8 +103,7 @@
         },
         "report": null,
         "policy": {
-            "seal_day": 7,
-            "cosign_day": 7
+            "seal_day": 7
         },
         "links": {
             "home": {

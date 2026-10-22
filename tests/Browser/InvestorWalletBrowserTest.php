@@ -74,9 +74,9 @@ it('records a deposit without crediting it and credits it once after a verified 
             const recorded = await response.json();
             if (recorded.code !== "DEPOSIT_INTENT_RECORDED" || recorded.data.receipt.request_id !== sent.request_id) throw new Error("Deposit not recorded: " + recorded.code);
             if ("party_id" in sent || "provider_reference" in sent) throw new Error("The page sent authority it must not");
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("RWF 50,000 not yet confirmed — not in the total").waitFor();
-            if (!(await balance.textContent()).includes("AvailableRWF 0")) throw new Error("Credited before confirmation");
+            if (!(await balance.textContent()).includes("Available balanceRWF 0")) throw new Error("Credited before confirmation");
             await page.getByRole("region", {name:"Deposits"}).getByText("Not yet confirmed", {exact:true}).waitFor();
             await noOverflow();
             await shot('.$journey->shot('pending-phone').');'.iwNoPreview().'
@@ -89,10 +89,10 @@ it('records a deposit without crediting it and credits it once after a verified 
             const requested = [];
             page.on("request", (request) => requested.push(request.url()));
             await page.reload();
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("No deposits waiting").waitFor();
             const text = await balance.textContent();
-            if (!text.includes("RWF 50,000") || !text.includes("AvailableRWF 50,000")) throw new Error("Not credited: " + text);
+            if (!text.includes("RWF 50,000") || !text.includes("Available balanceRWF 50,000")) throw new Error("Not credited: " + text);
             await page.getByRole("region", {name:"Deposits"}).getByRole("link", {name:/Deposit from MTN MoMo/}).click();
             await page.getByText("Credit receipt").waitFor();
             await noOverflow();
@@ -132,7 +132,7 @@ it('resolves a deposit whose answer was lost by looking it up, never sending it 
             await form.getByLabel("AMOUNT").fill("20000");
             await priced;
             await form.getByRole("button", {name:"Confirm deposit", exact:true}).click({timeout: 10000});
-            await page.getByRole("region", {name:"Wallet total"}).getByText("RWF 20,000 not yet confirmed — not in the total").waitFor({timeout: 20000});
+            await page.getByRole("region", {name:"Available balance"}).getByText("RWF 20,000 not yet confirmed — not in the total").waitFor({timeout: 20000});
             await noOverflow();
             await shot('.$journey->shot('recovered-desktop').');'.iwNoPreview().'
             return {posts, lookups};');
@@ -152,16 +152,16 @@ it('keeps unknown outcomes not yet confirmed and shows a verified failure as not
         $journey->code('iw3', '
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
             await page.getByRole("region", {name:"Deposits"}).getByText("Not yet confirmed — we\'re checking with the provider").waitFor();
-            await page.getByRole("region", {name:"Wallet total"}).getByText("RWF 30,000 not yet confirmed — not in the total").waitFor();
+            await page.getByRole("region", {name:"Available balance"}).getByText("RWF 30,000 not yet confirmed — not in the total").waitFor();
             await shot('.$journey->shot('unknown-phone').');');
         expect(iwEvent($unknown, 'failed'))->toContain('nothing credited');
         $journey->code('iw3', '
             const requested = [];
             await page.reload();
             await page.getByRole("region", {name:"Deposits"}).getByText("Didn\'t go through — nothing credited").waitFor();
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("No deposits waiting").waitFor();
-            if (!(await balance.textContent()).includes("AvailableRWF 0")) throw new Error("A failure credited money");
+            if (!(await balance.textContent()).includes("Available balanceRWF 0")) throw new Error("A failure credited money");
             await noOverflow();
             await shot('.$journey->shot('failed-phone').');'.iwNoPreview());
     });
@@ -176,7 +176,7 @@ it('keeps the deposit form for an Investor under the section 11.4 hold and accep
         $journey->code('iw4', iwDeposit($journey, BrowserJourney::PHONE, '10000').'
             const recorded = await response.json();
             if (recorded.code !== "DEPOSIT_INTENT_RECORDED") throw new Error("Restricted deposit refused: " + recorded.code);
-            const balance = page.getByRole("region", {name:"Wallet total"});
+            const balance = page.getByRole("region", {name:"Available balance"});
             await balance.getByText("Deposits still work.", {exact:false}).waitFor();
             await balance.getByText("RWF 10,000 not yet confirmed — not in the total").waitFor();
             await noOverflow();

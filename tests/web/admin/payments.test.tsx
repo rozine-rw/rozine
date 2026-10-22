@@ -55,6 +55,10 @@ const props = (
             },
         ],
         in_flight: 2,
+        policy: [
+            { key: 'platform_fee', value: '3%' },
+            { key: 'cpa_share', value: '40%' },
+        ],
         bars: [
             {
                 label: '10-14',
@@ -107,6 +111,11 @@ describe('Payment Center', () => {
         expect(screen.getByText('1 txn · last 14 days')).toBeInTheDocument();
         expect(screen.getByText('0 txns · last 14 days')).toBeInTheDocument();
         expect(screen.getByText('Awaiting the provider')).toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Fee schedule in effect' }),
+        ).toHaveTextContent(
+            'Platform fee · at disbursement3%Audit Partner share of the fee40%',
+        );
 
         const movement = screen.getByRole('region', {
             name: 'Money movement',
@@ -140,6 +149,24 @@ describe('Payment Center', () => {
         expect(
             screen.queryByRole('link', { name: 'Show all payouts' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('keeps a single day of movement to one bar wide', () => {
+        render(
+            <AdminPayments
+                {...props({
+                    bars: [
+                        {
+                            label: '10-14',
+                            amount: { currency: 'RWF', amount: '1000000' },
+                            height_pct: 100,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByTestId('chart-bar')).toHaveClass('max-w-14');
     });
 
     it('offers a further page when more payouts are in flight', () => {

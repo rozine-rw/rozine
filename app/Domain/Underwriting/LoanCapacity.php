@@ -12,6 +12,23 @@ final class LoanCapacity
 {
     public const CALCULATOR_VERSION = 'underwriting-1';
 
+    /** The coverage every offer is sized to (DSCR 1.50). */
+    public const string TARGET_COVERAGE = '3/2';
+
+    /** Below this coverage (DSCR 1.25) an application is rejected. */
+    public const string MINIMUM_COVERAGE = '5/4';
+
+    /** The smallest and largest principal one note may raise, in RWF. */
+    public const int MINIMUM_PRINCIPAL = 3000000;
+
+    public const int MAXIMUM_PRINCIPAL = 100000000;
+
+    /** Every repeat month must cover its instalment at least this well (DSCR 1.35). */
+    public const string REPEAT_MONTHLY_COVERAGE = '27/20';
+
+    /** Offers are whole issuance units of this many RWF (one note). */
+    public const int ISSUANCE_UNIT = 5000;
+
     /**
      * @param  list<BigRational>  $repeatMonthlyCfads  The authorized corresponding-month projection, or [] for first-time.
      * @return array<string, mixed>
@@ -47,25 +64,25 @@ final class LoanCapacity
             'repeat_monthly_dscr' => [],
             'reason_codes' => [],
         ];
-        if ($initialDscr->isLessThan('5/4')) {
+        if ($initialDscr->isLessThan(self::MINIMUM_COVERAGE)) {
             return $result;
         }
 
-        $rawCapacity = $cfads->dividedBy('3/2')->multipliedBy($tenor)->dividedBy($rate->plus(1));
+        $rawCapacity = $cfads->dividedBy(self::TARGET_COVERAGE)->multipliedBy($tenor)->dividedBy($rate->plus(1));
         $result['raw_capacity'] = ExactFinancialValue::ratio($rawCapacity);
-        if (BigRational::min($rawCapacity, $remainingRoom, $requestedPrincipal)->isLessThan(3000000)) {
+        if (BigRational::min($rawCapacity, $remainingRoom, $requestedPrincipal)->isLessThan(self::MINIMUM_PRINCIPAL)) {
             $result['code'] = 'CAPACITY_BELOW_MINIMUM';
 
             return $result;
         }
 
         $candidate = BigInteger::min(
-            ExactFinancialValue::halfUp($rawCapacity), $requestedPrincipal, 100000000,
+            ExactFinancialValue::halfUp($rawCapacity), $requestedPrincipal, self::MAXIMUM_PRINCIPAL,
             ExactFinancialValue::floor($remainingRoom),
         );
         $result['rounded_candidate'] = ExactFinancialValue::money($candidate);
         $schedule = LoanSchedule::build((string) $candidate, $tenor, $rate);
-        while ($schedule->dscr($cfads)->isLessThan('3/2')) {
+        while ($schedule->dscr($cfads)->isLessThan(self::TARGET_COVERAGE)) {
             $candidate = $candidate->minus(1);
             $schedule = LoanSchedule::build((string) $candidate, $tenor, $rate);
         }
@@ -76,16 +93,16 @@ final class LoanCapacity
         if ($rawCapacity->isLessThan($requestedPrincipal)) {
             $reasons[] = 'DSCR_SCALED';
         }
-        if ($remainingRoom->isLessThan(BigRational::min($rawCapacity, $requestedPrincipal, 100000000))) {
+        if ($remainingRoom->isLessThan(BigRational::min($rawCapacity, $requestedPrincipal, self::MAXIMUM_PRINCIPAL))) {
             $reasons[] = 'EXPOSURE_CAPPED';
         }
-        if ($original->principal->isGreaterThan(100000000)) {
+        if ($original->principal->isGreaterThan(self::MAXIMUM_PRINCIPAL)) {
             $reasons[] = 'PRINCIPAL_MAX_CAPPED';
         }
         if (! $guard->isZero()) {
             $reasons[] = 'ROUNDING_GUARD';
         }
-        $quantized = $candidate->quotient(5000)->multipliedBy(5000);
+        $quantized = $candidate->quotient(self::ISSUANCE_UNIT)->multipliedBy(self::ISSUANCE_UNIT);
         if (! $quantized->isEqualTo($candidate)) {
             $reasons[] = 'ISSUANCE_UNIT_QUANTIZED';
         }
@@ -97,7 +114,7 @@ final class LoanCapacity
             $quantized = $repeatPrincipal;
         }
         $result['reason_codes'] = $reasons;
-        if ($quantized->isLessThan(3000000)) {
+        if ($quantized->isLessThan(self::MINIMUM_PRINCIPAL)) {
             $result['code'] = 'CAPACITY_BELOW_MINIMUM';
 
             return $result;
@@ -105,7 +122,7 @@ final class LoanCapacity
 
         if ($acceptedPrincipal !== null) {
             $accepted = ExactFinancialValue::amount($acceptedPrincipal);
-            if ($accepted->isLessThan(3000000) || $accepted->isGreaterThan($quantized) || ! $accepted->remainder(5000)->isZero()) {
+            if ($accepted->isLessThan(self::MINIMUM_PRINCIPAL) || $accepted->isGreaterThan($quantized) || ! $accepted->remainder(self::ISSUANCE_UNIT)->isZero()) {
                 throw new UnderwritingViolation('INVALID_ACCEPTED_PRINCIPAL');
             }
             $quantized = $accepted;
@@ -113,7 +130,7 @@ final class LoanCapacity
         $final = LoanSchedule::build((string) $quantized, $tenor, $rate);
         $result['code'] = 'UNDERWRITING_ELIGIBLE';
         $result['eligible'] = true;
-        $result['offer'] = [...$final->toArray(), 'units' => (string) $quantized->quotient(5000)];
+        $result['offer'] = [...$final->toArray(), 'units' => (string) $quantized->quotient(self::ISSUANCE_UNIT)];
         $result['final_dscr'] = ExactFinancialValue::ratio($final->dscr($cfads));
         $result['repeat_monthly_dscr'] = array_map(
             fn (BigRational $monthly, BigInteger $instalment): array => ExactFinancialValue::ratio($monthly->dividedBy($instalment)),
@@ -126,14 +143,14 @@ final class LoanCapacity
     /** @param list<BigRational> $monthlyCfads */
     private function repeatPrincipal(BigInteger $maximum, int $tenor, BigRational $rate, array $monthlyCfads): BigInteger
     {
-        if (! $this->passesMonthly(LoanSchedule::build('3000000', $tenor, $rate), $monthlyCfads)) {
+        if (! $this->passesMonthly(LoanSchedule::build((string) self::MINIMUM_PRINCIPAL, $tenor, $rate), $monthlyCfads)) {
             return BigInteger::zero();
         }
         $low = 600;
-        $high = $maximum->quotient(5000)->toInt();
+        $high = $maximum->quotient(self::ISSUANCE_UNIT)->toInt();
         while ($low < $high) {
             $middle = intdiv($low + $high + 1, 2);
-            $schedule = LoanSchedule::build((string) ($middle * 5000), $tenor, $rate);
+            $schedule = LoanSchedule::build((string) ($middle * self::ISSUANCE_UNIT), $tenor, $rate);
             if ($this->passesMonthly($schedule, $monthlyCfads)) {
                 $low = $middle;
             } else {
@@ -141,14 +158,14 @@ final class LoanCapacity
             }
         }
 
-        return BigInteger::of($low)->multipliedBy(5000);
+        return BigInteger::of($low)->multipliedBy(self::ISSUANCE_UNIT);
     }
 
     /** @param list<BigRational> $monthlyCfads */
     private function passesMonthly(LoanSchedule $schedule, array $monthlyCfads): bool
     {
         foreach ($monthlyCfads as $index => $monthly) {
-            if ($monthly->dividedBy($schedule->instalments[$index])->isLessThan('27/20')) {
+            if ($monthly->dividedBy($schedule->instalments[$index])->isLessThan(self::REPEAT_MONTHLY_COVERAGE)) {
                 return false;
             }
         }

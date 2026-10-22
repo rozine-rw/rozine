@@ -23,7 +23,7 @@ import type {
 
 const STATUS_PILL: Record<MonthlyUpdateStatus, string> = {
     healthy:
-        'bg-[rgba(29,158,117,.10)] text-[#17795a] dark:bg-[rgba(63,205,160,.14)] dark:text-[#3fcda0]',
+        'bg-[rgba(29,158,117,.10)] text-[#157357] dark:bg-[rgba(63,205,160,.14)] dark:text-[#3fcda0]',
     watch: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:bg-[rgba(240,160,96,.14)] dark:text-[#f0a060]',
 };
 

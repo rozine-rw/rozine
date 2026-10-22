@@ -9,6 +9,8 @@ import {
     UseOfFundsChips,
 } from '@/components/investor/deals/deal-sections';
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
+import { CartToggle } from '@/components/investor/deals/invest-bar';
+import type { CartToggleState } from '@/components/investor/deals/invest-bar';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
@@ -24,14 +26,21 @@ const MICRO =
  * progress; then the details. The design leaves the Field Flash drawer out of this panel — a parity
  * gap against the phone deal page — so it is included here. The rating-factor bars are internal
  * score components (engineering contract §4), so only the engine's rationale is shown; the save
- * and follow controls are outside the MVP.
+ * and follow controls are outside the MVP. Add to cart sits under the funding progress, as the
+ * design's desktop has it, taking the notes chosen in the invest bar.
  */
 export function DealPanel({
     deal,
     serverTime,
+    cart = null,
+    units = 1,
 }: {
     deal: C3DealDetail;
     serverTime: string;
+    /** Null where the Investor has no cart (before verification, while restricted). */
+    cart?: CartToggleState | null;
+    /** The notes chosen in the invest bar, which Add to cart puts in the cart. */
+    units?: number;
 }) {
     const { t } = useTranslation();
     const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
@@ -88,6 +97,17 @@ export function DealPanel({
                             variant="desk"
                         />
                     </div>
+
+                    {cart !== null && (
+                        <div className="mt-3.5">
+                            <CartToggle
+                                deal={deal}
+                                cart={cart}
+                                units={units}
+                                size="desk"
+                            />
+                        </div>
+                    )}
 
                     <p className="mt-4 text-[11px] font-bold tracking-[.08em] text-rz-slate uppercase">
                         {t('investor.deal.details')}

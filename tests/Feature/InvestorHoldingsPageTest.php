@@ -130,7 +130,7 @@ it('opens a Holding with its issue as recorded, its maturity value and its next 
             'rate_pct' => $holding->terms['rate_pct'], 'expected_profit' => $holding->rights['total_return'],
             'maturity_value' => ['currency' => 'RWF', 'amount' => (string) (5000000 + (int) $holding->rights['total_return']['amount'] - (int) $holding->terms['payout_fee']['amount'])],
             'received' => ['currency' => 'RWF', 'amount' => '0'], 'months_left' => 6, 'on_time' => ['made' => 0, 'on_time' => 0, 'late' => 0],
-            'recovery_plan' => null, 'arrears' => null, 'updates' => [],
+            'recovery_plan' => null, 'arrears' => null, 'updates' => [], 'latest_report' => null,
             'next_payment' => ['amount' => ['currency' => 'RWF', 'amount' => (string) ((int) $first['principal']['amount'] + (int) $first['return']['amount'] - $fee)],
                 'due_on' => '2026-11-10T00:00:00+02:00']])
         ->and($issue)->toMatchArray(['id' => $holding->id, 'campaign_id' => $holding->business_campaign_id, 'units' => '1000',
@@ -171,7 +171,32 @@ it('shows the business\'s published monthly reports on the Holding page', functi
 
     $this->actingAs($user)->get(route('investor.holdings.show', $holding->id))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('holding.updates.0.id', 'r1')->where('holding.updates.0.month', '2026-11-01T00:00:00+02:00')
-            ->where('holding.updates.0.net', ['currency' => 'RWF', 'amount' => '-100'])->where('holding.updates.0.status', 'healthy'));
+            ->where('holding.updates.0.net', ['currency' => 'RWF', 'amount' => '-100'])->where('holding.updates.0.status', 'healthy')
+            ->where('holding.health', 'healthy')
+            ->where('holding.latest_report', ['month' => '2026-11-01T00:00:00+02:00', 'status' => 'healthy', 'summary' => 'Verified · figures match the statements']));
+});
+
+it('puts a Holding on watch when the business\'s newest published monthly report is', function (): void {
+    ['holdings' => [$holding], 'user' => $user] = issuedHoldings();
+    $business = BusinessCampaign::query()->whereKey($holding->business_campaign_id)->value('business_id');
+    app()->instance(PublishedMonthlyReports::class, new class($business) implements PublishedMonthlyReports
+    {
+        public function __construct(private string $businessId) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            $report = fn (string $id, string $period, bool $differences): array => ['report_id' => $id, 'period' => $period, 'inflow' => '900', 'outflow' => '800',
+                'net' => '100', 'operational_status' => 'active', 'differences' => $differences,
+                'auditor' => ['name' => 'Diane Uwase', 'licence' => 'ICPAR/P-2026/0481', 'sealed_on' => '2026-12-07'], 'auditor_note' => '', 'business_note' => ''];
+
+            return $businessId !== $this->businessId ? [] : [$report('r2', '2026-12', true), $report('r1', '2026-11', false)];
+        }
+    });
+
+    $this->actingAs($user)->get(route('investor.holdings.show', $holding->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('holding.health', 'watch')
+            ->where('holding.latest_report', ['month' => '2026-12-01T00:00:00+02:00', 'status' => 'watch', 'summary' => 'Watch · the Audit Partner noted a difference']));
+    $this->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('holdings.0.health', 'watch'));
 });
 
 it('keeps a Holding from anyone but its holder, and answers over API v1 with investor:read', function (): void {

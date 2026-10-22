@@ -65,6 +65,7 @@
         "withdrawals": [],
         "history": {
             "movement": "external",
+            "period": "all",
             "filters": [
                 {
                     "key": "external",
@@ -79,6 +80,40 @@
                     "active": false,
                     "link": {
                         "url": "/investor/wallet?movement=internal",
+                        "method": "get"
+                    }
+                }
+            ],
+            "periods": [
+                {
+                    "key": "today",
+                    "active": false,
+                    "link": {
+                        "url": "/investor/wallet?movement=external&period=today",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "7d",
+                    "active": false,
+                    "link": {
+                        "url": "/investor/wallet?movement=external&period=7d",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "30d",
+                    "active": false,
+                    "link": {
+                        "url": "/investor/wallet?movement=external&period=30d",
+                        "method": "get"
+                    }
+                },
+                {
+                    "key": "all",
+                    "active": true,
+                    "link": {
+                        "url": "/investor/wallet?movement=external",
                         "method": "get"
                     }
                 }

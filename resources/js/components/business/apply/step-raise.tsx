@@ -671,6 +671,13 @@ function Economics({
                         {quote ? formatRwf(quote.total) : dash}
                     </span>
                 </div>
+                {quote && (
+                    <p className="-mt-2 text-right text-[13px] font-bold text-rz-accent-app-text">
+                        {t('business.apply.raise.per_month', {
+                            amount: formatRwf(quote.schedule[0].amount),
+                        })}
+                    </p>
+                )}
                 {quote && <InstalmentSchedule schedule={quote.schedule} />}
                 {quote?.reserve && (
                     <div className="mt-1 flex flex-col gap-[9px] border-t border-[#dbe7ff] pt-[11px] dark:border-rz-divider">

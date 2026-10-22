@@ -34,6 +34,7 @@ const en = {
         'Identity verification required',
     'identity.denied.verification_required.body':
         'Your identity needs to be verified before you can open this page. Choose an app to continue.',
+    'identity.denied.verification_required.action': 'Verify your identity',
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
@@ -56,16 +57,15 @@ const en = {
     'common.action.sign_up': 'Sign up',
 
     'auth.login.head_title': 'Log in',
-    'auth.login.layout_title': 'Log in to your account',
-    'auth.login.layout_description':
-        'Enter your email and password below to log in',
+    'auth.login.layout_title': 'Welcome back',
+    'auth.login.layout_description': 'Log in to your Rozine account.',
     'auth.login.email_label': 'Email address',
     'auth.login.email_placeholder': 'email@example.com',
     'auth.login.password_label': 'Password',
     'auth.login.password_placeholder': 'Password',
     'auth.login.forgot_password': 'Forgot your password?',
     'auth.login.remember_me': 'Remember me',
-    'auth.login.no_account': "Don't have an account?",
+    'auth.login.no_account': 'New to Rozine?',
 
     'auth.forgot_password.head_title': 'Forgot password',
     'auth.forgot_password.layout_title': 'Forgot password',
@@ -76,6 +76,81 @@ const en = {
     'auth.forgot_password.submit': 'Email password reset link',
     'auth.forgot_password.return_prefix': 'Or, return to',
     'auth.forgot_password.return_link': 'log in',
+    'auth.login.create_account': 'Create account',
+    'auth.register.head_title': 'Register',
+    'auth.register.layout_title': 'Create your account',
+    'auth.register.layout_description':
+        'Enter your details below to create your account.',
+    'auth.register.name_label': 'Name',
+    'auth.register.name_placeholder': 'Full name',
+    'auth.register.email_label': 'Email address',
+    'auth.register.email_placeholder': 'you@example.rw',
+    'auth.register.password_label': 'Password',
+    'auth.register.password_placeholder': 'Password',
+    'auth.register.confirm_label': 'Confirm password',
+    'auth.register.confirm_placeholder': 'Confirm password',
+    'auth.register.submit': 'Create account',
+    'auth.register.have_account': 'Already have an account?',
+    'auth.register.log_in': 'Log in',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Secure',
+    'auth.brand.business.have_account': 'Already registered?',
+    'auth.brand.business.eyebrow': 'For business',
+    'auth.brand.business.login_description': 'Log in to your issuer dashboard.',
+    'auth.brand.business.email_label': 'Work email',
+    'auth.brand.business.email_placeholder': 'you@company.rw',
+    'auth.brand.business.register_cta': 'Register a business',
+    'auth.brand.business.register_title': 'Register your business',
+    'auth.brand.business.register_description':
+        'Create the account your business will apply and raise with.',
+    'auth.brand.investor.login_description': 'Log in to manage your portfolio.',
+    'auth.brand.investor.register_description':
+        'Start investing in verified businesses across Rwanda.',
+    'auth.brand.auditor.eyebrow': 'For audit partners',
+    'auth.brand.auditor.login_description': 'Log in to your audit desk.',
+    'auth.brand.auditor.register_description':
+        'Create the account you will take audit jobs with.',
+    'auth.reset_password.head_title': 'Reset password',
+    'auth.reset_password.layout_title': 'Reset password',
+    'auth.reset_password.layout_description':
+        'Choose a new password for your account.',
+    'auth.reset_password.email_label': 'Email',
+    'auth.reset_password.password_label': 'Password',
+    'auth.reset_password.password_placeholder': 'Password',
+    'auth.reset_password.confirm_label': 'Confirm password',
+    'auth.reset_password.confirm_placeholder': 'Confirm password',
+    'auth.reset_password.submit': 'Reset password',
+    'auth.verify_email.head_title': 'Email verification',
+    'auth.verify_email.layout_title': 'Verify your email',
+    'auth.verify_email.layout_description':
+        'Enter the 6-digit code we emailed you. It expires in 10 minutes.',
+    'auth.verify_email.resent':
+        'A new code has been sent to the email address you signed up with. Earlier codes no longer work.',
+    'auth.verify_email.submit': 'Verify email',
+    'auth.verify_email.resend': 'Send a new code',
+    'auth.verify_email.log_out': 'Log out',
+    'auth.confirm_password.head_title': 'Confirm password',
+    'auth.confirm_password.layout_title': 'Confirm password',
+    'auth.confirm_password.layout_description':
+        'This is a secure area. Please confirm your password before continuing.',
+    'auth.confirm_password.passkey': 'Confirm with passkey',
+    'auth.confirm_password.passkey_loading': 'Confirming…',
+    'auth.confirm_password.separator': 'Or confirm with password',
+    'auth.confirm_password.password_label': 'Password',
+    'auth.confirm_password.password_placeholder': 'Password',
+    'auth.confirm_password.submit': 'Confirm password',
+    'auth.two_factor_challenge.head_title': 'Two-factor authentication',
+    'auth.two_factor_challenge.code_title': 'Authentication code',
+    'auth.two_factor_challenge.code_description':
+        'Enter the authentication code provided by your authenticator application.',
+    'auth.two_factor_challenge.recovery_title': 'Recovery code',
+    'auth.two_factor_challenge.recovery_description':
+        'Please confirm access to your account by entering one of your emergency recovery codes.',
+    'auth.two_factor_challenge.recovery_placeholder': 'Enter recovery code',
+    'auth.two_factor_challenge.submit': 'Continue',
+    'auth.two_factor_challenge.toggle_prefix': 'or you can',
+    'auth.two_factor_challenge.use_recovery': 'login using a recovery code',
+    'auth.two_factor_challenge.use_code': 'login using an authentication code',
 
     'suite.head_title': 'Your apps',
     'suite.tagline': 'The Retail Capital Markets Layer for Emerging Economies',
@@ -106,8 +181,7 @@ const en = {
         'Your identity is not set up yet',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Your identity is being verified',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Ready to invest?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -332,7 +406,7 @@ const en = {
     'business.apply.raise.term': 'Term',
     'business.apply.raise.term_months': '{months} Months',
     'business.apply.raise.rate': 'Rate',
-    'business.apply.raise.rate_info': 'How this rate is set',
+    'business.apply.raise.rate_info': 'How this yield is calculated',
     'business.apply.raise.rate_how': 'How your rate is set',
     'business.apply.raise.rate_one_charge':
         'One flat charge on what you borrow. The only deduction is the 3% platform fee, taken from your raise when it is paid out — there is no origination fee or levy on top.',
@@ -353,6 +427,7 @@ const en = {
     'business.apply.raise.interest': '+ Interest',
     'business.apply.raise.interest_basis': '({rate}% flat · {months} months)',
     'business.apply.raise.you_repay': 'You repay',
+    'business.apply.raise.per_month': '{amount} / month',
     'business.apply.raise.first_payment': 'Starting 1 month after funding',
     'business.apply.raise.reserve': 'Investor protection reserve',
     'business.apply.raise.reserve_detail':
@@ -407,6 +482,13 @@ const en = {
         'Charged once your note is approved, before it goes live. When your raise is paid out, a 3% platform fee is deducted from it; you repay the full amount raised.',
     'business.apply.review.binding':
         'Your signature legally binds the business to the disclosed obligations. Your application ID is issued on submission.',
+    'business.apply.approved.title': 'Your application is approved',
+    'business.apply.approved.body':
+        'Publish it to the investor feed to start raising. The listing fee is waived.',
+    'business.apply.approved.publish': 'Publish to the investor feed',
+    'business.apply.published.title': 'Your raise is published',
+    'business.apply.published.body':
+        'Investors can see it in the feed and commit now.',
     'business.apply.submitted.title': 'Your application has been submitted',
     'business.apply.submitted.body':
         "Your application is being reviewed. You'll be notified at each stage.",
@@ -599,11 +681,9 @@ const en = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Co-sign, or dispute',
     'business.reports.guide.cosign.body':
-        'When the audit is sealed you add a recap and co-sign it by the {day}, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+        'When the audit is sealed you have 24 hours to review it and co-sign it, or raise a dispute with counter-proof. If you do neither within 24 hours, the report counts as approved. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.guide.visit.body_undated':
         'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report.',
-    'business.reports.guide.cosign.body_undated':
-        'When the audit is sealed you review it and co-sign it within the review window, or raise a dispute with counter-proof. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
@@ -620,6 +700,8 @@ const en = {
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
+    'business.reports.empty_body':
+        'Each monthly report appears here once your Audit Partner seals it.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} of {of}',
     'business.reports.sheet.live': 'Live to your investors',
@@ -1380,6 +1462,49 @@ const en = {
     'admin.rating.band.stable': 'Stable',
     'admin.rating.band.weak': 'Weak',
     'admin.rating.band.distressed': 'Distressed',
+    'admin.design.ratings.weights.title': 'How a rating is computed',
+    'admin.design.ratings.weights.sub':
+        'Each input is scaled from 0 to 100 across its range, weighted, and summed; the score divided by 20 is the rating out of 5. Conduct caps apply after.',
+    'admin.design.ratings.weights.empty':
+        'Only underwriters can see the scorecard.',
+    'admin.design.ratings.bands.title': 'Bands',
+    'admin.design.ratings.bands.empty': 'Only underwriters can see the bands.',
+    'admin.engine.target_dscr': 'Target DSCR',
+    'admin.engine.minimum_dscr': 'Minimum DSCR',
+    'admin.engine.repeat_monthly_dscr': 'Monthly DSCR · repeat issue',
+    'admin.engine.min_principal': 'Smallest raise',
+    'admin.engine.max_principal': 'Largest raise',
+    'admin.engine.issuance_unit': 'Raise rounded down to',
+    'admin.engine.first_issue_months': 'Audited months · first issue',
+    'admin.engine.repeat_issue_months': 'Audited months · repeat issue',
+    'admin.engine.tenors': 'Term · months',
+    'admin.engine.rate_band': 'Rate band · flat, all-in',
+    'admin.engine.platform_fee': 'Platform fee · at disbursement',
+    'admin.engine.cpa_share': 'Audit Partner share of the fee',
+    'admin.engine.coverage': 'Debt coverage',
+    'admin.engine.cfads_margin': 'Cash available for debt / revenue',
+    'admin.engine.nocf_stability': 'Operating cash stability',
+    'admin.engine.positive_months': 'Months with positive cash',
+    'admin.engine.history_depth': 'Months of history',
+    'admin.engine.conduct': 'Repayment and reporting conduct',
+    'admin.engine.adverse_conduct_cap': 'Rating cap · late or missed reports',
+    'admin.engine.default_cap': 'Rating cap · default',
+    'admin.engine.strong': 'Strong',
+    'admin.engine.stable': 'Stable',
+    'admin.engine.weak': 'Weak',
+    'admin.engine.distressed': 'Distressed',
+    'admin.design.engines.sizing.sub':
+        'All four limits apply and the lowest binds: capacity at the target DSCR, the amount asked, the largest raise and the exposure room left. A raise below the smallest is refused. The result is then stepped down until DSCR holds at the target, and rounded down to the issuance unit.',
+    'admin.design.ratings.movers.title': 'What moves a rating',
+    'admin.design.ratings.movers.sub':
+        'Each verified statement recomputes the financial inputs, so revenue and cash moving up or down move the rating. Repayments and monthly reports move conduct, and the caps hold a rating down while arrears, a reporting breach or a default stand. No staff override exists.',
+    'admin.design.ratings.movers.empty':
+        'Only underwriters can see what moves a rating.',
+    'admin.engine.new_issuer_conduct':
+        'Conduct before any repayment · out of 100',
+    'admin.engine.instalment_conduct':
+        'Instalments paid on time · share of conduct',
+    'admin.engine.report_conduct': 'Monthly reports on time · share of conduct',
     'admin.policy.eyebrow': 'Set in Policies',
     'admin.policy.target_dscr': 'Target DSCR',
     'admin.policy.listing_audit': 'Listing audit',
@@ -1389,6 +1514,29 @@ const en = {
     'admin.policy.min_statement_years': 'Min statement years',
     'admin.policy.rdb_certificate': 'RDB certificate',
     'admin.policy.max_notes': 'Max notes / business',
+    'admin.policy.platform_fee': 'Platform fee · at disbursement',
+    'admin.policy.cpa_share': 'Audit Partner share of the fee',
+    'admin.policy.listing_fee': 'Listing fee',
+    'admin.policy.repayment_fee': 'Repayment fee',
+    'admin.payments.policy_title': 'Fee schedule in effect',
+    'admin.policy.minimum_age': 'Minimum investor age',
+    'admin.policy.identity_evidence': 'Identity files per case',
+    'admin.policy.complaint_acknowledge': 'Complaint acknowledged within',
+    'admin.policy.complaint_resolve': 'Complaint resolved within',
+    'admin.kyc.policy_title': 'Compliance rules in effect',
+    'admin.policy.min_principal': 'Smallest raise',
+    'admin.policy.max_principal': 'Largest raise',
+    'admin.policy.tenors': 'Term · months',
+    'admin.policy.first_issue_months': 'Audited months · first issue',
+    'admin.policy.repeat_issue_months': 'Audited months · repeat issue',
+    'admin.policy.withdrawal_min': 'Smallest withdrawal',
+    'admin.policy.withdrawal_max': 'Largest withdrawal',
+    'admin.finance.stream.platform_fee': 'Platform fee · Rozine share',
+    'admin.finance.stream.audit_partner_share':
+        'Platform fee · Audit Partner share (payable)',
+    'admin.finance.stream.deposit_fees': 'Deposit fees',
+    'admin.finance.paid_by.business': 'Businesses',
+    'admin.finance.paid_by.investor': 'Investors',
     'admin.policy.dual_control_threshold': 'Two approvers from',
     'admin.time.now': 'just now',
     'admin.time.minutes': '{count}m ago',
@@ -1707,7 +1855,7 @@ const en = {
     'admin.parties.stats.total_businesses': 'Total Businesses',
     'admin.parties.stats.avg_rating': 'Avg rating',
     'admin.parties.stats.active_notes': 'Active Notes',
-    'admin.parties.stats.capital_raised': 'Capital Raised',
+    'admin.parties.stats.capital_raised': 'Capital Funded',
     'admin.parties.stats.total_investors': 'Total Investors',
     'admin.parties.stats.kyc_verified': 'KYC Verified',
     'admin.parties.stats.awaiting_kyc': 'Awaiting KYC',
@@ -1740,14 +1888,15 @@ const en = {
     'admin.parties.empty.staff': 'No operators match these filters.',
     'admin.parties.col.business': 'Business',
     'admin.parties.col.rating': 'Rating',
+    'admin.parties.name_pending': 'Name pending',
     'admin.parties.col.active_notes': 'Active notes',
-    'admin.parties.col.investors': 'Investors',
-    'admin.parties.col.raised': 'Raised',
+    'admin.parties.col.investors': 'Funders',
+    'admin.parties.col.raised': 'Funded',
     'admin.parties.col.capacity': 'Capacity used',
     'admin.parties.col.status': 'Status',
     'admin.parties.col.investor': 'Investor',
     'admin.parties.col.kyc': 'KYC',
-    'admin.parties.col.portfolio': 'Portfolio',
+    'admin.parties.col.portfolio': 'Invested + committed',
     'admin.parties.col.wallet': 'Wallet',
     'admin.parties.col.holdings': 'Holdings',
     'admin.parties.col.businesses': 'Businesses',
@@ -1781,6 +1930,73 @@ const en = {
     'admin.parties.standing.pending': 'Pending verification',
     'admin.parties.standing.licence_expired': 'Licence expired',
     'admin.parties.standing.suspended': 'Suspended',
+    'admin.matrix.title': 'Role permissions',
+    'admin.matrix.info':
+        'What each tier may do. Lower tiers are blocked from destructive actions, not just hidden from them.',
+    'admin.matrix.col.capability': 'Capability',
+    'admin.matrix.col.detail': 'What it allows',
+    'admin.matrix.granted': 'Allowed',
+    'admin.matrix.withheld': 'Not allowed',
+    'admin.permission.admin.open': 'Open the console',
+    'admin.permission_detail.admin.open':
+        'Sign in to the staff console, its dashboard and Staff & Roles.',
+    'admin.permission.businesses.view': 'View businesses',
+    'admin.permission_detail.businesses.view':
+        'Read the business directory and each business 360.',
+    'admin.permission.businesses.verify': 'Verify businesses',
+    'admin.permission_detail.businesses.verify':
+        'Decide business verification, with a recorded reason.',
+    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission_detail.investors.verify':
+        'Decide investor identity checks and read Activity & Audit.',
+    'admin.permission.applications.review': 'Review applications',
+    'admin.permission_detail.applications.review':
+        'Review raise applications and release them for publishing.',
+    'admin.permission.audit.partners.verify': 'Verify Audit Partners',
+    'admin.permission_detail.audit.partners.verify':
+        'Approve CPA firms and read partner coverage.',
+    'admin.permission.audit.assignments.manage': 'Assign audits',
+    'admin.permission_detail.audit.assignments.manage':
+        'Dispatch and reassign audits to Audit Partners.',
+    'admin.permission.audit.reports.view': 'Read audit reports',
+    'admin.permission_detail.audit.reports.view':
+        'Open sealed audit reports and their evidence.',
+    'admin.permission.consent.documents.record': 'Record legal documents',
+    'admin.permission_detail.consent.documents.record':
+        'Record new versions of the Terms and the Privacy Note.',
+    'admin.permission.ledger.view': 'View the ledger',
+    'admin.permission_detail.ledger.view': 'Read ledger entries and balances.',
+    'admin.permission.disbursements.view': 'View disbursements',
+    'admin.permission_detail.disbursements.view':
+        'See the disbursement queue and each release.',
+    'admin.permission.disbursements.hold': 'Hold disbursements',
+    'admin.permission_detail.disbursements.hold':
+        'Hold a disbursement before it is released.',
+    'admin.permission.disbursements.requery': 'Requery disbursements',
+    'admin.permission_detail.disbursements.requery':
+        "Ask the payment provider for a disbursement's current state.",
+    'admin.permission.staging.mail.testers.manage': 'Manage mail testers',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Choose who receives email on staging.',
+    'admin.permission.reconciliation.view': 'View reconciliation',
+    'admin.permission_detail.reconciliation.view':
+        'Compare the ledger with provider statements.',
+    'admin.permission.exceptions.view': 'View exceptions',
+    'admin.permission_detail.exceptions.view':
+        "See the Risk Center's open exceptions.",
+    'admin.permission.messaging.view': 'View messaging',
+    'admin.permission_detail.messaging.view': 'Read the messaging history.',
+    'admin.permission.primary.view': 'View the primary market',
+    'admin.permission_detail.primary.view':
+        'Follow live raises and the Notes register.',
+    'admin.permission.payments.view': 'View payments',
+    'admin.permission_detail.payments.view': 'Open the Payment Center.',
+    'admin.permission.complaints.answer': 'Answer complaints',
+    'admin.permission_detail.complaints.answer':
+        'Reply to and close participant complaints.',
+    'admin.permission.health.view': 'View system health',
+    'admin.permission_detail.health.view':
+        'See queues, jobs and service status.',
     'admin.parties.you': 'You',
     'admin.parties.drawer_label': '{name}, party record',
     'admin.parties.type.business': 'Business',
@@ -1800,12 +2016,12 @@ const en = {
     'admin.parties.kyc_overdue_note':
         'KYC re-verification overdue since {date}.',
     'admin.parties.stat.active_notes': 'Active notes',
-    'admin.parties.stat.investors': 'Investors',
-    'admin.parties.stat.raised': 'Raised',
+    'admin.parties.stat.investors': 'Funders',
+    'admin.parties.stat.raised': 'Funded',
     'admin.parties.stat.rating': 'Rozine rating',
     'admin.parties.stat.capacity': 'Capacity',
     'admin.parties.stat.capacity_used': 'Capacity used',
-    'admin.parties.stat.portfolio': 'Portfolio',
+    'admin.parties.stat.portfolio': 'Invested + committed',
     'admin.parties.stat.wallet': 'Wallet',
     'admin.parties.stat.holdings': 'Holdings',
     'admin.parties.stat.businesses': 'Businesses',
@@ -1968,6 +2184,18 @@ const en = {
     'business.wallet.back': 'Back to Home',
     'business.wallet.available': 'Available balance',
     'business.wallet.brand': 'Rozine Wallet',
+    'business.wallet.range.label': 'Date range',
+    'business.wallet.range.all': 'All time',
+    'business.wallet.range.start': 'Start',
+    'business.wallet.range.now': 'Now',
+    'business.wallet.range.from': 'From',
+    'business.wallet.range.to': 'To',
+    'business.wallet.range.apply': 'Apply',
+    'business.wallet.range.clear': 'All time',
+    'business.wallet.export.label': 'Download statement',
+    'business.wallet.export.pdf': 'Download PDF',
+    'business.wallet.export.csv': 'Download Excel',
+    'business.wallet.caption': 'Fees, payouts & disbursements settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
@@ -1979,7 +2207,6 @@ const en = {
     'business.servicing.wallet.status.restricted': 'Restricted',
     'business.servicing.wallet.restricted':
         'Restricted since {date}. Deposits and repayments still go through.',
-    'business.servicing.wallet.no_pending': 'No deposits waiting',
     'business.servicing.wallet.pending': '{amount} waiting to be confirmed',
     'business.servicing.wallet.to_repayments': 'Go to repayments',
     'business.servicing.wallet.movement': 'Movement type',
@@ -1989,7 +2216,7 @@ const en = {
     'business.servicing.wallet.entry.repayment': 'Repayment · {note}',
     'business.servicing.wallet.instalments': 'Instalments {list}',
     'business.servicing.wallet.empty': 'Nothing here yet.',
-    'business.servicing.wallet.older': 'Show older',
+    'business.servicing.wallet.older': 'Show more',
     'business.servicing.wallet.receipt.label': 'Transaction receipt',
     'business.servicing.wallet.receipt.psp_fee': 'Provider fee',
     'business.servicing.wallet.receipt.policy': 'Policy version',
@@ -2496,9 +2723,27 @@ const en = {
         'Accepted · the platform MSA and agreed procedures',
     'auditor.profile.legal.required': 'Needs your acceptance',
     'auditor.profile.legal.unavailable': "Can't be read right now",
-    'auditor.profile.pending.earnings_title': 'No earnings yet',
-    'auditor.profile.pending.earnings_body':
-        'Your 40% share of the platform fee on raises you audited will show here once it accrues.',
+    'auditor.profile.earnings.title': 'Earnings',
+    'auditor.profile.earnings.lead':
+        'Everything you have earned this month, every line, and exactly how it was worked out.',
+    'auditor.profile.earnings.this_month': 'Earned in {month}',
+    'auditor.profile.earnings.total': 'Earned in total',
+    'auditor.profile.earnings.sources': 'Where it came from',
+    'auditor.profile.earnings.platform_fee': 'Platform fee share',
+    'auditor.profile.earnings.platform_fee_rule':
+        '40% of the 3% platform fee on each raise you audited, credited when it is paid out.',
+    'auditor.profile.earnings.earnings_fee': 'Earnings fee share',
+    'auditor.profile.earnings.earnings_fee_rule':
+        '25% of the earnings fee on each monthly payout to investors. Starts with the first payout.',
+    'auditor.profile.earnings.lines': 'Every line this month',
+    'auditor.profile.earnings.line_count': {
+        one: '{count} line',
+        other: '{count} lines',
+    },
+    'auditor.profile.earnings.empty':
+        'Nothing earned yet this month. A line appears the moment a raise you audited is paid out.',
+    'auditor.profile.earnings.basis':
+        'Raise {raise} · 3% platform fee {fee} · your 40% {amount}',
     'auditor.profile.pending.payout_title': 'No payout account yet',
     'auditor.profile.pending.payout_body':
         'The bank account your earnings are paid to will show here.',
@@ -2619,7 +2864,7 @@ const en = {
     'business.rating.financials': 'Verified financials',
     'business.rating.sources': 'Bank · MoMo',
     'business.rating.financial.revenue': 'Avg monthly rev.',
-    'business.rating.financial.ebitda': 'EBITDA / month',
+    'business.rating.financial.ebitda': 'Net cash / month',
     'business.rating.financial.margin': 'Net margin',
     'business.rating.financial.outstanding': 'Outstanding',
     'business.repayments.title': 'Repayments',
@@ -2811,6 +3056,26 @@ const en = {
     'investor.cart.empty_body':
         'Add notes from Deals, set how much you want in each, and check them all out at once.',
     'investor.cart.browse_deals': 'Browse deals',
+    'investor.cart.add': 'Add to cart',
+    'investor.cart.in_cart_remove': 'In cart · Remove',
+    'investor.cart.update_failed':
+        "We couldn't update your cart. Refresh and try again.",
+    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.total': 'CART TOTAL',
+    'investor.cart.remove': 'Remove {name} from cart',
+    'investor.cart.filled_remove': 'Fully funded · Remove',
+    'investor.cart.filled_note': {
+        one: "{count} note is fully funded and won't be checked out.",
+        other: "{count} notes are fully funded and won't be checked out.",
+    },
+    'investor.cart.target_of': 'of {amount}',
+    'investor.cart.units': { one: 'note', other: 'notes' },
+    'investor.cart.quantity': 'Number of notes in {name}',
+    'investor.cart.checkout': 'Check out',
+    'investor.cart.checkout_note':
+        'Each note checks out on its own for now: open its checkout to reserve and pay.',
+    'investor.cart.before_charge':
+        'Get back is before the charge on earnings. Each checkout shows the exact amount.',
     'investor.common.back': 'Back',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Strong',
@@ -2828,6 +3093,7 @@ const en = {
     'investor.deals.sort.top_interest': 'Top Interest',
     'investor.deals.sort.top_rated': 'Top Rated',
     'investor.deals.sort.top_picks': 'Top Picks',
+    'investor.deals.sort.in_cart': 'In cart',
     'investor.deals.industry_label': 'Filter by industry',
     'investor.deals.industry_all': 'All',
     'investor.deals.audited': 'AUDITED',
@@ -2839,6 +3105,7 @@ const en = {
     'investor.deals.avg_revenue_short': 'AVG MO. REV.',
     'investor.deals.avg_revenue': 'AVG MONTHLY REV.',
     'investor.deals.funded_label': '{name} funding progress',
+    'investor.deals.investors_one': 'investor',
     'investor.deals.investors': 'investors',
     'investor.deals.left_to_fill': 'LEFT TO FILL',
     'investor.deals.notes': 'NOTES',
@@ -2915,7 +3182,7 @@ const en = {
     'investor.deal.total_return': 'Total return',
     'investor.deal.repayment': 'Repayment',
     'investor.deal.monthly': 'Monthly',
-    'investor.deal.term': 'TERM',
+    'investor.deal.term': 'Term',
     'investor.deal.months_long': '{count} months',
     'investor.deal.track_record': 'Track record on Rozine',
     'investor.deal.history': 'HISTORY',
@@ -2968,7 +3235,7 @@ const en = {
     'investor.plus.tier.platinum': 'Platinum',
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
-    'investor.checkout.pay_with': 'PAY WITH',
+    'investor.checkout.pay_with': 'FUNDING SOURCE',
     'investor.checkout.wallet': 'Wallet',
     'investor.checkout.wallet_detail': 'Rozine Wallet · {amount} available',
     'investor.checkout.insufficient':
@@ -2992,7 +3259,7 @@ const en = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'The terms changed while you were reading. Review them and confirm again.',
     'investor.checkout.processing': 'Confirming…',
-    'investor.checkout.confirm': 'Confirm · {amount}',
+    'investor.checkout.confirm': 'Confirm investment · {amount}',
     'investor.checkout.fine_print':
         'Funds committed instantly · Returns are projected, not guaranteed',
     'investor.checkout.confirmed': 'Investment confirmed',
@@ -3321,6 +3588,7 @@ const en = {
     'investor.portfolio.empty.saved.title': 'No saved deals yet',
     'investor.portfolio.browse_deals': 'Browse opportunities',
     'investor.portfolio.total_value': 'TOTAL VALUE',
+    'investor.portfolio.businesses_one': '1 business',
     'investor.portfolio.businesses': '{count} businesses',
     'investor.portfolio.invested': 'INVESTED',
     'investor.portfolio.total_gain': 'TOTAL GAIN',
@@ -4117,6 +4385,7 @@ const en = {
         'Verify your email and turn on two-factor authentication to continue.',
     'settlement.refusal.MFA_REQUIRED': 'Two-factor authentication is required.',
     'settlement.refusal.NOT_FOUND': 'You can no longer view this record.',
+    'investor.wallet.c3.available_balance': 'Available balance',
     'investor.wallet.c3.total': 'Wallet total',
     'investor.wallet.c3.bucket.available': 'Available',
     'investor.wallet.c3.bucket.held': 'Held',
@@ -4253,7 +4522,7 @@ const en = {
     'business.publish.published.disclosure': 'Fee disclosure',
     'business.publish.published.campaign': 'View campaign',
     'business.publish.published.home': 'Back to Home',
-    'business.campaign.state.live': 'Live',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Fully reserved',
     'business.campaign.state.funded': 'Funded',
     'business.campaign.state.funded_pending_disbursement':
@@ -4280,6 +4549,7 @@ const en = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         "Not eligible for new commitments since {date}; what's already committed stays.",
     'business.campaign.tile.committed': 'Committed',
+    'business.campaign.tile.of_target': 'Of target',
     'business.campaign.tile.refunded': 'Refunded',
     'business.campaign.tracker.title': 'Commitment tracker',
     'business.campaign.tracker.committed_pct': '{pct}% committed',
@@ -4692,6 +4962,8 @@ const en = {
     'investor.checkout.risks.accept': 'I understand these risks',
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
+    'investor.checkout.c3.reserve_after_risks':
+        'Confirm the risk statements above to reserve.',
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':
@@ -5358,6 +5630,12 @@ const en = {
         'Arrears, halts and variances appear here when the core opens one.',
     'admin.exceptions.filtered_title': 'No exceptions of this kind',
     'admin.exceptions.filtered_body': 'Choose All to see every open exception.',
+    'admin.notes.tabs': 'Notes by state',
+    'admin.notes.state.live': 'Live',
+    'admin.notes.state.funded': 'Funded',
+    'admin.notes.state.repaying': 'Repaying',
+    'admin.notes.state.failed': 'Failed',
+    'admin.notes.more': 'More notes',
     'admin.primary.title': 'Live raises',
     'admin.primary.caption':
         'Every raise still filling, newest first. Raises fill or fail on their own clock, so there is no moderation here.',
@@ -5569,6 +5847,8 @@ const en = {
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
     'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.within':
+        'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',

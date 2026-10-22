@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\SubmitAuditorAccreditation;
+use App\Application\Identity\Contracts\PartyNotices;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Models\AuditAssignment;
 use App\Models\BusinessProfile;
 use App\Models\PartyNotice;
@@ -144,4 +146,13 @@ it('reads Auditor notices over API v1 with auditor:read and marks them read only
     $this->postJson(route('api.v1.auditor.notices.read', $offer->id))->assertForbidden();
     Sanctum::actingAs($partner, ['auditor:read', 'auditor:command']);
     $this->postJson(route('api.v1.auditor.notices.read', $offer->id))->assertOk()->assertJsonPath('data.unread', 1);
+});
+
+it('opens a security notice on the partner\'s own profile, never the Investor app\'s', function (): void {
+    $fixture = AuditorFixture::make();
+    app(PartyNotices::class)->record($fixture['party']->id, PartyNoticeKind::NewDevice, ['device' => 'Synthetic phone', 'signed_in_at' => '2026-10-21T08:00:00Z'],
+        'new-device:synthetic', []);
+
+    $this->actingAs($fixture['user'])->getJson(route('auditor.notices'))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'security.new_device')->assertJsonPath('data.notices.0.link', ['url' => '/auditor/profile', 'method' => 'get']);
 });

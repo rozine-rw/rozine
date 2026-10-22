@@ -1,3 +1,4 @@
+import { mergeDataIntoQueryString } from '@inertiajs/core';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -29,7 +30,7 @@ import gatedFixture from '../../../resources/fixtures/ui/investor-deals-gated.js
 import minimalFixture from '../../../resources/fixtures/ui/investor-deals-live-minimal.json';
 import restrictedFixture from '../../../resources/fixtures/ui/investor-deals-restricted.json';
 import dealsFixture from '../../../resources/fixtures/ui/investor-deals.json';
-import { inertia, resetInertia, setWide } from './inertia-mock';
+import { answers, fails, inertia, resetInertia, setWide } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -175,10 +176,10 @@ describe('Deals on a phone', () => {
         render(<InvestorDeals {...deals()} />);
 
         await user.click(screen.getByRole('button', { name: 'Next deal' }));
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_sebeya' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_sebeya', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
         const other = screen.getByRole('region', {
             name: 'Invest in Sebeya Logistics',
         });
@@ -190,10 +191,10 @@ describe('Deals on a phone', () => {
 
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_inzovu' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_inzovu', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
         const deck = screen.getByRole('article', { name: 'Inzovu Coffee Co.' });
 
@@ -201,18 +202,21 @@ describe('Deals on a phone', () => {
         fireEvent.pointerDown(deck, { clientX: 200 });
         fireEvent.pointerMove(deck, { clientX: 100 });
         fireEvent.pointerUp(deck);
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_greenleaf' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            {
+                url: '/preview/investor-deals?deal=cmp_greenleaf',
+                method: 'get',
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
         fireEvent.pointerDown(deck, { clientX: 100 });
         fireEvent.pointerMove(deck, { clientX: 200 });
         fireEvent.pointerCancel(deck);
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_inzovu' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_inzovu', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
         fireEvent.pointerDown(deck, { clientX: 100 });
         fireEvent.pointerMove(deck, { clientX: 110 });
@@ -442,15 +446,18 @@ describe('Deals on a wide screen', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'Next deal' }));
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_sebeya' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_sebeya', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
         await user.click(screen.getByRole('button', { name: 'Previous deal' }));
-        expect(inertia.reload).toHaveBeenLastCalledWith({
-            only: ['focus', 'quote'],
-            data: { deal: 'cmp_greenleaf' },
-        });
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            {
+                url: '/preview/investor-deals?deal=cmp_greenleaf',
+                method: 'get',
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
         unmount();
         expect(disconnect).toHaveBeenCalled();
@@ -903,6 +910,75 @@ describe('Deals in C3 states', () => {
         expect(screen.getByRole('button', { name: 'Invest' })).toBeDisabled();
     });
 
+    it('opens the checkout from the focused live deal when the server sends no quote, as the live Deals page does', async () => {
+        const user = userEvent.setup();
+        const props = deals();
+
+        props.quote = null;
+        props.allowed_actions = [];
+        render(<InvestorDeals {...props} />);
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+
+        expect(bar).toHaveTextContent('RWF5,000');
+        expect(
+            within(bar).getByRole('link', { name: 'Invest' }),
+        ).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=1',
+        );
+
+        fireEvent.change(within(bar).getByRole('slider'), {
+            target: { value: '3' },
+        });
+        expect(bar).toHaveTextContent('RWF15,000');
+        expect(
+            within(bar).getByRole('link', { name: 'Invest' }),
+        ).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=3',
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+        expect(
+            within(
+                screen.getByRole('region', {
+                    name: 'Invest in Sebeya Logistics',
+                }),
+            ).getByRole('button', { name: 'Invest' }),
+        ).toBeDisabled();
+    });
+
+    it('opens the checkout from an unquoted deal page at the deal’s unit price', async () => {
+        const user = userEvent.setup();
+        const props = deal();
+
+        props.quote = null;
+        props.allowed_actions = [];
+        render(<InvestorDeal {...props} />);
+
+        expect(screen.getByText('RWF 5,000 × 1 note')).toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'One note more' }));
+        expect(screen.getByText('RWF 5,000 × 2 notes')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Invest' })).toHaveAttribute(
+            'href',
+            '/preview/investor-checkout?deal=cmp_greenleaf&units=2',
+        );
+    });
+
+    it('counts a single investor in the singular', () => {
+        const props = deals();
+
+        props.deals[0].investors = 1;
+        render(<InvestorDeals {...props} />);
+
+        expect(
+            screen.getByRole('article', { name: 'GreenLeaf Agro' }),
+        ).toHaveTextContent(/1\s*investor(?!s)/);
+    });
+
     it('names the cap that binds once the chosen quantity reaches it', () => {
         const props = deals();
         const quote = props.quote as NonNullable<C3InvestorDealsProps['quote']>;
@@ -1227,5 +1303,378 @@ describe('A deck with nothing open to reserve', () => {
         render(<InvestorDeals {...deals(restrictedFixture)} />);
 
         expect(screen.queryByText(line)).not.toBeInTheDocument();
+    });
+});
+
+describe('Add to cart', () => {
+    it('opens the selected deal by its detail link when no sort supplies a destination', async () => {
+        const page = deals();
+        page.sorts = page.sorts.map((sort) => ({ ...sort, active: false }));
+        const next = page.deals[1];
+        next.links.detail = {
+            url: `/investor/deals/${next.campaign_id}`,
+            method: 'get',
+        };
+        render(<InvestorDeals {...page} />);
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Next deal' }),
+        );
+
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            {
+                url: `/investor/deals/${next.campaign_id}?deal=${next.campaign_id}`,
+                method: 'get',
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+        expect(
+            screen.getByRole('region', { name: `Invest in ${next.name}` }),
+        ).toBeInTheDocument();
+    });
+
+    it('refreshes campaign-bound commands and checkout after moving, keeping the server filters', async () => {
+        const page = deals();
+        const next = page.deals[1];
+        page.quote = null;
+        page.sorts[0].link = {
+            url: '/investor/deals?industry=Agriculture',
+            method: 'get',
+        };
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/investor/deals/first/cart', method: 'post' },
+            remove: null,
+        };
+        page.links.checkout = {
+            url: '/investor/deals/first/checkout',
+            method: 'get',
+        };
+        const { rerender } = render(<InvestorDeals {...page} />);
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Next deal' }),
+        );
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            {
+                url: `/investor/deals?industry=Agriculture&deal=${next.campaign_id}`,
+                method: 'get',
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+
+        const refreshed = structuredClone(page);
+        refreshed.focus = { ...refreshed.focus!, ...next };
+        refreshed.links.checkout = {
+            url: `/investor/deals/${next.campaign_id}/checkout`,
+            method: 'get',
+        };
+        refreshed.cart!.add = {
+            url: `/investor/deals/${next.campaign_id}/cart`,
+            method: 'post',
+        };
+        rerender(<InvestorDeals {...refreshed} />);
+        const bar = within(
+            screen.getByRole('region', { name: `Invest in ${next.name}` }),
+        );
+        expect(bar.getByRole('link', { name: 'Invest' })).toHaveAttribute(
+            'href',
+            `/investor/deals/${next.campaign_id}/checkout?deal=${next.campaign_id}&units=1`,
+        );
+        inertia.queue.push(answers({ data: { in_cart: true } }));
+        await userEvent.click(bar.getByRole('button', { name: 'Add to cart' }));
+        expect(inertia.calls[0].url).toBe(
+            `/investor/deals/${next.campaign_id}/cart`,
+        );
+    });
+
+    it('keeps a shortened In cart deck usable after its last selected card is removed', async () => {
+        const page = deals();
+        page.deals = page.deals.slice(0, 2);
+        page.focus = { ...page.focus!, ...page.deals[1] };
+        page.cart = {
+            campaign_ids: page.deals.map((entry) => entry.campaign_id),
+            add: null,
+            remove: { url: '/investor/cart/second/remove', method: 'post' },
+        };
+        inertia.shared = { cart_count: 2 };
+        inertia.queue.push(answers({ data: { removed: true } }));
+        const { rerender } = render(<InvestorDeals {...page} />);
+        await userEvent.click(
+            screen.getByRole('button', { name: 'In cart · Remove' }),
+        );
+
+        const reload = inertia.reload.mock.lastCall![0];
+        expect(reload).not.toHaveProperty('only');
+        expect(reload.data).toEqual({ deal: undefined });
+        expect(
+            mergeDataIntoQueryString(
+                'get',
+                '/investor/deals?sort=in_cart&deal=removed',
+                reload.data,
+            )[0],
+        ).toBe('/investor/deals?sort=in_cart');
+        const refreshed = structuredClone(page);
+        refreshed.deals = refreshed.deals.slice(0, 1);
+        refreshed.focus = { ...refreshed.focus!, ...refreshed.deals[0] };
+        refreshed.cart!.campaign_ids = [refreshed.deals[0].campaign_id];
+        refreshed.cart!.remove = {
+            url: '/investor/cart/first/remove',
+            method: 'post',
+        };
+        inertia.shared = { cart_count: 1 };
+        rerender(<InvestorDeals {...refreshed} />);
+        await act(async () => reload.onFinish());
+
+        expect(
+            screen.getByRole('region', { name: 'Invest in GreenLeaf Agro' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('link', { name: /^Cart\s*\(1\)$/u }),
+        ).toHaveLength(2);
+        expect(
+            screen.getByRole('button', { name: 'In cart · Remove' }),
+        ).toBeEnabled();
+    });
+
+    it('refreshes the nested home and badge after a desktop detail cart change', async () => {
+        setWide(true);
+        const page = deal();
+        page.home.cart = {
+            campaign_ids: [page.deal.campaign_id],
+            add: null,
+            remove: { url: '/investor/cart/first/remove', method: 'post' },
+        };
+        inertia.shared = { cart_count: 1 };
+        inertia.queue.push(answers({ data: { removed: true } }));
+        const { rerender } = render(<InvestorDeal {...page} />);
+        await userEvent.click(
+            screen.getByRole('button', { name: 'In cart · Remove' }),
+        );
+        const reload = inertia.reload.mock.lastCall![0];
+        expect(reload).not.toHaveProperty('only');
+
+        const refreshed = structuredClone(page);
+        refreshed.home.cart = {
+            campaign_ids: [],
+            add: { url: '/investor/deals/first/cart', method: 'post' },
+            remove: null,
+        };
+        inertia.shared = { cart_count: 0 };
+        rerender(<InvestorDeal {...refreshed} />);
+        await act(async () => reload.onFinish());
+        expect(
+            screen.getByRole('button', { name: 'Add to cart' }),
+        ).toBeEnabled();
+        expect(
+            screen.queryByRole('button', { name: 'In cart · Remove' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByRole('link', { name: 'Cart' })).toHaveLength(1);
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Next deal' }),
+        );
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                url: expect.stringContaining(
+                    `deal=${page.home.deals[1].campaign_id}`,
+                ),
+            }),
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    });
+
+    it('reads In cart · Remove on a phone for a deal already in the cart and takes it out', async () => {
+        inertia.queue.push(
+            answers({ data: { removed: true, in_cart: false } }),
+        );
+        render(<InvestorDeals {...deals()} />);
+
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Sort deals' }),
+            ).getByRole('link', { name: 'In cart' }),
+        ).toHaveAttribute('href', '/preview/investor-deals');
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+        const toggle = within(bar).getByRole('button', {
+            name: 'In cart · Remove',
+        });
+
+        expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+        await userEvent.click(toggle);
+
+        expect(inertia.calls).toEqual([
+            {
+                url: '/preview/investor-cart',
+                method: 'post',
+                body: { identity_context_revision: 5 },
+            },
+        ]);
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { deal: undefined },
+            }),
+        );
+    });
+
+    it('adds the chosen notes, and says when the cart could not be changed', async () => {
+        const page = deals();
+
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        inertia.queue.push(
+            answers(undefined),
+            answers({ data: { units: 1, in_cart: true } }),
+            fails(409, { code: 'DEAL_FULLY_FUNDED' }),
+        );
+        render(<InvestorDeals {...page} />);
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+        const toggle = within(bar).getByRole('button', {
+            name: 'Add to cart',
+        });
+
+        expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+        await userEvent.click(toggle);
+
+        expect(inertia.calls[0]).toEqual({
+            url: '/preview/investor-cart-add',
+            method: 'post',
+            body: { identity_context_revision: 5, units: 1 },
+        });
+        expect(within(bar).getByRole('alert')).toHaveTextContent(
+            "We couldn't update your cart. Refresh and try again.",
+        );
+        expect(inertia.reload).not.toHaveBeenCalled();
+
+        await userEvent.click(toggle);
+
+        expect(within(bar).queryByRole('alert')).not.toBeInTheDocument();
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        // Until the reload brings the new cart, the toggle cannot repeat the change.
+        expect(toggle).toBeDisabled();
+        act(() =>
+            (
+                inertia.reload.mock.calls[0][0] as { onFinish: () => void }
+            ).onFinish(),
+        );
+        expect(toggle).toBeEnabled();
+
+        await userEvent.click(toggle);
+
+        expect(within(bar).getByRole('alert')).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(3);
+    });
+
+    it('cannot add a fully funded deal', () => {
+        const page = deals();
+
+        page.deals[0].units.available = '0';
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        render(<InvestorDeals {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Fully funded' }),
+        ).toBeDisabled();
+        expect(
+            screen.queryByRole('button', { name: 'Add to cart' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('waits for the server’s command and offers no cart where the Investor has none', () => {
+        const page = deals();
+
+        page.cart = { campaign_ids: [], add: null, remove: null };
+        const { unmount } = render(<InvestorDeals {...page} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Add to cart' }),
+        ).toBeDisabled();
+        unmount();
+
+        render(<InvestorDeals {...deals(restrictedFixture)} />);
+
+        expect(
+            screen.queryByRole('button', { name: /cart/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says when the cart could not be changed from the wide panel', async () => {
+        setWide(true);
+        const page = deals();
+
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        inertia.queue.push(fails(409, { code: 'DEAL_FULLY_FUNDED' }));
+        render(<InvestorDeals {...page} />);
+
+        await userEvent.click(
+            screen.getAllByRole('button', { name: 'Add to cart' })[0],
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            "We couldn't update your cart. Refresh and try again.",
+        );
+    });
+
+    it('counts a single investor in the singular, on a phone and a wide screen', () => {
+        const page = deals();
+
+        page.deals[0].investors = 1;
+        const { unmount } = render(
+            <InvestorDeals {...structuredClone(page)} />,
+        );
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+        unmount();
+
+        setWide(true);
+        render(<InvestorDeals {...page} />);
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+    });
+
+    it('counts a single investor in the singular on the deal page', () => {
+        const page = deal();
+
+        page.deal.investors = 1;
+        render(<InvestorDeal {...page} />);
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+    });
+
+    it('puts the toggle in the focused deal’s panel on a wide screen', async () => {
+        setWide(true);
+        inertia.queue.push(answers({ data: { removed: true } }));
+        render(<InvestorDeals {...deals()} />);
+
+        const toggles = screen.getAllByRole('button', {
+            name: 'In cart · Remove',
+        });
+
+        expect(toggles).toHaveLength(1);
+
+        await userEvent.click(toggles[0]);
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(inertia.reload).toHaveBeenCalledWith(
+            expect.objectContaining({
+                data: { deal: undefined },
+            }),
+        );
     });
 });

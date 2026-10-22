@@ -342,8 +342,8 @@ type AdminFrameProps = AdminFrameShellProps & {
 /**
  * The Admin console frame (design T87–182): a 216px grouped sidebar on its soft gradient, a 54px
  * glass top bar with the section title, its ⓘ, the page search and the operator menu, and the
- * content column that anchors every drawer. It fills the window up to the desktop cap and matches
- * the design's 1113×750 frame at that size. On a phone the sidebar becomes a menu sheet.
+ * content column that anchors every drawer. It is centred at the design's 1113px frame width and
+ * keeps the window's height. On a phone the sidebar becomes a menu sheet.
  */
 export function AdminFrame({
     section,
@@ -438,7 +438,7 @@ export function AdminFrame({
                                             'relative mb-[3px] flex w-full items-center gap-[11px] rounded-[11px] py-2.5 pr-3 pl-[13px] text-left text-[13.5px] transition-[background,color] duration-100',
                                             active
                                                 ? 'bg-[linear-gradient(90deg,rgba(30,58,255,.13),rgba(91,43,217,.07))] font-bold text-[#1e3aff] dark:bg-[linear-gradient(90deg,rgba(30,58,255,.32),rgba(30,58,255,.12))] dark:text-white'
-                                                : 'font-medium text-[#8c97ad] hover:bg-[rgba(30,58,255,.04)] dark:text-[#93a1bd]',
+                                                : 'font-medium text-[#636e86] hover:bg-[rgba(30,58,255,.04)] dark:text-[#93a1bd]',
                                         )}
                                     >
                                         <span
@@ -453,7 +453,7 @@ export function AdminFrame({
                                                 'flex w-[18px] justify-center',
                                                 active
                                                     ? 'text-[#1e3aff] dark:text-[#99a3ff]'
-                                                    : 'text-[#8c97ad] dark:text-[#6b7a99]',
+                                                    : 'text-[#636e86] dark:text-[#6b7a99]',
                                             )}
                                         >
                                             <svg
@@ -621,17 +621,17 @@ export function AdminFrame({
                                                 <div className="text-[14px] font-bold text-rz-ink">
                                                     {viewer.name}
                                                 </div>
-                                                <div className="truncate text-[11.5px] text-[#8895ab] dark:text-rz-muted">
+                                                <div className="truncate text-[11.5px] text-[#636e86] dark:text-rz-muted">
                                                     {viewer.email}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 px-[17px] py-2.5">
                                             <span className="size-[7px] rounded-full bg-[#1d9e75]" />
-                                            <span className="text-[11.5px] font-semibold text-[#5a6a86] dark:text-rz-secondary">
+                                            <span className="text-[11.5px] font-semibold text-[#4f5d77] dark:text-rz-secondary">
                                                 {t(`admin.role.${viewer.role}`)}
                                             </span>
-                                            <span className="ml-auto rounded-md bg-[rgba(29,158,117,.12)] px-2 py-0.5 text-[10px] font-bold text-[#1d9e75] dark:text-[#3fcda0]">
+                                            <span className="ml-auto rounded-md bg-[rgba(29,158,117,.12)] px-2 py-0.5 text-[10px] font-bold text-[#157357] dark:text-[#3fcda0]">
                                                 {t(
                                                     `admin.role.access.${viewer.role}`,
                                                 )}
@@ -641,7 +641,7 @@ export function AdminFrame({
                                             <Link
                                                 href={logout()}
                                                 as="button"
-                                                className="flex w-full items-center gap-[11px] rounded-[10px] px-[11px] py-2.5 text-left text-[13px] font-semibold text-[#e5484d] hover:bg-[rgba(255,77,79,.07)] dark:text-[#ff6b6f]"
+                                                className="flex w-full items-center gap-[11px] rounded-[10px] px-[11px] py-2.5 text-left text-[13px] font-semibold text-[#b3352a] hover:bg-[rgba(255,77,79,.07)] dark:text-[#ff6b6f]"
                                             >
                                                 <svg
                                                     width="16"

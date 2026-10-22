@@ -628,8 +628,41 @@ describe('Auditor Profile', () => {
         },
     );
 
+    it('states every platform fee share credited this month and how each was worked out', () => {
+        render(<AuditorProfile {...props(earningsFixture)} />);
+
+        expect(screen.getByText('Earned in October 2026')).toBeInTheDocument();
+        expect(screen.getByText('259,200')).toBeInTheDocument();
+        expect(screen.getAllByText('RWF 388,800')).toHaveLength(2);
+        expect(screen.getByText('2 lines')).toBeInTheDocument();
+        expect(screen.getByText('Kigali Fresh Foods')).toBeInTheDocument();
+        expect(screen.getByText('Gasabo · 2 Oct')).toBeInTheDocument();
+        expect(screen.getAllByText('RWF 129,600')).toHaveLength(2);
+        expect(
+            screen.getAllByText(
+                'Raise RWF 10,800,000 · 3% platform fee RWF 324,000 · your 40% RWF 129,600',
+            ),
+        ).toHaveLength(2);
+        expect(screen.getByText('Earnings fee share')).toBeInTheDocument();
+    });
+
+    it('says nothing was earned this month when no share was credited', () => {
+        const page = props(earningsFixture);
+
+        page.earnings = {
+            ...page.earnings,
+            this_month: { currency: 'RWF', amount: '0' },
+            lines: [],
+        };
+        render(<AuditorProfile {...page} />);
+
+        expect(screen.getByText('0 lines')).toBeInTheDocument();
+        expect(
+            screen.getByText(/^Nothing earned yet this month\./u),
+        ).toBeInTheDocument();
+    });
+
     it.each([
-        [earningsFixture, 'No earnings yet'],
         [payoutFixture, 'No payout account yet'],
         [learnFixture, 'Coming to the app soon'],
         [

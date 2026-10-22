@@ -125,7 +125,7 @@ export function ReleasePanel({
                     type="button"
                     disabled={command.unresolved}
                     onClick={() => setStaged(true)}
-                    className="mt-3 h-[42px] w-full rounded-[11px] bg-[#1d9e75] text-[13.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                    className="mt-3 h-[42px] w-full rounded-[11px] bg-[#157357] text-[13.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
                 >
                     {t('admin.applications.release.command')}
                 </button>

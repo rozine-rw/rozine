@@ -88,10 +88,16 @@ describe('Wallet (C3)', () => {
         vi.useFakeTimers({ now: new Date('2026-10-02T07:00:00Z') });
         render(<InvestorWallet {...wallet()} />);
 
-        const balance = screen.getByRole('region', { name: 'Wallet total' });
+        const balance = screen.getByRole('region', {
+            name: 'Available balance',
+        });
 
         expect(balance).toHaveTextContent('RWF 1,733,485');
-        expect(balance).toHaveTextContent('AvailableRWF 1,253,485');
+        expect(balance).toHaveTextContent('Available balanceRWF 1,253,485');
+        /* A clipped figure reads as a different amount, so a long one wraps instead. */
+        expect(within(balance).getByText('RWF 1,253,485')).not.toHaveClass(
+            'truncate',
+        );
         expect(balance).toHaveTextContent('HeldRWF 30,000');
         expect(balance).toHaveTextContent('CommittedRWF 450,000');
         expect(balance).toHaveTextContent(
@@ -120,10 +126,10 @@ describe('Wallet (C3)', () => {
         act(() => vi.advanceTimersByTime(60_000));
         expect(holds).toHaveTextContent('00:02:00');
 
-        const deposits = screen.getByRole('region', { name: 'Deposits' });
-
-        expect(deposits).toHaveTextContent('Deposit from MTN MoMo');
-        expect(deposits).toHaveTextContent('Credited');
+        // A credited deposit shows once, as its credit in the history, not again under Deposits.
+        expect(
+            screen.queryByRole('region', { name: 'Deposits' }),
+        ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
             name: 'Transaction history',
@@ -223,7 +229,7 @@ describe('Wallet (C3)', () => {
             method: 'get',
         });
         expect(
-            screen.getByRole('region', { name: 'Wallet total' }),
+            screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent('RWF 1,733,485');
     });
 
@@ -347,7 +353,7 @@ describe('Wallet (C3)', () => {
         render(<InvestorWallet {...wallet(pendingFixture)} />);
 
         expect(
-            screen.getByRole('region', { name: 'Wallet total' }),
+            screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent('RWF 200,000 not yet confirmed — not in the total');
 
         const deposits = screen.getByRole('region', { name: 'Deposits' });
@@ -487,7 +493,7 @@ describe('Wallet (C3)', () => {
         unmount();
         render(<InvestorWallet {...wallet(restrictedFixture)} />);
         expect(
-            screen.getByRole('region', { name: 'Wallet total' }),
+            screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent(
             'A restriction has applied since 25 Sept 2026. Deposits still work.',
         );
@@ -503,7 +509,7 @@ describe('Wallet (C3)', () => {
         expect(props.allowed_actions).toContain('wallet.deposit');
         expect(screen.getByText('Restricted')).toBeInTheDocument();
         expect(
-            screen.getByRole('region', { name: 'Wallet total' }),
+            screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent('Deposits still work.');
         expect(
             screen.getByRole('form', { name: 'Add money' }),
@@ -618,7 +624,7 @@ describe('Wallet (C3)', () => {
         render(<InvestorWallet {...wallet(minimalFixture)} />);
 
         expect(
-            screen.getByRole('region', { name: 'Wallet total' }),
+            screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent('RWF 0');
         expect(screen.getByRole('link', { name: 'Deposit' })).toHaveAttribute(
             'href',
@@ -698,12 +704,12 @@ describe('Wallet (C3)', () => {
             render(<InvestorWallet {...wallet(pendingFixture)} />);
 
             const balance = screen.getByRole('region', {
-                name: 'Wallet total',
+                name: 'Available balance',
             });
 
             expect(balance).toHaveTextContent('RWF 1,733,485');
             expect(balance).not.toHaveTextContent('RWF 1,933,485');
-            expect(balance).toHaveTextContent('AvailableRWF 1,253,485');
+            expect(balance).toHaveTextContent('Available balanceRWF 1,253,485');
             expect(balance).toHaveTextContent(
                 'RWF 200,000 not yet confirmed — not in the total',
             );
@@ -735,7 +741,7 @@ describe('Wallet (C3)', () => {
             render(<InvestorWallet {...props} />);
 
             expect(
-                screen.getByRole('region', { name: 'Wallet total' }),
+                screen.getByRole('region', { name: 'Available balance' }),
             ).toHaveTextContent(
                 'A restriction has applied since 25 Sept 2026. Deposits are not currently available.',
             );
@@ -802,7 +808,7 @@ describe('Wallet (C3)', () => {
                 expect.objectContaining({ only: RELOADED }),
             );
             expect(
-                screen.getByRole('region', { name: 'Wallet total' }),
+                screen.getByRole('region', { name: 'Available balance' }),
             ).toHaveTextContent('RWF 1,733,485');
         });
 

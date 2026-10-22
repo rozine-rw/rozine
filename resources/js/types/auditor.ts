@@ -1162,6 +1162,31 @@ export type AssignedFile = {
     allowed_actions: AuditorAllowedAction[];
 };
 
+/** One share of a platform fee credited to the partner: 40% of the 3% fee on a raise they audited. */
+export type EarningLine = {
+    id: string;
+    /** The Business as the partner's sealed report named it. */
+    business: string;
+    district: string;
+    /** The raise the fee was taken from, and the fee itself. */
+    raise: Money;
+    platform_fee: Money;
+    amount: Money;
+    credited_at: string;
+};
+
+/**
+ * The partner's earnings statement (BRS v2.0 FEE-R02): what was credited in the Kigali month
+ * `month` (its first day) and ever, and that month's credits, newest first. The 25% share of the
+ * earnings fee arrives with Investor payouts, which no read serves yet.
+ */
+export type AuditorEarnings = {
+    month: string;
+    this_month: Money;
+    total: Money;
+    lines: EarningLine[];
+};
+
 /**
  * Portfolio (GET `/auditor/portfolio`, `auditor.portfolio.index`): the partner's filed reports and
  * their conflict register. The server sends only the filters it can count; the live page offers
@@ -1198,6 +1223,7 @@ export type AuditorPortfolioProps = AuditorPageContract & {
          */
         declare: RouteAction;
     };
+    earnings: AuditorEarnings;
     outcome: AuditorOutcome | null;
     /** Eligible Flash Audits right now, for the Jobs tab badge. */
     open_jobs: number;
@@ -1322,6 +1348,7 @@ export type AuditorProfileProps = AuditorPageContract &
         quality_score: number | null;
         on_time_pct: number | null;
         jobs_done: number;
+        earnings: AuditorEarnings;
         /** The account's own email; no phone or address is held, so they are null. */
         contact: { email: string; phone: null; address: null };
         security: { two_factor: boolean };

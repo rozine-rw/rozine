@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
 import { raiseOpen } from '@/components/investor/deals/time-left';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
@@ -12,14 +12,17 @@ import type {
     InvestorAllowedAction,
     PrimaryQuote,
 } from '@/types/investor';
+import type { RouteAction } from '@/types/routing';
 
 /** The design's `.rz-qty` range: a 4px track and a 22px accent thumb ringed in white. */
 export const RANGE_CLASS =
     'h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-[3px] bg-[#e2e8f2] outline-none dark:bg-rz-surface-muted [&::-moz-range-thumb]:size-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:size-[22px] [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-rz-accent-fill [&::-webkit-slider-thumb]:shadow-[0_2px_8px_rgba(30,58,255,.4)] active:[&::-webkit-slider-thumb]:shadow-[0_0_0_7px_rgba(30,58,255,.10)]';
 
 /**
- * Whether a deal may be reserved now (C3 v2 §2b): the server lists `primary.reserve`, the campaign
- * is live with no restriction, the Investor is eligible and the quote allows at least one unit.
+ * Whether a deal may be reserved now (C3 v2 §2b): the campaign is live with no restriction and the
+ * Investor is eligible. Where the server quotes the deck, it must also list `primary.reserve` and
+ * allow at least one unit. The live Deals pages send no quote, only the checkout link (offered
+ * when the Investor has a wallet and no restriction); the checkout quotes and admits from there.
  */
 export function canReserve({
     deal,
@@ -33,12 +36,12 @@ export function canReserve({
     quote: PrimaryQuote | null;
 }): boolean {
     return (
-        allowed.includes('primary.reserve') &&
         deal.lifecycle === 'live' &&
         deal.restriction === null &&
         gate.status === 'eligible' &&
-        quote !== null &&
-        Number(quote.capacity.max_units) >= 1
+        (quote === null ||
+            (allowed.includes('primary.reserve') &&
+                Number(quote.capacity.max_units) >= 1))
     );
 }
 
@@ -81,6 +84,137 @@ export function CapNote({
     );
 }
 
+/** The focused deal's place in the Investor's cart, as Deals hands it to the toggle. */
+export type CartToggleState = {
+    /** The deal is already in the cart. */
+    inCart: boolean;
+    /** Add (with the chosen units) or remove; null while the deal in front is not the focused one. */
+    action: RouteAction | null;
+    identityRevision: number;
+};
+
+/** A deal is fully funded for the cart once its raise is no longer live or no note is left. */
+const fullyFunded = (deal: Pick<C3DealCard, 'lifecycle' | 'units'>) =>
+    deal.lifecycle !== 'live' || Number(deal.units.available) <= 0;
+
+/**
+ * Add to cart (BRS v2.0 INV-R02, design desktop L393–398): adds the deal at the chosen number of
+ * notes, or, once it is in the cart, reads "In cart · Remove" and takes it out. A fully funded
+ * deal cannot be added, so the button is disabled and says so. On a phone it is the design's
+ * square cart button beside Invest, named by its label. The server decides; the cart is reloaded
+ * for the deal in front after each change.
+ */
+export function CartToggle({
+    deal,
+    cart,
+    units,
+    size,
+}: {
+    deal: C3DealCard;
+    cart: CartToggleState;
+    units: number;
+    size: 'phone' | 'desk';
+}) {
+    const { t } = useTranslation();
+    const http = useHttp<Record<string, never>, unknown>();
+    const [busy, setBusy] = useState(false);
+    const [failed, setFailed] = useState(false);
+    const full = !cart.inCart && fullyFunded(deal);
+    const action = cart.action;
+    const label = cart.inCart
+        ? t('investor.cart.in_cart_remove')
+        : full
+          ? t('investor.deals.fully_funded')
+          : t('investor.cart.add');
+    const phone = size === 'phone';
+
+    const toggle = async (target: RouteAction) => {
+        setBusy(true);
+        setFailed(false);
+        http.transform(() =>
+            cart.inCart
+                ? { identity_context_revision: cart.identityRevision }
+                : { identity_context_revision: cart.identityRevision, units },
+        );
+
+        /* The toggle stays busy until the reload brings the new cart state, so a second tap cannot repeat the change. */
+        try {
+            const answer = await http.submit(target, {});
+
+            if (answer === undefined) {
+                setFailed(true);
+                setBusy(false);
+            } else {
+                router.reload({
+                    // Refresh nested home and the shared badge too. A removed card may no longer
+                    // belong to the filtered deck, so let its server read choose the next focus.
+                    data: { deal: cart.inCart ? undefined : deal.campaign_id },
+                    onFinish: () => setBusy(false),
+                });
+            }
+        } catch {
+            setFailed(true);
+            setBusy(false);
+        }
+    };
+
+    return (
+        <div className={cn(phone && 'relative shrink-0')}>
+            <button
+                type="button"
+                onClick={() => action !== null && toggle(action)}
+                disabled={full || action === null || busy}
+                aria-pressed={cart.inCart}
+                aria-label={phone ? label : undefined}
+                title={phone ? label : undefined}
+                className={cn(
+                    'flex items-center justify-center gap-2 border font-semibold transition-colors',
+                    phone
+                        ? 'size-12 rounded-[14px]'
+                        : 'h-[42px] w-full rounded-xl text-[13.5px]',
+                    cart.inCart
+                        ? 'border-rz-accent-fill/30 bg-rz-accent-soft text-rz-accent-text'
+                        : full
+                          ? 'cursor-not-allowed border-rz-border bg-rz-surface-sunken text-rz-faint'
+                          : 'border-rz-border bg-rz-surface text-rz-ink disabled:opacity-60',
+                )}
+            >
+                <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                >
+                    <path
+                        d="M2.8 4h2.3l2.2 10.3a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.56-1.22L20.6 8H6"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                    <circle cx="9.6" cy="19.6" r="1.35" fill="currentColor" />
+                    <circle cx="17" cy="19.6" r="1.35" fill="currentColor" />
+                </svg>
+                {!phone && <span>{label}</span>}
+            </button>
+            {failed && (
+                <p
+                    role="alert"
+                    className={cn(
+                        'text-[11px] text-rz-secondary',
+                        phone
+                            ? 'absolute top-full right-0 mt-1 w-max max-w-56 text-right'
+                            : 'mt-1.5 text-center',
+                    )}
+                >
+                    {t('investor.cart.update_failed')}
+                </p>
+            )}
+        </div>
+    );
+}
+
 type InvestBarProps = {
     deal: C3DealCard;
     /** The server's quote for this deal, or null while it is not the focused one. */
@@ -94,12 +228,15 @@ type InvestBarProps = {
     /** Checkout for this deal and quantity, or null while the deal cannot be bought. */
     checkout: RouteLink | null;
     size: 'phone' | 'desk';
+    /** The phone bar's Add to cart; null where the Investor has no cart. The desk panel holds its own. */
+    cart?: CartToggleState | null;
 };
 
 /**
  * The persistent invest bar (phone L650–690, desk L335–372): how many notes, of how many left,
  * the term; then what the ticket costs, its flat return and what comes back — all from the
- * server's quote for exactly that quantity — then the slider and Invest.
+ * server's quote for exactly that quantity — then the slider and Invest. On a phone, Add to cart
+ * sits under the slider, since the phone has no detail panel to hold it.
  */
 export function InvestBar({
     deal,
@@ -110,15 +247,20 @@ export function InvestBar({
     gate,
     checkout,
     size,
+    cart = null,
 }: InvestBarProps) {
     const { t } = useTranslation();
     const [draft, setDraft] = useState<string | null>(null);
     const current = quote;
-    const max = Math.max(Number(current?.capacity.max_units ?? '1'), 1);
+    /* Unquoted, the notes still open bound the choice; the checkout applies the Investor's caps. */
+    const max = Math.max(
+        Number(current?.capacity.max_units ?? deal.units.available),
+        1,
+    );
     const soldOut = deal.lifecycle !== 'live' || deal.restriction !== null;
     const phone = size === 'phone';
     const micro = cn(
-        'font-bold tracking-[.08em] whitespace-nowrap text-[#7c869a] uppercase dark:text-rz-muted',
+        'font-bold tracking-[.08em] whitespace-nowrap text-[#636e86] uppercase dark:text-rz-muted',
         phone ? 'text-[9.5px] leading-3' : 'text-[10px] leading-[13px]',
     );
     const value = cn(
@@ -205,7 +347,7 @@ export function InvestBar({
                         <span
                             aria-hidden
                             className={cn(
-                                'flex items-center border-l border-[#eef2f8] bg-rz-surface-sunken font-bold tracking-[.08em] whitespace-nowrap text-[#7c869a] dark:border-rz-divider dark:text-rz-muted',
+                                'flex items-center border-l border-[#eef2f8] bg-rz-surface-sunken font-bold tracking-[.08em] whitespace-nowrap text-[#636e86] dark:border-rz-divider dark:text-rz-muted',
                                 phone
                                     ? 'h-7 px-2 text-[9.5px]'
                                     : 'h-[30px] px-[9px] text-[10px]',
@@ -217,7 +359,7 @@ export function InvestBar({
                     {raiseOpen(deal.lifecycle) && (
                         <span
                             className={cn(
-                                'truncate whitespace-nowrap text-[#9aa3b4] dark:text-rz-faint',
+                                'truncate whitespace-nowrap text-[#636e86] dark:text-rz-faint',
                                 phone ? 'text-[11px]' : 'text-[11.5px]',
                             )}
                         >
@@ -237,7 +379,7 @@ export function InvestBar({
                 >
                     <span
                         className={cn(
-                            'font-bold tracking-[.08em] text-[#7c869a] dark:text-rz-muted',
+                            'font-bold tracking-[.08em] text-[#636e86] dark:text-rz-muted',
                             phone ? 'text-[9.5px]' : 'text-[10px]',
                         )}
                     >
@@ -272,13 +414,22 @@ export function InvestBar({
                         <span className="mr-[3px]">
                             {t('investor.money.rwf')}
                         </span>
-                        {current === null ? '—' : formatAmount(current.amount)}
+                        {current !== null
+                            ? formatAmount(current.amount)
+                            : checkout !== null
+                              ? formatAmount({
+                                    ...deal.unit_price,
+                                    amount: String(
+                                        Number(deal.unit_price.amount) * units,
+                                    ),
+                                })
+                              : '—'}
                     </p>
                 </div>
                 <span
                     aria-hidden
                     className={cn(
-                        'self-end font-bold text-[#a3abbb]',
+                        'self-end font-bold text-[#636e86]',
                         phone ? 'pl-1.5 text-sm' : 'pl-2 text-[15px]',
                     )}
                 >
@@ -293,7 +444,7 @@ export function InvestBar({
                 <span
                     aria-hidden
                     className={cn(
-                        'self-end font-bold text-[#a3abbb]',
+                        'self-end font-bold text-[#636e86]',
                         phone ? 'pr-1.5 text-sm' : 'pr-2 text-[15px]',
                     )}
                 >
@@ -343,6 +494,14 @@ export function InvestBar({
                     <Link href={checkout} className={investClass}>
                         {investLabel}
                     </Link>
+                )}
+                {phone && cart !== null && (
+                    <CartToggle
+                        deal={deal}
+                        cart={cart}
+                        units={units}
+                        size="phone"
+                    />
                 )}
             </div>
             {gate.status !== 'eligible' ? (

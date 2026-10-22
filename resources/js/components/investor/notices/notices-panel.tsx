@@ -26,7 +26,7 @@ const stroke = {
 const TONES: Record<InvestorNotice['kind'], Tone> = {
     'wallet.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'wallet.withdrawal_sent': {
@@ -46,7 +46,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.refunded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -56,7 +56,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.report_published': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: (
             <path
                 d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4.5"
@@ -66,7 +66,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'primary.holding_issued': {
@@ -121,22 +121,22 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.disbursement_sent': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
     },
     'business.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'business.application_approved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_sent': {
@@ -203,7 +203,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'support.complaint_resolved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(23,121,90,.1)] text-[#17795a]',
+        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_renewal_due': {

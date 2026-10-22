@@ -63,7 +63,9 @@ describe('Business wallet (business-servicing-v1)', () => {
 
         expect(balance).toHaveTextContent('RWF 4,200,000');
         expect(balance).toHaveTextContent('Active');
-        expect(balance).toHaveTextContent('No deposits waiting');
+        expect(balance).toHaveTextContent(
+            'Fees, payouts & disbursements settle here',
+        );
         expect(
             within(balance).getByRole('link', { name: 'RWF 4,200,000' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');
@@ -82,10 +84,10 @@ describe('Business wallet (business-servicing-v1)', () => {
             screen.queryByRole('region', { name: 'Withdrawals' }),
         ).not.toBeInTheDocument();
 
-        const deposits = screen.getByRole('region', { name: 'Deposits' });
-
-        expect(deposits).toHaveTextContent('Deposit from Bank of Kigali');
-        expect(deposits).toHaveTextContent('Credited');
+        // The credited deposit shows once, in the history, not again under Deposits.
+        expect(
+            screen.queryByRole('region', { name: 'Deposits' }),
+        ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
             name: 'Transaction history',
@@ -101,7 +103,7 @@ describe('Business wallet (business-servicing-v1)', () => {
             'Deposit from Bank of Kigali ····2231',
         );
         expect(
-            within(history).queryByRole('link', { name: 'Show older' }),
+            within(history).queryByRole('link', { name: 'Show more' }),
         ).not.toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Back to Home' }),
@@ -262,7 +264,7 @@ describe('Business wallet (business-servicing-v1)', () => {
         expect(history).toHaveTextContent('Repayment · Fleet Expansion');
         expect(history).toHaveTextContent('Instalments 2');
         expect(
-            within(history).getByRole('link', { name: 'Show older' }),
+            within(history).getByRole('link', { name: 'Show more' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');
     });
 
@@ -345,6 +347,120 @@ describe('Business wallet (business-servicing-v1)', () => {
         expect(screen.getByText('Nothing here yet.')).toBeInTheDocument();
         expect(
             screen.queryByRole('region', { name: 'Deposits' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
+describe('Business wallet history range and statement', () => {
+    it('applies a date range by reloading the history with it, and clears back to all time', () => {
+        render(<BusinessWallet {...wallet()} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Date range: All time' }),
+        );
+        fireEvent.change(screen.getByLabelText('From'), {
+            target: { value: '2026-11-01' },
+        });
+        fireEvent.change(screen.getByLabelText('To'), {
+            target: { value: '2026-11-30' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+        expect(inertia.visits).toEqual([
+            {
+                url: '/preview/business-wallet?from=2026-11-01&to=2026-11-30',
+            },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Date range: All time' }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+
+        expect(inertia.visits.at(-1)).toEqual({
+            url: '/preview/business-wallet',
+        });
+    });
+
+    it('names the chosen range and offers the statement for it as PDF or Excel downloads', () => {
+        const props = wallet();
+        props.history.range = {
+            from: '2026-11-01',
+            to: null,
+            base: {
+                url: '/business/b1/wallet?movement=external',
+                method: 'get',
+            },
+        };
+        render(<BusinessWallet {...props} />);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: 1 Nov 2026 – Now',
+            }),
+        );
+        expect(screen.getByLabelText('From')).toHaveValue('2026-11-01');
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+        expect(inertia.visits).toEqual([
+            { url: '/business/b1/wallet?movement=external&from=2026-11-01' },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Download statement' }),
+        );
+        expect(
+            screen.getByRole('link', { name: /Download PDF/ }),
+        ).toHaveAttribute('href', '/preview/business-wallet-statement.pdf');
+        expect(
+            screen.getByRole('link', { name: /Download Excel/ }),
+        ).toHaveAttribute('href', '/preview/business-wallet-statement.csv');
+    });
+
+    it('names a range open at its start, clears it back to the base and closes the statement menu on a download', () => {
+        const props = wallet();
+        props.history.range = {
+            from: null,
+            to: '2026-11-30',
+            base: { url: '/business/b1/wallet', method: 'get' },
+        };
+        render(<BusinessWallet {...props} />);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: Start – 30 Nov 2026',
+            }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+        expect(inertia.visits).toEqual([{ url: '/business/b1/wallet' }]);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: Start – 30 Nov 2026',
+            }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+        expect(inertia.visits).toEqual([
+            { url: '/business/b1/wallet' },
+            { url: '/business/b1/wallet?to=2026-11-30' },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Download statement' }),
+        );
+        fireEvent.click(screen.getByRole('link', { name: /Download PDF/ }));
+        expect(
+            screen.queryByRole('link', { name: /Download PDF/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows neither control where the server serves no range or statement', () => {
+        render(<BusinessWallet {...wallet(emptyFixture)} />);
+
+        expect(
+            screen.queryByRole('button', { name: /Date range/ }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download statement' }),
         ).not.toBeInTheDocument();
     });
 });

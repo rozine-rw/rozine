@@ -56,7 +56,7 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
     expect($props)->toMatchArray(['contract_version' => 'investor-primary-v1', 'identity_context_revision' => 1, 'allowed_actions' => [],
         'gate' => ['status' => 'eligible'], 'unread_notifications' => 1, 'quote' => null])
         ->and($props['wallet'])->toBe(['available' => ['currency' => 'RWF', 'amount' => '10000000'], 'next_payout' => null])
-        ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated'])
+        ->and(array_column($props['sorts'], 'key'))->toBe(['all', 'top_interest', 'top_rated', 'top_picks', 'in_cart'])
         ->and($props['sorts'][0])->toBe(['key' => 'all', 'active' => true, 'link' => ['url' => '/investor/deals', 'method' => 'get']])
         ->and($props['industries'][0])->toMatchArray(['industry' => null, 'count' => 1, 'active' => true])
         ->and($props['industries'][1])->toMatchArray(['industry' => $this->evidence['business']['industry'], 'count' => 1, 'active' => false])
@@ -235,9 +235,9 @@ it('shows no audit summary unless the sealed report is published with a valid se
 it('sorts and filters the deck by industry and focuses the requested deal', function (): void {
     app()->instance(InvestorDealCatalogue::class, new class implements InvestorDealCatalogue
     {
-        private const array DEALS = [['campaign_id' => '01k0000000000000000000000a', 'industry' => 'Retail', 'funded_pct' => '10.0', 'rating' => ['score' => '4.5']],
-            ['campaign_id' => '01k0000000000000000000000b', 'industry' => '2024', 'funded_pct' => '80.0', 'rating' => ['score' => '3.1']],
-            ['campaign_id' => '01k0000000000000000000000c', 'industry' => 'Retail', 'funded_pct' => '40.0', 'rating' => ['score' => '4.9']]];
+        private const array DEALS = [['campaign_id' => '01k0000000000000000000000a', 'industry' => 'Retail', 'funded_pct' => '10.0', 'rating' => ['score' => '4.5'], 'rate_pct' => '20.0'],
+            ['campaign_id' => '01k0000000000000000000000b', 'industry' => '2024', 'funded_pct' => '80.0', 'rating' => ['score' => '3.1'], 'rate_pct' => '18.0'],
+            ['campaign_id' => '01k0000000000000000000000c', 'industry' => 'Retail', 'funded_pct' => '40.0', 'rating' => ['score' => '4.9'], 'rate_pct' => '13.5']];
 
         public function deals(): array
         {
@@ -264,6 +264,7 @@ it('sorts and filters the deck by industry and focuses the requested deal', func
     expect($ids([]))->toBe(['01k0000000000000000000000a', '01k0000000000000000000000b', '01k0000000000000000000000c'])
         ->and($ids(['sort' => 'top_interest']))->toBe(['01k0000000000000000000000b', '01k0000000000000000000000c', '01k0000000000000000000000a'])
         ->and($ids(['sort' => 'top_rated', 'industry' => 'Retail']))->toBe(['01k0000000000000000000000c', '01k0000000000000000000000a'])
+        ->and($ids(['sort' => 'top_picks']))->toBe(['01k0000000000000000000000a', '01k0000000000000000000000c', '01k0000000000000000000000b'])
         ->and($ids(['industry' => 'Unknown']))->toHaveCount(3);
     $props = ($this->deals)(['industry' => '2024', 'deal' => '01k0000000000000000000000c'])->viewData('page')['props'];
     expect(array_column($props['industries'], 'industry'))->toBe([null, '2024', 'Retail'])

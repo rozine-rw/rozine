@@ -24,6 +24,7 @@ namespace App\Application\Operations\Contracts;
  *     capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *     notes: array{live: int, funded: int, repaying: int, failed: int}
  * }
+ * @phpstan-type NoteState array{campaign_id: string, state: 'live'|'funded'|'repaying'|'failed', live_at: string}
  * @phpstan-type Bar array{label: string, amount: string, height_pct: int}
  * @phpstan-type Movement array{amount: string, count: int}
  * @phpstan-type Movements array{deposits: Movement, withdrawals: Movement, disbursed: Movement}
@@ -33,6 +34,14 @@ interface OperationsDashboardStore
 {
     /** @return Figures */
     public function figures(): array;
+
+    /**
+     * Every published campaign with where it sits now, by the same rules as `figures()['notes']`,
+     * newest first.
+     *
+     * @return list<NoteState>
+     */
+    public function noteStates(): array;
 
     /**
      * Issued Holding principal per Kigali calendar bucket, oldest first, from `$from` (inclusive) to

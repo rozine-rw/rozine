@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
+use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -26,7 +27,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route('business.show', ['business' => $business]))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component('business/home'))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
     };
     $this->purchase = function (BusinessCampaign $campaign, string $units): void {
         $investor = PrimaryReservationFixture::investor();
@@ -50,8 +51,11 @@ it('offers a released application for publication before anything is listed', fu
 
     $props = ($this->props)($user, $business);
 
+    // Before its first listing, the rating is the one staff released with the application.
+    $rating = BusinessApplicationSubmission::query()->whereKey($application->refresh()->current_submission_id)->sole()->payload['public_evidence']['rating'];
+    expect($rating)->toBeArray()->and($props['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
     // The sealed report awaiting the Business and the approved application are its two unread notices.
-    expect($props)->toMatchArray(['rating' => null, 'live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
+    expect($props)->toMatchArray(['live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
         'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'create_application' => null,
         'today' => [['kind' => 'application_approved', 'title' => $application->refresh()->draft['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
             'link' => ['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']]],
@@ -83,6 +87,31 @@ it('leads Today with a sealed audit report awaiting co-signatures, opening its c
     expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed')
         ->and(($this->props)($user, $business)['today'])->toBe([]);
 })->with(['flash', 'monthly']);
+
+it('moves the submitted application page on to approved, with its publish link, once staff release it', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::cosign($fixture);
+    $business = $fixture['audit']['business'];
+    $application = $fixture['application'];
+    $user = $fixture['audit']['authority']['users'][0];
+    app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $application->id, 0, 'Verified release.', (string) Str::uuid());
+    $page = fn (User $viewer, string $owner, string $id): array => $this->actingAs($viewer)
+        ->get(route('business.applications.show', ['business' => $owner, 'application' => $id]))->assertOk()->viewData('page')['props']['submission'];
+
+    $approved = $page($user, $business, $application->id);
+    expect(array_column($approved['timeline'], 'state'))->toBe(['done', 'done', 'current', 'pending'])
+        ->and($approved['publish'])->toBe(['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']);
+});
+
+it('shows a listed application\'s page as published, with nothing left to publish', function (): void {
+    $campaign = PrimaryReservationFixture::campaign();
+    $published = $this->actingAs(User::query()->findOrFail($campaign->actor_user_id))
+        ->get(route('business.applications.show', ['business' => $campaign->business_id, 'application' => $campaign->business_application_id]))
+        ->assertOk()->viewData('page')['props']['submission'];
+
+    expect(array_column($published['timeline'], 'state'))->toBe(['done', 'done', 'done', 'done'])->and($published['publish'])->toBeNull();
+});
 
 it('shows the live raise, then funded capital, from retained publication and funding facts only', function (): void {
     InvestorWalletFixture::policy(maximum: null);

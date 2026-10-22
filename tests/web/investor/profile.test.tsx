@@ -413,6 +413,8 @@ describe('Profile', () => {
         expect(field('ID NUMBER')).toBe('•••• •••• •••• 5678');
         expect(screen.getByText('ADDRESS')).toBeInTheDocument();
         expect(field('COUNTRY')).toBe('Unknown');
+        expect(screen.getAllByRole('term')).toHaveLength(10);
+        expect(screen.getAllByRole('definition')).toHaveLength(10);
 
         for (const label of ['PROVINCE', 'DISTRICT', 'SECTOR', 'CELL']) {
             expect(field(label)).toBe('Not provided');

@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * `BusinessProfileProps`: the Profile tab, with every section of the design's menu. `registration`
+ * `BusinessProfileProps`: the Profile tab, with every section of the design's menu. The card's
+ * location is the registered address's province and district, as the design writes it. `registration`
  * is the verified profile and mandate as Business authority holds them. `company` is the contact
  * details and registered address the mandate keeps current: the latest saved version, or until the
  * first save an empty e-mail and phone with the verified district and its province. No RDB
@@ -39,8 +40,12 @@ class BusinessProfileResource extends JsonResource
         $mandate = $business['mandate'];
         $parameters = ['business' => (string) $business['id']];
 
-        return ['business' => ['name' => $profile['name'], 'address_line' => $profile['district'], 'verified' => true, 'rating' => $data['rating']],
-            'section' => $data['section'], 'landing' => $data['landing'], 'company' => $this->company($data['contact'], $profile, count($mandate['required_signatories'])),
+        $company = $this->company($data['contact'], $profile, count($mandate['required_signatories']));
+        $address = $company['address'];
+
+        return ['business' => ['name' => $profile['name'], 'address_line' => $address['province'] === '' ? $profile['district'] : $address['province'].', '.$address['district'],
+            'verified' => true, 'rating' => $data['rating']],
+            'section' => $data['section'], 'landing' => $data['landing'], 'company' => $company,
             'registration' => ['name' => $profile['name'], 'company_code' => $profile['company_code'], 'industry' => $profile['industry'],
                 'district' => $profile['district'], 'established_year' => $profile['established_year'],
                 'people' => array_map(fn (array $person): array => ['name' => $person['name'], 'roles' => $person['roles'],
@@ -71,7 +76,7 @@ class BusinessProfileResource extends JsonResource
     /**
      * @param  array{email: string, phone: string, province: string, district: string, sector: string, cell: string, street: string}|null  $contact
      * @param  array{name: string, district: string}  $profile
-     * @return array<string, mixed>
+     * @return array{name: string, email: string, phone: string, address: array{province: string, district: string, sector: string, cell: string, street: string}, certificate: null, signatories: list<never>, signatories_required: int}
      */
     private function company(?array $contact, array $profile, int $signatoriesRequired): array
     {

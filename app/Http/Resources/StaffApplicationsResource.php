@@ -34,9 +34,9 @@ class StaffApplicationsResource extends JsonResource
 
         return ['contract_version' => 'staff-applications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()->getAuthIdentifier(), 'name' => $name, 'email' => $request->user()->email,
-                'initials' => mb_strtoupper(mb_substr($name, 0, 1)), 'role' => in_array('superadmin', $roles, true) ? 'superadmin' : 'approver'],
+                'initials' => StaffViewerResource::initials($name), 'role' => in_array('superadmin', $roles, true) ? 'superadmin' : 'approver'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
-            'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => [],
+            'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => $page['policy'],
             'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved']),
             'applications' => array_map(function (array $entry) use ($link, $position): array {
                 unset($entry['capacity'], $entry['use_of_funds']);

@@ -211,7 +211,9 @@ describe('Wallet withdrawals (LED-R04)', () => {
         vi.useFakeTimers();
         render(<InvestorWallet {...wallet(pendingFixture)} />);
 
-        const balance = screen.getByRole('region', { name: 'Wallet total' });
+        const balance = screen.getByRole('region', {
+            name: 'Available balance',
+        });
 
         expect(balance).toHaveTextContent('RWF 1,633,485');
         expect(balance).toHaveTextContent('RWF 100,000 withdrawal pending');

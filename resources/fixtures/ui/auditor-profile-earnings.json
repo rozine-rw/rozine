@@ -17,6 +17,55 @@
         "quality_score": 99,
         "on_time_pct": 96,
         "jobs_done": 9,
+        "earnings": {
+            "month": "2026-10-01",
+            "this_month": {
+                "currency": "RWF",
+                "amount": "259200"
+            },
+            "total": {
+                "currency": "RWF",
+                "amount": "388800"
+            },
+            "lines": [
+                {
+                    "id": "01JA0EARNING00000000000002",
+                    "business": "Kigali Fresh Foods",
+                    "district": "Gasabo",
+                    "raise": {
+                        "currency": "RWF",
+                        "amount": "10800000"
+                    },
+                    "platform_fee": {
+                        "currency": "RWF",
+                        "amount": "324000"
+                    },
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "129600"
+                    },
+                    "credited_at": "2026-10-02T09:15:00+00:00"
+                },
+                {
+                    "id": "01JA0EARNING00000000000001",
+                    "business": "Nyamirambo Tailors",
+                    "district": "Nyarugenge",
+                    "raise": {
+                        "currency": "RWF",
+                        "amount": "10800000"
+                    },
+                    "platform_fee": {
+                        "currency": "RWF",
+                        "amount": "324000"
+                    },
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "129600"
+                    },
+                    "credited_at": "2026-10-01T07:40:00+00:00"
+                }
+            ]
+        },
         "contact": {
             "email": "diane.uwase@uwaseco.rw",
             "phone": null,

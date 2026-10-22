@@ -34,6 +34,7 @@ const fr: Catalog = {
         'Vérification d’identité requise',
     'identity.denied.verification_required.body':
         'Votre identité doit être vérifiée avant de pouvoir ouvrir cette page. Choisissez une application pour continuer.',
+    'identity.denied.verification_required.action': 'Vérifier votre identité',
     'identity.denied.expired_offer.title': 'Cette offre est close',
     'identity.denied.expired_offer.body':
         'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
@@ -56,16 +57,15 @@ const fr: Catalog = {
     'common.action.sign_up': "S'inscrire",
 
     'auth.login.head_title': 'Connexion',
-    'auth.login.layout_title': 'Connectez-vous à votre compte',
-    'auth.login.layout_description':
-        'Saisissez votre e-mail et votre mot de passe pour vous connecter',
+    'auth.login.layout_title': 'Bon retour',
+    'auth.login.layout_description': 'Connectez-vous à votre compte Rozine.',
     'auth.login.email_label': 'Adresse e-mail',
     'auth.login.email_placeholder': 'email@exemple.com',
     'auth.login.password_label': 'Mot de passe',
     'auth.login.password_placeholder': 'Mot de passe',
     'auth.login.forgot_password': 'Mot de passe oublié ?',
     'auth.login.remember_me': 'Se souvenir de moi',
-    'auth.login.no_account': 'Vous n’avez pas de compte ?',
+    'auth.login.no_account': 'Nouveau sur Rozine ?',
 
     'auth.forgot_password.head_title': 'Mot de passe oublié',
     'auth.forgot_password.layout_title': 'Mot de passe oublié',
@@ -76,6 +76,87 @@ const fr: Catalog = {
     'auth.forgot_password.submit': 'Envoyer le lien de réinitialisation',
     'auth.forgot_password.return_prefix': 'Ou revenez à',
     'auth.forgot_password.return_link': 'la connexion',
+    'auth.login.create_account': 'Créer un compte',
+    'auth.register.head_title': 'Inscription',
+    'auth.register.layout_title': 'Créez votre compte',
+    'auth.register.layout_description':
+        'Saisissez vos informations pour créer votre compte.',
+    'auth.register.name_label': 'Nom',
+    'auth.register.name_placeholder': 'Nom complet',
+    'auth.register.email_label': 'Adresse e-mail',
+    'auth.register.email_placeholder': 'vous@exemple.rw',
+    'auth.register.password_label': 'Mot de passe',
+    'auth.register.password_placeholder': 'Mot de passe',
+    'auth.register.confirm_label': 'Confirmez le mot de passe',
+    'auth.register.confirm_placeholder': 'Confirmez le mot de passe',
+    'auth.register.submit': 'Créer un compte',
+    'auth.register.have_account': 'Vous avez déjà un compte ?',
+    'auth.register.log_in': 'Se connecter',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Sécurisé',
+    'auth.brand.business.have_account': 'Déjà inscrit ?',
+    'auth.brand.business.eyebrow': 'Pour les entreprises',
+    'auth.brand.business.login_description':
+        'Connectez-vous à votre tableau de bord émetteur.',
+    'auth.brand.business.email_label': 'E-mail professionnel',
+    'auth.brand.business.email_placeholder': 'vous@entreprise.rw',
+    'auth.brand.business.register_cta': 'Enregistrer une entreprise',
+    'auth.brand.business.register_title': 'Enregistrez votre entreprise',
+    'auth.brand.business.register_description':
+        'Créez le compte avec lequel votre entreprise fera sa demande et sa levée.',
+    'auth.brand.investor.login_description':
+        'Connectez-vous pour gérer votre portefeuille.',
+    'auth.brand.investor.register_description':
+        'Commencez à investir dans des entreprises vérifiées partout au Rwanda.',
+    'auth.brand.auditor.eyebrow': 'Pour les partenaires d’audit',
+    'auth.brand.auditor.login_description':
+        'Connectez-vous à votre bureau d’audit.',
+    'auth.brand.auditor.register_description':
+        'Créez le compte avec lequel vous accepterez des missions d’audit.',
+    'auth.reset_password.head_title': 'Réinitialiser le mot de passe',
+    'auth.reset_password.layout_title': 'Réinitialiser le mot de passe',
+    'auth.reset_password.layout_description':
+        'Choisissez un nouveau mot de passe pour votre compte.',
+    'auth.reset_password.email_label': 'E-mail',
+    'auth.reset_password.password_label': 'Mot de passe',
+    'auth.reset_password.password_placeholder': 'Mot de passe',
+    'auth.reset_password.confirm_label': 'Confirmez le mot de passe',
+    'auth.reset_password.confirm_placeholder': 'Confirmez le mot de passe',
+    'auth.reset_password.submit': 'Réinitialiser le mot de passe',
+    'auth.verify_email.head_title': 'Vérification de l’e-mail',
+    'auth.verify_email.layout_title': 'Vérifiez votre e-mail',
+    'auth.verify_email.layout_description':
+        'Saisissez le code à 6 chiffres que nous vous avons envoyé par e-mail. Il expire dans 10 minutes.',
+    'auth.verify_email.resent':
+        'Un nouveau code a été envoyé à l’adresse e-mail de votre inscription. Les codes précédents ne fonctionnent plus.',
+    'auth.verify_email.submit': 'Vérifier l’e-mail',
+    'auth.verify_email.resend': 'Envoyer un nouveau code',
+    'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.head_title': 'Confirmer le mot de passe',
+    'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
+    'auth.confirm_password.layout_description':
+        'Cette zone est sécurisée. Confirmez votre mot de passe pour continuer.',
+    'auth.confirm_password.passkey': 'Confirmer avec une clé d’accès',
+    'auth.confirm_password.passkey_loading': 'Confirmation…',
+    'auth.confirm_password.separator': 'Ou confirmez avec le mot de passe',
+    'auth.confirm_password.password_label': 'Mot de passe',
+    'auth.confirm_password.password_placeholder': 'Mot de passe',
+    'auth.confirm_password.submit': 'Confirmer le mot de passe',
+    'auth.two_factor_challenge.head_title': 'Authentification à deux facteurs',
+    'auth.two_factor_challenge.code_title': 'Code d’authentification',
+    'auth.two_factor_challenge.code_description':
+        'Saisissez le code fourni par votre application d’authentification.',
+    'auth.two_factor_challenge.recovery_title': 'Code de récupération',
+    'auth.two_factor_challenge.recovery_description':
+        'Confirmez l’accès à votre compte en saisissant l’un de vos codes de récupération d’urgence.',
+    'auth.two_factor_challenge.recovery_placeholder':
+        'Saisissez le code de récupération',
+    'auth.two_factor_challenge.submit': 'Continuer',
+    'auth.two_factor_challenge.toggle_prefix': 'ou vous pouvez',
+    'auth.two_factor_challenge.use_recovery':
+        'vous connecter avec un code de récupération',
+    'auth.two_factor_challenge.use_code':
+        'vous connecter avec un code d’authentification',
 
     'suite.head_title': 'Vos applications',
     'suite.tagline':
@@ -107,8 +188,7 @@ const fr: Catalog = {
         "Votre identité n'est pas encore configurée",
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Votre connexion n'est liée à aucune identité vérifiée ; aucune application ne peut encore s'ouvrir.",
-    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
-        'Votre identité est en cours de vérification',
+    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Prêt à investir ?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Un pouvoir de signature est requis',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.body':
@@ -342,7 +422,7 @@ const fr: Catalog = {
     'business.apply.raise.term': 'Durée',
     'business.apply.raise.term_months': '{months} mois',
     'business.apply.raise.rate': 'Taux',
-    'business.apply.raise.rate_info': 'Comment ce taux est fixé',
+    'business.apply.raise.rate_info': 'Comment ce rendement est calculé',
     'business.apply.raise.rate_how': 'Comment votre taux est fixé',
     'business.apply.raise.rate_one_charge':
         'Un seul coût forfaitaire sur ce que vous empruntez. La seule déduction est la commission de plateforme de 3 %, prélevée sur votre levée lors du versement — aucuns frais de dossier ni prélèvement en plus.',
@@ -364,6 +444,7 @@ const fr: Catalog = {
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',
     'business.apply.raise.you_repay': 'Vous remboursez',
+    'business.apply.raise.per_month': '{amount} / mois',
     'business.apply.raise.first_payment':
         "À partir d'un mois après le financement",
     'business.apply.raise.reserve': 'Réserve de protection des investisseurs',
@@ -419,6 +500,13 @@ const fr: Catalog = {
         'Facturés une fois la note approuvée, avant sa mise en ligne. Lors du versement de votre levée, une commission de plateforme de 3 % en est déduite ; vous remboursez la totalité du montant levé.',
     'business.apply.review.binding':
         "Votre signature engage légalement l'entreprise aux obligations divulguées. L'identifiant de la demande est attribué à la soumission.",
+    'business.apply.approved.title': 'Votre demande est approuvée',
+    'business.apply.approved.body':
+        'Publiez-la sur le fil des investisseurs pour commencer la levée. Les frais de publication sont offerts.',
+    'business.apply.approved.publish': 'Publier sur le fil des investisseurs',
+    'business.apply.published.title': 'Votre levée est publiée',
+    'business.apply.published.body':
+        "Les investisseurs la voient dans le fil et peuvent s'engager dès maintenant.",
     'business.apply.submitted.title': 'Votre demande a été soumise',
     'business.apply.submitted.body':
         "Votre demande est en cours d'examen. Vous serez notifié à chaque étape.",
@@ -618,11 +706,9 @@ const fr: Catalog = {
     'business.reports.guide.visit.body_after': '.',
     'business.reports.guide.cosign.title': 'Cosignez ou contestez',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous ajoutez un résumé et le cosignez avant le {day}, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et le cosigner, ou le contester avec une contre-preuve. Sans réponse de votre part dans les 24 heures, le rapport est considéré comme approuvé. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.guide.visit.body_undated':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
-    'business.reports.guide.cosign.body_undated':
-        "Une fois l'audit scellé, vous l'examinez et le cosignez pendant la période de revue, ou vous le contestez avec une contre-preuve. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
@@ -639,6 +725,8 @@ const fr: Catalog = {
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
+    'business.reports.empty_body':
+        "Chaque rapport mensuel apparaît ici dès que votre partenaire d'audit l'a scellé.",
     'business.reports.percent': '{value} %',
     'business.reports.count_of': '{count} sur {of}',
     'business.reports.sheet.live': 'Visible par vos investisseurs',
@@ -1459,6 +1547,52 @@ const fr: Catalog = {
     'admin.rating.band.stable': 'Stable',
     'admin.rating.band.weak': 'Faible',
     'admin.rating.band.distressed': 'En difficulté',
+    'admin.design.ratings.weights.title': 'Calcul de la notation',
+    'admin.design.ratings.weights.sub':
+        "Chaque critère est ramené de 0 à 100 sur sa plage, pondéré puis additionné ; le score divisé par 20 donne la note sur 5. Les plafonds de conduite s'appliquent ensuite.",
+    'admin.design.ratings.weights.empty':
+        'Seuls les analystes crédit voient la grille.',
+    'admin.design.ratings.bands.title': 'Catégories',
+    'admin.design.ratings.bands.empty':
+        'Seuls les analystes crédit voient les catégories.',
+    'admin.engine.target_dscr': 'DSCR cible',
+    'admin.engine.minimum_dscr': 'DSCR minimal',
+    'admin.engine.repeat_monthly_dscr': 'DSCR mensuel · nouvelle émission',
+    'admin.engine.min_principal': 'Levée minimale',
+    'admin.engine.max_principal': 'Levée maximale',
+    'admin.engine.issuance_unit': 'Levée arrondie à',
+    'admin.engine.first_issue_months': 'Mois audités · première émission',
+    'admin.engine.repeat_issue_months': 'Mois audités · nouvelle émission',
+    'admin.engine.tenors': 'Durée · mois',
+    'admin.engine.rate_band': 'Fourchette de taux · fixe, tout compris',
+    'admin.engine.platform_fee': 'Frais de plateforme · au décaissement',
+    'admin.engine.cpa_share': "Part du partenaire d'audit",
+    'admin.engine.coverage': 'Couverture de la dette',
+    'admin.engine.cfads_margin': 'Trésorerie disponible / revenus',
+    'admin.engine.nocf_stability': "Stabilité de la trésorerie d'exploitation",
+    'admin.engine.positive_months': 'Mois de trésorerie positive',
+    'admin.engine.history_depth': "Mois d'historique",
+    'admin.engine.conduct': 'Conduite de remboursement et de reporting',
+    'admin.engine.adverse_conduct_cap':
+        'Plafond · rapports en retard ou manquants',
+    'admin.engine.default_cap': 'Plafond · défaut',
+    'admin.engine.strong': 'Solide',
+    'admin.engine.stable': 'Stable',
+    'admin.engine.weak': 'Faible',
+    'admin.engine.distressed': 'En difficulté',
+    'admin.design.engines.sizing.sub':
+        "Les quatre limites s'appliquent et la plus basse l'emporte : capacité au DSCR cible, montant demandé, levée maximale et marge d'exposition restante. Une levée sous le minimum est refusée. Le montant est ensuite réduit jusqu'à tenir le DSCR cible, puis arrondi à l'unité d'émission.",
+    'admin.design.ratings.movers.title': 'Ce qui fait bouger une note',
+    'admin.design.ratings.movers.sub':
+        "Chaque relevé vérifié recalcule les critères financiers : la hausse ou la baisse des revenus et de la trésorerie fait bouger la note. Les remboursements et les rapports mensuels font bouger la conduite, et les plafonds maintiennent la note basse tant qu'un retard, un manquement de reporting ou un défaut persiste. Aucune dérogation du personnel n'existe.",
+    'admin.design.ratings.movers.empty':
+        'Seuls les analystes crédit voient ce qui fait bouger une note.',
+    'admin.engine.new_issuer_conduct':
+        'Conduite avant tout remboursement · sur 100',
+    'admin.engine.instalment_conduct':
+        'Échéances payées à temps · part de la conduite',
+    'admin.engine.report_conduct':
+        'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",
@@ -1468,6 +1602,29 @@ const fr: Catalog = {
     'admin.policy.min_statement_years': 'Années de relevés min.',
     'admin.policy.rdb_certificate': 'Certificat RDB',
     'admin.policy.max_notes': 'Titres max. / entreprise',
+    'admin.policy.platform_fee': 'Frais de plateforme · au décaissement',
+    'admin.policy.cpa_share': "Part de l'Audit Partner sur les frais",
+    'admin.policy.listing_fee': 'Frais de mise en ligne',
+    'admin.policy.repayment_fee': 'Frais de remboursement',
+    'admin.payments.policy_title': 'Barème des frais en vigueur',
+    'admin.policy.minimum_age': "Âge minimum de l'investisseur",
+    'admin.policy.identity_evidence': "Pièces d'identité par dossier",
+    'admin.policy.complaint_acknowledge': 'Réclamation accusée sous',
+    'admin.policy.complaint_resolve': 'Réclamation résolue sous',
+    'admin.kyc.policy_title': 'Règles de conformité en vigueur',
+    'admin.policy.min_principal': 'Levée minimale',
+    'admin.policy.max_principal': 'Levée maximale',
+    'admin.policy.tenors': 'Durée · mois',
+    'admin.policy.first_issue_months': 'Mois audités · première émission',
+    'admin.policy.repeat_issue_months': 'Mois audités · émission répétée',
+    'admin.policy.withdrawal_min': 'Retrait minimal',
+    'admin.policy.withdrawal_max': 'Retrait maximal',
+    'admin.finance.stream.platform_fee': 'Frais de plateforme · part Rozine',
+    'admin.finance.stream.audit_partner_share':
+        'Frais de plateforme · part Audit Partner (à payer)',
+    'admin.finance.stream.deposit_fees': 'Frais de dépôt',
+    'admin.finance.paid_by.business': 'Entreprises',
+    'admin.finance.paid_by.investor': 'Investisseurs',
     'admin.policy.dual_control_threshold': 'Deux approbateurs à partir de',
     'admin.time.now': "à l'instant",
     'admin.time.minutes': 'il y a {count} min',
@@ -1790,7 +1947,7 @@ const fr: Catalog = {
     'admin.parties.stats.total_businesses': 'Entreprises au total',
     'admin.parties.stats.avg_rating': 'Notation moyenne',
     'admin.parties.stats.active_notes': 'Titres actifs',
-    'admin.parties.stats.capital_raised': 'Capital levé',
+    'admin.parties.stats.capital_raised': 'Capital financé',
     'admin.parties.stats.total_investors': 'Investisseurs au total',
     'admin.parties.stats.kyc_verified': 'KYC vérifié',
     'admin.parties.stats.awaiting_kyc': 'KYC en attente',
@@ -1826,14 +1983,15 @@ const fr: Catalog = {
     'admin.parties.empty.staff': 'Aucun opérateur ne correspond à ces filtres.',
     'admin.parties.col.business': 'Entreprise',
     'admin.parties.col.rating': 'Notation',
+    'admin.parties.name_pending': 'Nom en attente',
     'admin.parties.col.active_notes': 'Titres actifs',
-    'admin.parties.col.investors': 'Investisseurs',
-    'admin.parties.col.raised': 'Levé',
+    'admin.parties.col.investors': 'Financeurs',
+    'admin.parties.col.raised': 'Financé',
     'admin.parties.col.capacity': 'Capacité utilisée',
     'admin.parties.col.status': 'Statut',
     'admin.parties.col.investor': 'Investisseur',
     'admin.parties.col.kyc': 'KYC',
-    'admin.parties.col.portfolio': 'Portefeuille',
+    'admin.parties.col.portfolio': 'Investi + engagé',
     'admin.parties.col.wallet': 'Portefeuille espèces',
     'admin.parties.col.holdings': 'Positions',
     'admin.parties.col.businesses': 'Entreprises',
@@ -1867,6 +2025,77 @@ const fr: Catalog = {
     'admin.parties.standing.pending': 'Vérification en attente',
     'admin.parties.standing.licence_expired': 'Licence expirée',
     'admin.parties.standing.suspended': 'Suspendu',
+    'admin.matrix.title': 'Permissions des rôles',
+    'admin.matrix.info':
+        'Ce que chaque niveau peut faire. Les niveaux inférieurs sont bloqués pour les actions destructrices, pas seulement privés de leur affichage.',
+    'admin.matrix.col.capability': 'Capacité',
+    'admin.matrix.col.detail': 'Ce qu’elle permet',
+    'admin.matrix.granted': 'Autorisé',
+    'admin.matrix.withheld': 'Non autorisé',
+    'admin.permission.admin.open': 'Ouvrir la console',
+    'admin.permission_detail.admin.open':
+        'Se connecter à la console du personnel, à son tableau de bord et à Personnel et rôles.',
+    'admin.permission.businesses.view': 'Voir les entreprises',
+    'admin.permission_detail.businesses.view':
+        "Consulter l'annuaire des entreprises et la fiche 360 de chacune.",
+    'admin.permission.businesses.verify': 'Vérifier les entreprises',
+    'admin.permission_detail.businesses.verify':
+        'Décider de la vérification des entreprises, avec un motif consigné.',
+    'admin.permission.investors.verify': 'Vérifier les investisseurs',
+    'admin.permission_detail.investors.verify':
+        "Décider des contrôles d'identité des investisseurs et consulter Activité et audit.",
+    'admin.permission.applications.review': 'Examiner les demandes',
+    'admin.permission_detail.applications.review':
+        'Examiner les demandes de levée et les libérer pour publication.',
+    'admin.permission.audit.partners.verify':
+        "Vérifier les partenaires d'audit",
+    'admin.permission_detail.audit.partners.verify':
+        'Approuver les cabinets CPA et consulter la couverture des partenaires.',
+    'admin.permission.audit.assignments.manage': 'Attribuer les audits',
+    'admin.permission_detail.audit.assignments.manage':
+        "Envoyer et réattribuer les audits aux partenaires d'audit.",
+    'admin.permission.audit.reports.view': "Lire les rapports d'audit",
+    'admin.permission_detail.audit.reports.view':
+        "Ouvrir les rapports d'audit scellés et leurs preuves.",
+    'admin.permission.consent.documents.record':
+        'Enregistrer les documents juridiques',
+    'admin.permission_detail.consent.documents.record':
+        'Enregistrer les nouvelles versions des Conditions et de la Note de confidentialité.',
+    'admin.permission.ledger.view': 'Voir le grand livre',
+    'admin.permission_detail.ledger.view':
+        'Consulter les écritures et les soldes du grand livre.',
+    'admin.permission.disbursements.view': 'Voir les décaissements',
+    'admin.permission_detail.disbursements.view':
+        'Voir la file des décaissements et chaque libération.',
+    'admin.permission.disbursements.hold': 'Suspendre les décaissements',
+    'admin.permission_detail.disbursements.hold':
+        'Suspendre un décaissement avant sa libération.',
+    'admin.permission.disbursements.requery': 'Réinterroger les décaissements',
+    'admin.permission_detail.disbursements.requery':
+        "Demander au prestataire de paiement l'état actuel d'un décaissement.",
+    'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
+    'admin.permission_detail.staging.mail.testers.manage':
+        'Choisir qui reçoit les e-mails en préproduction.',
+    'admin.permission.reconciliation.view': 'Voir le rapprochement',
+    'admin.permission_detail.reconciliation.view':
+        'Comparer le grand livre aux relevés des prestataires.',
+    'admin.permission.exceptions.view': 'Voir les exceptions',
+    'admin.permission_detail.exceptions.view':
+        'Voir les exceptions ouvertes du Centre des risques.',
+    'admin.permission.messaging.view': 'Voir la messagerie',
+    'admin.permission_detail.messaging.view':
+        "Consulter l'historique de la messagerie.",
+    'admin.permission.primary.view': 'Voir le marché primaire',
+    'admin.permission_detail.primary.view':
+        'Suivre les levées en cours et le registre des notes.',
+    'admin.permission.payments.view': 'Voir les paiements',
+    'admin.permission_detail.payments.view': 'Ouvrir le Centre des paiements.',
+    'admin.permission.complaints.answer': 'Répondre aux réclamations',
+    'admin.permission_detail.complaints.answer':
+        'Répondre aux réclamations des participants et les clôturer.',
+    'admin.permission.health.view': "Voir l'état du système",
+    'admin.permission_detail.health.view':
+        "Voir les files, les tâches et l'état des services.",
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',
@@ -1886,12 +2115,12 @@ const fr: Catalog = {
     'admin.parties.kyc_overdue_note':
         'Revérification KYC en retard depuis le {date}.',
     'admin.parties.stat.active_notes': 'Titres actifs',
-    'admin.parties.stat.investors': 'Investisseurs',
-    'admin.parties.stat.raised': 'Levé',
+    'admin.parties.stat.investors': 'Financeurs',
+    'admin.parties.stat.raised': 'Financé',
     'admin.parties.stat.rating': 'Notation Rozine',
     'admin.parties.stat.capacity': 'Capacité',
     'admin.parties.stat.capacity_used': 'Capacité utilisée',
-    'admin.parties.stat.portfolio': 'Portefeuille',
+    'admin.parties.stat.portfolio': 'Investi + engagé',
     'admin.parties.stat.wallet': 'Portefeuille espèces',
     'admin.parties.stat.holdings': 'Positions',
     'admin.parties.stat.businesses': 'Entreprises',
@@ -2057,6 +2286,19 @@ const fr: Catalog = {
     'business.wallet.back': "Retour à l'accueil",
     'business.wallet.available': 'Solde disponible',
     'business.wallet.brand': 'Portefeuille Rozine',
+    'business.wallet.range.label': 'Période',
+    'business.wallet.range.all': 'Depuis le début',
+    'business.wallet.range.start': 'Début',
+    'business.wallet.range.now': 'Aujourd’hui',
+    'business.wallet.range.from': 'Du',
+    'business.wallet.range.to': 'Au',
+    'business.wallet.range.apply': 'Appliquer',
+    'business.wallet.range.clear': 'Depuis le début',
+    'business.wallet.export.label': 'Télécharger le relevé',
+    'business.wallet.export.pdf': 'Télécharger le PDF',
+    'business.wallet.export.csv': 'Télécharger Excel',
+    'business.wallet.caption':
+        'Frais, versements et décaissements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -2069,7 +2311,6 @@ const fr: Catalog = {
     'business.servicing.wallet.status.restricted': 'Restreint',
     'business.servicing.wallet.restricted':
         'Restreint depuis le {date}. Les dépôts et les remboursements restent possibles.',
-    'business.servicing.wallet.no_pending': 'Aucun dépôt en attente',
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',
@@ -2079,7 +2320,7 @@ const fr: Catalog = {
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
     'business.servicing.wallet.instalments': 'Échéances {list}',
     'business.servicing.wallet.empty': 'Rien pour le moment.',
-    'business.servicing.wallet.older': 'Afficher plus ancien',
+    'business.servicing.wallet.older': 'Afficher plus',
     'business.servicing.wallet.receipt.label': 'Reçu de la transaction',
     'business.servicing.wallet.receipt.psp_fee': 'Frais du prestataire',
     'business.servicing.wallet.receipt.policy': 'Version de la politique',
@@ -2595,9 +2836,27 @@ const fr: Catalog = {
         'Acceptées · le contrat-cadre et les procédures convenues',
     'auditor.profile.legal.required': 'Votre acceptation est requise',
     'auditor.profile.legal.unavailable': 'Lecture impossible pour le moment',
-    'auditor.profile.pending.earnings_title': 'Aucun revenu pour le moment',
-    'auditor.profile.pending.earnings_body':
-        "Votre part de 40 % des frais de plateforme sur les levées que vous avez auditées apparaîtra ici dès qu'elle sera acquise.",
+    'auditor.profile.earnings.title': 'Revenus',
+    'auditor.profile.earnings.lead':
+        'Tout ce que vous avez gagné ce mois-ci, ligne par ligne, et comment chaque montant a été calculé.',
+    'auditor.profile.earnings.this_month': 'Gagné en {month}',
+    'auditor.profile.earnings.total': 'Gagné au total',
+    'auditor.profile.earnings.sources': 'Provenance',
+    'auditor.profile.earnings.platform_fee': 'Part des frais de plateforme',
+    'auditor.profile.earnings.platform_fee_rule':
+        '40 % des frais de plateforme de 3 % sur chaque levée que vous avez auditée, crédités au décaissement.',
+    'auditor.profile.earnings.earnings_fee': 'Part des frais sur les gains',
+    'auditor.profile.earnings.earnings_fee_rule':
+        '25 % des frais sur les gains à chaque versement mensuel aux investisseurs. Commence au premier versement.',
+    'auditor.profile.earnings.lines': 'Toutes les lignes du mois',
+    'auditor.profile.earnings.line_count': {
+        one: '{count} ligne',
+        other: '{count} lignes',
+    },
+    'auditor.profile.earnings.empty':
+        "Rien de gagné ce mois-ci. Une ligne apparaît dès qu'une levée que vous avez auditée est décaissée.",
+    'auditor.profile.earnings.basis':
+        'Levée {raise} · frais de plateforme de 3 % {fee} · vos 40 % {amount}',
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
@@ -2727,7 +2986,7 @@ const fr: Catalog = {
     'business.rating.financials': 'Chiffres vérifiés',
     'business.rating.sources': 'Banque · MoMo',
     'business.rating.financial.revenue': 'CA mensuel moyen',
-    'business.rating.financial.ebitda': 'EBITDA / mois',
+    'business.rating.financial.ebitda': 'Trésorerie nette / mois',
     'business.rating.financial.margin': 'Marge nette',
     'business.rating.financial.outstanding': 'Encours',
 
@@ -2929,6 +3188,26 @@ const fr: Catalog = {
     'investor.cart.empty_body':
         'Ajoutez des notes depuis les Offres, choisissez le montant de chacune et payez-les toutes en une fois.',
     'investor.cart.browse_deals': 'Parcourir les offres',
+    'investor.cart.add': 'Ajouter au panier',
+    'investor.cart.in_cart_remove': 'Dans le panier · Retirer',
+    'investor.cart.update_failed':
+        "Nous n'avons pas pu mettre à jour votre panier. Actualisez et réessayez.",
+    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.total': 'TOTAL DU PANIER',
+    'investor.cart.remove': 'Retirer {name} du panier',
+    'investor.cart.filled_remove': 'Entièrement financée · Retirer',
+    'investor.cart.filled_note': {
+        one: '{count} note est entièrement financée et ne sera pas payée.',
+        other: '{count} notes sont entièrement financées et ne seront pas payées.',
+    },
+    'investor.cart.target_of': 'sur {amount}',
+    'investor.cart.units': { one: 'note', other: 'notes' },
+    'investor.cart.quantity': 'Nombre de notes dans {name}',
+    'investor.cart.checkout': 'Payer',
+    'investor.cart.checkout_note':
+        'Pour le moment, chaque note se paie séparément : ouvrez son paiement pour la réserver et la payer.',
+    'investor.cart.before_charge':
+        'Le montant récupéré est avant les frais sur les gains. Chaque paiement indique le montant exact.',
     'investor.common.back': 'Retour',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Solide',
@@ -2946,6 +3225,7 @@ const fr: Catalog = {
     'investor.deals.sort.top_interest': 'Meilleur rendement',
     'investor.deals.sort.top_rated': 'Mieux notées',
     'investor.deals.sort.top_picks': 'Sélection',
+    'investor.deals.sort.in_cart': 'Dans le panier',
     'investor.deals.industry_label': 'Filtrer par secteur',
     'investor.deals.industry_all': 'Tous',
     'investor.deals.audited': 'AUDITÉ',
@@ -2957,6 +3237,7 @@ const fr: Catalog = {
     'investor.deals.avg_revenue_short': 'REV. MOY. MENS.',
     'investor.deals.avg_revenue': 'REVENU MENSUEL MOYEN',
     'investor.deals.funded_label': 'Financement de {name}',
+    'investor.deals.investors_one': 'investisseur',
     'investor.deals.investors': 'investisseurs',
     'investor.deals.left_to_fill': 'RESTE À LEVER',
     'investor.deals.notes': 'TITRES',
@@ -3034,7 +3315,7 @@ const fr: Catalog = {
     'investor.deal.total_return': 'Rendement total',
     'investor.deal.repayment': 'Remboursement',
     'investor.deal.monthly': 'Mensuel',
-    'investor.deal.term': 'DURÉE',
+    'investor.deal.term': 'Durée',
     'investor.deal.months_long': '{count} mois',
     'investor.deal.track_record': 'Historique sur Rozine',
     'investor.deal.history': 'HISTORIQUE',
@@ -3088,7 +3369,7 @@ const fr: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
-    'investor.checkout.pay_with': 'PAYER AVEC',
+    'investor.checkout.pay_with': 'SOURCE DE FINANCEMENT',
     'investor.checkout.wallet': 'Portefeuille',
     'investor.checkout.wallet_detail':
         'Portefeuille Rozine · {amount} disponibles',
@@ -3113,7 +3394,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer · {amount}',
+    'investor.checkout.confirm': "Confirmer l'investissement · {amount}",
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
@@ -3447,6 +3728,7 @@ const fr: Catalog = {
         'Aucune opération enregistrée pour le moment',
     'investor.portfolio.browse_deals': 'Voir les opportunités',
     'investor.portfolio.total_value': 'VALEUR TOTALE',
+    'investor.portfolio.businesses_one': '1 entreprise',
     'investor.portfolio.businesses': '{count} entreprises',
     'investor.portfolio.invested': 'INVESTI',
     'investor.portfolio.total_gain': 'GAIN TOTAL',
@@ -4332,6 +4614,7 @@ const fr: Catalog = {
         "L'authentification à deux facteurs est requise.",
     'settlement.refusal.NOT_FOUND':
         'Vous ne pouvez plus consulter cet enregistrement.',
+    'investor.wallet.c3.available_balance': 'Solde disponible',
     'investor.wallet.c3.total': 'Total du portefeuille',
     'investor.wallet.c3.bucket.available': 'Disponible',
     'investor.wallet.c3.bucket.held': 'Réservé',
@@ -4470,7 +4753,7 @@ const fr: Catalog = {
     'business.publish.published.disclosure': 'Information sur les frais',
     'business.publish.published.campaign': 'Voir la campagne',
     'business.publish.published.home': "Retour à l'accueil",
-    'business.campaign.state.live': 'En ligne',
+    'business.campaign.state.live': 'Active',
     'business.campaign.state.fully_reserved': 'Entièrement réservée',
     'business.campaign.state.funded': 'Financée',
     'business.campaign.state.funded_pending_disbursement':
@@ -4499,6 +4782,7 @@ const fr: Catalog = {
     'business.campaign.restriction.NOTE_INELIGIBLE':
         'Non éligible à de nouveaux engagements depuis le {date} ; ceux déjà pris restent.',
     'business.campaign.tile.committed': 'Engagé',
+    'business.campaign.tile.of_target': "De l'objectif",
     'business.campaign.tile.refunded': 'Remboursé',
     'business.campaign.tracker.title': 'Suivi des engagements',
     'business.campaign.tracker.committed_pct': '{pct} % engagé',
@@ -4919,6 +5203,8 @@ const fr: Catalog = {
     'investor.checkout.risks.accept': 'Je comprends ces risques',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
+    'investor.checkout.c3.reserve_after_risks':
+        'Confirmez les déclarations de risque ci-dessus pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':
@@ -5564,6 +5850,12 @@ const fr: Catalog = {
     'admin.exceptions.filtered_title': 'Aucune exception de ce type',
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
+    'admin.notes.tabs': 'Notes par état',
+    'admin.notes.state.live': 'En cours',
+    'admin.notes.state.funded': 'Financée',
+    'admin.notes.state.repaying': 'En remboursement',
+    'admin.notes.state.failed': 'Échouée',
+    'admin.notes.more': 'Plus de notes',
     'admin.primary.title': 'Levées en cours',
     'admin.primary.caption':
         'Chaque levée encore ouverte, la plus récente d’abord. Une levée se remplit ou échoue selon son propre délai, il n’y a donc pas de modération ici.',
@@ -5777,6 +6069,8 @@ const fr: Catalog = {
     'admin.health.queue.rec.watch':
         'Un retard s’accumule. Affectez un analyste.',
     'admin.health.queue.rec.healthy': 'La file est vide.',
+    'admin.health.queue.rec.within':
+        'Dans la tolérance. Aucun retard ne s’accumule.',
     'admin.health.queue.action': 'Ouvrir la file',
     'admin.health.events.label': 'Débit des événements',
     'admin.health.events.value': '{count}/h',
