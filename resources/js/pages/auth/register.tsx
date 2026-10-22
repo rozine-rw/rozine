@@ -128,7 +128,7 @@ export default function Register({ passwordRules, audience = null }: Props) {
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            {t('auth.register.have_account')}{' '}
+                            {t(brand.switchText)}{' '}
                             <TextLink
                                 href={login(audienceQuery(audience))}
                                 tabIndex={6}

@@ -92,6 +92,9 @@ const fr: Catalog = {
     'auth.register.submit': 'Créer un compte',
     'auth.register.have_account': 'Vous avez déjà un compte ?',
     'auth.register.log_in': 'Se connecter',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Sécurisé',
+    'auth.brand.business.have_account': 'Déjà inscrit ?',
     'auth.brand.business.eyebrow': 'Pour les entreprises',
     'auth.brand.business.login_description':
         'Connectez-vous à votre tableau de bord émetteur.',

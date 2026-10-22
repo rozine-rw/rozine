@@ -295,6 +295,7 @@ describe('authentication pages', () => {
             eyebrow: 'auth.brand.business.eyebrow',
             audience: 'business',
         });
+        expect(screen.getByText(/Already registered\?/)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute(
             'href',
             '/login?for=business',

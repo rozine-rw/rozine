@@ -32,6 +32,8 @@ export default function AuthLayout({
                     description === '' ? '' : t(description as MessageCode)
                 }
                 eyebrow={eyebrow === '' ? '' : t(eyebrow as MessageCode)}
+                wordmark={eyebrow === '' ? '' : t('auth.brand.wordmark')}
+                secure={eyebrow === '' ? '' : t('auth.brand.secure')}
                 audience={audience}
             >
                 {children}
@@ -47,6 +49,7 @@ export type AuthBranding = {
     description: MessageCode;
     emailLabel: MessageCode;
     emailPlaceholder: MessageCode;
+    switchText: MessageCode;
     switchCta: MessageCode;
 };
 
@@ -57,6 +60,7 @@ const GENERIC: Record<'login' | 'register', AuthBranding> = {
         description: 'auth.login.layout_description',
         emailLabel: 'auth.login.email_label',
         emailPlaceholder: 'auth.login.email_placeholder',
+        switchText: 'auth.login.no_account',
         switchCta: 'auth.login.create_account',
     },
     register: {
@@ -65,6 +69,7 @@ const GENERIC: Record<'login' | 'register', AuthBranding> = {
         description: 'auth.register.layout_description',
         emailLabel: 'auth.register.email_label',
         emailPlaceholder: 'auth.register.email_placeholder',
+        switchText: 'auth.register.have_account',
         switchCta: 'auth.register.log_in',
     },
 };
@@ -80,6 +85,7 @@ const BRANDED: Record<
             description: 'auth.brand.business.login_description',
             emailLabel: 'auth.brand.business.email_label',
             emailPlaceholder: 'auth.brand.business.email_placeholder',
+            switchText: 'auth.login.no_account',
             switchCta: 'auth.brand.business.register_cta',
         },
         register: {
@@ -88,6 +94,7 @@ const BRANDED: Record<
             description: 'auth.brand.business.register_description',
             emailLabel: 'auth.brand.business.email_label',
             emailPlaceholder: 'auth.brand.business.email_placeholder',
+            switchText: 'auth.brand.business.have_account',
             switchCta: 'auth.register.log_in',
         },
     },
@@ -98,6 +105,7 @@ const BRANDED: Record<
             description: 'auth.brand.investor.login_description',
             emailLabel: 'auth.login.email_label',
             emailPlaceholder: 'auth.register.email_placeholder',
+            switchText: 'auth.login.no_account',
             switchCta: 'auth.brand.investor.register_cta',
         },
         register: {
@@ -106,6 +114,7 @@ const BRANDED: Record<
             description: 'auth.brand.investor.register_description',
             emailLabel: 'auth.register.email_label',
             emailPlaceholder: 'auth.register.email_placeholder',
+            switchText: 'auth.register.have_account',
             switchCta: 'auth.register.log_in',
         },
     },
@@ -116,6 +125,7 @@ const BRANDED: Record<
             description: 'auth.brand.auditor.login_description',
             emailLabel: 'auth.brand.business.email_label',
             emailPlaceholder: 'auth.brand.business.email_placeholder',
+            switchText: 'auth.login.no_account',
             switchCta: 'auth.login.create_account',
         },
         register: {
@@ -124,6 +134,7 @@ const BRANDED: Record<
             description: 'auth.brand.auditor.register_description',
             emailLabel: 'auth.brand.business.email_label',
             emailPlaceholder: 'auth.brand.business.email_placeholder',
+            switchText: 'auth.register.have_account',
             switchCta: 'auth.register.log_in',
         },
     },

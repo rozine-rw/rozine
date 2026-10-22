@@ -119,7 +119,7 @@ export default function Login({
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            {t('auth.login.no_account')}{' '}
+                            {t(brand.switchText)}{' '}
                             <TextLink
                                 href={register(audienceQuery(audience))}
                                 tabIndex={5}

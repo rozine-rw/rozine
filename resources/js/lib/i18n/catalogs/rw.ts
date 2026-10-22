@@ -94,6 +94,9 @@ const rw: Catalog = {
     'auth.register.submit': 'Fungura konti',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Bitekanye',
+    'auth.brand.business.have_account': 'Waramaze kwiyandikisha?',
     'auth.brand.business.eyebrow': 'Ku bigo by’ubucuruzi',
     'auth.brand.business.login_description':
         'Injira mu mbonerahamwe y’ikigo cyawe.',
