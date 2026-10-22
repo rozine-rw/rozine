@@ -75,6 +75,11 @@ class ScopeTests(unittest.TestCase):
             with self.subTest(paths=paths), self.assertRaises(ValueError):
                 runner.selected_paths({"schema": 1, "scope": "poc-only", "php": paths}, "php")
 
+    def test_poc_catalog_covers_audit_completion_and_monthly_dispatch(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        self.assertIn("tests/Feature/AuditAssignmentCompletionTest.php", runner.selected_paths(manifest, "php"))
+        self.assertIn("tests/Feature/MonthlyAuditSchedulerTest.php", runner.selected_paths(manifest, "php"))
+
     def test_selected_file_cannot_succeed_without_running_its_tests(self):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "report.xml"

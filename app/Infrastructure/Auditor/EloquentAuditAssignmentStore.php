@@ -88,7 +88,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     if ($existing?->status === 'closed') {
                         throw new CommandRejection('AUDIT_ENGAGEMENT_CLOSED', revision: $existing->revision, data: ['assignment_id' => $existing->id]);
                     }
-                    $this->finish($existing, $actorId, $candidates, $context);
+                    $candidates = $this->finish($existing, $actorId, $candidates, $context);
                     if ($existing !== null && $existing->status !== 'completed') {
                         return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
                     }
@@ -502,7 +502,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId): ?string {
             $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
-            $this->finish($existing, null, $candidates, $context);
+            $candidates = $this->finish($existing, null, $candidates, $context);
             $month = now('Africa/Kigali')->startOfMonth();
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
                 ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine');
@@ -640,9 +640,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     $premises = AuditLocation::query()->where('business_id', $businessId)->lockForUpdate()->first();
                     $offices = AuditLocation::query()->whereIn('office_party_id', $ids)->orderBy('office_party_id')->lockForUpdate()->get()->keyBy('office_party_id');
                     $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
-                    $activeCounts = AuditAssignment::query()->whereIn('party_id', $ids)->where('status', 'accepted')->get(['party_id'])->countBy('party_id');
+                    [$activeCounts, $reports] = $this->workload($businessId, $ids);
                     $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, snapshot')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('id')->get()->keyBy('party_id');
-                    $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
                     $conflicted = AuditConflictDeclaration::query()->where('business_id', $businessId)->pluck('party_id')->all();
                     $candidates = [];
                     foreach ($profiles as $profile) {
@@ -659,7 +658,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         $tie = $context['role_ties'][$profile->party_id] ?? null;
                         $last = $lastOffers->get($profile->party_id);
                         $candidates[] = ['engagement' => $acceptances[$profile->party_id] ?? null, 'id' => $profile->party_id, 'standing' => $profile->state['standing'], 'accepting' => $profile->state['accepting'],
-                            'active_count' => $activeCounts->get($profile->party_id, 0),
+                            'active_count' => $activeCounts[$profile->party_id] ?? 0,
                             'consecutive_reports' => $this->consecutive($reports, $profile->party_id),
                             'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'], 'office' => $office, 'premises' => $site,
                             'distance_upper_bound_m' => $office['point'] === null || $site['point'] === null ? null : $this->distance->upperBound($office['point'], $site['point']),
@@ -671,6 +670,19 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     return $operation($context, $candidates);
                 });
             });
+    }
+
+    /**
+     * @param  list<string>  $partyIds
+     * @return array{array<string, int>, list<string>}
+     */
+    private function workload(string $businessId, array $partyIds): array
+    {
+        $activeCounts = AuditAssignment::query()->whereIn('party_id', $partyIds)->where('status', 'accepted')->get(['party_id'])->countBy('party_id')->all();
+        $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')
+            ->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
+
+        return [$activeCounts, $reports];
     }
 
     /** @param list<string> $reports */
@@ -778,12 +790,19 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     /**
      * @param  list<Candidate>  $candidates
      * @param  AuditContext  $context
+     * @return list<Candidate>
      */
-    private function finish(?AuditAssignment $record, ?int $actorId, array $candidates, array $context): void
+    private function finish(?AuditAssignment $record, ?int $actorId, array $candidates, array $context): array
     {
-        if ($record !== null && $this->published($record)) {
-            $this->persist($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
+        if ($record === null || ! $this->published($record)) {
+            return $candidates;
         }
+        $this->persist($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
+        // The existing Business and candidate Party locks protect this reread through the next offer.
+        [$activeCounts, $reports] = $this->workload($context['business']['id'], array_column($candidates, 'id'));
+
+        return array_map(fn (array $candidate): array => [...$candidate, 'active_count' => $activeCounts[$candidate['id']] ?? 0,
+            'consecutive_reports' => $this->consecutive($reports, $candidate['id'])], $candidates);
     }
 
     /**
