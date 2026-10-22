@@ -220,6 +220,7 @@ describe('authentication layouts', () => {
             // eslint-disable-next-line testing-library/no-node-access -- the audience frame has no role.
             screen.getByText('Register form').closest('[data-audience]'),
         ).toHaveAttribute('data-audience', 'investor');
+        expect(screen.queryByText('Secure')).not.toBeInTheDocument();
 
         rerender(
             <AuthLayout
@@ -232,6 +233,8 @@ describe('authentication layouts', () => {
             </AuthLayout>,
         );
         expect(screen.getByText('For business')).toBeInTheDocument();
+        expect(screen.getByText('rozine')).toBeInTheDocument();
+        expect(screen.getByText('Secure')).toBeInTheDocument();
         expect(
             screen.getByText('Log in to your issuer dashboard.'),
         ).toBeInTheDocument();

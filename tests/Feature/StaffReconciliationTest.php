@@ -19,6 +19,10 @@ use Tests\Support\InvestorWalletFixture;
  * provider outcome the ledger could not follow, aged and never hidden.
  */
 
+beforeEach(function (): void {
+    $this->withoutVite();
+});
+
 /** @param list<string> $roles */
 function reconciliationStaff(array $roles): User
 {
@@ -58,7 +62,7 @@ it('closes yesterday as reconciled when every provider outcome was followed', fu
     expect($props['contract_version'])->toBe('staff-reconciliation-v1')
         ->and($props['allowed_actions'])->toBe([])
         ->and($props['nav']['reconciliation'])->toBe(['url' => '/admin/reconciliation', 'method' => 'get'])
-        ->and($props['nav']['finance'])->toBe(['url' => '/admin/reconciliation', 'method' => 'get'])
+        ->and($props['nav']['finance'])->toBe(['url' => '/admin/finance', 'method' => 'get'])
         ->and($props['day_close'])->toBe(['business_date' => $yesterday->format('Y-m-d'), 'state' => 'reconciled', 'reconciled_at' => $yesterday->toIso8601String()])
         ->and($props['accounts'])->toBe([
             ['id' => 'deposits', 'label' => 'Deposit collections (provider clearing)', 'as_of' => $yesterday->toIso8601String(),
