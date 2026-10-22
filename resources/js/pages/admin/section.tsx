@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
-import type { DesignBlock } from '@/components/admin/section-designs';
+import type {
+    DesignBlock,
+    FINANCE_GROUPS,
+} from '@/components/admin/section-designs';
 import {
     CAPTION,
     CARD,
@@ -136,6 +139,20 @@ function figureOf(props: AdminPendingSectionProps, label: string): string {
     return figure === undefined ? NO_FIGURE : formatRwfShort(figure);
 }
 
+/** The design's Finance group each revenue stream sits in. */
+const STREAM_GROUP: Record<
+    FinanceStream['key'],
+    (typeof FINANCE_GROUPS)[number]
+> = {
+    platform_fee: 'raise',
+    audit_partner_share: 'raise',
+    earnings_fee: 'earnings',
+    resale_fee: 'trades',
+    deposit_fees: 'residual',
+    withdrawal_fee: 'residual',
+    loss_reserve: 'residual',
+};
+
 /** The blocks that list engine settings: Engines' tabs and the Ratings scorecard. */
 const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands', 'movers']);
 
@@ -208,20 +225,27 @@ function rowsOf(
         });
     }
 
-    if (block.key === 'streams') {
-        return (props.streams ?? []).map((stream: FinanceStream) => ({
-            key: stream.key,
-            cells: [
-                t(`admin.finance.stream.${stream.key}`),
-                stream.rate === null ? NO_FIGURE : policyValue(stream.rate, t),
-                stream.paid_by === null
-                    ? NO_FIGURE
-                    : t(`admin.finance.paid_by.${stream.paid_by}`),
-                stream.collected === null
-                    ? NO_FIGURE
-                    : formatRwf(stream.collected),
-            ],
-        }));
+    if (props.section === 'finance' && block.tab === 'streams') {
+        return (props.streams ?? [])
+            .filter(
+                (stream: FinanceStream) =>
+                    STREAM_GROUP[stream.key] === block.key,
+            )
+            .map((stream: FinanceStream) => ({
+                key: stream.key,
+                cells: [
+                    t(`admin.finance.stream.${stream.key}`),
+                    stream.rate === null
+                        ? NO_FIGURE
+                        : policyValue(stream.rate, t),
+                    stream.paid_by === null
+                        ? NO_FIGURE
+                        : t(`admin.finance.paid_by.${stream.paid_by}`),
+                    stream.collected === null
+                        ? NO_FIGURE
+                        : formatRwf(stream.collected),
+                ],
+            }));
     }
 
     return [];
