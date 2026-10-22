@@ -16,7 +16,7 @@ class ListBusinessDirectoryRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['chip' => ['sometimes', 'string', 'in:all'], 'sort' => ['sometimes', 'string', 'in:raised,name'],
+        return ['chip' => ['sometimes', 'string', 'in:all'], 'sort' => ['sometimes', 'string', 'in:raised,active_notes,investors,name'],
             'sector' => ['sometimes', 'nullable', 'string', 'max:120'], 'q' => ['sometimes', 'nullable', 'string', 'max:120'],
             'business' => ['sometimes', 'string', 'ulid']];
     }
