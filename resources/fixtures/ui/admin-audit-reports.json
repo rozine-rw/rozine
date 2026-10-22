@@ -318,6 +318,31 @@
                     "remind": null
                 }
             }
+        ],
+        "published": [
+            {
+                "id": "asg_01",
+                "business": "Kigali Fresh Foods Ltd",
+                "kind": "monthly",
+                "period": "2026-12-01",
+                "auditor": "Eric Kamanzi",
+                "licence": "ICPAR-2024-0117",
+                "status": "published",
+                "due_at": "2027-01-07T21:59:59Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-05T09:12:00Z",
+                "digest": "9f3c2a71be04",
+                "variance_pct": "0.0",
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                }
+            }
         ]
     }
 }

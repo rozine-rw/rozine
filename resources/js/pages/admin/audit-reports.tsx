@@ -164,9 +164,6 @@ function Row({ row }: { row: AuditRegisterRow }) {
 export default function AdminAuditReports(props: AdminAuditReportsProps) {
     const { t, locale } = useTranslation();
     const format = useStatFormatter();
-    const published = props.rows
-        .filter((row) => row.status === 'published')
-        .slice(0, 12);
 
     return (
         <AdminFrame section="reports" {...props}>
@@ -225,7 +222,7 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
                 <CardTitle>{t('admin.audit_reports.feed.title')}</CardTitle>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-                {published.map((row) => (
+                {props.published.map((row) => (
                     <div
                         key={row.id}
                         className="rounded-2xl border border-rz-hairline bg-rz-surface p-4"
@@ -248,7 +245,7 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
                         </p>
                     </div>
                 ))}
-                {published.length === 0 && (
+                {props.published.length === 0 && (
                     <p className="text-[12.5px] text-rz-muted">
                         {t('admin.audit_reports.feed.empty')}
                     </p>

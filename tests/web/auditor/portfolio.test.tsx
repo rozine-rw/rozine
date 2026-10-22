@@ -900,4 +900,16 @@ describe('Auditor Portfolio', () => {
             screen.getByRole('alertdialog', { name: 'Interest declared' }),
         ).toBeInTheDocument();
     });
+
+    it('counts every managed deal, not only the capped list it shows', () => {
+        const page = props();
+        page.earnings.deals = 60;
+        render(<AuditorPortfolio {...page} />);
+
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Managed deals' }),
+            ).getByText('60 total'),
+        ).toBeInTheDocument();
+    });
 });

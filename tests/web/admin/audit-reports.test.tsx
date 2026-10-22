@@ -79,5 +79,9 @@ describe('Audit reports register', () => {
 
         expect(screen.queryAllByRole('row')).toHaveLength(1);
         expect(screen.getByText('Nothing in this view.')).toBeInTheDocument();
+        expect(
+            screen.queryByText('No monthly reports audited yet.'),
+        ).not.toBeInTheDocument();
+        expect(screen.getAllByText('Kigali Fresh Foods Ltd')).toHaveLength(1);
     });
 });

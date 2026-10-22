@@ -140,7 +140,14 @@ export function YieldShare() {
  * Managed deals (design L507–552): every funded raise whose sealed report the partner wrote, newest
  * first, with the raise, its platform fee and the partner's 40% share (BRS v2.0 FEE-R02).
  */
-export function ManagedDeals({ deals }: { deals: EarningLine[] }) {
+export function ManagedDeals({
+    deals,
+    total,
+}: {
+    deals: EarningLine[];
+    /** Every raise that credited the partner; the list itself is capped. */
+    total: number;
+}) {
     const { t, locale } = useTranslation();
 
     return (
@@ -154,7 +161,7 @@ export function ManagedDeals({ deals }: { deals: EarningLine[] }) {
                 {deals.length > 0 && (
                     <span className="text-[11px] text-rz-secondary">
                         {t('auditor.portfolio.managed.count', {
-                            count: deals.length,
+                            count: total,
                         })}
                     </span>
                 )}

@@ -154,7 +154,7 @@ it('counts a sealed Flash Audit on time while it waits for the Business, with no
 
     $page = auditRegister($fixture['audit']['staff']);
     expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => null])
-        ->and($page['rows'][0]['links']['remind'])->toBeNull()
+        ->and($page['rows'][0]['links']['remind'])->toBeNull()->and($page['published'])->toBe([])
         ->and($page['stats'][3]['value'])->toBe(['kind' => 'percent', 'value' => '100']);
     actingAs($fixture['audit']['staff'])->postJson(route('staff.reports.remind', $fixture['report']->assignment_id))->assertConflict();
 });
