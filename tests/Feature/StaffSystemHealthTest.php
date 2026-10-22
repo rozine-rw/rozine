@@ -116,8 +116,9 @@ it('reads every signal healthy when the books match, the queue is short and acti
 
     expect($props['contract_version'])->toBe('staff-system-health-v1')->and($props['search'])->toBe('ledger')
         ->and($props['overall'])->toBe(['critical' => 0, 'watch' => 0])
-        ->and(array_column($props['signals'], 'key'))->toBe(['ledger', 'capital', 'queue', 'events', 'default_rate', 'arrears', 'outstanding', 'treasury', 'frozen'])
-        ->and(array_column($props['signals'], 'status'))->toBe(['healthy', 'healthy', 'healthy', 'healthy', 'untracked', 'untracked', 'untracked', 'untracked', 'untracked'])
+        ->and(array_column($props['signals'], 'key'))->toBe(['ledger', 'capital', 'queue', 'events', 'frozen', 'default_rate', 'arrears', 'outstanding', 'treasury'])
+        ->and(array_column($props['signals'], 'status'))->toBe(['healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'untracked', 'untracked', 'untracked', 'untracked'])
+        ->and($props['signals'][4]['facts'])->toBe(['accounts' => 0])
         ->and($props['signals'][0]['facts'])->toBe(['accounts' => 1, 'unmatched' => 0, 'breaks' => 0])
         ->and($props['signals'][1]['facts'])->toBe(['amount' => '500000', 'raises' => 2])
         ->and($props['signals'][3]['facts'])->toBe(['last_hour' => 7, 'total' => 90])
@@ -141,6 +142,14 @@ it('puts what needs a look first and links it to the page that resolves it', fun
     $treasury = ($this->page)(healthStaff(['treasury']));
 
     expect($treasury['signals'][0])->toMatchArray(['key' => 'ledger', 'status' => 'watch', 'action' => ['url' => '/admin/reconciliation', 'method' => 'get']]);
+
+    // A frozen operator puts frozen accounts on watch; only staff who manage staff get the link.
+    $frozen = healthStaff(['analyst']);
+    app(ConfigureStaffAccess::class)->handle($frozen->id, false, 'Left the team.', (string) Str::uuid(), ['analyst']);
+    $watch = fn (array $props): array => array_values(array_filter($props['signals'], fn (array $signal): bool => $signal['key'] === 'frozen'))[0];
+    expect($watch(($this->page)(healthStaff(['superadmin']))))->toBe(['key' => 'frozen', 'status' => 'watch', 'facts' => ['accounts' => 1],
+        'action' => ['url' => '/admin/staff', 'method' => 'get']])
+        ->and($watch(($this->page)(healthStaff(['treasury'])))['action'])->toBeNull();
 });
 
 it('is for operations staff, replaces the pending section, and serves API v1 with its own ability', function (): void {

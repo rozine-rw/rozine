@@ -1983,12 +1983,13 @@ export type HealthSignal =
           action: null;
       }
     | {
-          key:
-              | 'default_rate'
-              | 'arrears'
-              | 'outstanding'
-              | 'treasury'
-              | 'frozen';
+          key: 'frozen';
+          status: 'watch' | 'healthy';
+          facts: { accounts: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury';
           status: 'untracked';
           facts: never[];
           action: null;
