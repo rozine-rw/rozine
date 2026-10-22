@@ -6118,7 +6118,16 @@ const en = {
     'admin.health.treasury.label': 'Treasury position',
     'admin.health.treasury.detail': 'No treasury balance is recorded yet',
     'admin.health.frozen.label': 'Frozen accounts',
-    'admin.health.frozen.detail': 'Account freezes are not available yet',
+    'admin.health.frozen.detail': 'accounts with access paused',
+    'admin.health.frozen.rec.healthy': {
+        one: 'No accounts are frozen.',
+        other: 'No accounts are frozen.',
+    },
+    'admin.health.frozen.rec.watch': {
+        one: '{count} operator account is frozen. Review it in Staff & Roles.',
+        other: '{count} operator accounts are frozen. Review them in Staff & Roles.',
+    },
+    'admin.health.frozen.action': 'Open Staff & Roles',
     'admin.complaints.title': 'Complaints',
     'admin.complaints.caption':
         'Acknowledge within 4 hours and resolve within 48, or tell the customer why and when (BRS CMP-R03).',

@@ -6363,8 +6363,16 @@ const fr: Catalog = {
     'admin.health.treasury.detail':
         'Aucun solde de trésorerie n’est encore enregistré',
     'admin.health.frozen.label': 'Comptes gelés',
-    'admin.health.frozen.detail':
-        'Le gel des comptes n’est pas encore disponible',
+    'admin.health.frozen.detail': "comptes dont l'accès est suspendu",
+    'admin.health.frozen.rec.healthy': {
+        one: "Aucun compte n'est gelé.",
+        other: "Aucun compte n'est gelé.",
+    },
+    'admin.health.frozen.rec.watch': {
+        one: '{count} compte opérateur est gelé. Vérifiez-le dans Personnel et rôles.',
+        other: '{count} comptes opérateurs sont gelés. Vérifiez-les dans Personnel et rôles.',
+    },
+    'admin.health.frozen.action': 'Ouvrir Personnel et rôles',
     'admin.complaints.title': 'Réclamations',
     'admin.complaints.caption':
         'Accuser réception sous 4 heures et résoudre sous 48, ou dire au client pourquoi et quand (BRS CMP-R03).',
