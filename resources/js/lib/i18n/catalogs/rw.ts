@@ -1089,10 +1089,6 @@ const rw: Catalog = {
     'admin.design.col.message': 'Ubutumwa',
     'admin.design.col.recipient': 'Uwakiriye',
     'admin.design.col.lesson': 'Isomo',
-    'admin.design.col.time': 'Igihe',
-    'admin.design.col.done': 'Abarangije',
-    'admin.design.col.score': 'Amanota',
-    'admin.design.col.points': "Amanota y'ishimwe",
     'admin.design.col.app': 'Porogaramu',
     'admin.design.col.status': 'Uko bihagaze',
     'admin.design.col.assigned_cpa': 'CPA wahawe',
@@ -2936,9 +2932,6 @@ const rw: Catalog = {
         'Nta konti yo kwishyurirwaho iracyahari',
     'auditor.profile.pending.payout_body':
         'Konti ya banki wishyurirwaho izagaragara hano.',
-    'auditor.profile.pending.learn_title': 'Biraza vuba muri porogaramu',
-    'auditor.profile.pending.learn_body':
-        "Amasomo y'Ishuri ry'abagenzuzi azagaragara hano namara gutangazwa.",
     'auditor.profile.pending.legal_title': 'Biraza vuba muri porogaramu',
     'auditor.profile.pending.legal_body':
         "Amasezerano yawe y'akazi azasomerwa hano.",
@@ -4078,6 +4071,10 @@ const rw: Catalog = {
     'investor.academy.finish': 'Soza',
     'investor.academy.done_title': 'Isomo ryarangiye',
     'investor.academy.done_body': 'Urangije isomo “{lesson}”.',
+    'investor.academy.partial_title': 'Ntibiruzura neza',
+    'investor.academy.partial_body':
+        'Watsinze {passed} mu bibazo {total} byihuse bya {lesson}. Ongera usubire mu isomo kugira ngo urirangize.',
+    'investor.academy.partial_retry': 'Ongera utangire isomo',
     'investor.academy.done_cta': 'Subira ku Ishuri',
     'investor.academy.lesson.notes.title': 'Inyandiko z’umwenda za Rozine',
     'investor.academy.lesson.notes.sub': 'Icyo ugura n’uko cyishyura',

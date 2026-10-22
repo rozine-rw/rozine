@@ -127,16 +127,40 @@ describe('Investor Academy', () => {
         expect(lesson).toHaveTextContent('3 of 3');
         await user.click(screen.getByRole('button', { name: 'Finish' }));
 
+        expect(lesson).not.toHaveTextContent('Lesson complete');
+        expect(lesson).toHaveTextContent('Not quite yet');
+        expect(lesson).toHaveTextContent(
+            'You passed 1 of 2 quick checks in Rozine notes. Try the lesson again to finish it.',
+        );
+        expect(screen.getByRole('progressbar')).toHaveValue(3);
+        await user.click(
+            screen.getByRole('button', { name: 'Try the lesson again' }),
+        );
+        expect(lesson).toHaveTextContent('1 of 2');
+        expect(lesson).toHaveTextContent('What is a note?');
+        await user.click(screen.getByRole('button', { name: 'Got it' }));
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Lend to a verified business for a fixed return',
+            }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Next' }));
+        await user.click(screen.getByRole('button', { name: 'Got it' }));
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Monthly, over the term of the note',
+            }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Finish' }));
         expect(lesson).toHaveTextContent('Lesson complete');
         expect(lesson).toHaveTextContent('You finished Rozine notes.');
-        expect(screen.getByRole('progressbar')).toHaveValue(3);
         await user.click(
             screen.getByRole('button', { name: 'Back to the Academy' }),
         );
 
         expect(
             screen.getByRole('button', { name: /Rozine notes/u }),
-        ).toHaveTextContent('1/2');
+        ).toHaveTextContent('Done ✓');
     });
 
     it('marks a lesson done and the card complete once every topic is passed', async () => {

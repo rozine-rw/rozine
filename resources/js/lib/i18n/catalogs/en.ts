@@ -1047,10 +1047,6 @@ const en = {
     'admin.design.col.message': 'Message',
     'admin.design.col.recipient': 'Recipient',
     'admin.design.col.lesson': 'Lesson',
-    'admin.design.col.time': 'Time',
-    'admin.design.col.done': 'Done',
-    'admin.design.col.score': 'Score',
-    'admin.design.col.points': 'Points',
     'admin.design.col.app': 'App',
     'admin.design.col.status': 'Status',
     'admin.design.col.assigned_cpa': 'Assigned CPA',
@@ -2831,9 +2827,6 @@ const en = {
     'auditor.profile.pending.payout_title': 'No payout account yet',
     'auditor.profile.pending.payout_body':
         'The bank account your earnings are paid to will show here.',
-    'auditor.profile.pending.learn_title': 'Coming to the app soon',
-    'auditor.profile.pending.learn_body':
-        'Auditor Academy lessons will appear here once they are published.',
     'auditor.profile.pending.legal_title': 'Coming to the app soon',
     'auditor.profile.pending.legal_body':
         'Your engagement terms will be readable here.',
@@ -3947,6 +3940,10 @@ const en = {
     'investor.academy.finish': 'Finish',
     'investor.academy.done_title': 'Lesson complete',
     'investor.academy.done_body': 'You finished {lesson}.',
+    'investor.academy.partial_title': 'Not quite yet',
+    'investor.academy.partial_body':
+        'You passed {passed} of {total} quick checks in {lesson}. Try the lesson again to finish it.',
+    'investor.academy.partial_retry': 'Try the lesson again',
     'investor.academy.done_cta': 'Back to the Academy',
     'investor.academy.lesson.notes.title': 'Rozine notes',
     'investor.academy.lesson.notes.sub': 'What you buy and how it pays',

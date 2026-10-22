@@ -1094,10 +1094,6 @@ const fr: Catalog = {
     'admin.design.col.message': 'Message',
     'admin.design.col.recipient': 'Destinataire',
     'admin.design.col.lesson': 'Leçon',
-    'admin.design.col.time': 'Durée',
-    'admin.design.col.done': 'Terminées',
-    'admin.design.col.score': 'Score',
-    'admin.design.col.points': 'Points',
     'admin.design.col.app': 'Application',
     'admin.design.col.status': 'Statut',
     'admin.design.col.assigned_cpa': 'CPA assigné',
@@ -2947,9 +2943,6 @@ const fr: Catalog = {
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
-    'auditor.profile.pending.learn_title': "Bientôt dans l'application",
-    'auditor.profile.pending.learn_body':
-        "Les leçons de l'Académie des auditeurs apparaîtront ici dès leur publication.",
     'auditor.profile.pending.legal_title': "Bientôt dans l'application",
     'auditor.profile.pending.legal_body':
         "Vos conditions d'engagement pourront être consultées ici.",
@@ -4096,6 +4089,10 @@ const fr: Catalog = {
     'investor.academy.finish': 'Terminer',
     'investor.academy.done_title': 'Leçon terminée',
     'investor.academy.done_body': 'Vous avez terminé « {lesson} ».',
+    'investor.academy.partial_title': 'Pas encore tout à fait',
+    'investor.academy.partial_body':
+        'Vous avez réussi {passed} des {total} vérifications rapides de {lesson}. Reprenez la leçon pour la terminer.',
+    'investor.academy.partial_retry': 'Reprendre la leçon',
     'investor.academy.done_cta': 'Retour à l’Académie',
     'investor.academy.lesson.notes.title': 'Les notes Rozine',
     'investor.academy.lesson.notes.sub':

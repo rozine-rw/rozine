@@ -383,10 +383,10 @@ export type InvestorCheckoutProps = {
 /* Portfolio (MVP-INVESTOR-SCR-04) and holding detail (SCR-05)                                 */
 /* ------------------------------------------------------------------------------------------ */
 
-/** Crosswalk SCR-04-ST-02 / SCR-05-ST-01..03: arrears, matured, frozen and defaulted show at once. */
 /** The wallet history's range chips (design "activityRanges"). */
 export type WalletPeriod = 'today' | '7d' | '30d' | 'all';
 
+/** Crosswalk SCR-04-ST-02 / SCR-05-ST-01..03: arrears, matured, frozen and defaulted show at once. */
 export type HoldingHealth =
     | 'healthy'
     | 'watch'

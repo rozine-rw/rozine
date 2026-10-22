@@ -107,7 +107,10 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
 export default function AdminMessaging(props: AdminMessagingProps) {
     const { t } = useTranslation();
     const searched = props.search !== '';
-    const [tab, setTab] = useState<Tab>(searched ? 'history' : 'automations');
+    /* A search, or a page of older history, came from the History tab, so it reopens there. */
+    const [tab, setTab] = useState<Tab>(
+        searched || props.newest !== null ? 'history' : 'automations',
+    );
 
     return (
         <AdminFrame section="messaging" searchQuery={SEARCH_QUERY} {...props}>

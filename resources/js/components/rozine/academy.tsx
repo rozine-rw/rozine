@@ -310,6 +310,15 @@ function LessonPlayer({
     const number = index === 0 ? 1 : 2;
     const prefix = `${lesson.code}.topic${number}` as const;
     const last = position + 1 >= queue.length;
+    const complete = passed.length === lesson.topics.length;
+
+    const restart = () => {
+        setQueue([0, 1]);
+        setPosition(0);
+        setPhase('card');
+        setPassed([]);
+        setRetried([]);
+    };
 
     const answer = (option: number) => {
         const right = option === topic.correct;
@@ -465,8 +474,20 @@ function LessonPlayer({
                 )}
                 {phase === 'done' && (
                     <div className="mt-[30px] text-center">
-                        <span className="mx-auto flex size-[84px] items-center justify-center rounded-full bg-[rgba(29,158,117,.14)]">
-                            <span className="flex size-14 items-center justify-center rounded-full bg-[#17795a]">
+                        <span
+                            className={cn(
+                                'mx-auto flex size-[84px] items-center justify-center rounded-full',
+                                complete
+                                    ? 'bg-[rgba(29,158,117,.14)]'
+                                    : 'bg-[rgba(194,102,31,.12)]',
+                            )}
+                        >
+                            <span
+                                className={cn(
+                                    'flex size-14 items-center justify-center rounded-full',
+                                    complete ? 'bg-[#17795a]' : 'bg-[#c2661f]',
+                                )}
+                            >
                                 <svg
                                     width="26"
                                     height="26"
@@ -485,17 +506,40 @@ function LessonPlayer({
                             </span>
                         </span>
                         <p className="mt-[18px] text-[22px] font-semibold text-rz-ink">
-                            {t('investor.academy.done_title')}
+                            {t(
+                                complete
+                                    ? 'investor.academy.done_title'
+                                    : 'investor.academy.partial_title',
+                            )}
                         </p>
                         <p className="mt-2 text-[13.5px] leading-normal text-rz-slate">
-                            {t('investor.academy.done_body', {
-                                lesson: t(`${lesson.code}.title`),
-                            })}
+                            {complete
+                                ? t('investor.academy.done_body', {
+                                      lesson: t(`${lesson.code}.title`),
+                                  })
+                                : t('investor.academy.partial_body', {
+                                      passed: passed.length,
+                                      total: lesson.topics.length,
+                                      lesson: t(`${lesson.code}.title`),
+                                  })}
                         </p>
+                        {!complete && (
+                            <button
+                                type="button"
+                                onClick={restart}
+                                className={primary}
+                            >
+                                {t('investor.academy.partial_retry')}
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={onClose}
-                            className={primary}
+                            className={
+                                complete
+                                    ? primary
+                                    : 'mt-2.5 h-[48px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink'
+                            }
                         >
                             {t('investor.academy.done_cta')}
                         </button>

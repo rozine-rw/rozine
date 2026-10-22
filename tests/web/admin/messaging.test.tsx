@@ -146,6 +146,22 @@ describe('Messaging History', () => {
         });
     });
 
+    it('stays on History when paging back through older messages', () => {
+        render(
+            <AdminMessaging
+                {...props({
+                    newest: { url: '/admin/messaging/history', method: 'get' },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        expect(rowOf('Aline Uwase')).toHaveTextContent('Email failed');
+    });
+
     it('shows an empty history before any notice went out', () => {
         render(<AdminMessaging {...props({ history: [], older: null })} />);
         fireEvent.click(screen.getByRole('tab', { name: 'History' }));
