@@ -1696,6 +1696,110 @@ const fr: Catalog = {
     'admin.policy.residency': 'Résidence',
     'admin.policy.risk_statements':
         'Déclarations de risque avant un premier investissement',
+    'admin.policy.hint.platform_fee':
+        "Prélevés sur la levée lors du versement à l'entreprise.",
+    'admin.policy.hint.cpa_share':
+        "Part des frais de plateforme versée à l'auditeur attitré pour les dossiers de Kigali.",
+    'admin.policy.hint.cpa_share_upcountry':
+        'La même part pour les dossiers hors de Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Prélevés sur les gains de l'investisseur. La tranche suit son niveau.",
+    'admin.policy.hint.cpa_earnings_share':
+        "Part des frais sur les gains versée à l'auditeur attitré.",
+    'admin.policy.hint.resale_fee':
+        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+    'admin.policy.hint.listing_fee':
+        "Facturés à l'entreprise pour publier une levée.",
+    'admin.policy.hint.repayment_fee':
+        'Facturés sur chaque remboursement mensuel.',
+    'admin.policy.hint.application_fee':
+        'Facturés pour une demande pendant la phase sandbox.',
+    'admin.policy.hint.withdrawal_fee':
+        'Appliqués aux retraits du portefeuille.',
+    'admin.policy.hint.loss_reserve':
+        'Part des frais mise de côté contre les défauts.',
+    'admin.policy.hint.target_dscr':
+        'La levée maximale est plafonnée pour que la trésorerie couvre les remboursements à ce ratio.',
+    'admin.policy.hint.listing_audit':
+        'Un expert-comptable audite chaque levée avant sa publication.',
+    'admin.policy.hint.audit_routing':
+        'DSCR le plus bas admis. En dessous, la demande est refusée.',
+    'admin.policy.hint.min_rate':
+        "Taux fixe le plus bas d'une note, tout compris.",
+    'admin.policy.hint.max_rate':
+        "Taux fixe le plus haut d'une note, tout compris.",
+    'admin.policy.hint.note_unit_price': "Prix d'une seule note Rozine.",
+    'admin.policy.hint.min_term': "Durée la plus courte d'une note.",
+    'admin.policy.hint.max_term': "Durée la plus longue d'une note.",
+    'admin.policy.hint.min_principal':
+        "Plus petite levée qu'une entreprise peut demander.",
+    'admin.policy.hint.max_principal':
+        "Plus grande levée qu'une entreprise peut demander.",
+    'admin.policy.hint.min_rating':
+        'Note Rozine la plus basse autorisée à lever.',
+    'admin.policy.hint.revenue_cap':
+        "Plus grande levée, en part du chiffre d'affaires annuel vérifié.",
+    'admin.policy.hint.registration_countries':
+        "Où l'entreprise doit être immatriculée.",
+    'admin.policy.hint.min_statement_years':
+        'Années de relevés bancaires ou MoMo exigées.',
+    'admin.policy.hint.min_revenue':
+        "Chiffre d'affaires minimum sur les 12 derniers mois.",
+    'admin.policy.hint.first_issue_months':
+        'Mois de relevés audités avant une première levée.',
+    'admin.policy.hint.repeat_issue_months':
+        'Mois audités avant chaque levée suivante.',
+    'admin.policy.hint.rdb_certificate':
+        "L'entreprise doit fournir un certificat RDB valide.",
+    'admin.policy.hint.max_notes':
+        "Notes en cours ou en remboursement qu'une entreprise peut avoir à la fois.",
+    'admin.policy.hint.residency': "Où l'investisseur doit résider.",
+    'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
+    'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
+    'admin.policy.hint.concentration':
+        "Part maximale d'une levée détenue par un investisseur.",
+    'admin.policy.hint.risk_statements':
+        'Déclarations acceptées avant un premier investissement.',
+    'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
+    'admin.policy.hint.kyc_investor_selfie':
+        'Une photo en direct comparée au document.',
+    'admin.policy.hint.kyc_investor_dob':
+        "Montre que l'investisseur a l'âge requis.",
+    'admin.policy.hint.kyc_investor_address':
+        "L'inscription ne le demande pas.",
+    'admin.policy.hint.kyc_business_rdb':
+        "Vérifié avant qu'une entreprise puisse postuler.",
+    'admin.policy.hint.identity_evidence':
+        'Photos de chaque dossier : recto, verso et selfie.',
+    'admin.policy.hint.kyc_reverify':
+        "Fréquence de la nouvelle vérification d'identité.",
+    'admin.policy.hint.late_charge': 'Ajoutée à une échéance en retard.',
+    'admin.policy.hint.miss_grace':
+        'Quand un paiement manqué devient un retard.',
+    'admin.policy.hint.default_at':
+        'Quand une échéance impayée devient un défaut.',
+    'admin.policy.hint.auto_freeze':
+        'Geler automatiquement une entreprise en défaut.',
+    'admin.policy.hint.complaint_acknowledge':
+        "Délai pour accuser réception d'une plainte.",
+    'admin.policy.hint.complaint_resolve': 'Délai pour résoudre une plainte.',
+    'admin.policy.hint.raise_days': "Durée d'ouverture d'une levée.",
+    'admin.policy.hint.withdrawal_min': 'Plus petit retrait du portefeuille.',
+    'admin.policy.hint.withdrawal_max': 'Plus grand retrait autorisé.',
+    'admin.policy.hint.resale_listing_days': "Durée d'une offre de revente.",
+    'admin.policy.hint.resale_reservation_minutes':
+        "Durée de réservation d'une part avant paiement.",
+    'admin.policy.hint.cpa_radius': "Distance maximale d'envoi d'un auditeur.",
+    'admin.policy.hint.sandbox_businesses':
+        "Plafond d'entreprises actives pendant la sandbox CMA.",
+    'admin.policy.hint.sandbox_investors':
+        "Plafond d'investisseurs vérifiés pendant la sandbox.",
+    'admin.policy.hint.sandbox_principal':
+        'Plafond du capital total levé pendant la sandbox.',
+    'admin.policy.hint.rate_band':
+        "Fourchette de taux fixe d'une note, tout compris.",
+    'admin.policy.hint.dual_control_threshold':
+        'À partir de ce montant, un second approbateur est requis.',
     'admin.policy.min_rate': 'Taux minimum · fixe',
     'admin.policy.max_rate': 'Taux maximum · fixe',
     'admin.policy.note_unit_price': 'Prix unitaire de la note',
