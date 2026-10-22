@@ -168,12 +168,13 @@ test('a superadmin suspends and reactivates another operator with a reason, and 
             ->where('party.actions', ['release' => ['url' => '/admin/staff/'.$eric->id.'/reactivate', 'method' => 'post']])
             ->where('action_log.0', fn ($entry): bool => $entry['actor'] === 'A. Diane' && $entry['target'] === 'Eric Ndoli'
                 && $entry['action'] === 'staff_suspended' && $entry['reason'] === 'On leave until November.' && is_string($entry['at']))
-            ->where('action_log.1.action', 'staff_enabled')->where('action_log.1.actor', 'Server console'));
+            ->where('action_log.1.action', 'staff_granted')->where('action_log.1.role', 'approver')->where('action_log.1.actor', 'Server console'));
 
     $this->actingAs($superadmin)->post(route('staff.staff.reactivate', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Back from leave.'])
         ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
     expect(StaffAccount::query()->find($eric->id))->enabled->toBeTrue()->roles->toBe(['approver', 'treasury']);
-    $this->actingAs($eric)->get(route('staff.staff.index'))->assertOk();
+    $this->actingAs($eric)->get(route('staff.staff.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('action_log.0.action', 'staff_enabled')->where('action_log.0.role', null));
 });
 
 test('nobody changes their own access, other roles cannot, and reactivation still needs MFA', function (): void {
@@ -222,7 +223,7 @@ test('a superadmin adds an operator by email with one role and a reason, and the
 
     $this->actingAs($superadmin)->get(route('staff.staff.index', ['operator' => $candidate->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('action_log.0', fn ($entry): bool => $entry['actor'] === 'A. Diane'
-            && $entry['target'] === 'Eric Kamanzi' && $entry['action'] === 'staff_enabled' && $entry['reason'] === 'Joins the treasury desk.'));
+            && $entry['target'] === 'Eric Kamanzi' && $entry['action'] === 'staff_granted' && $entry['role'] === 'treasury' && $entry['reason'] === 'Joins the treasury desk.'));
     $this->actingAs($superadmin)->post(route('staff.staff.grant'), [...$payload, 'request_id' => (string) Str::uuid()])
         ->assertSessionHasErrors(['email' => 'That account is already an operator. Open it to suspend or reactivate it.']);
 });

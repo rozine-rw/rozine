@@ -2352,6 +2352,7 @@ const rw: Catalog = {
     'admin.action_log.col.when': 'Ryari',
     'admin.action_log.action.staff_suspended': 'Uburenganzira bwahagaritswe',
     'admin.action_log.action.staff_enabled': 'Uburenganzira bwemejwe',
+    'admin.action_log.action.staff_granted': 'Yongewemo nka {role}',
     'admin.permission.reconciliation.view': 'Kureba guhuza konti',
     'admin.permission_detail.reconciliation.view':
         "Kugereranya igitabo cy'imari n'imbonerahamwe z'abatanga serivisi.",

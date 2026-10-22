@@ -17,6 +17,7 @@ const GRID =
 const ACTION_TONE: Record<StaffActionLogEntry['action'], string> = {
     staff_suspended: 'text-[#b3352a] dark:text-[#ff6b6f]',
     staff_enabled: 'text-[#157357] dark:text-[#3fcda0]',
+    staff_granted: 'text-[#157357] dark:text-[#3fcda0]',
 };
 
 /**
@@ -75,7 +76,11 @@ export function ActionLog({
                                 ACTION_TONE[entry.action],
                             )}
                         >
-                            {t(`admin.action_log.action.${entry.action}`)}
+                            {entry.role === null
+                                ? t(`admin.action_log.action.${entry.action}`)
+                                : t('admin.action_log.action.staff_granted', {
+                                      role: t(`admin.role.${entry.role}`),
+                                  })}
                         </span>
                         <span
                             role="cell"
