@@ -89,7 +89,7 @@ describe('Business Home', () => {
             'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
         );
         expect(items[10]).toHaveTextContent(
-            "Monthly audit openYour September 2026 audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the report by",
+            "Monthly audit openYour September 2026 audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by",
         );
 
         await user.click(

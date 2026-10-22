@@ -5723,7 +5723,7 @@ const en = {
     'investor.notices.business.reporting_window_open.title':
         'Monthly audit open',
     'investor.notices.business.reporting_window_open.body':
-        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the report by {date}. You then co-sign it or raise a dispute.",
+        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
