@@ -90,7 +90,10 @@ export default function AuditorPortfolio(props: AuditorPortfolioProps) {
                     }
                     right={
                         <ColumnPad side="right">
-                            <ManagedDeals deals={props.earnings.managed} />
+                            <ManagedDeals
+                                deals={props.earnings.managed}
+                                total={props.earnings.deals}
+                            />
                             <DueList
                                 items={items}
                                 month={month}
