@@ -33,7 +33,6 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessProfile;
-use App\Models\Party;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -222,7 +221,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $holder = $holders[$purchase['party_id']] ?? ['units' => BigInteger::zero(), 'principal' => BigInteger::zero()];
             $holders[$purchase['party_id']] = ['units' => $holder['units']->plus($purchase['units']), 'principal' => $holder['principal']->plus($purchase['principal'])];
         }
-        $kinds = Party::query()->whereKey(array_keys($holders))->pluck('kind', 'id')->all();
+        $kinds = $this->identities->partyKinds(array_map(strval(...), array_keys($holders)));
         $total = BigInteger::of($funding['principal']);
         $rows = array_map(fn (string $party, array $holder): array => ['kind' => $kinds[$party],
             'units' => (string) $holder['units'], 'principal' => ['currency' => 'RWF', 'amount' => (string) $holder['principal']]], array_keys($holders), $holders);
