@@ -6164,20 +6164,20 @@ const en = {
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
-    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.healthy': 'Queue is clear.',
     'admin.health.queue.rec.within':
         'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',
     'admin.health.events.detail': {
-        one: '{count} action recorded in total',
-        other: '{count} actions recorded in total',
+        one: '{count} event total',
+        other: '{count} events total',
     },
     'admin.health.events.rec.healthy':
         'Actions are being recorded and propagated.',
     'admin.health.events.rec.watch':
-        'No actions were recorded in the last hour.',
+        'No events in the last hour. Act in the apps to generate activity.',
     'admin.health.default_rate.label': 'Default rate',
     'admin.health.default_rate.detail': 'Starts when repayments are serviced',
     'admin.health.arrears.label': 'Arrears ratio',
