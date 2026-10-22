@@ -32,7 +32,7 @@ interface InvestorDirectoryStore
      * One page of the directory under a chip, sort and name or email search.
      *
      * @param  'all'|'verified'|'pending'|'kyc_overdue'|'frozen'|'restricted'  $chip
-     * @param  'portfolio'|'name'  $sort
+     * @param  'portfolio'|'holdings'|'wallet'|'name'  $sort
      * @return Directory
      */
     public function directory(string $chip, string $sort, string $search, int $limit): array;

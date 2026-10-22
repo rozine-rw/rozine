@@ -112,6 +112,15 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
                 'link' => ['url' => '/admin/businesses?q=isoko&sector=Agriculture&sort=name', 'method' => 'get']]])
             ->where('shown', 1)->where('total', 1)->where('directory.rows.0.name', 'Isoko Farms')
             ->where('directory.rows.0.link.url', '/admin/businesses?q=isoko&sector=Agriculture&sort=name&business='.$seed->business_id));
+    foreach (['active_notes', 'investors'] as $sort) {
+        $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => $sort]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('filters.1.value', $sort)
+                ->where('filters.1.options', fn (Collection $options): bool => $options->pluck('label')->all()
+                    === ['Sort: Capital raised', 'Sort: Active notes', 'Sort: Investors', 'Sort: Name (A–Z)'])
+                ->where('directory.rows', fn (Collection $rows): bool => $rows->pluck($sort)->all() === $rows->pluck($sort)->sortDesc()->values()->all()));
+    }
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'active_notes']))
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.name', 'Isoko Farms'));
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sector' => 'all', 'q' => 'kivu']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('filters.0.value', 'all')->where('directory.rows.0.id', $mill->business_id));
     // Health filters wait for an arrears and freeze read, so none is accepted.

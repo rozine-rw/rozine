@@ -70,7 +70,8 @@ class StaffBusinessDirectoryResource extends JsonResource
             // Health chips wait for an arrears and freeze read, so All is the only one.
             'chips' => [['key' => 'all', 'count' => $counts['all'], 'link' => $link($filters), 'active' => true]],
             'filters' => [...$sectors, ['key' => 'sort', 'value' => $page['sort'],
-                'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'name', 'label' => 'Sort: Name']]]],
+                'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'active_notes', 'label' => 'Sort: Active notes'],
+                    ['value' => 'investors', 'label' => 'Sort: Investors'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],

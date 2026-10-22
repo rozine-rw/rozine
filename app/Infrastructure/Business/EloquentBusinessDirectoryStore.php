@@ -35,7 +35,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         $totals = (clone $businesses)->selectRaw('count(*) AS everyone, coalesce(sum(active_notes), 0) AS notes, coalesce(sum(raised), 0)::text AS raised')->first();
         $ratings = $this->ratings(array_values((clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $matching = (clone $businesses)->count();
-        $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc('raised')->orderBy('name');
+        $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc($sort)->orderBy('name');
         $everyone = (int) ($totals->everyone ?? 0);
         $scores = array_map(fn (array $rating): string => $rating['score'], array_values($ratings));
 

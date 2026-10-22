@@ -29,7 +29,7 @@ class StaffBusinessDirectoryController extends Controller
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
         $chip = (string) $request->validated('chip', 'all');
-        /** @var 'raised'|'name' $sort */
+        /** @var 'raised'|'active_notes'|'investors'|'name' $sort */
         $sort = (string) $request->validated('sort', 'raised');
         $sector = trim((string) $request->validated('sector', ''));
         $sector = $sector === 'all' ? '' : $sector;

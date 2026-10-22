@@ -16,7 +16,7 @@ class ListInvestorDirectoryRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['chip' => ['sometimes', 'string', 'in:all,verified,pending,kyc_overdue,frozen,restricted'], 'sort' => ['sometimes', 'string', 'in:portfolio,name'],
+        return ['chip' => ['sometimes', 'string', 'in:all,verified,pending,kyc_overdue,frozen,restricted'], 'sort' => ['sometimes', 'string', 'in:portfolio,holdings,wallet,name'],
             'q' => ['sometimes', 'nullable', 'string', 'max:120'], 'investor' => ['sometimes', 'string', 'ulid'], 'verification' => ['sometimes', 'string', 'ulid']];
     }
 }

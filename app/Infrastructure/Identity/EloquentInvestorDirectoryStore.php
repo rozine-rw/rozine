@@ -40,7 +40,7 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
             default => null,
         };
         $matching = (clone $investors)->count();
-        $sort === 'name' ? $investors->orderBy('name') : $investors->orderByDesc('portfolio')->orderBy('name');
+        $sort === 'name' ? $investors->orderBy('name') : $investors->orderByDesc($sort)->orderBy('name');
 
         return ['rows' => array_values(array_map(self::row(...), $investors->orderBy('party_id')->limit($limit)->get()->all())),
             'matching' => $matching,
