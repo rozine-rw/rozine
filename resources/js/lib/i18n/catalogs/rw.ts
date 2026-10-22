@@ -1682,6 +1682,111 @@ const rw: Catalog = {
     'admin.policy.residency': 'Aho atuye',
     'admin.policy.risk_statements':
         "Amatangazo y'ingaruka mbere y'ishoramari rya mbere",
+    'admin.policy.hint.platform_fee':
+        'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
+    'admin.policy.hint.cpa_share':
+        "Umugabane w'amafaranga y'urubuga uhabwa umugenzuzi ku masezerano y'i Kigali.",
+    'admin.policy.hint.cpa_share_upcountry':
+        'Umugabane umwe ku masezerano yo hanze ya Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Bikurwa ku nyungu z'umushoramari. Urwego rukurikira icyiciro cye.",
+    'admin.policy.hint.cpa_earnings_share':
+        "Umugabane w'amafaranga ku nyungu uhabwa umugenzuzi.",
+    'admin.policy.hint.resale_fee':
+        "Yishyurwa n'ugurisha iyo inyandiko igurishijwe mbere y'igihe cyayo.",
+    'admin.policy.hint.listing_fee':
+        "Yishyurwa n'ikigo kugira ngo gishyire ahagaragara ishakishwa ry'imari.",
+    'admin.policy.hint.repayment_fee':
+        'Yishyurwa kuri buri bwishyu bwa buri kwezi.',
+    'admin.policy.hint.application_fee':
+        'Yishyurwa ku busabe igihe Rozine iri mu igerageza.',
+    'admin.policy.hint.withdrawal_fee': 'Ashyirwa ku kubikuza mu gikapu.',
+    'admin.policy.hint.loss_reserve':
+        "Umugabane w'amafaranga ubikwa mu gihe cyo kunanirwa kwishyura.",
+    'admin.policy.hint.target_dscr':
+        'Ishakishwa rinini rigarukira aho amafaranga yinjira yishyura ku kigero iki.',
+    'admin.policy.hint.listing_audit':
+        "Umugenzuzi agenzura buri shakishwa ry'imari mbere y'uko rijya ahagaragara.",
+    'admin.policy.hint.audit_routing':
+        'DSCR ntoya yemewe. Munsi yayo, ubusabe buranswe.',
+    'admin.policy.hint.min_rate':
+        'Inyungu ihamye ntoya inyandiko ishobora kugira, byose hamwe.',
+    'admin.policy.hint.max_rate':
+        'Inyungu ihamye nini inyandiko ishobora kugira, byose hamwe.',
+    'admin.policy.hint.note_unit_price': "Igiciro cy'inyandiko imwe ya Rozine.",
+    'admin.policy.hint.min_term': "Igihe gito cyemewe cy'inyandiko.",
+    'admin.policy.hint.max_term': "Igihe kinini cyemewe cy'inyandiko.",
+    'admin.policy.hint.min_principal':
+        'Ishakishwa rito ikigo gishobora gusaba.',
+    'admin.policy.hint.max_principal':
+        'Ishakishwa rinini ikigo gishobora gusaba.',
+    'admin.policy.hint.min_rating':
+        'Amanota ya Rozine make yemerera gushaka imari.',
+    'admin.policy.hint.revenue_cap':
+        "Ishakishwa rinini, nk'umugabane w'amafaranga ikigo cyinjiza.",
+    'admin.policy.hint.registration_countries':
+        'Aho ikigo kigomba kuba cyanditswe.',
+    'admin.policy.hint.min_statement_years':
+        "Imyaka y'inyandiko za banki cyangwa MoMo isabwa.",
+    'admin.policy.hint.min_revenue':
+        'Amafaranga make yinjiye mu mezi 12 ashize kugira ngo cyemererwe.',
+    'admin.policy.hint.first_issue_months':
+        "Amezi y'inyandiko agenzurwa mbere y'ishakishwa rya mbere.",
+    'admin.policy.hint.repeat_issue_months':
+        'Amezi agenzurwa mbere ya buri shakishwa rikurikiraho.',
+    'admin.policy.hint.rdb_certificate':
+        'Ikigo kigomba gushyiraho icyemezo cya RDB gifite agaciro.',
+    'admin.policy.hint.max_notes':
+        'Inyandiko zikora cyangwa zishyurwa ikigo gishobora kugira icyarimwe.',
+    'admin.policy.hint.residency': 'Aho umushoramari agomba gutura.',
+    'admin.policy.hint.minimum_age':
+        'Imyaka mike umushoramari ashobora kugira.',
+    'admin.policy.hint.min_investment': 'Ishoramari rito ryemewe.',
+    'admin.policy.hint.concentration':
+        'Umugabane munini umushoramari umwe ashobora kugira mu ishakishwa rimwe.',
+    'admin.policy.hint.risk_statements':
+        "Amatangazo umushoramari yemera mbere y'ishoramari rya mbere.",
+    'admin.policy.hint.kyc_investor_id': "Imbere n'inyuma by'inyandiko.",
+    'admin.policy.hint.kyc_investor_selfie':
+        "Ifoto ifashwe ako kanya igereranywa n'inyandiko.",
+    'admin.policy.hint.kyc_investor_dob':
+        'Bigaragaza ko umushoramari afite imyaka isabwa.',
+    'admin.policy.hint.kyc_investor_address': 'Kwiyandikisha ntibibisaba.',
+    'admin.policy.hint.kyc_business_rdb':
+        "Bigenzurwa mbere y'uko ikigo gisaba.",
+    'admin.policy.hint.identity_evidence':
+        'Amafoto muri buri dosiye: imbere, inyuma na selfie.',
+    'admin.policy.hint.kyc_reverify':
+        'Inshuro umukoresha agomba kongera kugenzura umwirondoro.',
+    'admin.policy.hint.late_charge': 'Yongerwa ku bwishyu bwakererewe.',
+    'admin.policy.hint.miss_grace':
+        "Igihe ubwishyu butatanzwe bufatwa nk'ubukererewe.",
+    'admin.policy.hint.default_at':
+        'Igihe ubwishyu butatanzwe buhinduka kunanirwa kwishyura.',
+    'admin.policy.hint.auto_freeze':
+        'Guhagarika ikigo mu buryo bwikora iyo kinaniwe kwishyura.',
+    'admin.policy.hint.complaint_acknowledge':
+        'Igihe cyo kwemeza ko ikirego cyakiriwe.',
+    'admin.policy.hint.complaint_resolve': 'Igihe cyo gukemura ikirego.',
+    'admin.policy.hint.raise_days':
+        "Igihe ishakishwa ry'imari rimara rifunguye.",
+    'admin.policy.hint.withdrawal_min': 'Kubikuza guto mu gikapu.',
+    'admin.policy.hint.withdrawal_max': 'Kubikuza kunini kwemewe.',
+    'admin.policy.hint.resale_listing_days':
+        'Igihe itangazo ryo kongera kugurisha rimara.',
+    'admin.policy.hint.resale_reservation_minutes':
+        'Igihe umuguzi afata igice mbere yo kwishyura.',
+    'admin.policy.hint.cpa_radius': 'Intera nini umugenzuzi yoherezwa.',
+    'admin.policy.hint.sandbox_businesses':
+        "Umubare ntarengwa w'ibigo bikora mu igerageza rya CMA.",
+    'admin.policy.hint.sandbox_investors':
+        "Umubare ntarengwa w'abashoramari bemejwe mu igerageza.",
+    'admin.policy.hint.sandbox_principal':
+        "Igiteranyo ntarengwa cy'imari yakusanyijwe mu igerageza.",
+    'admin.policy.hint.rate_band':
+        "Urugero rw'inyungu ihamye y'inyandiko, byose hamwe.",
+    'admin.policy.hint.dual_control_threshold':
+        'Guhera kuri aya mafaranga, hakenewe undi wemeza.',
     'admin.policy.min_rate': 'Inyungu nto · ihamye',
     'admin.policy.max_rate': 'Inyungu nini · ihamye',
     'admin.policy.note_unit_price': "Igiciro cy'igice cy'inyandiko",

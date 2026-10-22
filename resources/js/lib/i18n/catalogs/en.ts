@@ -1601,6 +1601,100 @@ const en = {
     'admin.policy.sandbox_principal': 'Sandbox limit · principal outstanding',
     'admin.policy.residency': 'Allowed countries of residence',
     'admin.policy.risk_statements': 'Risk statements before a first investment',
+    'admin.policy.hint.platform_fee':
+        'Taken from the raise when it is disbursed to the business.',
+    'admin.policy.hint.cpa_share':
+        'Share of the platform fee paid to the auditor of record on Kigali deals.',
+    'admin.policy.hint.cpa_share_upcountry':
+        'The same share on deals outside Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Taken from what an investor earns. The band follows the investor's tier.",
+    'admin.policy.hint.cpa_earnings_share':
+        'Share of the earnings fee paid to the auditor of record.',
+    'admin.policy.hint.resale_fee':
+        'Charged to the seller when a note is resold before maturity.',
+    'admin.policy.hint.listing_fee': 'Charged to a business to list a raise.',
+    'admin.policy.hint.repayment_fee': 'Charged on each monthly repayment.',
+    'admin.policy.hint.application_fee':
+        'Charged to apply while Rozine runs in the sandbox.',
+    'admin.policy.hint.withdrawal_fee': 'Applied to wallet withdrawals.',
+    'admin.policy.hint.loss_reserve':
+        'Share of fees set aside against defaults.',
+    'admin.policy.hint.target_dscr':
+        'Max raise is capped so cash flow covers repayments at this ratio.',
+    'admin.policy.hint.listing_audit':
+        'A CPA audits every raise before it lists.',
+    'admin.policy.hint.audit_routing':
+        'Lowest DSCR a deal may have. Below it, the application is refused.',
+    'admin.policy.hint.min_rate': 'Lowest flat rate a note can carry, all-in.',
+    'admin.policy.hint.max_rate': 'Highest flat rate a note can carry, all-in.',
+    'admin.policy.hint.note_unit_price': 'Price of a single Rozine note.',
+    'admin.policy.hint.min_term': 'Shortest allowed note term.',
+    'admin.policy.hint.max_term': 'Longest allowed note term.',
+    'admin.policy.hint.min_principal': 'Smallest raise a business may request.',
+    'admin.policy.hint.max_principal': 'Largest raise a business may request.',
+    'admin.policy.hint.min_rating': 'Lowest Rozine rating that may raise.',
+    'admin.policy.hint.revenue_cap':
+        'Largest raise as a share of verified annual revenue.',
+    'admin.policy.hint.registration_countries':
+        'Where a business must be registered.',
+    'admin.policy.hint.min_statement_years':
+        'Years of bank or MoMo statements required.',
+    'admin.policy.hint.min_revenue':
+        'Minimum revenue over the trailing 12 months to qualify.',
+    'admin.policy.hint.first_issue_months':
+        'Months of statements audited before a first raise.',
+    'admin.policy.hint.repeat_issue_months':
+        'Months audited before each later raise.',
+    'admin.policy.hint.rdb_certificate':
+        'Business must upload a valid RDB certificate.',
+    'admin.policy.hint.max_notes':
+        'Live and repaying notes a business may hold at once.',
+    'admin.policy.hint.residency': 'Where an investor must live.',
+    'admin.policy.hint.minimum_age': 'Youngest an investor may be.',
+    'admin.policy.hint.min_investment': 'Smallest single investment allowed.',
+    'admin.policy.hint.concentration':
+        'Most one investor may hold of a single raise.',
+    'admin.policy.hint.risk_statements':
+        'Statements an investor accepts before a first investment.',
+    'admin.policy.hint.kyc_investor_id': 'Front and back of the document.',
+    'admin.policy.hint.kyc_investor_selfie':
+        'A live photo matched to the document.',
+    'admin.policy.hint.kyc_investor_dob':
+        'Shows the investor is old enough to invest.',
+    'admin.policy.hint.kyc_investor_address': 'Onboarding does not ask for it.',
+    'admin.policy.hint.kyc_business_rdb':
+        'Checked before a business may apply.',
+    'admin.policy.hint.identity_evidence':
+        'Photos in each identity case: ID front, ID back and selfie.',
+    'admin.policy.hint.kyc_reverify':
+        'How often a user must verify their identity again.',
+    'admin.policy.hint.late_charge': 'Added to an overdue instalment.',
+    'admin.policy.hint.miss_grace': 'When a missed payment counts as late.',
+    'admin.policy.hint.default_at':
+        'When an unpaid instalment becomes a default.',
+    'admin.policy.hint.auto_freeze':
+        'Freeze a business automatically when it defaults.',
+    'admin.policy.hint.complaint_acknowledge':
+        'Time to acknowledge a new complaint.',
+    'admin.policy.hint.complaint_resolve': 'Time to resolve a complaint.',
+    'admin.policy.hint.raise_days': 'How long a raise stays open.',
+    'admin.policy.hint.withdrawal_min': 'Smallest wallet withdrawal.',
+    'admin.policy.hint.withdrawal_max': 'Largest wallet withdrawal allowed.',
+    'admin.policy.hint.resale_listing_days':
+        'How long a resale listing stays open.',
+    'admin.policy.hint.resale_reservation_minutes':
+        'How long a buyer holds a resale unit before paying.',
+    'admin.policy.hint.cpa_radius': 'Furthest a CPA is sent for an audit.',
+    'admin.policy.hint.sandbox_businesses':
+        'Cap on active businesses while in the CMA sandbox.',
+    'admin.policy.hint.sandbox_investors':
+        'Cap on verified investors while in the sandbox.',
+    'admin.policy.hint.sandbox_principal':
+        'Cap on total principal raised while in the sandbox.',
+    'admin.policy.hint.rate_band': 'Flat rate range a note can carry, all-in.',
+    'admin.policy.hint.dual_control_threshold':
+        'From this amount, a second approver is needed.',
     'admin.policy.min_rate': 'Minimum rate · flat',
     'admin.policy.max_rate': 'Maximum rate · flat',
     'admin.policy.note_unit_price': 'Note unit price',

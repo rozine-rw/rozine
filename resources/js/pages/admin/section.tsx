@@ -149,12 +149,13 @@ function rowsOf(
     tab: string | undefined,
     props: AdminPendingSectionProps,
     t: ReturnType<typeof useTranslation>['t'],
-): { key: string; cells: string[] }[] {
+): BlockRow[] {
     if (props.section === 'policies') {
         return (props.rules ?? [])
             .filter((rule: PolicyRule) => rule.tab === block.tab)
             .map((rule) => ({
                 key: rule.key,
+                hint: t(`admin.policy.hint.${rule.key}`),
                 cells: [
                     t(`admin.policy.${rule.key}`),
                     policyValue(rule, t),
@@ -226,14 +227,11 @@ function rowsOf(
     return [];
 }
 
+/** A table row as cell text, with an optional line under its first cell saying what it means. */
+type BlockRow = { key: string; cells: string[]; hint?: string };
+
 /** One designed panel: its title and caption over a chart's or a table's rows or empty state. */
-function Block({
-    block,
-    rows,
-}: {
-    block: DesignBlock;
-    rows: { key: string; cells: string[] }[];
-}) {
+function Block({ block, rows }: { block: DesignBlock; rows: BlockRow[] }) {
     const { t } = useTranslation();
     const title = t(block.title);
     const columns = block.columns ?? [];
@@ -298,6 +296,16 @@ function Block({
                                     )}
                                 >
                                     {cell}
+                                    {index === 0 && row.hint !== undefined && (
+                                        <span
+                                            className={cn(
+                                                'mt-0.5 block text-[12px] font-normal',
+                                                CAPTION,
+                                            )}
+                                        >
+                                            {row.hint}
+                                        </span>
+                                    )}
                                 </span>
                             ))}
                         </div>
