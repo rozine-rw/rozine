@@ -1261,23 +1261,26 @@ const fr: Catalog = {
     'admin.design.finance.kpi.primary': 'Marché primaire',
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
+    'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.primary.sub':
+        'Frais de plateforme, part de Rozine',
+    'admin.design.finance.kpi.investor_fees.sub':
+        'Tranches des frais sur les gains',
+    'admin.design.finance.kpi.secondary.sub': 'Frais de revente',
     'admin.design.finance.tab.streams': 'Sources de revenus',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
-    'admin.design.finance.raise.title':
-        'Ce que les entreprises paient pour lever des fonds',
+    'admin.design.finance.raise.title': 'Marché primaire',
     'admin.design.finance.raise.sub':
-        "Les frais de plateforme au versement, et la part de l'auditeur attitré.",
+        'Ce que les entreprises paient pour lever des fonds',
     'admin.design.finance.raise.empty': 'Aucuns frais de levée à afficher.',
-    'admin.design.finance.earnings.title':
-        'Ce que les investisseurs paient sur leurs gains',
+    'admin.design.finance.earnings.title': 'Frais investisseurs',
     'admin.design.finance.earnings.sub':
-        'Prélevés sur les gains des investisseurs, par tranche selon le niveau.',
+        'Ce que les investisseurs paient sur leurs gains',
     'admin.design.finance.earnings.empty':
         'Aucuns frais sur les gains à afficher.',
-    'admin.design.finance.trades.title':
-        'Ce que paient les sorties anticipées et les échanges',
+    'admin.design.finance.trades.title': 'Marché secondaire',
     'admin.design.finance.trades.sub':
-        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+        'Ce que paient les sorties anticipées et les échanges',
     'admin.design.finance.trades.empty': "Aucuns frais d'échange à afficher.",
     'admin.design.finance.residual.title': 'Recouvrement des coûts et résidus',
     'admin.design.finance.residual.sub': "Petites lignes. N'en prévoyez rien.",

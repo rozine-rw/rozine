@@ -1195,20 +1195,20 @@ const en = {
     'admin.design.finance.kpi.primary': 'Primary market',
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
+    'admin.design.finance.kpi.revenue.sub': 'Every stream, all time',
+    'admin.design.finance.kpi.primary.sub': 'Platform fee, Rozine share',
+    'admin.design.finance.kpi.investor_fees.sub': 'Earnings fee bands',
+    'admin.design.finance.kpi.secondary.sub': 'Resale fee',
     'admin.design.finance.tab.streams': 'Revenue streams',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
-    'admin.design.finance.raise.title': 'What businesses pay to raise money',
-    'admin.design.finance.raise.sub':
-        "The platform fee at disbursement, and the auditor of record's share of it.",
+    'admin.design.finance.raise.title': 'Primary market',
+    'admin.design.finance.raise.sub': 'What businesses pay to raise money',
     'admin.design.finance.raise.empty': 'No raise fees to show yet.',
-    'admin.design.finance.earnings.title':
-        'What investors pay on what they make',
-    'admin.design.finance.earnings.sub':
-        'Taken from investor earnings, banded by tier.',
+    'admin.design.finance.earnings.title': 'Investor fees',
+    'admin.design.finance.earnings.sub': 'What investors pay on what they make',
     'admin.design.finance.earnings.empty': 'No earnings fees to show yet.',
-    'admin.design.finance.trades.title': 'What early exits and trades pay',
-    'admin.design.finance.trades.sub':
-        'Charged to the seller when a note is resold before maturity.',
+    'admin.design.finance.trades.title': 'Secondary market',
+    'admin.design.finance.trades.sub': 'What early exits and trades pay',
     'admin.design.finance.trades.empty': 'No trade fees to show yet.',
     'admin.design.finance.residual.title': 'Cost recovery and residuals',
     'admin.design.finance.residual.sub':
