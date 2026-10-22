@@ -120,6 +120,12 @@ describe('Admin Notes', () => {
         const { rerender } = render(<AdminNotes {...props({ notes: [] })} />);
 
         expect(screen.getByText('No notes to show yet.')).toBeInTheDocument();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+        rerender(<AdminNotes {...props({ notes: [], search: 'ubuki' })} />);
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'No matches on this page',
+        );
 
         rerender(
             <AdminNotes
