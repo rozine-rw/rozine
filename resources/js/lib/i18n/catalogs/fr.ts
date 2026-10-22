@@ -1931,6 +1931,13 @@ const fr: Catalog = {
     'admin.audit_reports.title': 'Suivi de conformité des audits mensuels',
     'admin.audit_reports.caption':
         "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+    'admin.audit_reports.field.title':
+        "Opérations d'audit flash sur le terrain",
+    'admin.audit_reports.field.caption':
+        "Chaque visite sur le terrain avec son CPA, son écart, l'heure de signature et les constats signés.",
+    'admin.audit_reports.field.table': 'Audits flash sur le terrain',
+    'admin.audit_reports.field.empty':
+        "Aucune mission ISRS 4400 enregistrée pour l'instant.",
     'admin.audit_reports.feed.title': 'Récemment audités et publiés',
     'admin.audit_reports.feed.audited':
         '✓ Audité sur place par {auditor} · {licence}',

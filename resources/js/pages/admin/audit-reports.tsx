@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import {
     CardTitle,
@@ -155,6 +156,39 @@ function Row({ row }: { row: AuditRegisterRow }) {
     );
 }
 
+/** The register's table: one row per audit, under the shared column heads. */
+function RegisterTable({
+    label,
+    rows,
+    empty,
+}: {
+    label: string;
+    rows: AuditRegisterRow[];
+    empty: ReactNode;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <TableCard
+            label={label}
+            minWidth="min-w-[980px]"
+            empty={rows.length === 0 && empty}
+        >
+            <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
+                <HeadCell>{t('admin.audit_reports.col.business')}</HeadCell>
+                <HeadCell>{t('admin.audit_reports.col.period')}</HeadCell>
+                <HeadCell>{t('admin.audit_reports.col.partner')}</HeadCell>
+                <HeadCell>{t('admin.audit_reports.col.status')}</HeadCell>
+                <HeadCell>{t('admin.audit_reports.col.variance')}</HeadCell>
+                <HeadCell end>{t('admin.audit_reports.col.action')}</HeadCell>
+            </div>
+            {rows.map((row) => (
+                <Row key={row.id} row={row} />
+            ))}
+        </TableCard>
+    );
+}
+
 /**
  * Reports oversight (design "Monthly audit compliance tracker" and "Field Flash Audit operations"):
  * every audit with the state of its report, its due date and, once sealed, its digest, weighted
@@ -178,6 +212,23 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
                 ))}
             </div>
             <div className="mb-3">
+                <CardTitle>{t('admin.audit_reports.field.title')}</CardTitle>
+                <p className="mt-[3px] text-[12px] text-rz-muted">
+                    {t('admin.audit_reports.field.caption')}
+                </p>
+            </div>
+            <div className="mb-6">
+                <RegisterTable
+                    label={t('admin.audit_reports.field.table')}
+                    rows={props.field}
+                    empty={
+                        <EmptyState
+                            title={t('admin.audit_reports.field.empty')}
+                        />
+                    }
+                />
+            </div>
+            <div className="mb-3">
                 <CardTitle>{t('admin.audit_reports.title')}</CardTitle>
                 <p className="mt-[3px] text-[12px] text-rz-muted">
                     {t('admin.audit_reports.caption')}
@@ -192,32 +243,16 @@ export default function AdminAuditReports(props: AdminAuditReportsProps) {
                     }))}
                 />
             </div>
-            <TableCard
+            <RegisterTable
                 label={t('admin.audit_reports.table')}
-                minWidth="min-w-[980px]"
+                rows={props.rows}
                 empty={
-                    props.rows.length === 0 && (
-                        <EmptyState
-                            title={t('admin.audit_reports.empty_title')}
-                            body={t('admin.audit_reports.empty_body')}
-                        />
-                    )
+                    <EmptyState
+                        title={t('admin.audit_reports.empty_title')}
+                        body={t('admin.audit_reports.empty_body')}
+                    />
                 }
-            >
-                <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
-                    <HeadCell>{t('admin.audit_reports.col.business')}</HeadCell>
-                    <HeadCell>{t('admin.audit_reports.col.period')}</HeadCell>
-                    <HeadCell>{t('admin.audit_reports.col.partner')}</HeadCell>
-                    <HeadCell>{t('admin.audit_reports.col.status')}</HeadCell>
-                    <HeadCell>{t('admin.audit_reports.col.variance')}</HeadCell>
-                    <HeadCell end>
-                        {t('admin.audit_reports.col.action')}
-                    </HeadCell>
-                </div>
-                {props.rows.map((row) => (
-                    <Row key={row.id} row={row} />
-                ))}
-            </TableCard>
+            />
             <div className="mt-6 mb-3">
                 <CardTitle>{t('admin.audit_reports.feed.title')}</CardTitle>
             </div>

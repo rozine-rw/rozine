@@ -66,6 +66,8 @@ class StaffAuditReportRegisterResource extends JsonResource
                 'link' => ['url' => route('staff.reports.index', $chip === 'all' ? [] : ['chip' => $chip], false), 'method' => 'get'],
                 'active' => $chip === $page['chip']], array_keys(self::CHIPS)),
             'rows' => array_map($present, $in(self::CHIPS[$page['chip']])),
+            // The design's "Field Flash Audit operations": the newest field visits, whichever view is chosen.
+            'field' => array_map($present, array_slice(array_values(array_filter($rows, fn (array $row): bool => $row['kind'] === 'flash')), 0, 12)),
             // The design's "Recently audited & published" feed, whichever view is chosen.
             'published' => array_map($present, array_slice($in(['published']), 0, 12))];
     }

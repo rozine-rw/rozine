@@ -38,7 +38,7 @@ function registerStaff(array $roles): User
 
 /**
  * @param  array<string, string>  $query
- * @return array{stats: list<array{key: string, value: mixed}>, chips: list<array{key: string, count: int, link: mixed}>, rows: list<array<string, mixed>>, published: list<array<string, mixed>>} the register page's props
+ * @return array{stats: list<array{key: string, value: mixed}>, chips: list<array{key: string, count: int, link: mixed}>, rows: list<array<string, mixed>>, field: list<array<string, mixed>>, published: list<array<string, mixed>>} the register page's props
  */
 function auditRegister(User $user, array $query = []): array
 {
@@ -68,7 +68,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
         'variance_pct' => null, 'owes' => 'auditor', 'reminded_at' => null, 'links' => ['pdf' => null, 'remind' => null]];
 
     $page = auditRegister($analyst);
-    expect($page['rows'])->toBe([$row])
+    expect($page['rows'])->toBe([$row])->and($page['field'])->toBe([])
         ->and(array_column($page['stats'], 'value', 'key'))->toBe(['published' => ['kind' => 'count', 'value' => 0],
             'awaiting_cosign' => ['kind' => 'count', 'value' => 0], 'overdue' => ['kind' => 'count', 'value' => 0], 'on_time' => ['kind' => 'text', 'value' => '—']])
         ->and(array_column($page['chips'], 'count', 'key'))->toBe(['all' => 1, 'owed' => 1, 'awaiting_cosign' => 0, 'published' => 0, 'disputed' => 0])
@@ -155,6 +155,7 @@ it('counts a sealed Flash Audit on time while it waits for the Business, with no
     $page = auditRegister($fixture['audit']['staff']);
     expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => null])
         ->and($page['rows'][0]['links']['remind'])->toBeNull()->and($page['published'])->toBe([])
+        ->and($page['field'])->toBe([$page['rows'][0]])
         ->and($page['stats'][3]['value'])->toBe(['kind' => 'percent', 'value' => '100']);
     actingAs($fixture['audit']['staff'])->postJson(route('staff.reports.remind', $fixture['report']->assignment_id))->assertConflict();
 });

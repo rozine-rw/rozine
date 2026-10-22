@@ -319,6 +319,31 @@
                 }
             }
         ],
+        "field": [
+            {
+                "id": "asg_04",
+                "business": "Rubavu Fish Market Co.",
+                "kind": "flash",
+                "period": null,
+                "auditor": "Eric Ndoli",
+                "licence": "ICPAR-2025-0021",
+                "status": "disputed",
+                "due_at": "2027-01-20T10:00:00Z",
+                "cosign_by": null,
+                "sealed_at": "2027-01-19T15:02:00Z",
+                "digest": "c7d5e3b1a908",
+                "variance_pct": "12.5",
+                "owes": null,
+                "reminded_at": null,
+                "links": {
+                    "pdf": {
+                        "url": "/preview/admin-audit-reports",
+                        "method": "get"
+                    },
+                    "remind": null
+                }
+            }
+        ],
         "published": [
             {
                 "id": "asg_01",

@@ -84,5 +84,6 @@ export type AdminAuditReportsProps = AdminFrameShellProps & {
     }[];
     rows: AuditRegisterRow[];
     /** The newest published reports, whichever view is chosen. */
+    field: AuditRegisterRow[];
     published: AuditRegisterRow[];
 };
