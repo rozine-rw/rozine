@@ -1318,6 +1318,9 @@ const en = {
         'Each notice goes out by itself when its event is recorded. They cannot be edited from the console yet.',
     'admin.messaging.templates.sub':
         'The transactional emails Rozine sends. They cannot be edited from the console yet.',
+    'admin.messaging.rule.funds_disbursed': 'Funds disbursed',
+    'admin.messaging.rule.verification_approved': 'Verification approved',
+    'admin.messaging.rule.raise_fully_funded': 'Raise fully funded',
     'admin.messaging.template.account.new_device_sign_in': 'New device sign-in',
     'admin.messaging.template.account.one_time_code': 'One-time code',
     'admin.messaging.template.account.reset_password': 'Reset password',
@@ -1327,12 +1330,12 @@ const en = {
     'admin.messaging.template.auditor.job_offered': 'Audit job offered',
     'admin.messaging.template.business.application_decided':
         'Application decision',
-    'admin.messaging.template.business.disbursement_sent': 'Disbursement sent',
+    'admin.messaging.template.business.disbursement_sent': 'Funds disbursed',
     'admin.messaging.template.business.raise_expired': 'Raise expired',
     'admin.messaging.template.business.repayment_reminder':
         'Repayment reminder',
     'admin.messaging.template.business.reporting_window_open':
-        'Reporting window open',
+        'Monthly report reminder',
     'admin.messaging.template.investor.investment_confirmed':
         'Investment confirmed',
     'admin.messaging.template.investor.payment_delayed': 'Payment delayed',
@@ -1524,7 +1527,7 @@ const en = {
     'admin.kyc.col.applicant': 'Applicant',
     'admin.kyc.col.checks': 'Automated checks',
     'admin.kyc.submitted_ago': 'Submitted {ago}',
-    'admin.kyc.checks.passed': 'All {count} checks passed',
+    'admin.kyc.checks.passed': 'All automated KYC checks passed',
     'admin.kyc.checks.screening':
         'Age, ID number, documents, selfie · no screening yet',
     'admin.kyc.check.age': 'Age 18 or over',
@@ -2359,12 +2362,12 @@ const en = {
     'admin.permission.businesses.verify': 'Verify businesses',
     'admin.permission_detail.businesses.verify':
         'Decide business verification, with a recorded reason.',
-    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission.investors.verify': 'KYC decisions',
     'admin.permission_detail.investors.verify':
-        'Decide investor identity checks and read Activity & Audit.',
-    'admin.permission.applications.review': 'Review applications',
+        'Verify or reject investor identity documents, and read Activity & Audit.',
+    'admin.permission.applications.review': 'Approvals',
     'admin.permission_detail.applications.review':
-        'Review raise applications and release them for publishing.',
+        'Approve applications: release them for listing once every check passes.',
     'admin.permission.audit.partners.verify': 'Verify Audit Partners',
     'admin.permission_detail.audit.partners.verify':
         'Approve CPA firms and read partner coverage.',
@@ -2396,7 +2399,7 @@ const en = {
         "Add an operator, or suspend or reactivate another operator's access, with a reason.",
     'admin.permission.accounts.freeze': 'Freeze / suspend',
     'admin.permission_detail.accounts.freeze':
-        "Pause an investor's or business's access to their app.",
+        'Pause an account’s access to either app.',
     'admin.permission.capacity.adjust': 'Adjust capacity',
     'admin.permission_detail.capacity.adjust':
         'Change how much a business may raise.',
@@ -4258,6 +4261,7 @@ const en = {
     'investor.wallet.earn.paid': 'PAID',
     'investor.wallet.earn.total': 'TOTAL IN',
     'investor.wallet.earn.empty': 'No payouts landed between those dates.',
+    'investor.wallet.tx.title': 'Transaction history',
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Export',
     'investor.wallet.tx.pdf': 'Download PDF',
@@ -5188,7 +5192,8 @@ const en = {
     'investor.wallet.c3.range.today': 'Today',
     'investor.wallet.c3.range.7d': '7 days',
     'investor.wallet.c3.range.30d': '30 days',
-    'investor.wallet.c3.range.all': 'All',
+    'investor.wallet.c3.range.all': 'All time',
+    'investor.wallet.c3.range.all_short': 'All',
     'investor.wallet.c3.filter.external': 'Cash in and out',
     'investor.wallet.c3.filter.internal': 'Holds and commitments',
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -6648,20 +6653,20 @@ const en = {
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
-    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.healthy': 'Queue is clear.',
     'admin.health.queue.rec.within':
         'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',
     'admin.health.events.detail': {
-        one: '{count} action recorded in total',
-        other: '{count} actions recorded in total',
+        one: '{count} event total',
+        other: '{count} events total',
     },
     'admin.health.events.rec.healthy':
         'Actions are being recorded and propagated.',
     'admin.health.events.rec.watch':
-        'No actions were recorded in the last hour.',
+        'No events in the last hour. Act in the apps to generate activity.',
     'admin.health.default_rate.label': 'Default rate',
     'admin.health.default_rate.detail': 'Starts when repayments are serviced',
     'admin.health.arrears.label': 'Arrears ratio',

@@ -1382,6 +1382,9 @@ const rw: Catalog = {
         'Buri butumwa bwoherezwa ubwabwo iyo igikorwa cyabwo cyanditswe. Ntibirahindurwa muri konsole.',
     'admin.messaging.templates.sub':
         'Imeyili Rozine yohereza. Ntizirahindurwa muri konsole.',
+    'admin.messaging.rule.funds_disbursed': 'Amafaranga yatanzwe',
+    'admin.messaging.rule.verification_approved': 'Kwemezwa byemejwe',
+    'admin.messaging.rule.raise_fully_funded': 'Ubukusanyamari bwuzuye',
     'admin.messaging.template.account.new_device_sign_in':
         'Kwinjira hakoreshejwe igikoresho gishya',
     'admin.messaging.template.account.one_time_code': 'Kode y’igihe kimwe',
@@ -1395,13 +1398,13 @@ const rw: Catalog = {
     'admin.messaging.template.business.application_decided':
         'Icyemezo ku busabe',
     'admin.messaging.template.business.disbursement_sent':
-        'Amafaranga yoherejwe',
+        'Amafaranga yatanzwe',
     'admin.messaging.template.business.raise_expired':
         'Igihe cyo gukusanya cyarangiye',
     'admin.messaging.template.business.repayment_reminder':
         'Kwibutsa kwishyura',
     'admin.messaging.template.business.reporting_window_open':
-        'Igihe cyo gutanga raporo cyafunguwe',
+        'Kwibutsa raporo y’ukwezi',
     'admin.messaging.template.investor.investment_confirmed':
         'Ishoramari ryemejwe',
     'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',
@@ -1608,7 +1611,7 @@ const rw: Catalog = {
     'admin.kyc.col.applicant': 'Usaba',
     'admin.kyc.col.checks': 'Igenzura ryikora',
     'admin.kyc.submitted_ago': 'Byoherejwe {ago}',
-    'admin.kyc.checks.passed': 'Igenzura ryose uko ari {count} ryatsinze',
+    'admin.kyc.checks.passed': 'Igenzura rya KYC ryikora ryose ryatsinze',
     'admin.kyc.checks.screening':
         "Imyaka, nimero y'indangamuntu, inyandiko, ifoto · nta isuzuma ry'urutonde",
     'admin.kyc.check.age': 'Imyaka 18 cyangwa irenga',
@@ -4415,6 +4418,7 @@ const rw: Catalog = {
     'investor.wallet.earn.paid': 'BYISHYUWE',
     'investor.wallet.earn.total': 'BYOSE BYINJIYE',
     'investor.wallet.earn.empty': "Nta bwishyu bwageze hagati y'izo tariki.",
+    'investor.wallet.tx.title': "Amateka y'ibikorwa",
     'investor.wallet.tx.title_short': 'Ibikorwa',
     'investor.wallet.tx.export': 'Kuramo',
     'investor.wallet.tx.pdf': 'Kuramo PDF',
@@ -5434,7 +5438,8 @@ const rw: Catalog = {
     'investor.wallet.c3.range.today': 'Uyu munsi',
     'investor.wallet.c3.range.7d': 'Iminsi 7',
     'investor.wallet.c3.range.30d': 'Iminsi 30',
-    'investor.wallet.c3.range.all': 'Byose',
+    'investor.wallet.c3.range.all': 'Igihe cyose',
+    'investor.wallet.c3.range.all_short': 'Byose',
     'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
     'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
     'investor.wallet.c3.transfer': '{from} → {to}',

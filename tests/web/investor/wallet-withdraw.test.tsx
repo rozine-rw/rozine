@@ -316,7 +316,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         render(<InvestorWallet {...props} />);
 
         const history = screen.getByRole('region', {
-            name: 'Transactions',
+            name: 'Transaction history',
         });
 
         expect(history).toHaveTextContent('Withdrawal · MTN MoMo');

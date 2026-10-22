@@ -1396,6 +1396,9 @@ const fr: Catalog = {
         'Chaque avis part de lui-même lorsque son événement est enregistré. Ils ne sont pas encore modifiables depuis la console.',
     'admin.messaging.templates.sub':
         'Les e-mails transactionnels envoyés par Rozine. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.rule.funds_disbursed': 'Fonds décaissés',
+    'admin.messaging.rule.verification_approved': 'Vérification approuvée',
+    'admin.messaging.rule.raise_fully_funded': 'Levée entièrement financée',
     'admin.messaging.template.account.new_device_sign_in':
         'Connexion depuis un nouvel appareil',
     'admin.messaging.template.account.one_time_code': 'Code à usage unique',
@@ -1408,13 +1411,12 @@ const fr: Catalog = {
     'admin.messaging.template.auditor.job_offered': 'Mission d’audit proposée',
     'admin.messaging.template.business.application_decided':
         'Décision sur la demande',
-    'admin.messaging.template.business.disbursement_sent':
-        'Décaissement envoyé',
+    'admin.messaging.template.business.disbursement_sent': 'Fonds décaissés',
     'admin.messaging.template.business.raise_expired': 'Levée expirée',
     'admin.messaging.template.business.repayment_reminder':
         'Rappel de remboursement',
     'admin.messaging.template.business.reporting_window_open':
-        'Période de rapport ouverte',
+        'Rappel du rapport mensuel',
     'admin.messaging.template.investor.investment_confirmed':
         'Investissement confirmé',
     'admin.messaging.template.investor.payment_delayed': 'Paiement retardé',
@@ -1622,7 +1624,7 @@ const fr: Catalog = {
     'admin.kyc.col.applicant': 'Demandeur',
     'admin.kyc.col.checks': 'Contrôles automatiques',
     'admin.kyc.submitted_ago': 'Envoyé {ago}',
-    'admin.kyc.checks.passed': 'Les {count} contrôles réussis',
+    'admin.kyc.checks.passed': 'Tous les contrôles KYC automatiques réussis',
     'admin.kyc.checks.screening':
         "Âge, numéro d'identité, documents, selfie · pas encore de filtrage",
     'admin.kyc.check.age': '18 ans ou plus',
@@ -2490,10 +2492,10 @@ const fr: Catalog = {
     'admin.permission.businesses.verify': 'Vérifier les entreprises',
     'admin.permission_detail.businesses.verify':
         'Décider de la vérification des entreprises, avec un motif consigné.',
-    'admin.permission.investors.verify': 'Vérifier les investisseurs',
+    'admin.permission.investors.verify': 'Décisions KYC',
     'admin.permission_detail.investors.verify':
         "Décider des contrôles d'identité des investisseurs et consulter Activité et audit.",
-    'admin.permission.applications.review': 'Examiner les demandes',
+    'admin.permission.applications.review': 'Approbations',
     'admin.permission_detail.applications.review':
         'Examiner les demandes de levée et les libérer pour publication.',
     'admin.permission.audit.partners.verify':
@@ -4438,6 +4440,7 @@ const fr: Catalog = {
     'investor.wallet.earn.paid': 'PAYÉS',
     'investor.wallet.earn.total': 'TOTAL REÇU',
     'investor.wallet.earn.empty': 'Aucun versement entre ces dates.',
+    'investor.wallet.tx.title': 'Historique des transactions',
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Exporter',
     'investor.wallet.tx.pdf': 'Télécharger le PDF',
@@ -5468,7 +5471,8 @@ const fr: Catalog = {
     'investor.wallet.c3.range.today': 'Aujourd’hui',
     'investor.wallet.c3.range.7d': '7 jours',
     'investor.wallet.c3.range.30d': '30 jours',
-    'investor.wallet.c3.range.all': 'Tout',
+    'investor.wallet.c3.range.all': 'Depuis le début',
+    'investor.wallet.c3.range.all_short': 'Tout',
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',

@@ -704,7 +704,7 @@ describe('Compliance figures and decisions', () => {
         const jean = screen.getByRole('row', { name: /Jean Habimana/ });
 
         expect(
-            within(jean).getByText('All 4 checks passed'),
+            within(jean).getByText('All automated KYC checks passed'),
         ).toBeInTheDocument();
         expect(
             within(jean).getByText(

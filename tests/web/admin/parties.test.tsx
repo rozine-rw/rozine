@@ -576,6 +576,17 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
         expect(within(remove).getAllByLabelText('Not allowed')).toHaveLength(5);
 
+        // Capabilities the design names carry its words.
+        expect(
+            within(matrix).getByRole('row', { name: /^KYC decisions/ }),
+        ).toHaveTextContent('Verify or reject investor identity documents');
+        expect(
+            within(matrix).getByRole('row', { name: /^Approvals/ }),
+        ).toBeInTheDocument();
+        expect(
+            within(matrix).getByRole('row', { name: /^Freeze \/ suspend/ }),
+        ).toHaveTextContent('Pause an account’s access to either app.');
+
         const requery = within(matrix).getByRole('row', {
             name: /Requery disbursements/,
         });

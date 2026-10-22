@@ -67,6 +67,56 @@ const rowOf = (text: string) =>
 beforeEach(resetInertia);
 
 describe('Messaging History', () => {
+    it.each([
+        ['business.disbursement_sent', 'payments', 'Funds disbursed'],
+        ['business.raise_funded', 'fundraising', 'Raise fully funded'],
+    ] as const)(
+        'names the backed %s rule without changing its notice title',
+        (kind, category, title) => {
+            render(
+                <AdminMessaging
+                    {...props({
+                        automations: [
+                            {
+                                kind,
+                                category,
+                                audience: 'business',
+                                channels: ['in_app'],
+                            },
+                        ],
+                        history: [
+                            row({
+                                kind,
+                                category,
+                                recipient: 'Kigali Bakery',
+                                recipient_kind: 'business',
+                            }),
+                        ],
+                    })}
+                />,
+            );
+
+            const rules = screen.getByRole('table', {
+                name: 'Businesses automations',
+            });
+            expect(
+                within(rules).getByRole('row', {
+                    name: new RegExp(title, 'u'),
+                }),
+            ).toHaveTextContent('As it happens · In-app');
+            expect(
+                screen.queryByText('Monthly report reminder'),
+            ).not.toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole('tab', { name: 'History' }));
+            expect(rowOf('Kigali Bakery')).toHaveTextContent(
+                kind === 'business.disbursement_sent'
+                    ? 'Funds sent'
+                    : 'Raise fully funded',
+            );
+        },
+    );
+
     it('lists each notice with its recipient, message, category, automation, outcome, channel and time', () => {
         render(<AdminMessaging {...props()} />);
 
@@ -194,6 +244,14 @@ describe('Messaging History', () => {
                             key: 'auditor.job_offered',
                             audience: 'auditor',
                         },
+                        {
+                            key: 'business.disbursement_sent',
+                            audience: 'business',
+                        },
+                        {
+                            key: 'business.reporting_window_open',
+                            audience: 'business',
+                        },
                     ],
                 })}
             />,
@@ -214,11 +272,11 @@ describe('Messaging History', () => {
                 .map((cell) => cell.textContent),
         ).toEqual(['Rule', 'Fires when', 'Timing & channels', 'On']);
         expect(
-            within(rowOf('You are verified'))
+            within(rowOf('Verification approved'))
                 .getAllByRole('cell')
                 .map((cell) => cell.textContent),
         ).toEqual([
-            'You are verified',
+            'Verification approved',
             'Compliance approves an identity check',
             'As it happens · In-app, Email',
             'Live',
@@ -240,6 +298,16 @@ describe('Messaging History', () => {
                 .getAllByRole('cell')
                 .map((cell) => cell.textContent),
         ).toEqual(['Audit job offered', 'Audit Partners', 'Email']);
+        expect(
+            within(rowOf('Funds disbursed'))
+                .getAllByRole('cell')
+                .map((cell) => cell.textContent),
+        ).toEqual(['Funds disbursed', 'Businesses', 'Email']);
+        expect(
+            within(rowOf('Monthly report reminder'))
+                .getAllByRole('cell')
+                .map((cell) => cell.textContent),
+        ).toEqual(['Monthly report reminder', 'Businesses', 'Email']);
 
         fireEvent.click(screen.getByRole('tab', { name: 'Campaigns' }));
         expect(

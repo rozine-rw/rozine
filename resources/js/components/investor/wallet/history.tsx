@@ -6,6 +6,7 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName, IconTone } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
+import { useWide } from '@/lib/investor/use-wide';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
@@ -393,6 +394,11 @@ export function WalletHistory({
     exports?: C3InvestorWalletProps['exports'];
 }) {
     const { t, locale } = useTranslation();
+    /* The wide design titles it Transactions with an All chip; the phone, Transaction history and All time. */
+    const wide = useWide();
+    const title = t(
+        wide ? 'investor.wallet.tx.title_short' : 'investor.wallet.tx.title',
+    );
     const [expanded, setExpanded] = useState(false);
     const collapsible = history.items.length > HISTORY_PREVIEW;
     const items =
@@ -401,14 +407,9 @@ export function WalletHistory({
             : history.items;
 
     return (
-        <section
-            aria-label={t('investor.wallet.tx.title_short')}
-            className="mt-5"
-        >
+        <section aria-label={title} className="mt-5">
             <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold text-rz-ink">
-                    {t('investor.wallet.tx.title_short')}
-                </h2>
+                <h2 className="text-sm font-semibold text-rz-ink">{title}</h2>
                 {exports !== null && <StatementExport exports={exports} />}
             </div>
             <nav
@@ -449,7 +450,11 @@ export function WalletHistory({
                                 : 'border-rz-border bg-rz-surface text-rz-slate',
                         )}
                     >
-                        {t(`investor.wallet.c3.range.${period.key}`)}
+                        {t(
+                            wide && period.key === 'all'
+                                ? 'investor.wallet.c3.range.all_short'
+                                : `investor.wallet.c3.range.${period.key}`,
+                        )}
                     </Link>
                 ))}
             </nav>

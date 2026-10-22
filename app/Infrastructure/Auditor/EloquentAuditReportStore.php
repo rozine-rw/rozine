@@ -298,7 +298,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     {
         $record = $this->owned($reportId, $this->party($userId));
 
-        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+        return $this->assignments->read($userId, $contextRevision, $record->assignment_id,
             function (array $assignment) use ($reportId, $documentId): array {
                 $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
                 $this->author($record, $assignment);
@@ -419,7 +419,7 @@ final class EloquentAuditReportStore implements AuditReportStore
         $partyId = $this->party($userId);
         $record = $this->owned($reportId, $partyId);
 
-        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id, function (array $assignment) use ($reportId): array {
+        return $this->assignments->read($userId, $contextRevision, $record->assignment_id, function (array $assignment) use ($reportId): array {
             $record = AuditReport::query()->lockForUpdate()->findOrFail($reportId);
             $this->author($record, $assignment);
 
@@ -432,7 +432,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     {
         $record = $this->owned($reportId, $this->party($userId));
 
-        return $this->assignments->handle($userId, $contextRevision, $record->assignment_id,
+        return $this->assignments->read($userId, $contextRevision, $record->assignment_id,
             function (array $assignment) use ($userId, $contextRevision, $reportId): array {
                 $record = AuditReport::query()->sharedLock()->findOrFail($reportId);
                 $this->author($record, $assignment);
@@ -464,7 +464,7 @@ final class EloquentAuditReportStore implements AuditReportStore
     /** @return Report|null */
     public function forAssignment(int $userId, int $contextRevision, string $assignmentId): ?array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $assignment): ?array {
+        return $this->assignments->read($userId, $contextRevision, $assignmentId, function (array $assignment): ?array {
             $record = $this->latest($assignment)->lockForUpdate()->first();
             if ($record === null) {
                 return null;
@@ -497,7 +497,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                 if ($type !== 'audit.assignment') {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
-                $this->assignments->handle($userId, $contextRevision, $id, function (array $assignment) use ($partyId): void {
+                $this->assignments->read($userId, $contextRevision, $id, function (array $assignment) use ($partyId): void {
                     if ($assignment['party_id'] !== $partyId) {
                         throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                     }
