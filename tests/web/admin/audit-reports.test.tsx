@@ -163,7 +163,12 @@ describe('Audit reports register', () => {
         };
 
         render(
-            <AdminAuditReports {...fixture} rows={[row]} published={[row]} />,
+            <AdminAuditReports
+                {...fixture}
+                rows={[row]}
+                field={[]}
+                published={[row]}
+            />,
         );
 
         expect(rowOf(row.business)).toHaveTextContent('sha256:');
@@ -175,13 +180,36 @@ describe('Audit reports register', () => {
     });
 
     it('says so when no audit matches the filter', () => {
-        render(<AdminAuditReports {...props()} rows={[]} />);
+        render(<AdminAuditReports {...props()} rows={[]} field={[]} />);
 
-        expect(screen.queryAllByRole('row')).toHaveLength(1);
+        expect(screen.queryAllByRole('row')).toHaveLength(2);
+        expect(
+            screen.getByText('No ISRS 4400 engagements recorded yet.'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Nothing in this view.')).toBeInTheDocument();
         expect(
             screen.queryByText('No monthly reports audited yet.'),
         ).not.toBeInTheDocument();
         expect(screen.getAllByText('Kigali Fresh Foods Ltd')).toHaveLength(1);
+    });
+
+    it('lists the field visits with their CPA, variance and seal above the monthly tracker', () => {
+        render(<AdminAuditReports {...props()} />);
+
+        const field = screen.getByRole('table', {
+            name: 'Field Flash Audits',
+        });
+        expect(
+            screen.getByText(
+                'Every field visit with its CPA, variance, sign-off time and signed findings.',
+            ),
+        ).toBeInTheDocument();
+        const visit = within(field)
+            .getAllByRole('row')
+            .find((row) => within(row).queryByText('Rubavu Fish Market Co.'));
+        expect(visit).toHaveTextContent('Flash Audit');
+        expect(visit).toHaveTextContent('12.5%');
+        expect(within(field).getByText('12.5%')).toHaveClass('text-[#b3352a]');
+        expect(within(field).getAllByRole('row')).toHaveLength(2);
     });
 });

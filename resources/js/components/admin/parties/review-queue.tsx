@@ -87,7 +87,7 @@ export function LicenceQueue({
                                     {entry.links.reject && (
                                         <Link
                                             href={entry.links.reject}
-                                            className="flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface px-3.5 py-[9px] text-center text-[12.5px] font-bold text-[#e5484d] sm:flex-none"
+                                            className="flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface px-3.5 py-[9px] text-center text-[12.5px] font-bold text-[#b3352a] sm:flex-none"
                                         >
                                             {t('admin.parties.queue.reject')}
                                         </Link>
@@ -134,7 +134,7 @@ export function LicenceQueue({
                                         key={key}
                                         className="min-w-0 rounded-[10px] border border-[#f0e6d4] bg-[#faf7f1] px-3 py-2.5 dark:border-rz-hairline dark:bg-rz-surface-muted"
                                     >
-                                        <dt className="text-[10px] font-bold tracking-[.04em] text-[#a1875a] uppercase">
+                                        <dt className="text-[10px] font-bold tracking-[.04em] text-[#7a5d33] uppercase">
                                             {t(
                                                 `admin.parties.queue.field.${key}`,
                                             )}

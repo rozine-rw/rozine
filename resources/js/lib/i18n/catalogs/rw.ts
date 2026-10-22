@@ -2292,6 +2292,11 @@ const rw: Catalog = {
     'admin.audit_reports.title': "Ikurikirana ry'igenzura rya buri kwezi",
     'admin.audit_reports.caption':
         "Igenzura ryose n'uko raporo yaryo ihagaze. Igenzura rya buri kwezi rikorerwa aho ubucuruzi buri bitarenze ku itariki ya 7; nyuma ubucuruzi bugira amasaha 24 yo gusinya cyangwa kujuririra.",
+    'admin.audit_reports.field.title': "Ibikorwa by'igenzura ryihuse ku butaka",
+    'admin.audit_reports.field.caption':
+        "Buri gusura ku butaka n'umucungamari (CPA) wabikoze, ikinyuranyo, igihe byashyiriweho umukono n'ibyagaragaye byasinywe.",
+    'admin.audit_reports.field.table': 'Igenzura ryihuse ku butaka',
+    'admin.audit_reports.field.empty': 'Nta gikorwa cya ISRS 4400 kiranditswe.',
     'admin.audit_reports.feed.title': 'Ibyagenzuwe vuba bigatangazwa',
     'admin.audit_reports.feed.audited':
         '✓ Byagenzuwe aho bikorera na {auditor} · {licence}',

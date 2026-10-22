@@ -85,6 +85,8 @@ export type AdminAuditReportsProps = AdminFrameShellProps & {
         active: boolean;
     }[];
     rows: AuditRegisterRow[];
+    /** The newest Flash Audits, whichever view is chosen. */
+    field: AuditRegisterRow[];
     /** The newest published reports, whichever view is chosen. */
     published: AuditRegisterRow[];
 };
