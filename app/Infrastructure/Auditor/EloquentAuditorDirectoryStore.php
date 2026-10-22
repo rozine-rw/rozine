@@ -38,20 +38,28 @@ final class EloquentAuditorDirectoryStore implements AuditorDirectoryStore
         $soon = now('Africa/Kigali')->addDays(30)->format('Y-m-d');
         $rows = [];
         $expiring = 0;
+        $queue = [];
         foreach ($records as $record) {
             $state = $profiles->get((string) $record->party_id)?->state;
             $rows[] = $row = self::row($record, $state);
             if ($row['standing'] === 'active' && (string) $state['standing']['expires_on'] <= $soon) {
                 $expiring++;
             }
+            $submission = $state['submission'] ?? ['status' => 'none'];
+            if ($submission['status'] === 'pending') {
+                $queue[] = ['party_id' => $row['party_id'], 'name' => $row['name'], 'licence' => $submission['licence'], 'expires_on' => $submission['expires_on'],
+                    'submitted_at' => $submission['submitted_at'], 'renewal' => $state['standing']['licence'] !== null];
+            }
         }
+        usort($queue, fn (array $a, array $b): int => [$a['submitted_at'], $a['party_id']] <=> [$b['submitted_at'], $b['party_id']]);
         $counts = ['all' => count($rows)];
         foreach (['active', 'pending', 'licence_expired', 'suspended'] as $standing) {
             $counts[$standing] = count(array_filter($rows, fn (array $row): bool => $row['standing'] === $standing));
         }
         $matches = $chip === 'all' ? $rows : array_values(array_filter($rows, fn (array $row): bool => $row['standing'] === $chip));
 
-        return ['rows' => array_slice($matches, 0, $limit), 'matching' => count($matches), 'counts' => $counts, 'licences_expiring' => $expiring];
+        return ['rows' => array_slice($matches, 0, $limit), 'matching' => count($matches), 'counts' => $counts, 'licences_expiring' => $expiring,
+            'active_audits' => array_sum(array_column($rows, 'active_engagements')), 'queue' => $queue];
     }
 
     /** @return Detail|null */

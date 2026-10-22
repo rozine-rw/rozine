@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1a7bea2a165f848e02747280bf8ce8b46d501d73a1db93fb1325c3ab952c530c",
-    "coverageSetSha256": "ce86c746d6df448795dc82dd7d4dbc3ecff7af1e746a724f9cf9004c2b8abb28",
+    "sourceManifestSha256": "f0f28d6e55725dcceb3693e60f0d37eac3066733d51c3ba3359d6d7da8963df4",
+    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6",
     "thresholds": {
         "critical": {
             "global": {
@@ -70,6 +70,7 @@
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
+        "resources/js/components/admin/parties/review-queue.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
@@ -377,6 +378,7 @@
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
+        "resources/js/pages/admin/audit-reports.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/book.tsx",
         "resources/js/pages/admin/complaints.tsx",

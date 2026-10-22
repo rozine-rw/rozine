@@ -354,9 +354,9 @@ describe('Auditor Home', () => {
                 'Engagement terms aren’t available; new work is paused',
             ),
         ).toBeInTheDocument();
-        expect(screen.getByText('Wallet balance')).toBeInTheDocument();
+        expect(screen.getByText('Owed to you')).toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /Wallet balance/ }),
+            screen.queryByRole('link', { name: /Owed to you/ }),
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: 'Withdraw' }),
@@ -372,6 +372,25 @@ describe('Auditor Home', () => {
             screen.getByRole('switch', { name: 'Accepting audits' }),
         ).toBeDisabled();
     });
+
+    it.each([true, false])(
+        'colours a rounded-zero average using the exact server flag %s',
+        (flagged) => {
+            const props = fixture();
+
+            props.standing = {
+                ...props.standing,
+                avg_variance_pct: '0.0',
+                variance_flagged: flagged,
+            };
+            render(<AuditorHome {...props} />);
+
+            expect(screen.getByText('Avg variance')).toBeInTheDocument();
+            expect(screen.getByText('0.0%')).toHaveClass(
+                flagged ? 'text-rz-danger-text' : 'text-rz-positive',
+            );
+        },
+    );
 
     it('names only the affiliation on record and colours clock expiries by their count', () => {
         const props = fixture();

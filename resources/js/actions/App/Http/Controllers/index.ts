@@ -60,6 +60,7 @@ import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
+import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
@@ -126,6 +127,7 @@ const Controllers = {
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
+    StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }

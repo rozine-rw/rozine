@@ -19,6 +19,8 @@ use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorIndependence;
 use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\AuditReadPolicy;
+use App\Domain\Auditor\AuditReportWindow;
+use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Identity\IdentityViolation;
@@ -33,6 +35,8 @@ use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
+use App\Models\AuditReportSeal;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
@@ -217,6 +221,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
                 [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
                 $profile = $context['business']['profile'];
+                $view = $this->view($record, $candidate);
                 $report = $record->status === 'accepted' ? AuditReport::query()
                     ->leftJoin('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
                     ->where('audit_reports.assignment_id', $record->id)->where('audit_reports.assignment_revision', $record->revision)
@@ -225,11 +230,30 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         ->whereColumn('amendments.amends_id', 'audit_reports.id'))
                     ->first(['audit_reports.id', 'audit_reports.status', 'publications.status as publication_status']) : null;
 
-                return $operation(['assignment' => $this->view($record, $candidate),
+                return $operation(['assignment' => $view,
                     'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
                     'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
-                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status')]]);
+                    'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status'),
+                        'due_at' => (new AuditReportWindow)->dueAt($view['period']), ...$this->dispute($report->id, $report->getAttribute('publication_status'))]]);
             }, [$partyId]);
+    }
+
+    /**
+     * A disputed report's desk-review facts for its partner: the weighted variance the seal
+     * recorded and how many proof originals the Business filed.
+     *
+     * @return array{variance_pct?: string|null, proofs?: int}
+     */
+    private function dispute(string $reportId, ?string $publication): array
+    {
+        if (! in_array($publication, ['disputed', 'escalated'], true)) {
+            return [];
+        }
+        $seal = AuditReportSeal::query()->where('audit_report_id', $reportId)->first();
+
+        return ['variance_pct' => $seal === null ? null : AuditVariance::weighted($seal->payload['report']['findings'] ?? []),
+            'proofs' => DB::table('audit_dispute_proofs')->join('audit_report_publications as publications', 'publications.id', '=', 'audit_dispute_proofs.audit_report_publication_id')
+                ->where('publications.audit_report_id', $reportId)->count()];
     }
 
     /**
@@ -249,7 +273,10 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
         return ['id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision,
             'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
-            'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions];
+            'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions,
+            // A monthly visit audits the Kigali month before the one it was first dispatched in.
+            'period' => $state['kind'] === 'routine'
+                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null];
     }
 
     /**

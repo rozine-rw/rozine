@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,11 +12,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Page from AuditorJobsResource
  * @phpstan-import-type Report from \App\Application\Auditor\Contracts\AuditReportStore
+ * @phpstan-import-type Document from \App\Application\Evidence\Contracts\StatementStore
  *
- * @phpstan-type File array{record: AuditApplication, jobs: Page, report?: Report|null, can_start?: bool}
+ * @phpstan-type File array{record: AuditApplication, jobs: Page, report?: Report|null, can_start?: bool, documents?: list<Document>|null}
+ *
+ * The file states why the field visit is needed and what it must clear from the rules that govern
+ * it (BRS v2.0 AUD-R03 and AUD-R07 for a Flash Audit, AUD-R04 for a monthly visit), which match
+ * the procedure's own steps. The statements on file are listed once the work is the partner's,
+ * each with when it arrived and whether its text was extracted; an offer lists none, and the
+ * application's own prose is never shown.
  */
 class AuditorFileResource extends JsonResource
 {
+    /** The brief each assignment kind reads: the app holds its reason and mandate in every locale. */
+    private const array BRIEF = ['flash' => 'flash', 'routine' => 'monthly'];
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -44,6 +55,20 @@ class AuditorFileResource extends JsonResource
                 'term_months' => $record['application']['term_months'] ?? null, 'return_pct' => null,
                 'sector' => AuditorJobsResource::sector($record['work']['business']['industry']),
                 'use_of_funds' => implode(', ', $record['application']['use_of_funds'] ?? [])],
-                'documents' => [], 'prescreen' => [], 'reason' => null, 'mandate' => [], 'history' => ['last_audit' => null, 'flags' => []]]];
+                'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
+                'brief' => self::BRIEF[$record['work']['assignment']['kind']] ?? null,
+                'history' => ['last_audit' => null, 'flags' => []]]];
+    }
+
+    /**
+     * @param  Document  $document
+     * @return array{kind: string, format: string, status: string, received_on: string, records: int|null}
+     */
+    private static function document(array $document): array
+    {
+        return ['kind' => 'statement', 'format' => $document['media_type'] === 'application/pdf' ? 'pdf' : 'csv',
+            'status' => $document['extraction']['status'] === 'text_extracted' ? 'parsed' : 'present',
+            'received_on' => CarbonImmutable::parse($document['received_at'])->setTimezone('Africa/Kigali')->format('Y-m-d'),
+            'records' => $document['extraction']['record_count']];
     }
 }

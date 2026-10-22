@@ -315,6 +315,27 @@ describe('Messaging History', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names the staff-triggered report reminder in the Audit Partner automations', () => {
+        render(
+            <AdminMessaging
+                {...props({
+                    automations: [
+                        {
+                            kind: 'auditor.report_reminder',
+                            category: 'audits',
+                            audience: 'auditor',
+                            channels: ['in_app'],
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(rowOf('Audit report reminder')).toHaveTextContent(
+            'Staff reminds the Audit Partner about a report',
+        );
+    });
+
     it('keeps automations, templates and campaigns at their empty state', () => {
         render(<AdminMessaging {...props()} />);
 

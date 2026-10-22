@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditorFiledReportStore;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Domain\Auditor\AuditReportWindow;
+use App\Domain\Auditor\AuditVariance;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditAssignment;
 use App\Models\AuditReport;
@@ -71,8 +72,10 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
             $seals = AuditReportSeal::query()->whereIn('audit_report_id', $reports->modelKeys())->get()->keyBy('audit_report_id');
             $assignments = AuditAssignment::query()->whereIn('id', $reports->pluck('assignment_id')->all())->get()->keyBy('id');
             $timed = $onTime = 0;
+            $findings = [];
             foreach ($reports as $report) {
                 $filed = $this->report($report, $seals[$report->id], $assignments[$report->assignment_id]);
+                $findings = [...$findings, ...$seals[$report->id]->payload['report']['findings'] ?? []];
                 if ($filed['due_at'] !== null) {
                     $timed++;
                     $onTime += $filed['sealed_at'] <= $filed['due_at'] ? 1 : 0;
@@ -84,7 +87,8 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
                 ->where('offers.party_id', $partyId)->where('offers.status', 'offered')
                 ->whereIn('exits.command', ['audit.assignment.expire', 'audit.assignment.advance'])->count();
 
-            return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries];
+            return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries,
+                'avg_variance_pct' => AuditVariance::weighted($findings), 'variance_flagged' => AuditVariance::hasMoneyDifference($findings)];
         });
     }
 
@@ -98,6 +102,7 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
         return ['id' => $report->id, 'kind' => $report->kind, 'period' => $period,
             'business' => $sealed['business']['profile']['name'], 'district' => $sealed['business']['profile']['district'],
             'sealed_at' => $sealed['sealed_at'], 'published' => $report->getAttribute('publication_status') === 'published',
-            'due_at' => $period === null ? ($assignment->state['complete_by'] ?? null) : $this->window->dueAt($period)];
+            'due_at' => $period === null ? ($assignment->state['complete_by'] ?? null) : $this->window->dueAt($period),
+            'variance_pct' => AuditVariance::weighted($seal->payload['report']['findings'] ?? [])];
     }
 }

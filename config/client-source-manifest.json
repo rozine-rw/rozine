@@ -82,6 +82,7 @@
         "resources/js/actions/App/Http/Controllers/SiteController.ts",
         "resources/js/actions/App/Http/Controllers/StaffActivityController.ts",
         "resources/js/actions/App/Http/Controllers/StaffApplicationReleaseController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/StaffAuditorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffBusinessDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffComplaintController.ts",
@@ -325,6 +326,7 @@
         "resources/js/routes/staff/payments/index.ts",
         "resources/js/routes/staff/primary-market/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
+        "resources/js/routes/staff/reports/index.ts",
         "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staff/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
@@ -339,6 +341,7 @@
         "resources/js/wayfinder/index.ts"
     ],
     "declarationOnlyPaths": [
+        "resources/js/types/admin-audit.ts",
         "resources/js/types/admin.ts",
         "resources/js/types/audit-dispute.ts",
         "resources/js/types/audit-seal.ts",
@@ -382,6 +385,7 @@
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
+        "resources/js/components/admin/parties/review-queue.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
@@ -689,6 +693,7 @@
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
+        "resources/js/pages/admin/audit-reports.tsx",
         "resources/js/pages/admin/auth/login.tsx",
         "resources/js/pages/admin/book.tsx",
         "resources/js/pages/admin/complaints.tsx",
@@ -767,10 +772,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 736,
-        "generated": 312,
-        "declarationOnly": 19,
-        "authoredExecutable": 405
+        "totalTrackedSources": 741,
+        "generated": 314,
+        "declarationOnly": 20,
+        "authoredExecutable": 407
     },
-    "coverageSetSha256": "ce86c746d6df448795dc82dd7d4dbc3ecff7af1e746a724f9cf9004c2b8abb28"
+    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6"
 }

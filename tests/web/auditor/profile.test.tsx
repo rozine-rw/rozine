@@ -5,7 +5,14 @@ import {
     waitFor,
     within,
 } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vite-plus/test';
 import AuditorProfile from '@/pages/auditor/profile';
 import type { Accreditation, AuditorProfileProps } from '@/types/auditor';
 import availabilityFixture from '../../../resources/fixtures/ui/auditor-profile-availability.json';
@@ -31,7 +38,54 @@ vi.setConfig({ testTimeout: 30_000 });
 const props = (fixture: { props: unknown } = profileFixture) =>
     structuredClone(fixture.props) as AuditorProfileProps;
 
-beforeEach(() => inertia.reset());
+/** Whether the page sees the lg breakpoint: jsdom has no matchMedia of its own. */
+const wide = (matches: boolean) =>
+    vi.stubGlobal('matchMedia', (query: string) => ({
+        matches,
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+    }));
+
+beforeEach(() => {
+    inertia.reset();
+    wide(true);
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('Auditor Profile on a phone', () => {
+    it('stacks every section under the identity card, with no menu, as the design does', () => {
+        wide(false);
+        render(<AuditorProfile {...props()} />);
+
+        expect(
+            screen.queryByRole('navigation', { name: 'Profile sections' }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('Diane Uwase, CPA')).toBeInTheDocument();
+        expect(
+            screen.getByText('Licence ICPAR/P-2026/0481 · expires 31 Mar 2027'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('No payout account yet')).toBeInTheDocument();
+        expect(
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent),
+        ).toEqual(
+            expect.arrayContaining([
+                'Payout bank account',
+                'Auditor Academy',
+                'Security & devices',
+            ]),
+        );
+        expect(
+            screen.getByText(/^Nothing earned yet this month\./u),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Two-factor authentication/u }),
+        ).toBeInTheDocument();
+    });
+});
 
 describe('Auditor Profile', () => {
     it('shows the partner, their accreditation standing and the section menu', () => {

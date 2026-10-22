@@ -50,6 +50,7 @@ class StaffAuditorDirectoryController extends Controller
 
         $resource = new StaffAuditorDirectoryResource([...$this->directory->directory($actorId, $chip, $search, self::LIMIT),
             'chip' => $chip, 'search' => $search, 'partner' => $selected === null ? null : $this->directory->partner($actorId, (string) $selected),
+            'decide' => $request->validated('decide'),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));

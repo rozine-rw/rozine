@@ -272,6 +272,55 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(await openBell(user)).toBeInTheDocument();
     });
 
+    it('words monthly and Flash Audit reminders with their own business and deadline', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'monthly-reminder',
+                kind: 'auditor.report_reminder',
+                facts: {
+                    business: 'Kigali Fresh Foods Ltd',
+                    kind: 'monthly',
+                    period: '2026-09',
+                    due_at: '2026-10-07T21:59:59Z',
+                    assignment_id: 'monthly-assignment',
+                },
+            },
+            {
+                ...first,
+                id: 'flash-reminder',
+                kind: 'auditor.report_reminder',
+                facts: {
+                    business: 'Huye Motors',
+                    kind: 'flash',
+                    period: '',
+                    due_at: '2026-10-04T14:00:00Z',
+                    assignment_id: 'flash-assignment',
+                },
+            },
+        ];
+        inertia.queue.push(answers({ data: inbox }));
+        render(<InvestorDeals {...deals()} />);
+
+        const panel = await openBell(user);
+        const items = await within(panel).findAllByRole('button', {
+            name: /Audit report reminder/u,
+        });
+
+        expect(items).toHaveLength(2);
+        expect(items[0]).toHaveTextContent(
+            'Audit report reminderRozine reminds you that the September 2026 audit for Kigali Fresh Foods Ltd is due by 7 Oct 2026.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Audit report reminderRozine reminds you that the Flash Audit for Huye Motors is due by 4 Oct 2026.',
+        );
+        expect(items[1]).not.toHaveTextContent('Invalid Date');
+    });
+
     it('words a sent and a returned withdrawal with the account they went to', async () => {
         const user = userEvent.setup();
         const inbox = notices();
