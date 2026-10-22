@@ -1249,23 +1249,26 @@ const rw: Catalog = {
     'admin.design.finance.kpi.primary': "Isoko ry'ibanze",
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
+    'admin.design.finance.kpi.revenue.sub': 'Inzira zose, kuva mu ntangiriro',
+    'admin.design.finance.kpi.primary.sub':
+        "Amafaranga y'urubuga, umugabane wa Rozine",
+    'admin.design.finance.kpi.investor_fees.sub':
+        "Ibyiciro by'amafaranga ku nyungu",
+    'admin.design.finance.kpi.secondary.sub': 'Amafaranga yo kongera kugurisha',
     'admin.design.finance.tab.streams': "Inkomoko z'amafaranga",
     'admin.design.finance.tab.ledger': "Igitabo cy'imari n'ubwishyu",
-    'admin.design.finance.raise.title':
-        'Icyo ibigo byishyura kugira ngo bishake imari',
+    'admin.design.finance.raise.title': "Isoko ry'ibanze",
     'admin.design.finance.raise.sub':
-        "Amafaranga y'urubuga igihe imari itanzwe, n'umugabane w'umugenzuzi.",
+        'Icyo ibigo byishyura kugira ngo bishake imari',
     'admin.design.finance.raise.empty':
         'Nta mafaranga yo gushaka imari yo kwerekana ubu.',
-    'admin.design.finance.earnings.title':
-        'Icyo abashoramari bishyura ku nyungu zabo',
+    'admin.design.finance.earnings.title': "Amafaranga y'abashoramari",
     'admin.design.finance.earnings.sub':
-        "Bikurwa ku nyungu z'abashoramari, ku byiciro.",
+        'Icyo abashoramari bishyura ku nyungu zabo',
     'admin.design.finance.earnings.empty':
         'Nta mafaranga ku nyungu yo kwerekana ubu.',
-    'admin.design.finance.trades.title': "Icyo kuva kare n'ubucuruzi byishyura",
-    'admin.design.finance.trades.sub':
-        "Yishyurwa n'ugurisha iyo inyandiko igurishijwe mbere y'igihe.",
+    'admin.design.finance.trades.title': 'Isoko rya kabiri',
+    'admin.design.finance.trades.sub': "Icyo kuva kare n'ubucuruzi byishyura",
     'admin.design.finance.trades.empty':
         "Nta mafaranga y'ubucuruzi yo kwerekana ubu.",
     'admin.design.finance.residual.title': "Kugaruza ikiguzi n'ibisigaye",
@@ -1332,6 +1335,23 @@ const rw: Catalog = {
         "Porogaramu z'abashoramari, ibigo n'abagenzuzi n'ibiziranga.",
     'admin.design.app_control.apps.empty':
         'Nta igenamiterere rya porogaramu ryo kwerekana ubu.',
+    'admin.design.app_control.app.investor': "Porogaramu y'Abashoramari",
+    'admin.design.app_control.app.business': "Porogaramu y'Ubucuruzi",
+    'admin.design.app_control.app.auditor': "Porogaramu y'Abagenzuzi",
+    'admin.design.app_control.online': 'Irakora',
+    'admin.design.app_control.feature.sign_ups': 'Kwiyandikisha gushya',
+    'admin.design.app_control.feature.secondary_market': 'Isoko rya kabiri',
+    'admin.design.app_control.feature.academy': "Ishuri ry'Abashoramari",
+    'admin.design.app_control.feature.note_creation': 'Gukora RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Raporo za buri kwezi',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        "Kwiyandikisha kw'abagenzuzi",
+    'admin.design.app_control.feature.auto_dispatch':
+        'Kohereza mu buryo bwikora muri km 30',
+    'admin.design.app_control.feature.flash_audits':
+        'Igenzura ryihuse (amasaha 24)',
+    'admin.design.app_control.state.live': 'Irakora',
+    'admin.design.app_control.state.not_built': 'Ntirarakorwa',
     'admin.design.app_control.sandbox.title': 'Imbibi za sandbox',
     'admin.design.app_control.sandbox.sub':
         'Igice cyakoreshejwe cya buri mbibi za sandbox ya CMA. Nta kirenze imbibi cyemerwa.',
@@ -1344,6 +1364,10 @@ const rw: Catalog = {
         "Ibiri muri porogaramu z'abashoramari, ibigo n'abagenzuzi.",
     'admin.design.app_control.content.empty':
         'Nta bikubiyemo byo kwerekana ubu.',
+    'admin.design.app_control.type.business': 'Ubucuruzi',
+    'admin.design.app_control.unrated': 'Ntirahabwa amanota',
+    'admin.design.app_control.content_state.active': 'Irakora',
+    'admin.design.app_control.content_state.pending': 'Bitegereje kwemezwa',
     'admin.design.engines.tab.sizing': 'Ingano',
     'admin.design.engines.tab.refinance': 'Kongera gutera inkunga',
     'admin.design.engines.tab.queue': 'Umurongo',
@@ -5233,6 +5257,31 @@ const rw: Catalog = {
         "Raporo y'igenzura ryo gushyira ku isoko",
     'admin.applications.release.gate_state.passed': 'Byatsinze',
     'admin.applications.release.gate_state.failed': 'Byahagaritswe',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "Ibisabwa by'inguzanyo bya moteri y'amanota ntibyujujwe.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Ububasha bwo gusinya bw'ikigo bwahindutse nyuma yo gusinya.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        'Uburenganzira bwo gusinyira ikigo ntiburemezwa.',
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Raporo y'igenzura ntikiri iy'ubu.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Nta bubiko bw'inguzanyo bwanditswe kuri iyi dosiye.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Ntabwo abasinya bose basabwa basinye ku Isuzuma.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "Iyemezwa ryanditswe ntirigihuye n'ibyo ikigo cyasinye.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Amasezerano yahindutse nyuma y'uko ikigo gisinye.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "Itangazo ry'amafaranga yo gushyira ku isoko ryahindutse.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Igiciro cyatanzwe ntikiri icy'ubu.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'Iki kigo gifite imbogamizi.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        'Iri genzura ntiryashoboye kurangira.',
+    'admin.applications.release.cause.other': 'Iri genzura ntiryatsinze.',
     'admin.applications.release.blocked':
         'Igenzura rimwe ryananiranye, bityo iyi dosiye ntishobora kurekurwa. Kurekura ntibirenga igenzura ryananiranye.',
     'admin.applications.release.receipt': 'Inyemezabwishyu yo kurekura',
@@ -6371,8 +6420,8 @@ const rw: Catalog = {
     'admin.health.frozen.label': 'Konti zahagaritswe',
     'admin.health.frozen.detail': 'konti zahagaritswe kwinjira',
     'admin.health.frozen.rec.healthy': {
-        one: 'Nta konti yahagaritswe.',
-        other: 'Nta konti yahagaritswe.',
+        one: 'Nta konti y’umukozi yahagaritswe.',
+        other: 'Nta konti y’umukozi yahagaritswe.',
     },
     'admin.health.frozen.rec.watch': {
         one: "Konti {count} y'umukozi yahagaritswe. Yisuzume muri Abakozi n'inshingano.",

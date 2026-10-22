@@ -1195,20 +1195,20 @@ const en = {
     'admin.design.finance.kpi.primary': 'Primary market',
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
+    'admin.design.finance.kpi.revenue.sub': 'Every stream, all time',
+    'admin.design.finance.kpi.primary.sub': 'Platform fee, Rozine share',
+    'admin.design.finance.kpi.investor_fees.sub': 'Earnings fee bands',
+    'admin.design.finance.kpi.secondary.sub': 'Resale fee',
     'admin.design.finance.tab.streams': 'Revenue streams',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
-    'admin.design.finance.raise.title': 'What businesses pay to raise money',
-    'admin.design.finance.raise.sub':
-        "The platform fee at disbursement, and the auditor of record's share of it.",
+    'admin.design.finance.raise.title': 'Primary market',
+    'admin.design.finance.raise.sub': 'What businesses pay to raise money',
     'admin.design.finance.raise.empty': 'No raise fees to show yet.',
-    'admin.design.finance.earnings.title':
-        'What investors pay on what they make',
-    'admin.design.finance.earnings.sub':
-        'Taken from investor earnings, banded by tier.',
+    'admin.design.finance.earnings.title': 'Investor fees',
+    'admin.design.finance.earnings.sub': 'What investors pay on what they make',
     'admin.design.finance.earnings.empty': 'No earnings fees to show yet.',
-    'admin.design.finance.trades.title': 'What early exits and trades pay',
-    'admin.design.finance.trades.sub':
-        'Charged to the seller when a note is resold before maturity.',
+    'admin.design.finance.trades.title': 'Secondary market',
+    'admin.design.finance.trades.sub': 'What early exits and trades pay',
     'admin.design.finance.trades.empty': 'No trade fees to show yet.',
     'admin.design.finance.residual.title': 'Cost recovery and residuals',
     'admin.design.finance.residual.sub':
@@ -1268,6 +1268,20 @@ const en = {
     'admin.design.app_control.apps.sub':
         'The Investor, Business and Auditor apps and their features.',
     'admin.design.app_control.apps.empty': 'No app settings to show yet.',
+    'admin.design.app_control.app.investor': 'Investor App',
+    'admin.design.app_control.app.business': 'Business App',
+    'admin.design.app_control.app.auditor': 'Auditor App',
+    'admin.design.app_control.online': 'Online',
+    'admin.design.app_control.feature.sign_ups': 'New sign-ups',
+    'admin.design.app_control.feature.secondary_market': 'Secondary Market',
+    'admin.design.app_control.feature.academy': 'Investor Academy',
+    'admin.design.app_control.feature.note_creation': 'RNP creation',
+    'admin.design.app_control.feature.monthly_reports': 'Monthly reports',
+    'admin.design.app_control.feature.auditor_sign_ups': 'Auditor sign-ups',
+    'admin.design.app_control.feature.auto_dispatch': '30km auto-dispatch',
+    'admin.design.app_control.feature.flash_audits': 'Flash Audits (24h)',
+    'admin.design.app_control.state.live': 'Live',
+    'admin.design.app_control.state.not_built': 'Not built yet',
     'admin.design.app_control.sandbox.title': 'Sandbox limits',
     'admin.design.app_control.sandbox.sub':
         'How much of each CMA sandbox hard limit is used now. Nothing beyond a limit is accepted.',
@@ -1280,6 +1294,10 @@ const en = {
     'admin.design.app_control.content.sub':
         'Items across the Investor, Business and Auditor apps.',
     'admin.design.app_control.content.empty': 'No content to show yet.',
+    'admin.design.app_control.type.business': 'Business',
+    'admin.design.app_control.unrated': 'Not rated yet',
+    'admin.design.app_control.content_state.active': 'Active',
+    'admin.design.app_control.content_state.pending': 'Pending verification',
     'admin.design.engines.tab.sizing': 'Sizing',
     'admin.design.engines.tab.refinance': 'Refinance',
     'admin.design.engines.tab.queue': 'The queue',
@@ -4998,6 +5016,31 @@ const en = {
     'admin.applications.release.gate.report': 'Listing audit report',
     'admin.applications.release.gate_state.passed': 'Passed',
     'admin.applications.release.gate_state.failed': 'Blocked',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "The rating engine's credit gates don't pass.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "The company's signing authority changed after it signed.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "The business's signing mandate isn't verified.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        'The audit report is no longer current.',
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        'No borrowing reservation is on record for this application.',
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Not every required signatory has signed at Review.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        'The release on record no longer matches what the business signed.',
+    'admin.applications.release.cause.TERMS_CHANGED':
+        'The terms changed after the business signed.',
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        'The listing fee disclosure changed.',
+    'admin.applications.release.cause.QUOTE_STALE':
+        'The quote is no longer current.',
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'A restriction applies to this business.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "This check couldn't be completed.",
+    'admin.applications.release.cause.other': "This check didn't pass.",
     'admin.applications.release.blocked':
         "A check failed, so this application can't be released. Release never overrides a failed check.",
     'admin.applications.release.receipt': 'Release receipt',
@@ -6126,7 +6169,7 @@ const en = {
         other: '{count} raises filling or awaiting disbursement',
     },
     'admin.health.capital.rec':
-        'Liquidity is flowing. Keep the disbursement queue clear.',
+        'Liquidity is flowing. Ensure disbursement queue stays clear.',
     'admin.health.queue.label': 'Underwriting queue',
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
@@ -6156,8 +6199,8 @@ const en = {
     'admin.health.frozen.label': 'Frozen accounts',
     'admin.health.frozen.detail': 'accounts with access paused',
     'admin.health.frozen.rec.healthy': {
-        one: 'No accounts are frozen.',
-        other: 'No accounts are frozen.',
+        one: 'No operator accounts are currently restricted.',
+        other: 'No operator accounts are currently restricted.',
     },
     'admin.health.frozen.rec.watch': {
         one: '{count} operator account is frozen. Review it in Staff & Roles.',

@@ -1261,23 +1261,26 @@ const fr: Catalog = {
     'admin.design.finance.kpi.primary': 'Marché primaire',
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
+    'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.primary.sub':
+        'Frais de plateforme, part de Rozine',
+    'admin.design.finance.kpi.investor_fees.sub':
+        'Tranches des frais sur les gains',
+    'admin.design.finance.kpi.secondary.sub': 'Frais de revente',
     'admin.design.finance.tab.streams': 'Sources de revenus',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
-    'admin.design.finance.raise.title':
-        'Ce que les entreprises paient pour lever des fonds',
+    'admin.design.finance.raise.title': 'Marché primaire',
     'admin.design.finance.raise.sub':
-        "Les frais de plateforme au versement, et la part de l'auditeur attitré.",
+        'Ce que les entreprises paient pour lever des fonds',
     'admin.design.finance.raise.empty': 'Aucuns frais de levée à afficher.',
-    'admin.design.finance.earnings.title':
-        'Ce que les investisseurs paient sur leurs gains',
+    'admin.design.finance.earnings.title': 'Frais investisseurs',
     'admin.design.finance.earnings.sub':
-        'Prélevés sur les gains des investisseurs, par tranche selon le niveau.',
+        'Ce que les investisseurs paient sur leurs gains',
     'admin.design.finance.earnings.empty':
         'Aucuns frais sur les gains à afficher.',
-    'admin.design.finance.trades.title':
-        'Ce que paient les sorties anticipées et les échanges',
+    'admin.design.finance.trades.title': 'Marché secondaire',
     'admin.design.finance.trades.sub':
-        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+        'Ce que paient les sorties anticipées et les échanges',
     'admin.design.finance.trades.empty': "Aucuns frais d'échange à afficher.",
     'admin.design.finance.residual.title': 'Recouvrement des coûts et résidus',
     'admin.design.finance.residual.sub': "Petites lignes. N'en prévoyez rien.",
@@ -1345,6 +1348,22 @@ const fr: Catalog = {
         'Les applications Investisseur, Entreprise et Auditeur et leurs fonctionnalités.',
     'admin.design.app_control.apps.empty':
         "Aucun réglage d'application à afficher pour le moment.",
+    'admin.design.app_control.app.investor': 'Application Investisseur',
+    'admin.design.app_control.app.business': 'Application Entreprise',
+    'admin.design.app_control.app.auditor': 'Application Auditeur',
+    'admin.design.app_control.online': 'En ligne',
+    'admin.design.app_control.feature.sign_ups': 'Nouvelles inscriptions',
+    'admin.design.app_control.feature.secondary_market': 'Marché secondaire',
+    'admin.design.app_control.feature.academy': 'Académie Investisseur',
+    'admin.design.app_control.feature.note_creation': 'Création de RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Rapports mensuels',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        'Inscriptions des auditeurs',
+    'admin.design.app_control.feature.auto_dispatch':
+        'Affectation automatique à 30 km',
+    'admin.design.app_control.feature.flash_audits': 'Audits flash (24 h)',
+    'admin.design.app_control.state.live': 'Actif',
+    'admin.design.app_control.state.not_built': 'Pas encore développé',
     'admin.design.app_control.sandbox.title': 'Limites du bac à sable',
     'admin.design.app_control.sandbox.sub':
         'Part utilisée de chaque limite du bac à sable de la CMA. Rien n’est accepté au-delà d’une limite.',
@@ -1359,6 +1378,10 @@ const fr: Catalog = {
         'Les éléments des applications Investisseur, Entreprise et Auditeur.',
     'admin.design.app_control.content.empty':
         'Aucun contenu à afficher pour le moment.',
+    'admin.design.app_control.type.business': 'Entreprise',
+    'admin.design.app_control.unrated': 'Pas encore noté',
+    'admin.design.app_control.content_state.active': 'Actif',
+    'admin.design.app_control.content_state.pending': 'Vérification en attente',
     'admin.design.engines.tab.sizing': 'Dimensionnement',
     'admin.design.engines.tab.refinance': 'Refinancement',
     'admin.design.engines.tab.queue': "La file d'attente",
@@ -5258,6 +5281,32 @@ const fr: Catalog = {
         "Rapport d'audit de mise en ligne",
     'admin.applications.release.gate_state.passed': 'Réussi',
     'admin.applications.release.gate_state.failed': 'Bloqué',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        'Les critères de crédit du moteur de notation ne sont pas remplis.',
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Le pouvoir de signature de l'entreprise a changé après sa signature.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise n'est pas vérifié.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Le rapport d'audit n'est plus à jour.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "La validation enregistrée ne correspond plus à ce que l'entreprise a signé.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Les conditions ont changé après la signature de l'entreprise.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de cotation a changé.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Le devis n'est plus à jour.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        "Une restriction s'applique à cette entreprise.",
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Cette vérification n'a pas pu être effectuée.",
+    'admin.applications.release.cause.other':
+        "Cette vérification n'a pas réussi.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',
@@ -6405,8 +6454,8 @@ const fr: Catalog = {
     'admin.health.frozen.label': 'Comptes gelés',
     'admin.health.frozen.detail': "comptes dont l'accès est suspendu",
     'admin.health.frozen.rec.healthy': {
-        one: "Aucun compte n'est gelé.",
-        other: "Aucun compte n'est gelé.",
+        one: "Aucun compte opérateur n'est actuellement restreint.",
+        other: "Aucun compte opérateur n'est actuellement restreint.",
     },
     'admin.health.frozen.rec.watch': {
         one: '{count} compte opérateur est gelé. Vérifiez-le dans Personnel et rôles.',

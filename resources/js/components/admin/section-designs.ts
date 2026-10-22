@@ -317,10 +317,10 @@ export const SECTION_DESIGNS: Record<
     },
     finance: {
         kpis: [
-            finance.kpi('revenue'),
-            finance.kpi('primary'),
-            finance.kpi('investor_fees'),
-            finance.kpi('secondary'),
+            finance.captioned('revenue'),
+            finance.captioned('primary'),
+            finance.captioned('investor_fees'),
+            finance.captioned('secondary'),
         ],
         tabs: [finance.tab('streams'), finance.tab('ledger')],
         blocks: [

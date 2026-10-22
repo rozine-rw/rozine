@@ -97,6 +97,9 @@ describe('Admin System Health', () => {
         expect(card('Underwriting queue')).not.toHaveTextContent(
             'The queue is clear.',
         );
+        expect(card('Capital in flight')).toHaveTextContent(
+            'Liquidity is flowing. Ensure disbursement queue stays clear.',
+        );
         expect(card('Event throughput')).toHaveTextContent('7/h');
         expect(card('Event throughput')).toHaveTextContent(
             '90 actions recorded in total',
@@ -105,7 +108,7 @@ describe('Admin System Health', () => {
             '0accounts with access paused',
         );
         expect(card('Frozen accounts')).toHaveTextContent(
-            'No accounts are frozen.',
+            'No operator accounts are currently restricted.',
         );
         expect(card('Treasury position')).toHaveTextContent('Not tracked yet');
         expect(card('Treasury position')).toHaveTextContent(

@@ -23,6 +23,8 @@ import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
+    AppContentRow,
+    AppStatus,
     EngineRow,
     FinanceStream,
     PolicyRule,
@@ -225,6 +227,39 @@ function rowsOf(
                 ],
             };
         });
+    }
+
+    if (block.key === 'content') {
+        return (props.content ?? []).map((row: AppContentRow) => ({
+            key: row.key,
+            cells: [
+                t(`admin.design.app_control.type.${row.type}`),
+                [
+                    row.name,
+                    row.sector,
+                    row.rating === null
+                        ? t('admin.design.app_control.unrated')
+                        : `${t(`admin.rating.band.${row.rating.band}`)} ${row.rating.score}`,
+                ].join(' · '),
+                t(`admin.design.app_control.content_state.${row.state}`),
+            ],
+        }));
+    }
+
+    if (block.key === 'apps') {
+        return (props.apps ?? []).map((app: AppStatus) => ({
+            key: app.key,
+            cells: [
+                t(`admin.design.app_control.app.${app.key}`),
+                t('admin.design.app_control.online'),
+                app.features
+                    .map(
+                        (feature) =>
+                            `${t(`admin.design.app_control.feature.${feature.key}`)} · ${t(`admin.design.app_control.state.${feature.state}`)}`,
+                    )
+                    .join(', '),
+            ],
+        }));
     }
 
     if (props.section === 'finance' && block.tab === 'streams') {
