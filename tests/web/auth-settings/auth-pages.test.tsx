@@ -275,7 +275,7 @@ describe('authentication pages', () => {
             audience: 'investor',
         });
         expect(
-            screen.getByRole('link', { name: 'Create one' }),
+            screen.getByRole('link', { name: 'Create account' }),
         ).toHaveAttribute('href', '/register?for=investor');
         cleanup();
 

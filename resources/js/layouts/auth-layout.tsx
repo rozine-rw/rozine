@@ -106,7 +106,7 @@ const BRANDED: Record<
             emailLabel: 'auth.login.email_label',
             emailPlaceholder: 'auth.register.email_placeholder',
             switchText: 'auth.login.no_account',
-            switchCta: 'auth.brand.investor.register_cta',
+            switchCta: 'auth.login.create_account',
         },
         register: {
             eyebrow: null,

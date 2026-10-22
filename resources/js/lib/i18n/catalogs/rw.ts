@@ -107,7 +107,6 @@ const rw: Catalog = {
     'auth.brand.business.register_description':
         'Fungura konti ikigo cyawe kizakoresha gusaba no gukusanya amafaranga.',
     'auth.brand.investor.login_description': 'Injira ucunge ishoramari ryawe.',
-    'auth.brand.investor.register_cta': 'Fungura konti',
     'auth.brand.investor.register_description':
         'Tangira gushora imari mu bigo byagenzuwe mu Rwanda hose.',
     'auth.brand.auditor.eyebrow': 'Ku bafatanyabikorwa b’igenzura',

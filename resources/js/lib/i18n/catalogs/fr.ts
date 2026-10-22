@@ -106,7 +106,6 @@ const fr: Catalog = {
         'Créez le compte avec lequel votre entreprise fera sa demande et sa levée.',
     'auth.brand.investor.login_description':
         'Connectez-vous pour gérer votre portefeuille.',
-    'auth.brand.investor.register_cta': 'En créer un',
     'auth.brand.investor.register_description':
         'Commencez à investir dans des entreprises vérifiées partout au Rwanda.',
     'auth.brand.auditor.eyebrow': 'Pour les partenaires d’audit',

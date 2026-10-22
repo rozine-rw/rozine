@@ -104,7 +104,6 @@ const en = {
     'auth.brand.business.register_description':
         'Create the account your business will apply and raise with.',
     'auth.brand.investor.login_description': 'Log in to manage your portfolio.',
-    'auth.brand.investor.register_cta': 'Create one',
     'auth.brand.investor.register_description':
         'Start investing in verified businesses across Rwanda.',
     'auth.brand.auditor.eyebrow': 'For audit partners',
