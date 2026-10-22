@@ -1296,6 +1296,9 @@ const en = {
         'Each notice goes out by itself when its event is recorded. They cannot be edited from the console yet.',
     'admin.messaging.templates.sub':
         'The transactional emails Rozine sends. They cannot be edited from the console yet.',
+    'admin.messaging.rule.funds_disbursed': 'Funds disbursed',
+    'admin.messaging.rule.verification_approved': 'Verification approved',
+    'admin.messaging.rule.raise_fully_funded': 'Raise fully funded',
     'admin.messaging.template.account.new_device_sign_in': 'New device sign-in',
     'admin.messaging.template.account.one_time_code': 'One-time code',
     'admin.messaging.template.account.reset_password': 'Reset password',
@@ -1305,12 +1308,12 @@ const en = {
     'admin.messaging.template.auditor.job_offered': 'Audit job offered',
     'admin.messaging.template.business.application_decided':
         'Application decision',
-    'admin.messaging.template.business.disbursement_sent': 'Disbursement sent',
+    'admin.messaging.template.business.disbursement_sent': 'Funds disbursed',
     'admin.messaging.template.business.raise_expired': 'Raise expired',
     'admin.messaging.template.business.repayment_reminder':
         'Repayment reminder',
     'admin.messaging.template.business.reporting_window_open':
-        'Reporting window open',
+        'Monthly report reminder',
     'admin.messaging.template.investor.investment_confirmed':
         'Investment confirmed',
     'admin.messaging.template.investor.payment_delayed': 'Payment delayed',
