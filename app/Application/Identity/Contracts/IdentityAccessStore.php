@@ -34,6 +34,16 @@ interface IdentityAccessStore
      */
     public function approveStaff(int $actorId, string $proposalId, string $reason, string $requestId): array;
 
+    /** @param list<int> $recipients
+     * @return array<string, mixed>
+     */
+    public function requestStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $kind, array $recipients, string $reason, string $requestId): array;
+
+    /** @param list<int> $expectedRecipients
+     * @return array<string, mixed>
+     */
+    public function approveStaffRecovery(int $operatorId, #[\SensitiveParameter] string $password, #[\SensitiveParameter] string $code, string $proposalId, string $payloadSha256, string $reason, string $requestId, string $expectedKind, array $expectedRecipients): array;
+
     /** @return array<string, mixed> */
     public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
 
