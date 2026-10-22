@@ -6159,7 +6159,7 @@ const en = {
         other: '{count} raises filling or awaiting disbursement',
     },
     'admin.health.capital.rec':
-        'Liquidity is flowing. Keep the disbursement queue clear.',
+        'Liquidity is flowing. Ensure disbursement queue stays clear.',
     'admin.health.queue.label': 'Underwriting queue',
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
