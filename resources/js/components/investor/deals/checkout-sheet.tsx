@@ -24,6 +24,7 @@ import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompactBare } from '@/lib/investor/format';
 import { useServerNow } from '@/lib/investor/server-clock';
+import { useWide } from '@/lib/investor/use-wide';
 import { formatAmount, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
@@ -127,6 +128,7 @@ export function CheckoutSheet({
     variant,
 }: CheckoutSheetProps) {
     const { t } = useTranslation();
+    const wide = useWide();
     const refusalText = useRefusalText();
     const clock = useTimeLeft(deal.clock.expires_at, serverTime);
     const quoted = useQuotedUnits(Number(quote.units), {}, [
@@ -650,31 +652,62 @@ export function CheckoutSheet({
                     {t('investor.checkout.c3.indicative')}
                 </p>
                 {quoteRows}
-                <p className={cn(LABEL, 'mt-3.5')}>
-                    {t('investor.checkout.pay_with')}
-                </p>
-                <div className="mt-[7px] grid grid-cols-4 gap-1.5">
-                    <span className="relative flex flex-col items-center gap-1.5 rounded-xl border-[1.5px] border-rz-accent-fill bg-rz-accent-soft px-1 py-2.5">
-                        <span className="flex size-[30px] items-center justify-center rounded-lg bg-rz-surface">
-                            <LogoMark className="size-4 text-rz-accent-fill" />
-                        </span>
-                        <span className="text-[11px] font-semibold text-rz-accent-app-text">
-                            {t('investor.checkout.wallet')}
-                        </span>
-                        <span
-                            aria-hidden
-                            className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-rz-accent-fill text-[9px] text-white"
-                        >
-                            ✓
-                        </span>
-                    </span>
-                </div>
-                <p className="mt-2 text-center text-[11.5px] text-rz-slate">
-                    {t('investor.checkout.wallet_line', {
-                        wallet: t('investor.wallet.rozine_wallet'),
-                        amount: formatRwf(wallet.available),
-                    })}
-                </p>
+                {wide ? (
+                    <>
+                        <p className={cn(LABEL, 'mt-3.5')}>
+                            {t('investor.checkout.pay_with')}
+                        </p>
+                        <div className="mt-[7px] grid grid-cols-4 gap-1.5">
+                            <span className="relative flex flex-col items-center gap-1.5 rounded-xl border-[1.5px] border-rz-accent-fill bg-rz-accent-soft px-1 py-2.5">
+                                <span className="flex size-[30px] items-center justify-center rounded-lg bg-rz-surface">
+                                    <LogoMark className="size-4 text-rz-accent-fill" />
+                                </span>
+                                <span className="text-[11px] font-semibold text-rz-accent-app-text">
+                                    {t('investor.checkout.wallet')}
+                                </span>
+                                <span
+                                    aria-hidden
+                                    className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-rz-accent-fill text-[9px] text-white"
+                                >
+                                    ✓
+                                </span>
+                            </span>
+                        </div>
+                        <p className="mt-2 text-center text-[11.5px] text-rz-slate">
+                            {t('investor.checkout.wallet_line', {
+                                wallet: t('investor.wallet.rozine_wallet'),
+                                amount: formatRwf(wallet.available),
+                            })}
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <p className={cn(LABEL, 'mt-3.5')}>
+                            {t('investor.checkout.funding_source')}
+                        </p>
+                        <div className="mt-[7px] flex items-center gap-3 rounded-2xl border border-rz-accent-fill bg-rz-surface px-3.5 py-3">
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft">
+                                <LogoMark className="size-[18px] text-rz-accent-fill" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[13.5px] font-semibold text-rz-ink">
+                                    {t('investor.wallet.rozine_wallet')}
+                                </span>
+                                <span className="mt-px block text-xs text-rz-slate">
+                                    {t('investor.checkout.wallet_available', {
+                                        amount: formatRwf(wallet.available),
+                                    })}
+                                </span>
+                            </span>
+                            <span
+                                aria-hidden
+                                className="flex size-5 shrink-0 items-center justify-center rounded-full bg-rz-accent-fill text-xs text-white"
+                            >
+                                ✓
+                            </span>
+                        </div>
+                    </>
+                )}
                 {shortWallet}
                 {pageRefusal}
             </div>

@@ -92,6 +92,9 @@ const en = {
     'auth.register.submit': 'Create account',
     'auth.register.have_account': 'Already have an account?',
     'auth.register.log_in': 'Log in',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Secure',
+    'auth.brand.business.have_account': 'Already registered?',
     'auth.brand.business.eyebrow': 'For business',
     'auth.brand.business.login_description': 'Log in to your issuer dashboard.',
     'auth.brand.business.email_label': 'Work email',
@@ -101,7 +104,6 @@ const en = {
     'auth.brand.business.register_description':
         'Create the account your business will apply and raise with.',
     'auth.brand.investor.login_description': 'Log in to manage your portfolio.',
-    'auth.brand.investor.register_cta': 'Create one',
     'auth.brand.investor.register_description':
         'Start investing in verified businesses across Rwanda.',
     'auth.brand.auditor.eyebrow': 'For audit partners',
@@ -3332,6 +3334,8 @@ const en = {
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
     'investor.checkout.wallet': 'Wallet',
+    'investor.checkout.funding_source': 'Funding source',
+    'investor.checkout.wallet_available': 'Available: {amount}',
     'investor.checkout.pay_with': 'Pay with',
     'investor.checkout.wallet_line': '{wallet} · {amount} available',
     'investor.checkout.insufficient':
@@ -3824,7 +3828,6 @@ const en = {
     'investor.wallet.earn.paid': 'PAID',
     'investor.wallet.earn.total': 'TOTAL IN',
     'investor.wallet.earn.empty': 'No payouts landed between those dates.',
-    'investor.wallet.tx.title': 'Transaction history',
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Export',
     'investor.wallet.tx.pdf': 'Download PDF',
@@ -3928,6 +3931,12 @@ const en = {
     'support.help.still_body':
         'Message us. We acknowledge every message within 4 hours.',
     'support.help.still_action': 'Message support',
+    'investor.deals.nudge.tag': 'Keep learning',
+    'investor.deals.nudge.title': 'Continue Investor Academy',
+    'investor.deals.nudge.body':
+        '{done} of {total} lessons done. Pick up where you left off.',
+    'investor.deals.nudge.later': 'Later',
+    'investor.deals.nudge.continue': 'Continue',
     'investor.academy.title': 'Investor Academy',
     'investor.academy.learning': 'Learning',
     'investor.academy.summary_start': 'Learn how Rozine notes work',
@@ -4749,7 +4758,7 @@ const en = {
     'investor.wallet.c3.range.today': 'Today',
     'investor.wallet.c3.range.7d': '7 days',
     'investor.wallet.c3.range.30d': '30 days',
-    'investor.wallet.c3.range.all': 'All time',
+    'investor.wallet.c3.range.all': 'All',
     'investor.wallet.c3.filter.external': 'Cash in and out',
     'investor.wallet.c3.filter.internal': 'Holds and commitments',
     'investor.wallet.c3.transfer': '{from} → {to}',

@@ -100,9 +100,9 @@ const fullyFunded = (deal: Pick<C3DealCard, 'lifecycle' | 'units'>) =>
 /**
  * Add to cart (BRS v2.0 INV-R02, design desktop L393–398): adds the deal at the chosen number of
  * notes, or, once it is in the cart, reads "In cart · Remove" and takes it out. A fully funded
- * deal cannot be added, so the button is disabled and says so. On a phone it is the design's
- * square cart button beside Invest, named by its label. The server decides; the cart is reloaded
- * for the deal in front after each change.
+ * deal cannot be added, so the button is disabled and says so. On a phone it is the swipe card's
+ * square cart button (SwipeCard.dc.html L133), named by its label, with a plus, tick or stroke for
+ * its state. The server decides; the cart is reloaded for the deal in front after each change.
  */
 export function CartToggle({
     deal,
@@ -113,7 +113,7 @@ export function CartToggle({
     deal: C3DealCard;
     cart: CartToggleState;
     units: number;
-    size: 'phone' | 'desk';
+    size: 'card' | 'desk';
 }) {
     const { t } = useTranslation();
     const http = useHttp<Record<string, never>, unknown>();
@@ -126,7 +126,7 @@ export function CartToggle({
         : full
           ? t('investor.deals.fully_funded')
           : t('investor.cart.add');
-    const phone = size === 'phone';
+    const card = size === 'card';
 
     const toggle = async (target: RouteAction) => {
         setBusy(true);
@@ -158,18 +158,22 @@ export function CartToggle({
     };
 
     return (
-        <div className={cn(phone && 'relative shrink-0')}>
+        <div className={cn(card && 'relative -mt-1 -mb-1 shrink-0')}>
             <button
                 type="button"
+                /* On the card, a press on the button is not the start of a swipe. */
+                onPointerDown={
+                    card ? (event) => event.stopPropagation() : undefined
+                }
                 onClick={() => action !== null && toggle(action)}
                 disabled={full || action === null || busy}
                 aria-pressed={cart.inCart}
-                aria-label={phone ? label : undefined}
-                title={phone ? label : undefined}
+                aria-label={card ? label : undefined}
+                title={card ? label : undefined}
                 className={cn(
                     'flex items-center justify-center gap-2 border font-semibold transition-colors',
-                    phone
-                        ? 'size-12 rounded-[14px]'
+                    card
+                        ? 'size-[34px] rounded-[10px]'
                         : 'h-[42px] w-full rounded-xl text-[13.5px]',
                     cart.inCart
                         ? 'border-rz-accent-fill/30 bg-rz-accent-soft text-rz-accent-text'
@@ -179,8 +183,8 @@ export function CartToggle({
                 )}
             >
                 <svg
-                    width="17"
-                    height="17"
+                    width={card ? 16 : 17}
+                    height={card ? 16 : 17}
                     viewBox="0 0 24 24"
                     fill="none"
                     aria-hidden
@@ -194,16 +198,31 @@ export function CartToggle({
                     />
                     <circle cx="9.6" cy="19.6" r="1.35" fill="currentColor" />
                     <circle cx="17" cy="19.6" r="1.35" fill="currentColor" />
+                    {card && (
+                        <path
+                            d={
+                                cart.inCart
+                                    ? 'M10.4 10.9l1.7 1.7 3.3-3.4'
+                                    : full
+                                      ? 'M11 9.4l3.8 3.2'
+                                      : 'M12.9 9v3.6M11.1 10.8h3.6'
+                            }
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    )}
                 </svg>
-                {!phone && <span>{label}</span>}
+                {!card && <span>{label}</span>}
             </button>
             {failed && (
                 <p
                     role="alert"
                     className={cn(
                         'text-[11px] text-rz-secondary',
-                        phone
-                            ? 'absolute top-full right-0 mt-1 w-max max-w-56 text-right'
+                        card
+                            ? 'absolute right-0 bottom-full mb-1.5 w-max max-w-56 rounded-lg bg-rz-surface px-2 py-1 text-right shadow-sm'
                             : 'mt-1.5 text-center',
                     )}
                 >
@@ -227,15 +246,13 @@ type InvestBarProps = {
     /** Checkout for this deal and quantity, or null while the deal cannot be bought. */
     checkout: RouteLink | null;
     size: 'phone' | 'desk';
-    /** The phone bar's Add to cart; null where the Investor has no cart. The desk panel holds its own. */
-    cart?: CartToggleState | null;
 };
 
 /**
  * The persistent invest bar (phone L650–690, desk L335–372): how many notes, of how many left,
  * the term; then what the ticket costs, its flat return and what comes back — all from the
- * server's quote for exactly that quantity — then the slider and Invest. On a phone, Add to cart
- * sits under the slider, since the phone has no detail panel to hold it.
+ * server's quote for exactly that quantity — then the slider and Invest. Add to cart is on the
+ * phone's swipe card and in the desk's detail panel.
  */
 export function InvestBar({
     deal,
@@ -246,7 +263,6 @@ export function InvestBar({
     gate,
     checkout,
     size,
-    cart = null,
 }: InvestBarProps) {
     const { t } = useTranslation();
     const [draft, setDraft] = useState<string | null>(null);
@@ -493,14 +509,6 @@ export function InvestBar({
                     <Link href={checkout} className={investClass}>
                         {investLabel}
                     </Link>
-                )}
-                {phone && cart !== null && (
-                    <CartToggle
-                        deal={deal}
-                        cart={cart}
-                        units={units}
-                        size="phone"
-                    />
                 )}
             </div>
             {gate.status !== 'eligible' ? (

@@ -140,6 +140,17 @@ const LESSONS = lessonsOf(INVESTOR_ACADEMY);
 /** The Investor Academy's progress on this device. */
 export const useAcademyProgress = () => useCourseProgress(INVESTOR_ACADEMY);
 
+/** Lessons done of the Academy's total once it is started; null before it starts or once it is done. */
+export function useAcademyNudge(): { done: number; total: number } | null {
+    const [progress] = useAcademyProgress();
+    const done = LESSONS.filter((lesson) => finished(lesson, progress)).length;
+    const started = Object.values(progress).some((value) => value > 0);
+
+    return started && done < LESSONS.length
+        ? { done, total: LESSONS.length }
+        : null;
+}
+
 /** The Investor Academy in the profile column. */
 export function Academy(
     props: Omit<Parameters<typeof CourseAcademy>[0], 'course'>,

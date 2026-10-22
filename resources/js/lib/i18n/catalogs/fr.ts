@@ -92,6 +92,9 @@ const fr: Catalog = {
     'auth.register.submit': 'Créer un compte',
     'auth.register.have_account': 'Vous avez déjà un compte ?',
     'auth.register.log_in': 'Se connecter',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Sécurisé',
+    'auth.brand.business.have_account': 'Déjà inscrit ?',
     'auth.brand.business.eyebrow': 'Pour les entreprises',
     'auth.brand.business.login_description':
         'Connectez-vous à votre tableau de bord émetteur.',
@@ -103,7 +106,6 @@ const fr: Catalog = {
         'Créez le compte avec lequel votre entreprise fera sa demande et sa levée.',
     'auth.brand.investor.login_description':
         'Connectez-vous pour gérer votre portefeuille.',
-    'auth.brand.investor.register_cta': 'En créer un',
     'auth.brand.investor.register_description':
         'Commencez à investir dans des entreprises vérifiées partout au Rwanda.',
     'auth.brand.auditor.eyebrow': 'Pour les partenaires d’audit',
@@ -3472,6 +3474,8 @@ const fr: Catalog = {
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.wallet': 'Portefeuille',
+    'investor.checkout.funding_source': 'Source de financement',
+    'investor.checkout.wallet_available': 'Disponible : {amount}',
     'investor.checkout.pay_with': 'Payer avec',
     'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
     'investor.checkout.insufficient':
@@ -3971,7 +3975,6 @@ const fr: Catalog = {
     'investor.wallet.earn.paid': 'PAYÉS',
     'investor.wallet.earn.total': 'TOTAL REÇU',
     'investor.wallet.earn.empty': 'Aucun versement entre ces dates.',
-    'investor.wallet.tx.title': 'Historique des transactions',
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Exporter',
     'investor.wallet.tx.pdf': 'Télécharger le PDF',
@@ -4079,6 +4082,12 @@ const fr: Catalog = {
     'support.help.still_body':
         'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
     'support.help.still_action': 'Écrire au support',
+    'investor.deals.nudge.tag': 'Continuez à apprendre',
+    'investor.deals.nudge.title': 'Reprendre l’Académie de l’investisseur',
+    'investor.deals.nudge.body':
+        '{done} leçons terminées sur {total}. Reprenez là où vous vous êtes arrêté.',
+    'investor.deals.nudge.later': 'Plus tard',
+    'investor.deals.nudge.continue': 'Continuer',
     'investor.academy.title': 'Académie de l’investisseur',
     'investor.academy.learning': 'Apprendre',
     'investor.academy.summary_start':
@@ -4996,7 +5005,7 @@ const fr: Catalog = {
     'investor.wallet.c3.range.today': 'Aujourd’hui',
     'investor.wallet.c3.range.7d': '7 jours',
     'investor.wallet.c3.range.30d': '30 jours',
-    'investor.wallet.c3.range.all': 'Depuis le début',
+    'investor.wallet.c3.range.all': 'Tout',
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',

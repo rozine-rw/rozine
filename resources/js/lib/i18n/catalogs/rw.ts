@@ -94,6 +94,9 @@ const rw: Catalog = {
     'auth.register.submit': 'Fungura konti',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Bitekanye',
+    'auth.brand.business.have_account': 'Waramaze kwiyandikisha?',
     'auth.brand.business.eyebrow': 'Ku bigo by’ubucuruzi',
     'auth.brand.business.login_description':
         'Injira mu mbonerahamwe y’ikigo cyawe.',
@@ -104,7 +107,6 @@ const rw: Catalog = {
     'auth.brand.business.register_description':
         'Fungura konti ikigo cyawe kizakoresha gusaba no gukusanya amafaranga.',
     'auth.brand.investor.login_description': 'Injira ucunge ishoramari ryawe.',
-    'auth.brand.investor.register_cta': 'Fungura konti',
     'auth.brand.investor.register_description':
         'Tangira gushora imari mu bigo byagenzuwe mu Rwanda hose.',
     'auth.brand.auditor.eyebrow': 'Ku bafatanyabikorwa b’igenzura',
@@ -3457,6 +3459,8 @@ const rw: Catalog = {
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
     'investor.checkout.wallet': 'Ikofi',
+    'investor.checkout.funding_source': 'Aho amafaranga ava',
+    'investor.checkout.wallet_available': 'Ahari: {amount}',
     'investor.checkout.pay_with': 'Ishyura ukoresheje',
     'investor.checkout.wallet_line': '{wallet} · {amount} bihari',
     'investor.checkout.insufficient':
@@ -3952,7 +3956,6 @@ const rw: Catalog = {
     'investor.wallet.earn.paid': 'BYISHYUWE',
     'investor.wallet.earn.total': 'BYOSE BYINJIYE',
     'investor.wallet.earn.empty': "Nta bwishyu bwageze hagati y'izo tariki.",
-    'investor.wallet.tx.title': "Amateka y'ibikorwa",
     'investor.wallet.tx.title_short': 'Ibikorwa',
     'investor.wallet.tx.export': 'Kuramo',
     'investor.wallet.tx.pdf': 'Kuramo PDF',
@@ -4059,6 +4062,12 @@ const rw: Catalog = {
     'support.help.still_body':
         'Twandikire. Twemeza ko twakiriye buri butumwa mu masaha 4.',
     'support.help.still_action': 'Andikira ubufasha',
+    'investor.deals.nudge.tag': 'Komeza kwiga',
+    'investor.deals.nudge.title': 'Komeza Ishuri ry’Umushoramari',
+    'investor.deals.nudge.body':
+        'Wasoje amasomo {done} kuri {total}. Komereza aho wari ugeze.',
+    'investor.deals.nudge.later': 'Nyuma',
+    'investor.deals.nudge.continue': 'Komeza',
     'investor.academy.title': 'Ishuri ry’Umushoramari',
     'investor.academy.learning': 'Kwiga',
     'investor.academy.summary_start':
@@ -4966,7 +4975,7 @@ const rw: Catalog = {
     'investor.wallet.c3.range.today': 'Uyu munsi',
     'investor.wallet.c3.range.7d': 'Iminsi 7',
     'investor.wallet.c3.range.30d': 'Iminsi 30',
-    'investor.wallet.c3.range.all': 'Igihe cyose',
+    'investor.wallet.c3.range.all': 'Byose',
     'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
     'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
     'investor.wallet.c3.transfer': '{from} → {to}',

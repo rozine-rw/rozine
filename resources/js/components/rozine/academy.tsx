@@ -1,6 +1,8 @@
+import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
+import type { Auth } from '@/types';
 
 type InvestorLessonKey =
     | 'notes'
@@ -100,18 +102,27 @@ const writeProgress = (storageKey: string, progress: Progress): void => {
 export const finished = (lesson: AcademyLesson, progress: Progress): boolean =>
     (progress[lesson.key] ?? 0) >= lesson.topics.length;
 
-/** A course's progress, read once from this device and saved on every change. */
+/**
+ * A course's progress, read once from this device and saved on every change. The key carries the
+ * signed-in user's id, so the next account on a shared device starts its own course.
+ */
 export function useCourseProgress(
     course: AcademyCourse,
 ): [Progress, (next: Progress) => void] {
+    const userId = usePage<{ auth?: Partial<Auth> | null }>().props.auth?.user
+        ?.id;
+    const storageKey =
+        userId === undefined
+            ? course.storageKey
+            : `${course.storageKey}.${userId}`;
     const [progress, setProgress] = useState<Progress>(() =>
-        readProgress(course.storageKey),
+        readProgress(storageKey),
     );
 
     return [
         progress,
         (next: Progress) => {
-            writeProgress(course.storageKey, next);
+            writeProgress(storageKey, next);
             setProgress(next);
         },
     ];
