@@ -4262,7 +4262,7 @@ const rw: Catalog = {
     'investor.academy.lesson.repayments.topic1.title':
         'Wishyurwa mu gihe cyose',
     'investor.academy.lesson.repayments.topic1.body':
-        'Icyiciro cya mbere kigomba kwishyurwa ukwezi kumwe nyuma y’uko amafaranga ageze ku bucuruzi, hanyuma buri kwezi ku munsi umwe. Ingengabihe yerekanwa mbere yo kwiyemeza kandi ntihinduka.',
+        'Mbere yo kwiyemeza, ubona amafaranga uzishyurwa n’igihe ubwishyu buzamara. Icyiciro cya mbere cyishyurwa ukwezi kumwe kuzuye nyuma y’uko amafaranga ahawe ikigo koko, hanyuma buri kwezi ku munsi umwe (cyangwa ku munsi wa nyuma w’ukwezi iyo bibaye ngombwa). Amatariki nyayo y’ubwishyu agenwa kandi akerekanwa iyo inyandiko z’umwenda zitanzwe.',
     'investor.academy.lesson.repayments.topic1.q': 'Ubwishyu bwa Rozine…',
     'investor.academy.lesson.repayments.topic1.option1':
         'Buteganyijwe buri kwezi mu gihe cyose',
@@ -6450,7 +6450,7 @@ const rw: Catalog = {
         'Iki kirego cyakemutse. Nta kindi gishobora kongerwaho.',
     'auditor.academy.title': 'Ishuri ry’Umugenzuzi',
     'auditor.academy.intro':
-        'Amasomo magufi ku igenzura, raporo zifunze n’uko uhembwa kuri Rozine, ashingiye ku mategeko urubuga rukurikiza. Aho ugeze ubikwa kuri iki gikoresho gusa.',
+        'Amasomo magufi ku igenzura, raporo zifunze n’uko uhembwa kuri Rozine, akubiyemo amategeko akurikizwa ubu n’amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza. Ayo mabwiriza y’ahazaza agaragazwa mu masomo. Aho ugeze ubikwa kuri iki gikoresho gusa.',
     'auditor.academy.summary_start': 'Menya uko igenzura rikorwa kuri Rozine',
     'auditor.academy.resume': 'Komeza: {lesson}',
     'auditor.academy.review': 'Subiramo Ishuri',
@@ -6706,13 +6706,13 @@ const rw: Catalog = {
     'auditor.academy.lesson.earnings.topic1.option2': 'RWF 40,000',
     'auditor.academy.lesson.earnings.topic1.option3': 'RWF 120,000',
     'auditor.academy.lesson.earnings.topic2.title':
-        '25% by’amafaranga ku nyungu',
+        '25% by’amafaranga ku nyungu (amabwiriza y’ahazaza)',
     'auditor.academy.lesson.earnings.topic2.body':
-        'Abashoramari bishyura amafaranga ku nyungu, ku gice cy’inyungu cya buri kwishyurwa kwa buri kwezi. 25% byayo ashyirwa kuri konti yawe kuri buri kwishyurwa kw’inyandiko ugenzura, bityo winjiza iyo ubucuruzi bwitwaye neza.',
+        'Amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza ateganya amafaranga ku gice cy’inyungu cya buri bwishyu bwa buri kwezi ku bashoramari, aho 25% by’ayo mafaranga yazajya ashyirwa kuri konti yawe kuri buri bwishyu bw’inyandiko ugenzura. Aya mafaranga ntaratangira gushyirwa kuri konti.',
     'auditor.academy.lesson.earnings.topic2.q':
-        'Umugabane ku mafaranga y’inyungu ugushyirwaho ryari?',
+        'Dukurikije amabwiriza yanditse y’ubwishyu bwo mu gihe kizaza, umugabane wa 25% ku mafaranga y’inyungu wazajya ugushyirwaho ryari?',
     'auditor.academy.lesson.earnings.topic2.option1':
-        'Kuri buri kwishyurwa kwa buri kwezi kw’inyandiko ugenzura',
+        'Kuri buri bwishyu bwa buri kwezi bw’inyandiko ugenzura, bimaze gutangira gukurikizwa',
     'auditor.academy.lesson.earnings.topic2.option2':
         'Rimwe kuri buri genzura rirangiye',
     'auditor.academy.lesson.earnings.topic2.option3':

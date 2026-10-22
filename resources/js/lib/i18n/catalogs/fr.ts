@@ -4284,7 +4284,7 @@ const fr: Catalog = {
     'investor.academy.lesson.repayments.sub': 'Comment vous êtes remboursé',
     'investor.academy.lesson.repayments.topic1.title': 'Payé pendant la durée',
     'investor.academy.lesson.repayments.topic1.body':
-        'La première mensualité est due un mois après le versement des fonds à l’entreprise, puis chaque mois le même jour. L’échéancier est affiché avant votre engagement et ne change jamais.',
+        'Avant de vous engager, vous voyez les montants des remboursements et la durée. La première mensualité est due un mois complet après le versement effectif des fonds à l’entreprise, puis chaque mois le même jour (ou le dernier jour du mois si nécessaire). Les dates exactes sont fixées et affichées à l’émission des notes.',
     'investor.academy.lesson.repayments.topic1.q':
         'Les remboursements Rozine sont…',
     'investor.academy.lesson.repayments.topic1.option1':
@@ -6490,7 +6490,7 @@ const fr: Catalog = {
         'Cette réclamation est résolue. Rien ne peut plus y être ajouté.',
     'auditor.academy.title': 'Académie de l’auditeur',
     'auditor.academy.intro':
-        'De courtes leçons sur la vérification, les rapports scellés et votre rémunération sur Rozine, d’après les règles appliquées par la plateforme. Votre progression est enregistrée sur cet appareil uniquement.',
+        'De courtes leçons sur la vérification, les rapports scellés et votre rémunération sur Rozine, couvrant les règles actuelles et les conditions documentées des futurs remboursements. Les conditions futures sont signalées dans les leçons. Votre progression est enregistrée sur cet appareil uniquement.',
     'auditor.academy.summary_start':
         'Découvrez le fonctionnement de la vérification sur Rozine',
     'auditor.academy.resume': 'Reprendre : {lesson}',
@@ -6745,13 +6745,13 @@ const fr: Catalog = {
     'auditor.academy.lesson.earnings.topic1.option2': '40 000 RWF',
     'auditor.academy.lesson.earnings.topic1.option3': '120 000 RWF',
     'auditor.academy.lesson.earnings.topic2.title':
-        '25 % des frais sur les gains',
+        '25 % des frais sur les gains (conditions futures)',
     'auditor.academy.lesson.earnings.topic2.body':
-        'Les investisseurs paient des frais sur les gains, sur la part de rendement de chaque versement mensuel. 25 % vous en sont crédités à chaque versement des notes que vous vérifiez : vous gagnez quand l’entreprise tient ses engagements.',
+        'Les conditions documentées des futurs remboursements prévoient des frais sur la part de rendement de chaque versement mensuel aux investisseurs, dont 25 % vous seraient crédités à chaque versement des notes que vous vérifiez. Ces crédits ne sont pas encore actifs.',
     'auditor.academy.lesson.earnings.topic2.q':
-        'Quand la part des frais sur les gains vous est-elle créditée ?',
+        'Selon les conditions documentées des futurs remboursements, quand la part de 25 % des frais sur les gains serait-elle créditée ?',
     'auditor.academy.lesson.earnings.topic2.option1':
-        'À chaque versement mensuel des notes que vous vérifiez',
+        'À chaque versement mensuel des notes que vous vérifiez, une fois les crédits actifs',
     'auditor.academy.lesson.earnings.topic2.option2':
         'Une fois par audit terminé',
     'auditor.academy.lesson.earnings.topic2.option3':

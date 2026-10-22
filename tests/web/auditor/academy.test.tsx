@@ -24,6 +24,41 @@ beforeEach(() => {
 });
 
 describe('Auditor Academy', () => {
+    it('separates current upfront credits from future repayment-fee terms', () => {
+        render(<AuditorProfile {...props()} />);
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Browse all lessons' }),
+        );
+        expect(screen.getByText(/^Short lessons/u)).toHaveTextContent(
+            'current rules and documented future repayment terms',
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Your earnings/u }));
+
+        const lesson = screen.getByRole('region', { name: 'Your earnings' });
+        expect(lesson).toHaveTextContent('40% of that fee is credited to you');
+        expect(lesson).toHaveTextContent('at disbursement');
+        expect(lesson).toHaveTextContent('your share is 144,000');
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        fireEvent.click(screen.getByRole('button', { name: 'RWF 120,000' }));
+        expect(screen.getByRole('status')).toHaveTextContent('Correct');
+        fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+        expect(lesson).toHaveTextContent(
+            '25% of the earnings fee (future terms)',
+        );
+        expect(lesson).toHaveTextContent('These credits are not active yet.');
+        fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
+        expect(lesson).toHaveTextContent(
+            'Under the documented future repayment terms, when would the 25% earnings-fee share be credited?',
+        );
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'On each monthly payout of notes you verify, once active',
+            }),
+        );
+        expect(screen.getByRole('status')).toHaveTextContent('Correct');
+    });
+
     it('shows the Academy section with nothing done, and resumes on the first lesson', () => {
         render(<AuditorProfile {...props()} />);
 

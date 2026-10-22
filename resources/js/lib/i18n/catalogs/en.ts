@@ -4121,7 +4121,7 @@ const en = {
     'investor.academy.lesson.repayments.sub': 'How you get paid back',
     'investor.academy.lesson.repayments.topic1.title': 'Paid over the term',
     'investor.academy.lesson.repayments.topic1.body':
-        'The first instalment is due one month after the money reaches the business, then monthly on the same day. The schedule is shown before you commit and never changes.',
+        'Before you commit, you see the repayment amounts and term. The first instalment is due one full month after the actual payout to the business, then monthly on the same day (or the month’s last day when needed). Exact due dates are fixed and shown when the notes are issued.',
     'investor.academy.lesson.repayments.topic1.q': 'Rozine repayments are…',
     'investor.academy.lesson.repayments.topic1.option1':
         'Scheduled monthly over the term',
@@ -6244,7 +6244,7 @@ const en = {
         'This complaint is resolved. Nothing more can be added.',
     'auditor.academy.title': 'Auditor Academy',
     'auditor.academy.intro':
-        'Short lessons on how verification, sealed reports and your pay work on Rozine, from the rules the platform enforces. Your progress is saved on this device only.',
+        'Short lessons on verification, sealed reports and your pay on Rozine, covering current rules and documented future repayment terms. Future terms are marked in the lessons. Your progress is saved on this device only.',
     'auditor.academy.summary_start': 'Learn how verification works on Rozine',
     'auditor.academy.resume': 'Resume: {lesson}',
     'auditor.academy.review': 'Review the Academy',
@@ -6478,13 +6478,14 @@ const en = {
     'auditor.academy.lesson.earnings.topic1.option1': 'RWF 300,000',
     'auditor.academy.lesson.earnings.topic1.option2': 'RWF 40,000',
     'auditor.academy.lesson.earnings.topic1.option3': 'RWF 120,000',
-    'auditor.academy.lesson.earnings.topic2.title': '25% of the earnings fee',
+    'auditor.academy.lesson.earnings.topic2.title':
+        '25% of the earnings fee (future terms)',
     'auditor.academy.lesson.earnings.topic2.body':
-        'Investors pay an earnings fee on the return part of each monthly payout. 25% of it is credited to you on each payout of the notes you verify, so you earn when the business performs.',
+        'The documented future repayment terms provide for an earnings fee on the return part of each monthly payout to investors, with 25% of that fee credited to you on each payout of the notes you verify. These credits are not active yet.',
     'auditor.academy.lesson.earnings.topic2.q':
-        'When is the earnings-fee share credited to you?',
+        'Under the documented future repayment terms, when would the 25% earnings-fee share be credited?',
     'auditor.academy.lesson.earnings.topic2.option1':
-        'On each monthly payout of notes you verify',
+        'On each monthly payout of notes you verify, once active',
     'auditor.academy.lesson.earnings.topic2.option2':
         'Once per completed audit',
     'auditor.academy.lesson.earnings.topic2.option3':

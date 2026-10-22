@@ -26,6 +26,33 @@ beforeEach(() => {
 });
 
 describe('Investor Academy', () => {
+    it('distinguishes quoted repayment amounts from the dates fixed at issue after payout', async () => {
+        const user = userEvent.setup();
+        render(<InvestorProfile {...profile()} />);
+        await user.click(
+            screen.getByRole('button', { name: /Investor Academy/u }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: /Repayments and payouts/u }),
+        );
+
+        const lesson = screen.getByRole('region', {
+            name: 'Repayments and payouts',
+        });
+        expect(lesson).toHaveTextContent(
+            'Before you commit, you see the repayment amounts and term.',
+        );
+        expect(lesson).toHaveTextContent(
+            'The first instalment is due one full month after the actual payout to the business',
+        );
+        expect(lesson).toHaveTextContent(
+            'Exact due dates are fixed and shown when the notes are issued.',
+        );
+        expect(lesson).not.toHaveTextContent(
+            'The schedule is shown before you commit and never changes.',
+        );
+    });
+
     it('shows the Learning card under the profile menu with nothing done yet', () => {
         render(<InvestorProfile {...profile()} />);
 
