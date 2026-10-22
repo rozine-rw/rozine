@@ -26,7 +26,6 @@ return new class extends Migration
                     business_id varchar(26) PRIMARY KEY,
                     business_application_id varchar(26) NOT NULL UNIQUE
                 );
-                CREATE UNIQUE INDEX business_applications_id_business ON business_applications (id, business_id);
                 ALTER TABLE business_application_pending_slots ADD CONSTRAINT business_application_pending_slots_application
                     FOREIGN KEY (business_application_id, business_id) REFERENCES business_applications (id, business_id)
                     ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
@@ -94,7 +93,6 @@ return new class extends Migration
                 DROP FUNCTION claim_business_application_pending_slot();
                 DROP TABLE business_application_pending_slots;
                 DROP FUNCTION guard_business_application_pending_slot();
-                DROP INDEX business_applications_id_business;
                 DROP INDEX business_applications_submitted;
                 CREATE UNIQUE INDEX business_applications_one_pending ON business_applications (business_id) WHERE status = 'submitted';
                 SQL);
