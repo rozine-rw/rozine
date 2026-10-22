@@ -328,7 +328,10 @@ export type PolicyItem = {
         | 'kyc_investor_selfie'
         | 'kyc_investor_dob'
         | 'kyc_investor_address'
-        | 'kyc_business_rdb';
+        | 'kyc_business_rdb'
+        | 'bank_signatories'
+        | 'recovery_rate'
+        | 'withdrawal_daily_cap';
     /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
     term?: PolicyTerm;
@@ -343,6 +346,7 @@ export type PolicyTerm =
     | 'late_from_due'
     | 'day_31'
     | 'late_schedule'
+    | 'pro_rata'
     | 'resident_rwanda'
     | 'rwanda'
     | 'not_collected';

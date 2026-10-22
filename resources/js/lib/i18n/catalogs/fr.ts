@@ -1845,6 +1845,16 @@ const fr: Catalog = {
     'admin.policy.residency': 'Résidence',
     'admin.policy.risk_statements':
         'Déclarations de risque avant un premier investissement',
+    'admin.policy.bank_signatories': 'Signataires bancaires minimum',
+    'admin.policy.recovery_rate': 'Taux de recouvrement en cas de défaut',
+    'admin.policy.withdrawal_daily_cap': 'Plafond de retrait journalier',
+    'admin.policy.hint.bank_signatories':
+        'Un seul représentant officiel agit pour l’entreprise. Un second signataire n’est jamais exigé.',
+    'admin.policy.hint.recovery_rate':
+        'Ce qui est recouvré après un défaut revient aux détenteurs. Rozine n’en garde rien et ne couvre pas les pertes.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Aucun plafond journalier. Chaque retrait est limité, comme indiqué ci-dessus.',
+    'admin.policy.term.pro_rata': 'La totalité, au prorata des détenteurs',
     'admin.policy.hint.platform_fee':
         "Prélevés sur la levée lors du versement à l'entreprise.",
     'admin.policy.hint.cpa_share':

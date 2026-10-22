@@ -47,7 +47,7 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
     expect($values)->toMatchArray([
         'target_dscr' => '1.50×', 'min_rate' => '10%', 'max_rate' => '15%', 'note_unit_price' => 'RWF 5,000', 'min_principal' => 'RWF 3,000,000',
         'max_principal' => 'RWF 100,000,000', 'min_term' => '3', 'max_term' => '6', 'first_issue_months' => '36', 'repeat_issue_months' => '12',
-        'minimum_age' => '18', 'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
+        'minimum_age' => '18', 'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000', 'bank_signatories' => '1'])
         ->and($values)->not->toHaveKeys(['rate_band', 'tenors'])
         ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'investor', 'kyc', 'penalties', 'limits'])
         ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
@@ -57,9 +57,10 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'registration_countries' => 'rwanda',
             'rdb_certificate' => 'required', 'max_notes' => 'not_set', 'residency' => 'resident_rwanda', 'kyc_investor_id' => 'required',
             'kyc_investor_selfie' => 'required', 'kyc_investor_dob' => 'required', 'kyc_investor_address' => 'not_collected', 'kyc_business_rdb' => 'required', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
-            'default_at' => 'day_31', 'auto_freeze' => 'not_set'])
+            'default_at' => 'day_31', 'recovery_rate' => 'pro_rata', 'auto_freeze' => 'not_set', 'withdrawal_daily_cap' => 'none'])
         ->and(array_column($rules, 'version', 'key'))->toMatchArray(['min_revenue' => 'brs-2.0-uw-r01', 'max_notes' => 'brs-2.0-od-20',
-            'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null]);
+            'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null,
+            'bank_signatories' => 'brs-2.0-kyc-r03', 'recovery_rate' => 'brs-2.0-col-r06', 'withdrawal_daily_cap' => 'brs-2.0-led-r04']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rules', []));
 });

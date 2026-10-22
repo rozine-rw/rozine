@@ -1698,7 +1698,7 @@ const en = {
     'admin.policy.min_revenue': 'Min annual revenue',
     'admin.policy.min_statement_years': 'Min years of statements',
     'admin.policy.rdb_certificate': 'RDB certificate',
-    'admin.policy.max_notes': 'Max notes / business',
+    'admin.policy.max_notes': 'Max active notes / business',
     'admin.policy.platform_fee': 'Platform fee · at disbursement',
     'admin.policy.cpa_share': 'CPA share — Kigali',
     'admin.policy.listing_fee': 'Listing fee',
@@ -1724,7 +1724,7 @@ const en = {
     'admin.policy.loss_reserve': 'Loss reserve',
     'admin.policy.min_rating': 'Minimum rating to raise',
     'admin.policy.revenue_cap': 'Largest raise · share of revenue',
-    'admin.policy.kyc_reverify': 'KYC re-verify',
+    'admin.policy.kyc_reverify': 'KYC re-verification',
     'admin.policy.late_charge': 'Late charges',
     'admin.policy.miss_grace': 'Miss grace period',
     'admin.policy.default_at': 'Default',
@@ -1740,6 +1740,16 @@ const en = {
     'admin.policy.sandbox_principal': 'Sandbox limit · principal outstanding',
     'admin.policy.residency': 'Allowed countries of residence',
     'admin.policy.risk_statements': 'Risk statements before a first investment',
+    'admin.policy.bank_signatories': 'Min bank signatories',
+    'admin.policy.recovery_rate': 'Default recovery rate',
+    'admin.policy.withdrawal_daily_cap': 'Daily withdrawal cap',
+    'admin.policy.hint.bank_signatories':
+        'One official representative acts for the business. A second signatory is never required.',
+    'admin.policy.hint.recovery_rate':
+        'What is recovered on a default goes to holders. Rozine keeps none and does not cover shortfalls.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'No daily cap. Each withdrawal is limited instead, as set above.',
+    'admin.policy.term.pro_rata': 'All of it, pro rata to holders',
     'admin.policy.hint.platform_fee':
         'Taken from the raise when it is disbursed to the business.',
     'admin.policy.hint.cpa_share':

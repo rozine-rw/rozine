@@ -1835,6 +1835,18 @@ const rw: Catalog = {
     'admin.policy.residency': 'Aho atuye',
     'admin.policy.risk_statements':
         "Amatangazo y'ingaruka mbere y'ishoramari rya mbere",
+    'admin.policy.bank_signatories': 'Umubare muto w’abasinya kuri konti',
+    'admin.policy.recovery_rate': 'Igipimo cy’ibigaruzwa iyo umwenda utishyuwe',
+    'admin.policy.withdrawal_daily_cap':
+        'Igipimo ntarengwa cyo kubikuza ku munsi',
+    'admin.policy.hint.bank_signatories':
+        'Uhagarariye ikigo umwe ni we ugikorera. Nta wundi usinya usabwa.',
+    'admin.policy.hint.recovery_rate':
+        'Ibigaruzwe nyuma y’umwenda utishyuwe bihabwa abafite inoti. Rozine nta cyo igumana kandi ntiyishyura igihombo.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Nta gipimo cya buri munsi. Buri kubikuza gifite imbibi, nk’uko byavuzwe haruguru.',
+    'admin.policy.term.pro_rata':
+        'Byose, bigabanywa abafite inoti ku kigereranyo',
     'admin.policy.hint.platform_fee':
         'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
     'admin.policy.hint.cpa_share':
