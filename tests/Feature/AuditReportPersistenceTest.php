@@ -250,6 +250,9 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
     // The pending-slot key references application_business_key, which the report migration drops, so repeat applications come off first and go back last.
     $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
+    // The fixture's submission leaves the deferred pending-slot key check queued, and a table with queued checks cannot be dropped.
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
     $repeatApplications->down();
     $cartLines->down();
     $automaticDisbursement->down();
