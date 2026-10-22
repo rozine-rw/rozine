@@ -103,6 +103,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     figures?: Partial<Record<string, Money>>;
     /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
     streams?: FinanceStream[];
+    /** Finance only: the window of Kigali dates `Y-m-d` every figure covers; null ends are open. */
+    period?: { from: string | null; to: string | null };
     /** Engines and Ratings, for underwriters: the engine's settings and the rating scorecard. */
     engine?: EngineRow[];
     /** A KPI tile's count by its design key, where the server reads one (Ratings). */

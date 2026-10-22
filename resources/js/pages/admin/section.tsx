@@ -1,3 +1,4 @@
+import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { AdminAcademies } from '@/components/admin/academies';
 import { AdminFrame } from '@/components/admin/admin-frame';
@@ -20,7 +21,12 @@ import {
     policyValue,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
+import {
+    formatCount,
+    formatDate,
+    formatRwf,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
@@ -77,6 +83,12 @@ function DesignedSection(props: AdminPendingSectionProps) {
     return (
         <AdminFrame {...props}>
             <section aria-label={title}>
+                {props.period !== undefined && (
+                    <FinancePeriod
+                        period={props.period}
+                        serverTime={props.server_time}
+                    />
+                )}
                 {design.kpis !== undefined && (
                     <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
                         {design.kpis.map((kpi, index) => (
@@ -88,7 +100,16 @@ function DesignedSection(props: AdminPendingSectionProps) {
                                 sub={
                                     kpi.sub === undefined
                                         ? undefined
-                                        : t(kpi.sub)
+                                        : t(
+                                              props.period !== undefined &&
+                                                  (props.period.from !== null ||
+                                                      props.period.to !==
+                                                          null) &&
+                                                  kpi.label ===
+                                                      'admin.design.finance.kpi.revenue'
+                                                  ? 'admin.design.finance.kpi.revenue.sub_period'
+                                                  : kpi.sub,
+                                          )
                                 }
                             />
                         ))}
@@ -137,6 +158,144 @@ function DesignedSection(props: AdminPendingSectionProps) {
                 </div>
             </section>
         </AdminFrame>
+    );
+}
+
+/** Finance's quick windows, in days ending today; null reads every posting. */
+const PERIOD_PRESETS = [null, 7, 30, 90, 365] as const;
+
+const PERIOD_DATE =
+    'rounded-lg border border-rz-hairline bg-rz-surface px-[7px] py-[5px] text-[11px] text-rz-ink uppercase outline-none';
+
+/** A Kigali date `Y-m-d`, `days` before the server's now. */
+function kigaliDay(serverTime: string, days = 0): string {
+    const at = new Date(Date.parse(serverTime) - days * 86_400_000);
+
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Africa/Kigali',
+    }).format(at);
+}
+
+/**
+ * Finance's window: every figure on the page counts only what the ledger posted between the chosen
+ * Kigali dates, both included. A quick window ends today; All time reads every posting.
+ */
+function FinancePeriod({
+    period,
+    serverTime,
+}: {
+    period: { from: string | null; to: string | null };
+    serverTime: string;
+}) {
+    const { t, locale } = useTranslation();
+    const { from: refusedFrom, to: refusedTo } = usePage().props
+        .errors as Partial<Record<'from' | 'to', string>>;
+    const refused = refusedTo ?? refusedFrom;
+    const today = kigaliDay(serverTime);
+    const reload = (next: { from: string | null; to: string | null }) =>
+        router.reload({
+            data: { from: next.from || null, to: next.to || null },
+            only: ['figures', 'streams', 'period', 'errors'],
+        });
+    const presetOf = (days: (typeof PERIOD_PRESETS)[number]) =>
+        days === null
+            ? { from: null, to: null }
+            : { from: kigaliDay(serverTime, days - 1), to: today };
+    const chosen = PERIOD_PRESETS.find((days) => {
+        const window = presetOf(days);
+
+        return window.from === period.from && window.to === period.to;
+    });
+    const presetLabel = (days: (typeof PERIOD_PRESETS)[number]) =>
+        days === null
+            ? t('admin.today.capital.all_time')
+            : days === 365
+              ? t('admin.finance.period.year')
+              : t('admin.finance.period.days', { count: days });
+    const label =
+        chosen !== undefined
+            ? presetLabel(chosen)
+            : period.from !== null && period.to !== null
+              ? t('admin.today.capital.range', {
+                    from: formatDate(period.from, locale),
+                    to: formatDate(period.to, locale),
+                })
+              : period.from !== null
+                ? t('admin.finance.period.since', {
+                      from: formatDate(period.from, locale),
+                  })
+                : // Not both ends are open here: that window is All time.
+                  t('admin.finance.period.until', {
+                      to: formatDate(String(period.to), locale),
+                  });
+
+    return (
+        <div
+            className={cn(
+                CARD,
+                CARD_SHADOW,
+                'mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-[18px] py-3.5',
+            )}
+        >
+            <div>
+                <p className={CAPTION}>{t('admin.finance.period.showing')}</p>
+                <p className="text-[14px] font-bold text-rz-ink">{label}</p>
+                <p className="text-[12px] text-rz-muted">
+                    {t('admin.finance.period.hint')}
+                </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+                {PERIOD_PRESETS.map((days) => (
+                    <button
+                        key={days ?? 'all'}
+                        type="button"
+                        aria-pressed={days === chosen}
+                        onClick={() => reload(presetOf(days))}
+                        className={cn(
+                            'rounded-lg border px-2.5 py-[5px] text-[11px] font-semibold',
+                            days === chosen
+                                ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
+                                : 'border-rz-hairline bg-rz-surface text-rz-slate',
+                        )}
+                    >
+                        {presetLabel(days)}
+                    </button>
+                ))}
+                <input
+                    type="date"
+                    aria-label={t('admin.today.capital.from_date')}
+                    aria-invalid={refused !== undefined || undefined}
+                    max={period.to ?? undefined}
+                    value={period.from ?? ''}
+                    onChange={(event) =>
+                        reload({ ...period, from: event.target.value })
+                    }
+                    className={PERIOD_DATE}
+                />
+                <span className="text-[11px] text-rz-muted">
+                    {t('admin.finance.period.to')}
+                </span>
+                <input
+                    type="date"
+                    aria-label={t('admin.today.capital.to_date')}
+                    aria-invalid={refused !== undefined || undefined}
+                    min={period.from ?? undefined}
+                    value={period.to ?? ''}
+                    onChange={(event) =>
+                        reload({ ...period, to: event.target.value })
+                    }
+                    className={PERIOD_DATE}
+                />
+                {refused !== undefined && (
+                    <p
+                        role="alert"
+                        className="basis-full text-right text-[11.5px] font-semibold text-rz-danger-text"
+                    >
+                        {t('admin.trend.refused')}
+                    </p>
+                )}
+            </div>
+        </div>
     );
 }
 

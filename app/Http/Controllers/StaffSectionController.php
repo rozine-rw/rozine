@@ -23,7 +23,7 @@ use Inertia\Response;
  * it, and it renders the console frame with the section's title and an empty state. Nothing is
  * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
- * whoever may read the ledger, Engines and Ratings show underwriters the engine's settings and the
+ * whoever may read the ledger, over every posting or a window of Kigali dates, Engines and Ratings show underwriters the engine's settings and the
  * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, and App
  * Control shows how much of the sandbox's limits is used, which app features are built and the largest Businesses.
  */
@@ -72,7 +72,12 @@ class StaffSectionController extends Controller
             return to_route('staff.investor-verifications.index');
         }
         $name = (string) $request->user()?->name;
-        $finance = $section === 'finance' && in_array('ledger.view', $permissions, true) ? self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier())) : [];
+        /** @var array{from?: string|null, to?: string|null} $period */
+        $period = $section === 'finance' ? $request->validate(['from' => ['sometimes', 'nullable', 'date_format:Y-m-d'],
+            'to' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:from']]) : [];
+        $period = ['from' => $period['from'] ?? null, 'to' => $period['to'] ?? null];
+        $finance = $section === 'finance' && in_array('ledger.view', $permissions, true)
+            ? [...self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier(), $period['from'], $period['to'])), 'period' => $period] : [];
         $underwriter = in_array('applications.review', $permissions, true);
         $content = $section === 'app-control' && in_array('businesses.view', $permissions, true)
             ? self::content($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'raised', '', '', self::CONTENT_LIMIT)['rows']) : [];

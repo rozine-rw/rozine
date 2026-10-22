@@ -1246,6 +1246,17 @@ const rw: Catalog = {
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
     'admin.design.finance.kpi.revenue.sub': 'Inzira zose, kuva mu ntangiriro',
+    'admin.design.finance.kpi.revenue.sub_period': 'Inzira zose, muri iki gihe',
+    'admin.finance.period.showing': 'Birerekana',
+    'admin.finance.period.hint': 'Bihindura imibare yose iri kuri uru rupapuro',
+    'admin.finance.period.days': {
+        one: 'Umunsi {count}',
+        other: 'Iminsi {count}',
+    },
+    'admin.finance.period.year': 'Umwaka 1',
+    'admin.finance.period.to': 'kugeza',
+    'admin.finance.period.since': 'Kuva {from}',
+    'admin.finance.period.until': 'Kugeza {to}',
     'admin.design.finance.kpi.primary.sub':
         "Amafaranga y'urubuga, umugabane wa Rozine",
     'admin.design.finance.kpi.investor_fees.sub':

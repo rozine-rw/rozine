@@ -1258,6 +1258,18 @@ const fr: Catalog = {
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
     'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.revenue.sub_period':
+        'Tous les flux, sur cette période',
+    'admin.finance.period.showing': 'Affichage',
+    'admin.finance.period.hint': 'Filtre chaque chiffre de cette page',
+    'admin.finance.period.days': {
+        one: '{count} jour',
+        other: '{count} jours',
+    },
+    'admin.finance.period.year': '1 an',
+    'admin.finance.period.to': 'au',
+    'admin.finance.period.since': 'Depuis le {from}',
+    'admin.finance.period.until': 'Jusqu’au {to}',
     'admin.design.finance.kpi.primary.sub':
         'Frais de plateforme, part de Rozine',
     'admin.design.finance.kpi.investor_fees.sub':

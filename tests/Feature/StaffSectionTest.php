@@ -9,6 +9,7 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
@@ -63,6 +64,28 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             'bank_signatories' => 'brs-2.0-kyc-r03', 'recovery_rate' => 'brs-2.0-col-r06', 'withdrawal_daily_cap' => 'brs-2.0-led-r04']);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rules', []));
+});
+
+test('Finance counts only the fees posted within a window of Kigali dates, and refuses a reversed window', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $posted = CarbonImmutable::parse((string) DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+        ->join('ledger_entries', 'ledger_entries.id', '=', 'ledger_lines.entry_id')->where('ledger_accounts.kind', 'platform_fee_revenue')
+        ->max('ledger_entries.created_at'))->setTimezone('Africa/Kigali');
+    $day = $posted->toDateString();
+    $treasury = sectionStaff(['treasury']);
+    $revenue = fn (array $window): mixed => $this->actingAs($treasury)->get('/admin/finance?'.http_build_query($window))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('period', ['from' => $window['from'] ?? null, 'to' => $window['to'] ?? null]));
+
+    $revenue(['from' => $day, 'to' => $day])->assertInertia(fn (Assert $page) => $page->where('figures.revenue.amount', '194400')
+        ->where('streams.1.collected.amount', '129600'));
+    $revenue(['from' => $posted->addDay()->toDateString()])->assertInertia(fn (Assert $page) => $page->where('figures.revenue.amount', '0')
+        ->where('figures.primary.amount', '0')->where('streams.1.collected.amount', '0'));
+    $revenue(['to' => $posted->subDay()->toDateString()])->assertInertia(fn (Assert $page) => $page->where('figures.revenue.amount', '0'));
+    $revenue([])->assertInertia(fn (Assert $page) => $page->where('figures.revenue.amount', '194400'));
+
+    $this->actingAs($treasury)->from('/admin/finance')->get('/admin/finance?from='.$day.'&to='.$posted->subDay()->toDateString())
+        ->assertRedirect('/admin/finance')->assertSessionHasErrors('to');
+    $this->actingAs($treasury)->from('/admin/finance')->get('/admin/finance?from=10-10-2026')->assertSessionHasErrors('from');
 });
 
 test('Finance shows the fee revenue the ledger holds to whoever may read the ledger, and nothing to anyone else', function (): void {
