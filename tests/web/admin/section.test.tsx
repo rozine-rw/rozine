@@ -260,6 +260,12 @@ describe('Policies', () => {
                             value: '18',
                             version: null,
                         },
+                        {
+                            tab: 'investor',
+                            key: 'concentration',
+                            value: '50%',
+                            version: 'brs-2.0-inv-r01',
+                        },
                     ],
                 })}
             />,
@@ -297,8 +303,15 @@ describe('Policies', () => {
                 screen.getByRole('table', { name: 'KYC requirements' }),
             ).getAllByRole('row')[1],
         ).toHaveTextContent('Minimum ageYoungest an investor may be.18—');
-        // Five groups have no rule in this fixture, so each shows its empty state.
-        expect(screen.getAllByText('No rules to show yet.')).toHaveLength(5);
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Investor eligibility' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent(
+            'Max investment / noteCap one investor can place in a single note, as a share of the raise.50%brs-2.0-inv-r01',
+        );
+        // Four groups have no rule in this fixture, so each shows its empty state.
+        expect(screen.getAllByText('No rules to show yet.')).toHaveLength(4);
     });
 });
 

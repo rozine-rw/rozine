@@ -1706,7 +1706,7 @@ const rw: Catalog = {
     'admin.policy.miss_grace': "Igihe cy'imbabazi",
     'admin.policy.default_at': 'Kunanirwa kwishyura',
     'admin.policy.auto_freeze': 'Guhagarika byikora iyo hananiwe',
-    'admin.policy.min_investment': 'Ishoramari rito · igice kimwe',
+    'admin.policy.min_investment': 'Ishoramari rito',
     'admin.policy.concentration':
         "Igice kinini cy'ubukusanyamari ku mushoramari",
     'admin.policy.raise_days': 'Igihe cyo gukusanya · iminsi',
