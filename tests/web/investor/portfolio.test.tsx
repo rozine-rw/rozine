@@ -317,6 +317,16 @@ describe('Portfolio', () => {
 });
 
 describe('Holding detail', () => {
+    it.each([
+        ['2026-09-23T09:00:00+02:00', 'in 10 days'],
+        ['2026-10-02T09:00:00+02:00', 'Tomorrow'],
+        ['2026-10-03T09:00:00+02:00', 'Today'],
+    ])('counts the next payment from the server clock at %s', (now, due) => {
+        render(<InvestorHolding {...{ ...holding(), server_time: now }} />);
+
+        expect(screen.getAllByText(due)).toHaveLength(2);
+    });
+
     it('shows the note’s figures, payments, rating and audited reports', async () => {
         const user = userEvent.setup();
 
