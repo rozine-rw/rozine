@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\CommandOperation;
 use App\Models\IdentityAuditEvent;
 use App\Models\Party;
@@ -12,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\StaffFixture;
 
 /**
  * @param  list<string>  $roles
@@ -20,7 +20,7 @@ use Laravel\Sanctum\Sanctum;
 function trailStaff(array $roles, array $attributes = []): User
 {
     $user = User::factory()->withTwoFactor()->create($attributes);
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Activity trail assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Activity trail assignment.');
 
     return $user;
 }

@@ -24,7 +24,9 @@ class StaffPrimaryMarketController extends Controller
     public function __invoke(ListPrimaryMarketRequest $request, BrowsePrimaryMarket $market, GetStaffAccess $access): Response|StaffPrimaryMarketResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
-        $page = $market->handle($actorId);
+        $from = $request->validated('from');
+        $to = $request->validated('to');
+        $page = $market->handle($actorId, $from === null ? null : (string) $from, $to === null ? null : (string) $to);
         $staff = $access->handle($actorId);
 
         $resource = new StaffPrimaryMarketResource([...$page, 'search' => trim((string) $request->validated('q', '')),

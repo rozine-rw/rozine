@@ -1045,6 +1045,11 @@ const en = {
     'admin.design.col.bands': 'Bands',
     'admin.design.col.filled_mtd': 'Filled MTD',
     'admin.design.col.stream': 'Stream',
+    'admin.design.col.limit': 'Limit',
+    'admin.design.col.used': 'Used',
+    'admin.design.col.cap': 'Cap',
+    'admin.design.col.share': 'Share used',
+    'admin.design.col.rate': 'Rate',
     'admin.design.col.paid_by': 'Paid by',
     'admin.design.col.collected': 'Collected',
     'admin.design.col.position': 'Position',
@@ -1186,10 +1191,25 @@ const en = {
     'admin.design.finance.kpi.primary': 'Primary market',
     'admin.design.finance.kpi.investor_fees': 'Investor fees',
     'admin.design.finance.kpi.secondary': 'Secondary market',
+    'admin.design.finance.kpi.revenue.sub': 'Every stream, all time',
+    'admin.design.finance.kpi.primary.sub': 'Platform fee, Rozine share',
+    'admin.design.finance.kpi.investor_fees.sub': 'Earnings fee bands',
+    'admin.design.finance.kpi.secondary.sub': 'Resale fee',
     'admin.design.finance.tab.streams': 'Revenue streams',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
-    'admin.design.finance.streams.title': 'Revenue streams',
-    'admin.design.finance.streams.empty': 'No revenue to show yet.',
+    'admin.design.finance.raise.title': 'Primary market',
+    'admin.design.finance.raise.sub': 'What businesses pay to raise money',
+    'admin.design.finance.raise.empty': 'No raise fees to show yet.',
+    'admin.design.finance.earnings.title': 'Investor fees',
+    'admin.design.finance.earnings.sub': 'What investors pay on what they make',
+    'admin.design.finance.earnings.empty': 'No earnings fees to show yet.',
+    'admin.design.finance.trades.title': 'Secondary market',
+    'admin.design.finance.trades.sub': 'What early exits and trades pay',
+    'admin.design.finance.trades.empty': 'No trade fees to show yet.',
+    'admin.design.finance.residual.title': 'Cost recovery and residuals',
+    'admin.design.finance.residual.sub':
+        'Small lines. Forecast nothing from them.',
+    'admin.design.finance.residual.empty': 'No residual lines to show yet.',
     'admin.design.finance.ledger.title': 'Ledger & payouts',
     'admin.design.finance.ledger.empty': 'No ledger entries to show yet.',
     'admin.design.messaging.tab.automations': 'Automations',
@@ -1352,10 +1372,36 @@ const en = {
     'admin.design.app_control.apps.sub':
         'The Investor, Business and Auditor apps and their features.',
     'admin.design.app_control.apps.empty': 'No app settings to show yet.',
+    'admin.design.app_control.app.investor': 'Investor App',
+    'admin.design.app_control.app.business': 'Business App',
+    'admin.design.app_control.app.auditor': 'Auditor App',
+    'admin.design.app_control.online': 'Online',
+    'admin.design.app_control.feature.sign_ups': 'New sign-ups',
+    'admin.design.app_control.feature.secondary_market': 'Secondary Market',
+    'admin.design.app_control.feature.academy': 'Investor Academy',
+    'admin.design.app_control.feature.note_creation': 'RNP creation',
+    'admin.design.app_control.feature.monthly_reports': 'Monthly reports',
+    'admin.design.app_control.feature.auditor_sign_ups': 'Auditor sign-ups',
+    'admin.design.app_control.feature.auto_dispatch': '30km auto-dispatch',
+    'admin.design.app_control.feature.flash_audits': 'Flash Audits (24h)',
+    'admin.design.app_control.state.live': 'Live',
+    'admin.design.app_control.state.not_built': 'Not built yet',
+    'admin.design.app_control.sandbox.title': 'Sandbox limits',
+    'admin.design.app_control.sandbox.sub':
+        'How much of each CMA sandbox hard limit is used now. Nothing beyond a limit is accepted.',
+    'admin.design.app_control.sandbox.empty': 'No sandbox usage to show yet.',
+    'admin.design.app_control.sandbox.businesses':
+        'Businesses with an active mandate',
+    'admin.design.app_control.sandbox.investors': 'Verified investors',
+    'admin.design.app_control.sandbox.principal': 'Principal outstanding',
     'admin.design.app_control.content.title': 'Content',
     'admin.design.app_control.content.sub':
         'Items across the Investor, Business and Auditor apps.',
     'admin.design.app_control.content.empty': 'No content to show yet.',
+    'admin.design.app_control.type.business': 'Business',
+    'admin.design.app_control.unrated': 'Not rated yet',
+    'admin.design.app_control.content_state.active': 'Active',
+    'admin.design.app_control.content_state.pending': 'Pending verification',
     'admin.design.engines.tab.sizing': 'Sizing',
     'admin.design.engines.tab.refinance': 'Refinance',
     'admin.design.engines.tab.queue': 'The queue',
@@ -1381,7 +1427,19 @@ const en = {
     'admin.design.policies.tab.kyc': 'KYC requirements',
     'admin.design.policies.tab.penalties': 'Compliance & penalties',
     'admin.design.policies.tab.limits': 'Limits',
-    'admin.design.policies.rules.title': 'Rules',
+    'admin.design.policies.fees.sub':
+        'What each side pays Rozine, and the share that goes to the auditor of record.',
+    'admin.design.policies.underwriting.sub':
+        'The rules that decide whether a raise is approved and on what terms.',
+    'admin.design.policies.business.sub':
+        'Who is allowed to raise capital on Rozine.',
+    'admin.design.policies.investor.sub': 'Who is allowed to invest on Rozine.',
+    'admin.design.policies.kyc.sub':
+        'What each side must provide. Required blocks transacting until met; not collected is never asked for.',
+    'admin.design.policies.penalties.sub':
+        'How Rozine handles late payments, defaults and re-verification.',
+    'admin.design.policies.limits.sub':
+        'Guardrails on activity across both apps.',
     'admin.design.policies.rules.empty': 'No rules to show yet.',
     'admin.design.system_health.signals.title': 'Signals',
     'admin.design.system_health.signals.empty': 'No signals to show yet.',
@@ -1462,10 +1520,32 @@ const en = {
     'admin.kyc.tab.submitted': 'Waiting for review',
     'admin.kyc.tab.decided': 'Decided',
     'admin.kyc.table': 'Identity submissions',
-    'admin.kyc.col.person': 'Person',
+    'admin.kyc.queue': 'KYC review queue',
     'admin.kyc.col.document': 'Document',
-    'admin.kyc.col.submitted': 'Submitted',
+    'admin.kyc.col.applicant': 'Applicant',
+    'admin.kyc.col.checks': 'Automated checks',
+    'admin.kyc.submitted_ago': 'Submitted {ago}',
+    'admin.kyc.checks.passed': 'All automated KYC checks passed',
+    'admin.kyc.checks.screening':
+        'Age, ID number, documents, selfie · no screening yet',
+    'admin.kyc.check.age': 'Age 18 or over',
+    'admin.kyc.check.id_number': 'ID number format',
+    'admin.kyc.check.documents': 'Document photos uploaded',
+    'admin.kyc.check.selfie': 'Selfie taken',
+    'admin.kyc.stats.aml': 'AML alerts',
+    'admin.kyc.stats.sanctions': 'Sanctions hits',
+    'admin.kyc.stats.not_connected': 'Not connected',
+    'admin.kyc.stats.screening_sub': 'Screening (KYC-R04) not built yet',
     'admin.kyc.col.status': 'Status',
+    'admin.kyc.col.decision': 'Decision',
+    'admin.kyc.review': 'Review',
+    'admin.kyc.review_named': 'Review {name}',
+    'admin.kyc.stats.completion': 'KYC completion',
+    'admin.kyc.stats.completion_sub': '{verified} of {total} verified',
+    'admin.kyc.stats.percent': '{value}%',
+    'admin.kyc.stats.pending': 'Pending reviews',
+    'admin.kyc.stats.turnaround': 'Avg {hours}h turnaround',
+    'admin.kyc.stats.turnaround_none': 'No decisions in 30 days',
     'admin.kyc.id_type.national_id': 'National ID',
     'admin.kyc.id_type.passport': 'Passport',
     'admin.kyc.id_type.drivers_license': 'Driving licence',
@@ -1610,37 +1690,182 @@ const en = {
         'Instalments paid on time · share of conduct',
     'admin.engine.report_conduct': 'Monthly reports on time · share of conduct',
     'admin.policy.eyebrow': 'Set in Policies',
+    'admin.policy.open': 'Policies',
     'admin.policy.target_dscr': 'Target DSCR',
     'admin.policy.listing_audit': 'Listing audit',
-    'admin.policy.audit_routing': 'Audit routing band',
+    'admin.policy.audit_routing': 'Audit routing floor',
     'admin.policy.rate_band': 'Rate band · flat, all-in',
     'admin.policy.min_revenue': 'Min annual revenue',
-    'admin.policy.min_statement_years': 'Min statement years',
+    'admin.policy.min_statement_years': 'Min years of statements',
     'admin.policy.rdb_certificate': 'RDB certificate',
     'admin.policy.max_notes': 'Max notes / business',
     'admin.policy.platform_fee': 'Platform fee · at disbursement',
-    'admin.policy.cpa_share': 'Audit Partner share of the fee',
+    'admin.policy.cpa_share': 'CPA share — Kigali',
     'admin.policy.listing_fee': 'Listing fee',
     'admin.policy.repayment_fee': 'Repayment fee',
     'admin.payments.policy_title': 'Fee schedule in effect',
-    'admin.policy.minimum_age': 'Minimum investor age',
+    'admin.policy.minimum_age': 'Minimum age',
     'admin.policy.identity_evidence': 'Identity files per case',
     'admin.policy.complaint_acknowledge': 'Complaint acknowledged within',
     'admin.policy.complaint_resolve': 'Complaint resolved within',
     'admin.kyc.policy_title': 'Compliance rules in effect',
-    'admin.policy.min_principal': 'Smallest raise',
-    'admin.policy.max_principal': 'Largest raise',
-    'admin.policy.tenors': 'Term · months',
+    'admin.policy.min_principal': 'Minimum raise target',
+    'admin.policy.max_principal': 'Maximum raise target',
     'admin.policy.first_issue_months': 'Audited months · first issue',
     'admin.policy.repeat_issue_months': 'Audited months · repeat issue',
     'admin.policy.withdrawal_min': 'Smallest withdrawal',
     'admin.policy.withdrawal_max': 'Largest withdrawal',
+    'admin.policy.cpa_share_upcountry': 'CPA share — upcountry',
+    'admin.policy.resale_fee': 'Resale fee · seller',
+    'admin.policy.earnings_fee': 'Earnings fee bands',
+    'admin.policy.cpa_earnings_share': 'CPA share of the earnings fee',
+    'admin.policy.application_fee': 'Application fee · sandbox',
+    'admin.policy.withdrawal_fee': 'Withdrawal fee',
+    'admin.policy.loss_reserve': 'Loss reserve',
+    'admin.policy.min_rating': 'Minimum rating to raise',
+    'admin.policy.revenue_cap': 'Largest raise · share of revenue',
+    'admin.policy.kyc_reverify': 'KYC re-verify',
+    'admin.policy.late_charge': 'Late charges',
+    'admin.policy.miss_grace': 'Miss grace period',
+    'admin.policy.default_at': 'Default',
+    'admin.policy.auto_freeze': 'Auto-freeze on default',
+    'admin.policy.min_investment': 'Minimum investment · one unit',
+    'admin.policy.concentration': 'Max investment / note · share of the raise',
+    'admin.policy.raise_days': 'Raise window · days',
+    'admin.policy.resale_listing_days': 'Resale listing life · days',
+    'admin.policy.resale_reservation_minutes': 'Resale reservation · minutes',
+    'admin.policy.cpa_radius': 'CPA dispatch radius',
+    'admin.policy.sandbox_businesses': 'Sandbox limit · businesses',
+    'admin.policy.sandbox_investors': 'Sandbox limit · investors',
+    'admin.policy.sandbox_principal': 'Sandbox limit · principal outstanding',
+    'admin.policy.residency': 'Allowed countries of residence',
+    'admin.policy.risk_statements': 'Risk statements before a first investment',
+    'admin.policy.hint.platform_fee':
+        'Taken from the raise when it is disbursed to the business.',
+    'admin.policy.hint.cpa_share':
+        'Share of the platform fee paid to the auditor of record on Kigali deals.',
+    'admin.policy.hint.cpa_share_upcountry':
+        'The same share on deals outside Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Taken from what an investor earns. The band follows the investor's tier.",
+    'admin.policy.hint.cpa_earnings_share':
+        'Share of the earnings fee paid to the auditor of record.',
+    'admin.policy.hint.resale_fee':
+        'Charged to the seller when a note is resold before maturity.',
+    'admin.policy.hint.listing_fee': 'Charged to a business to list a raise.',
+    'admin.policy.hint.repayment_fee': 'Charged on each monthly repayment.',
+    'admin.policy.hint.application_fee':
+        'Charged to apply while Rozine runs in the sandbox.',
+    'admin.policy.hint.withdrawal_fee': 'Applied to wallet withdrawals.',
+    'admin.policy.hint.loss_reserve':
+        'Share of fees set aside against defaults.',
+    'admin.policy.hint.target_dscr':
+        'Max raise is capped so cash flow covers repayments at this ratio.',
+    'admin.policy.hint.listing_audit':
+        'A CPA audits every raise before it lists.',
+    'admin.policy.hint.audit_routing':
+        'Lowest DSCR a deal may have. Below it, the application is refused.',
+    'admin.policy.hint.min_rate': 'Lowest flat rate a note can carry, all-in.',
+    'admin.policy.hint.max_rate': 'Highest flat rate a note can carry, all-in.',
+    'admin.policy.hint.note_unit_price': 'Price of a single Rozine note.',
+    'admin.policy.hint.min_term': 'Shortest allowed note term.',
+    'admin.policy.hint.max_term': 'Longest allowed note term.',
+    'admin.policy.hint.min_principal': 'Smallest raise a business may request.',
+    'admin.policy.hint.max_principal': 'Largest raise a business may request.',
+    'admin.policy.hint.min_rating': 'Lowest Rozine rating that may raise.',
+    'admin.policy.hint.revenue_cap':
+        'Largest raise as a share of verified annual revenue.',
+    'admin.policy.hint.registration_countries':
+        'Where a business must be registered.',
+    'admin.policy.hint.min_statement_years':
+        'Years of bank or MoMo statements required.',
+    'admin.policy.hint.min_revenue':
+        'Minimum revenue over the trailing 12 months to qualify.',
+    'admin.policy.hint.first_issue_months':
+        'Months of statements audited before a first raise.',
+    'admin.policy.hint.repeat_issue_months':
+        'Months audited before each later raise.',
+    'admin.policy.hint.rdb_certificate':
+        'Business must upload a valid RDB certificate.',
+    'admin.policy.hint.max_notes':
+        'Live and repaying notes a business may hold at once.',
+    'admin.policy.hint.residency': 'Where an investor must live.',
+    'admin.policy.hint.minimum_age': 'Youngest an investor may be.',
+    'admin.policy.hint.min_investment': 'Smallest single investment allowed.',
+    'admin.policy.hint.concentration':
+        'Most one investor may hold of a single raise.',
+    'admin.policy.hint.risk_statements':
+        'Statements an investor accepts before a first investment.',
+    'admin.policy.hint.kyc_investor_id': 'Front and back of the document.',
+    'admin.policy.hint.kyc_investor_selfie':
+        'A live photo matched to the document.',
+    'admin.policy.hint.kyc_investor_dob':
+        'Shows the investor is old enough to invest.',
+    'admin.policy.hint.kyc_investor_address': 'Onboarding does not ask for it.',
+    'admin.policy.hint.kyc_business_rdb':
+        'Checked before a business may apply.',
+    'admin.policy.hint.identity_evidence':
+        'Photos in each identity case: ID front, ID back and selfie.',
+    'admin.policy.hint.kyc_reverify':
+        'How often a user must verify their identity again.',
+    'admin.policy.hint.late_charge': 'Added to an overdue instalment.',
+    'admin.policy.hint.miss_grace': 'When a missed payment counts as late.',
+    'admin.policy.hint.default_at':
+        'When an unpaid instalment becomes a default.',
+    'admin.policy.hint.auto_freeze':
+        'Freeze a business automatically when it defaults.',
+    'admin.policy.hint.complaint_acknowledge':
+        'Time to acknowledge a new complaint.',
+    'admin.policy.hint.complaint_resolve': 'Time to resolve a complaint.',
+    'admin.policy.hint.raise_days': 'How long a raise stays open.',
+    'admin.policy.hint.withdrawal_min': 'Smallest wallet withdrawal.',
+    'admin.policy.hint.withdrawal_max': 'Largest wallet withdrawal allowed.',
+    'admin.policy.hint.resale_listing_days':
+        'How long a resale listing stays open.',
+    'admin.policy.hint.resale_reservation_minutes':
+        'How long a buyer holds a resale unit before paying.',
+    'admin.policy.hint.cpa_radius': 'Furthest a CPA is sent for an audit.',
+    'admin.policy.hint.sandbox_businesses':
+        'Cap on active businesses while in the CMA sandbox.',
+    'admin.policy.hint.sandbox_investors':
+        'Cap on verified investors while in the sandbox.',
+    'admin.policy.hint.sandbox_principal':
+        'Cap on total principal raised while in the sandbox.',
+    'admin.policy.hint.rate_band': 'Flat rate range a note can carry, all-in.',
+    'admin.policy.hint.dual_control_threshold':
+        'From this amount, a second approver is needed.',
+    'admin.policy.min_rate': 'Minimum rate · flat',
+    'admin.policy.max_rate': 'Maximum rate · flat',
+    'admin.policy.note_unit_price': 'Note unit price',
+    'admin.policy.min_term': 'Minimum term · months',
+    'admin.policy.max_term': 'Maximum term · months',
+    'admin.policy.registration_countries': 'Allowed countries of registration',
+    'admin.policy.kyc_investor_id': 'Investor · National ID / passport',
+    'admin.policy.kyc_investor_selfie': 'Investor · Liveness selfie',
+    'admin.policy.kyc_investor_dob': 'Investor · Date of birth',
+    'admin.policy.kyc_investor_address': 'Investor · Proof of address',
+    'admin.policy.kyc_business_rdb': 'Business · RDB certificate',
+    'admin.policy.term.rwanda': 'Rwanda',
+    'admin.policy.term.not_collected': 'Not collected',
+    'admin.policy.term.resident_rwanda': 'Resident in Rwanda',
+    'admin.policy.term.every_deal': 'Required on every deal',
+    'admin.policy.term.required': 'Required',
+    'admin.policy.term.not_set': 'Not set',
+    'admin.policy.term.none': 'None',
+    'admin.policy.term.late_from_due': 'None · late from the due date',
+    'admin.policy.term.day_31': 'Day 31 unpaid',
+    'admin.policy.term.late_schedule': '5% at D, day 7 and day 30 · cap 15%',
     'admin.finance.stream.platform_fee': 'Platform fee · Rozine share',
     'admin.finance.stream.audit_partner_share':
         'Platform fee · Audit Partner share (payable)',
     'admin.finance.stream.deposit_fees': 'Deposit fees',
     'admin.finance.paid_by.business': 'Businesses',
     'admin.finance.paid_by.investor': 'Investors',
+    'admin.finance.paid_by.seller': 'Seller',
+    'admin.finance.stream.earnings_fee': 'Earnings fee',
+    'admin.finance.stream.resale_fee': 'Resale fee',
+    'admin.finance.stream.withdrawal_fee': 'Withdrawal fee',
+    'admin.finance.stream.loss_reserve': 'Loss reserve',
     'admin.policy.dual_control_threshold': 'Two approvers from',
     'admin.time.now': 'just now',
     'admin.time.minutes': '{count}m ago',
@@ -1718,6 +1943,7 @@ const en = {
     'admin.today.capital.to_date': 'To date',
     'admin.today.capital.to_time': 'To time',
     'admin.today.capital.clear': 'Clear',
+    'admin.trend.refused': 'Choose a To date on or after the From date.',
     'admin.today.capital.all_time': 'All time',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · grouped by {grain}',
@@ -1727,12 +1953,13 @@ const en = {
     'admin.today.capital.grain.hour': 'hour',
     'admin.today.health.title': 'Portfolio health',
     'admin.today.health.caption':
-        '{count} notes live, funding, repaying or closed',
+        '{count} issued notes, by their newest monthly report',
     'admin.today.health.donut': '{pct}% of notes healthy',
     'admin.today.health.healthy_caption': 'healthy',
     'admin.today.health.healthy': 'Healthy',
     'admin.today.health.watch': 'Watch',
     'admin.today.health.distressed': 'Distressed',
+    'admin.today.health.untracked': 'Not tracked yet',
     'admin.today.activity.title': 'Live activity',
     'admin.today.activity.caption': 'Across the ecosystem',
     'admin.today.activity.empty': 'No money has moved yet.',
@@ -1756,6 +1983,7 @@ const en = {
     'admin.today.sectors.tip':
         'Outstanding capital by industry. Red means at least one note on watch or in distress.',
     'admin.today.sectors.notes': '{count} notes',
+    'admin.today.sectors.empty': 'No notes have issued yet.',
     'admin.today.treasury.title': 'Treasury snapshot',
     'admin.today.treasury.invested': 'Capital invested (primary)',
     'admin.today.treasury.disbursed': 'Disbursed to businesses',
@@ -1791,6 +2019,11 @@ const en = {
     'admin.applications.older': 'Older applications',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Current release review required: a retained quote is not a current approval. Check the release gates below.',
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        'Coverage below 1.25: cash flow cannot carry the instalment.',
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        'An active credit restriction blocks new borrowing.',
+    'admin.applications.term_only': '{term}mo',
     'admin.applications.decision.approve': 'Auto-approve',
     'admin.applications.decision.reject': 'Flag: reject',
     'admin.applications.decision.audit': 'Route to audit',
@@ -2026,6 +2259,7 @@ const en = {
     'admin.parties.kyc.overdue': 'Overdue',
     'admin.parties.kyc.rejected': 'Rejected',
     'admin.parties.status.frozen': 'Frozen',
+    'admin.parties.status.suspended': 'Suspended',
     'admin.parties.status.restricted': 'Restricted',
     'admin.parties.status.verified': 'Verified',
     'admin.parties.status.pending': 'Pending',
@@ -2050,12 +2284,12 @@ const en = {
     'admin.permission.businesses.verify': 'Verify businesses',
     'admin.permission_detail.businesses.verify':
         'Decide business verification, with a recorded reason.',
-    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission.investors.verify': 'KYC decisions',
     'admin.permission_detail.investors.verify':
-        'Decide investor identity checks and read Activity & Audit.',
-    'admin.permission.applications.review': 'Review applications',
+        'Verify or reject investor identity documents, and read Activity & Audit.',
+    'admin.permission.applications.review': 'Approvals',
     'admin.permission_detail.applications.review':
-        'Review raise applications and release them for publishing.',
+        'Approve applications: release them for listing once every check passes.',
     'admin.permission.audit.partners.verify': 'Verify Audit Partners',
     'admin.permission_detail.audit.partners.verify':
         'Approve CPA firms and read partner coverage.',
@@ -2082,6 +2316,63 @@ const en = {
     'admin.permission.staging.mail.testers.manage': 'Manage mail testers',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choose who receives email on staging.',
+    'admin.permission.staff.manage': 'Manage operators',
+    'admin.permission_detail.staff.manage':
+        "Add an operator, or suspend or reactivate another operator's access, with a reason.",
+    'admin.permission.accounts.freeze': 'Freeze / suspend',
+    'admin.permission_detail.accounts.freeze':
+        'Pause an account’s access to either app.',
+    'admin.permission.capacity.adjust': 'Adjust capacity',
+    'admin.permission_detail.capacity.adjust':
+        'Change how much a business may raise.',
+    'admin.permission.records.edit': 'Edit entities',
+    'admin.permission_detail.records.edit':
+        'Change stored details on any record.',
+    'admin.permission.ledger.correct': 'Reversals',
+    'admin.permission_detail.ledger.correct':
+        'Correct a settled entry with a new linked entry and a reason.',
+    'admin.permission.policies.change': 'Policies',
+    'admin.permission_detail.policies.change':
+        'Change pricing, eligibility and automation rules.',
+    'admin.permission.records.delete': 'Delete',
+    'admin.permission_detail.records.delete':
+        'Remove a record from the platform permanently.',
+    'admin.matrix.withheld.not_built': 'No role yet: not built',
+    'admin.matrix.withheld.by_rule':
+        'No role, by rule: ledger and audit entries are never deleted',
+    'admin.action_log.title': 'Admin action log',
+    'admin.staff.approvals.title': 'Awaiting super-admin approval',
+    'admin.staff.approvals.body':
+        'Super-admin access stays unchanged until a different, currently authorized super-admin approves. The requester and recipient cannot approve.',
+    'admin.staff.approvals.grant': '{requester} requested super-admin access.',
+    'admin.staff.approvals.reactivate':
+        '{requester} requested super-admin reactivation.',
+    'admin.staff.approvals.form': 'Approve access for {recipient}',
+    'admin.staff.approvals.submit': 'Approve super-admin access',
+    'admin.staff.approvals.waiting':
+        'Waiting for a different super-admin to approve.',
+    'admin.staff.invite.open': '+ Invite operator',
+    'admin.staff.invite.title': 'Invite an operator',
+    'admin.staff.invite.body':
+        'Give an existing account console access with one role. The operator signs up with their own dedicated account and turns on two-factor sign-in first. The change is logged with your name and reason.',
+    'admin.staff.invite.email': 'Account email',
+    'admin.staff.invite.role': 'Role',
+    'admin.staff.invite.cancel': 'Cancel',
+    'admin.staff.invite.submit': 'Give access',
+    'admin.staff.signed_in_as': 'Signed in as',
+    'admin.staff.access_full': 'Full access',
+    'admin.staff.access_count': '{granted} of {total} capabilities',
+    'admin.action_log.info':
+        'The latest changes to staff access, newest first: who made each one, whose access it changed and why.',
+    'admin.action_log.empty': 'No admin actions logged yet.',
+    'admin.action_log.col.action': 'Action',
+    'admin.action_log.col.by': 'By',
+    'admin.action_log.col.target': 'Target',
+    'admin.action_log.col.reason': 'Reason',
+    'admin.action_log.col.when': 'When',
+    'admin.action_log.action.staff_suspended': 'Suspended access',
+    'admin.action_log.action.staff_enabled': 'Enabled access',
+    'admin.action_log.action.staff_granted': 'Added as {role}',
     'admin.permission.reconciliation.view': 'View reconciliation',
     'admin.permission_detail.reconciliation.view':
         'Compare the ledger with provider statements.',
@@ -2139,13 +2430,17 @@ const en = {
     'admin.parties.list.holdings': 'Holdings',
     'admin.parties.list.engagements': 'Engagements',
     'admin.parties.list_empty': 'Nothing here yet.',
+    'admin.parties.holding_detail': {
+        one: '{amount} · {count} note',
+        other: '{amount} · {count} notes',
+    },
     'admin.parties.note_status.draft': 'Draft',
     'admin.parties.note_status.active': 'Live',
     'admin.parties.note_status.funded': 'Funded',
     'admin.parties.note_status.repaying': 'Repaying',
     'admin.parties.note_status.completed': 'Completed',
     'admin.parties.note_status.failed': 'Failed',
-    'admin.parties.history': 'History',
+    'admin.parties.history': 'Activity',
     'admin.parties.history_empty': 'No activity recorded yet.',
     'admin.parties.kyc_title': 'KYC & verification',
     'admin.parties.kyc_current': 'Current status',
@@ -5054,6 +5349,31 @@ const en = {
     'admin.applications.release.gate.report': 'Listing audit report',
     'admin.applications.release.gate_state.passed': 'Passed',
     'admin.applications.release.gate_state.failed': 'Blocked',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        "The rating engine's credit gates don't pass.",
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "The company's signing authority changed after it signed.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "The business's signing mandate isn't verified.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        'The audit report is no longer current.',
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        'No borrowing reservation is on record for this application.',
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        'Not every required signatory has signed at Review.',
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        'The release on record no longer matches what the business signed.',
+    'admin.applications.release.cause.TERMS_CHANGED':
+        'The terms changed after the business signed.',
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        'The listing fee disclosure changed.',
+    'admin.applications.release.cause.QUOTE_STALE':
+        'The quote is no longer current.',
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        'A restriction applies to this business.',
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "This check couldn't be completed.",
+    'admin.applications.release.cause.other': "This check didn't pass.",
     'admin.applications.release.blocked':
         "A check failed, so this application can't be released. Release never overrides a failed check.",
     'admin.applications.release.receipt': 'Release receipt',
@@ -5970,6 +6290,13 @@ const en = {
     'admin.exceptions.filtered_title': 'No exceptions of this kind',
     'admin.exceptions.filtered_body': 'Choose All to see every open exception.',
     'admin.notes.tabs': 'Notes by state',
+    'admin.notes.sort_label': 'Sort notes',
+    'admin.notes.sort.newest': 'Sort: Newest',
+    'admin.notes.sort.raised': 'Sort: Capital raised',
+    'admin.notes.sort.yield': 'Sort: Yield',
+    'admin.notes.sort.funded': 'Sort: % funded',
+    'admin.notes.sort.investors': 'Sort: Investors',
+    'admin.notes.sort.term': 'Sort: Term',
     'admin.notes.state.live': 'Live',
     'admin.notes.state.funded': 'Funded',
     'admin.notes.state.repaying': 'Repaying',
@@ -5992,11 +6319,13 @@ const en = {
     'admin.payments.title': 'Payouts in flight',
     'admin.payments.caption':
         'Withdrawals whose cash is held while the provider confirms the payout. Each one pays out, or returns to the wallet, on the verified outcome.',
-    'admin.payments.movement.caption':
-        'Credited deposits plus paid-out withdrawals per Kigali day, last 14 days',
     'admin.payments.kpi.count': {
         one: '{count} txn · last 14 days',
         other: '{count} txns · last 14 days',
+    },
+    'admin.payments.kpi.disbursed_count': {
+        one: '{count} payout to businesses · last 14 days',
+        other: '{count} payouts to businesses · last 14 days',
     },
     'admin.payments.kpi.in_flight': 'Payouts in flight',
     'admin.payments.kpi.in_flight.sub': 'Awaiting the provider',
@@ -6028,8 +6357,7 @@ const en = {
     'admin.primary.lifecycle.inventory_unavailable': 'Unavailable',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Sold out',
     'admin.primary.lifecycle.closing_pending_settlement': 'Closing',
-    'admin.primary.trend.caption':
-        'Cash committed to raises each day, last 14 days.',
+    'admin.primary.trend.last_14': 'Last 14 days',
     'admin.primary.more': 'More live raises',
     'admin.primary.empty_title': 'No live raises',
     'admin.primary.empty_body':
@@ -6180,25 +6508,25 @@ const en = {
         other: '{count} raises filling or awaiting disbursement',
     },
     'admin.health.capital.rec':
-        'Liquidity is flowing. Keep the disbursement queue clear.',
+        'Liquidity is flowing. Ensure disbursement queue stays clear.',
     'admin.health.queue.label': 'Underwriting queue',
     'admin.health.queue.detail': 'applications awaiting review',
     'admin.health.queue.rec.watch':
         'A backlog is building. Assign an underwriter.',
-    'admin.health.queue.rec.healthy': 'The queue is clear.',
+    'admin.health.queue.rec.healthy': 'Queue is clear.',
     'admin.health.queue.rec.within':
         'Within tolerance. No backlog is building.',
     'admin.health.queue.action': 'Open the queue',
     'admin.health.events.label': 'Event throughput',
     'admin.health.events.value': '{count}/h',
     'admin.health.events.detail': {
-        one: '{count} action recorded in total',
-        other: '{count} actions recorded in total',
+        one: '{count} event total',
+        other: '{count} events total',
     },
     'admin.health.events.rec.healthy':
         'Actions are being recorded and propagated.',
     'admin.health.events.rec.watch':
-        'No actions were recorded in the last hour.',
+        'No events in the last hour. Act in the apps to generate activity.',
     'admin.health.default_rate.label': 'Default rate',
     'admin.health.default_rate.detail': 'Starts when repayments are serviced',
     'admin.health.arrears.label': 'Arrears ratio',
@@ -6208,7 +6536,16 @@ const en = {
     'admin.health.treasury.label': 'Treasury position',
     'admin.health.treasury.detail': 'No treasury balance is recorded yet',
     'admin.health.frozen.label': 'Frozen accounts',
-    'admin.health.frozen.detail': 'Account freezes are not available yet',
+    'admin.health.frozen.detail': 'accounts with access paused',
+    'admin.health.frozen.rec.healthy': {
+        one: 'No operator accounts are currently restricted.',
+        other: 'No operator accounts are currently restricted.',
+    },
+    'admin.health.frozen.rec.watch': {
+        one: '{count} operator account is frozen. Review it in Staff & Roles.',
+        other: '{count} operator accounts are frozen. Review them in Staff & Roles.',
+    },
+    'admin.health.frozen.action': 'Open Staff & Roles',
     'admin.complaints.title': 'Complaints',
     'admin.complaints.caption':
         'Acknowledge within 4 hours and resolve within 48, or tell the customer why and when (BRS CMP-R03).',

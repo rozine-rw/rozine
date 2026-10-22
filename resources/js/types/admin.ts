@@ -109,6 +109,12 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     counts?: Partial<Record<string, number>>;
     /** Ratings only, for whoever may view Businesses: every Business with a published rating. */
     book?: RatingBookRow[];
+    /** App Control only: how much of each sandbox hard limit is used now (SBX-R01). */
+    sandbox?: SandboxUsage[];
+    /** App Control only: each app, online, with whether each of its features is built. */
+    apps?: AppStatus[];
+    /** App Control only, for whoever may view Businesses: the Businesses that raised most. */
+    content?: AppContentRow[];
 };
 
 /** One rated Business in the rating book. */
@@ -154,10 +160,54 @@ export type EngineRow = {
     source: string;
 };
 
+export type AppContentRow = {
+    key: string;
+    type: 'business';
+    name: string;
+    sector: string;
+    rating: Rating | null;
+    state: 'active' | 'pending';
+};
+
+export type AppStatus = {
+    key: 'investor' | 'business' | 'auditor';
+    features: {
+        key:
+            | 'sign_ups'
+            | 'secondary_market'
+            | 'academy'
+            | 'note_creation'
+            | 'monthly_reports'
+            | 'auditor_sign_ups'
+            | 'auto_dispatch'
+            | 'flash_audits';
+        state: 'live' | 'not_built';
+    }[];
+};
+
+/** Whole numbers as strings: a count, or RWF for `principal`. */
+export type SandboxUsage = {
+    key: 'businesses' | 'investors' | 'principal';
+    used: string;
+    cap: string;
+    used_pct: number;
+};
+
 export type FinanceStream = {
-    key: 'platform_fee' | 'audit_partner_share' | 'deposit_fees';
-    paid_by: 'business' | 'investor';
-    collected: Money;
+    key:
+        | 'platform_fee'
+        | 'audit_partner_share'
+        | 'deposit_fees'
+        | 'earnings_fee'
+        | 'resale_fee'
+        | 'withdrawal_fee'
+        | 'loss_reserve';
+    /** The rule that sets it, as Policies shows it; null when no rate applies. */
+    rate: PolicyItem | null;
+    /** Null when nobody pays it: the fee or reserve does not exist. */
+    paid_by: 'business' | 'investor' | 'seller' | null;
+    /** Null when no ledger account takes it yet. */
+    collected: Money | null;
 };
 
 /** One rule in effect, with the policy version it comes from when the rule carries one. */
@@ -239,13 +289,63 @@ export type PolicyItem = {
         | 'complaint_resolve'
         | 'min_principal'
         | 'max_principal'
-        | 'tenors'
         | 'first_issue_months'
         | 'repeat_issue_months'
         | 'withdrawal_min'
-        | 'withdrawal_max';
+        | 'withdrawal_max'
+        | 'cpa_share_upcountry'
+        | 'resale_fee'
+        | 'earnings_fee'
+        | 'cpa_earnings_share'
+        | 'application_fee'
+        | 'withdrawal_fee'
+        | 'loss_reserve'
+        | 'min_rating'
+        | 'revenue_cap'
+        | 'kyc_reverify'
+        | 'late_charge'
+        | 'miss_grace'
+        | 'default_at'
+        | 'auto_freeze'
+        | 'min_investment'
+        | 'concentration'
+        | 'raise_days'
+        | 'resale_listing_days'
+        | 'resale_reservation_minutes'
+        | 'cpa_radius'
+        | 'sandbox_businesses'
+        | 'sandbox_investors'
+        | 'sandbox_principal'
+        | 'residency'
+        | 'risk_statements'
+        | 'min_rate'
+        | 'max_rate'
+        | 'note_unit_price'
+        | 'min_term'
+        | 'max_term'
+        | 'registration_countries'
+        | 'kyc_investor_id'
+        | 'kyc_investor_selfie'
+        | 'kyc_investor_dob'
+        | 'kyc_investor_address'
+        | 'kyc_business_rdb';
+    /** Empty when the rule is worded: `term` then names the wording. */
     value: string;
+    term?: PolicyTerm;
 };
+
+/** A worded policy value, translated by the console. */
+export type PolicyTerm =
+    | 'every_deal'
+    | 'required'
+    | 'not_set'
+    | 'none'
+    | 'late_from_due'
+    | 'day_31'
+    | 'late_schedule'
+    | 'resident_rwanda'
+    | 'rwanda'
+    | 'not_collected';
 
 /** One entry in a record's trail: an action taken on it, by whom and when. */
 export type TrailEntry = {
@@ -365,11 +465,12 @@ export type AdminTodayProps = AdminFrameShellProps & {
         grain: 'year' | 'month' | 'day' | 'hour';
         bars: { label: string; amount: Money; height_pct: number }[];
     };
+    /** Issued notes by their newest monthly report; distress is null until servicing records it. */
     portfolio_health: {
         total: number;
         healthy: { count: number; pct: number };
         watch: { count: number; pct: number };
-        distressed: { count: number; pct: number };
+        distressed: { count: number; pct: number } | null;
     } | null;
     /** Null while the console has no ledger feed. */
     activity: ActivityItem[] | null;
@@ -444,15 +545,16 @@ export type ApplicationRow = {
     sector: string;
     requested: Money;
     term_months: number;
-    /** Flat total return over the term, one decimal: "12.1". Not an APR. */
-    rate_pct: string;
+    /** Flat total return over the term, one decimal: "12.1". Not an APR. Null when the engine refused it. */
+    rate_pct: string | null;
     /** Null while the server does not project capacity usage; shown as unavailable, never 0. */
     capacity_used_pct: number | null;
     rating: Rating | null;
     submitted_at: string;
     state: ApplicationState;
     decision: EngineDecision;
-    link: RouteLink;
+    /** Null for an engine refusal: the draft opens no staff review. */
+    link: RouteLink | null;
     /** Opens the review with the approval stage ready, when the server allows approving. */
     approve_link: RouteLink | null;
 };
@@ -663,12 +765,23 @@ export type StaffPermissionKey =
     | 'primary.view'
     | 'payments.view'
     | 'complaints.answer'
-    | 'health.view';
+    | 'health.view'
+    | 'staff.manage'
+    | 'accounts.freeze'
+    | 'capacity.adjust'
+    | 'records.edit'
+    | 'ledger.correct'
+    | 'policies.change'
+    | 'records.delete';
 
-/** One row of the Staff & Roles permission matrix: a capability and the roles that grant it. */
+/**
+ * One row of the Staff & Roles permission matrix: a capability and the roles that grant it. A design
+ * capability no role holds says why: not built yet, or barred for every role by rule.
+ */
 export type PermissionMatrixRow = {
     key: StaffPermissionKey;
     roles: StaffRole[];
+    withheld?: 'not_built' | 'by_rule';
 };
 
 export type PartyDirectory =
@@ -702,7 +815,8 @@ export type PartyListRow = {
     detail:
         | { kind: 'note_status'; value: NoteStatus }
         | { kind: 'money'; value: Money }
-        | { kind: 'text'; value: string };
+        | { kind: 'text'; value: string }
+        | { kind: 'holding'; value: Money; notes: number };
 };
 
 export type PartyDetail = {
@@ -811,6 +925,34 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     party: PartyDetail | null;
     /** Staff & Roles only: what each role may do. */
     permission_matrix?: PermissionMatrixRow[];
+    /** Staff & Roles only: the latest staff access changes, newest first. */
+    action_log?: StaffActionLogEntry[];
+    /** Staff only, for a viewer who may manage staff: adds an operator by email with one role. */
+    grant?: RouteAction | null;
+    pending_approvals?: StaffApproval[];
+    /** Staff only: how many of the capabilities a role can hold the viewer holds. */
+    access?: { granted: number; total: number };
+};
+
+export type StaffApproval = {
+    id: string;
+    recipient: string;
+    email: string;
+    requester: string;
+    operation: 'grant' | 'reactivate';
+    reason: string;
+    approve: RouteAction | null;
+};
+
+export type StaffActionLogEntry = {
+    id: string;
+    at: string;
+    actor: string;
+    target: string;
+    action: 'staff_suspended' | 'staff_enabled' | 'staff_granted';
+    /** The role an invite gave; null for a freeze or a reactivation. */
+    role: StaffRole | null;
+    reason: string;
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1388,6 +1530,15 @@ export type StaffNotesPageContract = {
 
 export type NotesStatKey = 'total' | 'live' | 'repaying' | 'raised';
 
+/** Newest first, or largest first by one of the design's sorts. */
+export type NotesSort =
+    | 'newest'
+    | 'raised'
+    | 'yield'
+    | 'funded'
+    | 'investors'
+    | 'term';
+
 /**
  * Where a note sits now, as the dashboard counts it: `live` while it raises, `funded` once full and
  * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
@@ -1423,14 +1574,18 @@ export type AdminNotesProps = AdminFrameShellProps &
         }[];
         notes: NoteRegisterRow[];
         pagination: Pagination;
+        sort: NotesSort;
     };
 
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
     StaffPrimaryMarketPageContract & {
         stats: { key: PrimaryMarketStatKey; value: StatValue }[];
-        /** Cash committed per Kigali day over the last fourteen days; days with none are left out. */
-        trend: {
-            from: string;
+        /**
+         * Cash committed per Kigali day over the last fourteen days, or over the chosen window of
+         * dates (`to` set, both ends included; by month over a long window). Buckets with none are
+         * left out.
+         */
+        trend: TrendWindow & {
             bars: { label: string; amount: Money; height_pct: number }[];
         };
         raises: PrimaryMarketRaise[];
@@ -1461,15 +1616,26 @@ export type PayoutInFlight = {
     requested_at: string;
 };
 
+/** A chart's window as the server read it: no `to` means the last fourteen days. */
+export type TrendWindow = {
+    from: string;
+    to: string | null;
+    grain: 'day' | 'month';
+    /** Whether the viewer chose either end; otherwise it is the last fourteen days. */
+    custom: boolean;
+};
+
 export type AdminPaymentsProps = AdminFrameShellProps &
     StaffPaymentsPageContract & {
-        /** The first Kigali day of the fourteen the figures and bars cover. */
+        /** The first Kigali day of the fourteen the figures cover. */
         from: string;
+        /** The bars' window: the last fourteen days, or the chosen dates (per month over a long one). */
+        trend: TrendWindow;
         stats: { key: PaymentsStatKey; value: Money; count: number }[];
         in_flight: number;
         /** The fee schedule money moves under. */
         policy: PolicyItem[];
-        /** Credited deposits plus paid-out withdrawals per Kigali day; days with none are left out. */
+        /** Credited deposits plus paid-out withdrawals per Kigali bucket; buckets with none are left out. */
         bars: { label: string; amount: Money; height_pct: number }[];
         payouts: PayoutInFlight[];
         pagination: Pagination;
@@ -1682,9 +1848,13 @@ export type InvestorVerificationEntry = {
     name: string;
     email: string;
     id_type: KycIdType;
+    /** The automated checks the case passed before it could be submitted. */
+    checks: KycCheck[];
     selected: boolean;
     link: RouteLink;
 };
+
+export type KycCheck = 'age' | 'id_number' | 'documents' | 'selfie';
 
 /** A private upload: read only through its link, never inlined in the props. */
 export type InvestorVerificationDocument = {
@@ -1746,6 +1916,18 @@ export type AdminInvestorVerificationsProps = AdminFrameShellProps & {
         link: RouteLink;
     }[];
     entries: InvestorVerificationEntry[];
+    /** Every case: verified of all started; the last 30 days' decisions and their mean time from submission. */
+    stats: {
+        completion_pct: string | null;
+        verified: number;
+        total: number;
+        turnaround_hours: string | null;
+        approved_30d: number;
+        rejected_30d: number;
+        /** Null until AML and sanctions screening (KYC-R04) is connected. */
+        aml_alerts: number | null;
+        sanctions_hits: number | null;
+    };
     pagination: { next: RouteLink | null };
     review: InvestorVerificationReview | null;
 };
@@ -1893,12 +2075,13 @@ export type HealthSignal =
           action: null;
       }
     | {
-          key:
-              | 'default_rate'
-              | 'arrears'
-              | 'outstanding'
-              | 'treasury'
-              | 'frozen';
+          key: 'frozen';
+          status: 'watch' | 'healthy';
+          facts: { accounts: number };
+          action: RouteLink | null;
+      }
+    | {
+          key: 'default_rate' | 'arrears' | 'outstanding' | 'treasury';
           status: 'untracked';
           facts: never[];
           action: null;

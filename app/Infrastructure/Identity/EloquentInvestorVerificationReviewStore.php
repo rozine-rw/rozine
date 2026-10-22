@@ -70,7 +70,30 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
             ])->all()),
             'next_cursor' => $more ? $records->last()?->id : null,
             'counts' => ['submitted' => InvestorVerification::query()->where('status', 'submitted')->count(),
-                'decided' => InvestorVerification::query()->whereIn('status', ['approved', 'rejected'])->count()]];
+                'decided' => InvestorVerification::query()->whereIn('status', ['approved', 'rejected'])->count()], 'stats' => $this->stats()];
+    }
+
+    /**
+     * The compliance figures over every case: how many identities are verified of all started, and
+     * over the last 30 days how many decisions went each way and how long a decision took from
+     * submission. A decision is the case's last update, so its time is `updated_at`.
+     *
+     * @return array{completion_pct: string|null, verified: int, total: int, turnaround_hours: string|null, approved_30d: int, rejected_30d: int}
+     */
+    private function stats(): array
+    {
+        $since = now()->subDays(30);
+        $row = InvestorVerification::query()->toBase()->selectRaw("count(*) AS total, count(*) FILTER (WHERE status = 'approved') AS verified,
+            count(*) FILTER (WHERE status = 'approved' AND updated_at >= ?) AS approved_recent,
+            count(*) FILTER (WHERE status = 'rejected' AND updated_at >= ?) AS rejected_recent,
+            avg(extract(epoch FROM updated_at - submitted_at)) FILTER (WHERE status IN ('approved', 'rejected') AND updated_at >= ?) AS turnaround",
+            [$since, $since, $since])->first();
+        $total = (int) ($row->total ?? 0);
+        $verified = (int) ($row->verified ?? 0);
+
+        return ['completion_pct' => $total === 0 ? null : number_format($verified * 100 / $total, 1, '.', ''), 'verified' => $verified, 'total' => $total,
+            'turnaround_hours' => $row?->turnaround === null ? null : number_format((float) $row->turnaround / 3600, 1, '.', ''),
+            'approved_30d' => (int) ($row->approved_recent ?? 0), 'rejected_30d' => (int) ($row->rejected_recent ?? 0)];
     }
 
     /** @return Review */

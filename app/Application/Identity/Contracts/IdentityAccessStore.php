@@ -19,6 +19,22 @@ interface IdentityAccessStore
     public function configureStaff(int $userId, bool $enabled, string $reason, string $requestId, array $roles = []): array;
 
     /** @return array<string, mixed> */
+    public function setStaffEnabled(int $actorId, int $userId, bool $enabled, string $reason, string $requestId): array;
+
+    /**
+     * A superadmin adds an operator: the dedicated account with this email, verified and with MFA
+     * confirmed, gets staff access with one role.
+     *
+     * @return array<string, mixed>
+     */
+    public function grantStaff(int $actorId, string $email, string $role, string $reason, string $requestId): array;
+
+    /** Approves the immutable superadmin grant or reactivation request as a second current manager.
+     * @return array<string, mixed>
+     */
+    public function approveStaff(int $actorId, string $proposalId, string $reason, string $requestId): array;
+
+    /** @return array<string, mixed> */
     public function staffAccess(int $userId, bool $required = false, bool $lock = true): array;
 
     /**

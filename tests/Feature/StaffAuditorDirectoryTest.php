@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\SubmitAuditorAccreditation;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Auditor\AccreditationProfile;
 use App\Domain\Auditor\AuditorStanding;
 use App\Models\AuditorProfile;
@@ -18,6 +17,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->officer = auditorDirectoryStaff(['compliance']);
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 function auditorDirectoryStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Audit Partner network assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Audit Partner network assignment.');
 
     return $user;
 }

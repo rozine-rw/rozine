@@ -180,6 +180,15 @@ export function PortfolioHealthPanel({
         );
     }
 
+    if (health.total === 0) {
+        return (
+            <Panel label={t('admin.today.health.title')}>
+                <CardTitle>{t('admin.today.health.title')}</CardTitle>
+                <p className={QUIET}>{t('admin.today.sectors.empty')}</p>
+            </Panel>
+        );
+    }
+
     const a = health.healthy.pct * 3.6;
     const b = (health.healthy.pct + health.watch.pct) * 3.6;
     const rows = [
@@ -243,7 +252,9 @@ export function PortfolioHealthPanel({
                             {t(`admin.today.health.${key}`)}
                         </dt>
                         <dd className={cn('text-[12.5px] font-semibold', text)}>
-                            {share.count} · {share.pct}%
+                            {share === null
+                                ? t('admin.today.health.untracked')
+                                : `${share.count} · ${share.pct}%`}
                         </dd>
                     </div>
                 ))}
@@ -481,6 +492,9 @@ export function SectorPanel({
                 </InfoTip>
             </div>
             {sectors === null && <Untracked />}
+            {sectors?.length === 0 && (
+                <p className={QUIET}>{t('admin.today.sectors.empty')}</p>
+            )}
             <div className="mt-3.5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {sectors?.map((sector) => (
                     <div

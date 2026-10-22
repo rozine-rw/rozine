@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Mockery\CompositeExpectation;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 10, 6)->startOfDay());
@@ -37,7 +38,7 @@ beforeEach(function (): void {
 function reviewStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Compliance review assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Compliance review assignment.');
 
     return $user;
 }
@@ -91,8 +92,9 @@ test('the queue lists submitted cases oldest first and pages by cursor', functio
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['limit' => 1]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('contract_version', 'staff-investor-verifications-v1')
-            ->where('active_tab', 'submitted')->where('policy', [['key' => 'minimum_age', 'value' => '18'], ['key' => 'identity_evidence', 'value' => '3'],
-                ['key' => 'complaint_acknowledge', 'value' => '4 h'], ['key' => 'complaint_resolve', 'value' => '48 h']])->where('tabs.0.count', 2)->where('tabs.1.count', 0)
+            ->where('active_tab', 'submitted')->where('policy', [['key' => 'miss_grace', 'value' => '', 'term' => 'late_from_due'],
+                ['key' => 'default_at', 'value' => '', 'term' => 'day_31'], ['key' => 'kyc_reverify', 'value' => '', 'term' => 'not_set'],
+                ['key' => 'auto_freeze', 'value' => '', 'term' => 'not_set'], ['key' => 'minimum_age', 'value' => '18']])->where('tabs.0.count', 2)->where('tabs.1.count', 0)
             ->where('nav.investors.url', '/admin/investors')->where('nav.compliance.url', '/admin/investor-verifications')->where('nav.applications', null)
             ->has('entries', 1)->where('entries.0.id', $first->id)->where('entries.0.name', 'Aline Uwase')
             ->where('entries.0.email', $this->person->email)->where('entries.0.id_type', 'national_id')->where('entries.0.selected', false)
@@ -474,4 +476,25 @@ test('a failed e-mail still leaves the notice, with a failed receipt', function 
     expect(PartyNotice::query()->count())->toBe(1)
         ->and(PartyNoticeDelivery::query()->where('channel', 'mail')->sole()->only(['status', 'detail']))
         ->toBe(['status' => 'failed', 'detail' => RuntimeException::class]);
+});
+
+test('the queue carries completion, turnaround and 30-day decision figures over every case', function (): void {
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats', ['completion_pct' => null, 'verified' => 0, 'total' => 0,
+            'turnaround_hours' => null, 'approved_30d' => 0, 'rejected_30d' => 0, 'aml_alerts' => null, 'sanctions_hits' => null]));
+    $approved = reviewSubmitted($this->person);
+    $rejected = reviewSubmitted(User::factory()->create(['name' => 'Eric N', 'party_id' => Party::factory()]), number: '1 1991 8 0012345 6 79');
+    reviewSubmitted(User::factory()->create(['name' => 'Grace K', 'party_id' => Party::factory()]), number: '1 1992 8 0012345 6 70');
+    $this->travel(3)->hours();
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $approved), reviewDecision($approved))->assertSessionHasNoErrors();
+    $this->travel(6)->hours();
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.reject', $rejected), reviewDecision($rejected, 'Blurred.'))->assertSessionHasNoErrors();
+
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats', ['completion_pct' => '33.3', 'verified' => 1, 'total' => 3,
+            'turnaround_hours' => '6.0', 'approved_30d' => 1, 'rejected_30d' => 1, 'aml_alerts' => null, 'sanctions_hits' => null])
+            ->where('entries.0.checks', ['age', 'id_number', 'documents', 'selfie']));
+    $this->travel(31)->days();
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('stats.turnaround_hours', null)->where('stats.approved_30d', 0)->where('stats.completion_pct', '33.3'));
 });

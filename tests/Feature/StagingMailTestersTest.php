@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Application\Environment\ManageStagingMailTesters;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Identity\StaffPermission;
 use App\Models\CommandOperation;
 use App\Models\Party;
@@ -12,6 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     // Outside `testing` the framework checks CSRF tokens again; these tests post as the browser would.
@@ -29,7 +29,7 @@ afterEach(function (): void {
 function testerStaff(array $roles, string $name = 'Staff Member'): User
 {
     $user = User::factory()->withTwoFactor()->create(['name' => $name]);
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Staging mail tester assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Staging mail tester assignment.');
 
     return $user;
 }

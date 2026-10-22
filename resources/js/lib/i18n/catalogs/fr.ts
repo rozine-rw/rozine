@@ -1095,6 +1095,11 @@ const fr: Catalog = {
     'admin.design.col.bands': 'Bandes',
     'admin.design.col.filled_mtd': 'Exécuté ce mois',
     'admin.design.col.stream': 'Source',
+    'admin.design.col.limit': 'Limite',
+    'admin.design.col.used': 'Utilisé',
+    'admin.design.col.cap': 'Plafond',
+    'admin.design.col.share': 'Part utilisée',
+    'admin.design.col.rate': 'Taux',
     'admin.design.col.paid_by': 'Payé par',
     'admin.design.col.collected': 'Perçu',
     'admin.design.col.position': 'Position',
@@ -1252,11 +1257,31 @@ const fr: Catalog = {
     'admin.design.finance.kpi.primary': 'Marché primaire',
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
+    'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.primary.sub':
+        'Frais de plateforme, part de Rozine',
+    'admin.design.finance.kpi.investor_fees.sub':
+        'Tranches des frais sur les gains',
+    'admin.design.finance.kpi.secondary.sub': 'Frais de revente',
     'admin.design.finance.tab.streams': 'Sources de revenus',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
-    'admin.design.finance.streams.title': 'Sources de revenus',
-    'admin.design.finance.streams.empty':
-        'Aucun revenu à afficher pour le moment.',
+    'admin.design.finance.raise.title': 'Marché primaire',
+    'admin.design.finance.raise.sub':
+        'Ce que les entreprises paient pour lever des fonds',
+    'admin.design.finance.raise.empty': 'Aucuns frais de levée à afficher.',
+    'admin.design.finance.earnings.title': 'Frais investisseurs',
+    'admin.design.finance.earnings.sub':
+        'Ce que les investisseurs paient sur leurs gains',
+    'admin.design.finance.earnings.empty':
+        'Aucuns frais sur les gains à afficher.',
+    'admin.design.finance.trades.title': 'Marché secondaire',
+    'admin.design.finance.trades.sub':
+        'Ce que paient les sorties anticipées et les échanges',
+    'admin.design.finance.trades.empty': "Aucuns frais d'échange à afficher.",
+    'admin.design.finance.residual.title': 'Recouvrement des coûts et résidus',
+    'admin.design.finance.residual.sub': "Petites lignes. N'en prévoyez rien.",
+    'admin.design.finance.residual.empty':
+        'Aucune ligne résiduelle à afficher.',
     'admin.design.finance.ledger.title': 'Grand livre et versements',
     'admin.design.finance.ledger.empty':
         'Aucune écriture à afficher pour le moment.',
@@ -1432,11 +1457,40 @@ const fr: Catalog = {
         'Les applications Investisseur, Entreprise et Auditeur et leurs fonctionnalités.',
     'admin.design.app_control.apps.empty':
         "Aucun réglage d'application à afficher pour le moment.",
+    'admin.design.app_control.app.investor': 'Application Investisseur',
+    'admin.design.app_control.app.business': 'Application Entreprise',
+    'admin.design.app_control.app.auditor': 'Application Auditeur',
+    'admin.design.app_control.online': 'En ligne',
+    'admin.design.app_control.feature.sign_ups': 'Nouvelles inscriptions',
+    'admin.design.app_control.feature.secondary_market': 'Marché secondaire',
+    'admin.design.app_control.feature.academy': 'Académie Investisseur',
+    'admin.design.app_control.feature.note_creation': 'Création de RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Rapports mensuels',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        'Inscriptions des auditeurs',
+    'admin.design.app_control.feature.auto_dispatch':
+        'Affectation automatique à 30 km',
+    'admin.design.app_control.feature.flash_audits': 'Audits flash (24 h)',
+    'admin.design.app_control.state.live': 'Actif',
+    'admin.design.app_control.state.not_built': 'Pas encore développé',
+    'admin.design.app_control.sandbox.title': 'Limites du bac à sable',
+    'admin.design.app_control.sandbox.sub':
+        'Part utilisée de chaque limite du bac à sable de la CMA. Rien n’est accepté au-delà d’une limite.',
+    'admin.design.app_control.sandbox.empty':
+        'Aucune utilisation à afficher pour l’instant.',
+    'admin.design.app_control.sandbox.businesses':
+        'Entreprises au mandat actif',
+    'admin.design.app_control.sandbox.investors': 'Investisseurs vérifiés',
+    'admin.design.app_control.sandbox.principal': 'Capital restant dû',
     'admin.design.app_control.content.title': 'Contenu',
     'admin.design.app_control.content.sub':
         'Les éléments des applications Investisseur, Entreprise et Auditeur.',
     'admin.design.app_control.content.empty':
         'Aucun contenu à afficher pour le moment.',
+    'admin.design.app_control.type.business': 'Entreprise',
+    'admin.design.app_control.unrated': 'Pas encore noté',
+    'admin.design.app_control.content_state.active': 'Actif',
+    'admin.design.app_control.content_state.pending': 'Vérification en attente',
     'admin.design.engines.tab.sizing': 'Dimensionnement',
     'admin.design.engines.tab.refinance': 'Refinancement',
     'admin.design.engines.tab.queue': "La file d'attente",
@@ -1468,7 +1522,19 @@ const fr: Catalog = {
     'admin.design.policies.tab.kyc': 'Exigences KYC',
     'admin.design.policies.tab.penalties': 'Conformité et pénalités',
     'admin.design.policies.tab.limits': 'Limites',
-    'admin.design.policies.rules.title': 'Règles',
+    'admin.design.policies.fees.sub':
+        "Ce que chaque partie paie à Rozine, et la part versée à l'auditeur attitré.",
+    'admin.design.policies.underwriting.sub':
+        'Les règles qui décident si une levée est approuvée et à quelles conditions.',
+    'admin.design.policies.business.sub':
+        'Qui peut lever des fonds sur Rozine.',
+    'admin.design.policies.investor.sub': 'Qui peut investir sur Rozine.',
+    'admin.design.policies.kyc.sub':
+        "Ce que chaque partie doit fournir. Un élément requis bloque les opérations tant qu'il manque ; un élément non collecté n'est jamais demandé.",
+    'admin.design.policies.penalties.sub':
+        'Comment Rozine traite les retards, les défauts et les nouvelles vérifications.',
+    'admin.design.policies.limits.sub':
+        "Garde-fous sur l'activité dans les deux applications.",
     'admin.design.policies.rules.empty':
         'Aucune règle à afficher pour le moment.',
     'admin.design.system_health.signals.title': 'Signaux',
@@ -1551,10 +1617,32 @@ const fr: Catalog = {
     'admin.kyc.tab.submitted': "En attente d'examen",
     'admin.kyc.tab.decided': 'Traitées',
     'admin.kyc.table': "Demandes de vérification d'identité",
-    'admin.kyc.col.person': 'Personne',
+    'admin.kyc.queue': 'File de vérification KYC',
     'admin.kyc.col.document': 'Document',
-    'admin.kyc.col.submitted': 'Envoyée',
+    'admin.kyc.col.applicant': 'Demandeur',
+    'admin.kyc.col.checks': 'Contrôles automatiques',
+    'admin.kyc.submitted_ago': 'Envoyé {ago}',
+    'admin.kyc.checks.passed': 'Tous les contrôles KYC automatiques réussis',
+    'admin.kyc.checks.screening':
+        "Âge, numéro d'identité, documents, selfie · pas encore de filtrage",
+    'admin.kyc.check.age': '18 ans ou plus',
+    'admin.kyc.check.id_number': "Format du numéro d'identité",
+    'admin.kyc.check.documents': 'Photos du document envoyées',
+    'admin.kyc.check.selfie': 'Selfie prise',
+    'admin.kyc.stats.aml': 'Alertes LBC',
+    'admin.kyc.stats.sanctions': 'Correspondances sanctions',
+    'admin.kyc.stats.not_connected': 'Non connecté',
+    'admin.kyc.stats.screening_sub': 'Filtrage (KYC-R04) pas encore disponible',
     'admin.kyc.col.status': 'Statut',
+    'admin.kyc.col.decision': 'Décision',
+    'admin.kyc.review': 'Examiner',
+    'admin.kyc.review_named': 'Examiner {name}',
+    'admin.kyc.stats.completion': 'Taux de KYC',
+    'admin.kyc.stats.completion_sub': '{verified} sur {total} vérifiés',
+    'admin.kyc.stats.percent': '{value} %',
+    'admin.kyc.stats.pending': 'Examens en attente',
+    'admin.kyc.stats.turnaround': 'Délai moyen {hours} h',
+    'admin.kyc.stats.turnaround_none': 'Aucune décision en 30 jours',
     'admin.kyc.id_type.national_id': "Carte d'identité nationale",
     'admin.kyc.id_type.passport': 'Passeport',
     'admin.kyc.id_type.drivers_license': 'Permis de conduire',
@@ -1703,6 +1791,7 @@ const fr: Catalog = {
     'admin.engine.report_conduct':
         'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
+    'admin.policy.open': 'Politiques',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",
     'admin.policy.audit_routing': "Seuil d'orientation vers l'audit",
@@ -1712,7 +1801,7 @@ const fr: Catalog = {
     'admin.policy.rdb_certificate': 'Certificat RDB',
     'admin.policy.max_notes': 'Titres max. / entreprise',
     'admin.policy.platform_fee': 'Frais de plateforme · au décaissement',
-    'admin.policy.cpa_share': "Part de l'Audit Partner sur les frais",
+    'admin.policy.cpa_share': 'Part du CPA — Kigali',
     'admin.policy.listing_fee': 'Frais de mise en ligne',
     'admin.policy.repayment_fee': 'Frais de remboursement',
     'admin.payments.policy_title': 'Barème des frais en vigueur',
@@ -1723,17 +1812,177 @@ const fr: Catalog = {
     'admin.kyc.policy_title': 'Règles de conformité en vigueur',
     'admin.policy.min_principal': 'Levée minimale',
     'admin.policy.max_principal': 'Levée maximale',
-    'admin.policy.tenors': 'Durée · mois',
     'admin.policy.first_issue_months': 'Mois audités · première émission',
     'admin.policy.repeat_issue_months': 'Mois audités · émission répétée',
     'admin.policy.withdrawal_min': 'Retrait minimal',
     'admin.policy.withdrawal_max': 'Retrait maximal',
+    'admin.policy.cpa_share_upcountry': 'Part du CPA — hors Kigali',
+    'admin.policy.resale_fee': 'Frais de revente · vendeur',
+    'admin.policy.earnings_fee': 'Tranches des frais sur gains',
+    'admin.policy.cpa_earnings_share': 'Part du CPA sur les frais sur gains',
+    'admin.policy.application_fee': 'Frais de dossier · bac à sable',
+    'admin.policy.withdrawal_fee': 'Frais de retrait',
+    'admin.policy.loss_reserve': 'Réserve pour pertes',
+    'admin.policy.min_rating': 'Note minimale pour lever',
+    'admin.policy.revenue_cap': "Levée maximale · part du chiffre d'affaires",
+    'admin.policy.kyc_reverify': 'Nouvelle vérification KYC',
+    'admin.policy.late_charge': 'Pénalités de retard',
+    'admin.policy.miss_grace': 'Délai de grâce',
+    'admin.policy.default_at': 'Défaut',
+    'admin.policy.auto_freeze': 'Gel automatique en cas de défaut',
+    'admin.policy.min_investment': 'Investissement minimal · une part',
+    'admin.policy.concentration': "Part maximale d'une levée par investisseur",
+    'admin.policy.raise_days': 'Durée de la levée · jours',
+    'admin.policy.resale_listing_days':
+        "Durée d'une annonce de revente · jours",
+    'admin.policy.resale_reservation_minutes':
+        'Réservation de revente · minutes',
+    'admin.policy.cpa_radius': "Rayon d'affectation du CPA",
+    'admin.policy.sandbox_businesses': 'Limite du bac à sable · entreprises',
+    'admin.policy.sandbox_investors': 'Limite du bac à sable · investisseurs',
+    'admin.policy.sandbox_principal':
+        'Limite du bac à sable · capital restant dû',
+    'admin.policy.residency': 'Résidence',
+    'admin.policy.risk_statements':
+        'Déclarations de risque avant un premier investissement',
+    'admin.policy.hint.platform_fee':
+        "Prélevés sur la levée lors du versement à l'entreprise.",
+    'admin.policy.hint.cpa_share':
+        "Part des frais de plateforme versée à l'auditeur attitré pour les dossiers de Kigali.",
+    'admin.policy.hint.cpa_share_upcountry':
+        'La même part pour les dossiers hors de Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Prélevés sur les gains de l'investisseur. La tranche suit son niveau.",
+    'admin.policy.hint.cpa_earnings_share':
+        "Part des frais sur les gains versée à l'auditeur attitré.",
+    'admin.policy.hint.resale_fee':
+        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+    'admin.policy.hint.listing_fee':
+        "Facturés à l'entreprise pour publier une levée.",
+    'admin.policy.hint.repayment_fee':
+        'Facturés sur chaque remboursement mensuel.',
+    'admin.policy.hint.application_fee':
+        'Facturés pour une demande pendant la phase sandbox.',
+    'admin.policy.hint.withdrawal_fee':
+        'Appliqués aux retraits du portefeuille.',
+    'admin.policy.hint.loss_reserve':
+        'Part des frais mise de côté contre les défauts.',
+    'admin.policy.hint.target_dscr':
+        'La levée maximale est plafonnée pour que la trésorerie couvre les remboursements à ce ratio.',
+    'admin.policy.hint.listing_audit':
+        'Un expert-comptable audite chaque levée avant sa publication.',
+    'admin.policy.hint.audit_routing':
+        'DSCR le plus bas admis. En dessous, la demande est refusée.',
+    'admin.policy.hint.min_rate':
+        "Taux fixe le plus bas d'une note, tout compris.",
+    'admin.policy.hint.max_rate':
+        "Taux fixe le plus haut d'une note, tout compris.",
+    'admin.policy.hint.note_unit_price': "Prix d'une seule note Rozine.",
+    'admin.policy.hint.min_term': "Durée la plus courte d'une note.",
+    'admin.policy.hint.max_term': "Durée la plus longue d'une note.",
+    'admin.policy.hint.min_principal':
+        "Plus petite levée qu'une entreprise peut demander.",
+    'admin.policy.hint.max_principal':
+        "Plus grande levée qu'une entreprise peut demander.",
+    'admin.policy.hint.min_rating':
+        'Note Rozine la plus basse autorisée à lever.',
+    'admin.policy.hint.revenue_cap':
+        "Plus grande levée, en part du chiffre d'affaires annuel vérifié.",
+    'admin.policy.hint.registration_countries':
+        "Où l'entreprise doit être immatriculée.",
+    'admin.policy.hint.min_statement_years':
+        'Années de relevés bancaires ou MoMo exigées.',
+    'admin.policy.hint.min_revenue':
+        "Chiffre d'affaires minimum sur les 12 derniers mois.",
+    'admin.policy.hint.first_issue_months':
+        'Mois de relevés audités avant une première levée.',
+    'admin.policy.hint.repeat_issue_months':
+        'Mois audités avant chaque levée suivante.',
+    'admin.policy.hint.rdb_certificate':
+        "L'entreprise doit fournir un certificat RDB valide.",
+    'admin.policy.hint.max_notes':
+        "Notes en cours ou en remboursement qu'une entreprise peut avoir à la fois.",
+    'admin.policy.hint.residency': "Où l'investisseur doit résider.",
+    'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
+    'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
+    'admin.policy.hint.concentration':
+        "Part maximale d'une levée détenue par un investisseur.",
+    'admin.policy.hint.risk_statements':
+        'Déclarations acceptées avant un premier investissement.',
+    'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
+    'admin.policy.hint.kyc_investor_selfie':
+        'Une photo en direct comparée au document.',
+    'admin.policy.hint.kyc_investor_dob':
+        "Montre que l'investisseur a l'âge requis.",
+    'admin.policy.hint.kyc_investor_address':
+        "L'inscription ne le demande pas.",
+    'admin.policy.hint.kyc_business_rdb':
+        "Vérifié avant qu'une entreprise puisse postuler.",
+    'admin.policy.hint.identity_evidence':
+        'Photos de chaque dossier : recto, verso et selfie.',
+    'admin.policy.hint.kyc_reverify':
+        "Fréquence de la nouvelle vérification d'identité.",
+    'admin.policy.hint.late_charge': 'Ajoutée à une échéance en retard.',
+    'admin.policy.hint.miss_grace':
+        'Quand un paiement manqué devient un retard.',
+    'admin.policy.hint.default_at':
+        'Quand une échéance impayée devient un défaut.',
+    'admin.policy.hint.auto_freeze':
+        'Geler automatiquement une entreprise en défaut.',
+    'admin.policy.hint.complaint_acknowledge':
+        "Délai pour accuser réception d'une plainte.",
+    'admin.policy.hint.complaint_resolve': 'Délai pour résoudre une plainte.',
+    'admin.policy.hint.raise_days': "Durée d'ouverture d'une levée.",
+    'admin.policy.hint.withdrawal_min': 'Plus petit retrait du portefeuille.',
+    'admin.policy.hint.withdrawal_max': 'Plus grand retrait autorisé.',
+    'admin.policy.hint.resale_listing_days': "Durée d'une offre de revente.",
+    'admin.policy.hint.resale_reservation_minutes':
+        "Durée de réservation d'une part avant paiement.",
+    'admin.policy.hint.cpa_radius': "Distance maximale d'envoi d'un auditeur.",
+    'admin.policy.hint.sandbox_businesses':
+        "Plafond d'entreprises actives pendant la sandbox CMA.",
+    'admin.policy.hint.sandbox_investors':
+        "Plafond d'investisseurs vérifiés pendant la sandbox.",
+    'admin.policy.hint.sandbox_principal':
+        'Plafond du capital total levé pendant la sandbox.',
+    'admin.policy.hint.rate_band':
+        "Fourchette de taux fixe d'une note, tout compris.",
+    'admin.policy.hint.dual_control_threshold':
+        'À partir de ce montant, un second approbateur est requis.',
+    'admin.policy.min_rate': 'Taux minimum · fixe',
+    'admin.policy.max_rate': 'Taux maximum · fixe',
+    'admin.policy.note_unit_price': 'Prix unitaire de la note',
+    'admin.policy.min_term': 'Durée minimale · mois',
+    'admin.policy.max_term': 'Durée maximale · mois',
+    'admin.policy.registration_countries': "Pays d'immatriculation autorisés",
+    'admin.policy.kyc_investor_id':
+        "Investisseur · Carte d'identité / passeport",
+    'admin.policy.kyc_investor_selfie': 'Investisseur · Selfie de vivacité',
+    'admin.policy.kyc_investor_dob': 'Investisseur · Date de naissance',
+    'admin.policy.kyc_investor_address':
+        'Investisseur · Justificatif de domicile',
+    'admin.policy.kyc_business_rdb': 'Entreprise · Certificat RDB',
+    'admin.policy.term.rwanda': 'Rwanda',
+    'admin.policy.term.not_collected': 'Non collecté',
+    'admin.policy.term.resident_rwanda': 'Résident au Rwanda',
+    'admin.policy.term.every_deal': 'Exigé pour chaque levée',
+    'admin.policy.term.required': 'Exigé',
+    'admin.policy.term.not_set': 'Non défini',
+    'admin.policy.term.none': 'Aucun',
+    'admin.policy.term.late_from_due': "Aucun · en retard dès l'échéance",
+    'admin.policy.term.day_31': 'Jour 31 sans paiement',
+    'admin.policy.term.late_schedule': '5 % à D, J7 et J30 · plafond 15 %',
     'admin.finance.stream.platform_fee': 'Frais de plateforme · part Rozine',
     'admin.finance.stream.audit_partner_share':
         'Frais de plateforme · part Audit Partner (à payer)',
     'admin.finance.stream.deposit_fees': 'Frais de dépôt',
     'admin.finance.paid_by.business': 'Entreprises',
     'admin.finance.paid_by.investor': 'Investisseurs',
+    'admin.finance.paid_by.seller': 'Vendeur',
+    'admin.finance.stream.earnings_fee': 'Frais sur gains',
+    'admin.finance.stream.resale_fee': 'Frais de revente',
+    'admin.finance.stream.withdrawal_fee': 'Frais de retrait',
+    'admin.finance.stream.loss_reserve': 'Réserve pour pertes',
     'admin.policy.dual_control_threshold': 'Deux approbateurs à partir de',
     'admin.time.now': "à l'instant",
     'admin.time.minutes': 'il y a {count} min',
@@ -1813,6 +2062,8 @@ const fr: Catalog = {
     'admin.today.capital.to_date': 'Date de fin',
     'admin.today.capital.to_time': 'Heure de fin',
     'admin.today.capital.clear': 'Effacer',
+    'admin.trend.refused':
+        'Choisissez une date de fin égale ou postérieure à la date de début.',
     'admin.today.capital.all_time': 'Depuis le début',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · regroupé par {grain}',
@@ -1822,12 +2073,13 @@ const fr: Catalog = {
     'admin.today.capital.grain.hour': 'heure',
     'admin.today.health.title': 'Santé du portefeuille',
     'admin.today.health.caption':
-        '{count} titres en ligne, en financement, en remboursement ou clos',
+        '{count} titres émis, selon leur dernier rapport mensuel',
     'admin.today.health.donut': '{pct} % des titres sains',
     'admin.today.health.healthy_caption': 'sains',
     'admin.today.health.healthy': 'Sain',
     'admin.today.health.watch': 'Sous surveillance',
     'admin.today.health.distressed': 'En difficulté',
+    'admin.today.health.untracked': 'Pas encore suivi',
     'admin.today.activity.title': 'Activité en direct',
     'admin.today.activity.caption': "Dans tout l'écosystème",
     'admin.today.activity.empty': "Aucun mouvement d'argent pour l'instant.",
@@ -1851,6 +2103,7 @@ const fr: Catalog = {
     'admin.today.sectors.tip':
         'Capital en cours par secteur. Le rouge signale au moins un titre sous surveillance ou en difficulté.',
     'admin.today.sectors.notes': '{count} titres',
+    'admin.today.sectors.empty': 'Aucun titre n’a encore été émis.',
     'admin.today.treasury.title': 'Aperçu de la trésorerie',
     'admin.today.treasury.invested': 'Capital investi (primaire)',
     'admin.today.treasury.disbursed': 'Versé aux entreprises',
@@ -1886,6 +2139,11 @@ const fr: Catalog = {
     'admin.applications.older': 'Demandes plus anciennes',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        'Une restriction de crédit active bloque tout nouvel emprunt.',
+    'admin.applications.term_only': '{term} mois',
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",
@@ -2126,6 +2384,7 @@ const fr: Catalog = {
     'admin.parties.kyc.overdue': 'En retard',
     'admin.parties.kyc.rejected': 'Refusé',
     'admin.parties.status.frozen': 'Gelé',
+    'admin.parties.status.suspended': 'Suspendu',
     'admin.parties.status.restricted': 'Restreint',
     'admin.parties.status.verified': 'Vérifié',
     'admin.parties.status.pending': 'En attente',
@@ -2150,10 +2409,10 @@ const fr: Catalog = {
     'admin.permission.businesses.verify': 'Vérifier les entreprises',
     'admin.permission_detail.businesses.verify':
         'Décider de la vérification des entreprises, avec un motif consigné.',
-    'admin.permission.investors.verify': 'Vérifier les investisseurs',
+    'admin.permission.investors.verify': 'Décisions KYC',
     'admin.permission_detail.investors.verify':
         "Décider des contrôles d'identité des investisseurs et consulter Activité et audit.",
-    'admin.permission.applications.review': 'Examiner les demandes',
+    'admin.permission.applications.review': 'Approbations',
     'admin.permission_detail.applications.review':
         'Examiner les demandes de levée et les libérer pour publication.',
     'admin.permission.audit.partners.verify':
@@ -2185,6 +2444,66 @@ const fr: Catalog = {
     'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choisir qui reçoit les e-mails en préproduction.',
+    'admin.permission.staff.manage': 'Gérer les opérateurs',
+    'admin.permission_detail.staff.manage':
+        "Ajouter un opérateur, ou suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+    'admin.permission.accounts.freeze': 'Geler / suspendre',
+    'admin.permission_detail.accounts.freeze':
+        "Suspendre l'accès d'un investisseur ou d'une entreprise à son application.",
+    'admin.permission.capacity.adjust': 'Ajuster la capacité',
+    'admin.permission_detail.capacity.adjust':
+        "Modifier le montant qu'une entreprise peut lever.",
+    'admin.permission.records.edit': 'Modifier les fiches',
+    'admin.permission_detail.records.edit':
+        "Modifier les informations enregistrées d'une fiche.",
+    'admin.permission.ledger.correct': 'Contre-passations',
+    'admin.permission_detail.ledger.correct':
+        'Corriger une écriture réglée par une nouvelle écriture liée, avec un motif.',
+    'admin.permission.policies.change': 'Règles',
+    'admin.permission_detail.policies.change':
+        "Modifier les règles de tarification, d'éligibilité et d'automatisation.",
+    'admin.permission.records.delete': 'Supprimer',
+    'admin.permission_detail.records.delete':
+        'Retirer définitivement une fiche de la plateforme.',
+    'admin.matrix.withheld.not_built':
+        'Aucun rôle pour l’instant : pas encore disponible',
+    'admin.matrix.withheld.by_rule':
+        "Aucun rôle, par règle : les écritures du grand livre et de l'audit ne sont jamais supprimées",
+    'admin.action_log.title': "Journal des actions d'administration",
+    'admin.staff.approvals.title': 'Approbation super-admin en attente',
+    'admin.staff.approvals.body':
+        'L’accès super-admin reste inchangé jusqu’à l’approbation d’un autre super-admin actuellement autorisé. Le demandeur et le bénéficiaire ne peuvent pas approuver.',
+    'admin.staff.approvals.grant':
+        '{requester} a demandé un accès super-admin.',
+    'admin.staff.approvals.reactivate':
+        '{requester} a demandé la réactivation super-admin.',
+    'admin.staff.approvals.form': 'Approuver l’accès de {recipient}',
+    'admin.staff.approvals.submit': 'Approuver l’accès super-admin',
+    'admin.staff.approvals.waiting':
+        'En attente de l’approbation d’un autre super-admin.',
+    'admin.staff.invite.open': '+ Inviter un opérateur',
+    'admin.staff.invite.title': 'Inviter un opérateur',
+    'admin.staff.invite.body':
+        'Donnez à un compte existant l’accès à la console avec un rôle. L’opérateur crée d’abord son propre compte dédié et active la connexion à deux facteurs. Le changement est consigné avec votre nom et votre motif.',
+    'admin.staff.invite.email': 'E-mail du compte',
+    'admin.staff.invite.role': 'Rôle',
+    'admin.staff.invite.cancel': 'Annuler',
+    'admin.staff.invite.submit': 'Donner l’accès',
+    'admin.staff.signed_in_as': 'Connecté en tant que',
+    'admin.staff.access_full': 'Accès complet',
+    'admin.staff.access_count': '{granted} capacités sur {total}',
+    'admin.action_log.info':
+        "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
+    'admin.action_log.empty':
+        "Aucune action d'administration enregistrée pour l'instant.",
+    'admin.action_log.col.action': 'Action',
+    'admin.action_log.col.by': 'Par',
+    'admin.action_log.col.target': 'Cible',
+    'admin.action_log.col.reason': 'Motif',
+    'admin.action_log.col.when': 'Quand',
+    'admin.action_log.action.staff_suspended': 'Accès suspendu',
+    'admin.action_log.action.staff_enabled': 'Accès activé',
+    'admin.action_log.action.staff_granted': 'Ajouté comme {role}',
     'admin.permission.reconciliation.view': 'Voir le rapprochement',
     'admin.permission_detail.reconciliation.view':
         'Comparer le grand livre aux relevés des prestataires.',
@@ -2243,13 +2562,17 @@ const fr: Catalog = {
     'admin.parties.list.holdings': 'Positions',
     'admin.parties.list.engagements': 'Missions',
     'admin.parties.list_empty': "Rien pour l'instant.",
+    'admin.parties.holding_detail': {
+        one: '{amount} · {count} note',
+        other: '{amount} · {count} notes',
+    },
     'admin.parties.note_status.draft': 'Brouillon',
     'admin.parties.note_status.active': 'En ligne',
     'admin.parties.note_status.funded': 'Financé',
     'admin.parties.note_status.repaying': 'En remboursement',
     'admin.parties.note_status.completed': 'Terminé',
     'admin.parties.note_status.failed': 'Échoué',
-    'admin.parties.history': 'Historique',
+    'admin.parties.history': 'Activité',
     'admin.parties.history_empty': 'Aucune activité enregistrée.',
     'admin.parties.kyc_title': 'KYC et vérification',
     'admin.parties.kyc_current': 'Statut actuel',
@@ -5308,6 +5631,32 @@ const fr: Catalog = {
         "Rapport d'audit de mise en ligne",
     'admin.applications.release.gate_state.passed': 'Réussi',
     'admin.applications.release.gate_state.failed': 'Bloqué',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        'Les critères de crédit du moteur de notation ne sont pas remplis.',
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Le pouvoir de signature de l'entreprise a changé après sa signature.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise n'est pas vérifié.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Le rapport d'audit n'est plus à jour.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "La validation enregistrée ne correspond plus à ce que l'entreprise a signé.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Les conditions ont changé après la signature de l'entreprise.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de cotation a changé.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Le devis n'est plus à jour.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        "Une restriction s'applique à cette entreprise.",
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Cette vérification n'a pas pu être effectuée.",
+    'admin.applications.release.cause.other':
+        "Cette vérification n'a pas réussi.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',
@@ -6207,6 +6556,13 @@ const fr: Catalog = {
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
     'admin.notes.tabs': 'Notes par état',
+    'admin.notes.sort_label': 'Trier les notes',
+    'admin.notes.sort.newest': 'Tri : plus récentes',
+    'admin.notes.sort.raised': 'Tri : capital levé',
+    'admin.notes.sort.yield': 'Tri : rendement',
+    'admin.notes.sort.funded': 'Tri : % financé',
+    'admin.notes.sort.investors': 'Tri : investisseurs',
+    'admin.notes.sort.term': 'Tri : durée',
     'admin.notes.state.live': 'En cours',
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',
@@ -6229,11 +6585,13 @@ const fr: Catalog = {
     'admin.payments.title': 'Paiements en cours',
     'admin.payments.caption':
         'Retraits dont les fonds sont bloqués pendant que le prestataire confirme le paiement. Chacun est versé, ou revient au portefeuille, selon le résultat vérifié.',
-    'admin.payments.movement.caption':
-        'Dépôts crédités et retraits versés par jour (Kigali), 14 derniers jours',
     'admin.payments.kpi.count': {
         one: '{count} opération · 14 derniers jours',
         other: '{count} opérations · 14 derniers jours',
+    },
+    'admin.payments.kpi.disbursed_count': {
+        one: '{count} versement aux entreprises · 14 derniers jours',
+        other: '{count} versements aux entreprises · 14 derniers jours',
     },
     'admin.payments.kpi.in_flight': 'Paiements en cours',
     'admin.payments.kpi.in_flight.sub': 'En attente du prestataire',
@@ -6264,8 +6622,7 @@ const fr: Catalog = {
     'admin.primary.lifecycle.inventory_unavailable': 'Indisponible',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Épuisée',
     'admin.primary.lifecycle.closing_pending_settlement': 'Clôture en cours',
-    'admin.primary.trend.caption':
-        'Montants engagés dans les levées chaque jour, sur les 14 derniers jours.',
+    'admin.primary.trend.last_14': '14 derniers jours',
     'admin.primary.more': 'Plus de levées en cours',
     'admin.primary.empty_title': 'Aucune levée en cours',
     'admin.primary.empty_body':
@@ -6451,8 +6808,16 @@ const fr: Catalog = {
     'admin.health.treasury.detail':
         'Aucun solde de trésorerie n’est encore enregistré',
     'admin.health.frozen.label': 'Comptes gelés',
-    'admin.health.frozen.detail':
-        'Le gel des comptes n’est pas encore disponible',
+    'admin.health.frozen.detail': "comptes dont l'accès est suspendu",
+    'admin.health.frozen.rec.healthy': {
+        one: "Aucun compte opérateur n'est actuellement restreint.",
+        other: "Aucun compte opérateur n'est actuellement restreint.",
+    },
+    'admin.health.frozen.rec.watch': {
+        one: '{count} compte opérateur est gelé. Vérifiez-le dans Personnel et rôles.',
+        other: '{count} comptes opérateurs sont gelés. Vérifiez-les dans Personnel et rôles.',
+    },
+    'admin.health.frozen.action': 'Ouvrir Personnel et rôles',
     'admin.complaints.title': 'Réclamations',
     'admin.complaints.caption':
         'Accuser réception sous 4 heures et résoudre sous 48, ou dire au client pourquoi et quand (BRS CMP-R03).',

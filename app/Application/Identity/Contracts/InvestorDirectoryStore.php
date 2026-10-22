@@ -22,7 +22,8 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, awaiting_review: int, aum: string}
  * @phpstan-type Detail array{
  *     row: DirectoryRow, restricted_since: string|null,
- *     history: list<array{id: string, at: string, actor: string, command: string, reason: string|null}>
+ *     history: list<array{id: string, at: string, actor: string, command: string, reason: string|null}>,
+ *     holdings: list<array{business_id: string, name: string, principal: string, notes: int}>
  * }
  */
 interface InvestorDirectoryStore
@@ -31,7 +32,7 @@ interface InvestorDirectoryStore
      * One page of the directory under a chip, sort and name or email search.
      *
      * @param  'all'|'verified'|'pending'|'kyc_overdue'|'frozen'|'restricted'  $chip
-     * @param  'portfolio'|'name'  $sort
+     * @param  'portfolio'|'holdings'|'wallet'|'name'  $sort
      * @return Directory
      */
     public function directory(string $chip, string $sort, string $search, int $limit): array;

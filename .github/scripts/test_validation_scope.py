@@ -80,6 +80,21 @@ class ScopeTests(unittest.TestCase):
         self.assertIn("tests/Feature/AuditAssignmentCompletionTest.php", runner.selected_paths(manifest, "php"))
         self.assertIn("tests/Feature/MonthlyAuditSchedulerTest.php", runner.selected_paths(manifest, "php"))
 
+    def test_poc_catalog_retains_staff_approval_boundaries(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        paths = runner.selected_paths(manifest, "php")
+        for path in ["tests/Feature/StaffSuperadminApprovalTest.php", "tests/Feature/StaffDirectoryTest.php",
+                     "tests/Feature/StaffAccessTest.php", "tests/Concurrency/StaffSuperadminApprovalConcurrencyTest.php"]:
+            with self.subTest(path=path):
+                self.assertIn(path, paths)
+
+    def test_poc_transactional_features_precede_committed_concurrency_fixtures(self):
+        manifest = json.loads(Path("config/poc-test-manifest.json").read_text())
+        paths = runner.selected_paths(manifest, "php")
+        features = [index for index, path in enumerate(paths) if path.startswith("tests/Feature/")]
+        concurrency = [index for index, path in enumerate(paths) if path.startswith("tests/Concurrency/")]
+        self.assertLess(max(features), min(concurrency))
+
     def test_selected_file_cannot_succeed_without_running_its_tests(self):
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory) / "report.xml"

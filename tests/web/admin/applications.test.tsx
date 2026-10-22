@@ -120,6 +120,12 @@ describe('Applications queue', () => {
 
         expect(within(policy).getByText('1.50×')).toBeInTheDocument();
         expect(within(policy).getByText('10–15%')).toBeInTheDocument();
+        expect(
+            within(policy).getByText('Required on every deal'),
+        ).toBeInTheDocument();
+        expect(
+            within(policy).getByRole('link', { name: 'Policies' }),
+        ).toHaveAttribute('href', '/preview/admin-section');
         const tabs = screen.getByRole('navigation', {
             name: 'Application states',
         });
@@ -669,12 +675,33 @@ describe('Staff release', () => {
 
         expect(within(panel).getByText('Blocked')).toBeInTheDocument();
         expect(
-            within(panel).getByText('MANDATE_UNVERIFIED'),
-        ).toBeInTheDocument();
+            within(panel).getByText(
+                "The business's signing mandate isn't verified.",
+            ),
+        ).toHaveAttribute('title', 'MANDATE_UNVERIFIED');
         expect(within(panel).getByRole('status')).toHaveTextContent(
             'Release never overrides a failed check.',
         );
         expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('reads a cause it has no words for as a failed check, keeping the code on hover', () => {
+        const fixture = props(releaseBlockedFixture);
+        const gate = releaseOf(fixture).gates.find(
+            (entry) => entry.cause !== null,
+        );
+
+        if (gate === undefined) {
+            throw new Error('the fixture carries a failed gate');
+        }
+
+        gate.cause = 'SOMETHING_NEW';
+        render(<AdminApplications {...fixture} />);
+
+        expect(screen.getByText("This check didn't pass.")).toHaveAttribute(
+            'title',
+            'SOMETHING_NEW',
+        );
     });
 
     it('never offers release over a failed gate, whatever the actions say', () => {
@@ -832,5 +859,42 @@ describe('The live staff applications index (#147)', () => {
         await user.type(screen.getByRole('searchbox'), 'Kigali{Enter}');
 
         expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
+    });
+});
+
+describe('Engine refusals', () => {
+    it('lists a refused draft with its reason and no review or approve control', () => {
+        const fixture = props(liveFixture);
+        const [first] = fixture.applications;
+
+        fixture.applications = [
+            {
+                ...first,
+                id: 'app_refused',
+                business: 'Kivu Fisheries',
+                state: 'rejected',
+                rate_pct: null,
+                term_months: 6,
+                link: null,
+                approve_link: null,
+                decision: {
+                    code: 'reject',
+                    reason: '',
+                    reason_code: 'RESTRICTION_ACTIVE',
+                },
+            },
+        ];
+        render(<AdminApplications {...fixture} />);
+
+        const row = screen.getByRole('row', { name: /Kivu Fisheries/ });
+
+        expect(within(row).getByText('Rejected')).toBeInTheDocument();
+        expect(within(row).getByText('6mo')).toBeInTheDocument();
+        expect(
+            within(row).getByText(
+                'An active credit restriction blocks new borrowing.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(row).queryByRole('link')).not.toBeInTheDocument();
     });
 });

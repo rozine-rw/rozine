@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Resources\StaffExceptionsResource;
 use App\Http\Resources\StaffNavigationResource;
 use App\Models\BusinessProfile;
@@ -17,6 +16,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * Exceptions (MVP-ADMIN-SCR-06) from live records: every open reconciliation break as a variance
@@ -27,7 +27,7 @@ use Tests\Support\InvestorWalletFixture;
 function exceptionsStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Exceptions assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Exceptions assignment.');
 
     return $user;
 }

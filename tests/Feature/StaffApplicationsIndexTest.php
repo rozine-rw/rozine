@@ -45,9 +45,9 @@ it('projects the same retained queue and current release gates through web and A
             ->where('applications.0.rate_pct', BusinessApplicationSubmission::query()->where('business_application_id', $id)->firstOrFail()->payload['review']['quote']['rate_pct'])
             ->where('applications.0.state', 'submitted')->where('applications.0.capacity_used_pct', null)
             ->where('applications.0.approve_link', null)->where('tabs.0.count', 1)->where('tabs.1.count', 0)
-            ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'audit_routing', 'value' => '≥ 1.25×'], ['key' => 'rate_band', 'value' => '10–15%']])
+            ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'listing_audit', 'value' => '', 'term' => 'every_deal'], ['key' => 'audit_routing', 'value' => '≥ 1.25×'], ['key' => 'rate_band', 'value' => '10–15%']])
             ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', null)
-            ->where('review.links.business', null)->where('review.audit.state', null)->where('review.factors', [])
+            ->where('review.links.business', ['url' => '/admin/businesses?business='.$fixture['application']->business_id, 'method' => 'get'])->where('review.audit.state', null)->where('review.factors', [])
             ->missing('review.acceptance')->missing('review.actor_user_id')->missing('review.application.draft')->missing('roles'));
     $props = $web->inertiaPage()['props'];
     $this->get(route('staff.applications.index'), ['X-Inertia' => 'true', 'X-Inertia-Version' => $web->inertiaPage()['version']])
@@ -229,4 +229,34 @@ it('refuses a corrupt release in the approved queue', function (): void {
     });
     $this->withoutExceptionHandling()->actingAs($fixture['audit']['staff']);
     expect(fn () => $this->getJson(route('api.v1.staff.applications.index', ['tab' => 'approved'])))->toThrow(RuntimeException::class, 'APPLICATION_RELEASE_INTEGRITY_FAILED');
+});
+
+it('lists drafts the engine refused under Rejected with the reason, without a staff review', function (): void {
+    $refused = BusinessQuoteFixture::make(credit: false);
+    BusinessCreditFactsFixture::record($refused['audit']['staff'], $refused['audit']['business'], facts: [...BusinessCreditFactsFixture::facts(), 'restriction_active' => true]);
+    expect(BusinessQuoteFixture::evaluate($refused)['data']['quote']['code'])->toBe('RESTRICTION_ACTIVE');
+    $missing = BusinessQuoteFixture::make(credit: false);
+    expect(BusinessQuoteFixture::evaluate($missing)['data']['quote']['status'])->toBe('refused');
+    $quoted = BusinessQuoteFixture::make();
+    expect(BusinessQuoteFixture::evaluate($quoted)['data']['quote']['status'])->toBe('ready');
+    $user = User::factory()->withTwoFactor()->create();
+    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Queue review.', (string) Str::uuid(), ['approver']);
+    $title = $refused['application']->refresh()->draft['title'];
+
+    $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('active_tab', 'rejected')->where('tabs.2.key', 'rejected')->where('tabs.2.count', 1)
+            ->where('tabs.2.link.url', '/admin/applications?tab=rejected&search=&limit=20')->has('applications', 1)
+            ->where('applications.0', fn ($row): bool => $row['id'] === $refused['application']->id && $row['state'] === 'rejected'
+                && $row['note_title'] === $title && $row['requested'] === ['amount' => '12000000', 'currency' => 'RWF'] && $row['rate_pct'] === null
+                && $row['decision'] === ['code' => 'reject', 'reason' => '', 'reason_code' => 'RESTRICTION_ACTIVE'] && $row['link'] === null
+                && $row['business'] !== '' && is_string($row['submitted_at']))
+            ->where('pagination.next', null)->where('review', null));
+    $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'search' => 'no such title']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('tabs.2.count', 0)->has('applications', 0));
+    $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'search' => $refused['application']->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 1));
+    $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'limit' => 1, 'before' => $refused['application']->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 0));
+    $this->actingAs($user)->get(route('staff.applications.index'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('active_tab', 'pending')->where('tabs.2.count', null));
 });

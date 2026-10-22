@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "a1c05eba36a2e5a30bd40c97a463538e1bc79b67a10460a966c6ef310263c045",
-    "coverageSetSha256": "b2e93f1888c6c8c22ad78f51bd22ed5b98d4dc9d078694fe6cd1fae9c98dd830",
+    "sourceManifestSha256": "21b963ea2f231ebb6a9899d4c6bdc34ca646c5105901c413d17cfe0177c33f4d",
+    "coverageSetSha256": "139e3863b689d0add9e415733863b79dfce6aa9e8b01ffde9f657f3505061a06",
     "thresholds": {
         "critical": {
             "global": {
@@ -64,8 +64,11 @@
         "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
+        "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
+        "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
+        "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
@@ -75,6 +78,7 @@
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",
+        "resources/js/components/admin/trend-range.tsx",
         "resources/js/components/admin/ui.tsx",
         "resources/js/components/alert-error.tsx",
         "resources/js/components/app-content.tsx",

@@ -136,7 +136,8 @@
             },
             {
                 "key": "listing_audit",
-                "value": "Required on every deal"
+                "value": "",
+                "term": "every_deal"
             },
             {
                 "key": "audit_routing",

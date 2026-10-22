@@ -12,8 +12,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * figures, the chips with their counts, the sector and sort filters, the first sixty matches and one
  * Business's 360. Fields the platform does not record yet are not invented: no capacity read exists,
  * so capacity is null; no arrears or freeze read exists, so health reads not tracked, frozen is null
- * and the only chip is All;
- * and no eligibility policy is published, so the policy strip is empty. A Business with no rated
+ * and the only chip is All. The policy strip shows who may apply (`PlatformPolicies::businesses()`).
+ * A Business with no rated
  * note reads as pending its audit, and the average is of published scores only.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
@@ -70,7 +70,8 @@ class StaffBusinessDirectoryResource extends JsonResource
             // Health chips wait for an arrears and freeze read, so All is the only one.
             'chips' => [['key' => 'all', 'count' => $counts['all'], 'link' => $link($filters), 'active' => true]],
             'filters' => [...$sectors, ['key' => 'sort', 'value' => $page['sort'],
-                'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'name', 'label' => 'Sort: Name']]]],
+                'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'active_notes', 'label' => 'Sort: Active notes'],
+                    ['value' => 'investors', 'label' => 'Sort: Investors'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],

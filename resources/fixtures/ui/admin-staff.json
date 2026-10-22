@@ -355,6 +355,36 @@
             {
                 "key": "disbursements.requery",
                 "roles": ["treasury"]
+            },
+            {
+                "key": "accounts.freeze",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "capacity.adjust",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "records.edit",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "ledger.correct",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "policies.change",
+                "roles": [],
+                "withheld": "not_built"
+            },
+            {
+                "key": "records.delete",
+                "roles": [],
+                "withheld": "by_rule"
             }
         ]
     }

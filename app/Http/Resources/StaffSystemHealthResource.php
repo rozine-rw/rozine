@@ -25,6 +25,7 @@ class StaffSystemHealthResource extends JsonResource
     private const array RESOLVED_BY = [
         'ledger' => ['permission' => 'reconciliation.view', 'route' => 'staff.reconciliation.index'],
         'queue' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],
+        'frozen' => ['permission' => 'staff.manage', 'route' => 'staff.staff.index'],
     ];
 
     /** @return array<string, mixed> */

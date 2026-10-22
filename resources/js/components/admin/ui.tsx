@@ -319,13 +319,26 @@ export function InfoTip({
     );
 }
 
+/** A rule's value as shown: its figure, or the translated wording the server names by `term`. */
+export function policyValue(
+    item: PolicyItem,
+    t: ReturnType<typeof useTranslation>['t'],
+): string {
+    return item.term === undefined
+        ? item.value
+        : t(`admin.policy.term.${item.term}`);
+}
+
 /** "SET IN POLICIES" — the rules governing this queue, read from the policy registry. */
 export function PolicyPeek({
     title,
     items,
+    link,
 }: {
     title: string;
     items: PolicyItem[];
+    /** The Policies section, when the viewer may open it: every rule in effect, read-only. */
+    link?: RouteLink | null;
 }) {
     const { t } = useTranslation();
 
@@ -372,19 +385,31 @@ export function PolicyPeek({
                             className="min-w-0 bg-rz-surface px-[13px] py-[9px]"
                         >
                             <dt
+                                title={t(`admin.policy.${item.key}`)}
                                 className={cn(
-                                    'truncate text-[10px] font-semibold',
+                                    'line-clamp-2 text-[10px] leading-[1.3] font-semibold',
                                     CAPTION,
                                 )}
                             >
                                 {t(`admin.policy.${item.key}`)}
                             </dt>
                             <dd className="mt-[3px] truncate text-[13.5px] font-bold tracking-[-.01em] text-rz-ink">
-                                {item.value}
+                                {policyValue(item, t)}
                             </dd>
                         </div>
                     ))}
                 </dl>
+                {link != null && (
+                    <Link
+                        href={link}
+                        className="flex shrink-0 items-center gap-1.5 rounded-[10px] border border-[#d9e5ff] bg-rz-surface px-3.5 py-[9px] text-[12px] font-bold text-rz-accent-app-text hover:border-[#1e3aff] hover:bg-[#1e3aff] hover:text-white dark:border-rz-border"
+                    >
+                        {t('admin.policy.open')}
+                        <span aria-hidden className="text-[13px]">
+                            →
+                        </span>
+                    </Link>
+                )}
             </div>
         </section>
     );

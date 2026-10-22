@@ -12,6 +12,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * served here; every other sidebar entry is null. A case's documents are linked, never inlined: each
  * carries a download link and a view link that serves the same private file for display in place.
  *
+ * Each queued case lists the automated checks it passed: no case reaches the queue without them, and
+ * approval reruns them under its locks. AML alerts and sanctions hits stay null until screening
+ * (KYC-R04) is connected, so the console says so rather than showing a count.
+ *
  * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string}
  * @phpstan-type Review array{
  *     id: string, revision: int, status: string, submitted_at: string|null, account: array{name: string, email: string},
@@ -22,12 +26,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * }
  * @phpstan-type Page array{
  *     tab: string, search: string, limit: int, before: string|null, entries: list<Entry>, next_cursor: string|null,
- *     counts: array{submitted: int, decided: int}, review: Review|null, roles: list<string>, permissions: list<string>,
+ *     counts: array{submitted: int, decided: int},
+ *     stats: array{completion_pct: string|null, verified: int, total: int, turnaround_hours: string|null, approved_30d: int, rejected_30d: int}, review: Review|null, roles: list<string>, permissions: list<string>,
  *     policy: list<array{key: string, value: string}>
  * }
  */
 class StaffInvestorVerificationsResource extends JsonResource
 {
+    /** The checks `InvestorVerificationCase::complete()` runs before a case can be submitted. */
+    private const CHECKS = ['age', 'id_number', 'documents', 'selfie'];
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -48,8 +56,9 @@ class StaffInvestorVerificationsResource extends JsonResource
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'active_tab' => $page['tab'], 'policy' => $page['policy'],
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['submitted', 'decided']),
-            'entries' => array_map(fn (array $entry): array => [...$entry, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
+            'entries' => array_map(fn (array $entry): array => [...$entry, 'checks' => self::CHECKS, 'selected' => $entry['id'] === ($page['review']['id'] ?? null),
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),
+            'stats' => [...$page['stats'], 'aml_alerts' => null, 'sanctions_hits' => null],
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
     }

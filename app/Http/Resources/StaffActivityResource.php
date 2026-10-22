@@ -32,7 +32,7 @@ class StaffActivityResource extends JsonResource
 
     /** How each recorded action reads, and its tone when it completed. */
     private const ACTIONS = [
-        'staff.configure' => ['Changed staff access', 'purple'], 'operator.configure' => ['Changed identity operator access', 'purple'],
+        'staff.superadmin.request' => ['Requested super-admin access', 'purple'], 'staff.configure' => ['Changed staff access', 'purple'], 'operator.configure' => ['Changed identity operator access', 'purple'],
         'staff.person.record' => ['Recorded the person behind a staff account', 'blue'], 'person.resolve' => ['Verified a person', 'green'],
         'investor.verify' => ['Verified an Investor', 'green'], 'organization.resolve' => ['Verified an organization', 'green'],
         'membership.change' => ['Changed a membership', 'amber'], 'role.select' => ['Switched active role', 'grey'],

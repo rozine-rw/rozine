@@ -17,6 +17,7 @@ class ListPaymentsRequest extends FormRequest
     /** @return array<string, list<mixed>> */
     public function rules(): array
     {
-        return ['q' => ['sometimes', 'nullable', 'string', 'max:120'], 'limit' => ['sometimes', 'integer', 'min:1', 'max:500']];
+        return ['q' => ['sometimes', 'nullable', 'string', 'max:120'], 'limit' => ['sometimes', 'integer', 'min:1', 'max:500'],
+            'from' => ['sometimes', 'nullable', 'date_format:Y-m-d'], 'to' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:from']];
     }
 }
