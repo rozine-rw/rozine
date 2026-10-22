@@ -88,9 +88,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     if ($existing?->status === 'closed') {
                         throw new CommandRejection('AUDIT_ENGAGEMENT_CLOSED', revision: $existing->revision, data: ['assignment_id' => $existing->id]);
                     }
-                    if ($existing !== null && $this->published($existing)) {
-                        $this->persist($existing, $this->states->complete($existing->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
-                    }
+                    $this->finish($existing, $actorId, $candidates, $context);
                     if ($existing !== null && $existing->status !== 'completed') {
                         return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
                     }
@@ -500,6 +498,26 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return $count;
     }
 
+    public function requestMonthly(string $businessId): ?string
+    {
+        return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId): ?string {
+            $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
+            $this->finish($existing, null, $candidates, $context);
+            $month = now('Africa/Kigali')->startOfMonth();
+            $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
+                ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine');
+            if (($existing !== null && $existing->status !== 'completed') || $dispatched) {
+                return null;
+            }
+            $record = new AuditAssignment;
+            $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
+            $state = $this->offer($this->states->start('routine', now()->toDateTimeImmutable()), $context, $candidates);
+            $this->persist($record, $state, null, 'audit.assignment.schedule', 'Monthly audit for '.$month->subMonth()->format('Y-m').'.', $candidates, $context);
+
+            return $record->id;
+        });
+    }
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array
     {
@@ -754,6 +772,17 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $this->notices->record((string) $state['party_id'], PartyNoticeKind::AuditorJobOffered, ['type' => $state['kind'],
                 'business' => (string) $context['business']['profile']['name'], 'location' => (string) $context['business']['profile']['district'],
                 'accept_by' => (string) $state['accept_by'], 'assignment_id' => $record->id], 'audit-job-offered:'.$record->id.':'.$record->revision);
+        }
+    }
+
+    /**
+     * @param  list<Candidate>  $candidates
+     * @param  AuditContext  $context
+     */
+    private function finish(?AuditAssignment $record, ?int $actorId, array $candidates, array $context): void
+    {
+        if ($record !== null && $this->published($record)) {
+            $this->persist($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
         }
     }
 

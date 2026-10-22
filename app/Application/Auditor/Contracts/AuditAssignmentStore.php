@@ -105,6 +105,12 @@ interface AuditAssignmentStore
     /** Trusted scheduler only; no participant identity or supplied eligibility facts. */
     public function advanceDue(int $limit): int;
 
+    /**
+     * Trusted scheduler only: dispatches the Business's routine audit once per Kigali month and returns
+     * the new assignment, or null when an engagement is still open, closed or already dispatched this month.
+     */
+    public function requestMonthly(string $businessId): ?string;
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array;
 
