@@ -3457,6 +3457,8 @@ const rw: Catalog = {
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
     'investor.checkout.wallet': 'Ikofi',
+    'investor.checkout.funding_source': 'Aho amafaranga ava',
+    'investor.checkout.wallet_available': 'Ahari: {amount}',
     'investor.checkout.pay_with': 'Ishyura ukoresheje',
     'investor.checkout.wallet_line': '{wallet} · {amount} bihari',
     'investor.checkout.insufficient':

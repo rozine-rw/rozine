@@ -152,10 +152,11 @@ describe('Checkout: the indicative step', () => {
         expect(sheet).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );
-        expect(within(sheet).getByText('Pay with')).toBeInTheDocument();
-        expect(
-            within(sheet).getByText('Rozine Wallet · RWF 1,253,485 available'),
-        ).toBeInTheDocument();
+        expect(within(sheet).getByText('Funding source')).toBeInTheDocument();
+        expect(sheet).toHaveTextContent(
+            'Rozine WalletAvailable: RWF 1,253,485',
+        );
+        expect(within(sheet).queryByText('Pay with')).not.toBeInTheDocument();
         expect(within(sheet).queryByText('CLOSES IN')).not.toBeInTheDocument();
         expect(within(sheet).queryByRole('checkbox')).not.toBeInTheDocument();
         expect(
@@ -596,6 +597,10 @@ describe('Checkout: committed', () => {
         expect(screen.getByRole('dialog', { name: 'Checkout' })).toHaveClass(
             'w-[376px]',
         );
+        expect(screen.getByText('Pay with')).toBeInTheDocument();
+        expect(
+            screen.getByText('Rozine Wallet · RWF 1,253,485 available'),
+        ).toBeInTheDocument();
         unmount();
 
         render(<InvestorCheckout {...props(minimalFixture)} />);

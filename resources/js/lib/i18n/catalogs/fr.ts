@@ -3472,6 +3472,8 @@ const fr: Catalog = {
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.wallet': 'Portefeuille',
+    'investor.checkout.funding_source': 'Source de financement',
+    'investor.checkout.wallet_available': 'Disponible : {amount}',
     'investor.checkout.pay_with': 'Payer avec',
     'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
     'investor.checkout.insufficient':

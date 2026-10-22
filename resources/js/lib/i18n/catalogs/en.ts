@@ -3332,6 +3332,8 @@ const en = {
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
     'investor.checkout.wallet': 'Wallet',
+    'investor.checkout.funding_source': 'Funding source',
+    'investor.checkout.wallet_available': 'Available: {amount}',
     'investor.checkout.pay_with': 'Pay with',
     'investor.checkout.wallet_line': '{wallet} · {amount} available',
     'investor.checkout.insufficient':
