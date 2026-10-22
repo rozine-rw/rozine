@@ -1371,7 +1371,19 @@ const fr: Catalog = {
     'admin.design.policies.tab.kyc': 'Exigences KYC',
     'admin.design.policies.tab.penalties': 'Conformité et pénalités',
     'admin.design.policies.tab.limits': 'Limites',
-    'admin.design.policies.rules.title': 'Règles',
+    'admin.design.policies.fees.sub':
+        "Ce que chaque partie paie à Rozine, et la part versée à l'auditeur attitré.",
+    'admin.design.policies.underwriting.sub':
+        'Les règles qui décident si une levée est approuvée et à quelles conditions.',
+    'admin.design.policies.business.sub':
+        'Qui peut lever des fonds sur Rozine.',
+    'admin.design.policies.investor.sub': 'Qui peut investir sur Rozine.',
+    'admin.design.policies.kyc.sub':
+        "Ce que chaque partie doit fournir. Un élément requis bloque les opérations tant qu'il manque ; un élément non collecté n'est jamais demandé.",
+    'admin.design.policies.penalties.sub':
+        'Comment Rozine traite les retards, les défauts et les nouvelles vérifications.',
+    'admin.design.policies.limits.sub':
+        "Garde-fous sur l'activité dans les deux applications.",
     'admin.design.policies.rules.empty':
         'Aucune règle à afficher pour le moment.',
     'admin.design.system_health.signals.title': 'Signaux',

@@ -94,7 +94,9 @@ describe('A designed section that is not wired yet', () => {
             for (const block of design.blocks) {
                 if (block.tab !== undefined && block.tab !== first) {
                     expect(
-                        within(region).queryByText(text(block.empty)),
+                        within(region).queryByRole('heading', {
+                            name: text(block.title),
+                        }),
                     ).not.toBeInTheDocument();
 
                     continue;
@@ -258,7 +260,12 @@ describe('Policies', () => {
             />,
         );
 
-        const rules = screen.getByRole('table', { name: 'Rules' });
+        const rules = screen.getByRole('table', { name: 'Fees' });
+        expect(
+            screen.getByText(
+                'What each side pays Rozine, and the share that goes to the auditor of record.',
+            ),
+        ).toBeInTheDocument();
         expect(within(rules).getAllByRole('row')).toHaveLength(3);
         expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
             'Platform fee · at disbursement3%brs-2.0-fee-r01',
@@ -272,9 +279,9 @@ describe('Policies', () => {
 
         fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
         expect(
-            within(screen.getByRole('table', { name: 'Rules' })).getAllByRole(
-                'row',
-            )[1],
+            within(
+                screen.getByRole('table', { name: 'KYC requirements' }),
+            ).getAllByRole('row')[1],
         ).toHaveTextContent('Minimum age18—');
 
         fireEvent.click(

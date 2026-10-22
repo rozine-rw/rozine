@@ -150,9 +150,9 @@ function rowsOf(
     props: AdminPendingSectionProps,
     t: ReturnType<typeof useTranslation>['t'],
 ): { key: string; cells: string[] }[] {
-    if (block.key === 'rules') {
+    if (props.section === 'policies') {
         return (props.rules ?? [])
-            .filter((rule: PolicyRule) => rule.tab === tab)
+            .filter((rule: PolicyRule) => rule.tab === block.tab)
             .map((rule) => ({
                 key: rule.key,
                 cells: [
