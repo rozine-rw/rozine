@@ -41,7 +41,7 @@ final readonly class BrowsePrimaryMarket
     /**
      * @param  string|null  $from  the window's first Kigali date `Y-m-d`, or null for fourteen days back
      * @param  string|null  $to  the window's last Kigali date `Y-m-d`, or null for today
-     * @return array{raises: list<Raise>, ended: array{funded: int, failed: int}, trend: array{from: string, to: string|null, grain: 'day'|'month', bars: list<Bar>}}
+     * @return array{raises: list<Raise>, ended: array{funded: int, failed: int}, trend: array{from: string, to: string|null, grain: 'day'|'month', custom: bool, bars: list<Bar>}}
      */
     public function handle(int $actorId, ?string $from = null, ?string $to = null): array
     {
@@ -68,7 +68,7 @@ final readonly class BrowsePrimaryMarket
         $grain = $first->diffInDays($last ?? $today, true) >= self::DAILY_DAYS ? 'month' : 'day';
 
         return ['raises' => $raises, 'ended' => ['funded' => $notes['funded'] + $notes['repaying'], 'failed' => $notes['failed']],
-            'trend' => ['from' => $first->toIso8601String(), 'to' => $last?->toIso8601String(), 'grain' => $grain,
+            'trend' => ['from' => $first->toIso8601String(), 'to' => $last?->toIso8601String(), 'grain' => $grain, 'custom' => $from !== null || $to !== null,
                 'bars' => $this->dashboard->committed($grain, $first->utc()->toIso8601String(), $last?->addDay()->utc()->toIso8601String())]];
     }
 }
