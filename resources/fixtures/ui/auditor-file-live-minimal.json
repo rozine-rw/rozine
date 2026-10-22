@@ -5,7 +5,9 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["conflict.declare"],
+        "allowed_actions": [
+            "conflict.declare"
+        ],
         "job": {
             "id": "01k6kz9w3e7r1t5y8u2i6o0p3a",
             "revision": 7,
@@ -20,7 +22,9 @@
             "accept_by": null,
             "complete_by": "2026-10-04T09:00:00Z",
             "reassigned_from": null,
-            "allowed_actions": ["conflict.declare"]
+            "allowed_actions": [
+                "conflict.declare"
+            ]
         },
         "file": {
             "raise": {
@@ -32,12 +36,11 @@
             },
             "documents": [],
             "prescreen": [],
-            "reason": null,
-            "mandate": [],
             "history": {
                 "last_audit": null,
                 "flags": []
-            }
+            },
+            "brief": null
         },
         "actions": {
             "accept": {
@@ -213,7 +216,9 @@
                         "url": "/auditor/jobs/01k6kz9w3e7r1t5y8u2i6o0p3a",
                         "method": "get"
                     },
-                    "allowed_actions": ["conflict.declare"]
+                    "allowed_actions": [
+                        "conflict.declare"
+                    ]
                 }
             ],
             "monthly": null,

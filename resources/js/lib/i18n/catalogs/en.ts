@@ -2479,14 +2479,39 @@ const en = {
     'auditor.file.no_documents':
         'No submitted documents are on record for this file yet.',
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Verified',
     'auditor.file.doc_status.present': '✓ Present',
-    'auditor.file.doc_status.missing': 'Missing',
     'auditor.file.prescreen': 'Automated pre-screen',
     'auditor.file.no_prescreen':
         'No automated pre-screen result has been published for this file yet.',
     'auditor.file.check.met': 'Met',
     'auditor.file.check.flag': 'Flag',
+    'auditor.file.document.pdf': 'Statement (PDF)',
+    'auditor.file.document.csv': 'Statement (CSV)',
+    'auditor.file.document.received': 'Received {date}',
+    'auditor.file.document.received_records': {
+        one: 'Received {date} · {count} record',
+        other: 'Received {date} · {count} records',
+    },
+    'auditor.file.brief.flash.reason':
+        'No note can list until an Audit Partner has visited the business and sealed a baseline report. Rozine checked the submitted statements remotely; your visit confirms on site that the business, its stock and its ledgers are real before any principal is issued.',
+    'auditor.file.brief.flash.step_1':
+        'Check in at the business premises; your live location is logged with the audit.',
+    'auditor.file.brief.flash.step_2':
+        'Take the required photos with the in-app camera inside the premises geofence. Gallery uploads are blocked.',
+    'auditor.file.brief.flash.step_3':
+        'Count the stock on site and record its value. Any difference from the declared figure must be explained before you can seal.',
+    'auditor.file.brief.flash.step_4':
+        'Reconcile the paper ledgers and receipts with the verified statements, following the ISRS 4400 agreed-upon procedures.',
+    'auditor.file.brief.monthly.reason':
+        "Every month while a note is outstanding, an Audit Partner checks the business's records in person and seals a report that holders receive before payment day. Seal by D−3; the business then has 24 hours to approve or dispute.",
+    'auditor.file.brief.monthly.step_1':
+        "Review the month's statements the business uploaded.",
+    'auditor.file.brief.monthly.step_2':
+        'Count cash and stock units on site. Any difference must be explained before you can seal.',
+    'auditor.file.brief.monthly.step_3':
+        'Take the required photos with the in-app camera inside the premises geofence.',
+    'auditor.file.brief.monthly.step_4':
+        'Seal the report by D−3 so holders receive it before payment day.',
     'auditor.file.why': 'Why a field audit is required',
     'auditor.file.mandate': 'What you must clear on site',
     'auditor.file.history': 'File history',

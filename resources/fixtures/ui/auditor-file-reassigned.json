@@ -5,7 +5,9 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": ["conflict.declare"],
+        "allowed_actions": [
+            "conflict.declare"
+        ],
         "job": {
             "id": "fa_huye",
             "revision": 2,
@@ -20,7 +22,9 @@
             "complete_by": "2026-10-04T05:00:00Z",
             "reassigned_from": "Chantal Rwema, CPA",
             "kind": "flash",
-            "allowed_actions": ["conflict.declare"]
+            "allowed_actions": [
+                "conflict.declare"
+            ]
         },
         "file": {
             "raise": {
@@ -35,40 +39,18 @@
             },
             "documents": [
                 {
-                    "name": "Bank statements",
-                    "detail": "Full required history · signature verified",
+                    "kind": "statement",
+                    "format": "pdf",
                     "status": "parsed",
-                    "kind": "statement"
+                    "received_on": "2026-09-24",
+                    "records": 182
                 },
                 {
-                    "name": "Mobile-money statements",
-                    "detail": "Full required history · parsed",
-                    "status": "parsed",
-                    "kind": "statement"
-                },
-                {
-                    "name": "RDB certificate",
-                    "detail": "Company code, directors & address matched",
-                    "status": "verified",
-                    "kind": "registry"
-                },
-                {
-                    "name": "Manager National ID",
-                    "detail": "Executive submitting the request",
-                    "status": "verified",
-                    "kind": "identity"
-                },
-                {
-                    "name": "Campaign pitch",
-                    "detail": "412 / 500 characters",
+                    "kind": "statement",
+                    "format": "csv",
                     "status": "present",
-                    "kind": "pitch"
-                },
-                {
-                    "name": "Site photos",
-                    "detail": "8 of max 10 uploaded",
-                    "status": "present",
-                    "kind": "photos"
+                    "received_on": "2026-09-24",
+                    "records": null
                 }
             ],
             "prescreen": [
@@ -93,13 +75,6 @@
                     "result": "met"
                 }
             ],
-            "reason": "The engine computed a DSCR of 1.02×, inside the 1.00–1.24 manual band. A field check confirms the business, its stock and its ledgers before any principal is issued.",
-            "mandate": [
-                "Confirm the business physically exists and is actively operating at the registered premises.",
-                "Count inventory on site and record the value you observe against the reported figure.",
-                "Reconcile the paper ledgers and receipts against the bank and MoMo statements on file.",
-                "Capture the three required photos (storefront, inventory, team & site) in the capture app and attach the ledger books as documents."
-            ],
             "history": {
                 "last_audit": {
                     "on": "2026-04-14",
@@ -107,8 +82,11 @@
                     "by": "Chantal Rwema, CPA",
                     "summary": "Stock counted and ledgers reconciled; findings filed on time."
                 },
-                "flags": ["August 2026 statements uploaded after the 3rd"]
-            }
+                "flags": [
+                    "August 2026 statements uploaded after the 3rd"
+                ]
+            },
+            "brief": "flash"
         },
         "actions": {
             "accept": {
@@ -229,7 +207,9 @@
                         "url": "/preview/auditor-audit-ledger",
                         "method": "get"
                     },
-                    "allowed_actions": ["conflict.declare"],
+                    "allowed_actions": [
+                        "conflict.declare"
+                    ],
                     "accept_by": null,
                     "complete_by": "2026-10-03T15:00:00Z"
                 },
@@ -252,7 +232,9 @@
                         "url": "/preview/auditor-audit-check-in",
                         "method": "get"
                     },
-                    "allowed_actions": ["conflict.declare"],
+                    "allowed_actions": [
+                        "conflict.declare"
+                    ],
                     "accept_by": null,
                     "complete_by": "2026-10-04T13:59:55Z"
                 }
