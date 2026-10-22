@@ -1957,7 +1957,7 @@ const rw: Catalog = {
     'admin.audit_reports.col.status': 'Uko bihagaze',
     'admin.audit_reports.col.variance': 'Ikinyuranyo',
     'admin.audit_reports.col.action': 'Igikorwa',
-    'admin.audit_reports.status.not_started': 'Ntibiratangira',
+    'admin.audit_reports.status.not_started': 'Igenzura ntirirafungurwa',
     'admin.audit_reports.status.in_progress': 'Birakomeje',
     'admin.audit_reports.status.overdue': 'Byatinze',
     'admin.audit_reports.status.returned': 'Byagaruwe',
@@ -1973,7 +1973,7 @@ const rw: Catalog = {
     'admin.parties.queue.requests.caption':
         'Kongerera igihe impushya bitegereje gusuzumwa. Umufatanyabikorwa abona ko bigitegereje kugeza ufashe icyemezo.',
     'admin.parties.queue.requests.empty':
-        'Nta kongerera igihe uruhushya bitegereje.',
+        'Nta busabe bw’abafatanyabikorwa butegereje. Kongerera igihe impushya biva muri porogaramu y’Abagenzuzi bigera hano.',
     'admin.parties.queue.requests.chip': 'KONGERERA IGIHE',
     'admin.parties.queue.desk.title': 'Ibiro byo kugenzura ICPAR',
     'admin.parties.queue.desk.caption':

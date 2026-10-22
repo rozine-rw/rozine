@@ -1953,12 +1953,12 @@ const fr: Catalog = {
     'admin.audit_reports.pdf_named':
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
-    'admin.audit_reports.stats.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
     'admin.audit_reports.stats.overdue': 'SLA dépassé',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
-    'admin.audit_reports.chip.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.chip.awaiting_cosign': 'En attente de validation',
     'admin.audit_reports.chip.published': 'Publiés',
     'admin.audit_reports.chip.disputed': 'Contestés',
     'admin.audit_reports.col.business': 'Entreprise',
@@ -1967,12 +1967,12 @@ const fr: Catalog = {
     'admin.audit_reports.col.status': 'Statut',
     'admin.audit_reports.col.variance': 'Écart',
     'admin.audit_reports.col.action': 'Action',
-    'admin.audit_reports.status.not_started': 'Non commencé',
+    'admin.audit_reports.status.not_started': 'Audit non ouvert',
     'admin.audit_reports.status.in_progress': 'En cours',
     'admin.audit_reports.status.overdue': 'En retard',
     'admin.audit_reports.status.returned': 'Renvoyé',
     'admin.audit_reports.status.sealed': 'Scellé',
-    'admin.audit_reports.status.awaiting_cosign': 'En attente de cosignature',
+    'admin.audit_reports.status.awaiting_cosign': 'En attente de validation',
     'admin.audit_reports.status.published': 'Publié',
     'admin.audit_reports.status.disputed': 'Contesté',
     'admin.audit_reports.status.escalated': 'Transmis',
@@ -1984,7 +1984,7 @@ const fr: Catalog = {
     'admin.parties.queue.requests.caption':
         "Renouvellements de licence en attente d'examen. Le partenaire voit sa demande en attente jusqu'à votre décision.",
     'admin.parties.queue.requests.empty':
-        'Aucun renouvellement de licence en attente.',
+        "Aucune demande de partenaire en attente. Les renouvellements de licence de l'app Auditeur arrivent ici.",
     'admin.parties.queue.requests.chip': 'RENOUVELLEMENT',
     'admin.parties.queue.desk.title': 'Bureau de vérification ICPAR',
     'admin.parties.queue.desk.caption':
