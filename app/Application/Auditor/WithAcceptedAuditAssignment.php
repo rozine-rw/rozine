@@ -23,6 +23,19 @@ final class WithAcceptedAuditAssignment
         return $this->store->withAccepted($userId, $contextRevision, $assignmentId, $operation);
     }
 
+    /**
+     * Reads only: also admits the partner's completed assignment.
+     *
+     * @template TResult
+     *
+     * @param  Closure(AcceptedAssignment): TResult  $operation
+     * @return TResult
+     */
+    public function read(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
+    {
+        return $this->store->withAssigned($userId, $contextRevision, $assignmentId, $operation);
+    }
+
     /** @param AcceptedAssignment $assignment */
     public function retainsVerification(array $assignment): bool
     {

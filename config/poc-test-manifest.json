@@ -20,6 +20,8 @@
     "tests/Feature/StaffPermissionTest.php",
     "tests/Feature/DemoSafeguardsTest.php",
     "tests/Feature/AuditReportCryptographyTest.php",
+    "tests/Feature/AuditAssignmentCompletionTest.php",
+    "tests/Feature/MonthlyAuditSchedulerTest.php",
     "tests/Feature/AuditStatementAccessTest.php",
     "tests/Feature/OrganizationIdentityTest.php",
     "tests/Concurrency/LedgerCommitIntegrityTest.php",
