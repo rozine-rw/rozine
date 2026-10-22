@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Auditor\DecideAuditReport;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\AuditReportSeal;
@@ -111,13 +112,16 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
     expect(auditRegister($staff)['rows'][0])->toMatchArray(['status' => 'in_progress', 'owes' => 'auditor', 'links' => ['pdf' => null,
         'remind' => ['url' => '/admin/reports/'.$assignment.'/remind', 'method' => 'post']]]);
     actingAs($staff)->get(route('staff.reports.pdf', $report->id))->assertNotFound();
+    actingAs($staff)->post(route('staff.reports.remind', $assignment))->assertRedirect();
+    expect(auditRegister($staff)['rows'][0]['links']['remind'])->toBeNull();
 
     AuditSealingFixture::seal($fixture);
     $seal = AuditReportSeal::query()->where('audit_report_id', $report->id)->sole();
     $row = auditRegister($staff)['rows'][0];
     expect($row)->toMatchArray(['status' => 'awaiting_cosign', 'owes' => 'business', 'licence' => $seal->payload['report']['licence'],
         'sealed_at' => $seal->payload['sealed_at'], 'digest' => substr($seal->digest, 0, 12), 'variance_pct' => '0.0'])
-        ->and($row['cosign_by'])->not->toBeNull()
+        ->and($row['cosign_by'])->not->toBeNull()->and($row['reminded_at'])->toBeNull()
+        ->and($row['links']['remind'])->toBe(['url' => '/admin/reports/'.$assignment.'/remind', 'method' => 'post'])
         ->and($row['links']['pdf'])->toBe(['url' => '/admin/reports/'.$report->id.'/pdf', 'method' => 'get']);
 
     actingAs($staff)->post(route('staff.reports.remind', $assignment))->assertRedirect();
@@ -144,11 +148,25 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
     actingAs($staff)->postJson(route('staff.reports.remind', (string) Str::ulid()))->assertNotFound();
 });
 
-it('counts a sealed Flash Audit on time while it waits for the Business to co-sign', function (): void {
+it('counts a sealed Flash Audit on time while it waits for the Business, with no co-sign deadline to remind', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
 
     $page = auditRegister($fixture['audit']['staff']);
-    expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => 'business'])
+    expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => null])
+        ->and($page['rows'][0]['links']['remind'])->toBeNull()
         ->and($page['stats'][3]['value'])->toBe(['kind' => 'percent', 'value' => '100']);
+    actingAs($fixture['audit']['staff'])->postJson(route('staff.reports.remind', $fixture['report']->assignment_id))->assertConflict();
+});
+
+it('reminds the partner of a report returned to them', function (): void {
+    $fixture = AuditSealingFixture::ready(kind: 'monthly');
+    app(DecideAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->revision, false,
+        'missing_originals', 'Missing original.', (string) Str::uuid());
+
+    $row = auditRegister($fixture['audit']['staff'], ['chip' => 'owed'])['rows'][0];
+    expect($row)->toMatchArray(['status' => 'returned', 'owes' => 'auditor'])
+        ->and($row['links']['remind'])->not->toBeNull();
+    actingAs($fixture['audit']['staff'])->post($row['links']['remind']['url'])->assertRedirect();
+    expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->count())->toBe(1);
 });

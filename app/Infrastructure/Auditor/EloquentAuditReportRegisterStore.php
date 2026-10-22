@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\DB;
  * An assignment's kind and clock sit in its encrypted state, so the accepted and completed
  * assignments are read and sorted here; the network is small. Each takes its newest report, that
  * report's seal and its publication. The Business is named as the seal recorded it once sealed,
- * else as its profile names it now.
+ * else as its profile names it now. A Flash Audit's report waits for the Business with no review
+ * deadline, so only a monthly one can be reminded to the Business. A reminder is remembered per
+ * recipient, so nudging one party leaves the other's Remind in place.
  *
  * @phpstan-import-type RegisterRow from AuditReportRegisterStore
  * @phpstan-import-type RegisterStatus from AuditReportRegisterStore
@@ -27,9 +29,9 @@ use Illuminate\Support\Facades\DB;
  */
 final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
 {
-    /** How each publication state reads in the register. */
-    private const array PUBLICATION = ['pending' => 'awaiting_cosign', 'published' => 'published', 'resolved' => 'published',
-        'disputed' => 'disputed', 'under_review' => 'disputed', 'escalated' => 'escalated', 'amended' => 'amended', 'withdrawn' => 'withdrawn'];
+    /** How each publication state the table allows (audit_publication_state) reads in the register. */
+    private const array PUBLICATION = ['pending' => 'awaiting_cosign', 'published' => 'published',
+        'disputed' => 'disputed', 'escalated' => 'escalated', 'amended' => 'amended'];
 
     public function __construct(private AuditReportWindow $window) {}
 
@@ -83,7 +85,7 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
             ->get(['party_id', 'name'])->unique('party_id')->pluck('name', 'party_id');
         $reminders = DB::table('party_notices')->where('event_key', 'like', 'staff-audit-reminder:%')
             ->whereIn(DB::raw("split_part(event_key, ':', 2)"), $assignments->modelKeys())
-            ->selectRaw("split_part(event_key, ':', 2) AS assignment_id, max(created_at) AS at")->groupBy('assignment_id')->pluck('at', 'assignment_id');
+            ->selectRaw("split_part(event_key, ':', 2) || ':' || split_part(event_key, ':', 3) AS recipient, max(created_at) AS at")->groupBy('recipient')->pluck('at', 'recipient');
         $rows = [];
         foreach ($assignments as $assignment) {
             $state = $assignment->state;
@@ -96,6 +98,12 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
             $payload = $seal?->payload;
             $publication = $report === null ? null : $publications->get($report->id);
             $status = self::status($report?->status, $publication?->status, $due, $now);
+            $owes = match ($status) {
+                'not_started', 'in_progress', 'overdue', 'returned' => 'auditor',
+                'awaiting_cosign' => $publication?->due_at === null ? null : 'business',
+                default => null,
+            };
+            $reminded = $owes === null ? null : ($reminders[$assignment->id.':'.$owes] ?? null);
             $rows[] = ['assignment_id' => $assignment->id, 'report_id' => $report?->id, 'business_id' => $assignment->business_id,
                 'business' => $payload['business']['profile']['name'] ?? (string) ($businesses[$assignment->business_id] ?? ''),
                 'kind' => $state['kind'] === 'routine' ? 'monthly' : 'flash', 'period' => $period,
@@ -106,12 +114,8 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
                 'cosign_by' => $status === 'awaiting_cosign' && $publication?->due_at !== null ? CarbonImmutable::parse($publication->due_at)->utc()->format('Y-m-d\TH:i:s\Z') : null,
                 'digest' => $seal?->digest,
                 'variance_pct' => $payload === null ? null : AuditVariance::weighted($payload['report']['findings'] ?? []),
-                'owes' => match ($status) {
-                    'not_started', 'in_progress', 'overdue' => 'auditor',
-                    'awaiting_cosign' => 'business',
-                    default => null,
-                },
-                'reminded_at' => isset($reminders[$assignment->id]) ? CarbonImmutable::parse($reminders[$assignment->id])->utc()->format('Y-m-d\TH:i:s\Z') : null,
+                'owes' => $owes,
+                'reminded_at' => $reminded === null ? null : CarbonImmutable::parse($reminded)->utc()->format('Y-m-d\TH:i:s\Z'),
                 'dispatched_at' => (string) $state['original_dispatch_at']];
         }
         usort($rows, fn (array $a, array $b): int => [$b['dispatched_at'], $b['assignment_id']] <=> [$a['dispatched_at'], $a['assignment_id']]);
