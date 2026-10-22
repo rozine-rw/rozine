@@ -1380,6 +1380,9 @@ const rw: Catalog = {
         'Buri butumwa bwoherezwa ubwabwo iyo igikorwa cyabwo cyanditswe. Ntibirahindurwa muri konsole.',
     'admin.messaging.templates.sub':
         'Imeyili Rozine yohereza. Ntizirahindurwa muri konsole.',
+    'admin.messaging.rule.funds_disbursed': 'Amafaranga yatanzwe',
+    'admin.messaging.rule.verification_approved': 'Kwemezwa byemejwe',
+    'admin.messaging.rule.raise_fully_funded': 'Ubukusanyamari bwuzuye',
     'admin.messaging.template.account.new_device_sign_in':
         'Kwinjira hakoreshejwe igikoresho gishya',
     'admin.messaging.template.account.one_time_code': 'Kode y’igihe kimwe',
@@ -1393,13 +1396,13 @@ const rw: Catalog = {
     'admin.messaging.template.business.application_decided':
         'Icyemezo ku busabe',
     'admin.messaging.template.business.disbursement_sent':
-        'Amafaranga yoherejwe',
+        'Amafaranga yatanzwe',
     'admin.messaging.template.business.raise_expired':
         'Igihe cyo gukusanya cyarangiye',
     'admin.messaging.template.business.repayment_reminder':
         'Kwibutsa kwishyura',
     'admin.messaging.template.business.reporting_window_open':
-        'Igihe cyo gutanga raporo cyafunguwe',
+        'Kwibutsa raporo y’ukwezi',
     'admin.messaging.template.investor.investment_confirmed':
         'Ishoramari ryemejwe',
     'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',

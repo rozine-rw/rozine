@@ -1394,6 +1394,9 @@ const fr: Catalog = {
         'Chaque avis part de lui-même lorsque son événement est enregistré. Ils ne sont pas encore modifiables depuis la console.',
     'admin.messaging.templates.sub':
         'Les e-mails transactionnels envoyés par Rozine. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.rule.funds_disbursed': 'Fonds décaissés',
+    'admin.messaging.rule.verification_approved': 'Vérification approuvée',
+    'admin.messaging.rule.raise_fully_funded': 'Levée entièrement financée',
     'admin.messaging.template.account.new_device_sign_in':
         'Connexion depuis un nouvel appareil',
     'admin.messaging.template.account.one_time_code': 'Code à usage unique',
@@ -1406,13 +1409,12 @@ const fr: Catalog = {
     'admin.messaging.template.auditor.job_offered': 'Mission d’audit proposée',
     'admin.messaging.template.business.application_decided':
         'Décision sur la demande',
-    'admin.messaging.template.business.disbursement_sent':
-        'Décaissement envoyé',
+    'admin.messaging.template.business.disbursement_sent': 'Fonds décaissés',
     'admin.messaging.template.business.raise_expired': 'Levée expirée',
     'admin.messaging.template.business.repayment_reminder':
         'Rappel de remboursement',
     'admin.messaging.template.business.reporting_window_open':
-        'Période de rapport ouverte',
+        'Rappel du rapport mensuel',
     'admin.messaging.template.investor.investment_confirmed':
         'Investissement confirmé',
     'admin.messaging.template.investor.payment_delayed': 'Paiement retardé',
