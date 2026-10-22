@@ -44,17 +44,27 @@ it('offers nothing below the minimum principal, and never a negative limit', fun
         ->and($cash['cash_per_month'])->toBe($money('-1000'))->and($cash['approved'])->toBe($money('0'));
 });
 
-it('deducts a repeat raise\'s earlier funding once, since the newer quote already counted it', function () use ($ratio, $money): void {
-    // RWF 20M exposure limit less RWF 6M of earlier funding leaves RWF 14M, all of it offered.
-    $sizing = fn (array $current): array => (new BusinessScoreView(new LoanCapacity))->sizing(['cfads' => $ratio('10000000'),
-        'exposure_limit' => $ratio('20000000'), 'committed_exposure' => $ratio('6000000'), 'remaining_room' => $ratio('14000000'),
-        'repeat_projections' => []], ['percent' => '13.0', 'fraction' => $ratio('13', '100')], $ratio('50000000'), 6,
-        [['id' => 'first', 'principal' => '6000000']], $current);
+/**
+ * A RWF 20M exposure limit whose newer quote already counts RWF 6M of earlier funding: RWF 14M is offered.
+ *
+ * @param  list<array{id: string, principal: string}>  $current
+ * @return array<string, mixed>
+ */
+function repeatRaiseSizing(array $current): array
+{
+    $ratio = fn (string $numerator): array => ['numerator' => $numerator, 'denominator' => '1'];
 
-    $listed = $sizing([['id' => 'first', 'principal' => '6000000']]);
-    $funded = $sizing([['id' => 'first', 'principal' => '6000000'], ['id' => 'second', 'principal' => '3000000']]);
+    return (new BusinessScoreView(new LoanCapacity))->sizing(['cfads' => $ratio('10000000'), 'exposure_limit' => $ratio('20000000'),
+        'committed_exposure' => $ratio('6000000'), 'remaining_room' => $ratio('14000000'), 'repeat_projections' => []],
+        ['percent' => '13.0', 'fraction' => ['numerator' => '13', 'denominator' => '100']], $ratio('50000000'), 6,
+        [['id' => 'first', 'principal' => '6000000']], $current);
+}
+
+it('deducts a repeat raise\'s earlier funding once, since the newer quote already counted it', function () use ($money): void {
+    $listed = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000']]);
+    $funded = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000'], ['id' => 'second', 'principal' => '3000000']]);
     // A quoted commitment released since is not given back.
-    $released = $sizing([['id' => 'second', 'principal' => '3000000']]);
+    $released = repeatRaiseSizing([['id' => 'second', 'principal' => '3000000']]);
 
     expect($listed['limits'][1]['binding'])->toBeTrue()->and($listed['approved'])->toBe($money('14000000'))
         ->and($listed['headroom'])->toBe($money('14000000'))
