@@ -93,6 +93,7 @@ export default function AuditorPortfolio(props: AuditorPortfolioProps) {
                             <ManagedDeals
                                 deals={props.earnings.managed}
                                 total={props.earnings.deals}
+                                raising={props.raising}
                             />
                             <DueList
                                 items={items}

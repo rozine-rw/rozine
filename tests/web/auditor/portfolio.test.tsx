@@ -912,4 +912,59 @@ describe('Auditor Portfolio', () => {
             ).getByText('60 total'),
         ).toBeInTheDocument();
     });
+
+    it('switches to the raises still taking commitments and those that failed', async () => {
+        const { user } = renderWithUser(<AuditorPortfolio {...props()} />);
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        );
+
+        expect(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            within(managed).getByText('Kivu Coffee Roasters'),
+        ).toBeInTheDocument();
+        expect(within(managed).getByText('Isoko Energy')).toBeInTheDocument();
+        expect(
+            within(managed).getByText('Solar Kiosk Rollout'),
+        ).toBeInTheDocument();
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Failed 1' }),
+        );
+
+        expect(within(managed).queryByText('Kivu Coffee Roasters')).toBeNull();
+        expect(within(managed).getByText('Isoko Energy')).toBeInTheDocument();
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Active portfolio' }),
+        );
+
+        expect(within(managed).queryByText('Isoko Energy')).toBeNull();
+    });
+
+    it('says when no audited business is raising in the chosen state', async () => {
+        const page = props();
+        page.raising = page.raising.filter(
+            (raise) => raise.status === 'failed',
+        );
+        const { user } = renderWithUser(<AuditorPortfolio {...page} />);
+        const managed = screen.getByRole('region', { name: 'Managed deals' });
+
+        await user.click(
+            within(managed).getByRole('button', { name: 'Raising' }),
+        );
+        await user.click(
+            within(managed).getByRole('button', { name: 'Live 0' }),
+        );
+
+        expect(
+            within(managed).getByText(
+                'No raises from the businesses you audited in this view.',
+            ),
+        ).toBeInTheDocument();
+    });
 });

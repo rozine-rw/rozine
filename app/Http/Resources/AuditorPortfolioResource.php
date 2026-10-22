@@ -73,6 +73,8 @@ class AuditorPortfolioResource extends JsonResource
             'owed_complete' => $page['jobs']['next_cursor'] === null,
             'reports_complete' => $page['filter'] === self::FILTERS[0] && count($page['reports']['data']) >= $counts['all'],
             'earnings' => self::earnings($page['earnings']),
+            'raising' => array_map(fn (array $raise): array => [...$raise, 'raised' => ['currency' => 'RWF', 'amount' => $raise['raised']],
+                'target' => ['currency' => 'RWF', 'amount' => $raise['target']]], $page['earnings']['raising']),
             'outcome' => null,
             'open_jobs' => AuditorJobsResource::openJobs($page['jobs']),
             'links' => AuditorJobsResource::links($request)];

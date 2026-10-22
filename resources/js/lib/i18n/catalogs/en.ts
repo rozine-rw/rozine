@@ -2713,6 +2713,18 @@ const en = {
     'auditor.portfolio.yield.empty':
         'Yield-share payouts appear here once they are paid.',
     'auditor.portfolio.managed.title': 'Managed deals',
+    'auditor.portfolio.managed.groups': 'Managed deal groups',
+    'auditor.portfolio.managed.group.active': 'Active portfolio',
+    'auditor.portfolio.managed.group.raising': 'Raising',
+    'auditor.portfolio.managed.filter': 'Raise status',
+    'auditor.portfolio.managed.chip.all': 'All',
+    'auditor.portfolio.managed.chip.live': 'Live',
+    'auditor.portfolio.managed.chip.failed': 'Failed',
+    'auditor.portfolio.managed.raising_empty':
+        'No raises from the businesses you audited in this view.',
+    'auditor.portfolio.managed.raised': 'Raised',
+    'auditor.portfolio.managed.target': 'Target',
+    'auditor.portfolio.managed.investors': 'Investors',
     'auditor.portfolio.managed.count': '{count} total',
     'auditor.portfolio.managed.sub': '{district} · credited {date}',
     'auditor.portfolio.managed.funded': 'Funded',

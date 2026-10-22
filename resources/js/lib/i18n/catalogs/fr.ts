@@ -2825,6 +2825,18 @@ const fr: Catalog = {
     'auditor.portfolio.yield.empty':
         'Les versements de part du rendement apparaissent ici une fois payés.',
     'auditor.portfolio.managed.title': 'Opérations gérées',
+    'auditor.portfolio.managed.groups': 'Groupes de dossiers gérés',
+    'auditor.portfolio.managed.group.active': 'Portefeuille actif',
+    'auditor.portfolio.managed.group.raising': 'En levée',
+    'auditor.portfolio.managed.filter': 'Statut de la levée',
+    'auditor.portfolio.managed.chip.all': 'Tous',
+    'auditor.portfolio.managed.chip.live': 'En cours',
+    'auditor.portfolio.managed.chip.failed': 'Échouée',
+    'auditor.portfolio.managed.raising_empty':
+        'Aucune levée des entreprises que vous avez auditées dans cette vue.',
+    'auditor.portfolio.managed.raised': 'Levé',
+    'auditor.portfolio.managed.target': 'Objectif',
+    'auditor.portfolio.managed.investors': 'Investisseurs',
     'auditor.portfolio.managed.count': '{count} au total',
     'auditor.portfolio.managed.sub': '{district} · crédité le {date}',
     'auditor.portfolio.managed.funded': 'Financé',
