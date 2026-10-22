@@ -1261,9 +1261,26 @@ const fr: Catalog = {
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
     'admin.design.finance.tab.streams': 'Sources de revenus',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
-    'admin.design.finance.streams.title': 'Sources de revenus',
-    'admin.design.finance.streams.empty':
-        'Aucun revenu à afficher pour le moment.',
+    'admin.design.finance.raise.title':
+        'Ce que les entreprises paient pour lever des fonds',
+    'admin.design.finance.raise.sub':
+        "Les frais de plateforme au versement, et la part de l'auditeur attitré.",
+    'admin.design.finance.raise.empty': 'Aucuns frais de levée à afficher.',
+    'admin.design.finance.earnings.title':
+        'Ce que les investisseurs paient sur leurs gains',
+    'admin.design.finance.earnings.sub':
+        'Prélevés sur les gains des investisseurs, par tranche selon le niveau.',
+    'admin.design.finance.earnings.empty':
+        'Aucuns frais sur les gains à afficher.',
+    'admin.design.finance.trades.title':
+        'Ce que paient les sorties anticipées et les échanges',
+    'admin.design.finance.trades.sub':
+        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+    'admin.design.finance.trades.empty': "Aucuns frais d'échange à afficher.",
+    'admin.design.finance.residual.title': 'Recouvrement des coûts et résidus',
+    'admin.design.finance.residual.sub': "Petites lignes. N'en prévoyez rien.",
+    'admin.design.finance.residual.empty':
+        'Aucune ligne résiduelle à afficher.',
     'admin.design.finance.ledger.title': 'Grand livre et versements',
     'admin.design.finance.ledger.empty':
         'Aucune écriture à afficher pour le moment.',

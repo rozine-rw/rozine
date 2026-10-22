@@ -1249,9 +1249,28 @@ const rw: Catalog = {
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
     'admin.design.finance.tab.streams': "Inkomoko z'amafaranga",
     'admin.design.finance.tab.ledger': "Igitabo cy'imari n'ubwishyu",
-    'admin.design.finance.streams.title': "Inkomoko z'amafaranga",
-    'admin.design.finance.streams.empty':
-        'Nta mafaranga yinjiye yo kwerekana ubu.',
+    'admin.design.finance.raise.title':
+        'Icyo ibigo byishyura kugira ngo bishake imari',
+    'admin.design.finance.raise.sub':
+        "Amafaranga y'urubuga igihe imari itanzwe, n'umugabane w'umugenzuzi.",
+    'admin.design.finance.raise.empty':
+        'Nta mafaranga yo gushaka imari yo kwerekana ubu.',
+    'admin.design.finance.earnings.title':
+        'Icyo abashoramari bishyura ku nyungu zabo',
+    'admin.design.finance.earnings.sub':
+        "Bikurwa ku nyungu z'abashoramari, ku byiciro.",
+    'admin.design.finance.earnings.empty':
+        'Nta mafaranga ku nyungu yo kwerekana ubu.',
+    'admin.design.finance.trades.title': "Icyo kuva kare n'ubucuruzi byishyura",
+    'admin.design.finance.trades.sub':
+        "Yishyurwa n'ugurisha iyo inyandiko igurishijwe mbere y'igihe.",
+    'admin.design.finance.trades.empty':
+        "Nta mafaranga y'ubucuruzi yo kwerekana ubu.",
+    'admin.design.finance.residual.title': "Kugaruza ikiguzi n'ibisigaye",
+    'admin.design.finance.residual.sub':
+        'Imirongo mito. Ntugire icyo uteganya kuri yo.',
+    'admin.design.finance.residual.empty':
+        'Nta mirongo isigaye yo kwerekana ubu.',
     'admin.design.finance.ledger.title': "Igitabo cy'imari n'ubwishyu",
     'admin.design.finance.ledger.empty':
         "Nta nyandiko z'ibaruramari zo kwerekana ubu.",

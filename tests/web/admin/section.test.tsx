@@ -156,7 +156,7 @@ describe('A designed section that is not wired yet', () => {
         expect(
             within(tabs).getByRole('tab', { name: 'Revenue streams' }),
         ).toHaveAttribute('aria-selected', 'true');
-        expect(screen.getByText('No revenue to show yet.')).toBeVisible();
+        expect(screen.getByText('No raise fees to show yet.')).toBeVisible();
 
         fireEvent.click(
             within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
@@ -172,7 +172,7 @@ describe('A designed section that is not wired yet', () => {
             screen.getByText('No ledger entries to show yet.'),
         ).toBeVisible();
         expect(
-            screen.queryByText('No revenue to show yet.'),
+            screen.queryByText('No raise fees to show yet.'),
         ).not.toBeInTheDocument();
         expect(screen.getAllByRole('tab', { selected: true })).toHaveLength(1);
     });
@@ -342,17 +342,31 @@ describe('Finance', () => {
         expect(region).toHaveTextContent('All revenueRWF 2M');
         expect(region).toHaveTextContent('Primary marketRWF 1.8M');
 
-        const streams = screen.getByRole('table', { name: 'Revenue streams' });
-        expect(within(streams).getAllByRole('row')[1]).toHaveTextContent(
+        const raise = screen.getByRole('table', {
+            name: 'What businesses pay to raise money',
+        });
+        expect(within(raise).getAllByRole('row')).toHaveLength(2);
+        expect(within(raise).getAllByRole('row')[1]).toHaveTextContent(
             'Platform fee · Rozine share3%BusinessesRWF 1,800,000',
         );
-        expect(within(streams).getAllByRole('row')[2]).toHaveTextContent(
+        expect(screen.getByText('No earnings fees to show yet.')).toBeVisible();
+        expect(
+            within(
+                screen.getByRole('table', {
+                    name: 'What early exits and trades pay',
+                }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Resale fee2%Seller—');
+        const residual = screen.getByRole('table', {
+            name: 'Cost recovery and residuals',
+        });
+        expect(
+            screen.getByText('Small lines. Forecast nothing from them.'),
+        ).toBeVisible();
+        expect(within(residual).getAllByRole('row')[1]).toHaveTextContent(
             'Deposit fees—InvestorsRWF 150,000',
         );
-        expect(within(streams).getAllByRole('row')[3]).toHaveTextContent(
-            'Resale fee2%Seller—',
-        );
-        expect(within(streams).getAllByRole('row')[4]).toHaveTextContent(
+        expect(within(residual).getAllByRole('row')[2]).toHaveTextContent(
             'Loss reserveNone——',
         );
     });
