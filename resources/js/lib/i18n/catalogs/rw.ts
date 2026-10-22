@@ -94,6 +94,9 @@ const rw: Catalog = {
     'auth.register.submit': 'Fungura konti',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Bitekanye',
+    'auth.brand.business.have_account': 'Waramaze kwiyandikisha?',
     'auth.brand.business.eyebrow': 'Ku bigo by’ubucuruzi',
     'auth.brand.business.login_description':
         'Injira mu mbonerahamwe y’ikigo cyawe.',
@@ -104,7 +107,6 @@ const rw: Catalog = {
     'auth.brand.business.register_description':
         'Fungura konti ikigo cyawe kizakoresha gusaba no gukusanya amafaranga.',
     'auth.brand.investor.login_description': 'Injira ucunge ishoramari ryawe.',
-    'auth.brand.investor.register_cta': 'Fungura konti',
     'auth.brand.investor.register_description':
         'Tangira gushora imari mu bigo byagenzuwe mu Rwanda hose.',
     'auth.brand.auditor.eyebrow': 'Ku bafatanyabikorwa b’igenzura',

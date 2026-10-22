@@ -29,6 +29,8 @@ export default function AuthSimpleLayout({
     title,
     description,
     eyebrow = '',
+    wordmark = '',
+    secure = '',
     audience = null,
 }: AuthLayoutProps) {
     return (
@@ -39,15 +41,20 @@ export default function AuthSimpleLayout({
             <IconGradients />
             <div className="mx-auto flex w-full max-w-[412px] flex-1 flex-col px-6 pt-[calc(env(safe-area-inset-top)+56px)] pb-[calc(env(safe-area-inset-bottom)+30px)] lg:max-w-[440px] lg:flex-none lg:rounded-[20px] lg:border lg:border-rz-border lg:bg-rz-surface lg:px-10 lg:pt-10 lg:pb-9 lg:shadow-[0_24px_60px_-28px_rgba(20,45,95,.35)]">
                 <div className="flex flex-col items-center text-center">
-                    <Link href={home()} className="flex">
+                    <Link href={home()} className="flex items-center gap-2.5">
                         <LogoMark className="h-[56px] w-[54px] text-rz-accent-fill" />
                         <span className="sr-only">{title}</span>
+                        {eyebrow !== '' && (
+                            <span className="text-left">
+                                <span className="block text-base font-semibold tracking-[.06em] text-rz-ink">
+                                    {wordmark}
+                                </span>
+                                <span className="block text-[11px] font-semibold tracking-[.08em] text-rz-secondary uppercase">
+                                    {eyebrow}
+                                </span>
+                            </span>
+                        )}
                     </Link>
-                    {eyebrow !== '' && (
-                        <p className="mt-2 text-[11px] font-semibold tracking-[.08em] text-rz-secondary uppercase">
-                            {eyebrow}
-                        </p>
-                    )}
                     <h1 className="mt-3.5 text-[22px] font-semibold text-rz-ink">
                         {title}
                     </h1>
@@ -56,6 +63,15 @@ export default function AuthSimpleLayout({
                     </p>
                 </div>
                 <div className={`mt-6 ${FORM_SKIN}`}>{children}</div>
+                {secure !== '' && (
+                    <p className="mt-6 flex items-center justify-center gap-[7px] text-[11.5px] font-semibold tracking-[.06em] text-rz-secondary uppercase">
+                        <span
+                            aria-hidden="true"
+                            className="size-1.5 rounded-full bg-rz-positive"
+                        />
+                        {secure}
+                    </p>
+                )}
             </div>
         </div>
     );

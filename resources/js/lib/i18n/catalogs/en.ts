@@ -92,6 +92,9 @@ const en = {
     'auth.register.submit': 'Create account',
     'auth.register.have_account': 'Already have an account?',
     'auth.register.log_in': 'Log in',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Secure',
+    'auth.brand.business.have_account': 'Already registered?',
     'auth.brand.business.eyebrow': 'For business',
     'auth.brand.business.login_description': 'Log in to your issuer dashboard.',
     'auth.brand.business.email_label': 'Work email',
@@ -101,7 +104,6 @@ const en = {
     'auth.brand.business.register_description':
         'Create the account your business will apply and raise with.',
     'auth.brand.investor.login_description': 'Log in to manage your portfolio.',
-    'auth.brand.investor.register_cta': 'Create one',
     'auth.brand.investor.register_description':
         'Start investing in verified businesses across Rwanda.',
     'auth.brand.auditor.eyebrow': 'For audit partners',

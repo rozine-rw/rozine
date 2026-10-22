@@ -92,6 +92,9 @@ const fr: Catalog = {
     'auth.register.submit': 'Créer un compte',
     'auth.register.have_account': 'Vous avez déjà un compte ?',
     'auth.register.log_in': 'Se connecter',
+    'auth.brand.wordmark': 'rozine',
+    'auth.brand.secure': 'Sécurisé',
+    'auth.brand.business.have_account': 'Déjà inscrit ?',
     'auth.brand.business.eyebrow': 'Pour les entreprises',
     'auth.brand.business.login_description':
         'Connectez-vous à votre tableau de bord émetteur.',
@@ -103,7 +106,6 @@ const fr: Catalog = {
         'Créez le compte avec lequel votre entreprise fera sa demande et sa levée.',
     'auth.brand.investor.login_description':
         'Connectez-vous pour gérer votre portefeuille.',
-    'auth.brand.investor.register_cta': 'En créer un',
     'auth.brand.investor.register_description':
         'Commencez à investir dans des entreprises vérifiées partout au Rwanda.',
     'auth.brand.auditor.eyebrow': 'Pour les partenaires d’audit',
