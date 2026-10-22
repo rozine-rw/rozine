@@ -109,7 +109,6 @@ export function PhoneDeck({
 
     const down = (event: ReactPointerEvent<HTMLDivElement>) => {
         start.current = event.clientX;
-        moved.current = false;
     };
 
     const move = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -141,6 +140,10 @@ export function PhoneDeck({
         <div className="relative mt-3 max-h-[540px] min-h-[364px] shrink-0 grow-[100] basis-[364px] overflow-visible">
             <div
                 className="absolute inset-y-0 right-[30px] left-[30px] animate-[rz-fade_.5s_cubic-bezier(.22,.9,.3,1)_both]"
+                onPointerDownCapture={() => {
+                    // A fresh press is a new gesture even when a card control stops it bubbling.
+                    moved.current = false;
+                }}
                 onPointerDown={down}
                 onPointerMove={move}
                 onPointerUp={up}
