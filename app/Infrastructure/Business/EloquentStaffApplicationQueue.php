@@ -31,10 +31,11 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         }
         $released = BusinessApplicationRelease::query()->selectRaw('1')
             ->whereColumn('business_application_id', 'business_applications.id')->whereColumn('business_id', 'business_applications.business_id');
-        $rejected = $this->rejected($search);
+        // Refused drafts are only recognised by decrypting each current quote, so they are read for the Rejected tab alone.
+        $rejected = $tab === 'rejected' ? $this->rejected($search) : null;
         $counts = ['pending' => (clone $base)->whereNotExists($released)->count(), 'approved' => (clone $base)->whereExists($released)->count(),
-            'rejected' => count($rejected)];
-        if ($tab === 'rejected') {
+            'rejected' => $rejected === null ? null : count($rejected)];
+        if ($rejected !== null) {
             $rows = array_values(array_filter($rejected, fn (array $row): bool => $before === null || $row['id'] < $before));
 
             return ['entries' => array_slice($rows, 0, $limit), 'selected' => null, 'underwriting_basis' => null, 'counts' => $counts,
