@@ -2932,7 +2932,7 @@ const rw: Catalog = {
     'auditor.desk_review.status.disputed': 'Riri gusuzumwa',
     'auditor.desk_review.status.escalated': 'Ryoherejwe hejuru',
     'auditor.desk_review.note':
-        'Ikigo cyajuririye iyi raporo. Iguma isomwa gusa kugeza isuzuma rya Rozine rifashe icyemezo.',
+        "Ntibishobora guhindurwa kugeza ubuyobozi bwa Rozine bukemuye ikibazo. Kuvugana mu buryo butaziguye n'uyu mucuruzi byahagaritswe.",
     'auditor.desk_review.proofs': 'Ibimenyetso byatanzwe',
     'auditor.desk_review.proofs_value': {
         one: 'Ikimenyetso {count}',
@@ -3216,8 +3216,8 @@ const rw: Catalog = {
     'auditor.seal.digest': 'Ikimenyetso gitegereje',
     'auditor.seal.digest_note':
         "Birangira iyo kashe yawe ya ICPAR ishyizweho. PDF isinywe ikorwa na Rozine igezwa ku bashoramari nyuma y'uko ikigo cyemeje.",
-    'auditor.seal.apply': "Emeza ukoresheje porogaramu y'umutekano",
-    'auditor.seal.submit': 'Shyiraho kashe wohereze kuri Rozine',
+    'auditor.seal.apply': 'Ongera wiyemeze kugira ngo ushyireho kashe',
+    'auditor.seal.submit': "Shyiraho kashe y'uruhushya rwa ICPAR",
     'auditor.sealed.title': 'Byashyizweho kashe biratangwa',
     'auditor.sealed.body':
         'Raporo yashyizweho kashe ntishobora guhindurwa. {party} isinya bitarenze {date}; nyuma igezwa ku bashoramari.',

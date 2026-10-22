@@ -2804,7 +2804,7 @@ const en = {
     'auditor.desk_review.status.disputed': 'Under desk review',
     'auditor.desk_review.status.escalated': 'Escalated',
     'auditor.desk_review.note':
-        'The business disputed this report. It stays read-only until Rozine’s desk review records a decision.',
+        'Read-only until Rozine Admin resolves the ticket. Direct contact with this merchant is disabled.',
     'auditor.desk_review.proofs': 'Counter-proof filed',
     'auditor.desk_review.proofs_value': {
         one: '{count} item',
@@ -3085,8 +3085,8 @@ const en = {
     'auditor.seal.digest': 'Pending digest',
     'auditor.seal.digest_note':
         'Finalised when your ICPAR seal is applied. The signed PDF is compiled by Rozine and released to holders after the business approves.',
-    'auditor.seal.apply': 'Confirm with your authenticator',
-    'auditor.seal.submit': 'Seal & submit to Rozine',
+    'auditor.seal.apply': 'Re-authenticate to seal',
+    'auditor.seal.submit': 'Apply ICPAR licence seal',
     'auditor.sealed.title': 'Sealed and filed',
     'auditor.sealed.body':
         'The report is sealed and can no longer be edited. {party} co-signs by {date}; it publishes to holders after that.',

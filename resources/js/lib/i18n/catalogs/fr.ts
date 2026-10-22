@@ -2947,7 +2947,7 @@ const fr: Catalog = {
     'auditor.desk_review.status.disputed': 'En revue documentaire',
     'auditor.desk_review.status.escalated': 'Escaladé',
     'auditor.desk_review.note':
-        "L'entreprise a contesté ce rapport. Il reste en lecture seule jusqu'à ce que la revue documentaire de Rozine enregistre une décision.",
+        "En lecture seule jusqu'à ce que l'administration Rozine traite le dossier. Le contact direct avec ce commerçant est désactivé.",
     'auditor.desk_review.proofs': 'Contre-preuves déposées',
     'auditor.desk_review.proofs_value': {
         one: '{count} pièce',
@@ -3232,8 +3232,8 @@ const fr: Catalog = {
     'auditor.seal.digest': 'Empreinte en attente',
     'auditor.seal.digest_note':
         "Finalisée lors de l'apposition de votre sceau ICPAR. Le PDF signé est compilé par Rozine et publié aux porteurs après l'accord de l'entreprise.",
-    'auditor.seal.apply': 'Confirmer avec votre authentificateur',
-    'auditor.seal.submit': 'Sceller et soumettre à Rozine',
+    'auditor.seal.apply': 'Se réauthentifier pour sceller',
+    'auditor.seal.submit': 'Apposer le sceau de licence ICPAR',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
         "Le rapport est scellé et ne peut plus être modifié. {party} cosigne d'ici le {date} ; il est ensuite publié aux porteurs.",
