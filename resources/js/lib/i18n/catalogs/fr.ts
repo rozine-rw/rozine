@@ -3456,10 +3456,9 @@ const fr: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
-    'investor.checkout.pay_with': 'SOURCE DE FINANCEMENT',
     'investor.checkout.wallet': 'Portefeuille',
-    'investor.checkout.funding_source': 'Source de financement',
-    'investor.checkout.wallet_available': 'Disponible : {amount}',
+    'investor.checkout.pay_with': 'Payer avec',
+    'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
     'investor.checkout.insufficient':
         'Le montant dépasse votre solde. Déposez sur votre portefeuille ou réduisez le montant.',
     'investor.checkout.deposit': 'Déposer',

@@ -152,8 +152,9 @@ describe('Checkout: the indicative step', () => {
         expect(sheet).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );
+        expect(within(sheet).getByText('Pay with')).toBeInTheDocument();
         expect(
-            within(sheet).getByText('Available: RWF 1,253,485'),
+            within(sheet).getByText('Rozine Wallet · RWF 1,253,485 available'),
         ).toBeInTheDocument();
         expect(within(sheet).queryByText('CLOSES IN')).not.toBeInTheDocument();
         expect(within(sheet).queryByRole('checkbox')).not.toBeInTheDocument();

@@ -3443,10 +3443,9 @@ const rw: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
-    'investor.checkout.pay_with': 'AHO AMAFARANGA AVA',
     'investor.checkout.wallet': 'Ikofi',
-    'investor.checkout.funding_source': 'Aho amafaranga ava',
-    'investor.checkout.wallet_available': 'Ahari: {amount}',
+    'investor.checkout.pay_with': 'Ishyura ukoresheje',
+    'investor.checkout.wallet_line': '{wallet} · {amount} bihari',
     'investor.checkout.insufficient':
         'Amafaranga arenze ayo ufite ku ikofi. Shyira amafaranga ku ikofi cyangwa ugabanye umubare.',
     'investor.checkout.deposit': 'Shyiraho',

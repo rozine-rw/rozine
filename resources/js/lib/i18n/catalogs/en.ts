@@ -3319,10 +3319,9 @@ const en = {
     'investor.plus.tier.platinum': 'Platinum',
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
-    'investor.checkout.pay_with': 'FUNDING SOURCE',
     'investor.checkout.wallet': 'Wallet',
-    'investor.checkout.funding_source': 'Funding source',
-    'investor.checkout.wallet_available': 'Available: {amount}',
+    'investor.checkout.pay_with': 'Pay with',
+    'investor.checkout.wallet_line': '{wallet} · {amount} available',
     'investor.checkout.insufficient':
         'Amount exceeds your wallet balance. Deposit to your wallet, or lower the amount.',
     'investor.checkout.deposit': 'Deposit',
