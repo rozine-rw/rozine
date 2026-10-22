@@ -626,7 +626,7 @@ export function HoldingSchedule({
     /** The server's clock, which the next payment counts its days from. */
     now: string;
 }) {
-    const { t, locale } = useTranslation();
+    const { t } = useTranslation();
     const [update, setUpdate] = useState<MonthlyUpdateSummary | null>(null);
 
     return (
