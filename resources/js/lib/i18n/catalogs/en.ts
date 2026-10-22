@@ -1197,8 +1197,23 @@ const en = {
     'admin.design.finance.kpi.secondary': 'Secondary market',
     'admin.design.finance.tab.streams': 'Revenue streams',
     'admin.design.finance.tab.ledger': 'Ledger & payouts',
-    'admin.design.finance.streams.title': 'Revenue streams',
-    'admin.design.finance.streams.empty': 'No revenue to show yet.',
+    'admin.design.finance.raise.title': 'What businesses pay to raise money',
+    'admin.design.finance.raise.sub':
+        "The platform fee at disbursement, and the auditor of record's share of it.",
+    'admin.design.finance.raise.empty': 'No raise fees to show yet.',
+    'admin.design.finance.earnings.title':
+        'What investors pay on what they make',
+    'admin.design.finance.earnings.sub':
+        'Taken from investor earnings, banded by tier.',
+    'admin.design.finance.earnings.empty': 'No earnings fees to show yet.',
+    'admin.design.finance.trades.title': 'What early exits and trades pay',
+    'admin.design.finance.trades.sub':
+        'Charged to the seller when a note is resold before maturity.',
+    'admin.design.finance.trades.empty': 'No trade fees to show yet.',
+    'admin.design.finance.residual.title': 'Cost recovery and residuals',
+    'admin.design.finance.residual.sub':
+        'Small lines. Forecast nothing from them.',
+    'admin.design.finance.residual.empty': 'No residual lines to show yet.',
     'admin.design.finance.ledger.title': 'Ledger & payouts',
     'admin.design.finance.ledger.empty': 'No ledger entries to show yet.',
     'admin.design.messaging.tab.automations': 'Automations',

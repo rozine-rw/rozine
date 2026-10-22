@@ -85,6 +85,14 @@ const health = codes('system_health');
 
 const ENGINE_COLUMNS: DesignColumn[] = ['input', 'value', 'source'];
 
+/** Finance's revenue streams, grouped as the design groups them: by who pays and why. */
+export const FINANCE_GROUPS = [
+    'raise',
+    'earnings',
+    'trades',
+    'residual',
+] as const;
+
 /** Policies' tabs: each lists its rules under the tab's title and what the rules decide. */
 const POLICY_TABS = [
     'fees',
@@ -316,10 +324,13 @@ export const SECTION_DESIGNS: Record<
         ],
         tabs: [finance.tab('streams'), finance.tab('ledger')],
         blocks: [
-            finance.block('streams', {
-                tab: 'streams',
-                columns: ['stream', 'rate', 'paid_by', 'collected'],
-            }),
+            ...FINANCE_GROUPS.map((key) =>
+                finance.block(key, {
+                    tab: 'streams',
+                    sub: finance.sub(key),
+                    columns: ['stream', 'rate', 'paid_by', 'collected'],
+                }),
+            ),
             finance.block('ledger', {
                 tab: 'ledger',
                 columns: ['entry', 'account', 'debit', 'credit', 'posted'],
