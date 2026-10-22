@@ -2180,12 +2180,12 @@ const en = {
     'admin.permission.businesses.verify': 'Verify businesses',
     'admin.permission_detail.businesses.verify':
         'Decide business verification, with a recorded reason.',
-    'admin.permission.investors.verify': 'Verify investors',
+    'admin.permission.investors.verify': 'KYC decisions',
     'admin.permission_detail.investors.verify':
-        'Decide investor identity checks and read Activity & Audit.',
-    'admin.permission.applications.review': 'Review applications',
+        'Verify or reject investor identity documents, and read Activity & Audit.',
+    'admin.permission.applications.review': 'Approvals',
     'admin.permission_detail.applications.review':
-        'Review raise applications and release them for publishing.',
+        'Approve applications: release them for listing once every check passes.',
     'admin.permission.audit.partners.verify': 'Verify Audit Partners',
     'admin.permission_detail.audit.partners.verify':
         'Approve CPA firms and read partner coverage.',
@@ -2217,7 +2217,7 @@ const en = {
         "Add an operator, or suspend or reactivate another operator's access, with a reason.",
     'admin.permission.accounts.freeze': 'Freeze / suspend',
     'admin.permission_detail.accounts.freeze':
-        "Pause an investor's or business's access to their app.",
+        'Pause an account’s access to either app.',
     'admin.permission.capacity.adjust': 'Adjust capacity',
     'admin.permission_detail.capacity.adjust':
         'Change how much a business may raise.',
