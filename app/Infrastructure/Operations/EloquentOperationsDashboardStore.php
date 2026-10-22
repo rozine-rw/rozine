@@ -59,14 +59,14 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
 
     public function noteStates(): array
     {
-        return array_values(array_map(fn (object $row): array => ['campaign_id' => (string) $row->id, 'state' => match ((string) $row->state) {
+        return array_values(array_map(fn (object $row): array => ['campaign_id' => (string) $row->id, 'business_id' => (string) $row->business_id, 'state' => match ((string) $row->state) {
             'live' => 'live', 'funded' => 'funded', 'repaying' => 'repaying', default => 'failed',
         }, 'live_at' => CarbonImmutable::parse((string) $row->live_at)->toIso8601String()], DB::table('business_campaigns AS c')
             ->leftJoin('business_campaign_closures AS closure', 'closure.business_campaign_id', '=', 'c.id')
             ->leftJoin('primary_campaign_fundings AS funding', 'funding.business_campaign_id', '=', 'c.id')
             ->leftJoin('disbursements AS d', 'd.business_campaign_id', '=', 'c.id')
             ->leftJoin('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
-            ->selectRaw("c.id, c.live_at, CASE
+            ->selectRaw("c.id, c.business_id, c.live_at, CASE
                 WHEN closure.id IS NOT NULL OR closing.kind = 'failed_closing' THEN 'failed'
                 WHEN closing.kind = 'issued' THEN 'repaying'
                 WHEN funding.id IS NOT NULL AND closing.id IS NULL THEN 'funded'

@@ -94,9 +94,9 @@ it('counts every tab, filters by state and search, and pages', function (): void
         }
     });
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, [
-        'noteStates' => [['campaign_id' => '01K0000000000000000000AAAA', 'state' => 'live', 'live_at' => '2026-10-15T08:00:00+00:00'],
-            ['campaign_id' => '01K0000000000000000000BBBB', 'state' => 'repaying', 'live_at' => '2026-10-01T08:00:00+00:00'],
-            ['campaign_id' => '01K0000000000000000000CCCC', 'state' => 'failed', 'live_at' => '2026-09-01T08:00:00+00:00']],
+        'noteStates' => [['campaign_id' => '01K0000000000000000000AAAA', 'business_id' => '01K0000000000000000000BAAA', 'state' => 'live', 'live_at' => '2026-10-15T08:00:00+00:00'],
+            ['campaign_id' => '01K0000000000000000000BBBB', 'business_id' => '01K0000000000000000000BBBB', 'state' => 'repaying', 'live_at' => '2026-10-01T08:00:00+00:00'],
+            ['campaign_id' => '01K0000000000000000000CCCC', 'business_id' => '01K0000000000000000000BCCC', 'state' => 'failed', 'live_at' => '2026-09-01T08:00:00+00:00']],
         'figures' => ['capital_raised' => '6000000', 'active_businesses' => 0, 'disbursements_waiting' => 0, 'disbursed' => '0',
             'notes' => ['live' => 1, 'funded' => 0, 'repaying' => 1, 'failed' => 1]]]));
     $staff = notesStaff(['treasury']);
