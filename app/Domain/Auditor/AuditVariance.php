@@ -37,8 +37,8 @@ final class AuditVariance
 
     /**
      * The weighted variance of a sealed report's money findings: the sum of absolute differences
-     * over the sum of reported amounts, as a percentage to one decimal; null with nothing reported
-     * to weigh.
+     * over the sum of absolute reported amounts (a reported overdraft weighs as much as a balance),
+     * as a percentage rounded half up to one decimal; null with nothing reported to weigh.
      *
      * @param  array<int, array<string, mixed>>  $findings  the sealed `report.findings`
      */
@@ -47,7 +47,7 @@ final class AuditVariance
         $reported = $difference = BigDecimal::zero();
         foreach ($findings as $finding) {
             if (in_array($finding['measure'] ?? null, self::MONEY, true) && is_string($finding['reported'] ?? null) && is_string($finding['observed'] ?? null)) {
-                $reported = $reported->plus(BigDecimal::of($finding['reported']));
+                $reported = $reported->plus(BigDecimal::of($finding['reported'])->abs());
                 $difference = $difference->plus(BigDecimal::of($finding['observed'])->minus(BigDecimal::of($finding['reported']))->abs());
             }
         }
