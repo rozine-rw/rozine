@@ -158,6 +158,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         'complaints_party_id_foreign', 'complaints_opened_by_user_id_foreign', 'complaint_messages_complaint_id_foreign', 'complaint_messages_author_user_id_foreign')
         ->and(array_column($originalDependentShape[2], 'tgname'))->toBe(['business_contact_versions_immutable', 'complaint_messages_immutable', 'complaints_immutable'])
         ->and(array_column($originalDependentShape[2], 'tgenabled'))->toBe(['O', 'O', 'O']);
+    // The pending-slot key references application_business_key, which the report migration drops, so repeat applications come off first and go back last.
+    $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
+    $repeatApplications->down();
     $cartLines->down();
     expect(Schema::hasTable('investor_cart_lines'))->toBeFalse();
     $automaticDisbursement->down();
@@ -419,6 +422,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $platformFee->up();
     $automaticDisbursement->up();
     $cartLines->up();
+    $repeatApplications->up();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);
     expect(Schema::hasTable('business_contact_versions'))->toBeTrue()->and(Schema::hasTable('complaints'))->toBeTrue()

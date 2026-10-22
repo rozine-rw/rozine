@@ -248,6 +248,9 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     // The Investor cart references campaigns, so it comes off first and goes back last.
     $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
+    // The pending-slot key references application_business_key, which the report migration drops, so repeat applications come off first and go back last.
+    $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
+    $repeatApplications->down();
     $cartLines->down();
     $automaticDisbursement->down();
     $platformFee->down();
@@ -356,6 +359,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $platformFee->up();
     $automaticDisbursement->up();
     $cartLines->up();
+    $repeatApplications->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
