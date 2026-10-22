@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { CardTitle } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
@@ -23,9 +23,12 @@ export function TrendRange({
     only: string[];
 }) {
     const { t, locale } = useTranslation();
-    const chosen = trend.to !== null;
+    const errors = usePage().props.errors as
+        | Partial<Record<'from' | 'to', string>>
+        | undefined;
+    const refused = errors?.to ?? errors?.from;
     const [range, setRange] = useState({
-        from: chosen ? trend.from.slice(0, 10) : '',
+        from: trend.custom ? trend.from.slice(0, 10) : '',
         to: trend.to?.slice(0, 10) ?? '',
     });
 
@@ -65,6 +68,22 @@ export function TrendRange({
                         <input
                             type="date"
                             aria-label={t(`admin.today.capital.${end}_date`)}
+                            aria-invalid={refused !== undefined || undefined}
+                            aria-describedby={
+                                refused === undefined
+                                    ? undefined
+                                    : 'trend-range-error'
+                            }
+                            min={
+                                end === 'to'
+                                    ? range.from || undefined
+                                    : undefined
+                            }
+                            max={
+                                end === 'from'
+                                    ? range.to || undefined
+                                    : undefined
+                            }
                             value={range[end]}
                             onChange={(event) =>
                                 reload({ ...range, [end]: event.target.value })
@@ -73,6 +92,15 @@ export function TrendRange({
                         />
                     </label>
                 ))}
+                {refused !== undefined && (
+                    <p
+                        id="trend-range-error"
+                        role="alert"
+                        className="basis-full text-right text-[11.5px] font-semibold text-rz-danger-text"
+                    >
+                        {t('admin.trend.refused')}
+                    </p>
+                )}
                 {(range.from !== '' || range.to !== '') && (
                     <button
                         type="button"

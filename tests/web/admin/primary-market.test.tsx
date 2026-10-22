@@ -169,6 +169,7 @@ describe('Primary Market Monitor', () => {
                         from: '2026-05-01T00:00:00+02:00',
                         to: '2026-10-14T00:00:00+02:00',
                         grain: 'month',
+                        custom: true,
                         bars: [],
                     },
                 })}
@@ -198,6 +199,38 @@ describe('Primary Market Monitor', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows a From-only window as chosen, and says when the dates were refused', () => {
+        inertia.errors = {
+            to: 'The to field must be a date after or equal to from.',
+        };
+        render(
+            <AdminPrimaryMarket
+                {...props({
+                    trend: {
+                        from: '2026-09-01T00:00:00+02:00',
+                        to: null,
+                        grain: 'day',
+                        custom: true,
+                        bars: [],
+                    },
+                })}
+            />,
+        );
+
+        const trend = screen.getByRole('region', { name: 'Funding trend' });
+        const from = within(trend).getByLabelText('From date');
+        expect(from).toHaveValue('2026-09-01');
+        expect(trend).not.toHaveTextContent('Last 14 days');
+        expect(within(trend).getByLabelText('To date')).toHaveAttribute(
+            'min',
+            '2026-09-01',
+        );
+        expect(within(trend).getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+        expect(from).toHaveAttribute('aria-invalid', 'true');
+    });
+
     it('keeps a single day of commitments to one bar wide', () => {
         render(
             <AdminPrimaryMarket
@@ -206,6 +239,7 @@ describe('Primary Market Monitor', () => {
                         from: '2026-10-14T00:00:00+02:00',
                         to: null,
                         grain: 'day',
+                        custom: false,
                         bars: [
                             {
                                 label: '10-14',
@@ -254,7 +288,13 @@ describe('Primary Market Monitor', () => {
             <AdminPrimaryMarket
                 {...props({
                     raises: [],
-                    trend: { from: '', to: null, grain: 'day', bars: [] },
+                    trend: {
+                        from: '',
+                        to: null,
+                        grain: 'day',
+                        custom: false,
+                        bars: [],
+                    },
                 })}
             />,
         );

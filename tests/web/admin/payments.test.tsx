@@ -37,7 +37,12 @@ const props = (
         staff_access_version: 'staff-access-v1',
         allowed_actions: [],
         from: '2026-10-02T00:00:00+02:00',
-        trend: { from: '2026-10-02T00:00:00+02:00', to: null, grain: 'day' },
+        trend: {
+            from: '2026-10-02T00:00:00+02:00',
+            to: null,
+            grain: 'day',
+            custom: false,
+        },
         stats: [
             {
                 key: 'deposits',
