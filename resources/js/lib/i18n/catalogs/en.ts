@@ -1287,13 +1287,13 @@ const en = {
     'admin.messaging.trigger.business.deposit_received':
         'The provider confirms a business deposit',
     'admin.messaging.trigger.business.application_approved':
-        'The funding application is approved',
+        'A note application is approved',
     'admin.messaging.trigger.business.raise_expired':
         'The raise closes without reaching its target',
     'admin.messaging.trigger.business.raise_funded':
-        'The raise is fully funded',
+        'A raise reaches its target',
     'admin.messaging.trigger.business.disbursement_sent':
-        'The raised funds are disbursed',
+        'Funds are released to the business wallet',
     'admin.messaging.trigger.business.withdrawal_sent':
         'A business withdrawal is paid out',
     'admin.messaging.trigger.business.withdrawal_returned':
