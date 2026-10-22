@@ -25,6 +25,7 @@ use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
+use App\Domain\Underwriting\BusinessScoreView;
 use App\Domain\Wallet\WalletViolation;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationRelease;
@@ -50,7 +51,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     public function __construct(private AcceptedApplicationStore $accepted, private BusinessAuthorityStore $businesses,
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
         private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignProgress $progress, private CampaignFundingEvidence $fundings,
-        private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
+        private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience,
+        private RetainedStaffUnderwritingBasis $underwriting, private BusinessScoreView $scores) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -196,9 +198,43 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
                 'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
-                'progress' => $progress,
+                'progress' => $progress, 'investors' => $this->holders($projection['funding'] ?? null),
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
+    }
+
+    /**
+     * Who funded a note, for its own Business: each Investor's kind, notes and principal, largest
+     * first, with the holder mix by kind. Nobody is named or identified: the Privacy Note shares no
+     * Investor's personal data with a Business. Null until the raise is funded.
+     *
+     * @param  array<string, mixed>|null  $funding
+     * @return array<string, mixed>|null
+     */
+    private function holders(?array $funding): ?array
+    {
+        if ($funding === null) {
+            return null;
+        }
+        $holders = [];
+        foreach ($funding['commitments'] as $purchase) {
+            $holder = $holders[$purchase['party_id']] ?? ['units' => BigInteger::zero(), 'principal' => BigInteger::zero()];
+            $holders[$purchase['party_id']] = ['units' => $holder['units']->plus($purchase['units']), 'principal' => $holder['principal']->plus($purchase['principal'])];
+        }
+        $kinds = $this->identities->partyKinds(array_map(strval(...), array_keys($holders)));
+        $total = BigInteger::of($funding['principal']);
+        $rows = array_map(fn (string $party, array $holder): array => ['kind' => $kinds[$party],
+            'units' => (string) $holder['units'], 'principal' => ['currency' => 'RWF', 'amount' => (string) $holder['principal']]], array_keys($holders), $holders);
+        usort($rows, fn (array $left, array $right): int => BigInteger::of($right['principal']['amount'])->compareTo($left['principal']['amount']));
+        $mix = [];
+        foreach (['person', 'organization'] as $kind) {
+            $ofKind = array_filter($rows, fn (array $row): bool => $row['kind'] === $kind);
+            $capital = array_reduce($ofKind, fn (BigInteger $sum, array $row): BigInteger => $sum->plus($row['principal']['amount']), BigInteger::zero());
+            $mix[] = ['kind' => $kind, 'holders' => count($ofKind), 'percent' => (string) BigDecimal::of((string) $capital)->multipliedBy(100)->dividedBy((string) $total, 0, RoundingMode::HalfUp)];
+        }
+
+        return ['raised' => ['currency' => 'RWF', 'amount' => (string) $total], 'holders' => count($rows),
+            'average' => ['currency' => 'RWF', 'amount' => (string) $total->dividedBy(count($rows), RoundingMode::HalfUp)], 'mix' => $mix, 'list' => $rows];
     }
 
     /**
@@ -232,11 +268,12 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function () use ($businessId): array {
             $notes = [];
-            $rating = $evidence = null;
+            $rating = $evidence = $rated = null;
             $raised = BigInteger::zero();
             $investors = [];
             foreach (BusinessCampaign::query()->where('business_id', $businessId)->orderByDesc('live_at')->orderByDesc('id')->get() as $campaign) {
                 $payload = $this->publications->find($campaign->id);
+                $rated ??= isset($payload['public_evidence']['rating']) ? $campaign->business_application_id : null;
                 $rating ??= $payload['public_evidence']['rating'] ?? null;
                 $evidence ??= $payload['public_evidence'] ?? null;
                 $closure = $this->closures->find($campaign->id);
@@ -262,11 +299,15 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             foreach ($rating === null ? $released->reverse() : [] as $application) {
                 $found = BusinessApplicationSubmission::query()->where('business_application_id', $application->id)
                     ->whereKey($application->current_submission_id)->first()?->payload['public_evidence'] ?? null;
-                [$rating, $evidence] = $rating === null ? [$found['rating'] ?? null, $found] : [$rating, $evidence];
+                [$rating, $evidence, $rated] = $rating === null ? [$found['rating'] ?? null, $found, isset($found['rating']) ? $application->id : null] : [$rating, $evidence, $rated];
             }
+            $basis = $rated === null ? null : $this->underwriting->forBusiness(BusinessApplication::query()->findOrFail($rated));
 
             return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
                 'financials' => self::financials($evidence, $raised),
+                'factors' => $basis === null ? null : BusinessScoreView::factors($basis['components']),
+                'sizing' => $basis === null ? null : $this->scores->sizing($basis['cash_flow'], $basis['pricing'], $basis['raw_capacity'], $basis['term_months'],
+                    $basis['accepted_commitments'], $this->exposures->current($businessId)),
                 'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
                 'capital' => ['raised' => ['currency' => 'RWF', 'amount' => (string) $raised], 'investors' => count(array_unique($investors)),
                     'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))]];

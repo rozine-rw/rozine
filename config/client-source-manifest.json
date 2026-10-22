@@ -481,6 +481,7 @@
         "resources/js/components/business/audit-cosign/review-window.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
+        "resources/js/components/business/campaign/campaign-investors.tsx",
         "resources/js/components/business/campaign/campaign-progress.tsx",
         "resources/js/components/business/campaign/cancel-sheet.tsx",
         "resources/js/components/business/detail-sheet.tsx",
@@ -771,10 +772,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 740,
+        "totalTrackedSources": 741,
         "generated": 314,
         "declarationOnly": 20,
-        "authoredExecutable": 406
+        "authoredExecutable": 407
     },
-    "coverageSetSha256": "e32e60ae020dc7dcd2b5b6c31b66e00864a952720a9339f2933f3f4ca47d20ae"
+    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6"
 }

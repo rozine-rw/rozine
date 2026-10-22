@@ -1158,39 +1158,33 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
 
 /** One of the five limits on a raise; the engine marks the one that binds. */
 export type CapacityLimit = { value: Money; binding: boolean } & (
-    | { key: 'capacity'; ebitda: Money; multiplier: string }
-    | { key: 'revenue_share'; percent: string; revenue: Money }
-    | { key: 'book_share'; percent: string; book: Money }
-    | { key: 'phase_cap'; phase: string; book_under: Money }
+    | { key: 'cash_flow' }
+    | { key: 'exposure'; limit: Money; committed: Money }
     | { key: 'policy_max' }
 );
 
-/** How the engine sized this business's capacity, exactly as it computed it. */
+/**
+ * How the engine sized this business's capacity on the quote its rating came from: the cash it
+ * keeps each month, the cover every instalment needs, and the three limits on one note (BRS §4).
+ * Headroom is that capacity less the raises signed since it was sized.
+ */
 export type CapacitySizing = {
     cash_per_month: Money;
-    net_margin_percent: string;
-    depreciation_percent: string;
-    multiplier: string;
-    cover_tier: 'none' | 'cover1x' | 'cover2x';
-    carry: Money;
-    stock: { state: 'verified' | 'indicative' | 'none'; value: Money | null };
+    /** The cover each instalment needs, already formatted: "1.50". */
+    target_cover: string;
+    term_months: number;
+    rate_percent: string;
     limits: CapacityLimit[];
     approved: Money;
     headroom: Money;
-    tiers: {
-        multiplier: string;
-        principal: Money;
-        applied: boolean;
-        needs_cover: string | null;
-        your_cover: string;
-    }[];
 };
 
+/** The engine measures no growth; the fourth factor is the depth of the verified track record. */
 export type RatingFactorKey =
     | 'financial_health'
     | 'repayment_history'
     | 'statement_consistency'
-    | 'growth_outlook';
+    | 'track_record';
 
 export type BusinessRatingProps = {
     home: BusinessHomeProps;
@@ -1203,7 +1197,7 @@ export type BusinessRatingProps = {
         audited: BusinessRating;
         moves: { reason: string; delta: string }[];
     } | null;
-    /** Published factor scores out of 100, when the engine publishes them. */
+    /** The Business's own factor scores out of 100, from the quote its rating came from. */
     factors: { key: RatingFactorKey; score: number }[] | null;
     sizing: CapacitySizing | null;
     /** Audited financials the rating rests on; null while none is published, and none is shown. */
@@ -1528,6 +1522,18 @@ export type CampaignProgress =
           closed_at: string;
       };
 
+export type InvestorKind = 'person' | 'organization';
+
+/** A funded raise's holders for its own Business. No Investor is named (Privacy Note §5). */
+export type CampaignInvestors = {
+    raised: Money;
+    holders: number;
+    average: Money;
+    mix: { kind: InvestorKind; holders: number; percent: string }[];
+    /** Largest holding first. */
+    list: { kind: InvestorKind; units: string; principal: Money }[];
+};
+
 export type BusinessCampaignProps = Omit<
     BusinessNoteProps,
     'home' | 'note' | 'links'
@@ -1559,6 +1565,8 @@ export type BusinessCampaignProps = Omit<
      * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
+    /** Who holds the funded notes, by kind and amount only; null until the raise is funded. */
+    investors?: CampaignInvestors | null;
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     actions: { cancel: RouteAction | null };

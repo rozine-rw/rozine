@@ -7,6 +7,7 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessExposureReservation;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
@@ -55,7 +56,12 @@ it('offers a released application for publication before anything is listed', fu
     $rating = BusinessApplicationSubmission::query()->whereKey($application->refresh()->current_submission_id)->sole()->payload['public_evidence']['rating'];
     expect($rating)->toBeArray()->and($props['rating'])->toBe(['band' => $rating['band'], 'score' => $rating['score']]);
     // The sealed report awaiting the Business and the approved application are its two unread notices.
-    expect($props)->toMatchArray(['live_raise' => null, 'notes' => [], 'headroom' => null, 'unread_notifications' => 2,
+    // Its own accepted raise is the one commitment its quote never counted, so headroom is the capacity it leaves.
+    $sizing = $this->actingAs($user)->get(route('business.rating', ['business' => $business]))->assertOk()->viewData('page')['props']['sizing'];
+    $principal = BusinessExposureReservation::query()->where('business_application_id', $application->id)->sole()->principal;
+    expect($props['headroom'])->toBe($sizing['headroom'])
+        ->and($sizing['headroom']['amount'])->toBe((string) max(0, intdiv((int) $sizing['approved']['amount'] - (int) $principal, 5000) * 5000));
+    expect($props)->toMatchArray(['live_raise' => null, 'notes' => [], 'unread_notifications' => 2,
         'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'create_application' => null,
         'today' => [['kind' => 'application_approved', 'title' => $application->refresh()->draft['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
             'link' => ['url' => "/business/{$business}/applications/{$application->id}/publish", 'method' => 'get']]],
@@ -142,6 +148,19 @@ it('shows the live raise, then funded capital, from retained publication and fun
             'raised' => ['currency' => 'RWF', 'amount' => $campaign->payload['principal']]])
         ->and($funded['capital'])->toBe(['raised' => ['currency' => 'RWF', 'amount' => $campaign->payload['principal']], 'investors' => 2,
             'active_notes' => 1, 'repaid' => ['currency' => 'RWF', 'amount' => '0'], 'on_time_pct' => null]);
+
+    // Once funded, its own raise page lists who holds the notes by kind and amount, and never who they are.
+    $investors = $this->actingAs($user)->get(route('business.campaigns.show', ['business' => $campaign->business_id, 'campaign' => $campaign->id]))
+        ->assertOk()->viewData('page')['props']['investors'];
+    $half = ['kind' => 'person', 'units' => '1080', 'principal' => ['currency' => 'RWF', 'amount' => '5400000']];
+    expect($investors)->toBe(['raised' => ['currency' => 'RWF', 'amount' => $campaign->payload['principal']], 'holders' => 2,
+        'average' => ['currency' => 'RWF', 'amount' => '5400000'],
+        'mix' => [['kind' => 'person', 'holders' => 2, 'percent' => '100'], ['kind' => 'organization', 'holders' => 0, 'percent' => '0']],
+        'list' => [$half, $half]]);
+
+    // Headroom is the engine's capacity less the funded note, in whole issuance units.
+    $approved = $this->actingAs($user)->get(route('business.rating', ['business' => $campaign->business_id]))->viewData('page')['props']['sizing']['approved']['amount'];
+    expect($funded['headroom'])->toBe(['currency' => 'RWF', 'amount' => (string) max(0, intdiv((int) $approved - (int) $campaign->payload['principal'], 5000) * 5000)]);
 });
 
 it('keeps a cancelled raise as a failed note and leaves no live raise', function (): void {

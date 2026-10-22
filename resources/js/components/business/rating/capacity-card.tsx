@@ -5,16 +5,10 @@ import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { CapacityLimit, CapacitySizing } from '@/types/business';
 
-const MULTIPLIER_TONE = {
-    none: 'text-rz-secondary',
-    cover1x: 'text-[#1832c8] dark:text-[#99a3ff]',
-    cover2x: 'text-rz-accent-app-text',
-} as const;
-
 /**
- * "How your capacity is sized" and "What a higher multiplier would allow" (design L855–921).
+ * "How your capacity is sized" (design L853–921), on the BRS sizing the engine runs: the cash the
+ * business keeps each month, the cover every instalment needs, and the three limits on one note.
  * Every figure, the binding limit and the headroom are the engine's; the card only lays them out.
- * A tier's amount wraps under its multiplier on a narrow card, where the design clipped it.
  */
 export function CapacityCard({
     sizing,
@@ -26,30 +20,19 @@ export function CapacityCard({
     const { t } = useTranslation();
 
     const limitLabel = (limit: CapacityLimit): string =>
-        limit.key === 'phase_cap'
-            ? t('business.rating.limit.phase_cap', { phase: limit.phase })
-            : t(`business.rating.limit.${limit.key}`);
+        t(`business.rating.limit.${limit.key}`);
 
     const limitDetail = (limit: CapacityLimit): string => {
         switch (limit.key) {
-            case 'capacity':
-                return t('business.rating.limit.capacity_detail', {
-                    ebitda: formatRwf(limit.ebitda),
-                    multiplier: limit.multiplier,
+            case 'cash_flow':
+                return t('business.rating.limit.cash_flow_detail', {
+                    cover: sizing.target_cover,
+                    months: sizing.term_months,
                 });
-            case 'revenue_share':
-                return t('business.rating.limit.revenue_share_detail', {
-                    percent: limit.percent,
-                    revenue: formatRwf(limit.revenue),
-                });
-            case 'book_share':
-                return t('business.rating.limit.book_share_detail', {
-                    percent: limit.percent,
-                    book: formatRwf(limit.book),
-                });
-            case 'phase_cap':
-                return t('business.rating.limit.phase_cap_detail', {
-                    book: formatRwf(limit.book_under),
+            case 'exposure':
+                return t('business.rating.limit.exposure_detail', {
+                    limit: formatRwf(limit.limit),
+                    committed: formatRwf(limit.committed),
                 });
             default:
                 return t('business.rating.limit.policy_max_detail');
@@ -71,10 +54,7 @@ export function CapacityCard({
                             {t('business.rating.sizing.cash')}
                         </p>
                         <p className="mt-0.5 text-[11px] leading-[1.45] text-rz-secondary">
-                            {t('business.rating.sizing.cash_note', {
-                                margin: sizing.net_margin_percent,
-                                depreciation: sizing.depreciation_percent,
-                            })}
+                            {t('business.rating.sizing.cash_note')}
                         </p>
                     </div>
                     <p className="shrink-0 text-[17px] font-bold tracking-[-.3px] text-rz-ink">
@@ -84,56 +64,30 @@ export function CapacityCard({
                 <div className="flex items-baseline justify-between gap-2.5 border-t border-[#eef2f9] py-[9px] dark:border-rz-divider">
                     <div className="min-w-0">
                         <p className="text-[10.5px] font-bold tracking-[.04em] text-rz-secondary uppercase">
-                            {t('business.rating.sizing.multiplier')}
+                            {t('business.rating.sizing.cover')}
                         </p>
                         <p className="mt-0.5 text-[11px] leading-[1.45] text-rz-secondary">
-                            {t(
-                                `business.rating.sizing.tier.${sizing.cover_tier}`,
-                            )}
+                            {t('business.rating.sizing.cover_note', {
+                                cover: sizing.target_cover,
+                            })}
                         </p>
                     </div>
-                    <p
-                        className={cn(
-                            'shrink-0 text-[17px] font-bold tracking-[-.3px]',
-                            MULTIPLIER_TONE[sizing.cover_tier],
-                        )}
-                    >
-                        {sizing.multiplier}
+                    <p className="shrink-0 text-[17px] font-bold tracking-[-.3px] text-[#1832c8] dark:text-[#99a3ff]">
+                        {t('business.rating.sizing.cover_value', {
+                            cover: sizing.target_cover,
+                        })}
                     </p>
                 </div>
                 <div className="flex items-baseline justify-between gap-2.5 border-t-2 border-rz-ink pt-2.5 pb-[3px]">
                     <p className="text-[12.5px] font-bold text-rz-ink">
-                        {t('business.rating.sizing.carry')}
+                        {t('business.rating.sizing.term')}
                     </p>
-                    <p className="shrink-0 text-[17px] font-bold tracking-[-.3px] text-rz-ink">
-                        {formatRwf(sizing.carry)}
+                    <p className="shrink-0 text-[15px] font-bold tracking-[-.3px] text-rz-ink">
+                        {t('business.rating.sizing.term_value', {
+                            months: sizing.term_months,
+                            rate: sizing.rate_percent,
+                        })}
                     </p>
-                </div>
-
-                <div className="mt-3 rounded-xl border border-rz-border bg-[#f6f8fc] px-3 py-[11px] dark:bg-rz-page">
-                    <p
-                        className={cn(
-                            'text-[10.5px] font-bold tracking-[.04em] uppercase',
-                            sizing.stock.state === 'verified'
-                                ? 'text-rz-accent-app-text'
-                                : 'text-rz-faint',
-                        )}
-                    >
-                        {t('business.rating.stock.title')}
-                    </p>
-                    <p className="mt-[3px] text-[11.5px] leading-normal text-rz-secondary">
-                        {sizing.stock.value === null
-                            ? t('business.rating.stock.none')
-                            : t(
-                                  `business.rating.stock.${sizing.stock.state === 'verified' ? 'verified' : 'indicative'}`,
-                                  { value: formatRwf(sizing.stock.value) },
-                              )}
-                    </p>
-                    {sizing.stock.state === 'verified' && (
-                        <p className="mt-1.5 text-[11.5px] leading-normal text-rz-accent-app-text">
-                            {t('business.rating.stock.why')}
-                        </p>
-                    )}
                 </div>
 
                 <p className="mt-4 text-[10.5px] font-bold tracking-[.04em] text-rz-secondary uppercase">
@@ -226,61 +180,6 @@ export function CapacityCard({
                     {t('business.rating.sizing.explainer')}
                 </p>
             </div>
-
-            <h2 className="mt-3 text-[13px] font-semibold tracking-[.04em] text-rz-secondary uppercase">
-                {t('business.rating.tiers.title')}
-            </h2>
-            <ul className="mt-2 flex gap-[9px]">
-                {sizing.tiers.map((tier) => (
-                    <li
-                        key={tier.multiplier}
-                        className={cn(
-                            'min-w-0 flex-1 rounded-xl border px-3 py-[11px]',
-                            tier.applied
-                                ? 'border-[#cfe9d8] bg-[#f0f9f3] dark:border-transparent dark:bg-rz-accent-soft'
-                                : 'border-rz-border bg-rz-surface',
-                        )}
-                    >
-                        <div className="flex flex-wrap items-baseline justify-between gap-x-[7px]">
-                            <span
-                                className={cn(
-                                    'text-xs font-bold',
-                                    tier.applied
-                                        ? 'text-rz-accent-app-text'
-                                        : 'text-rz-faint',
-                                )}
-                            >
-                                × {tier.multiplier}
-                            </span>
-                            <span className="text-[13px] font-bold tracking-[-.2px] text-rz-ink">
-                                {formatRwf(tier.principal)}
-                            </span>
-                        </div>
-                        <p
-                            className={cn(
-                                'mt-[3px] text-[9.5px] font-bold tracking-[.04em] uppercase',
-                                tier.applied
-                                    ? 'text-rz-accent-app-text'
-                                    : 'text-rz-faint',
-                            )}
-                        >
-                            {t(
-                                tier.applied
-                                    ? 'business.rating.tiers.applied'
-                                    : 'business.rating.tiers.not_yet',
-                            )}
-                        </p>
-                        <p className="mt-[3px] text-[10.5px] leading-[1.4] text-rz-secondary">
-                            {tier.needs_cover === null
-                                ? t('business.rating.tiers.no_cover')
-                                : t('business.rating.tiers.needs', {
-                                      need: tier.needs_cover,
-                                      yours: tier.your_cover,
-                                  })}
-                        </p>
-                    </li>
-                ))}
-            </ul>
         </>
     );
 }

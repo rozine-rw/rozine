@@ -260,7 +260,7 @@
                 "score": 82
             },
             {
-                "key": "growth_outlook",
+                "key": "track_record",
                 "score": 87
             }
         ],
@@ -269,72 +269,32 @@
                 "currency": "RWF",
                 "amount": "9800000"
             },
-            "net_margin_percent": "18.4",
-            "depreciation_percent": "3.1",
-            "multiplier": "1.6",
-            "cover_tier": "cover1x",
-            "carry": {
-                "currency": "RWF",
-                "amount": "15680000"
-            },
-            "stock": {
-                "state": "verified",
-                "value": {
-                    "currency": "RWF",
-                    "amount": "21000000"
-                }
-            },
+            "target_cover": "1.50",
+            "term_months": 6,
+            "rate_percent": "13.0",
             "limits": [
                 {
-                    "key": "capacity",
+                    "key": "cash_flow",
                     "value": {
                         "currency": "RWF",
-                        "amount": "94080000"
+                        "amount": "34690265"
                     },
-                    "binding": false,
-                    "ebitda": {
-                        "currency": "RWF",
-                        "amount": "9800000"
-                    },
-                    "multiplier": "1.6"
+                    "binding": true
                 },
                 {
-                    "key": "revenue_share",
+                    "key": "exposure",
                     "value": {
                         "currency": "RWF",
-                        "amount": "117600000"
+                        "amount": "71516731"
                     },
                     "binding": false,
-                    "percent": "35",
-                    "revenue": {
+                    "limit": {
                         "currency": "RWF",
-                        "amount": "336000000"
-                    }
-                },
-                {
-                    "key": "book_share",
-                    "value": {
-                        "currency": "RWF",
-                        "amount": "92500000"
+                        "amount": "100000000"
                     },
-                    "binding": false,
-                    "percent": "2.5",
-                    "book": {
+                    "committed": {
                         "currency": "RWF",
-                        "amount": "3700000000"
-                    }
-                },
-                {
-                    "key": "phase_cap",
-                    "value": {
-                        "currency": "RWF",
-                        "amount": "80000000"
-                    },
-                    "binding": true,
-                    "phase": "Launch",
-                    "book_under": {
-                        "currency": "RWF",
-                        "amount": "5000000000"
+                        "amount": "28483269"
                     }
                 },
                 {
@@ -348,44 +308,12 @@
             ],
             "approved": {
                 "currency": "RWF",
-                "amount": "80000000"
+                "amount": "34690000"
             },
             "headroom": {
                 "currency": "RWF",
                 "amount": "33916731"
-            },
-            "tiers": [
-                {
-                    "multiplier": "0.8",
-                    "principal": {
-                        "currency": "RWF",
-                        "amount": "47040000"
-                    },
-                    "applied": true,
-                    "needs_cover": null,
-                    "your_cover": "1.34"
-                },
-                {
-                    "multiplier": "1.6",
-                    "principal": {
-                        "currency": "RWF",
-                        "amount": "94080000"
-                    },
-                    "applied": true,
-                    "needs_cover": "1.0",
-                    "your_cover": "1.34"
-                },
-                {
-                    "multiplier": "2.4",
-                    "principal": {
-                        "currency": "RWF",
-                        "amount": "141120000"
-                    },
-                    "applied": false,
-                    "needs_cover": "2.0",
-                    "your_cover": "1.34"
-                }
-            ]
+            }
         },
         "financials": {
             "avg_monthly_revenue": {

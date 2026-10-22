@@ -3499,66 +3499,42 @@ const rw: Catalog = {
     'business.rating.factor.repayment_history': 'Amateka yo kwishyura',
     'business.rating.factor.statement_consistency':
         'Guhuza kwa raporo za banki',
-    'business.rating.factor.growth_outlook': "Iterambere n'icyerekezo",
+    'business.rating.factor.track_record': 'Amateka yagenzuwe',
     'business.rating.sizing.title': 'Uko ubushobozi bwawe bubarwa',
-    'business.rating.sizing.cash': 'Amafaranga ku kwezi',
+    'business.rating.sizing.cash': 'Amafaranga usigarana buri kwezi',
     'business.rating.sizing.cash_note':
-        "inyungu nyayo {margin}% + {depreciation}% by'iyangirika byongeweho",
-    'business.rating.sizing.multiplier': '× Ikigwizo cyawe',
-    'business.rating.sizing.tier.none': 'Nta bicuruzwa byemejwe biraboneka',
-    'business.rating.sizing.tier.cover1x':
-        "CPA wawe yemeje ibicuruzwa bingana nibura n'amafaranga asabwa inshuro 1",
-    'business.rating.sizing.tier.cover2x':
-        "CPA wawe yemeje ibicuruzwa bingana nibura n'amafaranga asabwa inshuro 2",
-    'business.rating.sizing.carry':
-        'Ubwishyu bwa buri kwezi ushobora kwishyura',
+        'Nyuma y’ayo nyir’ubucuruzi afata n’imyenda usanzwe wishyura',
+    'business.rating.sizing.cover': 'Ingwate isabwa',
+    'business.rating.sizing.cover_note':
+        'Buri kwishyura kwa buri kwezi kugomba gukubwa inshuro {cover} n’ayo mafaranga',
+    'business.rating.sizing.cover_value': '{cover}×',
+    'business.rating.sizing.term': 'Igihe n’inyungu byakoreshejwe',
+    'business.rating.sizing.term_value':
+        'Amezi {months} · {rate}% ku giciro kimwe',
     'business.rating.sizing.explainer':
-        "Ubushobozi bwawe ni amafaranga ikigo cyawe kinjiza buri kwezi, agwizwa n'ibyo ibicuruzwa byemejwe byemerera, hanyuma bigarukira ku gipimo gito muri bitanu biri hejuru. Nta muntu muri Rozine ushyiraho iyi mibare n'intoki. Ubusabe burenze ubushobozi bwangwa ako kanya.",
-    'business.rating.stock.title': 'Ibicuruzwa byanditswe',
-    'business.rating.stock.verified':
-        '{value} byabaruwe na CPA wawe aho ukorera',
-    'business.rating.stock.indicative':
-        '{value} ni ibisanzwe mu rwego rwawe — ariko ibarura rya CPA ni ryo ryonyine ritanga ikigwizo kinini',
-    'business.rating.stock.none': 'Nta bicuruzwa byanditswe',
-    'business.rating.stock.why':
-        'Inguzanyo igura ibicuruzwa yishyurwa hagurishijwe ibyo bicuruzwa, bityo ibicuruzwa byemejwe byongera ubushobozi bwawe.',
-    'business.rating.limits': 'Ibipimo bitanu · igito ni cyo gikoreshwa',
-    'business.rating.limit.capacity': "Ubushobozi bw'amafaranga",
-    'business.rating.limit.capacity_detail':
-        'EBITDA {ebitda}/ukwezi × M {multiplier}',
-    'business.rating.limit.capacity_lift':
-        'Ongera EBITDA, cyangwa usabe CPA wawe kwemeza ibicuruzwa',
-    'business.rating.limit.revenue_share': "Igice cy'ayinjiye",
-    'business.rating.limit.revenue_share_detail':
-        '{percent}% bya {revenue} byinjiye mu mwaka byagenzuwe',
-    'business.rating.limit.revenue_share_lift':
-        'Ongera ayinjiye mu mwaka yagenzuwe',
-    'business.rating.limit.book_share': "Igice cy'inguzanyo zose",
-    'business.rating.limit.book_share_detail':
-        "{percent}% bya {book} by'inguzanyo zitarishyurwa",
-    'business.rating.limit.book_share_lift':
-        "Kizamuka ubwacyo uko inguzanyo z'urubuga ziyongera",
-    'business.rating.limit.phase_cap': "Igipimo cy'icyiciro {phase}",
-    'business.rating.limit.phase_cap_detail':
-        "Igipimo cy'urubuga igihe inguzanyo ziri munsi ya {book}",
-    'business.rating.limit.phase_cap_lift': 'Kizamuka mu cyiciro gikurikira',
+        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo ibyo wasabye ugasinya kuva bwabarwa; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
+    'business.rating.limits': 'Imbibi eshatu · ntoya ni yo ikurikizwa',
+    'business.rating.limit.cash_flow': 'Ibyo amafaranga yawe yishyura',
+    'business.rating.limit.cash_flow_detail':
+        'Byishyurwa n’ingwate ya {cover}× mu mezi {months}',
+    'business.rating.limit.cash_flow_lift':
+        'Sigarana amafaranga menshi buri kwezi, cyangwa uhitemo igihe kirekire',
+    'business.rating.limit.exposure': 'Imbibi z’umwenda',
+    'business.rating.limit.exposure_detail':
+        '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi',
+    'business.rating.limit.exposure_lift':
+        'Ongera ibyinjira, cyangwa wishyure ibyo ufitiye abandi',
     'business.rating.limit.policy_max': 'Igipimo ntarengwa',
     'business.rating.limit.policy_max_detail':
-        'Igipimo ntarengwa ku gukusanya kumwe',
-    'business.rating.limit.policy_max_lift': 'Nta na kimwe — iki ni ntarengwa',
-    'business.rating.limit.yours': 'Iki ni cyo gipimo cyawe',
+        'Igipimo ntarengwa cy’ubusabe bumwe',
+    'business.rating.limit.policy_max_lift': 'Ntacyo — iki gipimo ntigihinduka',
+    'business.rating.limit.yours': 'Iyi ni yo mbibi yawe',
     'business.rating.approved': 'Ubushobozi bwemejwe',
     'business.rating.bound': 'Igikubuza: {limit}',
     'business.rating.lift': 'Kugira ngo kizamuke — {how}',
     'business.rating.headroom': 'Umwanya usigaye',
     'business.rating.headroom_note': 'Ushobora gukusanya aya yiyongera ubu.',
     'business.rating.raise': 'Kusanya',
-    'business.rating.tiers.title': 'Icyo ikigwizo kinini cyakwemerera',
-    'business.rating.tiers.applied': 'Cyakoreshejwe',
-    'business.rating.tiers.not_yet': 'Ntibirashoboka',
-    'business.rating.tiers.no_cover': 'Nta bicuruzwa bikenewe kuri uru rwego',
-    'business.rating.tiers.needs':
-        'Hakenewe {need}× · ibicuruzwa byawe bitanga {yours}×',
     'business.rating.financials': 'Imibare yemejwe',
     'business.rating.sources': 'Banki · MoMo',
     'business.rating.financial.revenue': 'Ayinjira buri kwezi',
@@ -5563,6 +5539,23 @@ const rw: Catalog = {
     'business.publish.published.disclosure': 'Itangazo ku mafaranga',
     'business.publish.published.campaign': 'Reba igikorwa cyo gukusanya',
     'business.publish.published.home': 'Subira ku Ahabanza',
+    'business.campaign.investors.title': 'Abashoramari',
+    'business.campaign.investors.all': 'Reba bose ({count}) ›',
+    'business.campaign.investors.fewer': 'Erekana bake',
+    'business.campaign.investors.raised': 'Ayakusanyijwe yose',
+    'business.campaign.investors.holders': 'Abafite inyandiko',
+    'business.campaign.investors.average': 'Impuzandengo',
+    'business.campaign.investors.mix': 'Uko bagabanyije',
+    'business.campaign.investors.by_capital': 'ukurikije imari',
+    'business.campaign.investors.kinds.person': 'Abantu ku giti cyabo',
+    'business.campaign.investors.kinds.organization': 'Ibigo',
+    'business.campaign.investors.kind.person': 'Umushoramari ku giti cye',
+    'business.campaign.investors.kind.organization': 'Ikigo gishora imari',
+    'business.campaign.investors.notes': {
+        other: 'Inyandiko {count}',
+    },
+    'business.campaign.investors.privacy':
+        'Abashoramari ntibavugwa amazina hano: umwirondoro wabo urinzwe n’amabwiriza y’ibanga ya Rozine.',
     'business.campaign.state.live': 'Irakora',
     'business.campaign.state.fully_reserved': 'Yose yafashwe',
     'business.campaign.state.funded': 'Yabonye amafaranga yose',

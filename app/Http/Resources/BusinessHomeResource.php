@@ -10,8 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `BusinessHomeProps` for both transports. It shapes already authorized facts and adds real routes
  * only: a destination with no live route yet (withdraw) is null, as are Rating, Reports and
- * Profile on the bearer transport, which has no such read; headroom and on-time share are not
- * invented. The bell opens the Business's own notices with their real unread count.
+ * Profile on the bearer transport, which has no such read. Headroom is the engine's capacity on the
+ * rated application less the raises signed since that quote, null before a rating; on-time share is not invented. The bell opens the Business's own notices with their real unread count.
  *
  * Today leads with the business's latest sealed audit report while it waits for co-signatures,
  * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
@@ -53,7 +53,7 @@ class BusinessHomeResource extends JsonResource
             'today' => [...$cosign, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
-            'notes' => $notes, 'headroom' => null,
+            'notes' => $notes, 'headroom' => $raises['sizing']['headroom'] ?? null,
             'links' => ['home' => self::link($request, 'business.show', ['business' => $business]),
                 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
                 ...self::tabs($request, $business), 'wallet' => $wallet(), 'deposit' => $wallet(['kind' => 'deposit']), 'withdraw' => null,

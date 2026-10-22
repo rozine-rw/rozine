@@ -68,4 +68,10 @@ final class EloquentIdentityRepository implements IdentityRepository
             ->whereNotIn('id', RoleMembership::query()->select('party_id')->where('role', '<>', 'auditor')->where('status', 'active'))
             ->exists();
     }
+
+    public function partyKinds(array $partyIds): array
+    {
+        /** @var array<string, 'person'|'organization'> */
+        return Party::query()->whereKey($partyIds)->pluck('kind', 'id')->all();
+    }
 }

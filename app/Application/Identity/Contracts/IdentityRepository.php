@@ -18,4 +18,12 @@ interface IdentityRepository
 
     /** Current Party facts only; does not authorize an actor or grant access to a record. */
     public function auditorPartyIsActive(string $partyId): bool;
+
+    /**
+     * Each Party's kind, keyed by id, and nothing that names it.
+     *
+     * @param  list<string>  $partyIds
+     * @return array<string, 'person'|'organization'>
+     */
+    public function partyKinds(array $partyIds): array;
 }

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "f33d469065f2fa9195667be53135181b245f78c0892923d5801a3f70824df946",
-    "coverageSetSha256": "e32e60ae020dc7dcd2b5b6c31b66e00864a952720a9339f2933f3f4ca47d20ae",
+    "sourceManifestSha256": "f0f28d6e55725dcceb3693e60f0d37eac3066733d51c3ba3359d6d7da8963df4",
+    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6",
     "thresholds": {
         "critical": {
             "global": {
@@ -166,6 +166,7 @@
         "resources/js/components/business/audit-cosign/review-window.tsx",
         "resources/js/components/business/business-auth-frame.tsx",
         "resources/js/components/business/business-shell.tsx",
+        "resources/js/components/business/campaign/campaign-investors.tsx",
         "resources/js/components/business/campaign/campaign-progress.tsx",
         "resources/js/components/business/campaign/cancel-sheet.tsx",
         "resources/js/components/business/detail-sheet.tsx",
