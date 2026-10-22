@@ -138,6 +138,10 @@ describe('Party directories', () => {
         });
 
         expect(
+            screen.getByRole('heading', { name: 'CPA registry' }),
+        ).toBeInTheDocument();
+
+        expect(
             within(requests).getByText('Jean Habimana, CPA'),
         ).toBeInTheDocument();
         expect(within(requests).getByText('RENEWAL')).toBeInTheDocument();
@@ -188,6 +192,9 @@ describe('Party directories', () => {
 
         expect(
             screen.queryByRole('region', { name: 'ICPAR verification desk' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'CPA registry' }),
         ).not.toBeInTheDocument();
     });
 
