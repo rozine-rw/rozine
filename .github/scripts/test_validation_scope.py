@@ -30,19 +30,25 @@ lint = module("check-workflow-lint.py")
 
 class ApiFailureDiagnosticTests(unittest.TestCase):
     def test_api_failure_reports_only_bounded_status_and_preserves_original_exception(self):
-        for status in (401, 403, 429, 503, None):
+        cases = [(status, "", "http_error" if status else "unclassified") for status in (401, 403, 429, 503, None)]
+        cases += [(403, "API rate limit exceeded", "rate_limit"),
+                  (403, "You have exceeded a secondary rate limit", "secondary_rate_limit"),
+                  (401, "Bad credentials", "bad_credentials"),
+                  (403, "Resource not accessible by integration", "integration_access_denied"),
+                  (403, "Resource not accessible by personal access token", "personal_token_access_denied")]
+        for status, message, classification in cases:
             secret = "Authorization: Bearer ghp_private_secret https://private.example/secret-endpoint"
-            stderr = secret + (f" (HTTP {status})" if status else " transport failed") + "x" * 10000
+            stderr = secret + message + (f" (HTTP {status})" if status else " transport failed") + "x" * 10000
             error = subprocess.CalledProcessError(7, ["gh", "api", "private-endpoint"], stderr=stderr)
             output = io.StringIO()
             stdout = io.StringIO()
-            with self.subTest(status=status), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+            with self.subTest(status=status, message=message), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
                 policy.command("gh", "api", "private-endpoint")
             self.assertIs(caught.exception, error)
             self.assertEqual(caught.exception.returncode, 7)
             call.assert_called_once()
             self.assertEqual(output.getvalue(), "CI coordination: gh_api_failed " + json.dumps({
-                "classification": "http_error" if status else "unclassified", "http_status": status, "returncode": 7,
+                "classification": classification, "http_status": status, "returncode": 7,
             }, sort_keys=True) + "\n")
             self.assertLess(len(output.getvalue()), 160)
             self.assertNotIn(secret, output.getvalue())

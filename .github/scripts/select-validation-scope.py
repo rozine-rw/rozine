@@ -69,10 +69,17 @@ def command(*args, timeout=45):
         result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout).strip()
     except subprocess.CalledProcessError as error:
         if args[:2] == ("gh", "api"):
-            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", error.stderr if isinstance(error.stderr, str) else "")
+            detail = error.stderr if isinstance(error.stderr, str) else ""
+            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
+            classification = next((label for phrase, label in (
+                ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
+                ("bad credentials", "bad_credentials"),
+                ("resource not accessible by integration", "integration_access_denied"),
+                ("personal access token", "personal_token_access_denied"),
+            ) if phrase in detail.lower()), "http_error" if status else "unclassified")
             try:
                 diagnostic("gh_api_failed " + json.dumps({
-                    "classification": "http_error" if status else "unclassified",
+                    "classification": classification,
                     "http_status": int(status[1]) if status else None, "returncode": error.returncode,
                 }, sort_keys=True))
             except (OSError, ValueError):
