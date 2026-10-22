@@ -24,27 +24,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class AuditorFileResource extends JsonResource
 {
-    /** @var array<string, string> */
-    private const REASON = [
-        'flash' => 'No note can list until an Audit Partner has visited the business and sealed a baseline report. Rozine checked the submitted statements remotely; your visit confirms on site that the business, its stock and its ledgers are real before any principal is issued.',
-        'routine' => 'Every month while a note is outstanding, an Audit Partner checks the business\'s records in person and seals a report that holders receive before payment day. Seal by D−3; the business then has 24 hours to approve or dispute.',
-    ];
-
-    /** @var array<string, list<string>> */
-    private const MANDATE = [
-        'flash' => [
-            'Check in at the business premises; your live location is logged with the audit.',
-            'Take the required photos with the in-app camera inside the premises geofence. Gallery uploads are blocked.',
-            'Count the stock on site and record its value. Any difference from the declared figure must be explained before you can seal.',
-            'Reconcile the paper ledgers and receipts with the verified statements, following the ISRS 4400 agreed-upon procedures.',
-        ],
-        'routine' => [
-            'Review the month\'s statements the business uploaded.',
-            'Count cash and stock units on site. Any difference must be explained before you can seal.',
-            'Take the required photos with the in-app camera inside the premises geofence.',
-            'Seal the report by D−3 so holders receive it before payment day.',
-        ],
-    ];
+    /** The brief each assignment kind reads: the app holds its reason and mandate in every locale. */
+    private const array BRIEF = ['flash' => 'flash', 'routine' => 'monthly'];
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
@@ -75,21 +56,19 @@ class AuditorFileResource extends JsonResource
                 'sector' => AuditorJobsResource::sector($record['work']['business']['industry']),
                 'use_of_funds' => implode(', ', $record['application']['use_of_funds'] ?? [])],
                 'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
-                'reason' => self::REASON[$record['work']['assignment']['kind']] ?? null, 'mandate' => self::MANDATE[$record['work']['assignment']['kind']] ?? [],
+                'brief' => self::BRIEF[$record['work']['assignment']['kind']] ?? null,
                 'history' => ['last_audit' => null, 'flags' => []]]];
     }
 
     /**
      * @param  Document  $document
-     * @return array{name: string, detail: string, status: string, kind: string}
+     * @return array{kind: string, format: string, status: string, received_on: string, records: int|null}
      */
     private static function document(array $document): array
     {
-        $extracted = $document['extraction']['status'] === 'text_extracted';
-        $received = CarbonImmutable::parse($document['received_at'])->setTimezone('Africa/Kigali')->format('j M Y');
-        $records = $document['extraction']['record_count'];
-
-        return ['name' => $document['media_type'] === 'application/pdf' ? 'Statement (PDF)' : 'Statement (CSV)', 'kind' => 'statement', 'status' => $extracted ? 'parsed' : 'present',
-            'detail' => $records === null ? "Received {$received}" : "Received {$received} · {$records} records"];
+        return ['kind' => 'statement', 'format' => $document['media_type'] === 'application/pdf' ? 'pdf' : 'csv',
+            'status' => $document['extraction']['status'] === 'text_extracted' ? 'parsed' : 'present',
+            'received_on' => CarbonImmutable::parse($document['received_at'])->setTimezone('Africa/Kigali')->format('Y-m-d'),
+            'records' => $document['extraction']['record_count']];
     }
 }

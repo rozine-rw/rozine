@@ -2593,14 +2593,39 @@ const fr: Catalog = {
     'auditor.file.no_documents':
         "Aucun document soumis n'est encore enregistré pour ce dossier.",
     'auditor.file.doc_status.parsed': '✓ OCR',
-    'auditor.file.doc_status.verified': '✓ Vérifié',
     'auditor.file.doc_status.present': '✓ Présent',
-    'auditor.file.doc_status.missing': 'Manquant',
     'auditor.file.prescreen': 'Présélection automatique',
     'auditor.file.no_prescreen':
         "Aucun résultat de présélection automatique n'a encore été publié pour ce dossier.",
     'auditor.file.check.met': 'Atteint',
     'auditor.file.check.flag': 'Signalé',
+    'auditor.file.document.pdf': 'Relevé (PDF)',
+    'auditor.file.document.csv': 'Relevé (CSV)',
+    'auditor.file.document.received': 'Reçu le {date}',
+    'auditor.file.document.received_records': {
+        one: 'Reçu le {date} · {count} enregistrement',
+        other: 'Reçu le {date} · {count} enregistrements',
+    },
+    'auditor.file.brief.flash.reason':
+        "Aucune note ne peut être listée avant qu'un Audit Partner ait visité l'entreprise et scellé un rapport de référence. Rozine a vérifié à distance les relevés soumis ; votre visite confirme sur place que l'entreprise, son stock et ses registres sont réels avant tout versement du principal.",
+    'auditor.file.brief.flash.step_1':
+        "Enregistrez votre arrivée dans les locaux de l'entreprise ; votre position en direct est consignée avec l'audit.",
+    'auditor.file.brief.flash.step_2':
+        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux. Les imports depuis la galerie sont bloqués.",
+    'auditor.file.brief.flash.step_3':
+        'Comptez le stock sur place et notez sa valeur. Tout écart avec le chiffre déclaré doit être expliqué avant de pouvoir sceller.',
+    'auditor.file.brief.flash.step_4':
+        'Rapprochez les registres papier et les reçus des relevés vérifiés, selon les procédures convenues de la norme ISRS 4400.',
+    'auditor.file.brief.monthly.reason':
+        "Chaque mois tant qu'une note est en cours, un Audit Partner contrôle sur place les registres de l'entreprise et scelle un rapport que les détenteurs reçoivent avant le jour de paiement. Scellez avant J−3 ; l'entreprise dispose ensuite de 24 heures pour approuver ou contester.",
+    'auditor.file.brief.monthly.step_1':
+        "Examinez les relevés du mois téléversés par l'entreprise.",
+    'auditor.file.brief.monthly.step_2':
+        'Comptez la trésorerie et les unités de stock sur place. Tout écart doit être expliqué avant de pouvoir sceller.',
+    'auditor.file.brief.monthly.step_3':
+        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux.",
+    'auditor.file.brief.monthly.step_4':
+        'Scellez le rapport avant J−3 pour que les détenteurs le reçoivent avant le jour de paiement.',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
     'auditor.file.mandate': 'Ce que vous devez lever sur site',
     'auditor.file.history': 'Historique du dossier',

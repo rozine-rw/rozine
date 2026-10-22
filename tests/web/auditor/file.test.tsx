@@ -58,8 +58,26 @@ describe('Auditor business file', () => {
             within(sheet).queryByText(/rate \/ yr/i),
         ).not.toBeInTheDocument();
         expect(within(sheet).getByText(/· Logistics/)).toBeInTheDocument();
-        expect(within(sheet).getAllByText('✓ OCR')).toHaveLength(2);
-        expect(within(sheet).getAllByText('✓ Verified')).toHaveLength(2);
+        expect(within(sheet).getByText('Statement (PDF)')).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(/^Received 24 Sept? 2026 · 182 records$/u),
+        ).toBeInTheDocument();
+        expect(within(sheet).getByText('✓ OCR')).toBeInTheDocument();
+        expect(within(sheet).getByText('Statement (CSV)')).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(/^Received 24 Sept? 2026$/u),
+        ).toBeInTheDocument();
+        expect(within(sheet).getByText('✓ Present')).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                /^No note can list until an Audit Partner/u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                'Count the stock on site and record its value. Any difference from the declared figure must be explained before you can seal.',
+            ),
+        ).toBeInTheDocument();
         expect(within(sheet).getAllByText('Met')).toHaveLength(3);
         expect(within(sheet).getByText('Flag')).toBeInTheDocument();
         expect(within(sheet).getByText('First visit')).toBeInTheDocument();
@@ -67,7 +85,7 @@ describe('Auditor business file', () => {
             within(sheet).getByText('No flags on file.'),
         ).toBeInTheDocument();
         expect(within(sheet).getAllByRole('listitem').length).toBeGreaterThan(
-            10,
+            8,
         );
         expect(
             screen.getAllByRole('link', { name: 'Close' })[0],
@@ -261,7 +279,7 @@ describe('Auditor business file', () => {
         ).toBeInTheDocument();
     });
 
-    it('reads a monthly last audit, a missing document and no procedure link', () => {
+    it('reads a monthly last audit, a single-record statement and no procedure link', () => {
         const base = props(reassignedFixture);
         const file = base.file as BusinessFile;
 
@@ -271,7 +289,7 @@ describe('Auditor business file', () => {
                 links={{ ...base.links, procedure: null }}
                 file={{
                     ...file,
-                    documents: [{ ...file.documents[0], status: 'missing' }],
+                    documents: [{ ...file.documents[0], records: 1 }],
                     history: {
                         ...file.history,
                         last_audit: {
@@ -284,7 +302,9 @@ describe('Auditor business file', () => {
             />,
         );
 
-        expect(screen.getByText('Missing')).toBeInTheDocument();
+        expect(
+            screen.getByText(/^Received 24 Sept? 2026 · 1 record$/u),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(/Monthly report · Chantal Rwema, CPA/),
         ).toBeInTheDocument();
@@ -404,45 +424,13 @@ describe('Auditor business file on the live S-C projection', () => {
         ).toHaveAttribute('href', '/auditor/jobs');
     });
 
-    it('shows the mandate alone under its own heading when no reason is persisted', () => {
+    it('states why a monthly visit is needed and what it must clear', () => {
         const base = live();
 
         render(
             <AuditorFile
                 {...base}
-                file={{
-                    ...(base.file as BusinessFile),
-                    mandate: ['Count the steel stock on site.'],
-                }}
-                blocked={null}
-            />,
-        );
-
-        const sheet = liveSheet();
-
-        expect(
-            within(sheet).getByRole('heading', {
-                name: 'What you must clear on site',
-            }),
-        ).toBeInTheDocument();
-        expect(
-            within(sheet).getByText('Count the steel stock on site.'),
-        ).toBeInTheDocument();
-        expect(
-            within(sheet).queryByText('Why a field audit is required'),
-        ).not.toBeInTheDocument();
-    });
-
-    it('shows the reason alone when no mandate is published', () => {
-        const base = live();
-
-        render(
-            <AuditorFile
-                {...base}
-                file={{
-                    ...(base.file as BusinessFile),
-                    reason: 'Stock levels need a field check.',
-                }}
+                file={{ ...(base.file as BusinessFile), brief: 'monthly' }}
                 blocked={null}
             />,
         );
@@ -455,8 +443,28 @@ describe('Auditor business file on the live S-C projection', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            within(sheet).getByText('Stock levels need a field check.'),
+            within(sheet).getByText(
+                /^Every month while a note is outstanding/u,
+            ),
         ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText('What you must clear on site'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet).getByText(
+                "Review the month's statements the business uploaded.",
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('leaves the brief out when the server names none', () => {
+        render(<AuditorFile {...live()} blocked={null} />);
+
+        const sheet = liveSheet();
+
+        expect(
+            within(sheet).queryByText('Why a field audit is required'),
+        ).not.toBeInTheDocument();
         expect(
             within(sheet).queryByText('What you must clear on site'),
         ).not.toBeInTheDocument();

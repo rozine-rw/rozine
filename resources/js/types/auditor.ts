@@ -635,11 +635,13 @@ export type AuditorJobsProps = AuditorPageContract &
 /* Business file (MVP-AUDITOR-SCR-02, design step 0 L1038–1093)                                 */
 /* ------------------------------------------------------------------------------------------ */
 
+/** A statement the business submitted: its format, the Kigali day it arrived and, once its text was extracted, how many records it held. */
 export type FileDocument = {
-    name: string;
-    detail: string;
-    status: 'parsed' | 'verified' | 'present' | 'missing';
-    kind: 'statement' | 'registry' | 'identity' | 'pitch' | 'photos';
+    kind: 'statement';
+    format: 'pdf' | 'csv';
+    status: 'parsed' | 'present';
+    received_on: string;
+    records: number | null;
 };
 
 /**
@@ -663,10 +665,11 @@ export type BusinessFile = {
      * pre-screen result is published.
      */
     prescreen: { label: string; detail: string; result: 'met' | 'flag' }[];
-    /** Why the engine sent this case to the field; null until a public reason is persisted. */
-    reason: string | null;
-    /** The procedure version's agreed steps for the visit, in order; empty until published (S-D). */
-    mandate: string[];
+    /**
+     * Which rules the visit answers (BRS v2.0 AUD-R03/R07 for a Flash Audit, AUD-R04 for a monthly
+     * visit): the app states why it is needed and what it must clear. Null shows neither.
+     */
+    brief: 'flash' | 'monthly' | null;
     history: {
         last_audit: {
             on: string;
