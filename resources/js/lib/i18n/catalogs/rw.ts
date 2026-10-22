@@ -1332,6 +1332,23 @@ const rw: Catalog = {
         "Porogaramu z'abashoramari, ibigo n'abagenzuzi n'ibiziranga.",
     'admin.design.app_control.apps.empty':
         'Nta igenamiterere rya porogaramu ryo kwerekana ubu.',
+    'admin.design.app_control.app.investor': "Porogaramu y'Abashoramari",
+    'admin.design.app_control.app.business': "Porogaramu y'Ubucuruzi",
+    'admin.design.app_control.app.auditor': "Porogaramu y'Abagenzuzi",
+    'admin.design.app_control.online': 'Irakora',
+    'admin.design.app_control.feature.sign_ups': 'Kwiyandikisha gushya',
+    'admin.design.app_control.feature.secondary_market': 'Isoko rya kabiri',
+    'admin.design.app_control.feature.academy': "Ishuri ry'Abashoramari",
+    'admin.design.app_control.feature.note_creation': 'Gukora RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Raporo za buri kwezi',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        "Kwiyandikisha kw'abagenzuzi",
+    'admin.design.app_control.feature.auto_dispatch':
+        'Kohereza mu buryo bwikora muri km 30',
+    'admin.design.app_control.feature.flash_audits':
+        'Igenzura ryihuse (amasaha 24)',
+    'admin.design.app_control.state.live': 'Irakora',
+    'admin.design.app_control.state.not_built': 'Ntirarakorwa',
     'admin.design.app_control.sandbox.title': 'Imbibi za sandbox',
     'admin.design.app_control.sandbox.sub':
         'Igice cyakoreshejwe cya buri mbibi za sandbox ya CMA. Nta kirenze imbibi cyemerwa.',
@@ -6360,8 +6377,8 @@ const rw: Catalog = {
     'admin.health.frozen.label': 'Konti zahagaritswe',
     'admin.health.frozen.detail': 'konti zahagaritswe kwinjira',
     'admin.health.frozen.rec.healthy': {
-        one: 'Nta konti yahagaritswe.',
-        other: 'Nta konti yahagaritswe.',
+        one: 'Nta konti ifungiwe ubu.',
+        other: 'Nta konti ifungiwe ubu.',
     },
     'admin.health.frozen.rec.watch': {
         one: "Konti {count} y'umukozi yahagaritswe. Yisuzume muri Abakozi n'inshingano.",

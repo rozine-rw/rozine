@@ -105,7 +105,7 @@ describe('Admin System Health', () => {
             '0accounts with access paused',
         );
         expect(card('Frozen accounts')).toHaveTextContent(
-            'No accounts are frozen.',
+            'No accounts are currently restricted.',
         );
         expect(card('Treasury position')).toHaveTextContent('Not tracked yet');
         expect(card('Treasury position')).toHaveTextContent(

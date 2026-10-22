@@ -1345,6 +1345,22 @@ const fr: Catalog = {
         'Les applications Investisseur, Entreprise et Auditeur et leurs fonctionnalités.',
     'admin.design.app_control.apps.empty':
         "Aucun réglage d'application à afficher pour le moment.",
+    'admin.design.app_control.app.investor': 'Application Investisseur',
+    'admin.design.app_control.app.business': 'Application Entreprise',
+    'admin.design.app_control.app.auditor': 'Application Auditeur',
+    'admin.design.app_control.online': 'En ligne',
+    'admin.design.app_control.feature.sign_ups': 'Nouvelles inscriptions',
+    'admin.design.app_control.feature.secondary_market': 'Marché secondaire',
+    'admin.design.app_control.feature.academy': 'Académie Investisseur',
+    'admin.design.app_control.feature.note_creation': 'Création de RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Rapports mensuels',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        'Inscriptions des auditeurs',
+    'admin.design.app_control.feature.auto_dispatch':
+        'Affectation automatique à 30 km',
+    'admin.design.app_control.feature.flash_audits': 'Audits flash (24 h)',
+    'admin.design.app_control.state.live': 'Actif',
+    'admin.design.app_control.state.not_built': 'Pas encore développé',
     'admin.design.app_control.sandbox.title': 'Limites du bac à sable',
     'admin.design.app_control.sandbox.sub':
         'Part utilisée de chaque limite du bac à sable de la CMA. Rien n’est accepté au-delà d’une limite.',
@@ -6394,8 +6410,8 @@ const fr: Catalog = {
     'admin.health.frozen.label': 'Comptes gelés',
     'admin.health.frozen.detail': "comptes dont l'accès est suspendu",
     'admin.health.frozen.rec.healthy': {
-        one: "Aucun compte n'est gelé.",
-        other: "Aucun compte n'est gelé.",
+        one: "Aucun compte n'est actuellement restreint.",
+        other: "Aucun compte n'est actuellement restreint.",
     },
     'admin.health.frozen.rec.watch': {
         one: '{count} compte opérateur est gelé. Vérifiez-le dans Personnel et rôles.',

@@ -577,4 +577,39 @@ describe('App Control', () => {
         );
         expect(screen.getByText('No app settings to show yet.')).toBeVisible();
     });
+
+    it('lists each app as online, with whether each of its features is built', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    apps: [
+                        {
+                            key: 'investor',
+                            features: [
+                                { key: 'sign_ups', state: 'live' },
+                                { key: 'secondary_market', state: 'not_built' },
+                            ],
+                        },
+                        {
+                            key: 'auditor',
+                            features: [{ key: 'flash_audits', state: 'live' }],
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Apps' }),
+        ).getAllByRole('row');
+
+        expect(rows).toHaveLength(3);
+        expect(rows[1]).toHaveTextContent(
+            'Investor AppOnlineNew sign-ups · Live, Secondary Market · Not built yet',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'Auditor AppOnlineFlash Audits (24h) · Live',
+        );
+    });
 });
