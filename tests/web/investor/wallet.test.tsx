@@ -132,7 +132,7 @@ describe('Wallet (C3)', () => {
         ).not.toBeInTheDocument();
 
         const history = screen.getByRole('region', {
-            name: 'Transactions',
+            name: 'Transaction history',
         });
 
         expect(
@@ -456,7 +456,7 @@ describe('Wallet (C3)', () => {
         render(<InvestorWallet {...wallet(internalFixture)} />);
 
         const history = screen.getByRole('region', {
-            name: 'Transactions',
+            name: 'Transaction history',
         });
 
         expect(
@@ -493,7 +493,7 @@ describe('Wallet (C3)', () => {
                 method: 'get',
             },
         }));
-        render(<InvestorWallet {...page} />);
+        const { unmount } = render(<InvestorWallet {...page} />);
 
         const ranges = screen.getByRole('navigation', { name: 'Time range' });
 
@@ -501,7 +501,7 @@ describe('Wallet (C3)', () => {
             within(ranges)
                 .getAllByRole('link')
                 .map((link) => link.textContent),
-        ).toEqual(['Today', '7 days', '30 days', 'All']);
+        ).toEqual(['Today', '7 days', '30 days', 'All time']);
         expect(
             within(ranges).getByRole('link', { name: '7 days' }),
         ).toHaveAttribute('aria-current', 'true');
@@ -512,8 +512,21 @@ describe('Wallet (C3)', () => {
             '/investor/wallet?movement=external&period=30d',
         );
         expect(
-            within(ranges).getByRole('link', { name: 'All' }),
+            within(ranges).getByRole('link', { name: 'All time' }),
         ).not.toHaveAttribute('aria-current');
+        unmount();
+
+        // The wide design titles the history Transactions and its widest range All.
+        setWide(true);
+        render(<InvestorWallet {...page} />);
+        expect(
+            screen.getByRole('region', { name: 'Transactions' }),
+        ).toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('navigation', { name: 'Time range' }),
+            ).getByRole('link', { name: 'All' }),
+        ).toBeInTheDocument();
     });
 
     it('opens an internal transfer’s receipt', () => {

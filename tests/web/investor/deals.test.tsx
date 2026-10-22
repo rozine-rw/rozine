@@ -431,6 +431,7 @@ describe('The Academy nudge in the phone deck', () => {
         );
         fireEvent.pointerUp(nudge);
         expect(inertia.reload).not.toHaveBeenCalled();
+        expect(inertia.visit).not.toHaveBeenCalled();
         expect(
             screen.queryByRole('region', { name: /^Invest in/u }),
         ).not.toBeInTheDocument();
