@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { LogoMark } from '@/components/rozine/logo';
@@ -738,6 +739,18 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     className="min-w-0 flex-1 border-0 bg-transparent text-right text-xl font-semibold text-rz-ink outline-none placeholder:text-rz-ink"
                 />
             </div>
+            <div className="mt-2 flex gap-1.5">
+                {funding.picks.map((pick) => (
+                    <button
+                        key={pick.amount}
+                        type="button"
+                        onClick={() => setAmount(pick.amount)}
+                        className="flex-1 rounded-[10px] border border-rz-border bg-[#f3f6fc] py-2 text-[11px] font-semibold text-rz-slate dark:bg-rz-surface-muted"
+                    >
+                        {formatCompactBare(pick)}
+                    </button>
+                ))}
+            </div>
             <p className="mt-1.5 text-[11px] text-rz-secondary">
                 {t('investor.wallet.c3.withdraw_available', {
                     amount: formatRwf(available),
@@ -758,7 +771,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             >
                 <div className="flex justify-between gap-2.5 border-b border-[#eef2f9] py-[9px] dark:border-rz-divider">
                     <dt className="text-xs text-rz-secondary">
-                        {t('investor.wallet.c3.provider_charge')}
+                        {t('investor.wallet.fee')}
                     </dt>
                     <dd className="text-xs font-semibold text-rz-ink">
                         {quote === null ? '—' : formatRwf(quote.charge)}
@@ -768,7 +781,12 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <dt className="text-xs text-rz-secondary">
                         {t('investor.wallet.result.withdraw')}
                     </dt>
-                    <dd className="text-xs font-bold text-rz-ink">
+                    <dd
+                        className={cn(
+                            'text-xs font-bold',
+                            quote === null ? 'text-rz-ink' : POSITIVE_TEXT,
+                        )}
+                    >
                         {quote === null ? '—' : formatRwf(quote.received)}
                     </dd>
                 </div>

@@ -3919,7 +3919,7 @@ const fr: Catalog = {
     'investor.wallet.panel.withdraw': 'Retirer',
     'investor.wallet.amount': 'MONTANT',
     'investor.wallet.method': 'MOYEN DE PAIEMENT',
-    'investor.wallet.method_to': 'ENVOYER VERS',
+    'investor.wallet.method_to': 'MOYEN DE PAIEMENT',
     'investor.wallet.fee': 'Frais de traitement',
     'investor.wallet.result.deposit': 'Nouveau solde disponible',
     'investor.wallet.result.withdraw': 'Vous recevez',

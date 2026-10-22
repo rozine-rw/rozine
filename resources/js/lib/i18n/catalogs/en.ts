@@ -3776,7 +3776,7 @@ const en = {
     'investor.wallet.panel.withdraw': 'Withdraw',
     'investor.wallet.amount': 'AMOUNT',
     'investor.wallet.method': 'PAYMENT METHOD',
-    'investor.wallet.method_to': 'SEND TO',
+    'investor.wallet.method_to': 'PAYMENT METHOD',
     'investor.wallet.fee': 'Processing fee',
     'investor.wallet.result.deposit': 'New available balance',
     'investor.wallet.result.withdraw': 'You receive',

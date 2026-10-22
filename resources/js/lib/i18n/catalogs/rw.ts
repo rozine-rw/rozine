@@ -3902,7 +3902,7 @@ const rw: Catalog = {
     'investor.wallet.panel.withdraw': 'Bikuza',
     'investor.wallet.amount': 'AMAFARANGA',
     'investor.wallet.method': 'UBURYO BWO KWISHYURA',
-    'investor.wallet.method_to': 'OHEREZA KURI',
+    'investor.wallet.method_to': 'UBURYO BWO KWISHYURA',
     'investor.wallet.fee': 'Ikiguzi cyo gukora',
     'investor.wallet.result.deposit': 'Amafaranga mashya ahari',
     'investor.wallet.result.withdraw': 'Uzakira',
