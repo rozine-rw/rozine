@@ -474,7 +474,7 @@ arch('the named wallet testers are reached only by the deposit admission, the st
         'App\Console\Commands\PrepareStagingWallet']);
 
 it('has concrete targets for the disbursement boundary', function (): void {
-    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent',
+    foreach (['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing', 'App\Models\PrimaryHolding',
         'App\Application\Disbursement\Contracts\DisbursementStore', 'App\Application\Disbursement\Contracts\FundedCampaigns',
@@ -486,7 +486,7 @@ it('has concrete targets for the disbursement boundary', function (): void {
 })->group('arch');
 
 arch('disbursement records are only accessed by the disbursement adapters')
-    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent',
+    ->expect(['App\Models\Disbursement', 'App\Models\DisbursementEvent', 'App\Models\DisbursementStepUpProof',
         'App\Models\DisbursementIntent', 'App\Models\DisbursementDispatch', 'App\Models\DisbursementProviderCall', 'App\Models\DisbursementProviderEvent',
         'App\Models\DisbursementReconciliation', 'App\Models\DisbursementClosing'])
     ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Models', 'Database\Factories']);

@@ -412,7 +412,7 @@ fi
 
 if selected disbursement-boundary; then
   control disbursement-boundary "bypassing the disbursement adapter to write intents, observations, closings or proofs must fail the protected rule"
-  for disbursement_model in Disbursement DisbursementEvent DisbursementStepUpProof DisbursementStepUpMarker DisbursementIntent DisbursementDispatch DisbursementProviderCall DisbursementProviderEvent DisbursementReconciliation DisbursementClosing; do
+  for disbursement_model in Disbursement DisbursementEvent DisbursementStepUpProof DisbursementIntent DisbursementDispatch DisbursementProviderCall DisbursementProviderEvent DisbursementReconciliation DisbursementClosing; do
   echo "    checking ${disbursement_model}"
   plant app/Application/Disbursement/NegativeControlDisbursementWrite.php <<VIOLATION
 <?php

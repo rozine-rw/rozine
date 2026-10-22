@@ -12,6 +12,7 @@ import {
     vi,
 } from 'vite-plus/test';
 import { clearCarriedRefusal } from '@/components/business/apply/carried-refusal';
+import { formatRwf } from '@/lib/rozine/format';
 import BusinessApply from '@/pages/business/apply';
 import type {
     ApplicationQuote,
@@ -1214,7 +1215,9 @@ describe('Apply — step 2, the quote', () => {
         render(<BusinessApply {...props(raiseStep)} />);
 
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
 
         const rate = screen.getByRole('tooltip');
@@ -1257,8 +1260,15 @@ describe('Apply — step 2, the quote', () => {
             screen.getByText('Investor protection reserve'),
         ).toBeInTheDocument();
         expect(screen.getByText('RWF 369,673')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `${formatRwf((pending.quote as ReadyQuote).schedule[0].amount)} / month`,
+            ),
+        ).toBeInTheDocument();
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
         expect(screen.getByRole('tooltip')).toHaveTextContent('Pending audit');
 
@@ -1322,7 +1332,9 @@ describe('Apply — step 2, the quote', () => {
         render(<BusinessApply {...props(raiseStep)} />);
 
         await user.click(
-            screen.getByRole('button', { name: 'How this rate is set' }),
+            screen.getByRole('button', {
+                name: 'How this yield is calculated',
+            }),
         );
         await user.click(screen.getAllByRole('button', { name: 'Close' })[0]);
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();

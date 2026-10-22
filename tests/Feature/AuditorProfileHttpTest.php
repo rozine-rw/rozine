@@ -90,7 +90,7 @@ function profileHttpProps(User $user): array
             return $page->component('auditor/profile');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
 }
 
 /** @return array{user: User, party: Party, staff: User, submission: string} */

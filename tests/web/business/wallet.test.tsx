@@ -414,6 +414,43 @@ describe('Business wallet history range and statement', () => {
         ).toHaveAttribute('href', '/preview/business-wallet-statement.csv');
     });
 
+    it('names a range open at its start, clears it back to the base and closes the statement menu on a download', () => {
+        const props = wallet();
+        props.history.range = {
+            from: null,
+            to: '2026-11-30',
+            base: { url: '/business/b1/wallet', method: 'get' },
+        };
+        render(<BusinessWallet {...props} />);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: Start – 30 Nov 2026',
+            }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'All time' }));
+        expect(inertia.visits).toEqual([{ url: '/business/b1/wallet' }]);
+
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Date range: Start – 30 Nov 2026',
+            }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+        expect(inertia.visits).toEqual([
+            { url: '/business/b1/wallet' },
+            { url: '/business/b1/wallet?to=2026-11-30' },
+        ]);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Download statement' }),
+        );
+        fireEvent.click(screen.getByRole('link', { name: /Download PDF/ }));
+        expect(
+            screen.queryByRole('link', { name: /Download PDF/ }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows neither control where the server serves no range or statement', () => {
         render(<BusinessWallet {...wallet(emptyFixture)} />);
 

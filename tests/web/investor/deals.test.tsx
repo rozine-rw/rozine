@@ -1421,6 +1421,50 @@ describe('Add to cart', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('says when the cart could not be changed from the wide panel', async () => {
+        setWide(true);
+        const page = deals();
+
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        inertia.queue.push(fails(409, { code: 'DEAL_FULLY_FUNDED' }));
+        render(<InvestorDeals {...page} />);
+
+        await userEvent.click(
+            screen.getAllByRole('button', { name: 'Add to cart' })[0],
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            "We couldn't update your cart. Refresh and try again.",
+        );
+    });
+
+    it('counts a single investor in the singular, on a phone and a wide screen', () => {
+        const page = deals();
+
+        page.deals[0].investors = 1;
+        const { unmount } = render(
+            <InvestorDeals {...structuredClone(page)} />,
+        );
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+        unmount();
+
+        setWide(true);
+        render(<InvestorDeals {...page} />);
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+    });
+
+    it('counts a single investor in the singular on the deal page', () => {
+        const page = deal();
+
+        page.deal.investors = 1;
+        render(<InvestorDeal {...page} />);
+        expect(screen.getAllByText(/^investor$/u).length).toBeGreaterThan(0);
+    });
+
     it('puts the toggle in the focused deal’s panel on a wide screen', async () => {
         setWide(true);
         inertia.queue.push(answers({ data: { removed: true } }));
