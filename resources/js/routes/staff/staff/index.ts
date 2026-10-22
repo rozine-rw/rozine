@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/admin/staff'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::grant
-* @see app/Http/Controllers/StaffDirectoryController.php:57
+* @see app/Http/Controllers/StaffDirectoryController.php:62
 * @route '/admin/staff'
 */
 export const grant = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ grant.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::grant
-* @see app/Http/Controllers/StaffDirectoryController.php:57
+* @see app/Http/Controllers/StaffDirectoryController.php:62
 * @route '/admin/staff'
 */
 grant.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ grant.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::grant
-* @see app/Http/Controllers/StaffDirectoryController.php:57
+* @see app/Http/Controllers/StaffDirectoryController.php:62
 * @route '/admin/staff'
 */
 grant.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ grant.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::grant
-* @see app/Http/Controllers/StaffDirectoryController.php:57
+* @see app/Http/Controllers/StaffDirectoryController.php:62
 * @route '/admin/staff'
 */
 const grantForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const grantForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => 
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::grant
-* @see app/Http/Controllers/StaffDirectoryController.php:57
+* @see app/Http/Controllers/StaffDirectoryController.php:62
 * @route '/admin/staff'
 */
 grantForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -137,8 +137,82 @@ grantForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 grant.form = grantForm
 
 /**
+* @see \App\Http\Controllers\StaffDirectoryController::approve
+* @see app/Http/Controllers/StaffDirectoryController.php:70
+* @route '/admin/staff/approvals/{proposal}'
+*/
+export const approve = (args: { proposal: string | number } | [proposal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: approve.url(args, options),
+    method: 'post',
+})
+
+approve.definition = {
+    methods: ["post"],
+    url: '/admin/staff/approvals/{proposal}',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffDirectoryController::approve
+* @see app/Http/Controllers/StaffDirectoryController.php:70
+* @route '/admin/staff/approvals/{proposal}'
+*/
+approve.url = (args: { proposal: string | number } | [proposal: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { proposal: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            proposal: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        proposal: args.proposal,
+    }
+
+    return approve.definition.url
+            .replace('{proposal}', parsedArgs.proposal.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffDirectoryController::approve
+* @see app/Http/Controllers/StaffDirectoryController.php:70
+* @route '/admin/staff/approvals/{proposal}'
+*/
+approve.post = (args: { proposal: string | number } | [proposal: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: approve.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffDirectoryController::approve
+* @see app/Http/Controllers/StaffDirectoryController.php:70
+* @route '/admin/staff/approvals/{proposal}'
+*/
+const approveForm = (args: { proposal: string | number } | [proposal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: approve.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffDirectoryController::approve
+* @see app/Http/Controllers/StaffDirectoryController.php:70
+* @route '/admin/staff/approvals/{proposal}'
+*/
+approveForm.post = (args: { proposal: string | number } | [proposal: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: approve.url(args, options),
+    method: 'post',
+})
+
+approve.form = approveForm
+
+/**
 * @see \App\Http\Controllers\StaffDirectoryController::suspend
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/suspend'
 */
 export const suspend = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +227,7 @@ suspend.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::suspend
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/suspend'
 */
 suspend.url = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -180,7 +254,7 @@ suspend.url = (args: { operator: string | number } | [operator: string | number 
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::suspend
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/suspend'
 */
 suspend.post = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -190,7 +264,7 @@ suspend.post = (args: { operator: string | number } | [operator: string | number
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::suspend
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/suspend'
 */
 const suspendForm = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -200,7 +274,7 @@ const suspendForm = (args: { operator: string | number } | [operator: string | n
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::suspend
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/suspend'
 */
 suspendForm.post = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,7 +286,7 @@ suspend.form = suspendForm
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::reactivate
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/reactivate'
 */
 export const reactivate = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +301,7 @@ reactivate.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::reactivate
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/reactivate'
 */
 reactivate.url = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -254,7 +328,7 @@ reactivate.url = (args: { operator: string | number } | [operator: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::reactivate
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/reactivate'
 */
 reactivate.post = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -264,7 +338,7 @@ reactivate.post = (args: { operator: string | number } | [operator: string | num
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::reactivate
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/reactivate'
 */
 const reactivateForm = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -274,7 +348,7 @@ const reactivateForm = (args: { operator: string | number } | [operator: string 
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::reactivate
-* @see app/Http/Controllers/StaffDirectoryController.php:66
+* @see app/Http/Controllers/StaffDirectoryController.php:79
 * @route '/admin/staff/{operator}/reactivate'
 */
 reactivateForm.post = (args: { operator: string | number } | [operator: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -287,6 +361,7 @@ reactivate.form = reactivateForm
 const staff = {
     index: Object.assign(index, index),
     grant: Object.assign(grant, grant),
+    approve: Object.assign(approve, approve),
     suspend: Object.assign(suspend, suspend),
     reactivate: Object.assign(reactivate, reactivate),
 }

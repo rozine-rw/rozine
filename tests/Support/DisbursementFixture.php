@@ -10,7 +10,6 @@ use App\Application\Disbursement\FundedCampaign;
 use App\Application\Disbursement\ManageDisbursements;
 use App\Application\Disbursement\OpenFundedDisbursements;
 use App\Application\Disbursement\RecordPayoutEvent;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
@@ -35,7 +34,7 @@ final class DisbursementFixture
         $secret = (new Google2FA)->generateSecretKey();
         $user = User::factory()->create();
         $user->forceFill(['two_factor_secret' => encrypt($secret), 'two_factor_confirmed_at' => now()->subMinute()])->save();
-        app(ConfigureStaffAccess::class)->handle($user->id, true, 'Synthetic disbursement staff.', (string) Str::uuid(), $roles);
+        StaffFixture::provision($user, $roles, 'Synthetic disbursement staff.');
         self::$secrets[$user->id] = $secret;
 
         return $user;

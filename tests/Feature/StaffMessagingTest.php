@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Models\BusinessProfile;
@@ -14,6 +13,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\StaffFixture;
 
 /*
  * Admin Messaging History (BRS v2.0 NTF-R01): every notice receipt, newest first, naming who it
@@ -25,7 +25,7 @@ use Laravel\Sanctum\Sanctum;
 function messagingStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Messaging assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Messaging assignment.');
 
     return $user;
 }

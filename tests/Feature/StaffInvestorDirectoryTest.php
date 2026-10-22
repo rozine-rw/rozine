@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
@@ -17,6 +16,7 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->officer = directoryStaff(['compliance']);
@@ -26,7 +26,7 @@ beforeEach(function (): void {
 function directoryStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Investor directory assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Investor directory assignment.');
 
     return $user;
 }

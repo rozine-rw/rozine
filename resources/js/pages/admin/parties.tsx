@@ -4,6 +4,7 @@ import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { InviteOperator } from '@/components/admin/parties/invite-operator';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
+import { PendingStaffApprovals } from '@/components/admin/parties/pending-staff-approvals';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
@@ -142,6 +143,9 @@ export default function AdminParties(props: AdminPartiesProps) {
             </p>
             {props.directory.rows.length === 0 && props.search !== '' && (
                 <SearchEmpty section={section} term={props.search} />
+            )}
+            {props.kind === 'staff' && props.pending_approvals && (
+                <PendingStaffApprovals requests={props.pending_approvals} />
             )}
             <DirectoryTable directory={props.directory} />
             {props.kind === 'staff' && props.permission_matrix && (

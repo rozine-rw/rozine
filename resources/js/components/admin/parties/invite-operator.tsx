@@ -116,6 +116,11 @@ export function InviteOperator({ action }: { action: RouteAction }) {
                     </FieldError>
                 </label>
             </div>
+            {form.data.role === 'superadmin' && (
+                <p className="mt-3 text-[12.5px] text-rz-muted">
+                    {t('admin.staff.approvals.body')}
+                </p>
+            )}
             <label className="mt-3 block">
                 <span className="text-[11.5px] font-semibold text-rz-muted">
                     {t('admin.stage.reason_label')}

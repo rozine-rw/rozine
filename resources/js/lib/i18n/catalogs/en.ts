@@ -2217,6 +2217,16 @@ const en = {
     'admin.matrix.withheld.by_rule':
         'No role, by rule: ledger and audit entries are never deleted',
     'admin.action_log.title': 'Admin action log',
+    'admin.staff.approvals.title': 'Awaiting super-admin approval',
+    'admin.staff.approvals.body':
+        'Super-admin access stays unchanged until a different, currently authorized super-admin approves. The requester and recipient cannot approve.',
+    'admin.staff.approvals.grant': '{requester} requested super-admin access.',
+    'admin.staff.approvals.reactivate':
+        '{requester} requested super-admin reactivation.',
+    'admin.staff.approvals.form': 'Approve access for {recipient}',
+    'admin.staff.approvals.submit': 'Approve super-admin access',
+    'admin.staff.approvals.waiting':
+        'Waiting for a different super-admin to approve.',
     'admin.staff.invite.open': '+ Invite operator',
     'admin.staff.invite.title': 'Invite an operator',
     'admin.staff.invite.body':

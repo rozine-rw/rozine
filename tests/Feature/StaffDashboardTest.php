@@ -19,12 +19,13 @@ use Tests\Support\AuditSealingFixture;
 use Tests\Support\DisbursementFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 /** @param  list<string>  $roles */
 function boardStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Operations Center assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Operations Center assignment.');
 
     return $user;
 }

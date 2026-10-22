@@ -46,4 +46,9 @@ interface StaffDirectoryStore
      * @return list<LogEntry>
      */
     public function log(int $limit): array;
+
+    /**
+     * @return list<array{id: string, recipient_id: int, requester_id: int, recipient: string, email: string, requester: string, operation: string, reason: string}>
+     */
+    public function pending(): array;
 }

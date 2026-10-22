@@ -59,4 +59,12 @@ final class BrowseStaffDirectory
 
         return $this->store->log(20);
     }
+
+    /** @return list<array{id: string, recipient_id: int, requester_id: int, recipient: string, email: string, requester: string, operation: string, reason: string}> */
+    public function pending(int $actorId): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return in_array('staff.manage', $this->staff->permissions($actorId), true) ? $this->store->pending() : [];
+    }
 }

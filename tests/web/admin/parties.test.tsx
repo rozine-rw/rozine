@@ -1033,3 +1033,95 @@ describe('Party 360', () => {
         ).toBeInTheDocument();
     });
 });
+
+describe('Super-admin approvals', () => {
+    const proposal = {
+        id: 'proposal-1',
+        recipient: 'New Operator',
+        email: 'operator@example.test',
+        requester: 'First Manager',
+        operation: 'grant' as const,
+        reason: 'Joining administration.',
+        approve: {
+            url: '/admin/staff/approvals/proposal-1',
+            method: 'post' as const,
+        },
+    };
+
+    it('shows pending access unchanged and submits only the independent approval reason and key', async () => {
+        const fixture = props(staffFixture);
+        fixture.pending_approvals = [proposal];
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+        const region = screen.getByRole('region', {
+            name: 'Awaiting super-admin approval',
+        });
+        expect(
+            within(region).getByText(/access stays unchanged/),
+        ).toBeInTheDocument();
+        expect(
+            within(region).getByText(
+                'First Manager requested super-admin access.',
+            ),
+        ).toBeInTheDocument();
+        const form = within(region).getByRole('form', {
+            name: 'Approve access for New Operator',
+        });
+        const button = within(form).getByRole('button', {
+            name: 'Approve super-admin access',
+        });
+        expect(button).toBeDisabled();
+        await user.type(
+            within(form).getByRole('textbox'),
+            'Independent review.',
+        );
+        await user.click(button);
+        expect(inertia.posts).toEqual([
+            {
+                url: proposal.approve.url,
+                data: {
+                    request_id: expect.any(String),
+                    reason: 'Independent review.',
+                },
+            },
+        ]);
+    });
+
+    it('explains the second approval before a super-admin request is submitted', async () => {
+        const fixture = props(staffFixture);
+        fixture.grant = { url: '/admin/staff', method: 'post' };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+        await user.click(
+            screen.getByRole('button', { name: /Invite operator/ }),
+        );
+        await user.selectOptions(screen.getByRole('combobox'), 'superadmin');
+        expect(screen.getByText(/access stays unchanged/)).toBeInTheDocument();
+    });
+
+    it('shows no approval control to the requester or on read-only projections and handles an empty queue', () => {
+        const fixture = props(staffFixture);
+        fixture.pending_approvals = [
+            { ...proposal, operation: 'reactivate', approve: null },
+        ];
+        const { unmount } = render(<AdminParties {...fixture} />);
+        expect(
+            screen.getByText(
+                'First Manager requested super-admin reactivation.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Waiting for a different super-admin to approve.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', {
+                name: 'Approve super-admin access',
+            }),
+        ).not.toBeInTheDocument();
+        unmount();
+        render(<AdminParties {...fixture} pending_approvals={[]} />);
+        expect(
+            screen.queryByRole('region', {
+                name: 'Awaiting super-admin approval',
+            }),
+        ).not.toBeInTheDocument();
+    });
+});

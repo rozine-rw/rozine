@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Http\Resources\StaffLedgerResource;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -14,6 +13,7 @@ use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * The Admin Ledger from the live wallet ledger: every posting newest first, where the money came
@@ -24,7 +24,7 @@ use Tests\Support\InvestorWalletFixture;
 function ledgerStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Ledger assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Ledger assignment.');
 
     return $user;
 }

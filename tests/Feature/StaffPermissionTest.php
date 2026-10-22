@@ -11,10 +11,11 @@ use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
+use Tests\Support\StaffFixture;
 
 it('derives checkpoint two permissions from explicit staff roles without any override', function (string $role, bool $canVerify, bool $canApprove, bool $canAccredit, bool $canVerifyInvestors): void {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Checkpoint two staff assignment.', (string) Str::uuid(), [$role]);
+    StaffFixture::provision($user, [$role], 'Checkpoint two staff assignment.');
     $access = app(GetStaffAccess::class)->handle($user->id);
     expect($access['allowed_actions'])->toContain('admin.open', 'businesses.view', 'audit.reports.view')
         ->and(in_array('businesses.verify', $access['allowed_actions'], true))->toBe($canVerify)

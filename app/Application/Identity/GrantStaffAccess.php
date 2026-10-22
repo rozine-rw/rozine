@@ -11,6 +11,7 @@ use App\Domain\Identity\IdentityViolation;
  * Staff & Roles: a superadmin adds an operator by email with one role and a reason (ADM-R01/R02).
  * Only a dedicated account whose email is verified and whose two-factor sign-in is confirmed can be
  * added; nobody adds themselves, and an existing operator is suspended or reactivated instead.
+ * A superadmin grant waits for approval by a second current manager.
  */
 final class GrantStaffAccess
 {

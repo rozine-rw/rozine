@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Mockery\CompositeExpectation;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->travelTo(now()->setDate(2026, 10, 6)->startOfDay());
@@ -37,7 +38,7 @@ beforeEach(function (): void {
 function reviewStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Compliance review assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Compliance review assignment.');
 
     return $user;
 }

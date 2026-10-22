@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Disbursement;
 use App\Models\User;
 use App\Models\WalletWithdrawal;
@@ -12,6 +11,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryIssuanceFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * The Payment Center from live money movement: credited deposits, paid-out withdrawals and closed
@@ -23,7 +23,7 @@ use Tests\Support\PrimaryIssuanceFixture;
 function paymentsStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Payment center assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Payment center assignment.');
 
     return $user;
 }

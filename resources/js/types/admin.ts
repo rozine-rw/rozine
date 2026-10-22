@@ -900,8 +900,19 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     action_log?: StaffActionLogEntry[];
     /** Staff only, for a viewer who may manage staff: adds an operator by email with one role. */
     grant?: RouteAction | null;
+    pending_approvals?: StaffApproval[];
     /** Staff only: how many of the capabilities a role can hold the viewer holds. */
     access?: { granted: number; total: number };
+};
+
+export type StaffApproval = {
+    id: string;
+    recipient: string;
+    email: string;
+    requester: string;
+    operation: 'grant' | 'reactivate';
+    reason: string;
+    approve: RouteAction | null;
 };
 
 export type StaffActionLogEntry = {

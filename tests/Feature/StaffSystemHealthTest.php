@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\StaffFixture;
 
 /*
  * System Health from the records that exist: reconciliation, live raises, the underwriting queue
@@ -23,7 +24,7 @@ use Laravel\Sanctum\Sanctum;
 function healthStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'System health assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'System health assignment.');
 
     return $user;
 }

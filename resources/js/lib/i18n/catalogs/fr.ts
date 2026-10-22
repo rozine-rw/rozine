@@ -2336,6 +2336,17 @@ const fr: Catalog = {
     'admin.matrix.withheld.by_rule':
         "Aucun rôle, par règle : les écritures du grand livre et de l'audit ne sont jamais supprimées",
     'admin.action_log.title': "Journal des actions d'administration",
+    'admin.staff.approvals.title': 'Approbation super-admin en attente',
+    'admin.staff.approvals.body':
+        'L’accès super-admin reste inchangé jusqu’à l’approbation d’un autre super-admin actuellement autorisé. Le demandeur et le bénéficiaire ne peuvent pas approuver.',
+    'admin.staff.approvals.grant':
+        '{requester} a demandé un accès super-admin.',
+    'admin.staff.approvals.reactivate':
+        '{requester} a demandé la réactivation super-admin.',
+    'admin.staff.approvals.form': 'Approuver l’accès de {recipient}',
+    'admin.staff.approvals.submit': 'Approuver l’accès super-admin',
+    'admin.staff.approvals.waiting':
+        'En attente de l’approbation d’un autre super-admin.',
     'admin.staff.invite.open': '+ Inviter un opérateur',
     'admin.staff.invite.title': 'Inviter un opérateur',
     'admin.staff.invite.body':

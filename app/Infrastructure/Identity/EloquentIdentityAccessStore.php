@@ -29,6 +29,8 @@ use Laravel\Fortify\Features;
 /** @phpstan-import-type AccessSnapshot from ActiveRolePolicy */
 final class EloquentIdentityAccessStore implements IdentityAccessStore
 {
+    private const STAFF_APPROVAL_POLICY = 'staff-superadmin-approval-v1';
+
     public function __construct(
         private IdentityRepository $identities,
         private MembershipTransitions $transitions,
@@ -116,6 +118,10 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if (! $enabled && $staff === null) {
                 throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
             }
+            if (in_array('superadmin', $roles, true) && ($staff === null || ! in_array('superadmin', $staff->roles, true)
+                || ($enabled && ! $staff->enabled))) {
+                throw new IdentityViolation('STAFF_SUPERADMIN_APPROVAL_REQUIRED', 409);
+            }
             $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
             $staff ??= new StaffAccount;
             $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled, 'roles' => $roles])->save();
@@ -146,6 +152,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     {
         return DB::transaction(function () use ($actorId, $userId, $enabled, $reason, $requestId): array {
             $hash = $this->requestHash(['staff.enable', $userId, $enabled, $reason], $reason, $requestId);
+            User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get();
             $this->requireStaffPermission($actorId, 'staff.manage');
             if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
                 return $replay;
@@ -164,6 +171,9 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
                 throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
             }
+            if ($enabled && in_array('superadmin', $staff->roles, true)) {
+                return $this->requestSuperadmin($actorId, $user, $staff, 'reactivate', $reason, $requestId, $hash);
+            }
             $before = ['enabled' => $staff->enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles];
             $staff->forceFill(['enabled' => $enabled])->save();
             $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
@@ -180,13 +190,15 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         return DB::transaction(function () use ($actorId, $email, $role, $reason, $requestId): array {
             $email = mb_strtolower(trim($email));
             $hash = $this->requestHash(['staff.grant', $email, $role, $reason], $reason, $requestId);
+            $candidate = User::query()->whereRaw('lower(email) = ?', [$email])->first();
+            User::query()->whereKey([$actorId, ...($candidate === null ? [] : [$candidate->id])])->orderBy('id')->lockForUpdate()->get();
             $this->requireStaffPermission($actorId, 'staff.manage');
             if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
                 return $replay;
             }
             $roles = StaffPermission::normalizeRoles([$role]);
-            $user = User::query()->whereRaw('lower(email) = ?', [$email])->lockForUpdate()->first();
-            if ($user === null) {
+            $user = $candidate === null ? null : User::query()->find($candidate->id);
+            if ($user === null || mb_strtolower($user->email) !== $email) {
                 throw new IdentityViolation('STAFF_EMAIL_NOT_FOUND', 404);
             }
             if ($user->id === $actorId) {
@@ -196,20 +208,107 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if ($staff !== null) {
                 throw new IdentityViolation('STAFF_ALREADY_OPERATOR', 409);
             }
-            if (! $this->emailVerified($user) || ! $this->mfaConfirmed($user)) {
-                throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+            $this->requireStaffRecipient($user);
+            if ($role === 'superadmin') {
+                return $this->requestSuperadmin($actorId, $user, null, 'grant', $reason, $requestId, $hash);
             }
-            $this->requireDedicated($user, $this->lockParty($user->party_id));
-            $before = ['enabled' => false, 'party_id' => $user->party_id, 'roles' => []];
-            (new StaffAccount)->forceFill(['user_id' => $user->id, 'enabled' => true, 'roles' => $roles])->save();
+
+            return $this->enableStaff($actorId, $user, null, $roles, $reason, $requestId, $hash);
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function approveStaff(int $actorId, string $proposalId, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $proposalId, $reason, $requestId): array {
+            $hash = $this->requestHash(['staff.superadmin.approve', $proposalId, $reason], $reason, $requestId);
+            $proposal = IdentityAuditEvent::query()->where('action', 'staff.superadmin.request')->where('target_type', 'user')->find($proposalId);
+            $recipientId = $proposal === null ? null : (int) $proposal->target_id;
+            $requesterId = $proposal?->actor_user_id;
+            User::query()->whereKey(array_filter([$actorId, $requesterId, $recipientId]))->orderBy('id')->lockForUpdate()->get();
+            $this->requireStaffPermission($actorId, 'staff.manage');
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if ($proposal === null || $requesterId === null || $recipientId === null) {
+                throw new IdentityViolation('STAFF_APPROVAL_NOT_FOUND', 404);
+            }
+            if ($actorId === $requesterId || $actorId === $recipientId || $requesterId === $recipientId) {
+                throw new IdentityViolation('STAFF_SELF_APPROVAL_FORBIDDEN', 409);
+            }
+            $this->requireStaffPermission($requesterId, 'staff.manage');
+            if (IdentityAuditEvent::query()->where('action', 'staff.configure')->where('after->proposal_id', $proposalId)->exists()) {
+                throw new IdentityViolation('STAFF_APPROVAL_COMPLETED', 409);
+            }
+            $user = User::query()->find($recipientId);
+            $staff = StaffAccount::query()->lockForUpdate()->find($recipientId);
+            if ($user === null || ($proposal->after['approval_policy_version'] ?? null) !== self::STAFF_APPROVAL_POLICY
+                || $this->staffBaseline($user, $staff) != $proposal->before) {
+                throw new IdentityViolation('STAFF_APPROVAL_STALE', 409);
+            }
+            $this->requireStaffRecipient($user);
+            $operation = $proposal->after['operation'] ?? null;
+            if (($operation === 'grant' && $staff !== null) || ($operation === 'reactivate' && ($staff === null || $staff->enabled
+                || ! in_array('superadmin', $staff->roles, true))) || ! in_array($operation, ['grant', 'reactivate'], true)) {
+                throw new IdentityViolation('STAFF_APPROVAL_STALE', 409);
+            }
+
+            return $this->enableStaff($actorId, $user, $staff, $operation === 'grant' ? ['superadmin'] : $staff->roles,
+                $reason, $requestId, $hash, ['proposal_id' => $proposalId, 'requested_by' => $requesterId, 'request_reason' => $proposal->reason,
+                    'approval_policy_version' => self::STAFF_APPROVAL_POLICY]);
+        }, 3);
+    }
+
+    private function requireStaffRecipient(User $user): void
+    {
+        if (! $this->emailVerified($user) || ! $this->mfaConfirmed($user)) {
+            throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
+        }
+        $this->requireDedicated($user, $this->lockParty($user->party_id));
+    }
+
+    /** @return array<string, mixed> */
+    private function staffBaseline(User $user, ?StaffAccount $staff): array
+    {
+        return ['staff_exists' => $staff !== null, 'enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id,
+            'roles' => $staff->roles ?? [], 'context_revision' => $user->context_revision,
+            'access_event_id' => IdentityAuditEvent::query()->where('action', 'staff.configure')->where('target_type', 'user')
+                ->where('target_id', (string) $user->id)->orderByDesc('created_at')->orderByDesc('id')->value('id')];
+    }
+
+    /** @return array<string, mixed> */
+    private function requestSuperadmin(int $actorId, User $user, ?StaffAccount $staff, string $operation, string $reason, string $requestId, string $hash): array
+    {
+        $proposalId = strtolower((string) Str::ulid());
+        $before = $this->staffBaseline($user, $staff);
+        $result = ['code' => 'STAFF_SUPERADMIN_APPROVAL_REQUIRED', 'user_id' => $user->id, 'proposal_id' => $proposalId];
+        $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.superadmin.request', $reason, $requestId, $hash,
+            $before, [...$before, 'operation' => $operation, 'requested_roles' => $operation === 'grant' ? ['superadmin'] : $staff->roles,
+                'approval_policy_version' => self::STAFF_APPROVAL_POLICY], $result, $proposalId);
+
+        return $result;
+    }
+
+    /**
+     * @param  list<string>  $roles
+     * @param  array<string, mixed>  $approval
+     * @return array<string, mixed>
+     */
+    private function enableStaff(int $actorId, User $user, ?StaffAccount $staff, array $roles, string $reason, string $requestId, string $hash, array $approval = []): array
+    {
+        $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
+        $new = $staff === null;
+        $staff ??= new StaffAccount;
+        $staff->forceFill(['user_id' => $user->id, 'enabled' => true, 'roles' => $roles])->save();
+        if ($new) {
             $user->forceFill(['party_id' => null, 'active_membership_id' => null, 'active_membership_revision' => null,
                 'context_revision' => $user->context_revision + 1])->save();
-            $result = ['code' => 'STAFF_ACCESS_ENABLED', 'user_id' => $user->id];
-            $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.configure', $reason, $requestId, $hash,
-                $before, ['enabled' => true, 'party_id' => null, 'roles' => $roles], $result);
+        }
+        $result = ['code' => 'STAFF_ACCESS_ENABLED', 'user_id' => $user->id];
+        $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.configure', $reason, $requestId, $hash,
+            $before, ['enabled' => true, 'party_id' => $user->party_id, 'roles' => $roles, ...$approval], $result);
 
-            return $result;
-        }, 3);
+        return $result;
     }
 
     /** @return array<string, mixed> */
@@ -790,10 +889,10 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      * @param  array<string, mixed>  $after
      * @param  array<string, mixed>  $result
      */
-    private function record(string $actorKey, ?int $actorId, string $targetType, string $targetId, string $action, string $reason, string $requestId, string $hash, array $before, array $after, array $result): void
+    private function record(string $actorKey, ?int $actorId, string $targetType, string $targetId, string $action, string $reason, string $requestId, string $hash, array $before, array $after, array $result, ?string $id = null): void
     {
         (new IdentityAuditEvent)->forceFill([
-            'actor_key' => $actorKey, 'actor_user_id' => $actorId, 'target_type' => $targetType, 'target_id' => $targetId,
+            'id' => $id ?? strtolower((string) Str::ulid()), 'actor_key' => $actorKey, 'actor_user_id' => $actorId, 'target_type' => $targetType, 'target_id' => $targetId,
             'action' => $action, 'reason' => $reason, 'request_id' => $requestId, 'request_hash' => $hash,
             'before' => $before, 'after' => $after, 'result' => $result, 'policy_version' => ActiveRolePolicy::POLICY_VERSION,
         ])->save();

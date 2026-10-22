@@ -26,6 +26,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, granted: bool, roles: list<string>, reason: string}
  * @phpstan-type Page array{
  *     rows: list<StaffRow>, matching: int, counts: Counts, chip: string, search: string, member: Member|null,
+ *     pending: list<array{id: string, recipient_id: int, requester_id: int, recipient: string, email: string, requester: string, operation: string, reason: string}>,
  *     matrix: list<array{key: string, roles: list<string>, withheld?: string}>, roles: list<string>, permissions: list<string>, log: list<LogEntry>
  * }
  */
@@ -69,6 +70,11 @@ class StaffDirectoryResource extends JsonResource
             'permission_matrix' => $page['matrix'],
             'access' => ['granted' => count(array_filter($held, fn (array $row): bool => in_array($row['key'], $page['permissions'], true))), 'total' => count($held)],
             'grant' => in_array('staff.manage', $page['permissions'], true) && $prefix === '' ? ['url' => route('staff.staff.grant', [], false), 'method' => 'post'] : null,
+            'pending_approvals' => array_map(fn (array $proposal): array => ['id' => $proposal['id'], 'recipient' => $proposal['recipient'],
+                'email' => $proposal['email'], 'requester' => $proposal['requester'], 'operation' => $proposal['operation'], 'reason' => $proposal['reason'],
+                'approve' => $prefix === '' && in_array('staff.manage', $page['permissions'], true)
+                    && (string) $proposal['requester_id'] !== $viewer && (string) $proposal['recipient_id'] !== $viewer
+                    ? ['url' => route('staff.staff.approve', ['proposal' => $proposal['id']], false), 'method' => 'post'] : null], $page['pending']),
             'action_log' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'] ?? 'Server console',
                 'target' => $entry['target'], 'action' => $entry['granted'] ? 'staff_granted' : ($entry['enabled'] ? 'staff_enabled' : 'staff_suspended'),
                 'role' => $entry['granted'] ? StaffViewerResource::role($entry['roles']) : null, 'reason' => $entry['reason']], $page['log'])];

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffDirectoryController::index
-* @see app/Http/Controllers/StaffDirectoryController.php:40
+* @see app/Http/Controllers/StaffDirectoryController.php:44
 * @route '/api/v1/staff/staff'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\Party;
 use App\Models\User;
 use App\Models\WalletProviderEvent;
 use App\Models\WalletWithdrawal;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * Reconciliation (MVP-ADMIN-SCR-04, AC-05) from live records: each provider clearing account
@@ -23,7 +22,7 @@ use Tests\Support\InvestorWalletFixture;
 function reconciliationStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Reconciliation assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Reconciliation assignment.');
 
     return $user;
 }

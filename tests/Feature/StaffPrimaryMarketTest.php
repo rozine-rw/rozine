@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Models\PrimaryReservationRecord;
@@ -15,6 +14,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * The Primary Market Monitor from live publications: every rated raise still filling, with its
@@ -25,7 +25,7 @@ use Tests\Support\PrimaryReservationFixture;
 function primaryMarketStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Primary market assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Primary market assignment.');
 
     return $user;
 }

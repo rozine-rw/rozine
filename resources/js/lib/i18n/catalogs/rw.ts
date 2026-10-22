@@ -2329,6 +2329,17 @@ const rw: Catalog = {
     'admin.matrix.withheld.by_rule':
         "Nta ruhare, ku itegeko: ibyanditswe mu gitabo cy'imari n'igenzura ntibisibwa",
     'admin.action_log.title': "Igitabo cy'ibikorwa by'ubuyobozi",
+    'admin.staff.approvals.title': 'Gutegereza kwemezwa n’undi muyobozi mukuru',
+    'admin.staff.approvals.body':
+        'Uburenganzira bw’umuyobozi mukuru ntibuhinduka kugeza bwemejwe n’undi muyobozi mukuru ubufitiye uburenganzira. Uwasabye n’uwasabiriwe ntibashobora kwemeza.',
+    'admin.staff.approvals.grant':
+        '{requester} yasabye uburenganzira bw’umuyobozi mukuru.',
+    'admin.staff.approvals.reactivate':
+        '{requester} yasabye kongera gufungura uburenganzira bw’umuyobozi mukuru.',
+    'admin.staff.approvals.form': 'Emeza uburenganzira bwa {recipient}',
+    'admin.staff.approvals.submit': 'Emeza uburenganzira bw’umuyobozi mukuru',
+    'admin.staff.approvals.waiting':
+        'Gutegereza ko undi muyobozi mukuru abyemeza.',
     'admin.staff.invite.open': '+ Tumira umukozi',
     'admin.staff.invite.title': 'Tumira umukozi',
     'admin.staff.invite.body':

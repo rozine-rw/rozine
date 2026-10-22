@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Controllers\StaffSectionController;
@@ -11,15 +10,15 @@ use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
+use Tests\Support\StaffFixture;
 
 /** @param  list<string>  $roles */
 function sectionStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console section assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Console section assignment.');
 
     return $user;
 }

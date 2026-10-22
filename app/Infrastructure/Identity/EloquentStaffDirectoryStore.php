@@ -77,6 +77,20 @@ final class EloquentStaffDirectoryStore implements StaffDirectoryStore
         })->all());
     }
 
+    public function pending(): array
+    {
+        return array_values(DB::table('identity_audit_events AS proposal')->join('users AS recipient', DB::raw('recipient.id::text'), '=', 'proposal.target_id')
+            ->join('users AS requester', 'requester.id', '=', 'proposal.actor_user_id')->where('proposal.action', 'staff.superadmin.request')
+            ->where('proposal.target_type', 'user')->whereNotExists(fn (Builder $query) => $query->selectRaw('1')->from('identity_audit_events AS approval')
+            ->where('approval.action', 'staff.configure')->whereRaw('approval.after->>\'proposal_id\' = proposal.id'))
+            ->orderByDesc('proposal.created_at')->orderByDesc('proposal.id')->limit(50)
+            ->get(['proposal.id', 'recipient.id AS recipient_id', 'requester.id AS requester_id', 'recipient.name AS recipient', 'recipient.email',
+                'requester.name AS requester', 'proposal.reason', 'proposal.after'])
+            ->map(fn (object $row): array => ['id' => (string) $row->id, 'recipient_id' => (int) $row->recipient_id, 'requester_id' => (int) $row->requester_id,
+                'recipient' => (string) $row->recipient, 'email' => (string) $row->email, 'requester' => (string) $row->requester,
+                'operation' => (string) (self::json($row->after)['operation'] ?? ''), 'reason' => (string) $row->reason])->all());
+    }
+
     /** @return StaffRow */
     private static function row(object $record): array
     {

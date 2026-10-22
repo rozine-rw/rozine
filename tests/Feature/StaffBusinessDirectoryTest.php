@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessMandate;
@@ -18,6 +17,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\PrimaryFailedClosingFixture;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->analyst = businessDirectoryStaff(['analyst']);
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 function businessDirectoryStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Business directory assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Business directory assignment.');
 
     return $user;
 }

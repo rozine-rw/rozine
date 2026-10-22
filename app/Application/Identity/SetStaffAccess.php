@@ -7,7 +7,7 @@ namespace App\Application\Identity;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Domain\Identity\IdentityViolation;
 
-/** Staff & Roles: a superadmin suspends or reactivates another operator, with a reason (ADM-R02). */
+/** Staff & Roles: suspensions are immediate; superadmin reactivation requires a second approver. */
 final class SetStaffAccess
 {
     public function __construct(private IdentityAccessStore $access) {}

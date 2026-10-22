@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Identity\ApproveStaffAccess;
 use App\Application\Identity\BrowseStaffDirectory;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\GrantStaffAccess;
@@ -28,6 +29,9 @@ class StaffDirectoryController extends Controller
 {
     /** Refusals in the words the reason stage shows. */
     private const MESSAGES = [
+        'STAFF_SELF_APPROVAL_FORBIDDEN' => 'A different super-admin must approve this request. The requester and recipient cannot approve it.',
+        'STAFF_APPROVAL_COMPLETED' => 'This request has already been approved.',
+        'STAFF_APPROVAL_STALE' => 'This account changed after the request. Review it and create a new request.',
         'STAFF_SELF_CHANGE_FORBIDDEN' => 'You cannot change your own access. Ask another super-admin.',
         'STAFF_STATE_UNCHANGED' => "This operator's access already changed. Review it again.",
         'STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED' => 'This operator needs a verified email and two-factor sign-in before access can return.',
@@ -48,7 +52,8 @@ class StaffDirectoryController extends Controller
 
         $resource = new StaffDirectoryResource([...$directory->directory($actorId, $chip, $search), 'chip' => $chip, 'search' => $search,
             'member' => $operator === null ? null : $directory->member($actorId, (int) $operator), 'matrix' => $directory->permissions($actorId), 'log' => $directory->log($actorId),
-            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
+            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'],
+            'pending' => $directory->pending($actorId)]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }
@@ -58,6 +63,14 @@ class StaffDirectoryController extends Controller
     {
         $result = $this->refusing('email', fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (string) $request->validated('email'),
             (string) $request->validated('role'), (string) $request->validated('reason'), (string) $request->validated('request_id')));
+
+        return redirect()->route('staff.staff.index', $result['code'] === 'STAFF_SUPERADMIN_APPROVAL_REQUIRED' ? [] : ['operator' => $result['user_id']]);
+    }
+
+    public function approve(SetStaffAccessRequest $request, ApproveStaffAccess $action): RedirectResponse
+    {
+        $result = $this->refusing('reason', fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(),
+            (string) $request->route('proposal'), (string) $request->validated('reason'), (string) $request->validated('request_id')));
 
         return redirect()->route('staff.staff.index', ['operator' => $result['user_id']]);
     }
