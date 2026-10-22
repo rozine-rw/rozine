@@ -116,10 +116,18 @@ describe('Admin Notes', () => {
         );
     });
 
-    it('says when there are no notes yet, and offers the rest of a long list', () => {
+    it('says when there are no notes yet or the search matched none, and offers the rest of a long list', () => {
         const { rerender } = render(<AdminNotes {...props({ notes: [] })} />);
 
         expect(screen.getByText('No notes to show yet.')).toBeInTheDocument();
+        expect(
+            screen.queryByText('No matches on this page'),
+        ).not.toBeInTheDocument();
+
+        rerender(<AdminNotes {...props({ notes: [], search: 'ubuki' })} />);
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'No matches on this page',
+        );
 
         rerender(
             <AdminNotes
