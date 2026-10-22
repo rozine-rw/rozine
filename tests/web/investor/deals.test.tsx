@@ -1307,6 +1307,32 @@ describe('A deck with nothing open to reserve', () => {
 });
 
 describe('Add to cart', () => {
+    it('opens the selected deal by its detail link when no sort supplies a destination', async () => {
+        const page = deals();
+        page.sorts = page.sorts.map((sort) => ({ ...sort, active: false }));
+        const next = page.deals[1];
+        next.links.detail = {
+            url: `/investor/deals/${next.campaign_id}`,
+            method: 'get',
+        };
+        render(<InvestorDeals {...page} />);
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Next deal' }),
+        );
+
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            {
+                url: `/investor/deals/${next.campaign_id}?deal=${next.campaign_id}`,
+                method: 'get',
+            },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+        expect(
+            screen.getByRole('region', { name: `Invest in ${next.name}` }),
+        ).toBeInTheDocument();
+    });
+
     it('refreshes campaign-bound commands and checkout after moving, keeping the server filters', async () => {
         const page = deals();
         const next = page.deals[1];
