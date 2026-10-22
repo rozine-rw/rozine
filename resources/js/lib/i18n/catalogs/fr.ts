@@ -6120,6 +6120,13 @@ const fr: Catalog = {
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
     'admin.notes.tabs': 'Notes par état',
+    'admin.notes.sort_label': 'Trier les notes',
+    'admin.notes.sort.newest': 'Tri : plus récentes',
+    'admin.notes.sort.raised': 'Tri : capital levé',
+    'admin.notes.sort.yield': 'Tri : rendement',
+    'admin.notes.sort.funded': 'Tri : % financé',
+    'admin.notes.sort.investors': 'Tri : investisseurs',
+    'admin.notes.sort.term': 'Tri : durée',
     'admin.notes.state.live': 'En cours',
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',

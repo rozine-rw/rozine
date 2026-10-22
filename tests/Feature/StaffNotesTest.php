@@ -83,6 +83,8 @@ it('counts every tab, filters by state and search, and pages', function (): void
         {
             return notesCard($campaignId, match ($campaignId) {
                 '01K0000000000000000000AAAA' => 'Ubuki Crafts', '01K0000000000000000000BBBB' => 'GreenLeaf Agro', default => 'Kivu Fisheries',
+            }, match ($campaignId) {
+                '01K0000000000000000000AAAA' => '25.0', '01K0000000000000000000BBBB' => '100.0', default => '50.0',
             });
         }
 
@@ -109,7 +111,19 @@ it('counts every tab, filters by state and search, and pages', function (): void
     expect(array_column($repaying['notes'], 'business'))->toBe(['GreenLeaf Agro'])
         ->and(array_values(array_filter($repaying['tabs'], fn (array $tab): bool => $tab['active']))[0]['key'])->toBe('repaying')
         ->and(array_column(($this->page)($staff, ['q' => 'kivu'])['notes'], 'business'))->toBe(['Kivu Fisheries'])
-        ->and(($this->page)($staff, ['limit' => 1])['pagination']['next'])->toBe(['url' => '/admin/notes?limit=500', 'method' => 'get']);
+        ->and(($this->page)($staff, ['limit' => 1])['pagination']['next'])->toBe(['url' => '/admin/notes?limit=500', 'method' => 'get'])
+        ->and($props['sort'])->toBe('newest');
+
+    // Largest first; ties keep the newest-first order, and the sort rides on every tab link.
+    $funded = ($this->page)($staff, ['sort' => 'funded']);
+    expect(array_column($funded['notes'], 'business'))->toBe(['GreenLeaf Agro', 'Kivu Fisheries', 'Ubuki Crafts'])
+        ->and($funded['sort'])->toBe('funded')
+        ->and($funded['tabs'][1]['link'])->toBe(['url' => '/admin/notes?sort=funded&tab=live', 'method' => 'get'])
+        ->and(array_column(($this->page)($staff, ['sort' => 'term'])['notes'], 'business'))->toBe(['Ubuki Crafts', 'GreenLeaf Agro', 'Kivu Fisheries']);
+    foreach (['raised', 'yield', 'investors'] as $sort) {
+        expect(array_column(($this->page)($staff, ['sort' => $sort])['notes'], 'business'))->toBe(['Ubuki Crafts', 'GreenLeaf Agro', 'Kivu Fisheries']);
+    }
+    $this->actingAs($staff)->get(route('staff.notes.index', ['sort' => 'oldest']))->assertSessionHasErrors('sort');
 });
 
 it('is for staff who may view the primary market', function (): void {

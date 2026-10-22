@@ -24,7 +24,7 @@ class StaffNotesController extends Controller
         $staff = $access->handle($actorId);
 
         return Inertia::render('admin/notes', (new StaffNotesResource([...$page, 'tab' => (string) $request->validated('tab', 'all'),
-            'search' => trim((string) $request->validated('q', '')), 'limit' => (int) $request->validated('limit', self::LIMIT),
+            'search' => trim((string) $request->validated('q', '')), 'sort' => (string) $request->validated('sort', 'newest'), 'limit' => (int) $request->validated('limit', self::LIMIT),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]))->resolve($request));
     }
 }
