@@ -1290,7 +1290,19 @@ const en = {
     'admin.design.policies.tab.kyc': 'KYC requirements',
     'admin.design.policies.tab.penalties': 'Compliance & penalties',
     'admin.design.policies.tab.limits': 'Limits',
-    'admin.design.policies.rules.title': 'Rules',
+    'admin.design.policies.fees.sub':
+        'What each side pays Rozine, and the share that goes to the auditor of record.',
+    'admin.design.policies.underwriting.sub':
+        'The rules that decide whether a raise is approved and on what terms.',
+    'admin.design.policies.business.sub':
+        'Who is allowed to raise capital on Rozine.',
+    'admin.design.policies.investor.sub': 'Who is allowed to invest on Rozine.',
+    'admin.design.policies.kyc.sub':
+        'What each side must provide. Required blocks transacting until met; not collected is never asked for.',
+    'admin.design.policies.penalties.sub':
+        'How Rozine handles late payments, defaults and re-verification.',
+    'admin.design.policies.limits.sub':
+        'Guardrails on activity across both apps.',
     'admin.design.policies.rules.empty': 'No rules to show yet.',
     'admin.design.system_health.signals.title': 'Signals',
     'admin.design.system_health.signals.empty': 'No signals to show yet.',
