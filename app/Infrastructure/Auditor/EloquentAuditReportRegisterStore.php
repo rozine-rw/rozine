@@ -122,6 +122,7 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
                 'cosign_by' => $status === 'awaiting_cosign' && $publication?->due_at !== null ? CarbonImmutable::parse($publication->due_at)->utc()->format('Y-m-d\TH:i:s\Z') : null,
                 'digest' => $seal?->digest,
                 'variance_pct' => $payload === null ? null : AuditVariance::weighted($payload['report']['findings'] ?? []),
+                'variance_flagged' => AuditVariance::hasMoneyDifference($payload['report']['findings'] ?? []),
                 'owes' => $owes,
                 'reminded_at' => $reminded === null ? null : CarbonImmutable::parse($reminded)->utc()->format('Y-m-d\TH:i:s\Z'),
                 'dispatched_at' => (string) $state['original_dispatch_at']];

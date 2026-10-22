@@ -68,7 +68,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
     $row = ['id' => $assignment->id, 'business' => 'Synthetic business', 'kind' => 'monthly', 'period' => $period.'-01',
         'auditor' => $partner['user']->name, 'licence' => null, 'status' => 'not_started',
         'due_at' => now()->parse($due)->utc()->format('Y-m-d\TH:i:s\Z'), 'cosign_by' => null, 'sealed_at' => null, 'digest' => null,
-        'variance_pct' => null, 'owes' => 'auditor', 'reminded_at' => null, 'links' => ['pdf' => null, 'remind' => null]];
+        'variance_pct' => null, 'variance_flagged' => false, 'owes' => 'auditor', 'reminded_at' => null, 'links' => ['pdf' => null, 'remind' => null]];
 
     $page = auditRegister($analyst);
     expect($page['rows'])->toBe([$row])
@@ -122,7 +122,7 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
     $seal = AuditReportSeal::query()->where('audit_report_id', $report->id)->sole();
     $row = auditRegister($staff)['rows'][0];
     expect($row)->toMatchArray(['status' => 'awaiting_cosign', 'owes' => 'business', 'licence' => $seal->payload['report']['licence'],
-        'sealed_at' => $seal->payload['sealed_at'], 'digest' => substr($seal->digest, 0, 12), 'variance_pct' => '0.0'])
+        'sealed_at' => $seal->payload['sealed_at'], 'digest' => substr($seal->digest, 0, 12), 'variance_pct' => '0.0', 'variance_flagged' => true])
         ->and($row['cosign_by'])->not->toBeNull()->and($row['reminded_at'])->toBeNull()
         ->and($row['links']['remind'])->toBe(['url' => '/admin/reports/'.$assignment.'/remind', 'method' => 'post'])
         ->and($row['links']['pdf'])->toBe(['url' => '/admin/reports/'.$report->id.'/pdf', 'method' => 'get']);

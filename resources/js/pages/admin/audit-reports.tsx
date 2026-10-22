@@ -46,7 +46,6 @@ const STATUS_TONE: Record<AuditRegisterStatus, Tone> = {
 
 function Row({ row }: { row: AuditRegisterRow }) {
     const { t, locale } = useTranslation();
-    const flagged = row.variance_pct !== null && row.variance_pct !== '0.0';
 
     return (
         <div role="row" className={cn(GRID, ROW_RULE, 'items-center py-3.5')}>
@@ -104,7 +103,7 @@ function Row({ row }: { row: AuditRegisterRow }) {
                 role="cell"
                 className={cn(
                     'text-[12.5px] font-bold',
-                    flagged ? TONE_TEXT.red : 'text-rz-ink',
+                    row.variance_flagged ? TONE_TEXT.red : 'text-rz-ink',
                 )}
             >
                 {row.variance_pct === null ? '—' : `${row.variance_pct}%`}

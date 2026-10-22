@@ -239,6 +239,7 @@
                 "sealed_at": "2027-01-05T09:12:00Z",
                 "digest": "9f3c2a71be04",
                 "variance_pct": "0.0",
+                "variance_flagged": false,
                 "owes": null,
                 "reminded_at": null,
                 "links": {
@@ -262,6 +263,7 @@
                 "sealed_at": "2027-01-23T08:30:00Z",
                 "digest": "41aa07c9d2e8",
                 "variance_pct": "4.2",
+                "variance_flagged": true,
                 "owes": "business",
                 "reminded_at": null,
                 "links": {
@@ -288,6 +290,7 @@
                 "sealed_at": null,
                 "digest": null,
                 "variance_pct": null,
+                "variance_flagged": false,
                 "owes": "auditor",
                 "reminded_at": "2027-01-23T07:45:00Z",
                 "links": {
@@ -308,6 +311,7 @@
                 "sealed_at": "2027-01-19T15:02:00Z",
                 "digest": "c7d5e3b1a908",
                 "variance_pct": "12.5",
+                "variance_flagged": true,
                 "owes": null,
                 "reminded_at": null,
                 "links": {
@@ -333,6 +337,7 @@
                 "sealed_at": "2027-01-05T09:12:00Z",
                 "digest": "9f3c2a71be04",
                 "variance_pct": "0.0",
+                "variance_flagged": false,
                 "owes": null,
                 "reminded_at": null,
                 "links": {

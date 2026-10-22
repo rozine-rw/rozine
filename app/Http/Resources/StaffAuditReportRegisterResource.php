@@ -45,6 +45,7 @@ class StaffAuditReportRegisterResource extends JsonResource
             'period' => $row['period'] === null ? null : $row['period'].'-01', 'auditor' => $row['auditor'], 'licence' => $row['licence'],
             'status' => $row['status'], 'due_at' => $row['due_at'], 'cosign_by' => $row['cosign_by'], 'sealed_at' => $row['sealed_at'],
             'digest' => $row['digest'] === null ? null : substr($row['digest'], 0, 12), 'variance_pct' => $row['variance_pct'],
+            'variance_flagged' => $row['variance_flagged'],
             'owes' => $row['owes'], 'reminded_at' => $row['reminded_at'],
             'links' => [
                 'pdf' => $row['report_id'] !== null && $row['sealed_at'] !== null

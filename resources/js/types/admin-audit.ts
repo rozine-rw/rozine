@@ -59,6 +59,8 @@ export type AuditRegisterRow = {
     /** The seal digest's first twelve characters. */
     digest: string | null;
     variance_pct: string | null;
+    /** Any exact money discrepancy under zero tolerance, independent of the rounded percentage. */
+    variance_flagged: boolean;
     owes: 'auditor' | 'business' | null;
     reminded_at: string | null;
     links: { pdf: RouteLink | null; remind: RouteAction | null };

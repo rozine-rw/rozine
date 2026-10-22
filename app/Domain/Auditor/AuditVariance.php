@@ -36,6 +36,24 @@ final class AuditVariance
     }
 
     /**
+     * Whether any sealed money finding differs at the published zero tolerance, before rounding.
+     * A zero reported amount can still differ even though its percentage is undefined.
+     *
+     * @param  array<int, array<string, mixed>>  $findings
+     */
+    public static function hasMoneyDifference(array $findings): bool
+    {
+        foreach ($findings as $finding) {
+            if (in_array($finding['measure'] ?? null, self::MONEY, true) && is_string($finding['reported'] ?? null) && is_string($finding['observed'] ?? null)
+                && ! BigDecimal::of($finding['reported'])->isEqualTo(BigDecimal::of($finding['observed']))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The weighted variance of a sealed report's money findings: the sum of absolute differences
      * over the sum of absolute reported amounts (a reported overdraft weighs as much as a balance),
      * as a percentage rounded half up to one decimal; null with nothing reported to weigh.

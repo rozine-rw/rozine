@@ -51,6 +51,38 @@ describe('Audit reports register', () => {
         );
     });
 
+    it.each([
+        ['0.0', true],
+        ['0.0', false],
+        [null, false],
+        [null, true],
+    ] as const)(
+        'colours variance %s using the exact server flag %s',
+        (percentage, flagged) => {
+            const fixture = props();
+            const row = {
+                ...fixture.rows[0],
+                variance_pct: percentage,
+                variance_flagged: flagged,
+            };
+
+            render(
+                <AdminAuditReports {...fixture} rows={[row]} published={[]} />,
+            );
+
+            const variance = within(rowOf(row.business)).getAllByRole(
+                'cell',
+            )[4];
+
+            expect(variance).toHaveTextContent(
+                percentage === null ? '—' : `${percentage}%`,
+            );
+            expect(variance).toHaveClass(
+                flagged ? 'text-[#b3352a]' : 'text-rz-ink',
+            );
+        },
+    );
+
     it('offers Remind only where the server allows it, and the sealed PDF', () => {
         render(<AdminAuditReports {...props()} />);
 

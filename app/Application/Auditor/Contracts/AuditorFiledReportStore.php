@@ -13,7 +13,7 @@ namespace App\Application\Auditor\Contracts;
  *
  * @phpstan-type FiledReport array{id: string, kind: string, period: string|null, business: string, district: string, sealed_at: string, due_at: string|null, published: bool, variance_pct: string|null}
  * @phpstan-type FiledReports array{data: list<FiledReport>, counts: array{all: int, published: int}}
- * @phpstan-type TrackRecord array{on_time_pct: int|null, clock_expiries: int, avg_variance_pct: string|null}
+ * @phpstan-type TrackRecord array{on_time_pct: int|null, clock_expiries: int, avg_variance_pct: string|null, variance_flagged: bool}
  */
 interface AuditorFiledReportStore
 {

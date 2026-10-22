@@ -20,7 +20,7 @@ use DateTimeImmutable;
  * @phpstan-type RegisterRow array{
  *     assignment_id: string, report_id: string|null, business_id: string, business: string, kind: 'flash'|'monthly', period: string|null,
  *     auditor: string|null, auditor_party_id: string|null, licence: string|null, status: RegisterStatus, due_at: string|null,
- *     sealed_at: string|null, cosign_by: string|null, digest: string|null, variance_pct: string|null, owes: 'auditor'|'business'|null,
+ *     sealed_at: string|null, cosign_by: string|null, digest: string|null, variance_pct: string|null, variance_flagged: bool, owes: 'auditor'|'business'|null,
  *     reminded_at: string|null
  * }
  * @phpstan-type SealedReport array{

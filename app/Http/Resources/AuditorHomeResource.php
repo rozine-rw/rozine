@@ -62,7 +62,7 @@ class AuditorHomeResource extends JsonResource
             'nearby' => ['count' => $open, 'closest_km' => $open === 0 || $distances === [] ? null : min($distances)],
             'in_progress' => $jobs['assigned'],
             'standing' => [...$facts['standing'], 'on_time_pct' => $page['track_record']['on_time_pct'] ?? null, 'avg_variance_pct' => $variance,
-                'variance_flagged' => $variance !== null && $variance !== '0.0',
+                'variance_flagged' => $page['track_record']['variance_flagged'] ?? false,
                 'jobs_done' => $page['reports']['counts']['all'], 'clock_expiries' => $page['track_record']['clock_expiries'] ?? null],
             'activity' => array_map(fn (array $report): array => ['kind' => 'report_filed', 'at' => $report['sealed_at'],
                 'business' => $report['business'], 'variance_pct' => $report['variance_pct']], $page['reports']['data']),

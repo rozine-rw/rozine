@@ -167,6 +167,16 @@ it('weighs a sealed money difference into the filing\'s variance and flags the a
         ->and($props['standing'])->toMatchArray(['avg_variance_pct' => '2.6', 'variance_flagged' => true]);
 });
 
+it('keeps the exact zero-tolerance flag when a sealed monthly variance rounds to zero', function (bool $difference): void {
+    $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
+    $fixture = AuditSealingFixture::ready(kind: 'monthly', findings: $difference);
+    AuditSealingFixture::seal($fixture);
+
+    expect(auditorHomeProps($fixture['user'])['standing'])->toMatchArray([
+        'avg_variance_pct' => '0.0', 'variance_flagged' => $difference,
+    ]);
+})->with([true, false]);
+
 it('counts the offers that ran out on a partner as clock expiries', function (): void {
     $fixture = AuditAssignmentFixture::make();
     $offer = AuditAssignmentFixture::request($fixture);
