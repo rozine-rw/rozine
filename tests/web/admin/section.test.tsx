@@ -364,11 +364,14 @@ describe('Finance', () => {
         });
         expect(within(region).getAllByText('—')).toHaveLength(6);
         expect(region).toHaveTextContent('All revenueRWF 2M');
-        expect(region).toHaveTextContent('Primary marketRWF 1.8M');
+        expect(region).toHaveTextContent(
+            'Primary marketRWF 1.8MPlatform fee, Rozine share',
+        );
 
-        const raise = screen.getByRole('table', {
-            name: 'What businesses pay to raise money',
-        });
+        const raise = screen.getByRole('table', { name: 'Primary market' });
+        expect(
+            screen.getByText('What businesses pay to raise money'),
+        ).toBeVisible();
         expect(within(raise).getAllByRole('row')).toHaveLength(2);
         expect(within(raise).getAllByRole('row')[1]).toHaveTextContent(
             'Platform fee · Rozine share3%BusinessesRWF 1,800,000',
@@ -377,7 +380,7 @@ describe('Finance', () => {
         expect(
             within(
                 screen.getByRole('table', {
-                    name: 'What early exits and trades pay',
+                    name: 'Secondary market',
                 }),
             ).getAllByRole('row')[1],
         ).toHaveTextContent('Resale fee2%Seller—');
