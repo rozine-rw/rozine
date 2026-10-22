@@ -1888,6 +1888,9 @@ const en = {
     'admin.audit_reports.status.amended': 'Amended',
     'admin.audit_reports.status.withdrawn': 'Withdrawn',
     'admin.parties.coverage_link': 'Partner coverage',
+    'admin.parties.registry.title': 'CPA registry',
+    'admin.parties.registry.caption':
+        'Every licensed CPA, with their licence, standing and active audits. Open a row for the full profile.',
     'admin.parties.queue.requests.title': 'Partner change requests',
     'admin.parties.queue.requests.caption':
         'Licence renewals waiting for review. The partner sees theirs as pending until you decide.',

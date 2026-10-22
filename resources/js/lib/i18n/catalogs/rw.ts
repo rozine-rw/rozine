@@ -1971,6 +1971,9 @@ const rw: Catalog = {
     'admin.audit_reports.status.amended': 'Byahinduwe',
     'admin.audit_reports.status.withdrawn': 'Byakuweho',
     'admin.parties.coverage_link': 'Aho abafatanyabikorwa bagera',
+    'admin.parties.registry.title': 'Urutonde rwa CPA',
+    'admin.parties.registry.caption':
+        "Buri CPA ufite uruhushya, n'uruhushya rwe, uko ahagaze n'igenzura arimo gukora. Fungura umurongo ubone umwirondoro wose.",
     'admin.parties.queue.requests.title': "Ibisabwa n'abafatanyabikorwa",
     'admin.parties.queue.requests.caption':
         'Kongerera igihe impushya bitegereje gusuzumwa. Umufatanyabikorwa abona ko bigitegereje kugeza ufashe icyemezo.',

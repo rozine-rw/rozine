@@ -1981,6 +1981,9 @@ const fr: Catalog = {
     'admin.audit_reports.status.amended': 'Modifié',
     'admin.audit_reports.status.withdrawn': 'Retiré',
     'admin.parties.coverage_link': 'Couverture des partenaires',
+    'admin.parties.registry.title': 'Registre des CPA',
+    'admin.parties.registry.caption':
+        'Chaque CPA agréé, avec sa licence, son statut et ses audits en cours. Ouvrez une ligne pour le profil complet.',
     'admin.parties.queue.requests.title':
         'Demandes de modification des partenaires',
     'admin.parties.queue.requests.caption':
