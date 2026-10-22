@@ -22,5 +22,7 @@ export type AuthLayoutProps = {
     title?: string;
     description?: string;
     eyebrow?: string;
+    wordmark?: string;
+    secure?: string;
     audience?: AuthAudience;
 };
