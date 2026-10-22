@@ -77,7 +77,6 @@ const deferrals = codes('deferrals');
 const plus = codes('plus');
 const finance = codes('finance');
 const messaging = codes('messaging');
-const academies = codes('academies');
 const appControl = codes('app_control');
 const engines = codes('engines');
 const policies = codes('policies');
@@ -363,25 +362,8 @@ export const SECTION_DESIGNS: Record<
             }),
         ],
     },
-    academies: {
-        kpis: [
-            academies.kpi('completed'),
-            academies.kpi('live'),
-            academies.kpi('quiz'),
-            academies.kpi('points'),
-        ],
-        tabs: [
-            academies.tab('investor'),
-            academies.tab('business'),
-            academies.tab('auditor'),
-            academies.tab('all'),
-        ],
-        blocks: [
-            academies.block('lessons', {
-                columns: ['lesson', 'time', 'done', 'score', 'points'],
-            }),
-        ],
-    },
+    /** Academies has its own screen over the lesson catalogue. */
+    academies: undefined,
     app_control: {
         blocks: [
             appControl.block('sandbox', {

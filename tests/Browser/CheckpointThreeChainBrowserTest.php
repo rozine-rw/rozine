@@ -159,7 +159,7 @@ function c3Credit(BrowserJourney $journey, string $session, string $email, strin
             page.on("request", (request) => requested.push(request.url()));
             await page.reload();
             const balance = page.getByRole("region", {name:"Available balance"});
-            await balance.getByText("No deposits waiting").waitFor();
+            await balance.getByText("Instantly available to invest").waitFor();
             if (!(await balance.textContent()).includes('.json_encode('Available balance'.c3Rwf($total)).')) throw new Error("Not credited: " + await balance.textContent());
             await noOverflow();
             await shot('.$journey->shot($session.'-credited-desktop').');'.c3NoPreview());

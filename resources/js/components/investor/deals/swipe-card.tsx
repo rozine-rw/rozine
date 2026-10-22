@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import type { ReactNode } from 'react';
 import {
     AuditedBadge,
     JustListedBadge,
@@ -23,6 +24,8 @@ type SwipeCardProps = {
     serverTime: string;
     /** Only the front card is interactive; the fanned cards behind are decoration. */
     front: boolean;
+    /** The front card's Add to cart, beside what is left to fill; none on the cards behind. */
+    cart?: ReactNode;
 };
 
 /**
@@ -30,9 +33,14 @@ type SwipeCardProps = {
  * and rating badges and the business identity; then raised against target, average monthly
  * revenue, funding, time left, investors, the pitch and what is left to fill. The design's
  * investor face avatars (random stock portraits) and save button (the watchlist, outside the MVP)
- * are left out.
+ * are left out. The front card carries the cart button its deck hands it.
  */
-export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
+export function SwipeCard({
+    deal,
+    serverTime,
+    front,
+    cart = null,
+}: SwipeCardProps) {
     const { t } = useTranslation();
     const clock = useTimeLeft(deal.clock.expires_at, serverTime);
 
@@ -168,7 +176,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                     {deal.story}
                 </p>
 
-                <div className="mt-[9px] grid grid-cols-2 items-end gap-2.5 border-t border-[#eef2f8] pt-2 dark:border-rz-divider">
+                <div className="mt-[9px] grid grid-cols-[1fr_1fr_auto] items-end gap-2.5 border-t border-[#eef2f8] pt-2 dark:border-rz-divider">
                     <div className="min-w-0">
                         <p className="text-[10px] font-bold tracking-[.05em] whitespace-nowrap text-rz-slate uppercase">
                             {t('investor.deals.left_to_fill')}
@@ -190,6 +198,7 @@ export function SwipeCard({ deal, serverTime, front }: SwipeCardProps) {
                             </span>
                         </p>
                     </div>
+                    {cart}
                 </div>
             </div>
         </article>

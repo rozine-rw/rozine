@@ -76,13 +76,39 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
                         preserveScroll
                         aria-current={kind === option ? 'true' : undefined}
                         className={cn(
-                            'flex flex-1 items-center justify-center gap-[7px] rounded-2xl py-[13px] text-[13px] font-semibold shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]',
-                            option === 'deposit'
-                                ? 'bg-rz-accent-fill text-white'
-                                : 'bg-[#0c1830] text-white dark:bg-rz-surface-muted',
-                            kind !== null && kind !== option && 'opacity-60',
+                            'flex flex-1 items-center justify-center gap-[7px] rounded-2xl border py-[13px] text-[13px] font-semibold shadow-[0_5px_14px_-8px_rgba(20,45,95,.3)]',
+                            kind !== option
+                                ? 'border-rz-border bg-rz-surface text-rz-ink'
+                                : option === 'deposit'
+                                  ? 'border-rz-accent-fill bg-rz-accent-fill text-white'
+                                  : 'border-[#8a4a14] bg-[#8a4a14] text-white',
                         )}
                     >
+                        <svg
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            aria-hidden
+                            className={cn(
+                                kind === option
+                                    ? 'stroke-white'
+                                    : option === 'deposit'
+                                      ? 'stroke-rz-accent-fill'
+                                      : 'stroke-[#b05c1a] dark:stroke-[#f0a060]',
+                            )}
+                        >
+                            <path
+                                d={
+                                    option === 'deposit'
+                                        ? 'M12 4v10M8 11l4 4 4-4M5 20h14'
+                                        : 'M12 20V10M8 13l4-4 4 4M5 4h14'
+                                }
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
                         {t(`investor.wallet.${option}`)}
                     </Link>
                 ))}

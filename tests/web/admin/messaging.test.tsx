@@ -49,6 +49,8 @@ const props = (
                 status: 'delivered',
             }),
         ],
+        automations: [],
+        templates: [],
         older: { url: '/admin/messaging/history?before=b', method: 'get' },
         newest: null,
         ...overrides,
@@ -71,6 +73,10 @@ describe('Messaging History', () => {
         expect(screen.getByTestId('head')).toHaveTextContent(
             'Messaging & Automations',
         );
+        expect(
+            screen.getByRole('tab', { name: 'Automations' }),
+        ).toHaveAttribute('aria-selected', 'true');
+        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
         expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
             'aria-selected',
             'true',
@@ -114,6 +120,10 @@ describe('Messaging History', () => {
             />,
         );
 
+        expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
         expect(
             screen.getByText('No messages match your search.'),
         ).toBeInTheDocument();
@@ -136,18 +146,111 @@ describe('Messaging History', () => {
         });
     });
 
+    it('stays on History when paging back through older messages', () => {
+        render(
+            <AdminMessaging
+                {...props({
+                    newest: { url: '/admin/messaging/history', method: 'get' },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        expect(rowOf('Aline Uwase')).toHaveTextContent('Email failed');
+    });
+
     it('shows an empty history before any notice went out', () => {
         render(<AdminMessaging {...props({ history: [], older: null })} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
 
         expect(
             screen.getByText('No messages to show yet.'),
         ).toBeInTheDocument();
     });
 
+    it('lists each automation with its audience, timing and channels, and each email template', () => {
+        render(
+            <AdminMessaging
+                {...props({
+                    automations: [
+                        {
+                            kind: 'verification.approved',
+                            category: 'onboarding',
+                            audience: 'investor',
+                            channels: ['in_app', 'mail'],
+                        },
+                        {
+                            kind: 'support.complaint_resolved',
+                            category: 'support',
+                            audience: 'everyone',
+                            channels: ['in_app'],
+                        },
+                    ],
+                    templates: [
+                        {
+                            key: 'auditor.job_offered',
+                            audience: 'auditor',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        expect(screen.getByText('2 automations live')).toBeInTheDocument();
+        expect(
+            screen
+                .getAllByRole('heading', { level: 3 })
+                .map((heading) => heading.textContent),
+        ).toEqual([
+            'Investors automations',
+            'Everyone with an account automations',
+        ]);
+        expect(
+            within(screen.getByRole('table', { name: 'Investors automations' }))
+                .getAllByRole('columnheader')
+                .map((cell) => cell.textContent),
+        ).toEqual(['Rule', 'Fires when', 'Timing & channels', 'On']);
+        expect(
+            within(rowOf('You are verified'))
+                .getAllByRole('cell')
+                .map((cell) => cell.textContent),
+        ).toEqual([
+            'You are verified',
+            'Compliance approves an identity check',
+            'As it happens · In-app, Email',
+            'Live',
+        ]);
+        expect(
+            within(
+                screen.getByRole('table', {
+                    name: 'Everyone with an account automations',
+                }),
+            ).getByRole('row', { name: /Complaint resolved/u }),
+        ).toHaveTextContent('A complaint is resolvedAs it happens · In-app');
+        expect(
+            screen.queryByRole('button', { name: /edit/i }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Templates' }));
+        expect(
+            within(rowOf('Audit job offered'))
+                .getAllByRole('cell')
+                .map((cell) => cell.textContent),
+        ).toEqual(['Audit job offered', 'Audit Partners', 'Email']);
+
+        fireEvent.click(screen.getByRole('tab', { name: 'Campaigns' }));
+        expect(
+            screen.queryByText(/cannot be edited from the console/u),
+        ).not.toBeInTheDocument();
+    });
+
     it('keeps automations, templates and campaigns at their empty state', () => {
         render(<AdminMessaging {...props()} />);
 
-        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
+        expect(screen.getByText('0 automations live')).toBeInTheDocument();
         expect(
             screen.getByText('No automations to show yet.'),
         ).toBeInTheDocument();

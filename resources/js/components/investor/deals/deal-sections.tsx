@@ -176,7 +176,7 @@ export function FundingProgress({
                 </span>
                 <span
                     className={cn(
-                        'inline-flex items-center gap-[5px] text-[11px]',
+                        'inline-flex items-center gap-[5px] text-[11px] tracking-[.04em] uppercase',
                         phone ? 'font-semibold' : 'font-bold',
                         open ? POSITIVE_TEXT : 'text-rz-secondary',
                     )}

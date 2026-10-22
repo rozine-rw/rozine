@@ -51,6 +51,23 @@ enum PartyNoticeKind: string
     }
 
     /**
+     * Who the automation reaches, by the participant the notice is written for: a Business's
+     * entity, an Audit Partner, an Investor, or anyone with an account for security and support
+     * notices.
+     *
+     * @return 'investor'|'business'|'auditor'|'everyone'
+     */
+    public function audience(): string
+    {
+        return match (strstr($this->value, '.', true)) {
+            'business' => 'business',
+            'auditor' => 'auditor',
+            'security', 'support' => 'everyone',
+            default => 'investor',
+        };
+    }
+
+    /**
      * The category Admin Messaging History files the notice under, after the design's message
      * categories.
      *

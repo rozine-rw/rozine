@@ -74,6 +74,28 @@ it('lists every receipt newest first with its recipient, kind, category, channel
         ->and($props['history'][0])->toMatchArray(['id' => $this->failed, 'at' => now('UTC')->toIso8601String()]);
 });
 
+it('lists every automation with its audience and channels, and every email template', function (): void {
+    $props = ($this->page)(messagingStaff(['compliance']));
+    $automations = array_column($props['automations'], null, 'kind');
+
+    expect($props['automations'])->toHaveCount(count(PartyNoticeKind::cases()))
+        ->and($automations['verification.approved'])->toBe(['kind' => 'verification.approved', 'category' => 'onboarding',
+            'audience' => 'investor', 'channels' => ['in_app', 'mail']])
+        ->and($automations['business.deposit_received'])->toMatchArray(['audience' => 'business', 'channels' => ['in_app']])
+        ->and($automations['auditor.job_offered'])->toMatchArray(['audience' => 'auditor', 'channels' => ['in_app', 'mail']])
+        ->and($automations['security.password_changed']['audience'])->toBe('everyone')
+        ->and($automations['support.complaint_resolved']['audience'])->toBe('everyone')
+        ->and(array_column($props['templates'], 'audience', 'key'))->toBe([
+            'account.new_device_sign_in' => 'everyone', 'account.one_time_code' => 'everyone', 'account.reset_password' => 'everyone',
+            'account.verify_email' => 'everyone', 'auditor.accreditation_decided' => 'auditor', 'auditor.job_offered' => 'auditor',
+            'business.application_decided' => 'business', 'business.disbursement_sent' => 'business', 'business.raise_expired' => 'business',
+            'business.repayment_reminder' => 'business', 'business.reporting_window_open' => 'business',
+            'investor.investment_confirmed' => 'investor', 'investor.payment_delayed' => 'investor', 'investor.payout_received' => 'investor',
+            'investor.raise_expired' => 'investor', 'investor.report_published' => 'investor', 'investor.verification_decided' => 'investor',
+            'investor.wallet_transfer_completed' => 'investor',
+        ]);
+});
+
 it('searches recipients, kinds and categories, and pages to older receipts and back', function (): void {
     $staff = messagingStaff(['superadmin']);
 

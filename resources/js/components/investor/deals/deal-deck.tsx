@@ -1,9 +1,12 @@
+import { Link } from '@inertiajs/react';
 import { useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { DeskCard } from '@/components/investor/deals/desk-card';
 import { SwipeCard } from '@/components/investor/deals/swipe-card';
+import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
+import type { RouteLink } from '@/types';
 import type { C3DealCard } from '@/types/investor';
 
 type DeckProps = {
@@ -12,6 +15,16 @@ type DeckProps = {
     serverTime: string;
     onMove: (index: number) => void;
 };
+
+type PhoneDeckProps = DeckProps & {
+    /** The front card's Add to cart, or null where the Investor has no cart. */
+    cart?: ReactNode;
+    /** A card dealt after the first deal, such as the Academy nudge; `index` then counts it too. */
+    extra?: ReactNode;
+};
+
+/** Where the phone deck deals its extra card: after the first deal, so the front is a deal. */
+export const EXTRA_AT = 1;
 
 /** Wrap an index into the deck, which loops as the design's does. */
 export const wrapIndex = (index: number, length: number): number =>
@@ -62,16 +75,28 @@ function NavButton({
 
 /**
  * The phone deck (design L595–634): the front card with up to four fanned on each side. A
- * horizontal drag browses; a tap opens the deal. Save/pass swipes, the feed refresh and the
- * interleaved update cards are engagement extras outside the MVP.
+ * horizontal drag browses; a tap opens the deal. An extra card, the Academy nudge, may be dealt
+ * after the first deal, as the design interleaves its update cards. Save/pass swipes, the feed
+ * refresh and the other update cards are engagement extras outside the MVP.
  */
-export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
+export function PhoneDeck({
+    deals,
+    index,
+    serverTime,
+    onMove,
+    cart = null,
+    extra = null,
+}: PhoneDeckProps) {
     const [drag, setDrag] = useState(0);
     const start = useRef<number | null>(null);
     const moved = useRef(false);
+    const items: (C3DealCard | null)[] =
+        extra === null
+            ? deals
+            : [...deals.slice(0, EXTRA_AT), null, ...deals.slice(EXTRA_AT)];
     const used = new Set<number>();
     const cards = FAN_ORDER.flatMap((offset) => {
-        const at = wrapIndex(index + offset, deals.length);
+        const at = wrapIndex(index + offset, items.length);
 
         if (used.has(at)) {
             return [];
@@ -79,12 +104,11 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
 
         used.add(at);
 
-        return [{ offset, deal: deals[at] }];
+        return [{ offset, deal: items[at] }];
     });
 
     const down = (event: ReactPointerEvent<HTMLDivElement>) => {
         start.current = event.clientX;
-        moved.current = false;
     };
 
     const move = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -116,6 +140,10 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
         <div className="relative mt-3 max-h-[540px] min-h-[364px] shrink-0 grow-[100] basis-[364px] overflow-visible">
             <div
                 className="absolute inset-y-0 right-[30px] left-[30px] animate-[rz-fade_.5s_cubic-bezier(.22,.9,.3,1)_both]"
+                onPointerDownCapture={() => {
+                    // A fresh press is a new gesture even when a card control stops it bubbling.
+                    moved.current = false;
+                }}
                 onPointerDown={down}
                 onPointerMove={move}
                 onPointerUp={up}
@@ -135,7 +163,7 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
 
                     return (
                         <div
-                            key={deal.campaign_id}
+                            key={deal?.campaign_id ?? 'extra'}
                             aria-hidden={front ? undefined : true}
                             inert={front ? undefined : true}
                             className={cn(
@@ -151,11 +179,16 @@ export function PhoneDeck({ deals, index, serverTime, onMove }: DeckProps) {
                                     front && drag !== 0 ? '0ms' : undefined,
                             }}
                         >
-                            <SwipeCard
-                                deal={deal}
-                                serverTime={serverTime}
-                                front={front}
-                            />
+                            {deal === null ? (
+                                extra
+                            ) : (
+                                <SwipeCard
+                                    deal={deal}
+                                    serverTime={serverTime}
+                                    front={front}
+                                    cart={front ? cart : null}
+                                />
+                            )}
                         </div>
                     );
                 })}
@@ -230,5 +263,61 @@ export function DeskDeck({ deals, index, serverTime, onMove }: DeckProps) {
                 />
             </div>
         </div>
+    );
+}
+
+/**
+ * The deck's Academy nudge (design `_updateDefs` u-lesson, card L608–622): the Investor has started
+ * the Academy and not finished it. The design's promise of fee discounts is left out, since lessons
+ * earn nothing; the body says how far the Investor has got instead.
+ */
+export function AcademyNudge({
+    done,
+    total,
+    href,
+    onLater,
+}: {
+    done: number;
+    total: number;
+    href: RouteLink;
+    onLater: () => void;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <section
+            aria-label={t('investor.deals.nudge.title')}
+            className="flex size-full flex-col items-center justify-center rounded-[20px] border border-rz-border bg-rz-surface px-[22px] py-[26px] text-center shadow-[0_26px_50px_-22px_rgba(20,45,95,.30)]"
+        >
+            <span className="rounded-[10px] bg-[rgba(30,58,255,.10)] px-[11px] py-[5px] text-[10.5px] font-bold tracking-[.08em] text-rz-accent-app-text uppercase">
+                {t('investor.deals.nudge.tag')}
+            </span>
+            <span className="mt-[18px] flex size-[70px] items-center justify-center rounded-[20px] bg-[rgba(30,58,255,.10)] text-[30px]">
+                <Icon name="graduation" tone="blue" />
+            </span>
+            <h2 className="mt-[18px] text-[19px] font-semibold text-rz-ink">
+                {t('investor.deals.nudge.title')}
+            </h2>
+            <p className="mt-2 max-w-[250px] text-[13px] leading-[1.55] text-[#5b6680] dark:text-rz-body">
+                {t('investor.deals.nudge.body', { done, total })}
+            </p>
+            <div className="mt-[22px] flex w-full gap-2.5">
+                <button
+                    type="button"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={onLater}
+                    className="h-[46px] flex-1 rounded-xl border border-rz-border bg-rz-surface text-sm font-semibold text-rz-slate"
+                >
+                    {t('investor.deals.nudge.later')}
+                </button>
+                <Link
+                    href={href}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    className="flex h-[46px] flex-1 items-center justify-center rounded-xl bg-rz-accent-fill text-sm font-semibold text-white"
+                >
+                    {t('investor.deals.nudge.continue')}
+                </Link>
+            </div>
+        </section>
     );
 }

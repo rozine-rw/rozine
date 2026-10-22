@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "b178f7c42bda92423c9a34a66bd62e79e7ce82724789ba6e60e9c6761e8ec1aa",
-    "coverageSetSha256": "7197ea50f60e088d375a4f56c9432286de9db5f1f694a8359b0097b7c64e1b8b",
+    "sourceManifestSha256": "21b963ea2f231ebb6a9899d4c6bdc34ca646c5105901c413d17cfe0177c33f4d",
+    "coverageSetSha256": "139e3863b689d0add9e415733863b79dfce6aa9e8b01ffde9f657f3505061a06",
     "thresholds": {
         "critical": {
             "global": {
@@ -49,6 +49,7 @@
     },
     "criticalPaths": [
         "resources/js/app.tsx",
+        "resources/js/components/admin/academies.tsx",
         "resources/js/components/admin/admin-frame.tsx",
         "resources/js/components/admin/applications/application-status.tsx",
         "resources/js/components/admin/applications/release-panel.tsx",
@@ -129,6 +130,7 @@
         "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/earnings.tsx",
+        "resources/js/components/auditor/profile/academy-section.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -246,6 +248,7 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
+        "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
@@ -276,6 +279,7 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
+        "resources/js/components/rozine/academy.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
