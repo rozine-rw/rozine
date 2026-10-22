@@ -29,6 +29,39 @@ beforeEach(() => {
 });
 
 describe('Notices behind the bell (BRS NTF-R01)', () => {
+    it('counts each notice’s age from the server clock, keeping the exact time on hover', async () => {
+        const user = userEvent.setup();
+        const page = notices();
+        const times = [
+            '2026-10-13T08:59:30+02:00',
+            '2026-10-13T08:42:00+02:00',
+            '2026-10-13T08:00:00+02:00',
+            '2026-10-13T05:00:00+02:00',
+            '2026-10-12T08:00:00+02:00',
+            '2026-10-08T09:00:00+02:00',
+        ];
+
+        page.notices = page.notices
+            .slice(0, times.length)
+            .map((notice, index) => ({ ...notice, created_at: times[index] }));
+        inertia.shared = { server_time: '2026-10-13T09:00:00+02:00' };
+        render(<InvestorDeals {...deals()} />);
+        inertia.queue.push(answers({ data: page }));
+
+        const panel = await openBell(user);
+        const stamps = await within(panel).findAllByText(/ago|Just now/u);
+
+        expect(stamps.map((stamp) => stamp.textContent)).toEqual([
+            'Just now',
+            '18 min ago',
+            '1 hour ago',
+            '4 hours ago',
+            '1 day ago',
+            '5 days ago',
+        ]);
+        expect(stamps[1]).toHaveAttribute('title', '13 Oct 2026 · 08:42');
+    });
+
     it('loads the notices as the bell opens them, newest first, worded by kind', async () => {
         const user = userEvent.setup();
         render(<InvestorDeals {...deals()} />);

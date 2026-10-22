@@ -91,6 +91,15 @@ function describe(
                 rec: t(`admin.health.events.rec.${signal.status}`),
                 action: '',
             };
+        case 'frozen':
+            return {
+                value: String(signal.facts.accounts),
+                detail: t('admin.health.frozen.detail'),
+                rec: t(`admin.health.frozen.rec.${signal.status}`, {
+                    count: signal.facts.accounts,
+                }),
+                action: t('admin.health.frozen.action'),
+            };
         default:
             return {
                 value: t('admin.health.not_tracked'),

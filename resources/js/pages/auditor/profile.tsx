@@ -7,6 +7,7 @@ import {
     useAuditorCommandCenter,
 } from '@/components/auditor/commands';
 import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
+import { AcademySection } from '@/components/auditor/profile/academy-section';
 import {
     ContactSection,
     LegalSection,
@@ -102,7 +103,7 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                 settings={props.links.security_settings}
             />
         ),
-        learn: <PendingSection kind="learn" />,
+        learn: <AcademySection />,
         legal: <LegalSection engagement={props.engagement} />,
     };
 

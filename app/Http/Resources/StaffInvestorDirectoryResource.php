@@ -13,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * platform does not record yet are not invented: no country is captured at sign-up, and no
  * Investor can be frozen or fall KYC-overdue, so those read empty or zero. The person's identity
  * submission rides on the 360 with the same documents and decisions as the review queue. The 360
- * counts holdings but lists none until the S3-C adapter exposes them.
+ * lists the person's holdings by Business, largest first, with the principal and the notes held.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Identity\Contracts\InvestorDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Identity\Contracts\InvestorDirectoryStore
@@ -62,7 +62,8 @@ class StaffInvestorDirectoryResource extends JsonResource
                 ['key' => 'total_aum', 'value' => ['kind' => 'money', 'value' => $money($page['aum'])]]],
             'chips' => array_map(fn (string $chip): array => ['key' => $chip, 'count' => $counts[$chip], 'link' => $link([...$filters, ...($chip === 'all' ? [] : ['chip' => $chip])]),
                 'active' => $chip === $page['chip']], self::CHIPS),
-            'filters' => [['key' => 'sort', 'value' => $page['sort'], 'options' => [['value' => 'portfolio', 'label' => 'Sort: Portfolio value'], ['value' => 'name', 'label' => 'Sort: Name']]]],
+            'filters' => [['key' => 'sort', 'value' => $page['sort'], 'options' => [['value' => 'portfolio', 'label' => 'Sort: Portfolio value'],
+                ['value' => 'holdings', 'label' => 'Sort: Holdings'], ['value' => 'wallet', 'label' => 'Sort: Wallet balance'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'directory' => ['kind' => 'investor', 'rows' => array_map(fn (array $row): array => ['id' => $row['party_id'], 'name' => $row['name'], 'country' => '',
                 'kyc' => $row['kyc'], 'portfolio' => $money($row['portfolio']), 'wallet' => $money($row['wallet']), 'holdings' => $row['holdings'],
@@ -85,8 +86,9 @@ class StaffInvestorDirectoryResource extends JsonResource
             'health' => $row['kyc'] === 'verified' ? 'active' : 'kyc_pending',
             'stats' => [['key' => 'portfolio', 'value' => $money($row['portfolio'])], ['key' => 'wallet', 'value' => $money($row['wallet'])],
                 ['key' => 'holdings', 'value' => ['kind' => 'count', 'value' => $row['holdings']]], ['key' => 'businesses', 'value' => ['kind' => 'count', 'value' => $row['businesses']]]],
-            // Holdings are counted above but not listed until the S3-C adapter exposes them.
-            'list' => null,
+            'list' => ['key' => 'holdings', 'rows' => array_map(fn (array $holding): array => ['id' => $holding['business_id'], 'title' => $holding['name'],
+                'tone' => 'green', 'detail' => ['kind' => 'holding', 'value' => ['currency' => 'RWF', 'amount' => $holding['principal']], 'notes' => $holding['notes']]],
+                $party['holdings'])],
             'history' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'],
                 'action' => ['code' => $entry['command'], 'label' => self::COMMANDS[$entry['command']][0] ?? $entry['command'], 'tone' => self::COMMANDS[$entry['command']][1] ?? 'grey'],
                 'reason' => $entry['reason']], $party['history']),

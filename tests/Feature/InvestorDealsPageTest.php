@@ -64,7 +64,8 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
             'profile' => ['url' => '/investor/profile', 'method' => 'get'],
             'notifications' => ['url' => '/investor/notices', 'method' => 'get'], 'checkout' => ['url' => "/investor/deals/{$this->campaign->id}/checkout", 'method' => 'get'],
             'wallet' => ['url' => '/investor/wallet', 'method' => 'get'],
-            'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get']])
+            'deposit' => ['url' => '/investor/wallet?kind=deposit', 'method' => 'get'],
+            'withdraw' => ['url' => '/investor/wallet?kind=withdraw', 'method' => 'get']])
         ->and($props['deals'])->toHaveCount(1)
         ->and($card)->toMatchArray(['campaign_id' => $this->campaign->id, 'revision' => 1, 'name' => $this->evidence['business']['name'],
             'industry' => $this->evidence['business']['industry'], 'district' => $this->evidence['business']['district'],
@@ -290,7 +291,7 @@ it('lets a person still being verified browse the deals, with no wallet and no w
         ->assertInertia(fn ($page) => $page->component('investor/deals'))->viewData('page')['props'];
     expect($props)->toMatchArray(['gate' => $gate, 'wallet' => null, 'allowed_actions' => [], 'quote' => null,
         'identity_context_revision' => $person->context_revision])
-        ->and($props['links'])->toMatchArray(['wallet' => null, 'deposit' => null, 'checkout' => null,
+        ->and($props['links'])->toMatchArray(['wallet' => null, 'deposit' => null, 'withdraw' => null, 'checkout' => null,
             'deals' => ['url' => '/investor/deals', 'method' => 'get']])
         ->and(array_column($props['deals'], 'campaign_id'))->toBe([$this->campaign->id])
         ->and($props['focus']['campaign_id'])->toBe($this->campaign->id);

@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import { AdminAcademies } from '@/components/admin/academies';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
-import type { DesignBlock } from '@/components/admin/section-designs';
+import type {
+    DesignBlock,
+    FINANCE_GROUPS,
+} from '@/components/admin/section-designs';
 import {
     CAPTION,
     CARD,
@@ -13,16 +17,20 @@ import {
     ROW_RULE,
     TABLE_HEAD,
     TableCard,
+    policyValue,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPendingSectionProps,
+    AppContentRow,
+    AppStatus,
     EngineRow,
     FinanceStream,
     PolicyRule,
     RatingBookRow,
+    SandboxUsage,
 } from '@/types/admin';
 
 /** A figure the server has not stated: the tile keeps its place and says nothing. */
@@ -33,9 +41,18 @@ const NO_FIGURE = '—';
  * tiles, tabs and tables, every figure blank and every table at its empty state unless the server
  * sends it (Policies' rules, Finance's fee revenue). Nothing is invented and no action is offered,
  * because no server read or command backs them yet. A section
- * the design layout does not cover keeps the plain empty state.
+ * the design layout does not cover keeps the plain empty state. Academies has its own screen over
+ * the lesson catalogue the apps ship.
  */
 export default function AdminPendingSection(props: AdminPendingSectionProps) {
+    return props.section === 'academies' ? (
+        <AdminAcademies {...props} />
+    ) : (
+        <DesignedSection {...props} />
+    );
+}
+
+function DesignedSection(props: AdminPendingSectionProps) {
     const { t } = useTranslation();
     const design = SECTION_DESIGNS[props.section];
     const [tab, setTab] = useState(design?.tabs?.[0]?.key);
@@ -106,7 +123,9 @@ export default function AdminPendingSection(props: AdminPendingSectionProps) {
                     {design.blocks
                         .filter(
                             (block) =>
-                                block.tab === undefined || block.tab === tab,
+                                design.tabs === undefined ||
+                                block.tab === undefined ||
+                                block.tab === tab,
                         )
                         .map((block) => (
                             <Block
@@ -134,28 +153,43 @@ function figureOf(props: AdminPendingSectionProps, label: string): string {
     return figure === undefined ? NO_FIGURE : formatRwfShort(figure);
 }
 
+/** The design's Finance group each revenue stream sits in. */
+const STREAM_GROUP: Record<
+    FinanceStream['key'],
+    (typeof FINANCE_GROUPS)[number]
+> = {
+    platform_fee: 'raise',
+    audit_partner_share: 'raise',
+    earnings_fee: 'earnings',
+    resale_fee: 'trades',
+    deposit_fees: 'residual',
+    withdrawal_fee: 'residual',
+    loss_reserve: 'residual',
+};
+
 /** The blocks that list engine settings: Engines' tabs and the Ratings scorecard. */
 const ENGINE_BLOCKS = new Set(['sizing', 'cpa', 'weights', 'bands', 'movers']);
 
 /**
  * The rows the server read for a block, as cell text: Policies' rules under the selected tab,
- * Finance's fee streams, and the engine settings Engines and Ratings list for underwriters. Every
- * other block has none and keeps its empty state.
+ * Finance's fee streams, App Control's sandbox limits, and the engine settings Engines and Ratings
+ * list for underwriters. Every other block has none and keeps its empty state.
  */
 function rowsOf(
     block: DesignBlock,
     tab: string | undefined,
     props: AdminPendingSectionProps,
     t: ReturnType<typeof useTranslation>['t'],
-): { key: string; cells: string[] }[] {
-    if (block.key === 'rules') {
+): BlockRow[] {
+    if (props.section === 'policies') {
         return (props.rules ?? [])
-            .filter((rule: PolicyRule) => rule.tab === tab)
+            .filter((rule: PolicyRule) => rule.tab === block.tab)
             .map((rule) => ({
                 key: rule.key,
+                hint: t(`admin.policy.hint.${rule.key}`),
                 cells: [
                     t(`admin.policy.${rule.key}`),
-                    rule.value,
+                    policyValue(rule, t),
                     rule.version ?? NO_FIGURE,
                 ],
             }));
@@ -186,28 +220,89 @@ function rowsOf(
         );
     }
 
-    if (block.key === 'streams') {
-        return (props.streams ?? []).map((stream: FinanceStream) => ({
-            key: stream.key,
+    if (block.key === 'sandbox') {
+        return (props.sandbox ?? []).map((usage: SandboxUsage) => {
+            const figure = (amount: string): string =>
+                usage.key === 'principal'
+                    ? formatRwf({ currency: 'RWF', amount })
+                    : formatCount(Number(amount));
+
+            return {
+                key: usage.key,
+                cells: [
+                    t(`admin.design.app_control.sandbox.${usage.key}`),
+                    figure(usage.used),
+                    figure(usage.cap),
+                    `${usage.used_pct}%`,
+                ],
+            };
+        });
+    }
+
+    if (block.key === 'content') {
+        return (props.content ?? []).map((row: AppContentRow) => ({
+            key: row.key,
             cells: [
-                t(`admin.finance.stream.${stream.key}`),
-                t(`admin.finance.paid_by.${stream.paid_by}`),
-                formatRwf(stream.collected),
+                t(`admin.design.app_control.type.${row.type}`),
+                [
+                    row.name,
+                    row.sector,
+                    row.rating === null
+                        ? t('admin.design.app_control.unrated')
+                        : `${t(`admin.rating.band.${row.rating.band}`)} ${row.rating.score}`,
+                ].join(' · '),
+                t(`admin.design.app_control.content_state.${row.state}`),
             ],
         }));
+    }
+
+    if (block.key === 'apps') {
+        return (props.apps ?? []).map((app: AppStatus) => ({
+            key: app.key,
+            cells: [
+                t(`admin.design.app_control.app.${app.key}`),
+                t('admin.design.app_control.online'),
+                app.features
+                    .map(
+                        (feature) =>
+                            `${t(`admin.design.app_control.feature.${feature.key}`)} · ${t(`admin.design.app_control.state.${feature.state}`)}`,
+                    )
+                    .join(', '),
+            ],
+        }));
+    }
+
+    if (props.section === 'finance' && block.tab === 'streams') {
+        return (props.streams ?? [])
+            .filter(
+                (stream: FinanceStream) =>
+                    STREAM_GROUP[stream.key] === block.key,
+            )
+            .map((stream: FinanceStream) => ({
+                key: stream.key,
+                cells: [
+                    t(`admin.finance.stream.${stream.key}`),
+                    stream.rate === null
+                        ? NO_FIGURE
+                        : policyValue(stream.rate, t),
+                    stream.paid_by === null
+                        ? NO_FIGURE
+                        : t(`admin.finance.paid_by.${stream.paid_by}`),
+                    stream.collected === null
+                        ? NO_FIGURE
+                        : formatRwf(stream.collected),
+                ],
+            }));
     }
 
     return [];
 }
 
+/** A table row as cell text, with an optional line under its first cell saying what it means. */
+type BlockRow = { key: string; cells: string[]; hint?: string };
+
 /** One designed panel: its title and caption over a chart's or a table's rows or empty state. */
-function Block({
-    block,
-    rows,
-}: {
-    block: DesignBlock;
-    rows: { key: string; cells: string[] }[];
-}) {
+function Block({ block, rows }: { block: DesignBlock; rows: BlockRow[] }) {
     const { t } = useTranslation();
     const title = t(block.title);
     const columns = block.columns ?? [];
@@ -272,6 +367,16 @@ function Block({
                                     )}
                                 >
                                     {cell}
+                                    {index === 0 && row.hint !== undefined && (
+                                        <span
+                                            className={cn(
+                                                'mt-0.5 block text-[12px] font-normal',
+                                                CAPTION,
+                                            )}
+                                        >
+                                            {row.hint}
+                                        </span>
+                                    )}
                                 </span>
                             ))}
                         </div>

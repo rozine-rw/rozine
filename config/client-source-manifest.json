@@ -364,6 +364,7 @@
     ],
     "authoredExecutablePaths": [
         "resources/js/app.tsx",
+        "resources/js/components/admin/academies.tsx",
         "resources/js/components/admin/admin-frame.tsx",
         "resources/js/components/admin/applications/application-status.tsx",
         "resources/js/components/admin/applications/release-panel.tsx",
@@ -378,8 +379,11 @@
         "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
+        "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
+        "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
+        "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/parties/review-queue.tsx",
         "resources/js/components/admin/reason-stage.tsx",
@@ -390,6 +394,7 @@
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",
+        "resources/js/components/admin/trend-range.tsx",
         "resources/js/components/admin/ui.tsx",
         "resources/js/components/alert-error.tsx",
         "resources/js/components/app-content.tsx",
@@ -441,6 +446,7 @@
         "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/earnings.tsx",
+        "resources/js/components/auditor/profile/academy-section.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -558,6 +564,7 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
+        "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
@@ -588,6 +595,7 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
+        "resources/js/components/rozine/academy.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
@@ -763,10 +771,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 732,
+        "totalTrackedSources": 740,
         "generated": 314,
         "declarationOnly": 20,
-        "authoredExecutable": 398
+        "authoredExecutable": 406
     },
-    "coverageSetSha256": "90f188355c27d890c1299912e0cd10d79080cf340b1ca7a41a4a45df78c77cc1"
+    "coverageSetSha256": "e32e60ae020dc7dcd2b5b6c31b66e00864a952720a9339f2933f3f4ca47d20ae"
 }

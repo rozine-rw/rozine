@@ -1,7 +1,10 @@
 import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
+import { InviteOperator } from '@/components/admin/parties/invite-operator';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
+import { PendingStaffApprovals } from '@/components/admin/parties/pending-staff-approvals';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
 import {
     LicenceQueue,
@@ -55,6 +58,7 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                 <PolicyPeek
                     title={t('admin.parties.policy_title')}
                     items={props.policy}
+                    link={props.nav.policies}
                 />
             )}
             {props.stats.length > 0 && (
@@ -120,7 +124,24 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                         {t('admin.parties.coverage_link')}
                     </Link>
                 )}
+                {props.kind === 'staff' && props.grant && (
+                    <InviteOperator action={props.grant} />
+                )}
             </div>
+            {props.kind === 'staff' && props.access && (
+                <p className="mb-3 text-[12px] text-rz-muted">
+                    <span className="mr-1.5 text-[10px] font-bold tracking-[.06em] text-rz-faint uppercase">
+                        {t('admin.staff.signed_in_as')}
+                    </span>
+                    <span className="font-semibold text-rz-ink">
+                        {t(`admin.role.${props.viewer.role}`)}
+                    </span>
+                    {' · '}
+                    {props.access.granted === props.access.total
+                        ? t('admin.staff.access_full')
+                        : t('admin.staff.access_count', props.access)}
+                </p>
+            )}
             <p className="mb-2.5 text-[12px] font-semibold text-rz-muted">
                 {props.shown < props.total
                     ? t(`admin.parties.showing.${props.kind}`, {
@@ -134,9 +155,18 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
             {props.directory.rows.length === 0 && props.search !== '' && (
                 <SearchEmpty section={section} term={props.search} />
             )}
+            {props.kind === 'staff' && props.pending_approvals && (
+                <PendingStaffApprovals requests={props.pending_approvals} />
+            )}
             <DirectoryTable directory={props.directory} />
             {props.kind === 'staff' && props.permission_matrix && (
                 <PermissionMatrix rows={props.permission_matrix} />
+            )}
+            {props.kind === 'staff' && props.action_log && (
+                <ActionLog
+                    entries={props.action_log}
+                    serverTime={props.server_time}
+                />
             )}
         </AdminFrame>
     );

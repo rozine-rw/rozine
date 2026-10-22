@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Controllers\StaffSectionController;
@@ -10,9 +9,10 @@ use App\Models\BusinessCampaign;
 use App\Models\BusinessProfile;
 use App\Models\Party;
 use App\Models\User;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
+use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
     $this->withoutVite();
@@ -22,7 +22,7 @@ beforeEach(function (): void {
 function sectionStaff(array $roles): User
 {
     $user = User::factory()->withTwoFactor()->create();
-    app(ConfigureStaffAccess::class)->handle($user->id, true, 'Console section assignment.', (string) Str::uuid(), $roles);
+    StaffFixture::provision($user, $roles, 'Console section assignment.');
 
     return $user;
 }
@@ -44,12 +44,22 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
             ->where('rules.0', ['tab' => 'fees', 'key' => 'platform_fee', 'value' => '3%', 'version' => 'brs-2.0-fee-r01']));
     $values = array_column($rules, 'value', 'key');
 
-    expect(array_intersect_key($values, array_flip(['target_dscr', 'rate_band', 'min_principal', 'max_principal', 'tenors',
-        'first_issue_months', 'repeat_issue_months', 'minimum_age', 'complaint_resolve', 'withdrawal_max'])))->toBe([
-            'target_dscr' => '1.50×', 'rate_band' => '10–15%', 'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000',
-            'tenors' => '3–6', 'first_issue_months' => '36', 'repeat_issue_months' => '12', 'minimum_age' => '18',
-            'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
-        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'kyc', 'penalties', 'limits']);
+    expect($values)->toMatchArray([
+        'target_dscr' => '1.50×', 'min_rate' => '10%', 'max_rate' => '15%', 'note_unit_price' => 'RWF 5,000', 'min_principal' => 'RWF 3,000,000',
+        'max_principal' => 'RWF 100,000,000', 'min_term' => '3', 'max_term' => '6', 'first_issue_months' => '36', 'repeat_issue_months' => '12',
+        'minimum_age' => '18', 'complaint_resolve' => '48 h', 'withdrawal_max' => 'RWF 2,000,000'])
+        ->and($values)->not->toHaveKeys(['rate_band', 'tenors'])
+        ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'investor', 'kyc', 'penalties', 'limits'])
+        ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
+            'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'concentration' => '50%', 'resale_listing_days' => '7',
+            'resale_reservation_minutes' => '5', 'cpa_radius' => '30 km', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000', 'risk_statements' => '5'])
+        ->and(array_column(array_filter($rules, fn (array $rule): bool => isset($rule['term'])), 'term', 'key'))->toBe([
+            'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'registration_countries' => 'rwanda',
+            'rdb_certificate' => 'required', 'max_notes' => 'not_set', 'residency' => 'resident_rwanda', 'kyc_investor_id' => 'required',
+            'kyc_investor_selfie' => 'required', 'kyc_investor_dob' => 'required', 'kyc_investor_address' => 'not_collected', 'kyc_business_rdb' => 'required', 'kyc_reverify' => 'not_set', 'late_charge' => 'late_schedule', 'miss_grace' => 'late_from_due',
+            'default_at' => 'day_31', 'auto_freeze' => 'not_set'])
+        ->and(array_column($rules, 'version', 'key'))->toMatchArray(['min_revenue' => 'brs-2.0-uw-r01', 'max_notes' => 'brs-2.0-od-20',
+            'earnings_fee' => 'brs-2.0-inv-r04', 'withdrawal_max' => 'LED-R04/2026-10', 'minimum_age' => null]);
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rules', []));
 });
@@ -61,9 +71,13 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')->where('nav.finance.url', '/admin/finance')
             ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400')])
-            ->where('streams', [['key' => 'platform_fee', 'paid_by' => 'business', 'collected' => $money('194400')],
-                ['key' => 'audit_partner_share', 'paid_by' => 'business', 'collected' => $money('129600')],
-                ['key' => 'deposit_fees', 'paid_by' => 'investor', 'collected' => $money('0')]]));
+            ->where('streams', [['key' => 'platform_fee', 'rate' => ['key' => 'platform_fee', 'value' => '3%'], 'paid_by' => 'business', 'collected' => $money('194400')],
+                ['key' => 'audit_partner_share', 'rate' => ['key' => 'cpa_share', 'value' => '40%'], 'paid_by' => 'business', 'collected' => $money('129600')],
+                ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money('0')],
+                ['key' => 'earnings_fee', 'rate' => ['key' => 'earnings_fee', 'value' => '15% · 12% · 10% · 9% · 8%'], 'paid_by' => 'investor', 'collected' => null],
+                ['key' => 'resale_fee', 'rate' => ['key' => 'resale_fee', 'value' => '2%'], 'paid_by' => 'seller', 'collected' => null],
+                ['key' => 'withdrawal_fee', 'rate' => ['key' => 'withdrawal_fee', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null],
+                ['key' => 'loss_reserve', 'rate' => ['key' => 'loss_reserve', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null]]));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('section', 'finance')->missing('figures')->missing('streams'));
 });
@@ -102,6 +116,24 @@ test('Ratings lists every rated Business and counts them for whoever may view Bu
                 'rating' => ['band' => 'stable', 'score' => '3.1']]])->where('engine', []));
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/risk')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->missing('book')->missing('counts'));
+});
+
+test('App Control shows how much of the sandbox limits the platform uses, and no other section does', function (): void {
+    PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $principal = (string) DB::table('primary_holdings')->sum('principal');
+    $business = BusinessProfile::query()->sole();
+
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/app-control')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('section', 'app_control')->where('sandbox', [
+            ['key' => 'businesses', 'used' => '1', 'cap' => '100', 'used_pct' => 1],
+            ['key' => 'investors', 'used' => '2', 'cap' => '10000', 'used_pct' => 0],
+            ['key' => 'principal', 'used' => $principal, 'cap' => '5000000000', 'used_pct' => intdiv((int) $principal * 100, 5000000000)]])
+            ->where('apps.0', ['key' => 'investor', 'features' => [['key' => 'sign_ups', 'state' => 'live'],
+                ['key' => 'secondary_market', 'state' => 'not_built'], ['key' => 'academy', 'state' => 'not_built']]])
+            ->where('apps.2.key', 'auditor')->has('content', 1)->where('content.0.key', $business->id)->where('content.0.type', 'business')
+            ->where('content.0.name', $business->profile['name'])->where('content.0.sector', $business->profile['industry']));
+    $this->actingAs(sectionStaff(['analyst']))->get('/admin/engines')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->missing('sandbox')->missing('apps')->missing('content'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {

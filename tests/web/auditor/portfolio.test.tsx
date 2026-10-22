@@ -936,14 +936,18 @@ describe('Auditor Portfolio', () => {
             within(managed).getByRole('button', { name: 'Failed 1' }),
         );
 
-        expect(within(managed).queryByText('Kivu Coffee Roasters')).toBeNull();
+        expect(
+            within(managed).queryByText('Kivu Coffee Roasters'),
+        ).not.toBeInTheDocument();
         expect(within(managed).getByText('Isoko Energy')).toBeInTheDocument();
 
         await user.click(
             within(managed).getByRole('button', { name: 'Active portfolio' }),
         );
 
-        expect(within(managed).queryByText('Isoko Energy')).toBeNull();
+        expect(
+            within(managed).queryByText('Isoko Energy'),
+        ).not.toBeInTheDocument();
     });
 
     it('says when no audited business is raising in the chosen state', async () => {

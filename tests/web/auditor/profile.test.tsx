@@ -21,7 +21,6 @@ import earningsFixture from '../../../resources/fixtures/ui/auditor-profile-earn
 import expiredFixture from '../../../resources/fixtures/ui/auditor-profile-expired.json';
 import firstTimePendingFixture from '../../../resources/fixtures/ui/auditor-profile-first-time-pending.json';
 import firstTimeFixture from '../../../resources/fixtures/ui/auditor-profile-first-time.json';
-import learnFixture from '../../../resources/fixtures/ui/auditor-profile-learn.json';
 import legalFixture from '../../../resources/fixtures/ui/auditor-profile-legal.json';
 import pausedFixture from '../../../resources/fixtures/ui/auditor-profile-paused.json';
 import payoutFixture from '../../../resources/fixtures/ui/auditor-profile-payout.json';
@@ -718,7 +717,6 @@ describe('Auditor Profile', () => {
 
     it.each([
         [payoutFixture, 'No payout account yet'],
-        [learnFixture, 'Coming to the app soon'],
         [
             { props: { ...legalFixture.props, engagement: null } },
             'Coming to the app soon',

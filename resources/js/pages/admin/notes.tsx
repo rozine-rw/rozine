@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
@@ -18,11 +19,21 @@ import type {
     AdminNotesProps,
     NoteRegisterRow,
     NoteState,
+    NotesSort,
     NotesStatKey,
 } from '@/types/admin';
 
 const GRID =
     'grid grid-cols-[minmax(0,1.6fr)_110px_80px_90px_minmax(0,1fr)_minmax(0,1.3fr)] gap-3.5 px-5';
+
+const SORTS: NotesSort[] = [
+    'newest',
+    'raised',
+    'yield',
+    'funded',
+    'investors',
+    'term',
+];
 
 /** The design's rail colours: ink, blue, green, ink. */
 const STAT_ACCENT: Record<NotesStatKey, number> = {
@@ -115,13 +126,36 @@ export default function AdminNotes(props: AdminNotesProps) {
                     />
                 ))}
             </div>
-            <PillTabs
-                label={t('admin.notes.tabs')}
-                tabs={props.tabs.map((tab) => ({
-                    ...tab,
-                    label: t(`admin.design.notes.tab.${tab.key}`),
-                }))}
-            />
+            <div className="flex flex-wrap items-start justify-between gap-2.5">
+                <PillTabs
+                    label={t('admin.notes.tabs')}
+                    tabs={props.tabs.map((tab) => ({
+                        ...tab,
+                        label: t(`admin.design.notes.tab.${tab.key}`),
+                    }))}
+                />
+                <select
+                    aria-label={t('admin.notes.sort_label')}
+                    value={props.sort}
+                    onChange={(event) =>
+                        router.reload({
+                            data: {
+                                sort:
+                                    event.target.value === 'newest'
+                                        ? undefined
+                                        : event.target.value,
+                            },
+                        })
+                    }
+                    className="mb-4 cursor-pointer rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-[9px] text-[12.5px] font-semibold text-rz-ink outline-none"
+                >
+                    {SORTS.map((sort) => (
+                        <option key={sort} value={sort}>
+                            {t(`admin.notes.sort.${sort}`)}
+                        </option>
+                    ))}
+                </select>
+            </div>
             {props.notes.length === 0 && props.search !== '' && (
                 <SearchEmpty section="notes" term={props.search} />
             )}

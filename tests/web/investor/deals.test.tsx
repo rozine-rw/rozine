@@ -9,6 +9,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { ACADEMY } from '@/components/investor/profile/academy';
 import InvestorDeal from '@/pages/investor/deal';
 import InvestorDeals from '@/pages/investor/deals';
 import type {
@@ -359,6 +360,158 @@ describe('Deals on a phone', () => {
     });
 });
 
+describe('The Academy nudge in the phone deck', () => {
+    const ACADEMY_KEY = 'rozine.investor.academy.v1';
+
+    beforeEach(() => window.localStorage.clear());
+    afterEach(() => window.localStorage.clear());
+
+    it.each(['pointerUp', 'pointerCancel'] as const)(
+        'honors the first Later tap after swiping to the Academy nudge with %s',
+        async (end) => {
+            window.localStorage.setItem(
+                ACADEMY_KEY,
+                JSON.stringify({ notes: 1 }),
+            );
+            render(<InvestorDeals {...deals()} />);
+            const first = screen.getByRole('article', {
+                name: 'GreenLeaf Agro',
+            });
+
+            fireEvent.pointerDown(first, { clientX: 200 });
+            fireEvent.pointerMove(first, { clientX: 100 });
+            fireEvent[end](first);
+            const nudge = screen.getByRole('region', {
+                name: 'Continue Investor Academy',
+            });
+            await userEvent.click(
+                within(nudge).getByRole('button', { name: 'Later' }),
+            );
+
+            expect(
+                screen.queryByRole('region', {
+                    name: 'Continue Investor Academy',
+                }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('region', {
+                    name: 'Invest in GreenLeaf Agro',
+                }),
+            ).toBeInTheDocument();
+        },
+    );
+
+    it('deals the nudge after the first deal while the Academy is under way, and puts it away for Later', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        render(<InvestorDeals {...deals()} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Invest in GreenLeaf Agro' }),
+        ).toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        const nudge = screen.getByRole('region', {
+            name: 'Continue Investor Academy',
+        });
+
+        expect(nudge).toHaveTextContent('Keep learning');
+        expect(nudge).toHaveTextContent(
+            '0 of 8 lessons done. Pick up where you left off.',
+        );
+        expect(
+            within(nudge).getByRole('link', { name: 'Continue' }),
+        ).toHaveAttribute('href', '/preview/investor-profile#academy');
+        // A press on Continue is not the start of a swipe.
+        fireEvent.pointerDown(
+            within(nudge).getByRole('link', { name: 'Continue' }),
+            { clientX: 100 },
+        );
+        fireEvent.pointerUp(nudge);
+        expect(inertia.reload).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('region', { name: /^Invest in/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('navigation', { name: 'Filter by industry' }),
+        ).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_sebeya', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Previous deal' }));
+        await user.click(
+            within(
+                screen.getByRole('region', {
+                    name: 'Continue Investor Academy',
+                }),
+            ).getByRole('button', { name: 'Later' }),
+        );
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('region', { name: 'Invest in Sebeya Logistics' }),
+        ).toBeInTheDocument();
+    });
+
+    it('wraps past the nudge to the last deal, and deals none once every lesson is done', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        const { unmount } = render(<InvestorDeals {...deals()} />);
+
+        await user.click(screen.getByRole('button', { name: 'Previous deal' }));
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_inzovu', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+        unmount();
+
+        window.localStorage.setItem(
+            ACADEMY_KEY,
+            JSON.stringify(
+                Object.fromEntries(
+                    ACADEMY.flatMap((group) => group.lessons).map((lesson) => [
+                        lesson.key,
+                        lesson.topics.length,
+                    ]),
+                ),
+            ),
+        );
+        render(<InvestorDeals {...deals()} />);
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
+        expect(inertia.visit).toHaveBeenLastCalledWith(
+            { url: '/preview/investor-deals?deal=cmp_sebeya', method: 'get' },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
+    });
+
+    it('deals no nudge without a profile to continue in', async () => {
+        const user = userEvent.setup();
+        const page = deals();
+
+        page.links.profile = null;
+        window.localStorage.setItem(ACADEMY_KEY, JSON.stringify({ notes: 1 }));
+        render(<InvestorDeals {...page} />);
+        await user.click(screen.getByRole('button', { name: 'Next deal' }));
+
+        expect(
+            screen.queryByRole('region', { name: 'Continue Investor Academy' }),
+        ).not.toBeInTheDocument();
+    });
+});
+
 describe('Deals on a wide screen', () => {
     it('draws the desktop deck, invest bar and the focused deal’s panel on a fitted canvas', async () => {
         setWide(true);
@@ -393,9 +546,10 @@ describe('Deals on a wide screen', () => {
             'href',
             '/preview/investor-wallet-deposit',
         );
-        expect(
-            screen.queryByRole('link', { name: 'Withdraw' }),
-        ).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Withdraw' })).toHaveAttribute(
+            'href',
+            '/preview/investor-wallet-withdraw',
+        );
 
         const card = screen.getByRole('article', { name: 'GreenLeaf Agro' });
 
@@ -1307,6 +1461,45 @@ describe('A deck with nothing open to reserve', () => {
 });
 
 describe('Add to cart', () => {
+    it.each(['pointerUp', 'pointerCancel'] as const)(
+        'honors the first cart tap after a drag ending with %s',
+        async (end) => {
+            const page = deals();
+            const next = page.deals[1];
+            inertia.queue.push(answers({ data: { in_cart: true } }));
+            const { rerender } = render(<InvestorDeals {...page} />);
+            const first = screen.getByRole('article', {
+                name: page.deals[0].name,
+            });
+
+            fireEvent.pointerDown(first, { clientX: 200 });
+            fireEvent.pointerMove(first, { clientX: 100 });
+            fireEvent[end](first);
+
+            const refreshed = structuredClone(page);
+            refreshed.focus = { ...refreshed.focus!, ...next };
+            refreshed.cart = {
+                campaign_ids: [],
+                add: {
+                    url: `/investor/deals/${next.campaign_id}/cart`,
+                    method: 'post',
+                },
+                remove: null,
+            };
+            rerender(<InvestorDeals {...refreshed} />);
+            await userEvent.click(
+                within(
+                    screen.getByRole('article', { name: next.name }),
+                ).getByRole('button', { name: 'Add to cart' }),
+            );
+
+            expect(inertia.calls).toHaveLength(1);
+            expect(inertia.calls[0].url).toBe(
+                `/investor/deals/${next.campaign_id}/cart`,
+            );
+        },
+    );
+
     it('opens the selected deal by its detail link when no sort supplies a destination', async () => {
         const page = deals();
         page.sorts = page.sorts.map((sort) => ({ ...sort, active: false }));
@@ -1382,7 +1575,12 @@ describe('Add to cart', () => {
             `/investor/deals/${next.campaign_id}/checkout?deal=${next.campaign_id}&units=1`,
         );
         inertia.queue.push(answers({ data: { in_cart: true } }));
-        await userEvent.click(bar.getByRole('button', { name: 'Add to cart' }));
+        await userEvent.click(
+            within(screen.getByRole('article', { name: next.name })).getByRole(
+                'button',
+                { name: 'Add to cart' },
+            ),
+        );
         expect(inertia.calls[0].url).toBe(
             `/investor/deals/${next.campaign_id}/cart`,
         );
@@ -1484,7 +1682,7 @@ describe('Add to cart', () => {
         );
     });
 
-    it('reads In cart · Remove on a phone for a deal already in the cart and takes it out', async () => {
+    it('reads In cart · Remove on the phone card for a deal already in the cart and takes it out', async () => {
         inertia.queue.push(
             answers({ data: { removed: true, in_cart: false } }),
         );
@@ -1496,9 +1694,7 @@ describe('Add to cart', () => {
             ).getByRole('link', { name: 'In cart' }),
         ).toHaveAttribute('href', '/preview/investor-deals');
 
-        const bar = screen.getByRole('region', {
-            name: 'Invest in GreenLeaf Agro',
-        });
+        const bar = screen.getByRole('article', { name: 'GreenLeaf Agro' });
         const toggle = within(bar).getByRole('button', {
             name: 'In cart · Remove',
         });
@@ -1536,9 +1732,7 @@ describe('Add to cart', () => {
         );
         render(<InvestorDeals {...page} />);
 
-        const bar = screen.getByRole('region', {
-            name: 'Invest in GreenLeaf Agro',
-        });
+        const bar = screen.getByRole('article', { name: 'GreenLeaf Agro' });
         const toggle = within(bar).getByRole('button', {
             name: 'Add to cart',
         });

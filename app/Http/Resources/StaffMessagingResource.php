@@ -14,10 +14,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * and whether it arrived. Every notice today comes from a recorded event, so each went out by
  * automation. `older` opens the next page of receipts; `newest` returns to the first.
  *
+ * `automations` lists every notice kind the platform sends as it happens, with its audience and
+ * channels; `templates` lists the transactional email templates under resources/views/mail.
+ * Neither can be edited from the console yet.
+ *
  * @phpstan-import-type FiledDelivery from \App\Application\Identity\BrowseMessageHistory
+ * @phpstan-import-type Automation from \App\Application\Identity\BrowseMessageHistory
+ * @phpstan-import-type Template from \App\Application\Identity\BrowseMessageHistory
  *
  * @phpstan-type Page array{
- *     deliveries: list<FiledDelivery>, older: string|null, search: string, paged: bool, roles: list<string>, permissions: list<string>
+ *     deliveries: list<FiledDelivery>, older: string|null, automations: list<Automation>, templates: list<Template>, search: string,
+ *     paged: bool, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffMessagingResource extends JsonResource
@@ -39,6 +46,7 @@ class StaffMessagingResource extends JsonResource
                 'recipient_kind' => $delivery['recipient_kind'], 'kind' => $delivery['kind'],
                 'category' => $delivery['category'], 'source' => 'automation',
                 'channel' => $delivery['channel'], 'status' => $delivery['status'], 'at' => $delivery['delivered_at']], $page['deliveries']),
+            'automations' => $page['automations'], 'templates' => $page['templates'],
             'older' => $page['older'] === null ? null : $link([...$query, 'before' => $page['older']]),
             'newest' => $page['paged'] ? $link($query) : null];
     }

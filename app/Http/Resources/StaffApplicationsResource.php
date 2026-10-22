@@ -19,29 +19,33 @@ class StaffApplicationsResource extends JsonResource
         $position = array_filter([...$filters, 'before' => $page['before']], fn (mixed $value): bool => $value !== null);
         $link = fn (array $query): array => ['url' => route($route, $query, false), 'method' => 'get'];
         $review = null;
+        /** @var list<string> $permissions */
+        $permissions = $page['permissions'];
         if ($page['selected'] !== null) {
+            $businessId = $page['release_page']['application']['business_id'] ?? null;
+            $business = is_string($businessId) && in_array('businesses.view', $permissions, true)
+                ? ['url' => route(($request->routeIs('api.*') ? 'api.v1.' : '').'staff.businesses.index', ['business' => $businessId], false), 'method' => 'get'] : null;
             $release = (new StaffApplicationReleaseResource($page['release_page']))->resolve($request)['release'];
             $review = [...$page['selected'], 'state' => $release['state'] === 'released' ? 'approved' : 'submitted',
                 'underwriting_basis' => $page['underwriting_basis'],
                 'factors' => [], 'audit' => ['state' => null, 'sealed_at' => null], 'reviewer' => null, 'trail' => [],
-                'links' => ['close' => $link($position), 'business' => null], 'actions' => (object) [], 'release' => $release];
+                'links' => ['close' => $link($position), 'business' => $business], 'actions' => (object) [], 'release' => $release];
         }
         $name = $request->user()->name;
         /** @var list<string> $roles */
         $roles = $page['roles'];
-        /** @var list<string> $permissions */
-        $permissions = $page['permissions'];
 
         return ['contract_version' => 'staff-applications-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()->getAuthIdentifier(), 'name' => $name, 'email' => $request->user()->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => in_array('superadmin', $roles, true) ? 'superadmin' : 'approver'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => $page['counts']['pending'], 'disbursements' => null], 'policy' => $page['policy'],
-            'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved']),
+            'search' => $page['search'], 'active_tab' => $page['tab'], 'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $page['counts'][$tab], 'link' => $link([...$filters, 'tab' => $tab])], ['pending', 'approved', 'rejected']),
             'applications' => array_map(function (array $entry) use ($link, $position): array {
                 unset($entry['capacity'], $entry['use_of_funds']);
 
-                return [...$entry, 'link' => $link([...$position, 'application' => $entry['id']]), 'approve_link' => null];
+                // An engine refusal is a draft the business may still change: it opens no staff review.
+                return [...$entry, 'link' => $entry['state'] === 'rejected' ? null : $link([...$position, 'application' => $entry['id']]), 'approve_link' => null];
             }, $page['entries']), 'review' => $review, 'stage' => null,
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
             'links' => ['operation' => StaffApplicationReleaseResource::lookup($request), 'changes' => $request->routeIs('api.*') ? null

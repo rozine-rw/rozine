@@ -12,7 +12,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * three figures, the chips with their counts, every operator with their most privileged role and
  * all their roles, what each role may do (the permission matrix), and one operator's 360. A disabled staff account reads as frozen, attributed to the identity audit
  * entry that disabled it; its enable and disable entries are its freezes and releases. Sign-ins
- * are not recorded, so the 360 shows no last sign-in. No staff command is offered here.
+ * are not recorded, so the 360 shows no last sign-in. A viewer with `staff.manage` may add an
+ * operator (`grant`) and suspend or reactivate any other operator from the 360; the admin action log
+ * lists the latest staff access changes across every operator. `access` counts how many of the
+ * capabilities a role can hold the viewer holds, for the "Signed in as" line.
  *
  * @phpstan-type StaffRow array{user_id: int, name: string, email: string, roles: list<string>, enabled: bool}
  * @phpstan-type Counts array{all: int, active: int, frozen: int, approvers: int}
@@ -20,9 +23,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     id: string, at: string, actor: string|null, action: string, reason: string, before: array<string, mixed>, after: array<string, mixed>
  * }
  * @phpstan-type Member array{row: StaffRow, history: list<HistoryEntry>}
+ * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, granted: bool, roles: list<string>, reason: string}
  * @phpstan-type Page array{
  *     rows: list<StaffRow>, matching: int, counts: Counts, chip: string, search: string, member: Member|null,
- *     matrix: list<array{key: string, roles: list<string>}>, roles: list<string>, permissions: list<string>
+ *     pending: list<array{id: string, recipient_id: int, requester_id: int, recipient: string, email: string, requester: string, operation: string, reason: string}>,
+ *     matrix: list<array{key: string, roles: list<string>, withheld?: string}>, roles: list<string>, permissions: list<string>, log: list<LogEntry>
  * }
  */
 class StaffDirectoryResource extends JsonResource
@@ -43,6 +48,7 @@ class StaffDirectoryResource extends JsonResource
         $position = [...$filters, ...($page['chip'] === 'all' ? [] : ['chip' => $page['chip']])];
         $counts = $page['counts'];
         $viewer = (string) $request->user()?->getAuthIdentifier();
+        $held = array_filter($page['matrix'], fn (array $row): bool => ! isset($row['withheld']));
 
         return ['contract_version' => 'staff-directory-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($page['roles']))->resolve($request),
@@ -59,8 +65,19 @@ class StaffDirectoryResource extends JsonResource
                 'roles' => array_values(array_intersect(StaffViewerResource::ROLES, $row['roles'])),
                 'frozen' => ! $row['enabled'], 'you' => (string) $row['user_id'] === $viewer,
                 'link' => $link([...$position, 'operator' => $row['user_id']])], $page['rows'])],
-            'party' => $page['member'] === null ? null : self::member($page['member'], $link($position)),
-            'permission_matrix' => $page['matrix']];
+            'party' => $page['member'] === null ? null : self::member($page['member'], $link($position),
+                in_array('staff.manage', $page['permissions'], true) && (string) $page['member']['row']['user_id'] !== $viewer && $prefix === ''),
+            'permission_matrix' => $page['matrix'],
+            'access' => ['granted' => count(array_filter($held, fn (array $row): bool => in_array($row['key'], $page['permissions'], true))), 'total' => count($held)],
+            'grant' => in_array('staff.manage', $page['permissions'], true) && $prefix === '' ? ['url' => route('staff.staff.grant', [], false), 'method' => 'post'] : null,
+            'pending_approvals' => array_map(fn (array $proposal): array => ['id' => $proposal['id'], 'recipient' => $proposal['recipient'],
+                'email' => $proposal['email'], 'requester' => $proposal['requester'], 'operation' => $proposal['operation'], 'reason' => $proposal['reason'],
+                'approve' => $prefix === '' && in_array('staff.manage', $page['permissions'], true)
+                    && (string) $proposal['requester_id'] !== $viewer && (string) $proposal['recipient_id'] !== $viewer
+                    ? ['url' => route('staff.staff.approve', ['proposal' => $proposal['id']], false), 'method' => 'post'] : null], $page['pending']),
+            'action_log' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'] ?? 'Server console',
+                'target' => $entry['target'], 'action' => $entry['granted'] ? 'staff_granted' : ($entry['enabled'] ? 'staff_enabled' : 'staff_suspended'),
+                'role' => $entry['granted'] ? StaffViewerResource::role($entry['roles']) : null, 'reason' => $entry['reason']], $page['log'])];
     }
 
     /**
@@ -68,7 +85,7 @@ class StaffDirectoryResource extends JsonResource
      * @param  array{url: string, method: string}  $close
      * @return array<string, mixed>
      */
-    private static function member(array $member, array $close): array
+    private static function member(array $member, array $close, bool $manage): array
     {
         $row = $member['row'];
         $actor = fn (?string $name): string => $name ?? 'Server console';
@@ -96,6 +113,7 @@ class StaffDirectoryResource extends JsonResource
                     'action' => ['code' => $entry['action'], 'label' => $frozen ? 'Disabled staff access' : 'Enabled staff access', 'tone' => $frozen ? 'red' : 'green'],
                     'reason' => $entry['reason']];
             }, $switches),
-            'links' => ['close' => $close], 'actions' => (object) []];
+            'links' => ['close' => $close], 'actions' => $manage ? [($row['enabled'] ? 'freeze' : 'release') => [
+                'url' => route($row['enabled'] ? 'staff.staff.suspend' : 'staff.staff.reactivate', ['operator' => $row['user_id']], false), 'method' => 'post']] : (object) []];
     }
 }

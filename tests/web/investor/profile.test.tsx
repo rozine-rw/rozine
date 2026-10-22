@@ -88,6 +88,18 @@ describe('Profile', () => {
         ]);
     });
 
+    it('offers every investor the plain support card, whose Message opens the Help center', () => {
+        render(<InvestorProfile {...profile()} />);
+
+        const support = screen.getByRole('region', { name: 'Support' });
+
+        expect(support).toHaveTextContent('Talk to Rozine support');
+        expect(support).not.toHaveTextContent(/priority/iu);
+        expect(
+            within(support).getByRole('link', { name: 'Message' }),
+        ).toHaveAttribute('href', '/preview/investor-profile-help');
+    });
+
     it('opens linked accounts as its own phone page and links a bank account', async () => {
         const user = userEvent.setup();
 

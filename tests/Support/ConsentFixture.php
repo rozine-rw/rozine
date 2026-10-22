@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\RecordConsentRelease;
 use App\Domain\Identity\ConsentDocuments;
 use App\Models\User;
@@ -19,7 +18,7 @@ final class ConsentFixture
     public static function staff(string $role = 'compliance'): User
     {
         $user = User::factory()->withTwoFactor()->create();
-        app(ConfigureStaffAccess::class)->handle($user->id, true, 'Record reviewed consent documents.', (string) Str::uuid(), [$role]);
+        StaffFixture::provision($user, [$role], 'Record reviewed consent documents.');
 
         return $user;
     }

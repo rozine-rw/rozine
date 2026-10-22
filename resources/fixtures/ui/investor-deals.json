@@ -984,6 +984,10 @@
                 "url": "/preview/investor-wallet-deposit",
                 "method": "get"
             },
+            "withdraw": {
+                "url": "/preview/investor-wallet-withdraw",
+                "method": "get"
+            },
             "checkout": {
                 "url": "/preview/investor-checkout",
                 "method": "get"

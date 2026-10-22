@@ -259,21 +259,16 @@ export function LegalSection({
     );
 }
 
-const PENDING_ICON: Record<'payout' | 'learn' | 'legal', IconName> = {
+const PENDING_ICON: Record<'payout' | 'legal', IconName> = {
     payout: 'bank',
-    learn: 'graduation',
     legal: 'document',
 };
 
 /**
- * A section with nothing to read yet: no payout-account read, and no approved academy
- * lessons. The design draws each with content, so this is its empty state.
+ * A section with nothing to read yet, such as the payout account before its read exists. The
+ * design draws each with content, so this is its empty state.
  */
-export function PendingSection({
-    kind,
-}: {
-    kind: 'payout' | 'learn' | 'legal';
-}) {
+export function PendingSection({ kind }: { kind: 'payout' | 'legal' }) {
     const { t } = useTranslation();
 
     const heading =

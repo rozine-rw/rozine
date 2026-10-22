@@ -5,9 +5,7 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": [
-            "conflict.declare"
-        ],
+        "allowed_actions": ["conflict.declare"],
         "job": {
             "id": "fa_huye",
             "revision": 2,
@@ -22,9 +20,7 @@
             "complete_by": "2026-10-04T05:00:00Z",
             "reassigned_from": "Chantal Rwema, CPA",
             "kind": "flash",
-            "allowed_actions": [
-                "conflict.declare"
-            ]
+            "allowed_actions": ["conflict.declare"]
         },
         "file": {
             "raise": {
@@ -82,9 +78,7 @@
                     "by": "Chantal Rwema, CPA",
                     "summary": "Stock counted and ledgers reconciled; findings filed on time."
                 },
-                "flags": [
-                    "August 2026 statements uploaded after the 3rd"
-                ]
+                "flags": ["August 2026 statements uploaded after the 3rd"]
             },
             "brief": "flash"
         },
@@ -207,9 +201,7 @@
                         "url": "/preview/auditor-audit-ledger",
                         "method": "get"
                     },
-                    "allowed_actions": [
-                        "conflict.declare"
-                    ],
+                    "allowed_actions": ["conflict.declare"],
                     "accept_by": null,
                     "complete_by": "2026-10-03T15:00:00Z"
                 },
@@ -232,9 +224,7 @@
                         "url": "/preview/auditor-audit-check-in",
                         "method": "get"
                     },
-                    "allowed_actions": [
-                        "conflict.declare"
-                    ],
+                    "allowed_actions": ["conflict.declare"],
                     "accept_by": null,
                     "complete_by": "2026-10-04T13:59:55Z"
                 }

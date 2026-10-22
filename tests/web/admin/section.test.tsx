@@ -41,7 +41,6 @@ describe('A designed section that is not wired yet', () => {
             'plus',
             'finance',
             'messaging',
-            'academies',
             'app_control',
             'engines',
             'policies',
@@ -92,9 +91,15 @@ describe('A designed section that is not wired yet', () => {
             const first = design.tabs?.[0]?.key;
 
             for (const block of design.blocks) {
-                if (block.tab !== undefined && block.tab !== first) {
+                if (
+                    design.tabs !== undefined &&
+                    block.tab !== undefined &&
+                    block.tab !== first
+                ) {
                     expect(
-                        within(region).queryByText(text(block.empty)),
+                        within(region).queryByRole('heading', {
+                            name: text(block.title),
+                        }),
                     ).not.toBeInTheDocument();
 
                     continue;
@@ -105,8 +110,9 @@ describe('A designed section that is not wired yet', () => {
                         name: text(block.title),
                     }),
                 ).toBeInTheDocument();
+                // Groups shown together may share one empty message.
                 expect(
-                    within(region).getByText(text(block.empty)),
+                    within(region).getAllByText(text(block.empty))[0],
                 ).toBeVisible();
 
                 if (block.sub !== undefined) {
@@ -154,7 +160,7 @@ describe('A designed section that is not wired yet', () => {
         expect(
             within(tabs).getByRole('tab', { name: 'Revenue streams' }),
         ).toHaveAttribute('aria-selected', 'true');
-        expect(screen.getByText('No revenue to show yet.')).toBeVisible();
+        expect(screen.getByText('No raise fees to show yet.')).toBeVisible();
 
         fireEvent.click(
             within(tabs).getByRole('tab', { name: 'Ledger & payouts' }),
@@ -170,7 +176,7 @@ describe('A designed section that is not wired yet', () => {
             screen.getByText('No ledger entries to show yet.'),
         ).toBeVisible();
         expect(
-            screen.queryByText('No revenue to show yet.'),
+            screen.queryByText('No raise fees to show yet.'),
         ).not.toBeInTheDocument();
         expect(screen.getAllByRole('tab', { selected: true })).toHaveLength(1);
     });
@@ -228,7 +234,7 @@ describe('The title ⓘ', () => {
 });
 
 describe('Policies', () => {
-    it("lists the rules in effect under the selected tab, with each rule's version", () => {
+    it("lists every group's rules on one page, in the design's order, with each rule's version", () => {
         render(
             <AdminPendingSection
                 {...props({
@@ -241,36 +247,70 @@ describe('Policies', () => {
                             version: 'brs-2.0-fee-r01',
                         },
                         {
+                            tab: 'fees',
+                            key: 'loss_reserve',
+                            value: '',
+                            term: 'none',
+                            version: 'brs-2.0-gen-r01',
+                        },
+                        {
                             tab: 'kyc',
                             key: 'minimum_age',
                             value: '18',
                             version: null,
+                        },
+                        {
+                            tab: 'investor',
+                            key: 'concentration',
+                            value: '50%',
+                            version: 'brs-2.0-inv-r01',
                         },
                     ],
                 })}
             />,
         );
 
-        const rules = screen.getByRole('table', { name: 'Rules' });
-        expect(within(rules).getAllByRole('row')).toHaveLength(2);
+        const rules = screen.getByRole('table', { name: 'Fees' });
+        expect(
+            screen.getByText(
+                'What each side pays Rozine, and the share that goes to the auditor of record.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(rules).getAllByRole('row')).toHaveLength(3);
         expect(within(rules).getAllByRole('row')[1]).toHaveTextContent(
-            'Platform fee · at disbursement3%brs-2.0-fee-r01',
+            'Platform fee · at disbursementTaken from the raise when it is disbursed to the business.3%brs-2.0-fee-r01',
         );
-        expect(
-            screen.queryByText('No rules to show yet.'),
-        ).not.toBeInTheDocument();
-
-        fireEvent.click(screen.getByRole('tab', { name: 'KYC requirements' }));
-        expect(
-            within(screen.getByRole('table', { name: 'Rules' })).getAllByRole(
-                'row',
-            )[1],
-        ).toHaveTextContent('Minimum investor age18—');
-
-        fireEvent.click(
-            screen.getByRole('tab', { name: 'Investor eligibility' }),
+        expect(within(rules).getAllByRole('row')[2]).toHaveTextContent(
+            'Loss reserveShare of fees set aside against defaults.Nonebrs-2.0-gen-r01',
         );
-        expect(screen.getByText('No rules to show yet.')).toBeVisible();
+        expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+        expect(
+            screen
+                .getAllByRole('heading', { level: 2 })
+                .map((heading) => heading.textContent),
+        ).toEqual([
+            'Fees',
+            'Underwriting',
+            'Business eligibility',
+            'Investor eligibility',
+            'KYC requirements',
+            'Compliance & penalties',
+            'Limits',
+        ]);
+        expect(
+            within(
+                screen.getByRole('table', { name: 'KYC requirements' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Minimum ageYoungest an investor may be.18—');
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Investor eligibility' }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent(
+            'Max investment / note · share of the raiseMost one investor may hold of a single raise.50%brs-2.0-inv-r01',
+        );
+        // Four groups have no rule in this fixture, so each shows its empty state.
+        expect(screen.getAllByText('No rules to show yet.')).toHaveLength(4);
     });
 });
 
@@ -287,13 +327,31 @@ describe('Finance', () => {
                     streams: [
                         {
                             key: 'platform_fee',
+                            rate: { key: 'platform_fee', value: '3%' },
                             paid_by: 'business',
                             collected: { currency: 'RWF', amount: '1800000' },
                         },
                         {
                             key: 'deposit_fees',
+                            rate: null,
                             paid_by: 'investor',
                             collected: { currency: 'RWF', amount: '150000' },
+                        },
+                        {
+                            key: 'resale_fee',
+                            rate: { key: 'resale_fee', value: '2%' },
+                            paid_by: 'seller',
+                            collected: null,
+                        },
+                        {
+                            key: 'loss_reserve',
+                            rate: {
+                                key: 'loss_reserve',
+                                value: '',
+                                term: 'none',
+                            },
+                            paid_by: null,
+                            collected: null,
                         },
                     ],
                 })}
@@ -303,16 +361,39 @@ describe('Finance', () => {
         const region = screen.getByRole('region', {
             name: 'Finance Dashboard',
         });
-        expect(within(region).getAllByText('—')).toHaveLength(2);
+        expect(within(region).getAllByText('—')).toHaveLength(6);
         expect(region).toHaveTextContent('All revenueRWF 2M');
-        expect(region).toHaveTextContent('Primary marketRWF 1.8M');
-
-        const streams = screen.getByRole('table', { name: 'Revenue streams' });
-        expect(within(streams).getAllByRole('row')[1]).toHaveTextContent(
-            'Platform fee · Rozine shareBusinessesRWF 1,800,000',
+        expect(region).toHaveTextContent(
+            'Primary marketRWF 1.8MPlatform fee, Rozine share',
         );
-        expect(within(streams).getAllByRole('row')[2]).toHaveTextContent(
-            'Deposit feesInvestorsRWF 150,000',
+
+        const raise = screen.getByRole('table', { name: 'Primary market' });
+        expect(
+            screen.getByText('What businesses pay to raise money'),
+        ).toBeVisible();
+        expect(within(raise).getAllByRole('row')).toHaveLength(2);
+        expect(within(raise).getAllByRole('row')[1]).toHaveTextContent(
+            'Platform fee · Rozine share3%BusinessesRWF 1,800,000',
+        );
+        expect(screen.getByText('No earnings fees to show yet.')).toBeVisible();
+        expect(
+            within(
+                screen.getByRole('table', {
+                    name: 'Secondary market',
+                }),
+            ).getAllByRole('row')[1],
+        ).toHaveTextContent('Resale fee2%Seller—');
+        const residual = screen.getByRole('table', {
+            name: 'Cost recovery and residuals',
+        });
+        expect(
+            screen.getByText('Small lines. Forecast nothing from them.'),
+        ).toBeVisible();
+        expect(within(residual).getAllByRole('row')[1]).toHaveTextContent(
+            'Deposit fees—InvestorsRWF 150,000',
+        );
+        expect(within(residual).getAllByRole('row')[2]).toHaveTextContent(
+            'Loss reserveNone——',
         );
     });
 });
@@ -465,5 +546,129 @@ describe('A designed screen whose live data is wired elsewhere', () => {
             ),
         ).toBeInTheDocument();
         expect(within(section).queryByRole('tab')).not.toBeInTheDocument();
+    });
+});
+
+describe('App Control', () => {
+    it('shows how much of each sandbox limit is used, as counts and RWF', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    sandbox: [
+                        {
+                            key: 'businesses',
+                            used: '12',
+                            cap: '100',
+                            used_pct: 12,
+                        },
+                        {
+                            key: 'investors',
+                            used: '2400',
+                            cap: '10000',
+                            used_pct: 24,
+                        },
+                        {
+                            key: 'principal',
+                            used: '250000000',
+                            cap: '5000000000',
+                            used_pct: 5,
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const limits = screen.getByRole('table', { name: 'Sandbox limits' });
+        const rows = within(limits).getAllByRole('row');
+
+        expect(rows).toHaveLength(4);
+        expect(rows[1]).toHaveTextContent(
+            'Businesses with an active mandate1210012%',
+        );
+        expect(rows[2]).toHaveTextContent('Verified investors2,40010,00024%');
+        expect(rows[3]).toHaveTextContent(
+            'Principal outstandingRWF 250,000,000RWF 5,000,000,0005%',
+        );
+        expect(screen.getByText('No app settings to show yet.')).toBeVisible();
+    });
+
+    it('lists each app as online, with whether each of its features is built', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    apps: [
+                        {
+                            key: 'investor',
+                            features: [
+                                { key: 'sign_ups', state: 'live' },
+                                { key: 'secondary_market', state: 'not_built' },
+                            ],
+                        },
+                        {
+                            key: 'auditor',
+                            features: [{ key: 'flash_audits', state: 'live' }],
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Apps' }),
+        ).getAllByRole('row');
+
+        expect(rows).toHaveLength(3);
+        expect(rows[1]).toHaveTextContent(
+            'Investor AppOnlineNew sign-ups · Live, Secondary Market · Not built yet',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'Auditor AppOnlineFlash Audits (24h) · Live',
+        );
+    });
+
+    it('lists the businesses that raised most, rated or not, with nothing to edit', () => {
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'app_control',
+                    content: [
+                        {
+                            key: 'b1',
+                            type: 'business',
+                            name: 'GreenLeaf Agro',
+                            sector: 'Agriculture',
+                            rating: { band: 'strong', score: '4.2' },
+                            state: 'active',
+                        },
+                        {
+                            key: 'b2',
+                            type: 'business',
+                            name: 'Sebeya Logistics',
+                            sector: 'Logistics',
+                            rating: null,
+                            state: 'pending',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        const rows = within(
+            screen.getByRole('table', { name: 'Content' }),
+        ).getAllByRole('row');
+
+        expect(rows[1]).toHaveTextContent(
+            'BusinessGreenLeaf Agro · Agriculture · Strong 4.2Active',
+        );
+        expect(rows[2]).toHaveTextContent(
+            'BusinessSebeya Logistics · Logistics · Not rated yetPending verification',
+        );
+        expect(
+            within(
+                screen.getByRole('table', { name: 'Content' }),
+            ).queryAllByRole('button'),
+        ).toEqual([]);
     });
 });

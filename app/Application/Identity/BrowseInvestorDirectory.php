@@ -20,7 +20,7 @@ final class BrowseInvestorDirectory
 
     /**
      * @param  'all'|'verified'|'pending'|'kyc_overdue'|'frozen'|'restricted'  $chip
-     * @param  'portfolio'|'name'  $sort
+     * @param  'portfolio'|'holdings'|'wallet'|'name'  $sort
      * @return Directory
      */
     public function directory(int $actorId, string $chip, string $sort, string $search, int $limit): array

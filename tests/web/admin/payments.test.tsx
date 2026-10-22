@@ -1,9 +1,9 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminPayments from '@/pages/admin/payments';
 import type { AdminPaymentsProps, PayoutInFlight } from '@/types/admin';
 import shellFixture from '../../../resources/fixtures/ui/admin-exceptions-empty.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -37,6 +37,12 @@ const props = (
         staff_access_version: 'staff-access-v1',
         allowed_actions: [],
         from: '2026-10-02T00:00:00+02:00',
+        trend: {
+            from: '2026-10-02T00:00:00+02:00',
+            to: null,
+            grain: 'day',
+            custom: false,
+        },
         stats: [
             {
                 key: 'deposits',
@@ -109,21 +115,21 @@ describe('Payment Center', () => {
         expect(screen.getByText('Deposits')).toBeInTheDocument();
         expect(screen.getByText('3 txns · last 14 days')).toBeInTheDocument();
         expect(screen.getByText('1 txn · last 14 days')).toBeInTheDocument();
-        expect(screen.getByText('0 txns · last 14 days')).toBeInTheDocument();
+        expect(
+            screen.getByText('0 payouts to businesses · last 14 days'),
+        ).toBeInTheDocument();
         expect(screen.getByText('Awaiting the provider')).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Fee schedule in effect' }),
         ).toHaveTextContent(
-            'Platform fee · at disbursement3%Audit Partner share of the fee40%',
+            'Platform fee · at disbursement3%CPA share — Kigali40%',
         );
 
         const movement = screen.getByRole('region', {
             name: 'Money movement',
         });
 
-        expect(movement).toHaveTextContent(
-            'Credited deposits plus paid-out withdrawals per Kigali day, last 14 days',
-        );
+        expect(movement).toHaveTextContent('Last 14 days · grouped by day');
         expect(within(movement).getByText('10-14')).toBeInTheDocument();
         expect(within(movement).getByText('2.5M')).toBeInTheDocument();
 
@@ -149,6 +155,23 @@ describe('Payment Center', () => {
         expect(
             screen.queryByRole('link', { name: 'Show all payouts' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('reloads money movement over the chosen dates, grouped by day or month', () => {
+        render(<AdminPayments {...props()} />);
+
+        const movement = screen.getByRole('region', {
+            name: 'Money movement',
+        });
+
+        expect(movement).toHaveTextContent('Last 14 days · grouped by day');
+        fireEvent.change(within(movement).getByLabelText('From date'), {
+            target: { value: '2026-05-01' },
+        });
+        expect(inertia.reload.at(-1)).toMatchObject({
+            data: { from: '2026-05-01', to: null },
+            only: ['bars', 'trend'],
+        });
     });
 
     it('keeps a single day of movement to one bar wide', () => {

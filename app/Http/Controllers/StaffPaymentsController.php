@@ -25,7 +25,9 @@ class StaffPaymentsController extends Controller
     public function __invoke(ListPaymentsRequest $request, BrowsePayments $payments, GetStaffAccess $access): Response|StaffPaymentsResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
-        $page = $payments->handle($actorId);
+        $from = $request->validated('from');
+        $to = $request->validated('to');
+        $page = $payments->handle($actorId, $from === null ? null : (string) $from, $to === null ? null : (string) $to);
         $staff = $access->handle($actorId);
 
         $resource = new StaffPaymentsResource([...$page, 'policy' => PlatformPolicies::fees(), 'search' => trim((string) $request->validated('q', '')),

@@ -66,6 +66,7 @@ class InvestorDealsResource extends JsonResource
                 'wallet' => $funded ? self::link($request, 'investor.wallet') : null,
                 'notifications' => self::link($request, 'investor.notices'), 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
                 'deposit' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'deposit']) : null,
+                'withdraw' => $funded ? self::link($request, 'investor.wallet', ['kind' => 'withdraw']) : null,
                 'checkout' => $funded && ! $data['restricted'] && $focus !== null ? self::link($request, 'investor.checkout', ['campaign' => (string) $focus['campaign_id']]) : null]];
     }
 

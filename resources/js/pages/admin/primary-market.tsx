@@ -1,5 +1,6 @@
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SearchEmpty } from '@/components/admin/search-empty';
+import { TrendRange } from '@/components/admin/trend-range';
 import {
     CardTitle,
     EmptyState,
@@ -38,7 +39,10 @@ const fillColour = (raise: PrimaryMarketRaise): [string, string] =>
         ? ['bg-[#1d9e75]', 'text-[#157357]']
         : ['bg-[#1e3aff]', 'text-[#1e3aff] dark:text-[#99a3ff]'];
 
-/** "Funding trend": the cash Investors committed per Kigali day, as the server buckets it. */
+/**
+ * "Funding trend": the cash Investors committed per Kigali day, as the server buckets it, over the
+ * last fourteen days or the chosen window of dates (by month over a long one).
+ */
 function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
     const { t } = useTranslation();
 
@@ -47,12 +51,11 @@ function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
             label={t('admin.design.primary_market.trend.title')}
             className="mb-6"
         >
-            <CardTitle>
-                {t('admin.design.primary_market.trend.title')}
-            </CardTitle>
-            <p className="mt-[3px] text-[12px] text-rz-muted">
-                {t('admin.primary.trend.caption')}
-            </p>
+            <TrendRange
+                title={t('admin.design.primary_market.trend.title')}
+                trend={trend}
+                only={['trend']}
+            />
             <div className="mt-5 flex h-[180px] items-end gap-2.5">
                 {trend.bars.length === 0 && (
                     <p className="w-full self-center py-6 text-center text-[12.5px] text-rz-faint">

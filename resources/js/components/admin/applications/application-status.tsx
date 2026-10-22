@@ -65,7 +65,11 @@ export const DECISION_TONE: Record<
 };
 
 /** Reason codes the console explains itself; any other code falls back to the server's text. */
-const REASON_CODES = ['CURRENT_RELEASE_REVIEW_REQUIRED'] as const;
+const REASON_CODES = [
+    'CURRENT_RELEASE_REVIEW_REQUIRED',
+    'DSCR_BELOW_CUTOFF',
+    'RESTRICTION_ACTIVE',
+] as const;
 
 type ReasonCode = (typeof REASON_CODES)[number];
 

@@ -32,7 +32,7 @@ it('updates an open wallet from another context\'s deposit and credit without a 
         $journey->code('cb1', '
             await page.setViewportSize('.BrowserJourney::DESKTOP.');
             await page.goto('.json_encode($journey->base.'/investor/wallet').');
-            await page.getByRole("region", {name:"Available balance"}).getByText("No deposits waiting").waitFor();
+            await page.getByRole("region", {name:"Available balance"}).getByText("Instantly available to invest").waitFor();
             await page.evaluate(() => { window.__beacon = "same document"; window.__reads = 0; });
             page.on("request", (request) => { if (request.url().includes("/changes?")) page.evaluate(() => window.__reads++).catch(() => {}); });');
 
@@ -74,7 +74,7 @@ it('updates an open wallet from another context\'s deposit and credit without a 
             await page.context().setOffline(false);
             await page.evaluate(() => window.dispatchEvent(new Event("online")));
             const balance = page.getByRole("region", {name:"Available balance"});
-            await balance.getByText("No deposits waiting").waitFor({timeout: 25000});
+            await balance.getByText("Instantly available to invest").waitFor({timeout: 25000});
             const text = await balance.textContent();
             if (!text.includes("Available balanceRWF 50,000")) throw new Error("Not credited: " + text);
             if (await page.evaluate(() => window.__beacon) !== "same document") throw new Error("The page was fully reloaded");

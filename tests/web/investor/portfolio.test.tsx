@@ -16,6 +16,7 @@ import maturedFixture from '../../../resources/fixtures/ui/investor-holding-matu
 import planFixture from '../../../resources/fixtures/ui/investor-holding-plan.json';
 import holdingFixture from '../../../resources/fixtures/ui/investor-holding.json';
 import awaitingFixture from '../../../resources/fixtures/ui/investor-portfolio-awaiting-issue.json';
+import earningsFixture from '../../../resources/fixtures/ui/investor-portfolio-earnings.json';
 import emptyFixture from '../../../resources/fixtures/ui/investor-portfolio-empty.json';
 import portfolioMinimalFixture from '../../../resources/fixtures/ui/investor-portfolio-live-minimal.json';
 import portfolioMaturedFixture from '../../../resources/fixtures/ui/investor-portfolio-matured.json';
@@ -135,6 +136,11 @@ describe('Portfolio', () => {
 
         expect(within(risk).getByText('55%')).toBeInTheDocument();
         expect(screen.getByText('Well diversified')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your capital is spread across 6 businesses with no single position dominating. Keep it up.',
+            ),
+        ).toBeInTheDocument();
         expect(screen.getByText('IDLE IN WALLET')).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Reinvest ›' }),
@@ -311,6 +317,16 @@ describe('Portfolio', () => {
 });
 
 describe('Holding detail', () => {
+    it.each([
+        ['2026-09-23T09:00:00+02:00', 'in 10 days'],
+        ['2026-10-02T09:00:00+02:00', 'Tomorrow'],
+        ['2026-10-03T09:00:00+02:00', 'Today'],
+    ])('counts the next payment from the server clock at %s', (now, due) => {
+        render(<InvestorHolding {...{ ...holding(), server_time: now }} />);
+
+        expect(screen.getAllByText(due)).toHaveLength(2);
+    });
+
     it('shows the note’s figures, payments, rating and audited reports', async () => {
         const user = userEvent.setup();
 
@@ -422,6 +438,43 @@ describe('Holding detail', () => {
         expect(screen.getAllByText('Matured')).toHaveLength(1);
         expect(screen.getByText('Fully repaid')).toBeInTheDocument();
         expect(screen.getByText('+0.4')).not.toHaveClass('text-rz-danger-text');
+    });
+
+    it('says the business is on plan, or on watch, from its newest published report', () => {
+        const props = holding(issuedFixture);
+
+        props.holding.latest_report = {
+            month: '2026-09-01T00:00:00+02:00',
+            status: 'healthy',
+            summary: 'Coupon repaid on time.',
+        };
+        const { unmount } = render(<InvestorHolding {...props} />);
+        const report = screen.getByRole('region', { name: 'Latest report' });
+
+        expect(report).toHaveTextContent('September 2026 report');
+        expect(report).toHaveTextContent('On plan');
+        expect(report).toHaveTextContent('Coupon repaid on time.');
+        unmount();
+
+        props.holding.latest_report = {
+            month: '2026-09-01T00:00:00+02:00',
+            status: 'watch',
+            summary: '',
+        };
+        render(<InvestorHolding {...props} />);
+        expect(
+            screen.getByRole('region', { name: 'Latest report' }),
+        ).toHaveTextContent('Watchlist · under review');
+    });
+
+    it('keeps the plain diversification note where the page states no business count', () => {
+        render(<InvestorPortfolio {...portfolio(earningsFixture)} />);
+
+        expect(
+            screen.getByText(
+                'Your capital is spread across several businesses with no single position dominating. Keep it up.',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('lays a holding out in two columns on a wide screen', () => {

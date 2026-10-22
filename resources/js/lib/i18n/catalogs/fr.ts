@@ -1095,6 +1095,11 @@ const fr: Catalog = {
     'admin.design.col.bands': 'Bandes',
     'admin.design.col.filled_mtd': 'Exécuté ce mois',
     'admin.design.col.stream': 'Source',
+    'admin.design.col.limit': 'Limite',
+    'admin.design.col.used': 'Utilisé',
+    'admin.design.col.cap': 'Plafond',
+    'admin.design.col.share': 'Part utilisée',
+    'admin.design.col.rate': 'Taux',
     'admin.design.col.paid_by': 'Payé par',
     'admin.design.col.collected': 'Perçu',
     'admin.design.col.position': 'Position',
@@ -1115,10 +1120,6 @@ const fr: Catalog = {
     'admin.design.col.message': 'Message',
     'admin.design.col.recipient': 'Destinataire',
     'admin.design.col.lesson': 'Leçon',
-    'admin.design.col.time': 'Durée',
-    'admin.design.col.done': 'Terminées',
-    'admin.design.col.score': 'Score',
-    'admin.design.col.points': 'Points',
     'admin.design.col.app': 'Application',
     'admin.design.col.status': 'Statut',
     'admin.design.col.assigned_cpa': 'CPA assigné',
@@ -1256,11 +1257,31 @@ const fr: Catalog = {
     'admin.design.finance.kpi.primary': 'Marché primaire',
     'admin.design.finance.kpi.investor_fees': 'Frais investisseurs',
     'admin.design.finance.kpi.secondary': 'Marché secondaire',
+    'admin.design.finance.kpi.revenue.sub': 'Tous les flux, depuis le début',
+    'admin.design.finance.kpi.primary.sub':
+        'Frais de plateforme, part de Rozine',
+    'admin.design.finance.kpi.investor_fees.sub':
+        'Tranches des frais sur les gains',
+    'admin.design.finance.kpi.secondary.sub': 'Frais de revente',
     'admin.design.finance.tab.streams': 'Sources de revenus',
     'admin.design.finance.tab.ledger': 'Grand livre et versements',
-    'admin.design.finance.streams.title': 'Sources de revenus',
-    'admin.design.finance.streams.empty':
-        'Aucun revenu à afficher pour le moment.',
+    'admin.design.finance.raise.title': 'Marché primaire',
+    'admin.design.finance.raise.sub':
+        'Ce que les entreprises paient pour lever des fonds',
+    'admin.design.finance.raise.empty': 'Aucuns frais de levée à afficher.',
+    'admin.design.finance.earnings.title': 'Frais investisseurs',
+    'admin.design.finance.earnings.sub':
+        'Ce que les investisseurs paient sur leurs gains',
+    'admin.design.finance.earnings.empty':
+        'Aucuns frais sur les gains à afficher.',
+    'admin.design.finance.trades.title': 'Marché secondaire',
+    'admin.design.finance.trades.sub':
+        'Ce que paient les sorties anticipées et les échanges',
+    'admin.design.finance.trades.empty': "Aucuns frais d'échange à afficher.",
+    'admin.design.finance.residual.title': 'Recouvrement des coûts et résidus',
+    'admin.design.finance.residual.sub': "Petites lignes. N'en prévoyez rien.",
+    'admin.design.finance.residual.empty':
+        'Aucune ligne résiduelle à afficher.',
     'admin.design.finance.ledger.title': 'Grand livre et versements',
     'admin.design.finance.ledger.empty':
         'Aucune écriture à afficher pour le moment.',
@@ -1303,18 +1324,131 @@ const fr: Catalog = {
     'admin.messaging.category.audits': 'Audits',
     'admin.messaging.category.support': 'Assistance',
     'admin.messaging.category.general': 'Général',
+    'admin.messaging.audience.investor': 'Investisseurs',
+    'admin.messaging.audience.business': 'Entreprises',
+    'admin.messaging.audience.auditor': 'Partenaires d’audit',
+    'admin.messaging.audience.everyone': 'Tous les titulaires de compte',
+    'admin.messaging.trigger.verification.approved':
+        'La conformité approuve une vérification d’identité',
+    'admin.messaging.trigger.verification.rejected':
+        'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.wallet.deposit_received':
+        'Le prestataire confirme un dépôt',
+    'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
+    'admin.messaging.trigger.wallet.withdrawal_returned':
+        'Un retrait revient dans le portefeuille',
+    'admin.messaging.trigger.primary.refunded':
+        'Une levée se clôt sans atteindre son objectif',
+    'admin.messaging.trigger.primary.report_published':
+        'Le rapport mensuel d’une entreprise détenue est scellé',
+    'admin.messaging.trigger.primary.raise_funded':
+        'Une levée où l’investisseur s’est engagé est entièrement financée',
+    'admin.messaging.trigger.primary.holding_issued':
+        'Des titres sont émis pour l’investisseur',
+    'admin.messaging.trigger.security.password_changed':
+        'Le mot de passe est modifié',
+    'admin.messaging.trigger.security.payout_account_linked':
+        'Un compte de versement est lié',
+    'admin.messaging.trigger.security.payout_account_unlinked':
+        'Un compte de versement est retiré',
+    'admin.messaging.trigger.security.new_device':
+        'Un nouvel appareil se connecte',
+    'admin.messaging.trigger.business.deposit_received':
+        'Le prestataire confirme un dépôt de l’entreprise',
+    'admin.messaging.trigger.business.application_approved':
+        'La demande de financement est approuvée',
+    'admin.messaging.trigger.business.raise_expired':
+        'La levée se clôt sans atteindre son objectif',
+    'admin.messaging.trigger.business.raise_funded':
+        'La levée est entièrement financée',
+    'admin.messaging.trigger.business.disbursement_sent':
+        'Les fonds levés sont versés',
+    'admin.messaging.trigger.business.withdrawal_sent':
+        'Un retrait de l’entreprise est versé',
+    'admin.messaging.trigger.business.withdrawal_returned':
+        'Un retrait de l’entreprise revient',
+    'admin.messaging.trigger.business.report_sealed':
+        'Le partenaire d’audit scelle le rapport mensuel',
+    'admin.messaging.trigger.business.report_review_closing':
+        'Le délai pour cosigner ou contester un rapport se termine',
+    'admin.messaging.trigger.auditor.accreditation_approved':
+        'L’accréditation est approuvée',
+    'admin.messaging.trigger.auditor.accreditation_rejected':
+        'L’accréditation est refusée',
+    'admin.messaging.trigger.auditor.job_offered':
+        'Une mission d’audit est proposée',
+    'admin.messaging.trigger.auditor.report_reminder':
+        'L’équipe rappelle un rapport au partenaire d’audit',
+    'admin.messaging.trigger.auditor.accreditation_renewal_due':
+        'Le renouvellement de la licence arrive à échéance',
+    'admin.messaging.trigger.support.complaint_answered':
+        'Le support répond à une réclamation',
+    'admin.messaging.trigger.support.complaint_resolved':
+        'Une réclamation est résolue',
+    'admin.messaging.automations.live': '{count} automatisations actives',
+    'admin.messaging.automations.fire':
+        'Chacune se déclenche d’elle-même lorsque son événement survient',
+    'admin.messaging.automations.group': 'Automatisations · {audience}',
+    'admin.design.col.on': 'Active',
+    'admin.messaging.timing': 'Dès l’événement · {channels}',
+    'admin.messaging.state.live': 'Active',
+    'admin.messaging.automations.sub':
+        'Chaque avis part de lui-même lorsque son événement est enregistré. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.templates.sub':
+        'Les e-mails transactionnels envoyés par Rozine. Ils ne sont pas encore modifiables depuis la console.',
+    'admin.messaging.template.account.new_device_sign_in':
+        'Connexion depuis un nouvel appareil',
+    'admin.messaging.template.account.one_time_code': 'Code à usage unique',
+    'admin.messaging.template.account.reset_password':
+        'Réinitialisation du mot de passe',
+    'admin.messaging.template.account.verify_email':
+        'Vérification de l’adresse e-mail',
+    'admin.messaging.template.auditor.accreditation_decided':
+        'Décision d’accréditation',
+    'admin.messaging.template.auditor.job_offered': 'Mission d’audit proposée',
+    'admin.messaging.template.business.application_decided':
+        'Décision sur la demande',
+    'admin.messaging.template.business.disbursement_sent':
+        'Décaissement envoyé',
+    'admin.messaging.template.business.raise_expired': 'Levée expirée',
+    'admin.messaging.template.business.repayment_reminder':
+        'Rappel de remboursement',
+    'admin.messaging.template.business.reporting_window_open':
+        'Période de rapport ouverte',
+    'admin.messaging.template.investor.investment_confirmed':
+        'Investissement confirmé',
+    'admin.messaging.template.investor.payment_delayed': 'Paiement retardé',
+    'admin.messaging.template.investor.payout_received': 'Versement reçu',
+    'admin.messaging.template.investor.raise_expired': 'Levée expirée',
+    'admin.messaging.template.investor.report_published': 'Rapport publié',
+    'admin.messaging.template.investor.verification_decided':
+        'Décision de vérification',
+    'admin.messaging.template.investor.wallet_transfer_completed':
+        'Transfert du portefeuille effectué',
     'admin.messaging.no_match':
         'Aucun message ne correspond à votre recherche.',
     'admin.messaging.older': 'Messages plus anciens',
     'admin.messaging.newest': 'Messages les plus récents',
     'admin.design.academies.kpi.completed': 'Leçons terminées',
     'admin.design.academies.kpi.live': 'Leçons en ligne',
-    'admin.design.academies.kpi.quiz': 'Score moyen aux quiz',
-    'admin.design.academies.kpi.points': 'Passif en points',
+    'admin.design.col.track': 'Parcours',
+    'admin.design.col.topics': 'Thèmes',
+    'admin.design.academies.kpi.tracks': 'Parcours',
+    'admin.design.academies.kpi.checks': 'Vérifications rapides',
+    'admin.design.academies.kpi.completed.sub':
+        'Conservé sur l’appareil de chaque apprenant',
+    'admin.design.academies.lessons.sub':
+        'Chaque thème se termine par une vérification rapide. La progression reste sur l’appareil de l’apprenant : les leçons terminées et les scores ne sont donc pas indiqués ici.',
     'admin.design.academies.tab.investor': 'Académie Investisseurs',
     'admin.design.academies.tab.business': 'Académie Entreprises',
     'admin.design.academies.tab.auditor': 'Académie Auditeurs',
     'admin.design.academies.tab.all': 'Toutes',
+    'admin.design.academies.lessons.live': '{count} en ligne',
+    'admin.design.academies.lessons.live_in': '{count} en ligne dans {app}',
+    'admin.design.academies.app.investor': 'l’app Investisseur',
+    'admin.design.academies.app.business': 'l’app Entreprise',
+    'admin.design.academies.app.auditor': 'l’app Auditeur',
+    'admin.design.academies.state.live': 'En ligne',
     'admin.design.academies.lessons.title': 'Leçons',
     'admin.design.academies.lessons.empty':
         'Aucune leçon à afficher pour le moment.',
@@ -1323,11 +1457,40 @@ const fr: Catalog = {
         'Les applications Investisseur, Entreprise et Auditeur et leurs fonctionnalités.',
     'admin.design.app_control.apps.empty':
         "Aucun réglage d'application à afficher pour le moment.",
+    'admin.design.app_control.app.investor': 'Application Investisseur',
+    'admin.design.app_control.app.business': 'Application Entreprise',
+    'admin.design.app_control.app.auditor': 'Application Auditeur',
+    'admin.design.app_control.online': 'En ligne',
+    'admin.design.app_control.feature.sign_ups': 'Nouvelles inscriptions',
+    'admin.design.app_control.feature.secondary_market': 'Marché secondaire',
+    'admin.design.app_control.feature.academy': 'Académie Investisseur',
+    'admin.design.app_control.feature.note_creation': 'Création de RNP',
+    'admin.design.app_control.feature.monthly_reports': 'Rapports mensuels',
+    'admin.design.app_control.feature.auditor_sign_ups':
+        'Inscriptions des auditeurs',
+    'admin.design.app_control.feature.auto_dispatch':
+        'Affectation automatique à 30 km',
+    'admin.design.app_control.feature.flash_audits': 'Audits flash (24 h)',
+    'admin.design.app_control.state.live': 'Actif',
+    'admin.design.app_control.state.not_built': 'Pas encore développé',
+    'admin.design.app_control.sandbox.title': 'Limites du bac à sable',
+    'admin.design.app_control.sandbox.sub':
+        'Part utilisée de chaque limite du bac à sable de la CMA. Rien n’est accepté au-delà d’une limite.',
+    'admin.design.app_control.sandbox.empty':
+        'Aucune utilisation à afficher pour l’instant.',
+    'admin.design.app_control.sandbox.businesses':
+        'Entreprises au mandat actif',
+    'admin.design.app_control.sandbox.investors': 'Investisseurs vérifiés',
+    'admin.design.app_control.sandbox.principal': 'Capital restant dû',
     'admin.design.app_control.content.title': 'Contenu',
     'admin.design.app_control.content.sub':
         'Les éléments des applications Investisseur, Entreprise et Auditeur.',
     'admin.design.app_control.content.empty':
         'Aucun contenu à afficher pour le moment.',
+    'admin.design.app_control.type.business': 'Entreprise',
+    'admin.design.app_control.unrated': 'Pas encore noté',
+    'admin.design.app_control.content_state.active': 'Actif',
+    'admin.design.app_control.content_state.pending': 'Vérification en attente',
     'admin.design.engines.tab.sizing': 'Dimensionnement',
     'admin.design.engines.tab.refinance': 'Refinancement',
     'admin.design.engines.tab.queue': "La file d'attente",
@@ -1359,7 +1522,19 @@ const fr: Catalog = {
     'admin.design.policies.tab.kyc': 'Exigences KYC',
     'admin.design.policies.tab.penalties': 'Conformité et pénalités',
     'admin.design.policies.tab.limits': 'Limites',
-    'admin.design.policies.rules.title': 'Règles',
+    'admin.design.policies.fees.sub':
+        "Ce que chaque partie paie à Rozine, et la part versée à l'auditeur attitré.",
+    'admin.design.policies.underwriting.sub':
+        'Les règles qui décident si une levée est approuvée et à quelles conditions.',
+    'admin.design.policies.business.sub':
+        'Qui peut lever des fonds sur Rozine.',
+    'admin.design.policies.investor.sub': 'Qui peut investir sur Rozine.',
+    'admin.design.policies.kyc.sub':
+        "Ce que chaque partie doit fournir. Un élément requis bloque les opérations tant qu'il manque ; un élément non collecté n'est jamais demandé.",
+    'admin.design.policies.penalties.sub':
+        'Comment Rozine traite les retards, les défauts et les nouvelles vérifications.',
+    'admin.design.policies.limits.sub':
+        "Garde-fous sur l'activité dans les deux applications.",
     'admin.design.policies.rules.empty':
         'Aucune règle à afficher pour le moment.',
     'admin.design.system_health.signals.title': 'Signaux',
@@ -1442,10 +1617,32 @@ const fr: Catalog = {
     'admin.kyc.tab.submitted': "En attente d'examen",
     'admin.kyc.tab.decided': 'Traitées',
     'admin.kyc.table': "Demandes de vérification d'identité",
-    'admin.kyc.col.person': 'Personne',
+    'admin.kyc.queue': 'File de vérification KYC',
     'admin.kyc.col.document': 'Document',
-    'admin.kyc.col.submitted': 'Envoyée',
+    'admin.kyc.col.applicant': 'Demandeur',
+    'admin.kyc.col.checks': 'Contrôles automatiques',
+    'admin.kyc.submitted_ago': 'Envoyé {ago}',
+    'admin.kyc.checks.passed': 'Les {count} contrôles réussis',
+    'admin.kyc.checks.screening':
+        "Âge, numéro d'identité, documents, selfie · pas encore de filtrage",
+    'admin.kyc.check.age': '18 ans ou plus',
+    'admin.kyc.check.id_number': "Format du numéro d'identité",
+    'admin.kyc.check.documents': 'Photos du document envoyées',
+    'admin.kyc.check.selfie': 'Selfie prise',
+    'admin.kyc.stats.aml': 'Alertes LBC',
+    'admin.kyc.stats.sanctions': 'Correspondances sanctions',
+    'admin.kyc.stats.not_connected': 'Non connecté',
+    'admin.kyc.stats.screening_sub': 'Filtrage (KYC-R04) pas encore disponible',
     'admin.kyc.col.status': 'Statut',
+    'admin.kyc.col.decision': 'Décision',
+    'admin.kyc.review': 'Examiner',
+    'admin.kyc.review_named': 'Examiner {name}',
+    'admin.kyc.stats.completion': 'Taux de KYC',
+    'admin.kyc.stats.completion_sub': '{verified} sur {total} vérifiés',
+    'admin.kyc.stats.percent': '{value} %',
+    'admin.kyc.stats.pending': 'Examens en attente',
+    'admin.kyc.stats.turnaround': 'Délai moyen {hours} h',
+    'admin.kyc.stats.turnaround_none': 'Aucune décision en 30 jours',
     'admin.kyc.id_type.national_id': "Carte d'identité nationale",
     'admin.kyc.id_type.passport': 'Passeport',
     'admin.kyc.id_type.drivers_license': 'Permis de conduire',
@@ -1594,6 +1791,7 @@ const fr: Catalog = {
     'admin.engine.report_conduct':
         'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
+    'admin.policy.open': 'Politiques',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",
     'admin.policy.audit_routing': "Seuil d'orientation vers l'audit",
@@ -1603,7 +1801,7 @@ const fr: Catalog = {
     'admin.policy.rdb_certificate': 'Certificat RDB',
     'admin.policy.max_notes': 'Titres max. / entreprise',
     'admin.policy.platform_fee': 'Frais de plateforme · au décaissement',
-    'admin.policy.cpa_share': "Part de l'Audit Partner sur les frais",
+    'admin.policy.cpa_share': 'Part du CPA — Kigali',
     'admin.policy.listing_fee': 'Frais de mise en ligne',
     'admin.policy.repayment_fee': 'Frais de remboursement',
     'admin.payments.policy_title': 'Barème des frais en vigueur',
@@ -1614,17 +1812,177 @@ const fr: Catalog = {
     'admin.kyc.policy_title': 'Règles de conformité en vigueur',
     'admin.policy.min_principal': 'Levée minimale',
     'admin.policy.max_principal': 'Levée maximale',
-    'admin.policy.tenors': 'Durée · mois',
     'admin.policy.first_issue_months': 'Mois audités · première émission',
     'admin.policy.repeat_issue_months': 'Mois audités · émission répétée',
     'admin.policy.withdrawal_min': 'Retrait minimal',
     'admin.policy.withdrawal_max': 'Retrait maximal',
+    'admin.policy.cpa_share_upcountry': 'Part du CPA — hors Kigali',
+    'admin.policy.resale_fee': 'Frais de revente · vendeur',
+    'admin.policy.earnings_fee': 'Tranches des frais sur gains',
+    'admin.policy.cpa_earnings_share': 'Part du CPA sur les frais sur gains',
+    'admin.policy.application_fee': 'Frais de dossier · bac à sable',
+    'admin.policy.withdrawal_fee': 'Frais de retrait',
+    'admin.policy.loss_reserve': 'Réserve pour pertes',
+    'admin.policy.min_rating': 'Note minimale pour lever',
+    'admin.policy.revenue_cap': "Levée maximale · part du chiffre d'affaires",
+    'admin.policy.kyc_reverify': 'Nouvelle vérification KYC',
+    'admin.policy.late_charge': 'Pénalités de retard',
+    'admin.policy.miss_grace': 'Délai de grâce',
+    'admin.policy.default_at': 'Défaut',
+    'admin.policy.auto_freeze': 'Gel automatique en cas de défaut',
+    'admin.policy.min_investment': 'Investissement minimal · une part',
+    'admin.policy.concentration': "Part maximale d'une levée par investisseur",
+    'admin.policy.raise_days': 'Durée de la levée · jours',
+    'admin.policy.resale_listing_days':
+        "Durée d'une annonce de revente · jours",
+    'admin.policy.resale_reservation_minutes':
+        'Réservation de revente · minutes',
+    'admin.policy.cpa_radius': "Rayon d'affectation du CPA",
+    'admin.policy.sandbox_businesses': 'Limite du bac à sable · entreprises',
+    'admin.policy.sandbox_investors': 'Limite du bac à sable · investisseurs',
+    'admin.policy.sandbox_principal':
+        'Limite du bac à sable · capital restant dû',
+    'admin.policy.residency': 'Résidence',
+    'admin.policy.risk_statements':
+        'Déclarations de risque avant un premier investissement',
+    'admin.policy.hint.platform_fee':
+        "Prélevés sur la levée lors du versement à l'entreprise.",
+    'admin.policy.hint.cpa_share':
+        "Part des frais de plateforme versée à l'auditeur attitré pour les dossiers de Kigali.",
+    'admin.policy.hint.cpa_share_upcountry':
+        'La même part pour les dossiers hors de Kigali.',
+    'admin.policy.hint.earnings_fee':
+        "Prélevés sur les gains de l'investisseur. La tranche suit son niveau.",
+    'admin.policy.hint.cpa_earnings_share':
+        "Part des frais sur les gains versée à l'auditeur attitré.",
+    'admin.policy.hint.resale_fee':
+        "Facturés au vendeur quand une note est revendue avant l'échéance.",
+    'admin.policy.hint.listing_fee':
+        "Facturés à l'entreprise pour publier une levée.",
+    'admin.policy.hint.repayment_fee':
+        'Facturés sur chaque remboursement mensuel.',
+    'admin.policy.hint.application_fee':
+        'Facturés pour une demande pendant la phase sandbox.',
+    'admin.policy.hint.withdrawal_fee':
+        'Appliqués aux retraits du portefeuille.',
+    'admin.policy.hint.loss_reserve':
+        'Part des frais mise de côté contre les défauts.',
+    'admin.policy.hint.target_dscr':
+        'La levée maximale est plafonnée pour que la trésorerie couvre les remboursements à ce ratio.',
+    'admin.policy.hint.listing_audit':
+        'Un expert-comptable audite chaque levée avant sa publication.',
+    'admin.policy.hint.audit_routing':
+        'DSCR le plus bas admis. En dessous, la demande est refusée.',
+    'admin.policy.hint.min_rate':
+        "Taux fixe le plus bas d'une note, tout compris.",
+    'admin.policy.hint.max_rate':
+        "Taux fixe le plus haut d'une note, tout compris.",
+    'admin.policy.hint.note_unit_price': "Prix d'une seule note Rozine.",
+    'admin.policy.hint.min_term': "Durée la plus courte d'une note.",
+    'admin.policy.hint.max_term': "Durée la plus longue d'une note.",
+    'admin.policy.hint.min_principal':
+        "Plus petite levée qu'une entreprise peut demander.",
+    'admin.policy.hint.max_principal':
+        "Plus grande levée qu'une entreprise peut demander.",
+    'admin.policy.hint.min_rating':
+        'Note Rozine la plus basse autorisée à lever.',
+    'admin.policy.hint.revenue_cap':
+        "Plus grande levée, en part du chiffre d'affaires annuel vérifié.",
+    'admin.policy.hint.registration_countries':
+        "Où l'entreprise doit être immatriculée.",
+    'admin.policy.hint.min_statement_years':
+        'Années de relevés bancaires ou MoMo exigées.',
+    'admin.policy.hint.min_revenue':
+        "Chiffre d'affaires minimum sur les 12 derniers mois.",
+    'admin.policy.hint.first_issue_months':
+        'Mois de relevés audités avant une première levée.',
+    'admin.policy.hint.repeat_issue_months':
+        'Mois audités avant chaque levée suivante.',
+    'admin.policy.hint.rdb_certificate':
+        "L'entreprise doit fournir un certificat RDB valide.",
+    'admin.policy.hint.max_notes':
+        "Notes en cours ou en remboursement qu'une entreprise peut avoir à la fois.",
+    'admin.policy.hint.residency': "Où l'investisseur doit résider.",
+    'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
+    'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
+    'admin.policy.hint.concentration':
+        "Part maximale d'une levée détenue par un investisseur.",
+    'admin.policy.hint.risk_statements':
+        'Déclarations acceptées avant un premier investissement.',
+    'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
+    'admin.policy.hint.kyc_investor_selfie':
+        'Une photo en direct comparée au document.',
+    'admin.policy.hint.kyc_investor_dob':
+        "Montre que l'investisseur a l'âge requis.",
+    'admin.policy.hint.kyc_investor_address':
+        "L'inscription ne le demande pas.",
+    'admin.policy.hint.kyc_business_rdb':
+        "Vérifié avant qu'une entreprise puisse postuler.",
+    'admin.policy.hint.identity_evidence':
+        'Photos de chaque dossier : recto, verso et selfie.',
+    'admin.policy.hint.kyc_reverify':
+        "Fréquence de la nouvelle vérification d'identité.",
+    'admin.policy.hint.late_charge': 'Ajoutée à une échéance en retard.',
+    'admin.policy.hint.miss_grace':
+        'Quand un paiement manqué devient un retard.',
+    'admin.policy.hint.default_at':
+        'Quand une échéance impayée devient un défaut.',
+    'admin.policy.hint.auto_freeze':
+        'Geler automatiquement une entreprise en défaut.',
+    'admin.policy.hint.complaint_acknowledge':
+        "Délai pour accuser réception d'une plainte.",
+    'admin.policy.hint.complaint_resolve': 'Délai pour résoudre une plainte.',
+    'admin.policy.hint.raise_days': "Durée d'ouverture d'une levée.",
+    'admin.policy.hint.withdrawal_min': 'Plus petit retrait du portefeuille.',
+    'admin.policy.hint.withdrawal_max': 'Plus grand retrait autorisé.',
+    'admin.policy.hint.resale_listing_days': "Durée d'une offre de revente.",
+    'admin.policy.hint.resale_reservation_minutes':
+        "Durée de réservation d'une part avant paiement.",
+    'admin.policy.hint.cpa_radius': "Distance maximale d'envoi d'un auditeur.",
+    'admin.policy.hint.sandbox_businesses':
+        "Plafond d'entreprises actives pendant la sandbox CMA.",
+    'admin.policy.hint.sandbox_investors':
+        "Plafond d'investisseurs vérifiés pendant la sandbox.",
+    'admin.policy.hint.sandbox_principal':
+        'Plafond du capital total levé pendant la sandbox.',
+    'admin.policy.hint.rate_band':
+        "Fourchette de taux fixe d'une note, tout compris.",
+    'admin.policy.hint.dual_control_threshold':
+        'À partir de ce montant, un second approbateur est requis.',
+    'admin.policy.min_rate': 'Taux minimum · fixe',
+    'admin.policy.max_rate': 'Taux maximum · fixe',
+    'admin.policy.note_unit_price': 'Prix unitaire de la note',
+    'admin.policy.min_term': 'Durée minimale · mois',
+    'admin.policy.max_term': 'Durée maximale · mois',
+    'admin.policy.registration_countries': "Pays d'immatriculation autorisés",
+    'admin.policy.kyc_investor_id':
+        "Investisseur · Carte d'identité / passeport",
+    'admin.policy.kyc_investor_selfie': 'Investisseur · Selfie de vivacité',
+    'admin.policy.kyc_investor_dob': 'Investisseur · Date de naissance',
+    'admin.policy.kyc_investor_address':
+        'Investisseur · Justificatif de domicile',
+    'admin.policy.kyc_business_rdb': 'Entreprise · Certificat RDB',
+    'admin.policy.term.rwanda': 'Rwanda',
+    'admin.policy.term.not_collected': 'Non collecté',
+    'admin.policy.term.resident_rwanda': 'Résident au Rwanda',
+    'admin.policy.term.every_deal': 'Exigé pour chaque levée',
+    'admin.policy.term.required': 'Exigé',
+    'admin.policy.term.not_set': 'Non défini',
+    'admin.policy.term.none': 'Aucun',
+    'admin.policy.term.late_from_due': "Aucun · en retard dès l'échéance",
+    'admin.policy.term.day_31': 'Jour 31 sans paiement',
+    'admin.policy.term.late_schedule': '5 % à D, J7 et J30 · plafond 15 %',
     'admin.finance.stream.platform_fee': 'Frais de plateforme · part Rozine',
     'admin.finance.stream.audit_partner_share':
         'Frais de plateforme · part Audit Partner (à payer)',
     'admin.finance.stream.deposit_fees': 'Frais de dépôt',
     'admin.finance.paid_by.business': 'Entreprises',
     'admin.finance.paid_by.investor': 'Investisseurs',
+    'admin.finance.paid_by.seller': 'Vendeur',
+    'admin.finance.stream.earnings_fee': 'Frais sur gains',
+    'admin.finance.stream.resale_fee': 'Frais de revente',
+    'admin.finance.stream.withdrawal_fee': 'Frais de retrait',
+    'admin.finance.stream.loss_reserve': 'Réserve pour pertes',
     'admin.policy.dual_control_threshold': 'Deux approbateurs à partir de',
     'admin.time.now': "à l'instant",
     'admin.time.minutes': 'il y a {count} min',
@@ -1704,6 +2062,8 @@ const fr: Catalog = {
     'admin.today.capital.to_date': 'Date de fin',
     'admin.today.capital.to_time': 'Heure de fin',
     'admin.today.capital.clear': 'Effacer',
+    'admin.trend.refused':
+        'Choisissez une date de fin égale ou postérieure à la date de début.',
     'admin.today.capital.all_time': 'Depuis le début',
     'admin.today.capital.range': '{from} → {to}',
     'admin.today.capital.caption': '{range} · regroupé par {grain}',
@@ -1713,12 +2073,13 @@ const fr: Catalog = {
     'admin.today.capital.grain.hour': 'heure',
     'admin.today.health.title': 'Santé du portefeuille',
     'admin.today.health.caption':
-        '{count} titres en ligne, en financement, en remboursement ou clos',
+        '{count} titres émis, selon leur dernier rapport mensuel',
     'admin.today.health.donut': '{pct} % des titres sains',
     'admin.today.health.healthy_caption': 'sains',
     'admin.today.health.healthy': 'Sain',
     'admin.today.health.watch': 'Sous surveillance',
     'admin.today.health.distressed': 'En difficulté',
+    'admin.today.health.untracked': 'Pas encore suivi',
     'admin.today.activity.title': 'Activité en direct',
     'admin.today.activity.caption': "Dans tout l'écosystème",
     'admin.today.activity.empty': "Aucun mouvement d'argent pour l'instant.",
@@ -1742,6 +2103,7 @@ const fr: Catalog = {
     'admin.today.sectors.tip':
         'Capital en cours par secteur. Le rouge signale au moins un titre sous surveillance ou en difficulté.',
     'admin.today.sectors.notes': '{count} titres',
+    'admin.today.sectors.empty': 'Aucun titre n’a encore été émis.',
     'admin.today.treasury.title': 'Aperçu de la trésorerie',
     'admin.today.treasury.invested': 'Capital investi (primaire)',
     'admin.today.treasury.disbursed': 'Versé aux entreprises',
@@ -1777,6 +2139,11 @@ const fr: Catalog = {
     'admin.applications.older': 'Demandes plus anciennes',
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
+    'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
+        "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
+    'admin.decision.reason_code.RESTRICTION_ACTIVE':
+        'Une restriction de crédit active bloque tout nouvel emprunt.',
+    'admin.applications.term_only': '{term} mois',
     'admin.applications.decision.approve': 'Approbation auto',
     'admin.applications.decision.reject': 'Signal : refus',
     'admin.applications.decision.audit': "Orienter vers l'audit",
@@ -2091,6 +2458,7 @@ const fr: Catalog = {
     'admin.parties.kyc.overdue': 'En retard',
     'admin.parties.kyc.rejected': 'Refusé',
     'admin.parties.status.frozen': 'Gelé',
+    'admin.parties.status.suspended': 'Suspendu',
     'admin.parties.status.restricted': 'Restreint',
     'admin.parties.status.verified': 'Vérifié',
     'admin.parties.status.pending': 'En attente',
@@ -2150,6 +2518,66 @@ const fr: Catalog = {
     'admin.permission.staging.mail.testers.manage': 'Gérer les testeurs e-mail',
     'admin.permission_detail.staging.mail.testers.manage':
         'Choisir qui reçoit les e-mails en préproduction.',
+    'admin.permission.staff.manage': 'Gérer les opérateurs',
+    'admin.permission_detail.staff.manage':
+        "Ajouter un opérateur, ou suspendre ou réactiver l'accès d'un autre opérateur, avec un motif.",
+    'admin.permission.accounts.freeze': 'Geler / suspendre',
+    'admin.permission_detail.accounts.freeze':
+        "Suspendre l'accès d'un investisseur ou d'une entreprise à son application.",
+    'admin.permission.capacity.adjust': 'Ajuster la capacité',
+    'admin.permission_detail.capacity.adjust':
+        "Modifier le montant qu'une entreprise peut lever.",
+    'admin.permission.records.edit': 'Modifier les fiches',
+    'admin.permission_detail.records.edit':
+        "Modifier les informations enregistrées d'une fiche.",
+    'admin.permission.ledger.correct': 'Contre-passations',
+    'admin.permission_detail.ledger.correct':
+        'Corriger une écriture réglée par une nouvelle écriture liée, avec un motif.',
+    'admin.permission.policies.change': 'Règles',
+    'admin.permission_detail.policies.change':
+        "Modifier les règles de tarification, d'éligibilité et d'automatisation.",
+    'admin.permission.records.delete': 'Supprimer',
+    'admin.permission_detail.records.delete':
+        'Retirer définitivement une fiche de la plateforme.',
+    'admin.matrix.withheld.not_built':
+        'Aucun rôle pour l’instant : pas encore disponible',
+    'admin.matrix.withheld.by_rule':
+        "Aucun rôle, par règle : les écritures du grand livre et de l'audit ne sont jamais supprimées",
+    'admin.action_log.title': "Journal des actions d'administration",
+    'admin.staff.approvals.title': 'Approbation super-admin en attente',
+    'admin.staff.approvals.body':
+        'L’accès super-admin reste inchangé jusqu’à l’approbation d’un autre super-admin actuellement autorisé. Le demandeur et le bénéficiaire ne peuvent pas approuver.',
+    'admin.staff.approvals.grant':
+        '{requester} a demandé un accès super-admin.',
+    'admin.staff.approvals.reactivate':
+        '{requester} a demandé la réactivation super-admin.',
+    'admin.staff.approvals.form': 'Approuver l’accès de {recipient}',
+    'admin.staff.approvals.submit': 'Approuver l’accès super-admin',
+    'admin.staff.approvals.waiting':
+        'En attente de l’approbation d’un autre super-admin.',
+    'admin.staff.invite.open': '+ Inviter un opérateur',
+    'admin.staff.invite.title': 'Inviter un opérateur',
+    'admin.staff.invite.body':
+        'Donnez à un compte existant l’accès à la console avec un rôle. L’opérateur crée d’abord son propre compte dédié et active la connexion à deux facteurs. Le changement est consigné avec votre nom et votre motif.',
+    'admin.staff.invite.email': 'E-mail du compte',
+    'admin.staff.invite.role': 'Rôle',
+    'admin.staff.invite.cancel': 'Annuler',
+    'admin.staff.invite.submit': 'Donner l’accès',
+    'admin.staff.signed_in_as': 'Connecté en tant que',
+    'admin.staff.access_full': 'Accès complet',
+    'admin.staff.access_count': '{granted} capacités sur {total}',
+    'admin.action_log.info':
+        "Les dernières modifications des accès du personnel, les plus récentes d'abord : qui les a faites, quel accès a changé et pourquoi.",
+    'admin.action_log.empty':
+        "Aucune action d'administration enregistrée pour l'instant.",
+    'admin.action_log.col.action': 'Action',
+    'admin.action_log.col.by': 'Par',
+    'admin.action_log.col.target': 'Cible',
+    'admin.action_log.col.reason': 'Motif',
+    'admin.action_log.col.when': 'Quand',
+    'admin.action_log.action.staff_suspended': 'Accès suspendu',
+    'admin.action_log.action.staff_enabled': 'Accès activé',
+    'admin.action_log.action.staff_granted': 'Ajouté comme {role}',
     'admin.permission.reconciliation.view': 'Voir le rapprochement',
     'admin.permission_detail.reconciliation.view':
         'Comparer le grand livre aux relevés des prestataires.',
@@ -2208,13 +2636,17 @@ const fr: Catalog = {
     'admin.parties.list.holdings': 'Positions',
     'admin.parties.list.engagements': 'Missions',
     'admin.parties.list_empty': "Rien pour l'instant.",
+    'admin.parties.holding_detail': {
+        one: '{amount} · {count} note',
+        other: '{amount} · {count} notes',
+    },
     'admin.parties.note_status.draft': 'Brouillon',
     'admin.parties.note_status.active': 'En ligne',
     'admin.parties.note_status.funded': 'Financé',
     'admin.parties.note_status.repaying': 'En remboursement',
     'admin.parties.note_status.completed': 'Terminé',
     'admin.parties.note_status.failed': 'Échoué',
-    'admin.parties.history': 'Historique',
+    'admin.parties.history': 'Activité',
     'admin.parties.history_empty': 'Aucune activité enregistrée.',
     'admin.parties.kyc_title': 'KYC et vérification',
     'admin.parties.kyc_current': 'Statut actuel',
@@ -2390,7 +2822,7 @@ const fr: Catalog = {
     'business.servicing.wallet.movement': 'Type de mouvement',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
-    'business.servicing.wallet.entry.deposit': 'Dépôt depuis {counterparty}',
+    'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
     'business.servicing.wallet.instalments': 'Échéances {list}',
     'business.servicing.wallet.empty': 'Rien pour le moment.',
@@ -2991,9 +3423,6 @@ const fr: Catalog = {
     'auditor.profile.pending.payout_title': 'Aucun compte de versement',
     'auditor.profile.pending.payout_body':
         'Le compte bancaire sur lequel vos revenus sont versés apparaîtra ici.',
-    'auditor.profile.pending.learn_title': "Bientôt dans l'application",
-    'auditor.profile.pending.learn_body':
-        "Les leçons de l'Académie des auditeurs apparaîtront ici dès leur publication.",
     'auditor.profile.pending.legal_title': "Bientôt dans l'application",
     'auditor.profile.pending.legal_body':
         "Vos conditions d'engagement pourront être consultées ici.",
@@ -3500,10 +3929,11 @@ const fr: Catalog = {
     'investor.plus.tier.platinum': 'Platine',
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
-    'investor.checkout.pay_with': 'SOURCE DE FINANCEMENT',
     'investor.checkout.wallet': 'Portefeuille',
-    'investor.checkout.wallet_detail':
-        'Portefeuille Rozine · {amount} disponibles',
+    'investor.checkout.funding_source': 'Source de financement',
+    'investor.checkout.wallet_available': 'Disponible : {amount}',
+    'investor.checkout.pay_with': 'Payer avec',
+    'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
     'investor.checkout.insufficient':
         'Le montant dépasse votre solde. Déposez sur votre portefeuille ou réduisez le montant.',
     'investor.checkout.deposit': 'Déposer',
@@ -3525,7 +3955,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': "Confirmer l'investissement · {amount}",
+    'investor.checkout.confirm': 'Confirmer l’investissement · {amount}',
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
@@ -3881,12 +4311,18 @@ const fr: Catalog = {
     'investor.portfolio.balanced': 'Bien diversifié',
     'investor.portfolio.balanced_body':
         'Votre capital est réparti sur plusieurs entreprises sans position dominante. Continuez ainsi.',
+    'investor.portfolio.balanced_count':
+        'Votre capital est réparti sur {count} entreprises sans position dominante. Continuez ainsi.',
     'investor.portfolio.idle': 'INUTILISÉ SUR LE PORTEFEUILLE',
     'investor.portfolio.idle_body': 'Investissez-le dans un nouveau titre.',
     'investor.portfolio.reinvest': 'Réinvestir ›',
     'investor.holding.frozen_title': 'Ce titre est gelé',
     'investor.holding.frozen_body':
         "Rozine a gelé ce titre le temps d'un examen. Les versements reprennent à sa levée ; votre créance reste inchangée.",
+    'investor.holding.latest_report': 'Dernier rapport',
+    'investor.holding.latest_report_month': 'Rapport de {month}',
+    'investor.holding.on_watch': 'Sous surveillance · en cours d’examen',
+    'investor.holding.on_plan': 'Conforme au plan',
     'investor.holding.invested': 'INVESTI',
     'investor.holding.expected_profit': 'PROFIT ATTENDU',
     'investor.holding.yield': 'Rendement de {rate} %',
@@ -3894,6 +4330,9 @@ const fr: Catalog = {
     'investor.holding.principal_yield': 'Capital + rendement',
     'investor.holding.received': 'REÇU À CE JOUR',
     'investor.holding.payments': '{made}/{total} versements',
+    'investor.holding.due.today': 'Aujourd’hui',
+    'investor.holding.due.tomorrow': 'Demain',
+    'investor.holding.due.in_days': 'dans {count} jours',
     'investor.holding.next_payment': 'PROCHAIN VERSEMENT',
     'investor.holding.no_next.matured': 'Entièrement remboursé',
     'investor.holding.no_next.paused': 'Suspendu',
@@ -3957,7 +4396,7 @@ const fr: Catalog = {
     'investor.wallet.panel.withdraw': 'Retirer',
     'investor.wallet.amount': 'MONTANT',
     'investor.wallet.method': 'MOYEN DE PAIEMENT',
-    'investor.wallet.method_to': 'ENVOYER VERS',
+    'investor.wallet.method_to': 'MOYEN DE PAIEMENT',
     'investor.wallet.fee': 'Frais de traitement',
     'investor.wallet.result.deposit': 'Nouveau solde disponible',
     'investor.wallet.result.withdraw': 'Vous recevez',
@@ -3992,7 +4431,6 @@ const fr: Catalog = {
     'investor.wallet.earn.paid': 'PAYÉS',
     'investor.wallet.earn.total': 'TOTAL REÇU',
     'investor.wallet.earn.empty': 'Aucun versement entre ces dates.',
-    'investor.wallet.tx.title': 'Historique des transactions',
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Exporter',
     'investor.wallet.tx.pdf': 'Télécharger le PDF',
@@ -4044,6 +4482,11 @@ const fr: Catalog = {
     'investor.profile.kyc.expired': 'Document expiré',
     'investor.profile.type.individual': 'Particulier',
     'investor.profile.type.institution': 'Institution',
+    'investor.profile.support.label': 'Assistance',
+    'investor.profile.support.title': 'Contacter l’assistance Rozine',
+    'investor.profile.support.sub':
+        'Posez une question ou déposez une réclamation. L’équipe répond dans le centre d’aide.',
+    'investor.profile.support.message': 'Écrire',
     'investor.profile.member_since': 'Membre depuis {date}',
     'investor.profile.item.linked': 'Comptes liés',
     'investor.profile.item.statements': 'Relevés et impôts',
@@ -4095,6 +4538,229 @@ const fr: Catalog = {
     'support.help.still_body':
         'Écrivez-nous. Nous accusons réception de chaque message sous 4 heures.',
     'support.help.still_action': 'Écrire au support',
+    'investor.deals.nudge.tag': 'Continuez à apprendre',
+    'investor.deals.nudge.title': 'Reprendre l’Académie de l’investisseur',
+    'investor.deals.nudge.body':
+        '{done} leçons terminées sur {total}. Reprenez là où vous vous êtes arrêté.',
+    'investor.deals.nudge.later': 'Plus tard',
+    'investor.deals.nudge.continue': 'Continuer',
+    'investor.academy.title': 'Académie de l’investisseur',
+    'investor.academy.learning': 'Apprendre',
+    'investor.academy.summary_start':
+        'Découvrez le fonctionnement des notes Rozine',
+    'investor.academy.summary_resume': 'Reprenez là où vous vous êtes arrêté',
+    'investor.academy.summary_done': 'Toutes les leçons sont terminées',
+    'investor.academy.done_count': '{done} leçons sur {total} terminées',
+    'investor.academy.tracks': '{count} parcours',
+    'investor.academy.intro':
+        'De courtes leçons sur le fonctionnement des notes, des notations et des remboursements. Votre progression est enregistrée sur cet appareil uniquement.',
+    'investor.academy.group.basics': 'Les bases de Rozine',
+    'investor.academy.group.mission': 'Notre mission',
+    'investor.academy.group.investing': 'Investir : les bases',
+    'investor.academy.group.rozine': 'Investir sur Rozine',
+    'investor.academy.group_progress': '{done}/{total} terminées',
+    'investor.academy.status.start': 'Commencer',
+    'investor.academy.status.progress': '{done}/{total}',
+    'investor.academy.status.done': 'Terminé ✓',
+    'investor.academy.close': 'Fermer la leçon',
+    'investor.academy.progress': 'Progression de la leçon',
+    'investor.academy.step': '{step} sur {total}',
+    'investor.academy.got_it': 'Compris',
+    'investor.academy.quick_check': 'Petit test',
+    'investor.academy.correct': 'Bonne réponse',
+    'investor.academy.correct_body': 'C’est exact. Passons à la suite.',
+    'investor.academy.wrong': 'Pas tout à fait',
+    'investor.academy.wrong_body':
+        'Relisez ce thème : il revient une fois avant la fin de la leçon.',
+    'investor.academy.next': 'Suivant',
+    'investor.academy.finish': 'Terminer',
+    'investor.academy.done_title': 'Leçon terminée',
+    'investor.academy.done_body': 'Vous avez terminé « {lesson} ».',
+    'investor.academy.partial_title': 'Pas encore tout à fait',
+    'investor.academy.partial_body':
+        'Vous avez réussi {passed} des {total} vérifications rapides de {lesson}. Reprenez la leçon pour la terminer.',
+    'investor.academy.partial_retry': 'Reprendre la leçon',
+    'investor.academy.done_cta': 'Retour à l’Académie',
+    'investor.academy.lesson.notes.title': 'Les notes Rozine',
+    'investor.academy.lesson.notes.sub':
+        'Ce que vous achetez et comment il rapporte',
+    'investor.academy.lesson.notes.topic1.title': 'Qu’est-ce qu’une note ?',
+    'investor.academy.lesson.notes.topic1.body':
+        'Une note est un prêt court à une entreprise rwandaise vérifiée, vendu par parts de 5 000 RWF. L’entreprise rembourse votre principal et un rendement fixe sur 3 à 6 mois.',
+    'investor.academy.lesson.notes.topic1.q': 'Acheter une note, c’est…',
+    'investor.academy.lesson.notes.topic1.option1':
+        'Prêter à une entreprise vérifiée contre un rendement fixe',
+    'investor.academy.lesson.notes.topic1.option2':
+        'Acheter des actions de Rozine',
+    'investor.academy.lesson.notes.topic1.option3':
+        'Recevoir une prime quoi qu’il arrive',
+    'investor.academy.lesson.notes.topic2.title': 'Rendement et remboursement',
+    'investor.academy.lesson.notes.topic2.body':
+        'Chaque offre indique son rendement total et sa durée. L’entreprise rembourse par mensualités égales, et votre part de chacune est créditée sur votre portefeuille, moins les frais de Rozine sur la part de rendement.',
+    'investor.academy.lesson.notes.topic2.q': 'Votre rendement est versé…',
+    'investor.academy.lesson.notes.topic2.option1':
+        'En une seule fois après un an',
+    'investor.academy.lesson.notes.topic2.option2':
+        'Chaque mois, pendant la durée de la note',
+    'investor.academy.lesson.notes.topic2.option3':
+        'Seulement si vous le demandez',
+    'investor.academy.lesson.wallet.title': 'Votre portefeuille Rozine',
+    'investor.academy.lesson.wallet.sub': 'Dépôts, versements et retraits',
+    'investor.academy.lesson.wallet.topic1.title':
+        'Disponible, réservé et engagé',
+    'investor.academy.lesson.wallet.topic1.body':
+        'L’argent disponible peut être investi ou retiré. L’argent réservé pour un paiement, ou engagé dans une levée que vous avez rejointe, est mis de côté jusqu’à ce que la levée soit complète ou remboursée.',
+    'investor.academy.lesson.wallet.topic1.q':
+        'L’argent engagé dans une levée est…',
+    'investor.academy.lesson.wallet.topic1.option1': 'Retirable à tout moment',
+    'investor.academy.lesson.wallet.topic1.option2': 'Perdu définitivement',
+    'investor.academy.lesson.wallet.topic1.option3':
+        'Mis de côté jusqu’à ce que la levée soit complète ou remboursée',
+    'investor.academy.lesson.wallet.topic2.title': 'Être payé',
+    'investor.academy.lesson.wallet.topic2.body':
+        'Les versements arrivent sur votre portefeuille à chaque échéance. Vous pouvez les placer dans une autre levée ouverte ou les retirer vers un compte vérifié à votre nom.',
+    'investor.academy.lesson.wallet.topic2.q':
+        'Quand une entreprise rembourse, l’argent…',
+    'investor.academy.lesson.wallet.topic2.option1':
+        'Arrive automatiquement sur votre portefeuille',
+    'investor.academy.lesson.wallet.topic2.option2':
+        'Doit être réclamé dans la journée',
+    'investor.academy.lesson.wallet.topic2.option3':
+        'Va directement dans une nouvelle note',
+    'investor.academy.lesson.rating.title': 'Lire la notation Rozine',
+    'investor.academy.lesson.rating.sub': 'Une note, un mot',
+    'investor.academy.lesson.rating.topic1.title':
+        'Ce que signifie la notation',
+    'investor.academy.lesson.rating.topic1.body':
+        'Chaque entreprise reçoit une note sur 5,0 accompagnée d’un mot : Solide (4,0 à 5,0), Stable (3,0 à 3,9), Faible (2,0 à 2,9) ou En difficulté (moins de 2,0). Une entreprise doit obtenir au moins 2,0 pour lever des fonds.',
+    'investor.academy.lesson.rating.topic1.q': 'Une entreprise notée 4,4 est…',
+    'investor.academy.lesson.rating.topic1.option1': 'En difficulté',
+    'investor.academy.lesson.rating.topic1.option2': 'Solide',
+    'investor.academy.lesson.rating.topic1.option3':
+        'Interdite de lever des fonds',
+    'investor.academy.lesson.rating.topic2.title': 'Bien s’en servir',
+    'investor.academy.lesson.rating.topic2.body':
+        'La note est recalculée à chaque rapport mensuel scellé. Une note plus élevée signifie un risque plus faible, pas l’absence de risque : répartissez donc votre argent sur plusieurs notes.',
+    'investor.academy.lesson.rating.topic2.q': 'La notation sert surtout de…',
+    'investor.academy.lesson.rating.topic2.option1': 'Promesse de profit',
+    'investor.academy.lesson.rating.topic2.option2':
+        'Raison de tout placer dans une seule note',
+    'investor.academy.lesson.rating.topic2.option3':
+        'Repère, en plus de la répartition de votre argent',
+    'investor.academy.lesson.mission.title': 'Pourquoi Rozine existe',
+    'investor.academy.lesson.mission.sub': 'Notre mission et nos valeurs',
+    'investor.academy.lesson.mission.topic1.title': 'La mission',
+    'investor.academy.lesson.mission.topic1.body':
+        'Rozine met en relation des investisseurs ordinaires et des entreprises rwandaises vérifiées qui ont besoin de fonds de roulement, pour que les entreprises locales grandissent et que les investisseurs perçoivent un rendement fixe.',
+    'investor.academy.lesson.mission.topic1.q': 'Rozine existe pour…',
+    'investor.academy.lesson.mission.topic1.option1':
+        'Relier les investisseurs à des entreprises locales vérifiées',
+    'investor.academy.lesson.mission.topic1.option2':
+        'Négocier des actions étrangères',
+    'investor.academy.lesson.mission.topic1.option3': 'Vendre des assurances',
+    'investor.academy.lesson.mission.topic2.title': 'La transparence d’abord',
+    'investor.academy.lesson.mission.topic2.body':
+        'Chaque offre s’appuie sur des relevés bancaires et mobile money vérifiés, une visite indépendante sur site et des rapports mensuels scellés : vous voyez dans quoi vous investissez.',
+    'investor.academy.lesson.mission.topic2.q':
+        'Rozine appuie chaque offre sur…',
+    'investor.academy.lesson.mission.topic2.option1':
+        'Les seules promesses de l’entreprise',
+    'investor.academy.lesson.mission.topic2.option2':
+        'Des relevés vérifiés et des rapports mensuels scellés',
+    'investor.academy.lesson.mission.topic2.option3':
+        'Un engagement de Rozine à rembourser',
+    'investor.academy.lesson.fundamentals.title':
+        'Les fondamentaux de l’investissement',
+    'investor.academy.lesson.fundamentals.sub': 'Risque et rendement',
+    'investor.academy.lesson.fundamentals.topic1.title': 'Risque et rendement',
+    'investor.academy.lesson.fundamentals.topic1.body':
+        'Un rendement potentiel plus élevé s’accompagne généralement d’un risque plus élevé. Vous pouvez perdre tout ou partie de l’argent investi si une entreprise ne rembourse pas.',
+    'investor.academy.lesson.fundamentals.topic1.q':
+        'Un rendement potentiel plus élevé s’accompagne en général…',
+    'investor.academy.lesson.fundamentals.topic1.option1': 'D’aucun risque',
+    'investor.academy.lesson.fundamentals.topic1.option2':
+        'D’une promesse de profit',
+    'investor.academy.lesson.fundamentals.topic1.option3':
+        'D’un risque plus élevé',
+    'investor.academy.lesson.fundamentals.topic2.title':
+        'Investir avec un plan',
+    'investor.academy.lesson.fundamentals.topic2.body':
+        'Les notes ne peuvent pas être encaissées avant leur terme : n’investissez que l’argent dont vous n’aurez pas besoin pendant la durée, et décidez à l’avance du montant à placer.',
+    'investor.academy.lesson.fundamentals.topic2.q':
+        'Avant d’investir, il faut…',
+    'investor.academy.lesson.fundamentals.topic2.option1':
+        'N’utiliser que l’argent dont vous n’aurez pas besoin pendant la durée',
+    'investor.academy.lesson.fundamentals.topic2.option2':
+        'Emprunter pour investir davantage',
+    'investor.academy.lesson.fundamentals.topic2.option3':
+        'Prévoir d’encaisser avant le terme',
+    'investor.academy.lesson.diversify.title': 'La diversification',
+    'investor.academy.lesson.diversify.sub': 'Répartissez votre argent',
+    'investor.academy.lesson.diversify.topic1.title': 'Répartir',
+    'investor.academy.lesson.diversify.topic1.body':
+        'Répartir votre argent entre plusieurs entreprises réduit l’effet sur votre total d’une entreprise qui paie en retard.',
+    'investor.academy.lesson.diversify.topic1.q': 'Diversifier sert surtout à…',
+    'investor.academy.lesson.diversify.topic1.option1':
+        'Faire rapporter plus chaque note',
+    'investor.academy.lesson.diversify.topic1.option2':
+        'Réduire l’effet d’une seule entreprise',
+    'investor.academy.lesson.diversify.topic1.option3': 'Supprimer tout risque',
+    'investor.academy.lesson.diversify.topic2.title':
+        'Varier secteurs et durées',
+    'investor.academy.lesson.diversify.topic2.body':
+        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous pouvez détenir au plus la moitié d’une levée.',
+    'investor.academy.lesson.diversify.topic2.q':
+        'Varier secteurs et durées vous aide à…',
+    'investor.academy.lesson.diversify.topic2.option1':
+        'Ne pas dépendre d’un seul choc',
+    'investor.academy.lesson.diversify.topic2.option2': 'Payer moins de frais',
+    'investor.academy.lesson.diversify.topic2.option3':
+        'Détenir plus de la moitié d’une levée',
+    'investor.academy.lesson.deals.title': 'Choisir une offre',
+    'investor.academy.lesson.deals.sub': 'Lire la page de l’offre',
+    'investor.academy.lesson.deals.topic1.title': 'Ce qu’il faut vérifier',
+    'investor.academy.lesson.deals.topic1.body':
+        'Sur chaque page d’offre, regardez la notation, le rendement, la durée, ce qui reste à financer, les chiffres vérifiés et les rapports mensuels scellés avant de vous engager.',
+    'investor.academy.lesson.deals.topic1.q': 'Avant d’investir, examinez…',
+    'investor.academy.lesson.deals.topic1.option1':
+        'Seulement le nom de l’entreprise',
+    'investor.academy.lesson.deals.topic1.option2':
+        'Le nombre de personnes qui l’ont aimée',
+    'investor.academy.lesson.deals.topic1.option3':
+        'La notation, le rendement, la durée et les chiffres vérifiés',
+    'investor.academy.lesson.deals.topic2.title': 'Combien vous pouvez placer',
+    'investor.academy.lesson.deals.topic2.body':
+        'Les notes sont vendues par parts de 5 000 RWF : vous pouvez commencer avec une seule part. Un investissement ne peut jamais dépasser ce qui reste à financer.',
+    'investor.academy.lesson.deals.topic2.q':
+        'Le plus petit investissement est…',
+    'investor.academy.lesson.deals.topic2.option1': '1 000 000 RWF',
+    'investor.academy.lesson.deals.topic2.option2': 'Une part de 5 000 RWF',
+    'investor.academy.lesson.deals.topic2.option3': 'La moitié de la levée',
+    'investor.academy.lesson.repayments.title': 'Remboursements et versements',
+    'investor.academy.lesson.repayments.sub': 'Comment vous êtes remboursé',
+    'investor.academy.lesson.repayments.topic1.title': 'Payé pendant la durée',
+    'investor.academy.lesson.repayments.topic1.body':
+        'Avant de vous engager, vous voyez les montants des remboursements et la durée. La première mensualité est due un mois complet après le versement effectif des fonds à l’entreprise, puis chaque mois le même jour (ou le dernier jour du mois si nécessaire). Les dates exactes sont fixées et affichées à l’émission des notes.',
+    'investor.academy.lesson.repayments.topic1.q':
+        'Les remboursements Rozine sont…',
+    'investor.academy.lesson.repayments.topic1.option1':
+        'Mensuels, selon un échéancier fixé',
+    'investor.academy.lesson.repayments.topic1.option2':
+        'Un paiement unique à la fin',
+    'investor.academy.lesson.repayments.topic1.option3':
+        'Quand l’entreprise le décide',
+    'investor.academy.lesson.repayments.topic2.title': 'Réinvestir ou retirer',
+    'investor.academy.lesson.repayments.topic2.body':
+        'Chaque versement vous appartient : placez-le dans une autre levée ouverte ou retirez-le. Rien n’est réinvesti automatiquement.',
+    'investor.academy.lesson.repayments.topic2.q':
+        'Quand vous recevez un versement, vous pouvez…',
+    'investor.academy.lesson.repayments.topic2.option1':
+        'Seulement le laisser dans la note',
+    'investor.academy.lesson.repayments.topic2.option2':
+        'Seulement l’utiliser pour des frais',
+    'investor.academy.lesson.repayments.topic2.option3':
+        'Le réinvestir ou le retirer',
+
     'investor.help.group.start': 'Premiers pas',
     'investor.help.group.returns': 'Rendements et versements',
     'investor.help.group.risk': 'Risque et vérification des entreprises',
@@ -4756,7 +5422,7 @@ const fr: Catalog = {
         "Une restriction s'applique depuis le {date}. Les dépôts restent possibles.",
     'investor.wallet.c3.restricted_unavailable':
         "Une restriction s'applique depuis le {date}. Les dépôts ne sont pas disponibles pour le moment.",
-    'investor.wallet.c3.no_pending': 'Aucun dépôt en attente',
+    'investor.wallet.c3.no_pending': 'Disponible tout de suite pour investir',
     'investor.wallet.c3.pending_deposits':
         '{amount} pas encore confirmé — hors du total',
     'investor.wallet.c3.no_policy':
@@ -4778,19 +5444,24 @@ const fr: Catalog = {
     },
     'investor.wallet.c3.hold_expires': 'Libéré dans {time} sauf confirmation',
     'investor.wallet.c3.deposits': 'Dépôts',
-    'investor.wallet.c3.deposit_from': 'Dépôt depuis {method}',
+    'investor.wallet.c3.deposit_from': 'Dépôt · {method}',
     'investor.wallet.c3.intent.pending': 'Pas encore confirmé',
     'investor.wallet.c3.intent.unknown':
         'Pas encore confirmé — nous vérifions auprès du prestataire',
     'investor.wallet.c3.intent.succeeded': 'Crédité',
     'investor.wallet.c3.intent.failed': "Non abouti — rien n'a été crédité",
-    'investor.wallet.c3.entry.deposit_in': 'Dépôt depuis {counterparty}',
+    'investor.wallet.c3.entry.deposit_in': 'Dépôt · {counterparty}',
     'investor.wallet.c3.entry.deposit_out': 'Virement vers {counterparty}',
     'investor.wallet.c3.entry.hold': 'Réservé pour {name}',
     'investor.wallet.c3.entry.hold_release': 'Réservation libérée · {name}',
-    'investor.wallet.c3.entry.commitment': 'Engagé dans {name}',
+    'investor.wallet.c3.entry.commitment': 'Investissement · {name}',
     'investor.wallet.c3.entry.commitment_refund': 'Remboursement · {name}',
     'investor.wallet.c3.movement': 'Type de mouvement',
+    'investor.wallet.c3.period': 'Période',
+    'investor.wallet.c3.range.today': 'Aujourd’hui',
+    'investor.wallet.c3.range.7d': '7 jours',
+    'investor.wallet.c3.range.30d': '30 jours',
+    'investor.wallet.c3.range.all': 'Tout',
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',
@@ -4811,7 +5482,7 @@ const fr: Catalog = {
     'investor.wallet.c3.withdraw_only_on_success':
         'Le montant quitte votre solde disponible maintenant et est versé dès que le prestataire confirme. Si le versement échoue, il revient dans votre portefeuille.',
     'investor.wallet.c3.withdrawals': 'Retraits',
-    'investor.wallet.c3.withdrawal_to': 'Retrait vers {method}',
+    'investor.wallet.c3.withdrawal_to': 'Retrait · {method}',
     'investor.wallet.c3.withdrawal.pending': "En cours d'envoi",
     'investor.wallet.c3.withdrawal.unknown':
         "En cours d'envoi — nous vérifions auprès du prestataire",
@@ -4824,7 +5495,7 @@ const fr: Catalog = {
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED':
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
-    'investor.wallet.c3.entry.withdrawal_out': 'Retrait vers {counterparty}',
+    'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
     'business.publish.release.awaiting':
@@ -5089,6 +5760,32 @@ const fr: Catalog = {
         "Rapport d'audit de mise en ligne",
     'admin.applications.release.gate_state.passed': 'Réussi',
     'admin.applications.release.gate_state.failed': 'Bloqué',
+    'admin.applications.release.cause.ENGINE_GATE_FAILED':
+        'Les critères de crédit du moteur de notation ne sont pas remplis.',
+    'admin.applications.release.cause.AUTHORITY_CHANGED':
+        "Le pouvoir de signature de l'entreprise a changé après sa signature.",
+    'admin.applications.release.cause.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise n'est pas vérifié.",
+    'admin.applications.release.cause.REPORT_NOT_CURRENT':
+        "Le rapport d'audit n'est plus à jour.",
+    'admin.applications.release.cause.EXPOSURE_RESERVATION_REQUIRED':
+        "Aucune réservation d'emprunt n'est enregistrée pour cette demande.",
+    'admin.applications.release.cause.SIGNATURES_REQUIRED':
+        "Tous les signataires requis n'ont pas signé à l'étape Revue.",
+    'admin.applications.release.cause.STAFF_RELEASE_REQUIRED':
+        "La validation enregistrée ne correspond plus à ce que l'entreprise a signé.",
+    'admin.applications.release.cause.TERMS_CHANGED':
+        "Les conditions ont changé après la signature de l'entreprise.",
+    'admin.applications.release.cause.FEE_DISCLOSURE_CHANGED':
+        "L'information sur les frais de cotation a changé.",
+    'admin.applications.release.cause.QUOTE_STALE':
+        "Le devis n'est plus à jour.",
+    'admin.applications.release.cause.RESTRICTION_ACTIVE':
+        "Une restriction s'applique à cette entreprise.",
+    'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
+        "Cette vérification n'a pas pu être effectuée.",
+    'admin.applications.release.cause.other':
+        "Cette vérification n'a pas réussi.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',
@@ -5198,6 +5895,12 @@ const fr: Catalog = {
     'investor.checkout.c3.reserve': 'Réserver · {amount}',
     'investor.notices.title': 'Notifications',
     'investor.notices.unread_count': '{count} non lues',
+    'investor.notices.ago.now': 'À l’instant',
+    'investor.notices.ago.minutes': 'il y a {count} min',
+    'investor.notices.ago.hour': 'il y a 1 heure',
+    'investor.notices.ago.hours': 'il y a {count} heures',
+    'investor.notices.ago.day': 'il y a 1 jour',
+    'investor.notices.ago.days': 'il y a {count} jours',
     'investor.notices.unread': 'Non lue',
     'investor.notices.mark_all': 'Tout marquer comme lu',
     'investor.notices.close': 'Fermer les notifications',
@@ -5988,6 +6691,13 @@ const fr: Catalog = {
     'admin.exceptions.filtered_body':
         'Choisissez Toutes pour voir chaque exception ouverte.',
     'admin.notes.tabs': 'Notes par état',
+    'admin.notes.sort_label': 'Trier les notes',
+    'admin.notes.sort.newest': 'Tri : plus récentes',
+    'admin.notes.sort.raised': 'Tri : capital levé',
+    'admin.notes.sort.yield': 'Tri : rendement',
+    'admin.notes.sort.funded': 'Tri : % financé',
+    'admin.notes.sort.investors': 'Tri : investisseurs',
+    'admin.notes.sort.term': 'Tri : durée',
     'admin.notes.state.live': 'En cours',
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',
@@ -6010,11 +6720,13 @@ const fr: Catalog = {
     'admin.payments.title': 'Paiements en cours',
     'admin.payments.caption':
         'Retraits dont les fonds sont bloqués pendant que le prestataire confirme le paiement. Chacun est versé, ou revient au portefeuille, selon le résultat vérifié.',
-    'admin.payments.movement.caption':
-        'Dépôts crédités et retraits versés par jour (Kigali), 14 derniers jours',
     'admin.payments.kpi.count': {
         one: '{count} opération · 14 derniers jours',
         other: '{count} opérations · 14 derniers jours',
+    },
+    'admin.payments.kpi.disbursed_count': {
+        one: '{count} versement aux entreprises · 14 derniers jours',
+        other: '{count} versements aux entreprises · 14 derniers jours',
     },
     'admin.payments.kpi.in_flight': 'Paiements en cours',
     'admin.payments.kpi.in_flight.sub': 'En attente du prestataire',
@@ -6045,8 +6757,7 @@ const fr: Catalog = {
     'admin.primary.lifecycle.inventory_unavailable': 'Indisponible',
     'admin.primary.lifecycle.sold_out_pending_settlement': 'Épuisée',
     'admin.primary.lifecycle.closing_pending_settlement': 'Clôture en cours',
-    'admin.primary.trend.caption':
-        'Montants engagés dans les levées chaque jour, sur les 14 derniers jours.',
+    'admin.primary.trend.last_14': '14 derniers jours',
     'admin.primary.more': 'Plus de levées en cours',
     'admin.primary.empty_title': 'Aucune levée en cours',
     'admin.primary.empty_body':
@@ -6232,8 +6943,16 @@ const fr: Catalog = {
     'admin.health.treasury.detail':
         'Aucun solde de trésorerie n’est encore enregistré',
     'admin.health.frozen.label': 'Comptes gelés',
-    'admin.health.frozen.detail':
-        'Le gel des comptes n’est pas encore disponible',
+    'admin.health.frozen.detail': "comptes dont l'accès est suspendu",
+    'admin.health.frozen.rec.healthy': {
+        one: "Aucun compte opérateur n'est actuellement restreint.",
+        other: "Aucun compte opérateur n'est actuellement restreint.",
+    },
+    'admin.health.frozen.rec.watch': {
+        one: '{count} compte opérateur est gelé. Vérifiez-le dans Personnel et rôles.',
+        other: '{count} comptes opérateurs sont gelés. Vérifiez-les dans Personnel et rôles.',
+    },
+    'admin.health.frozen.action': 'Ouvrir Personnel et rôles',
     'admin.complaints.title': 'Réclamations',
     'admin.complaints.caption':
         'Accuser réception sous 4 heures et résoudre sous 48, ou dire au client pourquoi et quand (BRS CMP-R03).',
@@ -6273,6 +6992,274 @@ const fr: Catalog = {
         "Le client la lit dans l'application et reçoit une notification. Une résolution clôt la réclamation.",
     'admin.complaints.closed':
         'Cette réclamation est résolue. Rien ne peut plus y être ajouté.',
+    'auditor.academy.title': 'Académie de l’auditeur',
+    'auditor.academy.intro':
+        'De courtes leçons sur la vérification, les rapports scellés et votre rémunération sur Rozine, couvrant les règles actuelles et les conditions documentées des futurs remboursements. Les conditions futures sont signalées dans les leçons. Votre progression est enregistrée sur cet appareil uniquement.',
+    'auditor.academy.summary_start':
+        'Découvrez le fonctionnement de la vérification sur Rozine',
+    'auditor.academy.resume': 'Reprendre : {lesson}',
+    'auditor.academy.review': 'Revoir l’Académie',
+    'auditor.academy.browse': 'Voir toutes les leçons',
+    'auditor.academy.group.role': 'Votre rôle',
+    'auditor.academy.group.assignments': 'Comment le travail vous parvient',
+    'auditor.academy.group.verification': 'Vérifier une entreprise',
+    'auditor.academy.group.monthly': 'Chaque mois',
+    'auditor.academy.group.visits': 'Audits éclair et visites d’arriérés',
+    'auditor.academy.group.pay': 'Votre rémunération',
+    'auditor.academy.lesson.role.title': 'Qui vous êtes',
+    'auditor.academy.lesson.role.sub': 'Le contrôle agréé et indépendant',
+    'auditor.academy.lesson.role.topic1.title':
+        'Un expert-comptable indépendant',
+    'auditor.academy.lesson.role.topic1.body':
+        'Vous êtes un Partenaire d’audit : un expert-comptable certifié indépendant, agréé par l’ICPAR et sous contrat avec Rozine. Vous vérifiez sur place ce que les relevés seuls ne peuvent prouver, avant qu’une entreprise ne lève des fonds et chaque mois tant que sa note est en cours.',
+    'auditor.academy.lesson.role.topic1.q':
+        'Qui peut vérifier les entreprises sur Rozine ?',
+    'auditor.academy.lesson.role.topic1.option1':
+        'Uniquement des experts-comptables agréés et indépendants',
+    'auditor.academy.lesson.role.topic1.option2':
+        'Tout membre du personnel de Rozine',
+    'auditor.academy.lesson.role.topic1.option3':
+        'Le comptable de l’entreprise',
+    'auditor.academy.lesson.role.topic2.title': 'Votre agrément',
+    'auditor.academy.lesson.role.topic2.body':
+        'Votre agrément ICPAR est contrôlé lors de votre accréditation, puis avant chaque mission. Un agrément expiré bloque toute nouvelle mission le jour même.',
+    'auditor.academy.lesson.role.topic2.q':
+        'Votre agrément expire aujourd’hui. Que se passe-t-il ?',
+    'auditor.academy.lesson.role.topic2.option1':
+        'Vous gardez un mois de délai de grâce',
+    'auditor.academy.lesson.role.topic2.option2':
+        'Vous ne recevez plus de nouvelle mission dès aujourd’hui',
+    'auditor.academy.lesson.role.topic2.option3':
+        'Rien avant la fin de votre prochain audit',
+    'auditor.academy.lesson.independence.title': 'Indépendance',
+    'auditor.academy.lesson.independence.sub':
+        'Conflits et informations privilégiées',
+    'auditor.academy.lesson.independence.topic1.title':
+        'Déclarez chaque conflit',
+    'auditor.academy.lesson.independence.topic1.body':
+        'Vous déclarez tout conflit d’intérêts. Vous n’êtes jamais affecté à une entreprise avec laquelle vous ou votre cabinet avez une relation.',
+    'auditor.academy.lesson.independence.topic1.q':
+        'Votre cabinet tient la comptabilité d’une entreprise. Pouvez-vous la vérifier ?',
+    'auditor.academy.lesson.independence.topic1.option1':
+        'Oui, si vous le mentionnez dans le rapport',
+    'auditor.academy.lesson.independence.topic1.option2':
+        'Seulement pour un audit éclair',
+    'auditor.academy.lesson.independence.topic1.option3':
+        'Non, elle ne peut pas vous être confiée',
+    'auditor.academy.lesson.independence.topic2.title':
+        'Ne négociez jamais sur ce que vous savez',
+    'auditor.academy.lesson.independence.topic2.body':
+        'Un rapport, une notation ou des arriérés ne sont publics qu’une fois publiés par Rozine. Acheter une note que vous vérifiez entre le scellement de son rapport et sa publication ouvre un dossier de surveillance.',
+    'auditor.academy.lesson.independence.topic2.q':
+        'Vous avez scellé un bon rapport aujourd’hui, publié demain. Pouvez-vous acheter la note aujourd’hui ?',
+    'auditor.academy.lesson.independence.topic2.option1':
+        'Non, cela ouvre un dossier de surveillance',
+    'auditor.academy.lesson.independence.topic2.option2':
+        'Oui, le rapport est déjà scellé',
+    'auditor.academy.lesson.independence.topic2.option3':
+        'Oui, si le montant est faible',
+    'auditor.academy.lesson.dispatch.title': 'Missions',
+    'auditor.academy.lesson.dispatch.sub':
+        'L’expert éligible le plus proche, à 30 km au plus',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Dans un rayon de 30 km',
+    'auditor.academy.lesson.dispatch.topic1.body':
+        'Le travail va à l’expert-comptable éligible le plus proche dont le bureau se trouve à 30 km au plus des locaux de l’entreprise. Éligible signifie un agrément valide, aucun conflit déclaré et une rotation qui le permet.',
+    'auditor.academy.lesson.dispatch.topic1.q':
+        'Une entreprise est à 31 km de votre bureau. Que se passe-t-il ?',
+    'auditor.academy.lesson.dispatch.topic1.option1':
+        'Elle vous est proposée si personne n’est plus proche',
+    'auditor.academy.lesson.dispatch.topic1.option2':
+        'Elle ne vous est jamais proposée',
+    'auditor.academy.lesson.dispatch.topic1.option3':
+        'Vous pouvez la réclamer dans la liste',
+    'auditor.academy.lesson.dispatch.topic2.title': 'Rotation',
+    'auditor.academy.lesson.dispatch.topic2.body':
+        'Les experts-comptables tournent entre les entreprises, pour qu’aucun ne vérifie indéfiniment la même. Rozine fixe le nombre de mois consécutifs pendant lesquels un expert peut vérifier une entreprise.',
+    'auditor.academy.lesson.dispatch.topic2.q':
+        'Pourquoi les experts-comptables tournent-ils ?',
+    'auditor.academy.lesson.dispatch.topic2.option1':
+        'Pour répartir la rémunération également',
+    'auditor.academy.lesson.dispatch.topic2.option2':
+        'Parce que les agréments expirent chaque mois',
+    'auditor.academy.lesson.dispatch.topic2.option3':
+        'Pour qu’aucun expert ne vérifie indéfiniment la même entreprise',
+    'auditor.academy.lesson.baseline.title': 'Le rapport initial',
+    'auditor.academy.lesson.baseline.sub': 'Aucune note n’est publiée sans lui',
+    'auditor.academy.lesson.baseline.topic1.title': 'Avant toute publication',
+    'auditor.academy.lesson.baseline.topic1.body':
+        'Aucune note n’est publiée avant que vous ayez visité l’entreprise et scellé un rapport initial. Vous appliquez sur place des procédures convenues selon la norme ISRS 4400, et le rapport scellé est publié avec l’offre.',
+    'auditor.academy.lesson.baseline.topic1.q':
+        'Une levée peut-elle s’ouvrir avant le scellement de son rapport initial ?',
+    'auditor.academy.lesson.baseline.topic1.option1': 'Non, jamais',
+    'auditor.academy.lesson.baseline.topic1.option2':
+        'Oui, avec un avertissement aux investisseurs',
+    'auditor.academy.lesson.baseline.topic1.option3':
+        'Oui, pour les petites levées',
+    'auditor.academy.lesson.baseline.topic2.title': 'Règles de preuve',
+    'auditor.academy.lesson.baseline.topic2.body':
+        'Les photos proviennent uniquement de l’appareil photo de l’application, avec la position en direct. Les imports depuis la galerie sont bloqués et une photo prise hors du périmètre des locaux est refusée.',
+    'auditor.academy.lesson.baseline.topic2.q':
+        'Vous avez pris une photo hier avec l’appareil photo de votre téléphone. Pouvez-vous l’importer ?',
+    'auditor.academy.lesson.baseline.topic2.option1':
+        'Oui, depuis votre galerie',
+    'auditor.academy.lesson.baseline.topic2.option2':
+        'Non, seules les photos prises en direct dans l’application comptent',
+    'auditor.academy.lesson.baseline.topic2.option3':
+        'Oui, si vous ajoutez une note',
+    'auditor.academy.lesson.differences.title': 'Écarts et scellement',
+    'auditor.academy.lesson.differences.sub':
+        'Ce qui bloque le scellement et ce qu’il garantit',
+    'auditor.academy.lesson.differences.topic1.title': 'Expliquez chaque écart',
+    'auditor.academy.lesson.differences.topic1.body':
+        'Tout écart inexpliqué entre les registres de l’entreprise et ce que vous constatez sur place bloque le scellement. Expliquez chaque écart dans le rapport, sinon il ne peut pas être scellé.',
+    'auditor.academy.lesson.differences.topic1.q':
+        'Vous comptez moins de stock que ne l’indiquent les registres et ne pouvez l’expliquer. Pouvez-vous sceller ?',
+    'auditor.academy.lesson.differences.topic1.option1':
+        'Oui, si l’écart est faible',
+    'auditor.academy.lesson.differences.topic1.option2':
+        'Oui, avec un commentaire',
+    'auditor.academy.lesson.differences.topic1.option3':
+        'Non, le scellement est bloqué',
+    'auditor.academy.lesson.differences.topic2.title':
+        'Ce que garantit le scellement',
+    'auditor.academy.lesson.differences.topic2.body':
+        'Un rapport scellé est verrouillé par un sceau SHA-256 qui lie votre identité, votre agrément, son contenu et l’heure. Une fois scellé, rien ne peut y être modifié.',
+    'auditor.academy.lesson.differences.topic2.q': 'Que lie le sceau ?',
+    'auditor.academy.lesson.differences.topic2.option1':
+        'Votre identité, votre agrément, le contenu et l’heure',
+    'auditor.academy.lesson.differences.topic2.option2':
+        'Seulement le nom de l’entreprise',
+    'auditor.academy.lesson.differences.topic2.option3':
+        'Les investisseurs qui détiennent la note',
+    'auditor.academy.lesson.numbers.title': 'Les chiffres derrière une offre',
+    'auditor.academy.lesson.numbers.sub': 'Ce que vos contrôles confirment',
+    'auditor.academy.lesson.numbers.topic1.title': 'CFADS',
+    'auditor.academy.lesson.numbers.topic1.body':
+        'Le flux de trésorerie disponible pour le service de la dette correspond aux encaissements mensuels vérifiés, moins les charges d’exploitation, les prélèvements du propriétaire et les remboursements de dettes existantes. 4 200 000 RWF après charges, moins 600 000 de prélèvements et un remboursement de prêt de 400 000, donnent 3 200 000.',
+    'auditor.academy.lesson.numbers.topic1.q':
+        'Encaissements après charges : 5 000 000 RWF, prélèvements : 1 000 000, remboursement de prêt existant : 500 000. Quel est le CFADS ?',
+    'auditor.academy.lesson.numbers.topic1.option1': '3 500 000 RWF',
+    'auditor.academy.lesson.numbers.topic1.option2': '4 000 000 RWF',
+    'auditor.academy.lesson.numbers.topic1.option3': '5 500 000 RWF',
+    'auditor.academy.lesson.numbers.topic2.title': 'Couverture et offre',
+    'auditor.academy.lesson.numbers.topic2.body':
+        'La couverture est le CFADS divisé par l’échéance proposée. L’offre est la plus basse entre la demande, le montant à une couverture de 1,50, 35 % du chiffre d’affaires annuel vérifié et 100 000 000 RWF. Vos contrôles sur place confirment les registres sur lesquels reposent ces chiffres.',
+    'auditor.academy.lesson.numbers.topic2.q':
+        'À quelle couverture Rozine calcule-t-elle une offre ?',
+    'auditor.academy.lesson.numbers.topic2.option1': '1,00',
+    'auditor.academy.lesson.numbers.topic2.option2': '1,50',
+    'auditor.academy.lesson.numbers.topic2.option3': '1,25',
+    'auditor.academy.lesson.cycle.title': 'Le cycle mensuel',
+    'auditor.academy.lesson.cycle.sub': 'La fenêtre calendaire actuelle',
+    'auditor.academy.lesson.cycle.topic1.title':
+        'Au plus tard le 7, heure de Kigali',
+    'auditor.academy.lesson.cycle.topic1.body':
+        'Dans l’application actuelle, scellez le rapport de chaque mois audité au plus tard à la fin du 7 du mois suivant (heure de Kigali). Suivez l’échéance affichée sur le rapport ; elle ne se déplace pas avec le jour de paiement d’une note.',
+    'auditor.academy.lesson.cycle.topic1.q':
+        'Dans l’application actuelle, avant quelle date faut-il sceller l’audit mensuel de septembre ?',
+    'auditor.academy.lesson.cycle.topic1.option1': 'Le 7 octobre',
+    'auditor.academy.lesson.cycle.topic1.option2': 'Le 15 octobre',
+    'auditor.academy.lesson.cycle.topic1.option3': 'Le 18 octobre',
+    'auditor.academy.lesson.cycle.topic2.title': 'Quand un audit est en retard',
+    'auditor.academy.lesson.cycle.topic2.body':
+        'L’application actuelle marque un audit mensuel non scellé en retard après la fermeture de cette fenêtre et utilise la même échéance pour votre taux de ponctualité. Un rapport manquant ne met pas à lui seul la note en défaut.',
+    'auditor.academy.lesson.cycle.topic2.q':
+        'L’échéance mensuelle de scellement passe avant que vous scelliez. Qu’est-ce qui change ?',
+    'auditor.academy.lesson.cycle.topic2.option1':
+        'La note est automatiquement en défaut',
+    'auditor.academy.lesson.cycle.topic2.option2':
+        'L’audit est en retard et un scellement ultérieur compte comme tardif',
+    'auditor.academy.lesson.cycle.topic2.option3':
+        'L’échéance suit plutôt le jour du paiement',
+    'auditor.academy.lesson.disputes.title': 'Approbations et contestations',
+    'auditor.academy.lesson.disputes.sub': 'Ce qui suit le scellement',
+    'auditor.academy.lesson.disputes.topic1.title': '24 heures pour répondre',
+    'auditor.academy.lesson.disputes.topic1.body':
+        'Après le scellement, le représentant de l’entreprise dispose de 24 heures pour approuver ou contester votre rapport.',
+    'auditor.academy.lesson.disputes.topic1.q':
+        'De combien de temps l’entreprise dispose-t-elle pour contester un rapport scellé ?',
+    'auditor.academy.lesson.disputes.topic1.option1':
+        'Jusqu’au jour du paiement',
+    'auditor.academy.lesson.disputes.topic1.option2': 'Sept jours',
+    'auditor.academy.lesson.disputes.topic1.option3': '24 heures',
+    'auditor.academy.lesson.disputes.topic2.title': 'Revue documentaire',
+    'auditor.academy.lesson.disputes.topic2.body':
+        'Une contestation envoie le rapport en revue documentaire auprès du responsable Finance et réseau d’auditeurs. Pendant la contestation, la note ne peut pas être négociée ; la décision et son motif sont publiés avec le rapport.',
+    'auditor.academy.lesson.disputes.topic2.q':
+        'Qu’advient-il de la note pendant la contestation de son rapport ?',
+    'auditor.academy.lesson.disputes.topic2.option1':
+        'Elle ne peut pas être négociée',
+    'auditor.academy.lesson.disputes.topic2.option2': 'Elle est en défaut',
+    'auditor.academy.lesson.disputes.topic2.option3': 'Rien ne change',
+    'auditor.academy.lesson.flash.title': 'Audits éclair',
+    'auditor.academy.lesson.flash.sub': 'Inopinés, sous 24 heures',
+    'auditor.academy.lesson.flash.topic1.title': 'Sous 24 heures',
+    'auditor.academy.lesson.flash.topic1.body':
+        'Rozine peut vous envoyer chez une entreprise sans prévenir. Un audit éclair doit être terminé dans les 24 heures suivant la mission, avec les mêmes règles de preuve qu’un rapport initial.',
+    'auditor.academy.lesson.flash.topic1.q':
+        'De combien de temps disposez-vous pour terminer un audit éclair ?',
+    'auditor.academy.lesson.flash.topic1.option1':
+        '24 heures à compter de la mission',
+    'auditor.academy.lesson.flash.topic1.option2':
+        '24 heures à compter de votre arrivée',
+    'auditor.academy.lesson.flash.topic1.option3': 'Trois jours',
+    'auditor.academy.lesson.flash.topic2.title': 'Quand le délai expire',
+    'auditor.academy.lesson.flash.topic2.body':
+        'Un audit éclair inachevé au bout de 24 heures déclenche une alerte, et un délai manqué par un expert-comptable alerte la CMA. N’acceptez que ce que vous pouvez terminer à temps.',
+    'auditor.academy.lesson.flash.topic2.q':
+        'Que se passe-t-il quand un audit éclair est inachevé au bout de 24 heures ?',
+    'auditor.academy.lesson.flash.topic2.option1':
+        'Le délai se prolonge automatiquement',
+    'auditor.academy.lesson.flash.topic2.option2': 'Une alerte est déclenchée',
+    'auditor.academy.lesson.flash.topic2.option3': 'L’entreprise est refusée',
+    'auditor.academy.lesson.arrears.title': 'Visites d’arriérés',
+    'auditor.academy.lesson.arrears.sub':
+        'Quand une entreprise a une semaine de retard',
+    'auditor.academy.lesson.arrears.topic1.title': 'Septième jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic1.body':
+        'Quand une entreprise que vous vérifiez a sept jours de retard, une tâche de visite vous est attribuée. Vous vous y rendez aussitôt pour contrôler le stock, la trésorerie et l’activité.',
+    'auditor.academy.lesson.arrears.topic1.q':
+        'Quand une visite d’arriérés est-elle déclenchée ?',
+    'auditor.academy.lesson.arrears.topic1.option1':
+        'Au premier jour de retard',
+    'auditor.academy.lesson.arrears.topic1.option2': 'Au 30ᵉ jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic1.option3': 'Au 7ᵉ jour d’arriérés',
+    'auditor.academy.lesson.arrears.topic2.title':
+        'Une note scellée aux détenteurs',
+    'auditor.academy.lesson.arrears.topic2.body':
+        'Après la visite, vous déposez une note scellée à l’intention des détenteurs : les investisseurs apprennent ce que vous avez constaté de la personne qui a vérifié.',
+    'auditor.academy.lesson.arrears.topic2.q':
+        'Que déposez-vous après une visite d’arriérés ?',
+    'auditor.academy.lesson.arrears.topic2.option1':
+        'Une note scellée aux détenteurs',
+    'auditor.academy.lesson.arrears.topic2.option2':
+        'Une nouvelle offre pour l’entreprise',
+    'auditor.academy.lesson.arrears.topic2.option3':
+        'Rien, Rozine écrit aux détenteurs',
+    'auditor.academy.lesson.earnings.title': 'Vos revenus',
+    'auditor.academy.lesson.earnings.sub':
+        'Une part de ce que Rozine gagne sur vos notes',
+    'auditor.academy.lesson.earnings.topic1.title':
+        '40 % des frais de plateforme',
+    'auditor.academy.lesson.earnings.topic1.body':
+        'L’entreprise paie des frais de plateforme de 3 % du principal au décaissement. 40 % de ces frais vous sont crédités, en tant que Partenaire d’audit ayant vérifié la note, au décaissement. Sur une levée de 12 000 000 RWF, les frais sont de 360 000 et votre part de 144 000.',
+    'auditor.academy.lesson.earnings.topic1.q':
+        'Une levée de 10 000 000 RWF est décaissée. Quelle est votre part des frais de plateforme ?',
+    'auditor.academy.lesson.earnings.topic1.option1': '300 000 RWF',
+    'auditor.academy.lesson.earnings.topic1.option2': '40 000 RWF',
+    'auditor.academy.lesson.earnings.topic1.option3': '120 000 RWF',
+    'auditor.academy.lesson.earnings.topic2.title':
+        '25 % des frais sur les gains (conditions futures)',
+    'auditor.academy.lesson.earnings.topic2.body':
+        'Les conditions documentées des futurs remboursements prévoient des frais sur la part de rendement de chaque versement mensuel aux investisseurs, dont 25 % vous seraient crédités à chaque versement des notes que vous vérifiez. Ces crédits ne sont pas encore actifs.',
+    'auditor.academy.lesson.earnings.topic2.q':
+        'Selon les conditions documentées des futurs remboursements, quand la part de 25 % des frais sur les gains serait-elle créditée ?',
+    'auditor.academy.lesson.earnings.topic2.option1':
+        'À chaque versement mensuel des notes que vous vérifiez, une fois les crédits actifs',
+    'auditor.academy.lesson.earnings.topic2.option2':
+        'Une fois par audit terminé',
+    'auditor.academy.lesson.earnings.topic2.option3':
+        'Seulement à l’échéance de la note',
 };
 
 export default fr;

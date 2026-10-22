@@ -240,6 +240,11 @@
                     ]
                 }
             ],
+            "latest_report": {
+                "month": "2026-08-01T00:00:00+02:00",
+                "status": "healthy",
+                "summary": "On plan · coupon repaid on time"
+            },
             "issue": {
                 "id": "h-greenleaf",
                 "revision": 1,
