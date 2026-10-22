@@ -15,7 +15,10 @@ it('installs funding behind in-flight command table locks without blocking their
     $heldGenerations = require database_path('migrations/2026_10_03_083345_create_primary_held_claim_generations.php');
     $issuances = require database_path('migrations/2026_10_12_113137_retain_primary_successful_issuance.php');
     $terminalFailures = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
-    $dependants = [$issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
+    // The platform fee and automatic disbursement migrations rebind the primary closing authority, so they come off first and go back last.
+    $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
+    $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
+    $dependants = [$automaticDisbursement, $platformFee, $issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
     $shape = fn (): array => [
         DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
             AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,
