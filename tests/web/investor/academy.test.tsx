@@ -6,7 +6,7 @@ import en from '@/lib/i18n/catalogs/en';
 import InvestorProfile from '@/pages/investor/profile';
 import type { InvestorProfileProps } from '@/types/investor';
 import profileFixture from '../../../resources/fixtures/ui/investor-profile.json';
-import { resetInertia, setWide } from './inertia-mock';
+import { inertia, resetInertia, setWide } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -162,6 +162,59 @@ describe('Investor Academy', () => {
             screen.getByRole('button', { name: /Rozine notes/u }),
         ).toHaveTextContent('Done ✓');
     });
+
+    it('keeps each signed-in account on its own progress on a shared device', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem(
+            `${STORAGE_KEY}.7`,
+            JSON.stringify({ notes: 1 }),
+        );
+        inertia.shared = { auth: { user: { id: 8 } } };
+        const { unmount } = render(<InvestorProfile {...profile()} />);
+
+        expect(
+            screen.getByRole('button', { name: /Investor Academy/u }),
+        ).toHaveTextContent('Learn how Rozine notes work');
+        await user.click(
+            screen.getByRole('button', { name: /Investor Academy/u }),
+        );
+        await user.click(screen.getByRole('button', { name: /Rozine notes/u }));
+        await user.click(screen.getByRole('button', { name: 'Got it' }));
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Lend to a verified business for a fixed return',
+            }),
+        );
+        expect(
+            JSON.parse(window.localStorage.getItem(`${STORAGE_KEY}.8`)!),
+        ).toEqual({ notes: 1 });
+        expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+        unmount();
+
+        inertia.shared = { auth: { user: { id: 7 } } };
+        render(<InvestorProfile {...profile()} />);
+
+        expect(
+            screen.getByRole('button', { name: /Investor Academy/u }),
+        ).toHaveTextContent('Pick up where you left off');
+    });
+
+    it.each([{ auth: null }, { auth: {} }])(
+        'falls back to the device key without a signed-in user (%o)',
+        (shared) => {
+            window.localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({ notes: 1 }),
+            );
+            inertia.shared = shared;
+            render(<InvestorProfile {...profile()} />);
+
+            expect(
+                screen.getByRole('button', { name: /Investor Academy/u }),
+            ).toHaveTextContent('Pick up where you left off');
+        },
+    );
 
     it('marks a lesson done and the card complete once every topic is passed', async () => {
         const user = userEvent.setup();
