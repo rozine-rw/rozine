@@ -1375,6 +1375,10 @@ const fr: Catalog = {
         'Les éléments des applications Investisseur, Entreprise et Auditeur.',
     'admin.design.app_control.content.empty':
         'Aucun contenu à afficher pour le moment.',
+    'admin.design.app_control.type.business': 'Entreprise',
+    'admin.design.app_control.unrated': 'Pas encore noté',
+    'admin.design.app_control.content_state.active': 'Actif',
+    'admin.design.app_control.content_state.pending': 'Vérification en attente',
     'admin.design.engines.tab.sizing': 'Dimensionnement',
     'admin.design.engines.tab.refinance': 'Refinancement',
     'admin.design.engines.tab.queue': "La file d'attente",

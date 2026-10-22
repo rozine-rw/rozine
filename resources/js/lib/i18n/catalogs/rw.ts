@@ -1361,6 +1361,10 @@ const rw: Catalog = {
         "Ibiri muri porogaramu z'abashoramari, ibigo n'abagenzuzi.",
     'admin.design.app_control.content.empty':
         'Nta bikubiyemo byo kwerekana ubu.',
+    'admin.design.app_control.type.business': 'Ubucuruzi',
+    'admin.design.app_control.unrated': 'Ntirahabwa amanota',
+    'admin.design.app_control.content_state.active': 'Irakora',
+    'admin.design.app_control.content_state.pending': 'Bitegereje kwemezwa',
     'admin.design.engines.tab.sizing': 'Ingano',
     'admin.design.engines.tab.refinance': 'Kongera gutera inkunga',
     'admin.design.engines.tab.queue': 'Umurongo',

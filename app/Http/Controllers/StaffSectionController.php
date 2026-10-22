@@ -25,7 +25,7 @@ use Inertia\Response;
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
  * whoever may read the ledger, Engines and Ratings show underwriters the engine's settings and the
  * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, and App
- * Control shows how much of the sandbox's limits is used and which app features are built.
+ * Control shows how much of the sandbox's limits is used, which app features are built and the largest Businesses.
  */
 class StaffSectionController extends Controller
 {
@@ -50,6 +50,9 @@ class StaffSectionController extends Controller
             ['key' => 'flash_audits', 'state' => 'live']]],
     ];
 
+    /** The most Businesses App Control's content list shows, largest raise first. */
+    private const CONTENT_LIMIT = 6;
+
     /** The most Businesses the rating book reads at once. */
     private const BOOK_LIMIT = 500;
 
@@ -71,6 +74,8 @@ class StaffSectionController extends Controller
         $name = (string) $request->user()?->name;
         $finance = $section === 'finance' && in_array('ledger.view', $permissions, true) ? self::finance($ledger->revenue((int) $request->user()?->getAuthIdentifier())) : [];
         $underwriter = in_array('applications.review', $permissions, true);
+        $content = $section === 'app-control' && in_array('businesses.view', $permissions, true)
+            ? self::content($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'raised', '', '', self::CONTENT_LIMIT)['rows']) : [];
         $book = $section === 'ratings' && in_array('businesses.view', $permissions, true)
             ? self::book($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'name', '', '', self::BOOK_LIMIT)['rows']) : [];
 
@@ -80,7 +85,7 @@ class StaffSectionController extends Controller
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
             'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance, ...$book,
-            ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier()), 'apps' => self::APPS] : []),
+            ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier()), 'apps' => self::APPS, 'content' => $content] : []),
             'engine' => match (true) {
                 ! $underwriter => [],
                 $section === 'engines' => EngineSettings::engines(),
@@ -106,6 +111,19 @@ class StaffSectionController extends Controller
         }
 
         return ['counts' => ['rated' => count($book)], 'book' => $book];
+    }
+
+    /**
+     * App Control's content: the Businesses that raised most, each with its sector and rating, active
+     * once verified. Nothing can be edited, disabled or removed from here yet.
+     *
+     * @param  list<array{business_id: string, name: string, sector: string, kyc: string, rating: array{band: string, score: string}|null}>  $rows
+     * @return list<array{key: string, type: string, name: string, sector: string, rating: array{band: string, score: string}|null, state: string}>
+     */
+    private static function content(array $rows): array
+    {
+        return array_map(fn (array $row): array => ['key' => $row['business_id'], 'type' => 'business', 'name' => $row['name'], 'sector' => $row['sector'],
+            'rating' => $row['rating'], 'state' => $row['kyc'] === 'verified' ? 'active' : 'pending'], $rows);
     }
 
     /**

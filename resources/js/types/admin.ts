@@ -113,6 +113,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     sandbox?: SandboxUsage[];
     /** App Control only: each app, online, with whether each of its features is built. */
     apps?: AppStatus[];
+    /** App Control only, for whoever may view Businesses: the Businesses that raised most. */
+    content?: AppContentRow[];
 };
 
 /** One rated Business in the rating book. */
@@ -156,6 +158,15 @@ export type EngineRow = {
         | 'distressed';
     value: string;
     source: string;
+};
+
+export type AppContentRow = {
+    key: string;
+    type: 'business';
+    name: string;
+    sector: string;
+    rating: Rating | null;
+    state: 'active' | 'pending';
 };
 
 export type AppStatus = {

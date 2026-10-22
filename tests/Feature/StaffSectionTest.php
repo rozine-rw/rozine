@@ -122,6 +122,7 @@ test('Ratings lists every rated Business and counts them for whoever may view Bu
 test('App Control shows how much of the sandbox limits the platform uses, and no other section does', function (): void {
     PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
     $principal = (string) DB::table('primary_holdings')->sum('principal');
+    $business = BusinessProfile::query()->sole();
 
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/app-control')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('section', 'app_control')->where('sandbox', [
@@ -130,9 +131,10 @@ test('App Control shows how much of the sandbox limits the platform uses, and no
             ['key' => 'principal', 'used' => $principal, 'cap' => '5000000000', 'used_pct' => intdiv((int) $principal * 100, 5000000000)]])
             ->where('apps.0', ['key' => 'investor', 'features' => [['key' => 'sign_ups', 'state' => 'live'],
                 ['key' => 'secondary_market', 'state' => 'not_built'], ['key' => 'academy', 'state' => 'not_built']]])
-            ->where('apps.2.key', 'auditor'));
+            ->where('apps.2.key', 'auditor')->has('content', 1)->where('content.0.key', $business->id)->where('content.0.type', 'business')
+            ->where('content.0.name', $business->profile['name'])->where('content.0.sector', $business->profile['industry']));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/engines')->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->missing('sandbox')->missing('apps'));
+        ->assertInertia(fn (Assert $page) => $page->missing('sandbox')->missing('apps')->missing('content'));
 });
 
 test('the frame names the most privileged role, and Payments and Compliance open their live queues for whoever may see them', function (): void {
