@@ -7,7 +7,17 @@ use Illuminate\Support\Facades\Schema;
 
 it('installs terminal failure behind caller gates without occupying an in-flight writers remaining tables', function (): void {
     $migration = require database_path('migrations/2026_10_12_054843_retain_primary_terminal_failed_closings.php');
-    $migration->down();
+    // The platform fee and automatic disbursement migrations rebind the failed closing authority, so they come off first and go back last.
+    $later = [
+        require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php'),
+        require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php'),
+    ];
+    DB::transaction(function () use ($later, $migration): void {
+        foreach ($later as $dependant) {
+            $dependant->down();
+        }
+        $migration->down();
+    });
     $channels = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
     if ($channels === false) {
         throw new RuntimeException('Could not create terminal migration barrier.');
@@ -61,9 +71,14 @@ it('installs terminal failure behind caller gates without occupying an in-flight
         fclose($channels[0]);
         pcntl_waitpid($pid, $status);
         DB::purge();
-        if (! Schema::hasTable('primary_failed_closings')) {
-            $migration->up();
-        }
+        DB::transaction(function () use ($later, $migration): void {
+            if (! Schema::hasTable('primary_failed_closings')) {
+                $migration->up();
+            }
+            foreach (array_reverse($later) as $dependant) {
+                $dependant->up();
+            }
+        });
     }
     expect(pcntl_wifexited($status))->toBeTrue()->and(pcntl_wexitstatus($status))->toBe(0)
         ->and(Schema::hasTable('primary_failed_closings'))->toBeTrue();
