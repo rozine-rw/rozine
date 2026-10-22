@@ -361,7 +361,6 @@
     ],
     "authoredExecutablePaths": [
         "resources/js/app.tsx",
-        "resources/js/components/admin/academies.tsx",
         "resources/js/components/admin/admin-frame.tsx",
         "resources/js/components/admin/applications/application-status.tsx",
         "resources/js/components/admin/applications/release-panel.tsx",
@@ -438,7 +437,6 @@
         "resources/js/components/auditor/portfolio/audit-calendar.tsx",
         "resources/js/components/auditor/portfolio/conflict-register.tsx",
         "resources/js/components/auditor/portfolio/earnings.tsx",
-        "resources/js/components/auditor/profile/academy-section.tsx",
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
@@ -556,7 +554,6 @@
         "resources/js/components/investor/primary/commitment.tsx",
         "resources/js/components/investor/primary/earnings-fee.tsx",
         "resources/js/components/investor/primary/rights.tsx",
-        "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
         "resources/js/components/investor/tokens.ts",
@@ -587,7 +584,6 @@
         "resources/js/components/pulse/pulse-wordmark.tsx",
         "resources/js/components/pulse/signup-fields.tsx",
         "resources/js/components/pulse/stat-tile.tsx",
-        "resources/js/components/rozine/academy.tsx",
         "resources/js/components/rozine/app-frame.tsx",
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
@@ -762,10 +758,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 731,
+        "totalTrackedSources": 727,
         "generated": 312,
         "declarationOnly": 19,
-        "authoredExecutable": 400
+        "authoredExecutable": 396
     },
-    "coverageSetSha256": "b2e93f1888c6c8c22ad78f51bd22ed5b98d4dc9d078694fe6cd1fae9c98dd830"
+    "coverageSetSha256": "67d52ecf20ff65d133f51253807359f161ef94f180e62dcbae9e13e27346e34d"
 }

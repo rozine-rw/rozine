@@ -146,8 +146,9 @@ export function CartToggle({
                 setBusy(false);
             } else {
                 router.reload({
-                    only: ['cart', 'deals'],
-                    data: { deal: deal.campaign_id },
+                    // Refresh nested home and the shared badge too. A removed card may no longer
+                    // belong to the filtered deck, so let its server read choose the next focus.
+                    data: { deal: cart.inCart ? undefined : deal.campaign_id },
                     onFinish: () => setBusy(false),
                 });
             }
