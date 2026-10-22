@@ -102,6 +102,7 @@ export function InviteOperator({ action }: { action: RouteAction }) {
                                 event.target.value as (typeof ROLES)[number],
                             )
                         }
+                        aria-describedby="invite-role-error"
                         className={cn('mt-1', FIELD)}
                     >
                         {ROLES.map((role) => (
