@@ -4,10 +4,7 @@
         "contract_version": "auditor-filing-v1",
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
-        "allowed_actions": [
-            "audit.save_step",
-            "conflict.declare"
-        ],
+        "allowed_actions": ["audit.save_step", "conflict.declare"],
         "audit": {
             "id": "fa_huye",
             "kind": "flash",
