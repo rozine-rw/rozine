@@ -85,7 +85,7 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             // An analyst cannot review applications, so the queue is not read at all.
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
-                ['key' => 'frozen_accounts', 'count' => null, 'link' => null]])
+                ['key' => 'frozen_accounts', 'count' => 0, 'link' => null]])
             ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->where('activity', null)->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
@@ -94,6 +94,14 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('treasury', ['invested' => ['currency' => 'RWF', 'amount' => '0'], 'disbursed' => ['currency' => 'RWF', 'amount' => '0'],
                 'platform_net' => null, 'paid_to_investors' => null])
             ->where('nav.applications', null)->where('nav.events', null)->where('nav.staff.url', '/admin/staff'));
+});
+
+test('frozen accounts counts frozen operators and opens Staff & Roles once one is frozen', function (): void {
+    $frozen = boardStaff(['analyst']);
+    app(ConfigureStaffAccess::class)->handle($frozen->id, false, 'Left the team.', (string) Str::uuid(), ['analyst']);
+
+    $this->actingAs(boardStaff(['treasury']))->get(route('staff.dashboard'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('attention.4', ['key' => 'frozen_accounts', 'count' => 1, 'link' => ['url' => '/admin/staff', 'method' => 'get']]));
 });
 
 test('the open reconciliation breaks show, oldest first and unowned, to whoever may view reconciliation', function (): void {
