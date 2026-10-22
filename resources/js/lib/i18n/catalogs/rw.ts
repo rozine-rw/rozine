@@ -1501,7 +1501,7 @@ const rw: Catalog = {
     'admin.kyc.col.applicant': 'Usaba',
     'admin.kyc.col.checks': 'Igenzura ryikora',
     'admin.kyc.submitted_ago': 'Byoherejwe {ago}',
-    'admin.kyc.checks.passed': 'Igenzura ryose uko ari {count} ryatsinze',
+    'admin.kyc.checks.passed': 'Igenzura rya KYC ryikora ryose ryatsinze',
     'admin.kyc.checks.screening':
         "Imyaka, nimero y'indangamuntu, inyandiko, ifoto · nta isuzuma ry'urutonde",
     'admin.kyc.check.age': 'Imyaka 18 cyangwa irenga',

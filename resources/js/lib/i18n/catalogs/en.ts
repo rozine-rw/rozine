@@ -1421,7 +1421,7 @@ const en = {
     'admin.kyc.col.applicant': 'Applicant',
     'admin.kyc.col.checks': 'Automated checks',
     'admin.kyc.submitted_ago': 'Submitted {ago}',
-    'admin.kyc.checks.passed': 'All {count} checks passed',
+    'admin.kyc.checks.passed': 'All automated KYC checks passed',
     'admin.kyc.checks.screening':
         'Age, ID number, documents, selfie · no screening yet',
     'admin.kyc.check.age': 'Age 18 or over',
@@ -1622,7 +1622,7 @@ const en = {
     'admin.policy.revenue_cap': 'Largest raise · share of revenue',
     'admin.policy.kyc_reverify': 'KYC re-verify',
     'admin.policy.late_charge': 'Late payment fee',
-    'admin.policy.miss_grace': 'Grace period',
+    'admin.policy.miss_grace': 'Miss grace period',
     'admin.policy.default_at': 'Default',
     'admin.policy.auto_freeze': 'Auto-freeze on default',
     'admin.policy.min_investment': 'Minimum investment',

@@ -167,9 +167,7 @@ export default function AdminInvestorVerifications(
                             </div>
                             <div role="cell" className="min-w-0">
                                 <div className="truncate text-[12px] font-semibold text-[#157357] dark:text-[#3fcda0]">
-                                    {t('admin.kyc.checks.passed', {
-                                        count: entry.checks.length,
-                                    })}
+                                    {t('admin.kyc.checks.passed')}
                                 </div>
                                 <div
                                     className="truncate text-[11px] text-rz-faint"

@@ -1513,7 +1513,7 @@ const fr: Catalog = {
     'admin.kyc.col.applicant': 'Demandeur',
     'admin.kyc.col.checks': 'Contrôles automatiques',
     'admin.kyc.submitted_ago': 'Envoyé {ago}',
-    'admin.kyc.checks.passed': 'Les {count} contrôles réussis',
+    'admin.kyc.checks.passed': 'Tous les contrôles KYC automatiques réussis',
     'admin.kyc.checks.screening':
         "Âge, numéro d'identité, documents, selfie · pas encore de filtrage",
     'admin.kyc.check.age': '18 ans ou plus',
