@@ -3,7 +3,10 @@ import { AdminFrame } from '@/components/admin/admin-frame';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
-import { LicenceQueue } from '@/components/admin/parties/review-queue';
+import {
+    LicenceQueue,
+    RegistryHeading,
+} from '@/components/admin/parties/review-queue';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
@@ -70,6 +73,7 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                 <LicenceQueue kind="requests" entries={props.requests} />
             )}
             {props.desk && <LicenceQueue kind="desk" entries={props.desk} />}
+            {props.kind === 'auditor' && <RegistryHeading />}
             <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
                 <SegmentedChips
                     label={t('admin.parties.filter')}

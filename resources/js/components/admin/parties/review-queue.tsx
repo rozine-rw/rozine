@@ -152,3 +152,19 @@ export function LicenceQueue({
         </section>
     );
 }
+
+/** The design's heading over the partner table ("CPA registry"), under the two review queues. */
+export function RegistryHeading() {
+    const { t } = useTranslation();
+
+    return (
+        <>
+            <h2 className="mb-1 text-[15px] font-semibold text-rz-ink">
+                {t('admin.parties.registry.title')}
+            </h2>
+            <p className={cn('mb-3 text-[12px]', CAPTION)}>
+                {t('admin.parties.registry.caption')}
+            </p>
+        </>
+    );
+}
