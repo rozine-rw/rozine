@@ -64,8 +64,15 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
             ->where('investor_verification_id', $row['verification_id'])->orderByDesc('revision')
             ->get(['investor_verification_versions.id', 'investor_verification_versions.created_at', 'users.name', 'command', 'reason']);
 
+        $holdings = DB::table('primary_holdings AS h')->join('business_campaigns AS c', 'c.id', '=', 'h.business_campaign_id')
+            ->join('business_profiles AS bp', 'bp.id', '=', 'c.business_id')->where('h.party_id', $partyId)
+            ->groupBy('bp.id')->orderByRaw('sum(h.principal) DESC')->orderByRaw("bp.profile->>'name'")
+            ->selectRaw("bp.id AS business_id, bp.profile->>'name' AS name, sum(h.principal) AS principal, count(DISTINCT h.business_campaign_id) AS notes")->get();
+
         return ['row' => $row,
             'restricted_since' => $restriction === null ? null : (string) $restriction,
+            'holdings' => array_values($holdings->map(fn (object $holding): array => ['business_id' => (string) $holding->business_id,
+                'name' => (string) $holding->name, 'principal' => (string) $holding->principal, 'notes' => (int) $holding->notes])->all()),
             'history' => array_values($history->map(function (object $version): array {
                 $version = (array) $version;
 

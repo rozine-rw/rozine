@@ -786,7 +786,8 @@ export type PartyListRow = {
     detail:
         | { kind: 'note_status'; value: NoteStatus }
         | { kind: 'money'; value: Money }
-        | { kind: 'text'; value: string };
+        | { kind: 'text'; value: string }
+        | { kind: 'holding'; value: Money; notes: number };
 };
 
 export type PartyDetail = {
