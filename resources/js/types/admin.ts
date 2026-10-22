@@ -909,7 +909,9 @@ export type StaffActionLogEntry = {
     at: string;
     actor: string;
     target: string;
-    action: 'staff_suspended' | 'staff_enabled';
+    action: 'staff_suspended' | 'staff_enabled' | 'staff_granted';
+    /** The role an invite gave; null for a freeze or a reactivation. */
+    role: StaffRole | null;
     reason: string;
 };
 

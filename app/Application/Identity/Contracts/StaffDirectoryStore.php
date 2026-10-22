@@ -18,7 +18,7 @@ namespace App\Application\Identity\Contracts;
  *     before: array<string, mixed>, after: array<string, mixed>
  * }
  * @phpstan-type Member array{row: StaffRow, history: list<HistoryEntry>}
- * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, reason: string}
+ * @phpstan-type LogEntry array{id: string, at: string, actor: string|null, target: string, enabled: bool, granted: bool, roles: list<string>, reason: string}
  */
 interface StaffDirectoryStore
 {
