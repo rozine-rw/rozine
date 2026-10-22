@@ -298,6 +298,100 @@ describe('Cart', () => {
 });
 
 describe('Cart with notes', () => {
+    it('saves successive quantities in order even when an earlier request is slow', async () => {
+        vi.useFakeTimers();
+        let finishFirst!: (answer: unknown) => void;
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    finishFirst = resolve;
+                }),
+        );
+        inertia.queue.push(answers({ data: { units: 30 } }));
+        render(<InvestorCart {...cart()} />);
+        const slider = screen.getByRole('slider', {
+            name: 'Number of notes in GreenLeaf Agro',
+        });
+
+        fireEvent.change(slider, { target: { value: '20' } });
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        fireEvent.change(slider, { target: { value: '30' } });
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        expect(inertia.calls).toHaveLength(1);
+        expect(screen.getByTestId('cart-total')).toHaveTextContent('170,000');
+
+        await act(async () => {
+            finishFirst({ data: { units: 20 } });
+        });
+        expect(inertia.calls.map((call) => call.body)).toEqual([
+            { identity_context_revision: 3, units: 20 },
+            { identity_context_revision: 3, units: 30 },
+        ]);
+        vi.useRealTimers();
+    });
+
+    it('waits for an in-flight save before removing that line and refreshes the badge with the cart', async () => {
+        vi.useFakeTimers();
+        let finishSave!: (answer: unknown) => void;
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    finishSave = resolve;
+                }),
+        );
+        inertia.queue.push(answers({ data: { removed: true } }));
+        inertia.shared = { cart_count: 3 };
+        const page = cart();
+        const { rerender } = render(<InvestorCart {...page} />);
+
+        fireEvent.change(
+            screen.getByRole('slider', {
+                name: 'Number of notes in GreenLeaf Agro',
+            }),
+            { target: { value: '20' } },
+        );
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Remove GreenLeaf Agro from cart',
+            }),
+        );
+        expect(
+            screen.getByRole('slider', {
+                name: 'Number of notes in GreenLeaf Agro',
+            }),
+        ).toBeDisabled();
+        expect(inertia.calls).toHaveLength(1);
+
+        await act(async () => {
+            finishSave({ data: { units: 20 } });
+        });
+        expect(inertia.calls.map((call) => call.body)).toEqual([
+            { identity_context_revision: 3, units: 20 },
+            { identity_context_revision: 3 },
+        ]);
+        const reload = inertia.reload.mock.lastCall![0];
+        expect(reload).not.toHaveProperty('only');
+        const refreshed = structuredClone(page);
+        refreshed.cart!.lines.shift();
+        inertia.shared = { cart_count: 2 };
+        rerender(<InvestorCart {...refreshed} />);
+        await act(async () => reload.onFinish());
+        expect(
+            screen.queryByTestId('cart-line-cmp_greenleaf'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getAllByRole('link', { name: /^Cart\s*\(2\)$/u }),
+        ).toHaveLength(2);
+        vi.useRealTimers();
+    });
+
     it('shows each line with the deal facts and its return, and a total of the open lines only', () => {
         render(<InvestorCart {...cart()} />);
 
@@ -442,7 +536,9 @@ describe('Cart with notes', () => {
             method: 'post',
             body: { identity_context_revision: 3 },
         });
-        expect(inertia.reload).toHaveBeenCalledWith({ only: ['cart'] });
+        expect(inertia.reload).toHaveBeenCalledWith({
+            onFinish: expect.any(Function),
+        });
 
         inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
 

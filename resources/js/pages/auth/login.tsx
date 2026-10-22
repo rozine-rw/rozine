@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { useTranslation } from '@/hooks/use-translation';
-import { audienceQuery, authBranding } from '@/lib/rozine/auth-branding';
+import { audienceQuery, authBranding } from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -119,7 +119,7 @@ export default function Login({
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            {t('auth.login.no_account')}{' '}
+                            {t(brand.switchText)}{' '}
                             <TextLink
                                 href={register(audienceQuery(audience))}
                                 tabIndex={5}

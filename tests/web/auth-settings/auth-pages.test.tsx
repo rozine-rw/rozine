@@ -275,7 +275,7 @@ describe('authentication pages', () => {
             audience: 'investor',
         });
         expect(
-            screen.getByRole('link', { name: 'Create one' }),
+            screen.getByRole('link', { name: 'Create account' }),
         ).toHaveAttribute('href', '/register?for=investor');
         cleanup();
 
@@ -295,6 +295,7 @@ describe('authentication pages', () => {
             eyebrow: 'auth.brand.business.eyebrow',
             audience: 'business',
         });
+        expect(screen.getByText(/Already registered\?/)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute(
             'href',
             '/login?for=business',

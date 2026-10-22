@@ -258,7 +258,7 @@ function CartCard({
                             max={max}
                             step={1}
                             value={units}
-                            disabled={line.actions.units === null}
+                            disabled={line.actions.units === null || removing}
                             aria-label={t('investor.cart.quantity', {
                                 name: deal.name,
                             })}
@@ -317,9 +317,10 @@ export default function InvestorCart({
     const wide = useWide();
     const http = useHttp<Record<string, never>, unknown>();
     const [chosen, setChosen] = useState<Record<string, number>>({});
-    const [removing, setRemoving] = useState<string | null>(null);
+    const [removing, setRemoving] = useState<Record<string, boolean>>({});
     const [failed, setFailed] = useState(false);
     const timers = useRef<Record<string, number>>({});
+    const pending = useRef<Partial<Record<string, Promise<boolean>>>>({});
     const lines = cart?.lines ?? [];
 
     useEffect(() => {
@@ -367,6 +368,28 @@ export default function InvestorCart({
         }
     };
 
+    // A slower save must finish before a newer quantity or removal for the same line is sent.
+    const enqueue = (
+        line: InvestorCartLine,
+        action: RouteAction,
+        body: Record<string, unknown>,
+    ) => {
+        const previous = pending.current[line.campaign_id];
+        const request =
+            previous === undefined
+                ? send(action, body)
+                : previous.then(() => send(action, body));
+
+        pending.current[line.campaign_id] = request;
+        void request.then(() => {
+            if (pending.current[line.campaign_id] === request) {
+                delete pending.current[line.campaign_id];
+            }
+        });
+
+        return request;
+    };
+
     const change = (line: InvestorCartLine, next: number) => {
         const action = line.actions.units;
 
@@ -375,20 +398,25 @@ export default function InvestorCart({
 
         if (action !== null) {
             timers.current[line.campaign_id] = window.setTimeout(() => {
-                void send(action, { units: next });
+                void enqueue(line, action, { units: next });
             }, SAVE_DELAY_MS);
         }
     };
 
     const remove = async (line: InvestorCartLine) => {
         window.clearTimeout(timers.current[line.campaign_id]);
-        setRemoving(line.campaign_id);
+        setRemoving((current) => ({ ...current, [line.campaign_id]: true }));
+        const finish = () =>
+            setRemoving((current) => ({
+                ...current,
+                [line.campaign_id]: false,
+            }));
 
-        if (await send(line.actions.remove, {})) {
-            router.reload({ only: ['cart'] });
+        if (await enqueue(line, line.actions.remove, {})) {
+            router.reload({ onFinish: finish });
+        } else {
+            finish();
         }
-
-        setRemoving(null);
     };
 
     const header = (
@@ -499,7 +527,7 @@ export default function InvestorCart({
                     units={units(line)}
                     onUnits={(next) => change(line, next)}
                     onRemove={() => void remove(line)}
-                    removing={removing === line.campaign_id}
+                    removing={removing[line.campaign_id] ?? false}
                 />
             ))}
         </div>

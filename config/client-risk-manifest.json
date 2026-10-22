@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "8f49ba91658b0c7bc1ee7d2597212aea8e2b76fe2e7f5e24a86f7c0ec2239b14",
-    "coverageSetSha256": "ac6d9b3f0bf2de148fbaa5a640ee55da5f1b333a42cca8889b7cabadba4de405",
+    "sourceManifestSha256": "b178f7c42bda92423c9a34a66bd62e79e7ce82724789ba6e60e9c6761e8ec1aa",
+    "coverageSetSha256": "7197ea50f60e088d375a4f56c9432286de9db5f1f694a8359b0097b7c64e1b8b",
     "thresholds": {
         "critical": {
             "global": {
@@ -63,8 +63,12 @@
         "resources/js/components/admin/kyc-documents.tsx",
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
+        "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
+        "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
+        "resources/js/components/admin/parties/pending-staff-approvals.tsx",
+        "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
@@ -73,6 +77,7 @@
         "resources/js/components/admin/today/today-panels.tsx",
         "resources/js/components/admin/today/today-queues.tsx",
         "resources/js/components/admin/trail-list.tsx",
+        "resources/js/components/admin/trend-range.tsx",
         "resources/js/components/admin/ui.tsx",
         "resources/js/components/alert-error.tsx",
         "resources/js/components/app-content.tsx",
@@ -127,6 +132,7 @@
         "resources/js/components/auditor/profile/account-sections.tsx",
         "resources/js/components/auditor/profile/accreditation-section.tsx",
         "resources/js/components/auditor/profile/availability-section.tsx",
+        "resources/js/components/auditor/profile/earnings-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
         "resources/js/components/auditor/refresh.ts",
         "resources/js/components/auditor/sheets/bottom-sheet.tsx",
@@ -376,6 +382,7 @@
         "resources/js/pages/admin/investor-verifications.tsx",
         "resources/js/pages/admin/ledger.tsx",
         "resources/js/pages/admin/messaging.tsx",
+        "resources/js/pages/admin/notes.tsx",
         "resources/js/pages/admin/parties.tsx",
         "resources/js/pages/admin/payments.tsx",
         "resources/js/pages/admin/primary-market.tsx",
