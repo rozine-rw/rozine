@@ -2301,7 +2301,7 @@ const fr: Catalog = {
     'admin.audit_reports.field.title':
         "Opérations d'audit flash sur le terrain",
     'admin.audit_reports.field.caption':
-        "Chaque visite sur le terrain avec son CPA, son écart, l'heure de signature et les constats signés.",
+        'Chaque audit de terrain présente son CPA et sa licence, l’état du rapport et l’écart pondéré, avec l’empreinte du sceau conservé et le rapport PDF lorsqu’ils sont disponibles.',
     'admin.audit_reports.field.table': 'Audits flash sur le terrain',
     'admin.audit_reports.field.empty':
         "Aucune mission ISRS 4400 enregistrée pour l'instant.",

@@ -2294,7 +2294,7 @@ const rw: Catalog = {
         "Igenzura ryose n'uko raporo yaryo ihagaze. Igenzura rya buri kwezi rikorerwa aho ubucuruzi buri bitarenze ku itariki ya 7; nyuma ubucuruzi bugira amasaha 24 yo gusinya cyangwa kujuririra.",
     'admin.audit_reports.field.title': "Ibikorwa by'igenzura ryihuse ku butaka",
     'admin.audit_reports.field.caption':
-        "Buri gusura ku butaka n'umucungamari (CPA) wabikoze, ikinyuranyo, igihe byashyiriweho umukono n'ibyagaragaye byasinywe.",
+        'Buri genzura ryo ku kibanza ryerekana CPA n’uruhushya rwe, uko raporo ihagaze n’ikinyuranyo kigereranyijwe hakurikijwe amafaranga, hamwe n’ikimenyetso cy’ifungwa ryabitswe na raporo ya PDF iyo bihari.',
     'admin.audit_reports.field.table': 'Igenzura ryihuse ku butaka',
     'admin.audit_reports.field.empty': 'Nta gikorwa cya ISRS 4400 kiranditswe.',
     'admin.audit_reports.feed.title': 'Ibyagenzuwe vuba bigatangazwa',

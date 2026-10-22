@@ -201,7 +201,7 @@ describe('Audit reports register', () => {
         });
         expect(
             screen.getByText(
-                'Every field visit with its CPA, variance, sign-off time and signed findings.',
+                'Each field audit shows its CPA and licence, report state and weighted variance, with the retained seal digest and report PDF when available.',
             ),
         ).toBeInTheDocument();
         const visit = within(field)

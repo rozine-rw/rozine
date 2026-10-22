@@ -2177,7 +2177,7 @@ const en = {
         'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to co-sign or dispute.',
     'admin.audit_reports.field.title': 'Field Flash Audit operations',
     'admin.audit_reports.field.caption':
-        'Every field visit with its CPA, variance, sign-off time and signed findings.',
+        'Each field audit shows its CPA and licence, report state and weighted variance, with the retained seal digest and report PDF when available.',
     'admin.audit_reports.field.table': 'Field Flash Audits',
     'admin.audit_reports.field.empty': 'No ISRS 4400 engagements recorded yet.',
     'admin.audit_reports.feed.title': 'Recently audited & published',
