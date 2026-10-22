@@ -1488,6 +1488,15 @@ export type StaffNotesPageContract = {
 
 export type NotesStatKey = 'total' | 'live' | 'repaying' | 'raised';
 
+/** Newest first, or largest first by one of the design's sorts. */
+export type NotesSort =
+    | 'newest'
+    | 'raised'
+    | 'yield'
+    | 'funded'
+    | 'investors'
+    | 'term';
+
 /**
  * Where a note sits now, as the dashboard counts it: `live` while it raises, `funded` once full and
  * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
@@ -1523,6 +1532,7 @@ export type AdminNotesProps = AdminFrameShellProps &
         }[];
         notes: NoteRegisterRow[];
         pagination: Pagination;
+        sort: NotesSort;
     };
 
 export type AdminPrimaryMarketProps = AdminFrameShellProps &

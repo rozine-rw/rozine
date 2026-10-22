@@ -6085,6 +6085,13 @@ const rw: Catalog = {
     'admin.exceptions.filtered_body':
         'Hitamo Byose urebe ibidasanzwe byose bifunguye.',
     'admin.notes.tabs': 'Inyandiko z’imyenda ukurikije aho zigeze',
+    'admin.notes.sort_label': 'Tondeka inyandiko',
+    'admin.notes.sort.newest': 'Tondeka: izigezweho',
+    'admin.notes.sort.raised': 'Tondeka: imari yakusanyijwe',
+    'admin.notes.sort.yield': 'Tondeka: inyungu',
+    'admin.notes.sort.funded': 'Tondeka: % yatewe inkunga',
+    'admin.notes.sort.investors': 'Tondeka: abashoramari',
+    'admin.notes.sort.term': 'Tondeka: igihe',
     'admin.notes.state.live': 'Irakusanya',
     'admin.notes.state.funded': 'Yuzuye',
     'admin.notes.state.repaying': 'Irishyurwa',
