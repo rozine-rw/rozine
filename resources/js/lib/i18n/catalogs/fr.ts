@@ -1368,13 +1368,13 @@ const fr: Catalog = {
     'admin.messaging.trigger.business.deposit_received':
         'Le prestataire confirme un dépôt de l’entreprise',
     'admin.messaging.trigger.business.application_approved':
-        'La demande de financement est approuvée',
+        'Une demande de note est approuvée',
     'admin.messaging.trigger.business.raise_expired':
         'La levée se clôt sans atteindre son objectif',
     'admin.messaging.trigger.business.raise_funded':
-        'La levée est entièrement financée',
+        'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
-        'Les fonds levés sont versés',
+        'Les fonds sont versés sur le portefeuille de l’entreprise',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':

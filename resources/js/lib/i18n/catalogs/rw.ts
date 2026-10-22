@@ -1356,12 +1356,13 @@ const rw: Catalog = {
     'admin.messaging.trigger.business.deposit_received':
         'Utanga serivisi yemeje kubitsa kw’ikigo',
     'admin.messaging.trigger.business.application_approved':
-        'Ubusabe bw’inkunga bwemejwe',
+        'Ubusabe bw’inoti bwemejwe',
     'admin.messaging.trigger.business.raise_expired':
         'Ikusanya rirangiye ritageze ku ntego',
-    'admin.messaging.trigger.business.raise_funded': 'Ikusanya ryuzuye',
+    'admin.messaging.trigger.business.raise_funded':
+        'Ikusanya rigeze ku ntego yaryo',
     'admin.messaging.trigger.business.disbursement_sent':
-        'Amafaranga yakusanyijwe yoherejwe',
+        'Amafaranga yoherejwe mu ikofi y’ikigo',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Amafaranga ikigo cyabikuje yoherejwe',
     'admin.messaging.trigger.business.withdrawal_returned':
