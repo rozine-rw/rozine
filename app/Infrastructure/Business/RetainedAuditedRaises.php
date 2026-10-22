@@ -24,8 +24,12 @@ final class RetainedAuditedRaises implements AuditedRaises
     /** @return list<Raise> */
     public function unfunded(array $applicationIds, int $limit): array
     {
+        if ($limit <= 0) {
+            return [];
+        }
+
         $raises = [];
-        foreach (BusinessCampaign::query()->whereIn('business_application_id', $applicationIds)->orderByDesc('live_at')->orderByDesc('id')->limit($limit)->pluck('id') as $campaignId) {
+        foreach (BusinessCampaign::query()->whereIn('business_application_id', $applicationIds)->orderByDesc('live_at')->orderByDesc('id')->select('id')->lazy(100)->pluck('id') as $campaignId) {
             $card = $this->deals->card($campaignId);
             $closure = $this->closures->find($campaignId);
             if ($card === null || ($closure === null && $card['lifecycle'] === 'funded')) {
@@ -34,6 +38,9 @@ final class RetainedAuditedRaises implements AuditedRaises
             $raises[] = ['campaign_id' => $campaignId, 'business' => (string) $card['name'], 'title' => (string) $this->publications->find($campaignId)['title'],
                 'status' => $closure === null ? 'live' : 'failed', 'raised' => (string) ($closure['committed_refunded']['amount'] ?? $card['raised']['amount']),
                 'target' => (string) $card['target']['amount'], 'investors' => (int) ($closure['investors'] ?? $card['investors'])];
+            if (count($raises) >= $limit) {
+                break;
+            }
         }
 
         return $raises;
