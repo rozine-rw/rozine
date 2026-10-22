@@ -85,6 +85,17 @@ const health = codes('system_health');
 
 const ENGINE_COLUMNS: DesignColumn[] = ['input', 'value', 'source'];
 
+/** Policies' tabs: each lists its rules under the tab's title and what the rules decide. */
+const POLICY_TABS = [
+    'fees',
+    'underwriting',
+    'business',
+    'investor',
+    'kyc',
+    'penalties',
+    'limits',
+] as const;
+
 export const SECTION_DESIGNS: Record<
     AdminPendingSectionProps['section'],
     SectionDesign | undefined
@@ -402,18 +413,15 @@ export const SECTION_DESIGNS: Record<
         ],
     },
     policies: {
-        tabs: [
-            policies.tab('fees'),
-            policies.tab('underwriting'),
-            policies.tab('business'),
-            policies.tab('investor'),
-            policies.tab('kyc'),
-            policies.tab('penalties'),
-            policies.tab('limits'),
-        ],
-        blocks: [
-            policies.block('rules', { columns: ['rule', 'value', 'updated'] }),
-        ],
+        tabs: POLICY_TABS.map((key) => policies.tab(key)),
+        blocks: POLICY_TABS.map((key) => ({
+            key,
+            tab: key,
+            title: policies.tab(key).label,
+            sub: policies.sub(key),
+            empty: 'admin.design.policies.rules.empty',
+            columns: ['rule', 'value', 'updated'],
+        })),
     },
     system_health: {
         blocks: [

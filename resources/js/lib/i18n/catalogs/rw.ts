@@ -1356,7 +1356,20 @@ const rw: Catalog = {
     'admin.design.policies.tab.kyc': 'Ibisabwa bya KYC',
     'admin.design.policies.tab.penalties': "Kubahiriza n'ibihano",
     'admin.design.policies.tab.limits': 'Imbibi',
-    'admin.design.policies.rules.title': 'Amategeko',
+    'admin.design.policies.fees.sub':
+        "Icyo buri ruhande yishyura Rozine, n'umugabane ujya ku mugenzuzi w'ikigo.",
+    'admin.design.policies.underwriting.sub':
+        "Amategeko agena niba ishakishwa ry'imari ryemewe n'ingingo zaryo.",
+    'admin.design.policies.business.sub':
+        'Abemerewe gushaka imari kuri Rozine.',
+    'admin.design.policies.investor.sub':
+        'Abemerewe gushora imari kuri Rozine.',
+    'admin.design.policies.kyc.sub':
+        'Icyo buri ruhande rugomba gutanga. Igisabwa kibuza ibikorwa kugeza gitanzwe; igitakusanywa ntikigeze gisabwa.',
+    'admin.design.policies.penalties.sub':
+        'Uko Rozine ifata ubwishyu bukererewe, kunanirwa kwishyura no kongera kugenzura.',
+    'admin.design.policies.limits.sub':
+        "Imbibi z'ibikorwa muri porogaramu zombi.",
     'admin.design.policies.rules.empty': 'Nta mategeko yo kwerekana ubu.',
     'admin.design.system_health.signals.title': 'Ibimenyetso',
     'admin.design.system_health.signals.empty':
