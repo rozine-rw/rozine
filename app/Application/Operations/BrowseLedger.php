@@ -8,6 +8,7 @@ use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\LedgerJournal;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Domain\Operations\CommandRejection;
+use Carbon\CarbonImmutable;
 
 /**
  * The Admin Ledger for Treasury, Compliance and superadmin (`ledger.view`): every wallet ledger
@@ -28,6 +29,8 @@ use App\Domain\Operations\CommandRejection;
  */
 final readonly class BrowseLedger
 {
+    private const string ZONE = 'Africa/Kigali';
+
     public function __construct(private LedgerJournal $journal, private AuthorizeStaffPermission $staff, private OperationRecords $operations) {}
 
     /** @return array{entries: list<Entry>, total: int, next_before: string|null, entry: OpenedEntry|null} */
@@ -45,14 +48,19 @@ final readonly class BrowseLedger
 
     /**
      * The fee revenue the ledger holds, for the Finance section: Rozine's share of platform fees,
-     * the Audit Partners' share still payable and the deposit fees, each in whole RWF.
+     * the Audit Partners' share still payable and the deposit fees, each in whole RWF. Given Kigali
+     * dates, only what was posted from the first day through the last counts.
      *
+     * @param  string|null  $from  the first Kigali date `Y-m-d`, or null for the ledger's start
+     * @param  string|null  $to  the last Kigali date `Y-m-d`, or null for now
      * @return array{platform_fee: string, audit_partner_share: string, deposit_fees: string}
      */
-    public function revenue(int $actorId): array
+    public function revenue(int $actorId, ?string $from = null, ?string $to = null): array
     {
         $this->staff->check($actorId, 'ledger.view');
-        $credits = $this->journal->credits(['platform_fee_revenue', 'audit_partner_fee_payable', 'deposit_fee_revenue']);
+        $day = fn (string $date): CarbonImmutable => CarbonImmutable::parse($date, self::ZONE)->startOfDay();
+        $credits = $this->journal->credits(['platform_fee_revenue', 'audit_partner_fee_payable', 'deposit_fee_revenue'],
+            $from === null ? null : $day($from)->utc()->toIso8601String(), $to === null ? null : $day($to)->addDay()->utc()->toIso8601String());
 
         return ['platform_fee' => $credits['platform_fee_revenue'] ?? '0', 'audit_partner_share' => $credits['audit_partner_fee_payable'] ?? '0',
             'deposit_fees' => $credits['deposit_fee_revenue'] ?? '0'];

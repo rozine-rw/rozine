@@ -1246,6 +1246,17 @@ const rw: Catalog = {
     'admin.design.finance.kpi.investor_fees': "Amafaranga y'abashoramari",
     'admin.design.finance.kpi.secondary': 'Isoko rya kabiri',
     'admin.design.finance.kpi.revenue.sub': 'Inzira zose, kuva mu ntangiriro',
+    'admin.design.finance.kpi.revenue.sub_period': 'Inzira zose, muri iki gihe',
+    'admin.finance.period.showing': 'Birerekana',
+    'admin.finance.period.hint': 'Bihindura imibare yose iri kuri uru rupapuro',
+    'admin.finance.period.days': {
+        one: 'Umunsi {count}',
+        other: 'Iminsi {count}',
+    },
+    'admin.finance.period.year': 'Umwaka 1',
+    'admin.finance.period.to': 'kugeza',
+    'admin.finance.period.since': 'Kuva {from}',
+    'admin.finance.period.until': 'Kugeza {to}',
     'admin.design.finance.kpi.primary.sub':
         "Amafaranga y'urubuga, umugabane wa Rozine",
     'admin.design.finance.kpi.investor_fees.sub':
@@ -1839,6 +1850,18 @@ const rw: Catalog = {
     'admin.policy.residency': 'Aho atuye',
     'admin.policy.risk_statements':
         "Amatangazo y'ingaruka mbere y'ishoramari rya mbere",
+    'admin.policy.bank_signatories': 'Umubare muto w’abasinya kuri konti',
+    'admin.policy.recovery_rate': 'Igipimo cy’ibigaruzwa iyo umwenda utishyuwe',
+    'admin.policy.withdrawal_daily_cap':
+        'Igipimo ntarengwa cyo kubikuza ku munsi',
+    'admin.policy.hint.bank_signatories':
+        'Uhagarariye ikigo umwe ni we ugikorera. Nta wundi usinya usabwa.',
+    'admin.policy.hint.recovery_rate':
+        'Ibigaruzwe nyuma y’umwenda utishyuwe bihabwa abafite inoti. Rozine nta cyo igumana kandi ntiyishyura igihombo.',
+    'admin.policy.hint.withdrawal_daily_cap':
+        'Nta gipimo cya buri munsi. Buri kubikuza gifite imbibi, nk’uko byavuzwe haruguru.',
+    'admin.policy.term.pro_rata':
+        'Byose, bigabanywa abafite inoti ku kigereranyo',
     'admin.policy.hint.platform_fee':
         'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
     'admin.policy.hint.cpa_share':
