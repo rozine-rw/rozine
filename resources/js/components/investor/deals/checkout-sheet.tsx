@@ -204,7 +204,7 @@ export function CheckoutSheet({
                     'z-[63] flex flex-col bg-[#f6f8fc] dark:bg-rz-page',
                     phone
                         ? 'fixed inset-x-0 bottom-0 max-h-[94%] animate-[rz-sheetup_.34s_cubic-bezier(.22,1,.36,1)] rounded-[20px_26px_0_0] shadow-[0_-22px_60px_-18px_rgba(8,14,28,.5)]'
-                        : 'absolute top-1/2 left-1/2 h-[min(548px,calc(100%-26px))] min-h-80 w-[376px] -translate-x-1/2 -translate-y-1/2 animate-[rz-copop_.34s_cubic-bezier(.16,1,.3,1)_both] overflow-hidden rounded-[20px] border border-[#e2e8f2] shadow-[0_26px_64px_-20px_rgba(8,14,28,.5)] dark:border-rz-border',
+                        : 'absolute top-1/2 left-1/2 max-h-[calc(100%-26px)] min-h-80 w-[min(480px,calc(100%-26px))] -translate-x-1/2 -translate-y-1/2 animate-[rz-copop_.34s_cubic-bezier(.16,1,.3,1)_both] overflow-hidden rounded-[20px] border border-[#e2e8f2] shadow-[0_26px_64px_-20px_rgba(8,14,28,.5)] dark:border-rz-border',
                 )}
             >
                 <div

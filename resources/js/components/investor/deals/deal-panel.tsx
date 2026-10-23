@@ -47,7 +47,7 @@ export function DealPanel({
     const rating = RATING_STYLE[deal.rating.band];
 
     return (
-        <div className="relative flex min-w-[300px] flex-[0_1_400px]">
+        <div className="relative flex min-w-[300px] flex-[1_1_400px]">
             <div
                 className="rz-scroll min-w-0 flex-1 overflow-y-auto rounded-[20px] border border-rz-border bg-rz-surface shadow-[0_10px_30px_-18px_rgba(20,45,95,.25)]"
                 inert={update !== null || undefined}

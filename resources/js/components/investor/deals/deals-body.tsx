@@ -103,7 +103,7 @@ function DealPanelLoading() {
             role="status"
             aria-busy="true"
             aria-label={t('investor.deal.loading')}
-            className="flex min-w-[300px] flex-[0_1_400px] flex-col gap-3 rounded-[20px] border border-rz-border bg-rz-surface p-[18px] shadow-[0_10px_30px_-18px_rgba(20,45,95,.25)]"
+            className="flex min-w-[300px] flex-[1_1_400px] flex-col gap-3 rounded-[20px] border border-rz-border bg-rz-surface p-[18px] shadow-[0_10px_30px_-18px_rgba(20,45,95,.25)]"
         >
             <div className="grid grid-cols-3 gap-2.5">
                 <div className="h-[62px] animate-pulse rounded-xl bg-rz-surface-sunken" />
@@ -125,7 +125,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const title = <h1 className="sr-only">{t('investor.deals.head_title')}</h1>;
-    const { frame, scale, width } = useFitScale(CANVAS_HEIGHT);
+    const { frame, scale, width, canvasHeight } = useFitScale(CANVAS_HEIGHT);
     const start = Math.max(
         0,
         props.deals.findIndex(
@@ -327,9 +327,10 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             {title}
             <div ref={frame} className="h-full overflow-hidden">
                 <div
-                    className="flex h-[720px] shrink-0 origin-top-left flex-col"
+                    className="flex shrink-0 origin-top-left flex-col"
                     style={{
                         width: width ?? '100%',
+                        height: canvasHeight,
                         transform: `scale(${scale})`,
                     }}
                 >
@@ -345,7 +346,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
                         }
                     />
                     <div className="flex min-h-0 flex-1 items-stretch gap-[26px]">
-                        <div className="relative flex min-h-0 min-w-[420px] flex-[0_1_508px] flex-col">
+                        <div className="relative flex min-h-0 min-w-[420px] flex-[1_1_508px] flex-col">
                             <SortChips sorts={props.sorts} size="desk" />
                             {current === null ? (
                                 <EmptyDeals gate={props.gate} />

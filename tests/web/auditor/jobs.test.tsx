@@ -70,7 +70,9 @@ describe('Auditor Jobs', () => {
         expect(
             within(card).getByRole('link', { name: /View full application/ }),
         ).toHaveAttribute('href', '/preview/auditor-file');
-        expect(screen.queryByText('Assigned to you')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'In progress' }),
+        ).not.toBeInTheDocument();
     });
 
     it('accepts a job as a JSON command and moves to the next page the server names', async () => {
@@ -601,7 +603,9 @@ describe('Auditor Jobs', () => {
     it('lists overdue and reassigned work first', () => {
         render(<AuditorJobs {...props(overdueFixture)} />);
 
-        expect(screen.getByText('Assigned to you')).toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'In progress' }),
+        ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: /Sebeya Logistics/ }),
         ).toHaveAttribute('href', '/preview/auditor-audit-ledger');
@@ -998,7 +1002,7 @@ describe('Auditor Jobs, paged', () => {
         expect(screen.queryByText(/2 open/u)).not.toBeInTheDocument();
         /* A page count is never a total: the Jobs tab carries no badge. */
         expect(screen.queryByLabelText(/open offers/u)).not.toBeInTheDocument();
-        expect(screen.getByText('Assigned to you')).toBeInTheDocument();
+        expect(screen.getByText('In progress')).toBeInTheDocument();
     });
 
     it('keeps offering Show more after an empty page, which is not the end of the history', () => {
@@ -1025,7 +1029,7 @@ describe('Auditor Jobs, paged', () => {
     it('shows the assigned work alone when a page holds no offers', () => {
         render(<AuditorJobs {...props(pagedFixture)} eligible={[]} />);
 
-        expect(screen.getByText('Assigned to you')).toBeInTheDocument();
+        expect(screen.getByText('In progress')).toBeInTheDocument();
         expect(
             screen.queryByText(/Nothing to show on this page/u),
         ).not.toBeInTheDocument();
@@ -1084,7 +1088,7 @@ describe('Auditor Jobs on a wide screen', () => {
     const columns = () => screen.getAllByTestId(/^column-/u);
 
     const assignedHeading = () =>
-        screen.getByRole('heading', { name: 'Assigned to you' });
+        screen.getByRole('heading', { name: 'In progress' });
 
     it('puts the assigned work in the right column while no monthly section is sent', () => {
         wide(true);
@@ -1099,7 +1103,9 @@ describe('Auditor Jobs on a wide screen', () => {
         expect(left).toContainElement(
             screen.getByRole('article', { name: 'Kimisagara Hardware' }),
         );
-        expect(screen.getAllByText('Assigned to you')).toHaveLength(1);
+        expect(
+            screen.getAllByRole('heading', { name: 'In progress' }),
+        ).toHaveLength(1);
     });
 
     it('keeps Show more with the offers, and says so when a page holds no assigned work', () => {
@@ -1153,7 +1159,7 @@ describe('Auditor Jobs on a wide screen', () => {
 
         expect(columns()).toHaveLength(1);
         expect(screen.getByTestId('column-left')).toHaveTextContent(
-            /Assigned to you[\s\S]*Kimisagara Hardware/u,
+            /In progress[\s\S]*Kimisagara Hardware/u,
         );
     });
 });
