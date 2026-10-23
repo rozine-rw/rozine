@@ -1575,7 +1575,7 @@ class PreflightClassificationTests(unittest.TestCase):
                 self.assertEqual(policy.reusable_run(env, "poc", with_attempt=True), ("", "") if matching else ("99", "2"))
 
 
-class CanonicalCoordinationTests(unittest.TestCase):
+class NativeCoordinationFixture(unittest.TestCase):
     """A native API/artifact simulation; this does not simulate lock acquisition."""
 
     def setUp(self):
@@ -1694,6 +1694,8 @@ class CanonicalCoordinationTests(unittest.TestCase):
             finally:
                 os.chdir(previous)
 
+
+class CanonicalCoordinationTests(NativeCoordinationFixture):
     def test_simultaneous_dev_promotion_reuse_one_original_and_pin_receipt_owner(self):
         with self.server():
             first = policy.canonical_selection(self.env())
@@ -2765,6 +2767,332 @@ class WorkflowQueueCompatibilityTests(unittest.TestCase):
         for output, code in [('not json', 1), ('{}', 1), ('[]', 1), ('[]', 2), ('[{}]', 1)]:
             with self.subTest(output=output, code=code), self.assertRaises(ValueError):
                 lint.remaining_errors(output, code, Path('.github/workflows/tests.yml'))
+
+
+
+class FreshCompleteRecoveryTests(NativeCoordinationFixture):
+    def setUp(self):
+        super().setUp()
+        now = datetime.datetime.now(datetime.timezone.utc)
+        self.started = (now - datetime.timedelta(seconds=5)).isoformat()
+        self.runs[200].update(event="workflow_dispatch", run_started_at=self.started)
+        self.artifacts[200]["ci-coordination-identity"].update(event="workflow_dispatch",
+            recovery_intent={"contract": 1, "expected_sha": "d" * 40})
+        old = (now - datetime.timedelta(seconds=30)).isoformat()
+        for number, event in [(190, "push"), (191, "workflow_dispatch"), (201, "pull_request")]:
+            if number != 201:
+                self.runs[number] = dict(self.runs[200], id=number, event=event)
+                self.artifacts[number], self.jobs[number] = {}, []
+                self.identity(number)
+            self.runs[number].update(status="completed", conclusion="failure", created_at=old, updated_at=old, run_started_at=old)
+            self.jobs[number] = [self.job(policy.IDENTITY_JOB, steps=policy.IDENTITY_STEPS),
+                                 dict(self.job("Select CI scope"), conclusion="failure")]
+        self.tip = "d" * 40
+
+    def api(self, endpoint, **kwargs):
+        if endpoint.endswith("/git/ref/heads/dev"):
+            return {"object": {"sha": self.tip}}
+        return super().api(endpoint, **kwargs)
+
+    def fresh_env(self, **extra):
+        inputs = {"validation": "poc", "recovery": "fresh-complete-poc", "expected_sha": "d" * 40}
+        Path("event.json").write_text(json.dumps({"inputs": inputs}))
+        return self.env(GITHUB_EVENT_NAME="workflow_dispatch", GITHUB_REF="refs/heads/dev", VALIDATION="poc",
+            POC_RECOVERY="fresh-complete-poc", EXPECTED_CANDIDATE_SHA="d" * 40, GITHUB_EVENT_PATH=str(Path("event.json").resolve()), **extra)
+
+    def finish_recovery(self):
+        decision = policy.canonical_selection(self.fresh_env())
+        self.publish(200, decision)
+        self.complete_validation(200)
+        self.runs[200]["updated_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        return decision
+
+    def consumer(self, event="push"):
+        self.runs[300] = dict(self.runs[200], id=300, status="in_progress", conclusion=None, event=event,
+            created_at=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        self.artifacts[300], self.jobs[300] = {}, []
+        self.identity(300)
+        self.jobs[300].append(dict(self.job("Select CI scope"), status="in_progress", conclusion=None))
+        self.current = 300
+        return self.env()
+
+    def test_fresh_execution_pins_terminal_cycle_without_reusing_failed_or_successful_proof(self):
+        with self.server(), patch.object(policy, "reusable_run", side_effect=AssertionError("fresh recovery must execute")):
+            result = policy.canonical_selection(self.fresh_env())
+            self.assertEqual((result["mode"], result["source_run"], result["source_attempt"]), ("execute", "200", "1"))
+            self.assertEqual({pin["id"] for pin in result["recovery"]["covered"]}, {190, 191, 201})
+            self.assertEqual(result["recovery"]["started_at"], self.started)
+            self.assertNotIn("validation-tree", self.artifacts[200])
+
+    def test_ordinary_run_still_refuses_cycle_without_explicit_recovery(self):
+        self.runs[200]["event"] = "push"
+        self.artifacts[200]["ci-coordination-identity"].update(event="push")
+        del self.artifacts[200]["ci-coordination-identity"]["recovery_intent"]
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+
+    def test_only_explicit_first_attempt_dev_poc_input_is_eligible(self):
+        changes = [{"POC_RECOVERY": "unknown"}, {"GITHUB_EVENT_NAME": "push"}, {"GITHUB_REF": "refs/heads/uat"},
+                   {"GITHUB_REF": "refs/heads/main"}, {"VALIDATION": "full"}, {"GITHUB_RUN_ATTEMPT": "2"},
+                   {"EXPECTED_CANDIDATE_SHA": ""}, {"EXPECTED_CANDIDATE_SHA": "a" * 40}, {"GITHUB_SHA": "a" * 40}]
+        with self.server():
+            for change in changes:
+                with self.subTest(change=change), self.assertRaises(policy.CoordinationRefusal):
+                    policy.recovery_intent(dict(self.fresh_env(), **change))
+            for key in ("validation", "recovery", "expected_sha"):
+                env = self.fresh_env()
+                event = json.loads(Path("event.json").read_text())
+                event["inputs"][key] = "different"
+                Path("event.json").write_text(json.dumps(event))
+                with self.subTest(payload=key), self.assertRaises(policy.CoordinationRefusal):
+                    policy.recovery_intent(env)
+
+    def test_identity_producer_records_bound_intent_and_default_full_remains_full(self):
+        with self.server():
+            env = self.fresh_env(GITHUB_OUTPUT="output")
+            policy.record_coordination_identity(env)
+            proof = json.loads(Path("ci-coordination-identity/coordination-identity.json").read_text())
+            self.assertEqual(proof["recovery_intent"], {"contract": 1, "expected_sha": "d" * 40})
+            self.assertEqual(policy.requested_scope(dict(env, VALIDATION="full", POC_RECOVERY="none")), "full")
+            self.assertIsNone(policy.recovery_intent({"POC_RECOVERY": "none"}))
+
+    def test_current_tip_and_preflight_input_drift_refuse(self):
+        for change in ("tip", "intent", "identity attempt"):
+            self.setUp()
+            if change == "tip": self.tip = "f" * 40
+            if change == "intent": del self.artifacts[200]["ci-coordination-identity"]["recovery_intent"]
+            if change == "identity attempt": self.artifacts[200]["ci-coordination-identity"]["run_attempt"] = "2"
+            with self.subTest(change=change), self.server(), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(self.fresh_env())
+
+    def test_active_and_unknown_peers_never_lose_ownership(self):
+        for state in ("queued", "owner", "unknown", "preflight"):
+            self.setUp()
+            self.runs[201].update(status="in_progress", conclusion=None)
+            if state == "owner": self.publish(201, self.decision(201, "execute", 201, 201))
+            elif state == "unknown": self.artifacts[201].clear(); self.jobs[201] = []
+            elif state == "preflight": self.artifacts[201].clear(); self.jobs[201] = [dict(self.job(policy.IDENTITY_JOB), status="queued", conclusion=None)]
+            else: self.jobs[201][-1].update(status="queued", conclusion=None)
+            with self.subTest(state=state), self.server(), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(self.fresh_env())
+
+    def test_terminal_failures_must_predate_start_and_have_completed_jobs(self):
+        for change in ("equal", "later", "active job", "rerun", "missing time"):
+            self.setUp()
+            if change in ("equal", "later"): self.runs[190]["updated_at"] = self.started if change == "equal" else datetime.datetime.now(datetime.timezone.utc).isoformat()
+            if change == "active job": self.jobs[190][-1]["status"] = "in_progress"
+            if change == "rerun": self.runs[190]["run_attempt"] = 2; self.runs[190]["updated_at"] = self.started
+            if change == "missing time": self.runs[190].pop("updated_at")
+            with self.subTest(change=change), self.server(), self.assertRaises((ValueError, KeyError)):
+                policy.canonical_selection(self.fresh_env())
+
+    def test_same_tree_different_head_failure_is_not_blanket_superseded(self):
+        self.runs[201]["head_sha"] = "a" * 40
+        self.artifacts[201]["ci-coordination-identity"].update(head_sha="a" * 40, tested_sha="b" * 40, base_sha="9" * 40)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.fresh_env())
+
+    def test_original_success_unlocks_normal_consumer_and_receipt(self):
+        with self.server():
+            result = self.finish_recovery()
+            self.assertEqual(policy.successful_recovery(self.repository, self.runs[200], self.tree), result["recovery"])
+            env = self.consumer()
+            decision = policy.canonical_selection(env)
+            self.assertEqual((decision["mode"], decision["source_run"]), ("reuse", "200"))
+            self.assertNotIn("recovery", decision)
+            self.publish(300, decision)
+            policy.record_reuse(self.env(SOURCE_RUN="200", SOURCE_ATTEMPT="1"))
+            receipt = json.loads(Path("ci-evidence/tested-tree.json").read_text())
+            self.assertEqual((receipt["source_run"], receipt["source_attempt"]), ("200", "1"))
+
+    def test_exact_uat_reuse_receipt_consumes_verified_original_recovery(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            self.runs[300]["head_branch"] = "uat"
+            decision = policy.canonical_selection(env)
+            self.publish(300, decision)
+            policy.record_reuse(self.env(SOURCE_RUN="200", SOURCE_ATTEMPT="1"))
+            receipt = json.loads(Path("ci-evidence/tested-tree.json").read_text())
+            self.artifacts[300]["poc-reuse"] = receipt
+            self.jobs[300] = [job for job in self.jobs[300] if job["name"] != "Reuse POC validation evidence"]
+            self.jobs[300] += [self.job("Reuse POC validation evidence", steps=policy.REUSE_STEPS), self.job("Board sync offline tests")]
+            self.runs[300].update(status="completed", conclusion="success")
+            result = policy.staging_evidence(dict(env, COORDINATION_ACTIVE="false", CANDIDATE_SHA="d" * 40, EVIDENCE_RUN="300"))
+            self.assertEqual((result["scope"], result["source_run"], result["source_attempt"]), ("poc", "200", "1"))
+            self.assertEqual(result["required_jobs"], policy.POC_JOBS)
+            self.runs[190]["run_attempt"] = 2
+            with self.assertRaises(ValueError): policy.staging_evidence(dict(env, COORDINATION_ACTIVE="false", CANDIDATE_SHA="d" * 40, EVIDENCE_RUN="300"))
+
+    def test_marker_alone_and_unsuccessful_native_jobs_never_certify_recovery(self):
+        for change in ("missing proof", "failed", "cancelled", "skipped", "pending", "identity", "selector", "static", "catalog", "budget", "legacy proof"):
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                self.finish_recovery()
+                if change == "missing proof": del self.artifacts[200]["validation-tree"]
+                elif change in ("failed", "cancelled", "skipped", "pending"):
+                    self.runs[200].update(status="in_progress" if change == "pending" else "completed", conclusion=None if change == "pending" else change)
+                elif change in ("identity", "selector", "static", "catalog"):
+                    name = {"identity": policy.IDENTITY_JOB, "selector": "Select CI scope", "static": poc.STATIC_JOB, "catalog": poc.CATALOG_JOB}[change]
+                    next(job for job in self.jobs[200] if job["name"] == name)["conclusion"] = "skipped"
+                elif change == "budget":
+                    next(job for job in self.jobs[200] if job["name"] == poc.STATIC_JOB)["completed_at"] = "2026-10-07T09:10:01Z"
+                elif change == "legacy proof": self.artifacts[200]["validation-tree"]["required_jobs"] = policy.POC_JOBS[:-1]
+                with self.assertRaises(ValueError): policy.successful_recovery(self.repository, self.runs[200], self.tree)
+                self.assertIsNone(policy.completed_recovery(self.consumer(), self.tree, list(self.runs.values())))
+
+    def test_proof_and_native_provenance_bind_every_recovery_source(self):
+        for location, key, value in [("proof", "repository", "other/repo"), ("proof", "run_attempt", "2"),
+                                    ("proof", "run_id", "999"), ("proof", "tested_sha", "e" * 40),
+                                    ("proof", "tree_sha", "f" * 40), ("identity", "head_sha", "a" * 40),
+                                    ("identity", "run_attempt", "2"), ("intent", "expected_sha", "a" * 40),
+                                    ("decision", "mode", "reuse"), ("decision", "source_run", "100"),
+                                    ("decision", "owner_run", "100"), ("static", "run_attempt", 2),
+                                    ("static", "head_sha", "a" * 40)]:
+            self.setUp()
+            with self.subTest(location=location, key=key), self.server():
+                self.finish_recovery()
+                target = {"proof": self.artifacts[200]["validation-tree"], "identity": self.artifacts[200]["ci-coordination-identity"],
+                          "intent": self.artifacts[200]["ci-coordination-identity"]["recovery_intent"],
+                          "decision": self.artifacts[200]["ci-coordination-decision"],
+                          "static": next(job for job in self.jobs[200] if job["name"] == poc.STATIC_JOB)}[location]
+                target[key] = value
+                with self.assertRaises(ValueError): policy.successful_recovery(self.repository, self.runs[200], self.tree)
+
+    def test_pinned_failure_rerun_metadata_or_deletion_invalidates_exception(self):
+        for change in ("attempt", "time", "sha", "repository", "workflow", "delete", "duplicate", "unpin"):
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                decision = self.finish_recovery()
+                if change == "attempt": self.runs[190]["run_attempt"] = 2
+                if change == "time": self.runs[190]["updated_at"] = self.started
+                if change == "sha": self.runs[190]["head_sha"] = "a" * 40
+                if change == "repository": self.runs[190]["head_repository"] = {"full_name": "other/repo"}
+                if change == "workflow": self.runs[190]["workflow_id"] = 99
+                if change == "delete": del self.runs[190]
+                if change == "duplicate": decision["recovery"]["covered"].append(decision["recovery"]["covered"][0])
+                if change == "unpin": decision["recovery"]["covered"][0].pop("run_attempt")
+                with self.assertRaises((ValueError, KeyError)): policy.successful_recovery(self.repository, self.runs[200], self.tree)
+
+    def test_later_failed_and_during_execution_failed_runs_still_block(self):
+        for conclusion in ("failure", "cancelled", "skipped", "timed_out"):
+            self.setUp()
+            with self.subTest(conclusion=conclusion), self.server():
+                self.finish_recovery()
+                middle = (datetime.datetime.fromisoformat(self.started) + datetime.timedelta(seconds=1)).isoformat()
+                self.runs[250] = dict(self.runs[190], id=250, created_at=middle, updated_at=middle, run_started_at=middle, conclusion=conclusion)
+                self.artifacts[250], self.jobs[250] = {}, []
+                self.identity(250)
+                env = self.consumer()
+                with self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
+                    policy.reusable_run(dict(env, SOURCE_RUN="200", SOURCE_ATTEMPT="1"), "poc")
+
+    def test_legacy_success_never_receives_recovery_exception(self):
+        with self.server():
+            self.finish_recovery()
+            del self.artifacts[200]["ci-coordination-identity"]["recovery_intent"]
+            self.assertIsNone(policy.successful_recovery(self.repository, self.runs[200], self.tree))
+            with self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+                policy.canonical_selection(self.consumer())
+
+    def test_snapshot_size_schema_and_timezone_are_bounded(self):
+        with self.server():
+            decision = self.finish_recovery()
+            original = decision["recovery"]
+            for change in ({**original, "contract": True}, {**original, "covered": original["covered"] * 2000},
+                           {**original, "started_at": "2026-10-23T12:00:00"}, {**original, "unexpected": 1}):
+                with self.subTest(keys=list(change)), self.assertRaises(ValueError):
+                    policy.validate_recovery_failures(self.repository, self.runs[200], change)
+
+    def test_selection_rechecks_tip_and_historical_snapshot_before_publication(self):
+        for change in ("tip", "attempt", "new failure", "active peer"):
+            self.setUp()
+            reads = 0
+            original = self.api
+            def changing(endpoint, **kwargs):
+                nonlocal reads
+                if "/workflows/tests.yml/runs?" in endpoint:
+                    reads += 1
+                    if reads == 2:
+                        if change == "tip": self.tip = "f" * 40
+                        elif change == "attempt": self.runs[190]["run_attempt"] = 2
+                        else:
+                            self.runs[250] = dict(self.runs[190], id=250)
+                            self.artifacts[250], self.jobs[250] = {}, []
+                            self.identity(250)
+                            if change == "active peer": self.runs[250].update(status="queued", conclusion=None)
+                return copy.deepcopy(original(endpoint, **kwargs))
+            with self.subTest(change=change), self.server(), patch.object(policy, "api", side_effect=changing), self.assertRaises(ValueError):
+                policy.canonical_selection(self.fresh_env())
+                self.fail("a changed snapshot was published")
+            self.assertEqual(reads, 2)
+
+    def test_consumer_rechecks_complete_history_after_source_verification(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            original = policy.validate_source
+            changed = False
+            def after_source(*args):
+                nonlocal changed
+                result = original(*args)
+                if not changed:
+                    changed = True
+                    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    self.runs[250] = dict(self.runs[190], id=250, created_at=now, updated_at=now)
+                    self.artifacts[250], self.jobs[250] = {}, []
+                    self.identity(250)
+                return result
+            with patch.object(policy, "validate_source", side_effect=after_source), self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
+                policy.reusable_run(dict(env, SOURCE_RUN="200", SOURCE_ATTEMPT="1"), "poc")
+
+    def test_mandatory_static_and_catalog_steps_cannot_be_missing_or_pending(self):
+        for name, step in [(poc.STATIC_JOB, poc.STATIC_STEPS[1]), (poc.CATALOG_JOB, poc.CATALOG_STEPS[0]),
+                           (poc.STATIC_JOB, poc.POC_STEPS[-1])]:
+            for state in ("missing", "pending", "failed", "duplicate"):
+                self.setUp()
+                with self.subTest(name=name, step=step, state=state), self.server():
+                    self.finish_recovery()
+                    job = next(job for job in self.jobs[200] if job["name"] == name)
+                    target = next(item for item in job["steps"] if item["name"] == step)
+                    if state == "missing": job["steps"].remove(target)
+                    elif state == "duplicate": job["steps"].append(copy.deepcopy(target))
+                    else: target.update(status="in_progress" if state == "pending" else "completed", conclusion=None if state == "pending" else "failure")
+                    with self.assertRaises(ValueError): policy.successful_recovery(self.repository, self.runs[200], self.tree)
+
+    def test_native_attempt_changes_and_artifact_expiry_do_not_certify(self):
+        for change in ("attempt", "source time", "expired", "duplicate"):
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                self.finish_recovery()
+                if change == "attempt": self.runs[200]["run_attempt"] = 2
+                if change == "source time": self.runs[200]["created_at"] = "2000-01-01T00:00:00Z"
+                original = self.api
+                def changed(endpoint, **kwargs):
+                    result = copy.deepcopy(original(endpoint, **kwargs))
+                    if "/runs/200/artifacts?" in endpoint:
+                        if change == "expired":
+                            for artifact in result["artifacts"]: artifact["expired"] = True
+                        if change == "duplicate": result["artifacts"].append(dict(result["artifacts"][0], id=999999)); result["total_count"] += 1
+                    return result
+                with patch.object(policy, "api", side_effect=changed), self.assertRaises(ValueError):
+                    policy.successful_recovery(self.repository, self.runs[200], self.tree)
+
+    def test_api_failure_remains_failure_without_retry(self):
+        for error in (subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit"),
+                      subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503"), subprocess.TimeoutExpired("gh api", 45)):
+            self.setUp()
+            with self.subTest(error=type(error).__name__), self.server():
+                original = self.api
+                reads = []
+                def failing(endpoint, **kwargs):
+                    if endpoint.endswith("/actions/runs/190"):
+                        reads.append(endpoint)
+                        raise error
+                    return original(endpoint, **kwargs)
+                with patch.object(policy, "api", side_effect=failing), self.assertRaises(type(error)):
+                    policy.canonical_selection(self.fresh_env())
+                self.assertEqual(len(reads), 1)
 
 
 if __name__ == "__main__":
