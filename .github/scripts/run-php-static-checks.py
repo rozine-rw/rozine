@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Run both complete PHP static checks concurrently and require both to pass."""
+"""Require complete PHP static checks, optionally overlapping the POC catalog."""
 
+import argparse
 import os
 import signal
 import subprocess
@@ -68,7 +69,11 @@ def run_checks(checks=CHECKS, cancelled=lambda: 0):
             stop_checks(processes)
 
 
-def main():
+def main(arguments=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--poc", action="store_true", help="Also execute the unchanged complete POC PHP catalog concurrently.")
+    options = parser.parse_args(arguments)
+    checks = CHECKS + (("POC PHP safety catalog", ("python3", ".github/scripts/run-poc-tests.py", "php")),) if options.poc else CHECKS
     received = 0
 
     def cancel(signum, frame):
@@ -77,7 +82,7 @@ def main():
 
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, cancel)
-    return run_checks(cancelled=lambda: received)
+    return run_checks(checks, cancelled=lambda: received)
 
 
 if __name__ == "__main__":
