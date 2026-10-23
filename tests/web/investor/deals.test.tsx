@@ -57,6 +57,13 @@ describe('Deals on a phone', () => {
         render(<InvestorDeals {...deals()} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent('Deals');
+        /* On a short phone the photo gives up height, never the figures, so nothing is clipped. */
+        expect(screen.getAllByTestId('swipe-card-photo')[0]).toHaveClass(
+            'flex-[1_1_46%]',
+        );
+        expect(screen.getAllByTestId('swipe-card-figures')[0]).toHaveClass(
+            'shrink-0',
+        );
         expect(
             screen.getByRole('link', { name: 'Wallet balance' }),
         ).toHaveTextContent('RWF 1,253,485+RWF 912K · 3 Oct');
@@ -938,7 +945,7 @@ describe('Deal edge states', () => {
             'shrink-0',
         );
         expect(screen.getByTestId('desk-deck-stack')).toHaveClass(
-            'max-h-[460px]',
+            'max-h-[560px]',
         );
 
         const industries = screen.getByRole('navigation', {

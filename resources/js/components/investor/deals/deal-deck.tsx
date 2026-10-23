@@ -216,7 +216,7 @@ export function DeskDeck({ deals, index, serverTime, onMove }: DeckProps) {
         <div className="flex min-h-0 flex-1 items-center justify-center">
             <div
                 data-testid="desk-deck-stack"
-                className="relative h-[91%] max-h-[460px] w-full max-w-[340px]"
+                className="relative h-[91%] max-h-[560px] w-full max-w-[420px]"
             >
                 {deals.map((deal, at) => {
                     let offset = wrapIndex(at - index, deals.length);

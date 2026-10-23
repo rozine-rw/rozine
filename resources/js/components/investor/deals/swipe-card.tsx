@@ -49,7 +49,10 @@ export function SwipeCard({
             aria-label={deal.name}
             className="flex size-full flex-col overflow-hidden rounded-[20px] border border-rz-border bg-rz-surface shadow-[0_26px_50px_-22px_rgba(20,45,95,.30),0_8px_20px_-12px_rgba(20,45,95,.10)] select-none"
         >
-            <div className="relative min-h-0 flex-[1_0_46%] overflow-hidden bg-[#0b1c3a]">
+            <div
+                data-testid="swipe-card-photo"
+                className="relative min-h-[110px] flex-[1_1_46%] overflow-hidden bg-[#0b1c3a]"
+            >
                 <PhotoStrip
                     photos={deal.photos}
                     accent={deal.accent}
@@ -85,7 +88,10 @@ export function SwipeCard({
                 </div>
             </div>
 
-            <div className="relative flex min-h-0 flex-[0_1_197px] flex-col px-[15px] pt-[13px] pb-3">
+            <div
+                data-testid="swipe-card-figures"
+                className="relative flex shrink-0 flex-col px-[15px] pt-[13px] pb-3"
+            >
                 {front && (
                     <Link
                         href={deal.links.detail}
