@@ -9,7 +9,7 @@
 # commit. The one positive case proves the gate still admits a good candidate,
 # so a refusal is evidence of the condition and not of a broken script.
 
-set -uo pipefail
+set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GATE="${HERE}/verify-deployment-admission.sh"
@@ -52,14 +52,29 @@ if [[ "$path" == *pulls/*/reviews* ]] && [ -n "${REAL_GH_REVIEW_URL:-}" ]; then
 fi
 case "$path" in
   *git/ref/heads/*) body="$(cat "$FIXTURES/ref.json")" ;;
-  *actions/workflows/*)
+  *actions/workflows/tests.yml) body='{"id":123}' ;;
+  *actions/workflows/*/runs*)
+    if [ -f "$FIXTURES/runs-after.json" ] && [ -f "$FIXTURES/runs-read" ]; then
+      cp "$FIXTURES/runs-after.json" "$FIXTURES/runs.json"
+    fi
+    touch "$FIXTURES/runs-read"
     [[ "$path" == *'event=push&branch=main&per_page=100'* || "$path" == *'&branch=uat&per_page=100'* ]] || exit 64
     body="$(cat "$FIXTURES/runs.json")" ;;
-  *actions/runs/*/jobs*) body="$(cat "$FIXTURES/jobs.json")" ;;
+  *actions/runs/*/jobs*)
+    [[ "$path" == *'/attempts/2/jobs?per_page=100' ]] || exit 64
+    body="$(cat "$FIXTURES/jobs.json")" ;;
   *commits/*/pulls) body="$(cat "$FIXTURES/pulls.json")" ;;
   *pulls/*/reviews*) body="$(cat "$FIXTURES/reviews.json")" ;;
   *) echo "stub gh: unexpected path $path" >&2; exit 64 ;;
 esac
+if [[ "$path" == *actions/workflows/*/runs* ]] && [ -f "$FIXTURES/runs-error" ]; then
+  printf '%s' "$body"
+  exit 1
+fi
+if [[ "$path" == *actions/runs/*/jobs* ]] && [ -f "$FIXTURES/jobs-error" ]; then
+  printf '%s' "$body"
+  exit 1
+fi
 if [[ "$path" == *pulls/*/reviews* ]] && [ -f "$FIXTURES/reviews-error" ]; then
   printf '%s' "$body"
   exit 1
@@ -75,7 +90,7 @@ fixtures() { FIXTURES="${WORKDIR}/fx"; rm -rf "${FIXTURES}"; mkdir -p "${FIXTURE
 write_ref()  { echo "{\"object\":{\"sha\":\"$1\"}}" > "${FIXTURES}/ref.json"; }
 write_runs() {
   cat > "${FIXTURES}/runs.json" <<JSON
-{"workflow_runs":[{"id":99,"status":"$1","conclusion":$2,"created_at":"2026-09-06T10:00:00Z","event":"push","head_branch":"main","head_sha":"${GOOD_SHA}"}]}
+{"workflow_runs":[{"id":99,"workflow_id":123,"path":".github/workflows/tests.yml","repository":{"full_name":"rozine-rw/rozine"},"head_repository":{"full_name":"rozine-rw/rozine"},"run_attempt":2,"status":"$1","conclusion":$2,"created_at":"2026-09-06T10:00:00Z","event":"push","head_branch":"main","head_sha":"${GOOD_SHA}"}]}
 JSON
 }
 write_jobs() {
@@ -84,6 +99,14 @@ write_jobs() {
                    {\"name\":\"PostgreSQL concurrency lane\",\"conclusion\":\"success\"},
                    {\"name\":\"PHP gate negative controls\",\"conclusion\":\"success\"},
                    {\"name\":\"Deployment admission negative controls\",\"conclusion\":\"success\"}]}" > "${FIXTURES}/jobs.json"
+  jq --arg sha "$GOOD_SHA" '.jobs += [
+    {name:"Board sync offline tests",conclusion:"success"},
+    {name:"Identify CI validation tree",conclusion:"success"},
+    {name:"Select CI scope",conclusion:"success"},
+    {name:"Record validation tree",conclusion:"success"}
+  ] | .jobs |= map(. + {status:"completed",head_sha:$sha,run_id:99,run_attempt:2})' \
+    "$FIXTURES/jobs.json" > "$FIXTURES/complete-jobs.json"
+  mv "$FIXTURES/complete-jobs.json" "$FIXTURES/jobs.json"
 }
 write_pulls() { echo "$1" > "${FIXTURES}/pulls.json"; }
 write_reviews() { echo "$1" > "${FIXTURES}/reviews.json"; }
@@ -109,13 +132,13 @@ pass=0; fail=0
 check() {
   local name="$1" expect="$2" want="$3"
   local out code
+  rm -f "${WORKDIR}/attestation.json"
   out="$(PATH="${WORKDIR}/bin:${PATH}" \
         GH_TOKEN=stub GITHUB_REPOSITORY=rozine-rw/rozine \
-        CANDIDATE_SHA="${GOOD_SHA}" TARGET_BRANCH="${TEST_TARGET_BRANCH:-main}" \
+        CANDIDATE_SHA="${TEST_CANDIDATE_SHA:-${GOOD_SHA}}" TARGET_BRANCH="${TEST_TARGET_BRANCH:-main}" \
         WAIT_TIMEOUT_SECONDS=1 POLL_INTERVAL_SECONDS=1 \
         ATTESTATION_PATH="${WORKDIR}/attestation.json" \
-        bash "${GATE}" 2>&1)"
-  code=$?
+        bash "${GATE}" 2>&1)" && code=0 || code=$?
 
   if [ "${expect}" = "admit" ] && [ "${code}" -ne 0 ]; then
     echo "FAIL ${name}: expected admission, exited ${code}"; echo "${out}" | sed 's/^/     /'; fail=$((fail+1)); return
@@ -126,6 +149,14 @@ check() {
   if [ -n "${want}" ] && ! echo "${out}" | grep -qF "${want}"; then
     echo "FAIL ${name}: refusal did not mention '${want}'"; echo "${out}" | sed 's/^/     /'; fail=$((fail+1)); return
   fi
+  if [ "${expect}" = refuse ] && [ -e "${WORKDIR}/attestation.json" ]; then
+    echo "FAIL ${name}: refused candidate left an admission attestation"; fail=$((fail+1)); return
+  fi
+  if [ "${expect}" = admit ] && ! jq -e --arg sha "$GOOD_SHA" '
+    .candidate_sha == $sha and .evidence.run_id == "99" and .evidence.run_attempt == "2"
+  ' "${WORKDIR}/attestation.json" >/dev/null; then
+    echo "FAIL ${name}: attestation is not bound to the candidate/attempt"; fail=$((fail+1)); return
+  fi
   echo "ok   ${name}"
   pass=$((pass+1))
 }
@@ -135,6 +166,13 @@ echo
 
 baseline
 check "admits a fully evidenced, non-author-approved candidate" admit ""
+
+for candidate in main 1111111 111111111111111111111111111111111111111G; do
+  baseline
+  export TEST_CANDIDATE_SHA="$candidate"
+  check "refuses mutable or malformed candidate $candidate" refuse "not a full 40-character Git SHA"
+  unset TEST_CANDIDATE_SHA
+done
 
 baseline; write_ref "${OLD_SHA}"
 check "refuses a candidate that is no longer the branch tip" refuse "stale candidate"
@@ -281,6 +319,63 @@ baseline
 jq '.[0].merge_commit_sha = "3333333333333333333333333333333333333333"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"
 mv "${FIXTURES}/changed.json" "${FIXTURES}/pulls.json"
 check "refuses direct descendant of a previously reviewed merge" refuse "direct push cannot deploy"
+
+# Production run provenance and complete evidence must fail closed.
+for field in workflow_id path repository.full_name head_repository.full_name run_attempt; do
+  baseline
+  jq "del(.workflow_runs[0].$field)" "$FIXTURES/runs.json" > "$FIXTURES/changed.json"
+  mv "$FIXTURES/changed.json" "$FIXTURES/runs.json"
+  check "refuses missing run $field" refuse "inappropriate workflow provenance or attempt"
+done
+
+for change in '.workflow_id = 456' '.path = ".github/workflows/other.yml"' '.head_repository.full_name = "fork/rozine"'; do
+  baseline
+  jq ".workflow_runs[0] |= ($change)" "$FIXTURES/runs.json" > "$FIXTURES/changed.json"
+  mv "$FIXTURES/changed.json" "$FIXTURES/runs.json"
+  check "refuses inappropriate provenance: $change" refuse "inappropriate workflow provenance or attempt"
+done
+
+for state in cancelled skipped neutral timed_out; do
+  baseline; write_runs completed "\"$state\""
+  check "refuses $state workflow evidence" refuse "concluded '$state'"
+done
+for state in queued waiting pending; do
+  baseline; write_runs "$state" null
+  check "refuses $state workflow evidence" refuse "timed out"
+done
+for state in cancelled skipped failure; do
+  baseline; write_jobs "$state" success
+  check "refuses $state required PHP job" refuse "'$state'"
+done
+
+for change in 'map(select(.name != "Record validation tree"))' '. + [.[0]]' '.[0].status = "in_progress"' '.[0].head_sha = "wrong"' '.[0].run_attempt = 1' '.[0].run_id = 98'; do
+  baseline
+  jq ".jobs |= ($change)" "$FIXTURES/jobs.json" > "$FIXTURES/changed.json"
+  mv "$FIXTURES/changed.json" "$FIXTURES/jobs.json"
+  check "refuses incomplete or mismatched job evidence: $change" refuse ""
+done
+
+baseline; touch "$FIXTURES/runs-error"
+check "refuses partial run inventory after API error" refuse "could not read complete workflow"
+baseline; touch "$FIXTURES/jobs-error"
+check "refuses partial job inventory after API error" refuse "could not read complete job"
+
+baseline
+printf '\n{"workflow_runs":[{"id":100,"status":"completed","conclusion":"failure","created_at":"2026-09-06T12:00:00Z","event":"push","head_branch":"main","head_sha":"%s"}]}' "$GOOD_SHA" >> "$FIXTURES/runs.json"
+check "refuses newer failed run from a later inventory page" refuse "concluded 'failure'"
+
+baseline
+jq '.workflow_runs[0].run_attempt = 3 | .workflow_runs[0].status = "queued" | .workflow_runs[0].conclusion = null' "$FIXTURES/runs.json" > "$FIXTURES/runs-after.json"
+check "refuses a rerun started during approval validation" refuse "workflow evidence changed"
+
+baseline
+export REQUIRED_JOBS="irrelevant"
+check "production cannot narrow the required check set" admit "Record validation tree"
+unset REQUIRED_JOBS
+baseline
+export EVIDENCE_WORKFLOW="other.yml"
+check "production cannot substitute another workflow" refuse "requires tests.yml"
+unset EVIDENCE_WORKFLOW
 
 baseline
 jq '.workflow_runs[0].event = "workflow_dispatch" | .workflow_runs[0].head_branch = "uat"' "${FIXTURES}/runs.json" > "${FIXTURES}/changed.json"

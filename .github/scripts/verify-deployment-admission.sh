@@ -59,6 +59,22 @@ refuse() {
   exit 1
 }
 
+# Production cannot substitute a different workflow or a partial job list.
+if [ "${TARGET_BRANCH}" = main ]; then
+  [ "${EVIDENCE_WORKFLOW}" = tests.yml ] || refuse "production requires tests.yml evidence."
+  REQUIRED_JOBS="Board sync offline tests
+Identify CI validation tree
+Select CI scope
+PHP 8.5 quality gate
+TypeScript/React quality gate
+PostgreSQL concurrency lane
+PHP gate negative controls
+Deployment admission negative controls
+Record validation tree"
+  workflow_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/tests.yml" --jq '.id')"
+  [[ "${workflow_id}" =~ ^[1-9][0-9]*$ ]] || refuse "authoritative workflow identity is missing."
+fi
+
 echo "Candidate SHA : ${CANDIDATE_SHA}"
 echo "Target branch : ${TARGET_BRANCH}"
 echo "Repository    : ${GITHUB_REPOSITORY}"
@@ -95,10 +111,15 @@ if [ "${TARGET_BRANCH}" = uat ]; then
   event_filter='(.event == "push" or .event == "workflow_dispatch")'
 fi
 
-while :; do
-  run_json="$(gh api \
+latest_evidence_run() {
+  gh api --paginate \
     "repos/${GITHUB_REPOSITORY}/actions/workflows/${EVIDENCE_WORKFLOW}/runs?head_sha=${CANDIDATE_SHA}&${event_query}branch=${TARGET_BRANCH}&per_page=100" \
-    --jq "[.workflow_runs[] | select(${event_filter} and .head_branch == \"${TARGET_BRANCH}\" and .head_sha == \"${CANDIDATE_SHA}\") | {id, status, conclusion, created_at, run_started_at, updated_at}] | sort_by(([.created_at, .run_started_at, .updated_at] | map(select(. != null)) | max), .id) | last // empty")"
+    --jq '.workflow_runs[]' | jq -sc \
+      "[.[] | select(${event_filter} and .head_branch == \"${TARGET_BRANCH}\" and .head_sha == \"${CANDIDATE_SHA}\")] | sort_by(([.created_at, .run_started_at, .updated_at] | map(select(. != null)) | max), .id) | last // empty"
+}
+
+while :; do
+  run_json="$(latest_evidence_run)" || refuse "could not read complete workflow run evidence."
 
   if [ -z "${run_json}" ]; then
     status_line="no run yet"
@@ -124,6 +145,14 @@ done
 if [ "${run_conclusion}" != "success" ]; then
   refuse "${EVIDENCE_WORKFLOW} run ${run_id} concluded '${run_conclusion}' for ${CANDIDATE_SHA}."
 fi
+run_attempt="$(echo "${run_json}" | jq -r '.run_attempt')"
+if [ "${TARGET_BRANCH}" = main ]; then
+  echo "${run_json}" | jq -e --argjson workflow_id "${workflow_id}" --arg repository "${GITHUB_REPOSITORY}" '
+    .workflow_id == $workflow_id and .path == ".github/workflows/tests.yml" and
+    .repository.full_name == $repository and .head_repository.full_name == $repository and
+    (.run_attempt | type == "number" and . >= 1 and . == floor)
+  ' >/dev/null || refuse "production evidence has inappropriate workflow provenance or attempt."
+fi
 echo "OK  ${EVIDENCE_WORKFLOW} run ${run_id} succeeded on the exact candidate SHA."
 
 # ---------------------------------------------------------------------------
@@ -136,12 +165,16 @@ if [ "${TARGET_BRANCH}" = uat ]; then
   REQUIRED_JOBS="$(echo "${scope_evidence}" | jq -r '.required_jobs[]')"
   echo "OK  validated staging scoped evidence: ${scope_evidence}"
 else
-  jobs_json="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
-    --jq '.jobs[] | {name, conclusion}' | jq -s '.')"
+  jobs_json="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/attempts/${run_attempt}/jobs?per_page=100" \
+    --jq '.jobs[]' | jq -s '.')" || refuse "could not read complete job evidence."
+  # Each required job must belong to this exact run attempt and deploy SHA.
+  echo "${jobs_json}" | jq -e --arg sha "${CANDIDATE_SHA}" --argjson run_id "${run_id}" --argjson attempt "${run_attempt}" '
+    all(.[]; .head_sha == $sha and .run_id == $run_id and .run_attempt == $attempt)
+  ' >/dev/null || refuse "job evidence does not match the candidate run attempt."
   while IFS= read -r required_job; do
     [ -n "${required_job}" ] || continue
     conclusion="$(echo "${jobs_json}" | jq -r --arg n "${required_job}" \
-      'map(select(.name == $n)) | if length == 1 then .[0].conclusion // "missing" else "missing or duplicate" end')"
+      'map(select(.name == $n)) | if length == 1 then (if .[0].status == "completed" then .[0].conclusion // "missing" else "pending" end) else "missing or duplicate" end')"
     if [ "${conclusion}" != success ]; then
       refuse "required job '${required_job}' is '${conclusion}' in run ${run_id}."
     fi
@@ -183,6 +216,12 @@ echo "OK  non-author approval of the final candidate SHA recorded by '${approver
 # ---------------------------------------------------------------------------
 # Attestation. This is the record the phase gate archives.
 # ---------------------------------------------------------------------------
+if [ "${TARGET_BRANCH}" = main ]; then
+  latest_run="$(latest_evidence_run)" || refuse "could not recheck current workflow evidence."
+  echo "${latest_run}" | jq -e --argjson id "${run_id}" --argjson attempt "${run_attempt}" '
+    .id == $id and .run_attempt == $attempt and .status == "completed" and .conclusion == "success"
+  ' >/dev/null || refuse "workflow evidence changed during admission."
+fi
 branch_tip="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/${TARGET_BRANCH}" --jq '.object.sha')"
 [ "${branch_tip}" = "${CANDIDATE_SHA}" ] || refuse "stale candidate after evidence/review validation."
 mkdir -p "$(dirname "${ATTESTATION_PATH:-deployment-admission.json}")"
@@ -193,6 +232,7 @@ jq -n \
   --arg target_branch "${TARGET_BRANCH}" \
   --arg evidence_workflow "${EVIDENCE_WORKFLOW}" \
   --arg evidence_run_id "${run_id}" \
+  --arg evidence_run_attempt "${run_attempt}" \
   --arg pull_request "${pull_number}" \
   --arg pull_author "${pull_author}" \
   --arg pull_head_sha "${pull_head_sha}" \
@@ -208,6 +248,7 @@ jq -n \
     evidence: {
       workflow: $evidence_workflow,
       run_id: $evidence_run_id,
+      run_attempt: $evidence_run_attempt,
       required_jobs: $required_jobs,
       validation: $scope_evidence
     },
