@@ -1228,13 +1228,13 @@ const rw: Catalog = {
     'admin.design.deferrals.kpi.extra_paid': 'Inyongera yahawe abashoramari',
     'admin.design.deferrals.awaiting.title': 'Bitegereje icyemezo cyawe',
     'admin.design.deferrals.awaiting.empty':
-        'Nta gitegereje. Buri gahunda yafatiwe icyemezo.',
+        'Nta gahunda itegereje icyemezo yo kwerekana ubu.',
     'admin.design.deferrals.live_plans.title': 'Gahunda zikomeje',
     'admin.design.deferrals.live_plans.sub': 'Zemejwe kandi zirakomeje.',
     'admin.design.deferrals.live_plans.empty':
         'Nta gahunda zikomeje zo kwerekana ubu.',
     'admin.design.deferrals.decided.title': 'Byafashweho icyemezo',
-    'admin.design.deferrals.decided.empty': 'Nta cyemezo kirafatwa.',
+    'admin.design.deferrals.decided.empty': 'Nta byemezo byo kwerekana ubu.',
     'admin.design.plus.tab.tiers': 'Inzego za Plus',
     'admin.design.plus.tab.institutions': 'Ibigo',
     'admin.design.plus.tab.all': 'Abashoramari bose',

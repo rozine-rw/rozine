@@ -1239,13 +1239,14 @@ const fr: Catalog = {
         'Supplément versé aux investisseurs',
     'admin.design.deferrals.awaiting.title': 'En attente de votre décision',
     'admin.design.deferrals.awaiting.empty':
-        'Rien en attente. Chaque plan a été décidé.',
+        'Aucun plan en attente de décision à afficher pour le moment.',
     'admin.design.deferrals.live_plans.title': 'Plans en cours',
     'admin.design.deferrals.live_plans.sub': 'Approuvés et en cours.',
     'admin.design.deferrals.live_plans.empty':
         'Aucun plan en cours à afficher pour le moment.',
     'admin.design.deferrals.decided.title': 'Décidés',
-    'admin.design.deferrals.decided.empty': "Rien n'a encore été décidé.",
+    'admin.design.deferrals.decided.empty':
+        'Aucune décision à afficher pour le moment.',
     'admin.design.plus.tab.tiers': 'Niveaux Plus',
     'admin.design.plus.tab.institutions': 'Institutions',
     'admin.design.plus.tab.all': 'Tous les investisseurs',

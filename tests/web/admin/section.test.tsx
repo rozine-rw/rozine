@@ -214,6 +214,22 @@ describe('A designed section that is not wired yet', () => {
     });
 });
 
+describe('Deferrals', () => {
+    it('says no plans are read yet rather than claiming every plan was decided', () => {
+        render(<AdminPendingSection {...props({ section: 'deferrals' })} />);
+
+        expect(
+            screen.getByText('No plans awaiting a decision to show yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('No decisions to show yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Every plan has been decided/u),
+        ).not.toBeInTheDocument();
+    });
+});
+
 describe('The title ⓘ', () => {
     it('takes no layout while closed and opens on hover or keyboard focus', () => {
         render(<AdminPendingSection {...props({ section: 'reports' })} />);
