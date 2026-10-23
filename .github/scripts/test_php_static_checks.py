@@ -45,7 +45,7 @@ class StaticSupervisorTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
         self.shim = self.root / 'composer'
-        self.shim.write_text(CHILD)
+        self.shim.write_text(CHILD.replace("#!/usr/bin/env python3", "#!" + sys.executable, 1))
         self.shim.chmod(0o755)
         self.settings({})
         self.children = []
@@ -64,9 +64,9 @@ class StaticSupervisorTests(unittest.TestCase):
     def settings(self, settings):
         (self.root / 'settings.json').write_text(json.dumps(settings))
 
-    def start(self, code=None):
+    def start(self, code=None, extra=()):
         env = dict(os.environ, STATIC_TEST_ROOT=str(self.root), PATH=str(self.root) + os.pathsep + os.environ['PATH'])
-        command = [sys.executable, str(SCRIPT)] if code is None else [sys.executable, '-c', code]
+        command = [sys.executable, str(SCRIPT), *extra] if code is None else [sys.executable, '-c', code]
         process = subprocess.Popen(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         self.children.append(process)
         return process
@@ -85,6 +85,76 @@ class StaticSupervisorTests(unittest.TestCase):
 
     def finish(self, name):
         (self.root / (name + '.finish')).touch()
+
+    def poc_shim(self):
+        child = CHILD.replace("#!/usr/bin/env python3", "#!" + sys.executable, 1)
+        child = child.replace("name=sys.argv[1]", "name='poc-php'; assert sys.argv[1:] == ['.github/scripts/run-poc-tests.py','php']")
+        shim = self.root / 'python3'
+        shim.write_text(child)
+        shim.chmod(0o755)
+
+    def test_poc_overlaps_every_complete_static_check_and_requires_all_three(self):
+        self.poc_shim()
+        process = self.start(extra=['--poc'])
+        names = ['lint:check', 'types:check', 'poc-php']
+        for name in names:
+            child = self.ready(name)
+            self.assertEqual(child['pid'], child['group'])
+        for name in ['lint:check', 'poc-php']: self.finish(name)
+        time.sleep(.1)
+        self.assertIsNone(process.poll(), 'Passing POC cannot hide pending full static analysis')
+        self.finish('types:check')
+        stdout, stderr = process.communicate(timeout=5)
+        self.assertEqual(process.returncode, 0)
+        for name in names:
+            self.assertIn(name + ' stdout', stdout)
+            self.assertIn(name + ' stderr', stderr)
+
+    def test_each_failed_or_killed_poc_check_refuses_without_skipping_other_checks(self):
+        self.poc_shim()
+        names = ['lint:check', 'types:check', 'poc-php']
+        for name in names:
+            for failure in [{'exit': 7}, {'kill': True}]:
+                with self.subTest(check=name, failure=failure):
+                    for pattern in ['*.ready', '*.finish', '*.descendant']:
+                        for path in self.root.glob(pattern): path.unlink()
+                    self.settings({name: dict(failure, descendant=True)})
+                    process = self.start(extra=['--poc'])
+                    for check in names: self.ready(check)
+                    descendant = self.ready(name, descendant=True)
+                    for check in names: self.finish(check)
+                    stdout, stderr = process.communicate(timeout=5)
+                    self.assertEqual(process.returncode, 1)
+                    for other in names:
+                        if other != name: self.assertIn(other + ' stdout', stdout)
+                    self.assertFalse(live(descendant))
+
+    def test_poc_cancellation_refuses_and_stops_all_three_owned_process_groups(self):
+        self.poc_shim()
+        for signum in [signal.SIGINT, signal.SIGTERM]:
+            with self.subTest(signal=signum):
+                for pattern in ['*.ready', '*.finish', '*.descendant']:
+                    for path in self.root.glob(pattern): path.unlink()
+                names = ['lint:check', 'types:check', 'poc-php']
+                self.settings({name: {'descendant': True} for name in names})
+                process = self.start(extra=['--poc'])
+                pids = []
+                for name in names:
+                    pids += [self.ready(name)['pid'], self.ready(name, descendant=True)]
+                process.send_signal(signum)
+                process.communicate(timeout=6)
+                self.assertEqual(process.returncode, 128 + signum)
+                self.assertFalse(any(live(pid) for pid in pids))
+
+    def test_poc_option_keeps_both_original_commands_and_catalog_runner(self):
+        for arguments, expected in [([], policy.CHECKS), (['--poc'], policy.CHECKS + (('POC PHP safety catalog', ('python3', '.github/scripts/run-poc-tests.py', 'php')),))]:
+            with self.subTest(arguments=arguments), patch.object(policy, 'run_checks', return_value=7) as checks, patch.object(policy.signal, 'signal'):
+                self.assertEqual(policy.main(arguments), 7)
+                self.assertEqual(checks.call_args.args[0], expected)
+        with patch.object(policy, 'run_checks') as checks, self.assertRaises(SystemExit) as error:
+            policy.main(['--skip-static'])
+        self.assertEqual(error.exception.code, 2)
+        checks.assert_not_called()
 
     def test_both_complete_commands_start_before_either_finishes_and_both_are_required(self):
         process = self.start()

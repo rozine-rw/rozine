@@ -894,10 +894,10 @@ jobs:
       run: php artisan migrate --force
     - name: Build production assets
       run: npm run build
-    - name: Run PHP formatting and full Pest-aware static analysis
-      run: composer ci:check:php:static
+    # Full read-only Pint/PHPStan checks and the unchanged isolated PostgreSQL
+    # safety catalog must all finish successfully before proof publication.
     - name: Run explicit POC PostgreSQL safety catalog without coverage replay
-      run: python3 .github/scripts/run-poc-tests.py php
+      run: python3 .github/scripts/run-php-static-checks.py --poc
     - name: Prove deployment admission refuses missing scoped evidence
       env:
         REQUIRE_REAL_RUNTIME_IDENTITIES: 'true'
