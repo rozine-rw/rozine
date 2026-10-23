@@ -3,6 +3,7 @@
 
 import datetime
 import contextvars
+import io
 import json
 import os
 import re
@@ -10,9 +11,12 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
+from poc_validation import POC_JOBS, POC_STEPS, STATIC_JOB, static_evidence, catalog_evidence
 
 FULL_JOBS = [
     "Board sync offline tests", "PHP 8.5 quality gate", "TypeScript/React quality gate",
@@ -20,16 +24,15 @@ FULL_JOBS = [
     *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
-POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC web safety and static checks"]
 REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
 REUSE_STEPS = ["Revalidate original POC proof without repeating passed tests", "Record original POC source", "Publish POC reuse receipt", "Require combined POC execution within ten minutes"]
-POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
 MERGE_IDENTITY_STEPS = ["Record immutable PR merge identity", "Publish immutable PR merge identity"]
 IDENTITY_JOB = "Identify CI validation tree"
 IDENTITY_STEPS = ["Record immutable POC coordination identity", "Publish immutable POC coordination identity"]
 DECISION_STEPS = ["Reuse only original successful evidence for an identical dev/UAT tree", "Publish canonical validation decision"]
 VALIDATION_JOBS = [*POC_JOBS[1:], "Reuse POC validation evidence"]
 SHA = r"[0-9a-f]{40}"
+MAX_EVIDENCE_BYTES = 1024 * 1024
 # Maximum wait only: the current native job and combined POC budget can shorten it.
 FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
@@ -58,27 +61,55 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
-def api_failure_headers(detail):
-    headers, awaiting_response, reading_headers = {}, False, False
-    for line in detail.splitlines():
-        if line.startswith("* Request to "):
-            headers, awaiting_response, reading_headers = {}, True, False
-        elif awaiting_response and re.fullmatch(r"< HTTP/\S+ [1-5][0-9]{2}(?: .*)?", line):
-            awaiting_response, reading_headers = False, True
-        elif reading_headers:
-            if not line.startswith("< "):
-                reading_headers = False
-                continue
-            number = re.fullmatch(r"< (x-ratelimit-(?:limit|remaining|reset)|retry-after): ([0-9]{1,19})", line, re.IGNORECASE)
-            resource = re.fullmatch(r"< x-ratelimit-resource: (core|search|graphql|code_search|integration_manifest)", line, re.IGNORECASE)
-            if number and int(number[2]) < 2 ** 63:
-                headers[number[1].lower()] = int(number[2])
-            elif resource:
-                headers["x-ratelimit-resource"] = resource[1].lower()
-    return headers
+def report_api_failure(error):
+    # Never emit stderr, URLs, response headers or arbitrary server/user text.
+    # Categories are diagnostic only: every original error is still raised.
+    try:
+        detail = error.stderr
+        detail = detail.decode(errors="replace") if isinstance(detail, bytes) else detail if isinstance(detail, str) else ""
+        truncated = len(detail) > 65536
+        detail = detail[-65536:]
+        statuses, awaiting_response = [], False
+        for line in detail.splitlines():
+            if line.startswith("* Request to "):
+                awaiting_response = True
+            elif awaiting_response and (status := re.fullmatch(r"< HTTP/\S+ ([1-5][0-9]{2})(?: .*)?", line)):
+                statuses = [*statuses[-3:], int(status[1])]
+                awaiting_response = False
+        explicit = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
+        status = int(explicit[1]) if explicit else statuses[-1] if statuses else None
+        lower = detail.lower()
+        categories = (
+            ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
+            ("bad credentials", "bad_credentials"),
+            ("resource not accessible by integration", "integration_access_denied"),
+            ("personal access token", "personal_token_access_denied"),
+            ("permission denied", "access_denied"),
+            ("tls handshake timeout", "tls_timeout"), ("i/o timeout", "io_timeout"),
+            ("context deadline exceeded", "request_timeout"), ("client.timeout exceeded", "request_timeout"),
+            ("timeout awaiting response headers", "request_timeout"),
+            ("no such host", "dns_error"), ("temporary failure in name resolution", "dns_error"),
+            ("connection reset", "connection_reset"), ("connection refused", "connection_refused"),
+            ("x509:", "tls_certificate_error"), ("tls:", "tls_protocol_error"),
+            ("http2:", "http_protocol_error"), ("stream error", "http_protocol_error"),
+            ("unexpected eof", "response_truncated"), ("error reading response body", "response_read_error"),
+            ("unexpected end of json input", "response_parse_error"), ("invalid character", "response_parse_error"),
+            ("cannot unmarshal", "response_parse_error"), ("broken pipe", "output_write_error"),
+        )
+        category = "subprocess_timeout" if isinstance(error, subprocess.TimeoutExpired) else next(
+            (label for phrase, label in categories if phrase in lower),
+            "http_error" if status is not None and status >= 400 else "unclassified")
+        code = getattr(error, "returncode", None)
+        diagnostic("gh_api_failed " + json.dumps({
+            "classification": category, "http_status": status, "response_statuses": statuses,
+            "returncode": code if type(code) is int and abs(code) < 2 ** 31 else None,
+            "stderr_truncated": truncated,
+        }, sort_keys=True))
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
 
 
-def command(*args, timeout=45):
+def command(*args, timeout=45, binary=False):
     deadline = _follower_read_deadline.get()
     if deadline is not None:
         remaining = deadline - time.monotonic()
@@ -87,35 +118,20 @@ def command(*args, timeout=45):
         timeout = min(timeout, remaining)
     options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
     try:
-        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout, **options).strip()
+        result = subprocess.check_output(args, text=not binary, stderr=subprocess.PIPE, timeout=timeout, **options)
     except subprocess.CalledProcessError as error:
         if args[:2] == ("gh", "api"):
-            detail = error.stderr if isinstance(error.stderr, str) else ""
-            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
-            classification = next((label for phrase, label in (
-                ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
-                ("bad credentials", "bad_credentials"),
-                ("resource not accessible by integration", "integration_access_denied"),
-                ("personal access token", "personal_token_access_denied"),
-            ) if phrase in detail.lower()), "http_error" if status else "unclassified")
-            try:
-                diagnostic("gh_api_failed " + json.dumps({
-                    "classification": classification,
-                    "http_status": int(status[1]) if status else None, "returncode": error.returncode,
-                }, sort_keys=True))
-                headers = api_failure_headers(detail)
-                if headers:
-                    diagnostic("gh_api_response_quota " + json.dumps(headers, sort_keys=True))
-            except (OSError, ValueError):
-                pass
+            report_api_failure(error)
         raise
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
+        if args[:2] == ("gh", "api"):
+            report_api_failure(error)
         if deadline is not None and time.monotonic() >= deadline:
             raise CoordinationRefusal("follower_decision_publication_timeout") from None
         raise
     if deadline is not None and time.monotonic() >= deadline:
         raise CoordinationRefusal("follower_decision_publication_timeout")
-    return result
+    return result if binary else result.strip()
 
 
 def api(endpoint, *, timeout=45):
@@ -148,7 +164,7 @@ def requested_scope(env):
 
 def validate_completed_budget(jobs, reused=False):
     names = REUSE_JOBS if reused else ["Select CI scope", *POC_JOBS]
-    names = [*names, *([IDENTITY_JOB] if any(job["name"] == IDENTITY_JOB for job in jobs) else [])]
+    names = [*names, *([IDENTITY_JOB] if not reused or any(job["name"] == IDENTITY_JOB for job in jobs) else [])]
     durations = {}
     for name in names:
         matches = [job for job in jobs if job["name"] == name]
@@ -189,7 +205,8 @@ def validate_proof(proof, run, jobs, commit, tree, repository, scope):
             raise ValueError(f"missing, duplicate or unsuccessful job: {name}")
     if scope == "poc":
         validate_completed_budget(jobs)
-        job = next(job for job in jobs if job["name"] == "POC PHP safety and static checks")
+        job = static_evidence(jobs, run)
+        catalog_evidence(jobs)
         if proof.get("required_steps") != POC_STEPS:
             raise ValueError("POC proof omits publication/budget controls")
         for name in POC_STEPS:
@@ -236,12 +253,28 @@ def download_evidence(repository, run, prefix="validation-tree"):
         raise MissingEvidence("evidence artifact is absent from complete inventory")
     if len(matching) != 1 or matching[0]["expired"]:
         raise ValueError("missing, duplicate or expired evidence artifact")
-    with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
-        command("gh", "run", "download", str(run["id"]), "--repo", repository,
-                "--name", name, "--dir", directory)
-        filename = {"pr-merge-identity": "merge-identity.json", "ci-coordination-identity": "coordination-identity.json",
-                    "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
-        proof = json.loads((Path(directory) / filename).read_text())
+    artifact_id = matching[0]["id"]
+    if type(artifact_id) is not int or artifact_id <= 0:
+        raise ValueError("invalid evidence artifact ID")
+    size = matching[0].get("size_in_bytes")
+    if type(size) is not int or not 0 < size <= MAX_EVIDENCE_BYTES:
+        raise ValueError("evidence archive exceeds the bounded proof size")
+    # Download the inventoried immutable object, avoiding the CLI's second
+    # inventory lookup by name. All proof/native/job/attempt checks stay fresh.
+    archive = command("gh", "api", f"repos/{repository}/actions/artifacts/{artifact_id}/zip", binary=True)
+    if len(archive) > MAX_EVIDENCE_BYTES:
+        raise ValueError("evidence archive exceeds the bounded proof size")
+    filename = {"pr-merge-identity": "merge-identity.json", "ci-coordination-identity": "coordination-identity.json",
+                "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive)) as evidence:
+            if evidence.namelist().count(filename) != 1:
+                raise ValueError("missing or duplicate evidence file")
+            if evidence.getinfo(filename).file_size > MAX_EVIDENCE_BYTES:
+                raise ValueError("evidence file exceeds the bounded proof size")
+            proof = json.loads(evidence.read(filename).decode("utf-8"))
+    except (zipfile.BadZipFile, RuntimeError, UnicodeDecodeError) as error:
+        raise ValueError("unreadable evidence archive") from error
     if not isinstance(proof, dict):
         raise ValueError("evidence must be an object")
     return proof
@@ -1002,6 +1035,8 @@ def record(env, scope):
              "run_id": env["GITHUB_RUN_ID"], "run_attempt": env["GITHUB_RUN_ATTEMPT"],
              "pull_number": env.get("PR_NUMBER", ""), "required_jobs": required}
     if scope == "poc":
+        if proof["tested_sha"] != env["GITHUB_SHA"]:
+            raise ValueError("POC proof checkout differs from exact candidate")
         proof["required_steps"] = POC_STEPS
     Path("ci-evidence").mkdir(exist_ok=True)
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")
