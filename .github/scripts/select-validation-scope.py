@@ -3,6 +3,7 @@
 
 import datetime
 import contextvars
+import copy
 import io
 import json
 import os
@@ -10,6 +11,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import zipfile
 from collections.abc import Mapping
@@ -38,6 +40,20 @@ FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
 _follower_read_deadline = contextvars.ContextVar("follower_read_deadline", default=None)
 _follower_publication_deadlines = {}
+_lookup_counts = {}
+_lookup_counts_lock = threading.Lock()
+
+
+def count_lookup(name, amount=1):
+    with _lookup_counts_lock:
+        _lookup_counts[name] = _lookup_counts.get(name, 0) + amount
+
+
+def report_lookup_counts():
+    with _lookup_counts_lock:
+        counts = dict(_lookup_counts)
+    if counts:
+        print("CI lookup counts: " + json.dumps(counts, sort_keys=True), file=sys.stderr)
 
 
 class MissingEvidence(ValueError):
@@ -54,6 +70,14 @@ class PublicationPending(CoordinationRefusal):
 
 class PreflightPublicationPending(PublicationPending):
     """The independent identity job can finish while selection owns the lock."""
+
+
+class CoordinationArtifactIndex(dict):
+    """Complete identity descriptors and per-run sizes from one inventory."""
+
+    def __init__(self):
+        super().__init__()
+        self.run_sizes = {}
 
 
 def diagnostic(reason, run=None):
@@ -117,6 +141,10 @@ def command(*args, timeout=45, binary=False):
             raise CoordinationRefusal("follower_decision_publication_timeout")
         timeout = min(timeout, remaining)
     options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
+    if args[:2] == ("gh", "api"):
+        count_lookup("api_commands")
+        if binary:
+            count_lookup("archive_commands")
     try:
         result = subprocess.check_output(args, text=not binary, stderr=subprocess.PIPE, timeout=timeout, **options)
     except subprocess.CalledProcessError as error:
@@ -135,11 +163,15 @@ def command(*args, timeout=45, binary=False):
 
 
 def api(endpoint, *, timeout=45):
-    return json.loads(command("gh", "api", endpoint, timeout=timeout))
+    response = json.loads(command("gh", "api", endpoint, timeout=timeout))
+    count_lookup("json_response_pages")
+    return response
 
 
 def pages(endpoint, *, timeout=45):
-    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
+    responses = json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
+    count_lookup("json_response_pages", len(responses))
+    return responses
 
 
 def requested_scope(env):
@@ -245,14 +277,17 @@ def artifact_inventory(repository, run):
     return artifacts
 
 
-def download_evidence(repository, run, prefix="validation-tree"):
+def download_evidence(repository, run, prefix="validation-tree", *, artifact=None):
     name = f"{prefix}-{run['id']}-{run['run_attempt']}"
-    artifacts = artifact_inventory(repository, run)
+    artifacts = artifact_inventory(repository, run) if artifact is None else [artifact]
     matching = [item for item in artifacts if item["name"] == name]
     if not matching:
         raise MissingEvidence("evidence artifact is absent from complete inventory")
     if len(matching) != 1 or matching[0]["expired"]:
         raise ValueError("missing, duplicate or expired evidence artifact")
+    if artifact is not None and (type(artifact.get("workflow_run", {}).get("id")) is not int
+                                 or artifact["workflow_run"]["id"] != run["id"]):
+        raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
     artifact_id = matching[0]["id"]
     if type(artifact_id) is not int or artifact_id <= 0:
         raise ValueError("invalid evidence artifact ID")
@@ -311,8 +346,9 @@ def successful_steps(jobs, name, steps):
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
 
-def coordination_identity(repository, run):
-    proof = download_evidence(repository, run, "ci-coordination-identity")
+def coordination_identity(repository, run, *, artifact=None):
+    proof = (download_evidence(repository, run, "ci-coordination-identity") if artifact is None else
+             download_evidence(repository, run, "ci-coordination-identity", artifact=artifact))
     expected = {"schema": 1, "protocol": 1, "kind": "poc-coordination-identity", "scope": "poc",
                 "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"]),
                 "event": run["event"], "head_sha": run["head_sha"]}
@@ -530,23 +566,30 @@ def canonical_selection(env):
     retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
     inventory = coordination_artifact_index(repository)
     failed_peers = []
+    relevant_names = set()
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
             continue
         name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
+        relevant_names.add(name)
         if name not in inventory:
             continue
-        if inventory[name] != run["id"]:
+        if inventory.run_sizes.get(run["id"], 0) > 1000:
+            raise ValueError("artifact inventory exceeds the verified lookup bound")
+        if (type(inventory[name].get("workflow_run", {}).get("id")) is not int
+                or inventory[name]["workflow_run"]["id"] != run["id"]):
             raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
         failed_peers.append(run)
+    count_lookup("historical_peers", len(failed_peers))
     # Each immutable identity still receives all native tree/job/attempt checks.
     # Bound independent reads instead of serially downloading every old proof.
     try:
         with ThreadPoolExecutor(max_workers=4) as readers:
             for start in range(0, len(failed_peers), 4):
                 batch = failed_peers[start:start + 4]
-                identities = readers.map(lambda run: coordination_identity(repository, run), batch)
+                identities = readers.map(lambda run: coordination_identity(repository, run, artifact=inventory[
+                    f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"]), batch)
                 for run, failed_identity in zip(batch, identities):
                     if failed_identity["tree_sha"] == tree:
                         diagnostic("canonical_peer_unsuccessful", run)
@@ -582,6 +625,7 @@ def canonical_selection(env):
         result = dict(own, mode="reuse" if source else "execute", source_run=source or own["owner_run"], source_attempt=attempt or own["owner_attempt"])
         diagnostic("reuse_original_proof" if source else "execute_canonical_validation", current)
     result.update({key: identity[key] for key in ("schema", "protocol", "scope", "repository", "run_id", "run_attempt", "tested_sha", "tree_sha")}, kind="poc-coordination-decision")
+    revalidate_historical_inventory(repository, inventory, relevant_names)
     same_attempt(repository, current)
     Path("ci-coordination-decision").mkdir(exist_ok=True)
     Path("ci-coordination-decision/coordination-decision.json").write_text(json.dumps(result, indent=2) + "\n")
@@ -796,6 +840,7 @@ def coordination_artifact_index(repository):
     # One bounded paginated request replaces a serial lookup for every old
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
+    count_lookup("repository_inventory_reads")
     deadline = time.monotonic() + 45
     parent_deadline = _follower_read_deadline.get()
 
@@ -848,14 +893,27 @@ def coordination_artifact_index(repository):
             time.sleep(min(1, remaining()))
             continue
         remaining()  # Do not accept a read that finished outside its budget.
-        index = {}
+        index = CoordinationArtifactIndex()
         for artifact in artifacts:
+            run_id = artifact["workflow_run"]["id"]
+            index.run_sizes[run_id] = index.run_sizes.get(run_id, 0) + 1
             if artifact["name"].startswith("ci-coordination-identity-"):
                 name = artifact["name"]
                 if name in index:
                     raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
-                index[name] = artifact["workflow_run"]["id"]
+                index[name] = copy.deepcopy(artifact)
         return index
+
+
+def revalidate_historical_inventory(repository, original, names):
+    # Absence also matters: a failed peer can publish its identity after the
+    # initial read. Compare complete descriptors, never only IDs or counts.
+    if names:
+        latest = coordination_artifact_index(repository)
+        runs = {int(name.rsplit("-", 2)[1]) for name in names}
+        if (any(original.get(name) != latest.get(name) for name in names)
+                or any(original.run_sizes.get(run, 0) != latest.run_sizes.get(run, 0) for run in runs)):
+            raise CoordinationRefusal("coordination_inventory_changed_before_decision")
 
 
 def source_proof_hints(repository, candidates, deadline):
@@ -1145,7 +1203,7 @@ def record_reuse(env):
     path.write_text(json.dumps(receipt, indent=2) + "\n")
 
 
-def main():
+def select_scope():
     env = os.environ
     if sys.argv[1:] == ["record-coordination-identity"]:
         record_coordination_identity(env)
@@ -1190,6 +1248,13 @@ def main():
     with open(env["GITHUB_OUTPUT"], "a") as output:
         output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\nsource_attempt={source_attempt}\n")
     print(f"Scope: {scope}; " + (f"reuse identical complete tree from run {source}" if source else "execute checks"))
+
+
+def main():
+    try:
+        return select_scope()
+    finally:
+        report_lookup_counts()
 
 
 if __name__ == "__main__":
