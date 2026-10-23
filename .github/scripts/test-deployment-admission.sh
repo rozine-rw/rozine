@@ -167,6 +167,25 @@ echo
 baseline
 check "admits a fully evidenced, non-author-approved candidate" admit ""
 
+baseline
+jq '.workflow_runs[0].path = ".github/workflows/tests.yml@main"' "$FIXTURES/runs.json" > "$FIXTURES/changed.json"
+mv "$FIXTURES/changed.json" "$FIXTURES/runs.json"
+check "admits the documented ref-qualified workflow path" admit ""
+
+for path in '.github/workflows/tests.yml@dev' '.github/workflows/tests.yml@main@main' '.github/workflows/tests.yml@' '.github/workflows/other.yml@main'; do
+  baseline
+  jq --arg path "$path" '.workflow_runs[0].path = $path' "$FIXTURES/runs.json" > "$FIXTURES/changed.json"
+  mv "$FIXTURES/changed.json" "$FIXTURES/runs.json"
+  check "refuses inappropriate ref-qualified workflow path $path" refuse "inappropriate workflow provenance or attempt"
+done
+
+for change in '.workflow_id = 456' '.head_repository.full_name = "fork/rozine"'; do
+  baseline
+  jq ".workflow_runs[0] |= (.path = \".github/workflows/tests.yml@main\" | $change)" "$FIXTURES/runs.json" > "$FIXTURES/changed.json"
+  mv "$FIXTURES/changed.json" "$FIXTURES/runs.json"
+  check "qualified workflow path still refuses $change" refuse "inappropriate workflow provenance or attempt"
+done
+
 for candidate in main 1111111 111111111111111111111111111111111111111G; do
   baseline
   export TEST_CANDIDATE_SHA="$candidate"
