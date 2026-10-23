@@ -37,6 +37,7 @@ MAX_EVIDENCE_BYTES = 1024 * 1024
 FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
 _follower_read_deadline = contextvars.ContextVar("follower_read_deadline", default=None)
+_recovery_read_deadline = contextvars.ContextVar("recovery_read_deadline", default=None)
 _follower_publication_deadlines = {}
 
 
@@ -110,11 +111,14 @@ def report_api_failure(error):
 
 
 def command(*args, timeout=45, binary=False):
-    deadline = _follower_read_deadline.get()
+    deadlines = [(value, reason) for value, reason in
+                 ((_follower_read_deadline.get(), "follower_decision_publication_timeout"),
+                  (_recovery_read_deadline.get(), "recovery_evidence_lookup_timeout")) if value is not None]
+    deadline, deadline_reason = min(deadlines) if deadlines else (None, None)
     if deadline is not None:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise CoordinationRefusal("follower_decision_publication_timeout")
+            raise CoordinationRefusal(deadline_reason)
         timeout = min(timeout, remaining)
     options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
     try:
@@ -127,10 +131,10 @@ def command(*args, timeout=45, binary=False):
         if args[:2] == ("gh", "api"):
             report_api_failure(error)
         if deadline is not None and time.monotonic() >= deadline:
-            raise CoordinationRefusal("follower_decision_publication_timeout") from None
+            raise CoordinationRefusal(deadline_reason) from None
         raise
     if deadline is not None and time.monotonic() >= deadline:
-        raise CoordinationRefusal("follower_decision_publication_timeout")
+        raise CoordinationRefusal(deadline_reason)
     return result if binary else result.strip()
 
 
@@ -200,7 +204,7 @@ def recovery_time(value):
 def terminal_failure_pin(run):
     if (type(run.get("id")) is not int or run["id"] <= 0 or type(run.get("run_attempt")) is not int
             or run["run_attempt"] <= 0 or run.get("status") != "completed"
-            or not run.get("conclusion") or run["conclusion"] == "success"):
+            or run.get("conclusion") not in ("failure", "cancelled", "timed_out", "skipped", "neutral", "action_required", "stale", "startup_failure")):
         raise CoordinationRefusal("recovery_requires_terminal_failed_attempt")
     pin = {key: run[key] for key in ("id", "run_attempt", "head_sha", "event", "head_branch", "workflow_id", "path", "status", "conclusion", "updated_at")}
     pin["head_repository"] = run["head_repository"]["full_name"]
@@ -269,21 +273,35 @@ def successful_recovery(repository, source, tree):
 
 
 def completed_recovery(env, tree, runs):
-    # Positive candidates only. Unverifiable recovery can never unlock history.
-    candidates = sorted(runs, key=attempt_order, reverse=True)[:100]
-    for source in candidates:
-        if source["status"] != "completed" or source["conclusion"] != "success" or source["event"] != "workflow_dispatch":
-            continue
-        try:
-            recovery = successful_recovery(env["GITHUB_REPOSITORY"], source, tree)
-            if recovery is None:
+    # Probe only when a matching historical failure needs an exception. Share
+    # one read deadline across candidates, nested native checks and history.
+    deadline = min(time.monotonic() + 45, _recovery_read_deadline.get() or float("inf"))
+    token = _recovery_read_deadline.set(deadline)
+    try:
+        candidates = sorted(runs, key=attempt_order, reverse=True)[:100]
+        for source in candidates:
+            if time.monotonic() >= deadline:
+                raise CoordinationRefusal("recovery_evidence_lookup_timeout")
+            if (source["status"] != "completed" or source["conclusion"] != "success"
+                    or source["event"] != "workflow_dispatch" or source["head_branch"] != "dev"):
                 continue
-            pinned = dict(env, SOURCE_RUN=str(source["id"]), SOURCE_ATTEMPT=str(source["run_attempt"]))
-            if reusable_run(pinned, "poc") == str(source["id"]):
-                return source, recovery
-        except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError, AttributeError):
-            continue
-    return None
+            try:
+                recovery = successful_recovery(env["GITHUB_REPOSITORY"], source, tree)
+                if recovery is None:
+                    continue
+                pinned = dict(env, SOURCE_RUN=str(source["id"]), SOURCE_ATTEMPT=str(source["run_attempt"]))
+                if reusable_run(pinned, "poc") == str(source["id"]):
+                    if time.monotonic() >= deadline:
+                        raise CoordinationRefusal("recovery_evidence_lookup_timeout")
+                    return source, recovery
+            except (ValueError, KeyError, TypeError, AttributeError):
+                if time.monotonic() >= deadline:
+                    raise CoordinationRefusal("recovery_evidence_lookup_timeout") from None
+        if time.monotonic() >= deadline:
+            raise CoordinationRefusal("recovery_evidence_lookup_timeout")
+        return None
+    finally:
+        _recovery_read_deadline.reset(token)
 
 
 def validate_completed_budget(jobs, reused=False):
@@ -662,9 +680,8 @@ def canonical_selection(env):
         if pending_participants(repository, runs, tree):
             raise CoordinationRefusal("recovery_cannot_take_over_active_peer")
         recovery = recovery_failures(repository, current, runs)
-    else:
-        certified = completed_recovery(env, tree, runs)
-    covered = {pin["id"]: pin for pin in (recovery or (certified[1] if certified else {})).get("covered", [])}
+    covered = {pin["id"]: pin for pin in (recovery or {}).get("covered", [])}
+    certificate_checked = False
     # A sibling may finish unsuccessfully before this queued selector starts.
     # Its immutable claim remains authoritative; a waiter cannot take over.
     retry = not intent and (int(current["run_attempt"]) > 1 or current["event"] == "workflow_dispatch")
@@ -692,6 +709,12 @@ def canonical_selection(env):
                 identities = readers.map(lambda run: coordination_identity(repository, run), batch)
                 for run, failed_identity in zip(batch, identities):
                     if failed_identity["tree_sha"] == tree:
+                        if not intent and not certificate_checked:
+                            certificate_checked = True
+                            certified = completed_recovery(env, tree, runs)
+                            covered = {pin["id"]: pin for pin in certified[1]["covered"]} if certified else {}
+                        if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
+                            continue
                         diagnostic("canonical_peer_unsuccessful", run)
                         raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
     except MissingEvidence:

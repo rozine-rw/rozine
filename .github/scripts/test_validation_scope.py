@@ -3078,6 +3078,63 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                 with patch.object(policy, "api", side_effect=changed), self.assertRaises(ValueError):
                     policy.successful_recovery(self.repository, self.runs[200], self.tree)
 
+    def test_normal_consumer_does_not_retry_failed_recovery_candidate_read(self):
+        for error in (subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit"),
+                      subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503"), subprocess.TimeoutExpired("gh api", 45),
+                      OSError("connection unavailable")):
+            self.setUp()
+            with self.subTest(error=type(error).__name__), self.server():
+                self.finish_recovery()
+                # The matching failed peer requires the exceptional probe.
+                env = self.consumer()
+                original = self.api
+                reads = []
+                def failing(endpoint, **kwargs):
+                    if "/runs/200/artifacts?" in endpoint:
+                        reads.append(endpoint)
+                        if len(reads) == 1: raise error
+                    return original(endpoint, **kwargs)
+                with patch.object(policy, "api", side_effect=failing), self.assertRaises(type(error)) as caught:
+                    policy.canonical_selection(env)
+                self.assertIs(caught.exception, error)
+                self.assertEqual(len(reads), 1)
+                self.assertFalse(Path("ci-coordination-decision/coordination-decision.json").read_text().find('"run_id": "300"') >= 0)
+
+    def test_ordinary_success_history_does_not_trigger_recovery_probe(self):
+        with self.server():
+            for number in (190, 191, 201):
+                del self.runs[number], self.artifacts[number], self.jobs[number]
+            self.runs[200]["event"] = "push"
+            self.artifacts[200]["ci-coordination-identity"].update(event="push")
+            del self.artifacts[200]["ci-coordination-identity"]["recovery_intent"]
+            with patch.object(policy, "completed_recovery", side_effect=AssertionError("ordinary history must not probe")):
+                self.assertEqual(policy.canonical_selection(self.env())["source_run"], "100")
+
+    def test_recovery_probe_has_one_shared_deadline_and_restores_context(self):
+        clock = [0]
+        with self.server(), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]):
+            def slow(*args):
+                self.assertEqual(policy._recovery_read_deadline.get(), 45)
+                clock[0] = 46
+                return None
+            with patch.object(policy, "successful_recovery", side_effect=slow), self.assertRaisesRegex(policy.CoordinationRefusal, "recovery_evidence_lookup_timeout"):
+                policy.completed_recovery(self.env(), self.tree, [dict(self.runs[200], status="completed", conclusion="success")])
+            self.assertIsNone(policy._recovery_read_deadline.get())
+        with patch.object(policy.time, "monotonic", return_value=40), patch.object(policy.subprocess, "check_output", return_value="{}") as execute:
+            token = policy._recovery_read_deadline.set(45)
+            try:
+                policy.command("gh", "api", "fixture")
+                self.assertEqual(execute.call_args.kwargs["timeout"], 5)
+            finally:
+                policy._recovery_read_deadline.reset(token)
+
+    def test_unknown_terminal_conclusions_are_not_recovery_failures(self):
+        for conclusion in ("mystery", "", None, True, 7):
+            self.setUp()
+            self.runs[190]["conclusion"] = conclusion
+            with self.subTest(conclusion=conclusion), self.server(), self.assertRaises(policy.CoordinationRefusal):
+                policy.canonical_selection(self.fresh_env())
+
     def test_api_failure_remains_failure_without_retry(self):
         for error in (subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit"),
                       subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503"), subprocess.TimeoutExpired("gh api", 45)):
