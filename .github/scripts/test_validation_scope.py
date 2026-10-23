@@ -11,8 +11,16 @@ import subprocess
 import threading
 import unittest
 import tempfile
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
+
+
+def zipped_proof(filename, proof):
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        archive.writestr(filename, proof if isinstance(proof, (str, bytes)) else json.dumps(proof))
+    return output.getvalue()
 
 
 def module(filename):
@@ -353,19 +361,18 @@ class ScopeTests(unittest.TestCase):
         env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "GITHUB_SHA": "f" * 40, "GITHUB_RUN_ID": "101"}
         pull = {"base": {"ref": "dev"}, "head": {"sha": "a" * 40, "repo": {"full_name": "rozine-rw/rozine"}}}
 
-        def command(*args):
+        def command(*args, **kwargs):
             if args == ("git", "rev-parse", "HEAD"):
                 return "f" * 40
             if args == ("git", "rev-parse", "HEAD^{tree}"):
                 return "c" * 40
-            self.assertEqual(args[:4], ("gh", "run", "download", "99"))
-            self.assertEqual(args[args.index("--name") + 1], "validation-tree-99-2")
-            (Path(args[args.index("--dir") + 1]) / "tested-tree.json").write_text(json.dumps(self.proof))
-            return ""
+            self.assertEqual(args, ("gh", "api", "repos/rozine-rw/rozine/actions/artifacts/1/zip"))
+            self.assertEqual(kwargs, {"binary": True})
+            return zipped_proof("tested-tree.json", self.proof)
 
         for scenario in ["good", "expired", "wrong branch", "wrong repo", "malformed artifact", "changed config tree", "skipped gate", "wrong attempt"]:
             proof, jobs, source_pull = copy.deepcopy(self.proof), copy.deepcopy(self.jobs), copy.deepcopy(pull)
-            artifacts = [{"id": 1, "name": "validation-tree-99-2", "expired": scenario == "expired"}]
+            artifacts = [{"id": 1, "name": "validation-tree-99-2", "expired": scenario == "expired", "size_in_bytes": 1024}]
             if scenario == "wrong branch":
                 source_pull["base"]["ref"] = "main"
             elif scenario == "wrong repo":
@@ -834,7 +841,7 @@ class MergeIdentityTests(unittest.TestCase):
         self.latest = copy.deepcopy(self.run)
         self.jobs = [{"name": "Select CI scope", "steps": [
             {"name": name, "conclusion": "success"} for name in policy.MERGE_IDENTITY_STEPS]}]
-        self.artifacts = [{"id": 1, "name": "pr-merge-identity-100-2", "expired": False}]
+        self.artifacts = [{"id": 1, "name": "pr-merge-identity-100-2", "expired": False, "size_in_bytes": 1024}]
 
     def api(self, endpoint):
         if "/artifacts?" in endpoint:
@@ -847,11 +854,10 @@ class MergeIdentityTests(unittest.TestCase):
             return self.commit
         raise AssertionError(endpoint)
 
-    def command(self, *args):
-        self.assertEqual(args[:4], ("gh", "run", "download", "100"))
-        self.assertEqual(args[args.index("--name") + 1], "pr-merge-identity-100-2")
-        (Path(args[args.index("--dir") + 1]) / "merge-identity.json").write_text(json.dumps(self.proof))
-        return ""
+    def command(self, *args, **kwargs):
+        self.assertEqual(args, ("gh", "api", f"repos/{self.repository}/actions/artifacts/1/zip"))
+        self.assertEqual(kwargs, {"binary": True})
+        return zipped_proof("merge-identity.json", self.proof)
 
     def classify(self):
         with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs):
@@ -877,12 +883,11 @@ class MergeIdentityTests(unittest.TestCase):
     def test_expired_duplicate_unreadable_legacy_evidence_never_falls_back(self):
         for scenario in ["expired", "duplicate", "malformed", "download failure", "API failure"]:
             with self.subTest(scenario=scenario):
-                legacy = {"id": 2, "name": "validation-tree-100-2", "expired": scenario == "expired"}
+                legacy = {"id": 2, "name": "validation-tree-100-2", "expired": scenario == "expired", "size_in_bytes": 1024}
                 artifacts = [legacy, dict(legacy, id=3)] if scenario == "duplicate" else [legacy]
-                def download(*args):
+                def download(*args, **kwargs):
                     if scenario == "download failure": raise subprocess.CalledProcessError(1, "gh")
-                    (Path(args[args.index("--dir") + 1]) / "tested-tree.json").write_text("not json")
-                    return ""
+                    return zipped_proof("tested-tree.json", "not json")
                 def api(endpoint, *, timeout=45):
                     if "/artifacts?" in endpoint:
                         if scenario == "API failure": raise subprocess.CalledProcessError(1, "gh")
@@ -935,7 +940,7 @@ class MergeIdentityTests(unittest.TestCase):
 
     def test_validation_artifact_appearing_during_resolution_refuses_exclusion(self):
         inventory = {"total_count": 1, "artifacts": self.artifacts}
-        changed = {"total_count": 2, "artifacts": self.artifacts + [{"id": 2, "name": "validation-tree-100-2", "expired": False}]}
+        changed = {"total_count": 2, "artifacts": self.artifacts + [{"id": 2, "name": "validation-tree-100-2", "expired": False, "size_in_bytes": 1024}]}
         calls = iter([inventory, inventory, changed])
         def api(endpoint, *, timeout=45):
             return next(calls) if "/artifacts?" in endpoint else self.api(endpoint)
@@ -969,9 +974,9 @@ class MergeIdentityTests(unittest.TestCase):
         env = {"GITHUB_REPOSITORY": self.repository, "GITHUB_SHA": "8" * 40, "SOURCE_RUN": "99"}
         for matching in [False, True]:
             self.proof["tree_sha"] = self.commit["tree"]["sha"] = "c" * 40 if matching else "f" * 40
-            def command(*args):
+            def command(*args, **kwargs):
                 if args[:2] == ("git", "rev-parse"): return "c" * 40 if args[-1] == "HEAD^{tree}" else "8" * 40
-                return self.command(*args)
+                return self.command(*args, **kwargs)
             def api(endpoint, *, timeout=45):
                 return {"id": 7} if endpoint.endswith("/workflows/tests.yml") else self.api(endpoint)
             with self.subTest(matching=matching), patch.object(policy, "command", side_effect=command), patch.object(policy, "api", side_effect=api), patch.object(policy, "workflow_history", return_value=[self.run, self.source]), patch.object(policy, "validate_source"), patch.object(policy, "run_jobs", return_value=self.jobs):
@@ -1104,7 +1109,7 @@ class PreflightClassificationTests(unittest.TestCase):
         self.latest = copy.deepcopy(self.run)
         self.jobs = [{"name": policy.IDENTITY_JOB, "status": "completed", "conclusion": "success",
                       "steps": [{"name": name, "conclusion": "success"} for name in policy.IDENTITY_STEPS]}]
-        self.artifacts = [{"id": 1, "name": "ci-coordination-identity-100-2", "expired": False}]
+        self.artifacts = [{"id": 1, "name": "ci-coordination-identity-100-2", "expired": False, "size_in_bytes": 1024}]
         self.proofs = {"ci-coordination-identity": self.proof}
         self.download_error = None
 
@@ -1118,13 +1123,13 @@ class PreflightClassificationTests(unittest.TestCase):
 
     def command(self, *args, **kwargs):
         if args[:2] == ("git", "rev-parse"): return "c" * 40 if args[-1] == "HEAD^{tree}" else "8" * 40
-        self.assertEqual(args[:4], ("gh", "run", "download", "100"))
+        self.assertEqual(args[:2], ("gh", "api"))
+        self.assertEqual(kwargs, {"binary": True})
+        artifact_id = int(args[2].split("/artifacts/")[1].split("/")[0])
         if self.download_error: raise self.download_error
-        prefix = args[args.index("--name") + 1].rsplit("-", 2)[0]
+        prefix = next(item["name"] for item in self.artifacts if item["id"] == artifact_id).rsplit("-", 2)[0]
         filename = {"ci-coordination-identity": "coordination-identity.json", "pr-merge-identity": "merge-identity.json"}.get(prefix, "tested-tree.json")
-        proof = self.proofs[prefix]
-        (Path(args[args.index("--dir") + 1]) / filename).write_text(proof if isinstance(proof, str) else json.dumps(proof))
-        return ""
+        return zipped_proof(filename, self.proofs[prefix])
 
     @contextlib.contextmanager
     def server(self):
@@ -1163,7 +1168,7 @@ class PreflightClassificationTests(unittest.TestCase):
     def test_present_invalid_higher_priority_proof_never_falls_back(self):
         for prefix in ["validation-tree", "pr-merge-identity"]:
             for scenario in ["binding", "expired", "duplicate", "malformed", "download failure"]:
-                later = {"id": 2, "name": prefix + "-100-2", "expired": scenario == "expired"}
+                later = {"id": 2, "name": prefix + "-100-2", "expired": scenario == "expired", "size_in_bytes": 1024}
                 self.artifacts.append(later)
                 if scenario == "duplicate": self.artifacts.append(dict(later, id=3))
                 self.proofs[prefix] = "not json" if scenario == "malformed" else {"schema": "invalid"}
@@ -1340,7 +1345,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
             return {"total_count": len(artifacts), "artifacts": artifacts[(page - 1) * 100:page * 100]}
         if "/artifacts?" in endpoint:
             number = int(endpoint.split("/runs/")[1].split("/")[0])
-            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "expired": False} for index, prefix in enumerate(self.artifacts[number])]
+            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "expired": False, "size_in_bytes": 1024} for index, prefix in enumerate(self.artifacts[number])]
             return {"total_count": len(artifacts), "artifacts": artifacts}
         return self.runs[int(endpoint.rsplit("/", 1)[-1])]
 
@@ -1350,15 +1355,16 @@ class CanonicalCoordinationTests(unittest.TestCase):
             return [{"jobs": self.jobs[number]}]
         return [self.api(endpoint)]
 
-    def command(self, *args, timeout=45):
+    def command(self, *args, timeout=45, **kwargs):
         if args[:2] == ("git", "rev-parse"):
             return self.tree if args[-1] == "HEAD^{tree}" else self.env()["GITHUB_SHA"]
-        self.assertEqual(args[:3], ("gh", "run", "download"))
-        number = int(args[3]);name = args[args.index("--name") + 1]
-        prefix = name.rsplit("-", 2)[0]
+        self.assertEqual(args[:2], ("gh", "api"))
+        self.assertEqual(kwargs, {"binary": True})
+        artifact_id = int(args[2].split("/artifacts/")[1].split("/")[0])
+        number, index = divmod(artifact_id, 10)
+        prefix = list(self.artifacts[number])[index]
         filename = {"ci-coordination-identity": "coordination-identity.json", "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
-        (Path(args[args.index("--dir") + 1]) / filename).write_text(json.dumps(self.artifacts[number][prefix]))
-        return ""
+        return zipped_proof(filename, self.artifacts[number][prefix])
 
     @contextlib.contextmanager
     def server(self):
@@ -2192,6 +2198,111 @@ class CanonicalCoordinationTests(unittest.TestCase):
             api.assert_not_called()
         finally:
             policy._follower_read_deadline.reset(token)
+
+
+class ArtifactIdDownloadTests(unittest.TestCase):
+    repository = "rozine-rw/rozine"
+    source_run = {"id": 123, "run_attempt": 2}
+
+    def inventory(self, prefix="validation-tree"):
+        return {"total_count": 1, "artifacts": [
+            {"id": 456, "name": f"{prefix}-123-2", "expired": False, "size_in_bytes": 1024}
+        ]}
+
+    def test_each_proof_kind_downloads_the_inventoried_id_without_a_name_lookup(self):
+        cases = {"validation-tree": "tested-tree.json", "pr-merge-identity": "merge-identity.json",
+                 "ci-coordination-identity": "coordination-identity.json", "ci-coordination-decision": "coordination-decision.json"}
+        proof = {"repository": self.repository, "run_id": "123", "run_attempt": "2"}
+        for prefix, filename in cases.items():
+            with self.subTest(prefix=prefix), patch.object(policy, "api", return_value=self.inventory(prefix)) as inventory, patch.object(policy, "command", return_value=zipped_proof(filename, proof)) as transport:
+                self.assertEqual(policy.download_evidence(self.repository, self.source_run, prefix), proof)
+            inventory.assert_called_once_with("repos/rozine-rw/rozine/actions/runs/123/artifacts?per_page=100")
+            transport.assert_called_once_with("gh", "api", "repos/rozine-rw/rozine/actions/artifacts/456/zip", binary=True)
+
+    def test_absent_duplicate_expired_or_invalid_id_never_starts_archive_download(self):
+        for scenario in ["absent", "duplicate", "expired", "zero", "negative", "boolean", "string"]:
+            inventory = self.inventory()
+            if scenario == "absent": inventory = {"total_count": 0, "artifacts": []}
+            if scenario == "duplicate":
+                inventory["artifacts"].append(dict(inventory["artifacts"][0], id=457))
+                inventory["total_count"] = 2
+            if scenario == "expired": inventory["artifacts"][0]["expired"] = True
+            values = {"zero": 0, "negative": -1, "boolean": True, "string": "456/../../other"}
+            if scenario in values: inventory["artifacts"][0]["id"] = values[scenario]
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=inventory), patch.object(policy, "command") as transport, self.assertRaises(ValueError):
+                policy.download_evidence(self.repository, self.source_run)
+            transport.assert_not_called()
+
+    def test_unreadable_missing_duplicate_malformed_and_nonobject_proofs_refuse(self):
+        duplicate = io.BytesIO()
+        with zipfile.ZipFile(duplicate, "w") as archive:
+            archive.writestr("tested-tree.json", "{}")
+            with self.assertWarns(UserWarning): archive.writestr("tested-tree.json", "{}")
+        cases = {"not zip": b"not a zip", "missing": zipped_proof("other.json", {}),
+                 "duplicate": duplicate.getvalue(), "bad json": zipped_proof("tested-tree.json", "not json"),
+                 "nonobject": zipped_proof("tested-tree.json", []), "bad utf8": zipped_proof("tested-tree.json", b"\xff")}
+        for scenario, body in cases.items():
+            with self.subTest(scenario=scenario), patch.object(policy, "api", return_value=self.inventory()), patch.object(policy, "command", return_value=body), self.assertRaises(ValueError):
+                policy.download_evidence(self.repository, self.source_run)
+
+    def test_archive_and_uncompressed_file_sizes_are_bounded(self):
+        for size in [None, 0, -1, True, "1024", policy.MAX_EVIDENCE_BYTES + 1]:
+            inventory = self.inventory()
+            inventory["artifacts"][0]["size_in_bytes"] = size
+            with self.subTest(size=size), patch.object(policy, "api", return_value=inventory), patch.object(policy, "command") as transport, self.assertRaisesRegex(ValueError, "bounded proof size"):
+                policy.download_evidence(self.repository, self.source_run)
+            transport.assert_not_called()
+        inflated = io.BytesIO()
+        with zipfile.ZipFile(inflated, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("tested-tree.json", " " * (policy.MAX_EVIDENCE_BYTES + 1))
+        for body in [b"x" * (policy.MAX_EVIDENCE_BYTES + 1), inflated.getvalue()]:
+            with self.subTest(length=len(body)), patch.object(policy, "api", return_value=self.inventory()), patch.object(policy, "command", return_value=body), self.assertRaisesRegex(ValueError, "bounded proof size"):
+                policy.download_evidence(self.repository, self.source_run)
+
+    def test_archive_is_read_in_memory_without_extracting_other_members(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w") as archive:
+            archive.writestr("../unexpected", "must not be extracted")
+            archive.writestr("tested-tree.json", '{"run_id":"123"}')
+        with patch.object(policy, "api", return_value=self.inventory()), patch.object(policy, "command", return_value=output.getvalue()), patch.object(policy.zipfile.ZipFile, "extractall", side_effect=AssertionError("must not extract")), patch.object(policy.zipfile.ZipFile, "extract", side_effect=AssertionError("must not extract")):
+            self.assertEqual(policy.download_evidence(self.repository, self.source_run), {"run_id": "123"})
+
+    def test_archive_transport_failure_remains_a_failure(self):
+        for error in [subprocess.CalledProcessError(1, "gh api"), subprocess.TimeoutExpired("gh api", 2)]:
+            with self.subTest(error=type(error).__name__), patch.object(policy, "api", return_value=self.inventory()), patch.object(policy, "command", side_effect=error), self.assertRaises(type(error)):
+                policy.download_evidence(self.repository, self.source_run)
+
+    def test_binary_native_command_preserves_bytes_and_parent_deadline(self):
+        payload = b"  PK\x00\xff\n"
+        token = policy._follower_read_deadline.set(103)
+        try:
+            with patch.object(policy.time, "monotonic", return_value=100), patch.object(policy.subprocess, "check_output", return_value=payload) as native:
+                self.assertEqual(policy.command("gh", "api", "archive", binary=True), payload)
+            self.assertFalse(native.call_args.kwargs["text"])
+            self.assertEqual(native.call_args.kwargs["timeout"], 3)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+    def test_binary_native_timeout_and_late_success_cannot_escape_parent_cap(self):
+        clock = [100]
+        def native(*args, **kwargs):
+            self.assertEqual(kwargs["timeout"], 3)
+            clock[0] = 104
+            return b"PK"
+        token = policy._follower_read_deadline.set(103)
+        try:
+            with patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), patch.object(policy.subprocess, "check_output", side_effect=native), self.assertRaisesRegex(policy.CoordinationRefusal, "follower_decision_publication_timeout"):
+                policy.command("gh", "api", "archive", binary=True)
+        finally:
+            policy._follower_read_deadline.reset(token)
+
+    def test_binary_api_errors_keep_safe_classification_without_secret_output(self):
+        error = subprocess.CalledProcessError(1, "gh api", stderr=b"Authorization: Bearer private_secret rate limit (HTTP 403)")
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", side_effect=error), contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError):
+            policy.command("gh", "api", "archive", binary=True)
+        self.assertIn('"classification": "rate_limit"', output.getvalue())
+        self.assertNotIn("private_secret", output.getvalue())
 
 
 class SourceProofHintTests(unittest.TestCase):

@@ -3,6 +3,7 @@
 
 import datetime
 import contextvars
+import io
 import json
 import os
 import re
@@ -10,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -30,6 +32,7 @@ IDENTITY_STEPS = ["Record immutable POC coordination identity", "Publish immutab
 DECISION_STEPS = ["Reuse only original successful evidence for an identical dev/UAT tree", "Publish canonical validation decision"]
 VALIDATION_JOBS = [*POC_JOBS[1:], "Reuse POC validation evidence"]
 SHA = r"[0-9a-f]{40}"
+MAX_EVIDENCE_BYTES = 1024 * 1024
 # Maximum wait only: the current native job and combined POC budget can shorten it.
 FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
@@ -78,7 +81,7 @@ def api_failure_headers(detail):
     return headers
 
 
-def command(*args, timeout=45):
+def command(*args, timeout=45, binary=False):
     deadline = _follower_read_deadline.get()
     if deadline is not None:
         remaining = deadline - time.monotonic()
@@ -87,10 +90,10 @@ def command(*args, timeout=45):
         timeout = min(timeout, remaining)
     options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
     try:
-        result = subprocess.check_output(args, text=True, stderr=subprocess.PIPE, timeout=timeout, **options).strip()
+        result = subprocess.check_output(args, text=not binary, stderr=subprocess.PIPE, timeout=timeout, **options)
     except subprocess.CalledProcessError as error:
         if args[:2] == ("gh", "api"):
-            detail = error.stderr if isinstance(error.stderr, str) else ""
+            detail = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else error.stderr or ""
             status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
             classification = next((label for phrase, label in (
                 ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
@@ -115,7 +118,7 @@ def command(*args, timeout=45):
         raise
     if deadline is not None and time.monotonic() >= deadline:
         raise CoordinationRefusal("follower_decision_publication_timeout")
-    return result
+    return result if binary else result.strip()
 
 
 def api(endpoint, *, timeout=45):
@@ -236,12 +239,28 @@ def download_evidence(repository, run, prefix="validation-tree"):
         raise MissingEvidence("evidence artifact is absent from complete inventory")
     if len(matching) != 1 or matching[0]["expired"]:
         raise ValueError("missing, duplicate or expired evidence artifact")
-    with tempfile.TemporaryDirectory(prefix="rozine-validation-") as directory:
-        command("gh", "run", "download", str(run["id"]), "--repo", repository,
-                "--name", name, "--dir", directory)
-        filename = {"pr-merge-identity": "merge-identity.json", "ci-coordination-identity": "coordination-identity.json",
-                    "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
-        proof = json.loads((Path(directory) / filename).read_text())
+    artifact_id = matching[0]["id"]
+    if type(artifact_id) is not int or artifact_id <= 0:
+        raise ValueError("invalid evidence artifact ID")
+    size = matching[0].get("size_in_bytes")
+    if type(size) is not int or not 0 < size <= MAX_EVIDENCE_BYTES:
+        raise ValueError("evidence archive exceeds the bounded proof size")
+    # Download the inventoried immutable object, avoiding the CLI's second
+    # inventory lookup by name. All proof/native/job/attempt checks stay fresh.
+    archive = command("gh", "api", f"repos/{repository}/actions/artifacts/{artifact_id}/zip", binary=True)
+    if len(archive) > MAX_EVIDENCE_BYTES:
+        raise ValueError("evidence archive exceeds the bounded proof size")
+    filename = {"pr-merge-identity": "merge-identity.json", "ci-coordination-identity": "coordination-identity.json",
+                "ci-coordination-decision": "coordination-decision.json"}.get(prefix, "tested-tree.json")
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive)) as evidence:
+            if evidence.namelist().count(filename) != 1:
+                raise ValueError("missing or duplicate evidence file")
+            if evidence.getinfo(filename).file_size > MAX_EVIDENCE_BYTES:
+                raise ValueError("evidence file exceeds the bounded proof size")
+            proof = json.loads(evidence.read(filename).decode("utf-8"))
+    except (zipfile.BadZipFile, RuntimeError, UnicodeDecodeError) as error:
+        raise ValueError("unreadable evidence archive") from error
     if not isinstance(proof, dict):
         raise ValueError("evidence must be an object")
     return proof
