@@ -133,11 +133,11 @@ describe('useWide', () => {
 });
 
 function Fitted() {
-    const { frame, scale, width } = useFitScale(720);
+    const { frame, scale, width, canvasHeight } = useFitScale(720);
 
     return (
         <div ref={frame} data-testid="frame">
-            {scale}:{width ?? 'none'}
+            {scale}:{width ?? 'none'}:{canvasHeight}
         </div>
     );
 }
@@ -147,7 +147,7 @@ describe('useFitScale', () => {
         vi.stubGlobal('ResizeObserver', undefined);
         render(<Fitted />);
 
-        expect(screen.getByTestId('frame')).toHaveTextContent('1:none');
+        expect(screen.getByTestId('frame')).toHaveTextContent('1:none:720');
     });
 
     it('ignores a frame that has not been laid out yet', () => {
@@ -163,7 +163,7 @@ describe('useFitScale', () => {
             .mockReturnValue(0);
         const { unmount } = render(<Fitted />);
 
-        expect(screen.getByTestId('frame')).toHaveTextContent('1:none');
+        expect(screen.getByTestId('frame')).toHaveTextContent('1:none:720');
         unmount();
 
         height.mockReturnValue(668);
@@ -171,7 +171,7 @@ describe('useFitScale', () => {
             0,
         );
         render(<Fitted />);
-        expect(screen.getByTestId('frame')).toHaveTextContent('1:none');
+        expect(screen.getByTestId('frame')).toHaveTextContent('1:none:720');
     });
 
     it('scales a short pane down and widens the canvas to match', () => {
@@ -190,6 +190,25 @@ describe('useFitScale', () => {
         );
         render(<Fitted />);
 
-        expect(screen.getByTestId('frame')).toHaveTextContent('0.928:878');
+        expect(screen.getByTestId('frame')).toHaveTextContent('0.928:878:720');
+    });
+
+    it('stretches the canvas to fill a pane taller than the design', () => {
+        vi.stubGlobal(
+            'ResizeObserver',
+            class {
+                observe = vi.fn();
+                disconnect = vi.fn();
+            },
+        );
+        vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(
+            1100,
+        );
+        vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(
+            1400,
+        );
+        render(<Fitted />);
+
+        expect(screen.getByTestId('frame')).toHaveTextContent('1:1400:1100');
     });
 });
