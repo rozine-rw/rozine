@@ -64,9 +64,10 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
             self.assertEqual(caught.exception.returncode, 7)
             call.assert_called_once()
             self.assertEqual(output.getvalue(), "CI coordination: gh_api_failed " + json.dumps({
-                "classification": classification, "http_status": status, "returncode": 7,
+                "classification": classification, "http_status": status, "response_statuses": [],
+                "returncode": 7, "stderr_truncated": False,
             }, sort_keys=True) + "\n")
-            self.assertLess(len(output.getvalue()), 160)
+            self.assertLess(len(output.getvalue()), 320)
             self.assertNotIn(secret, output.getvalue())
             self.assertEqual(stdout.getvalue(), "")
 
@@ -100,7 +101,7 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
                     policy.command("gh", "api", "private-endpoint")
                 self.assertIs(caught.exception, error)
 
-    def test_original_failure_headers_are_whitelisted_without_another_request(self):
+    def test_response_headers_are_never_emitted_and_failure_does_not_retry(self):
         headers = {"x-ratelimit-limit": 5000, "x-ratelimit-remaining": 0, "x-ratelimit-reset": 1792648800,
                    "retry-after": 60, "x-ratelimit-resource": "core"}
         debug = "* Request to https://private.example/secret\n> Authorization: Bearer private-token\n< HTTP/2.0 403 Forbidden\n"
@@ -115,7 +116,12 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
             self.assertEqual(caught.exception.returncode, 1)
             call.assert_called_once()
             self.assertEqual(call.call_args_list[0].args, (("gh", "api", "private-endpoint"),))
-            self.assertEqual(output.getvalue().splitlines()[-1], "CI coordination: gh_api_response_quota " + json.dumps(headers, sort_keys=True))
+            self.assertEqual(len(output.getvalue().splitlines()), 1)
+            data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+            self.assertEqual(data["http_status"], 403)
+            self.assertEqual(data["response_statuses"], [403])
+            self.assertNotIn("x-ratelimit", output.getvalue())
+            self.assertNotIn("retry-after", output.getvalue())
             self.assertLess(len(output.getvalue().splitlines()[-1]), 320)
             self.assertNotIn("private-token", output.getvalue())
             self.assertNotIn("private-endpoint", output.getvalue())
@@ -138,7 +144,7 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
             self.assertEqual(len(output.getvalue().splitlines()), 1)
             self.assertNotIn("private-token", output.getvalue())
 
-    def test_only_final_response_headers_survive_redirects_or_multiple_responses(self):
+    def test_redirect_statuses_are_numeric_and_headers_never_survive(self):
         for final in ("< X-Ratelimit-Reset: 22", "< X-Ratelimit-Reset: private-token"):
             debug = "* Request to https://private.example/first\n> X-Ratelimit-Reset: 999\n< HTTP/1.1 301 Moved Permanently\n< X-Ratelimit-Remaining: 0\n< X-Ratelimit-Reset: 11\n\n"
             debug += "* Request to https://private.example/last\n< HTTP/2.0 403 Forbidden\n" + final + "\n\nAPI rate limit exceeded (HTTP 403)"
@@ -149,9 +155,11 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
             self.assertIs(caught.exception, error)
             call.assert_called_once()
             lines = output.getvalue().splitlines()
-            self.assertEqual(len(lines), 2 if "22" in final else 1)
-            if "22" in final:
-                self.assertEqual(lines[-1], 'CI coordination: gh_api_response_quota {"x-ratelimit-reset": 22}')
+            self.assertEqual(len(lines), 1)
+            data = json.loads(lines[0].split("gh_api_failed ", 1)[1])
+            self.assertEqual(data["response_statuses"], [301, 403])
+            self.assertNotIn("x-ratelimit", output.getvalue())
+            self.assertNotIn("private-token", output.getvalue())
 
     def test_original_failure_does_not_extend_or_restart_follower_deadline(self):
         token = policy._follower_read_deadline.set(10)
@@ -165,6 +173,124 @@ class ApiFailureDiagnosticTests(unittest.TestCase):
             self.assertEqual(policy._follower_read_deadline.get(), 10)
         finally:
             policy._follower_read_deadline.reset(token)
+
+
+    def test_fixed_transport_and_response_categories_never_leak_secret_bearing_stderr(self):
+        cases = [
+            ("net/http: TLS handshake timeout", "tls_timeout"),
+            ("dial tcp: i/o timeout", "io_timeout"),
+            ("context deadline exceeded", "request_timeout"),
+            ("Client.Timeout exceeded while awaiting headers", "request_timeout"),
+            ("timeout awaiting response headers", "request_timeout"),
+            ("lookup artifact.example: no such host", "dns_error"),
+            ("temporary failure in name resolution", "dns_error"),
+            ("read tcp: connection reset by peer", "connection_reset"),
+            ("dial tcp: connection refused", "connection_refused"),
+            ("x509: certificate signed by unknown authority", "tls_certificate_error"),
+            ("remote error: tls: internal error", "tls_protocol_error"),
+            ("http2: stream closed", "http_protocol_error"),
+            ("stream error: INTERNAL_ERROR", "http_protocol_error"),
+            ("unexpected EOF", "response_truncated"),
+            ("error reading response body", "response_read_error"),
+            ("unexpected end of JSON input", "response_parse_error"),
+            ("invalid character in response", "response_parse_error"),
+            ("cannot unmarshal response", "response_parse_error"),
+            ("write stdout: broken pipe", "output_write_error"),
+            ("permission denied", "access_denied"),
+            ("unknown private failure", "unclassified"),
+        ]
+        secrets = ["PRIVATE_TOKEN", "QUERY_SECRET", "USER_DATA", "Authorization", "Location", "X-Private", "x-ratelimit"]
+        for message, classification in cases:
+            stderr = ('* Request to https://private.example/blob?sig=QUERY_SECRET\n'
+                      '> Authorization: Bearer PRIVATE_TOKEN\n< X-Private: USER_DATA\n'
+                      '< Location: https://private.example/blob?sig=QUERY_SECRET\n< x-ratelimit-reset: 1234567\n' + message).encode() + b'\xff'
+            error = subprocess.CalledProcessError(1, "gh", stderr=stderr)
+            output, stdout = io.StringIO(), io.StringIO()
+            with self.subTest(message=message), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), contextlib.redirect_stdout(stdout), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint", binary=True)
+            self.assertIs(caught.exception, error)
+            self.assertIs(caught.exception.stderr, stderr)
+            call.assert_called_once()
+            data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+            self.assertEqual(data["classification"], classification)
+            self.assertEqual(set(data), {"classification", "http_status", "response_statuses", "returncode", "stderr_truncated"})
+            self.assertEqual(data["returncode"], 1)
+            self.assertLess(len(output.getvalue()), 320)
+            for secret in secrets:
+                self.assertNotIn(secret, output.getvalue())
+            self.assertEqual(stdout.getvalue(), "")
+
+    def test_failure_status_chain_is_bounded_and_final_success_is_not_operation_success(self):
+        stderr = "".join(f"* Request to https://private.example?sig=SECRET\n< HTTP/2.0 {code} PrivateReason\n< Location: SECRET\n\n" for code in [301, 302, 303, 307, 308, 200]) + "unexpected EOF SECRET"
+        error = subprocess.CalledProcessError(1, "gh", stderr=stderr)
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+            policy.command("gh", "api", "private-endpoint")
+        self.assertIs(caught.exception, error)
+        call.assert_called_once()
+        data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+        self.assertEqual(data["response_statuses"], [303, 307, 308, 200])
+        self.assertEqual(data["http_status"], 200)
+        self.assertEqual(data["classification"], "response_truncated")
+        self.assertNotIn("SECRET", output.getvalue())
+        self.assertNotIn("PrivateReason", output.getvalue())
+
+    def test_unknown_large_stderr_has_bounded_diagnostic_scan_and_still_fails(self):
+        stderr = "PRIVATE_TOKEN" + "X" * 200000
+        error = subprocess.CalledProcessError(1, "gh", stderr=stderr)
+        output = io.StringIO()
+        with patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output), self.assertRaises(subprocess.CalledProcessError) as caught:
+            policy.command("gh", "api", "private-endpoint")
+        self.assertIs(caught.exception, error)
+        self.assertEqual(error.stderr, stderr)
+        call.assert_called_once()
+        data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+        self.assertTrue(data["stderr_truncated"])
+        self.assertEqual(data["classification"], "unclassified")
+        self.assertLess(len(output.getvalue()), 320)
+        self.assertNotIn("PRIVATE_TOKEN", output.getvalue())
+
+    def test_api_timeout_diagnostic_preserves_timeout_and_original_deadline(self):
+        for expired in (False, True):
+            token = policy._follower_read_deadline.set(10)
+            error = subprocess.TimeoutExpired("gh", 3, stderr=b"PRIVATE_TOKEN")
+            output = io.StringIO()
+            try:
+                with self.subTest(expired=expired), patch.object(policy.time, "monotonic", side_effect=[7, 10 if expired else 8]), patch.object(policy.subprocess, "check_output", side_effect=error) as call, contextlib.redirect_stderr(output):
+                    if expired:
+                        with self.assertRaisesRegex(policy.CoordinationRefusal, "follower_decision_publication_timeout"):
+                            policy.command("gh", "api", "private-endpoint")
+                    else:
+                        with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                            policy.command("gh", "api", "private-endpoint")
+                        self.assertIs(caught.exception, error)
+                call.assert_called_once()
+                self.assertEqual(call.call_args.kwargs["timeout"], 3)
+                self.assertEqual(policy._follower_read_deadline.get(), 10)
+                data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+                self.assertEqual(data["classification"], "subprocess_timeout")
+                self.assertIsNone(data["returncode"])
+                self.assertNotIn("PRIVATE_TOKEN", output.getvalue())
+            finally:
+                policy._follower_read_deadline.reset(token)
+
+    def test_non_numeric_exit_values_cannot_become_diagnostic_user_data(self):
+        for code in ("PRIVATE_TOKEN", True, 2 ** 70):
+            error = subprocess.CalledProcessError(code, "gh", stderr="unknown failure")
+            output = io.StringIO()
+            with self.subTest(code=code), contextlib.redirect_stderr(output):
+                policy.report_api_failure(error)
+            data = json.loads(output.getvalue().split("gh_api_failed ", 1)[1])
+            self.assertIsNone(data["returncode"])
+            self.assertNotIn("PRIVATE_TOKEN", output.getvalue())
+
+    def test_diagnostic_type_or_attribute_errors_cannot_replace_original_api_failure(self):
+        for failure in (TypeError("PRIVATE_TOKEN"), AttributeError("PRIVATE_TOKEN")):
+            error = subprocess.CalledProcessError(1, "gh", stderr="unknown failure")
+            with self.subTest(failure=failure), patch.object(policy.subprocess, "check_output", side_effect=error) as call, patch.object(policy, "diagnostic", side_effect=failure), self.assertRaises(subprocess.CalledProcessError) as caught:
+                policy.command("gh", "api", "private-endpoint")
+            self.assertIs(caught.exception, error)
+            call.assert_called_once()
 
 
 class ScopeTests(unittest.TestCase):

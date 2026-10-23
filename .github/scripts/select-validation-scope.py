@@ -61,24 +61,52 @@ def diagnostic(reason, run=None):
     print(f"CI coordination: {reason}{suffix}", file=sys.stderr)
 
 
-def api_failure_headers(detail):
-    headers, awaiting_response, reading_headers = {}, False, False
-    for line in detail.splitlines():
-        if line.startswith("* Request to "):
-            headers, awaiting_response, reading_headers = {}, True, False
-        elif awaiting_response and re.fullmatch(r"< HTTP/\S+ [1-5][0-9]{2}(?: .*)?", line):
-            awaiting_response, reading_headers = False, True
-        elif reading_headers:
-            if not line.startswith("< "):
-                reading_headers = False
-                continue
-            number = re.fullmatch(r"< (x-ratelimit-(?:limit|remaining|reset)|retry-after): ([0-9]{1,19})", line, re.IGNORECASE)
-            resource = re.fullmatch(r"< x-ratelimit-resource: (core|search|graphql|code_search|integration_manifest)", line, re.IGNORECASE)
-            if number and int(number[2]) < 2 ** 63:
-                headers[number[1].lower()] = int(number[2])
-            elif resource:
-                headers["x-ratelimit-resource"] = resource[1].lower()
-    return headers
+def report_api_failure(error):
+    # Never emit stderr, URLs, response headers or arbitrary server/user text.
+    # Categories are diagnostic only: every original error is still raised.
+    try:
+        detail = error.stderr
+        detail = detail.decode(errors="replace") if isinstance(detail, bytes) else detail if isinstance(detail, str) else ""
+        truncated = len(detail) > 65536
+        detail = detail[-65536:]
+        statuses, awaiting_response = [], False
+        for line in detail.splitlines():
+            if line.startswith("* Request to "):
+                awaiting_response = True
+            elif awaiting_response and (status := re.fullmatch(r"< HTTP/\S+ ([1-5][0-9]{2})(?: .*)?", line)):
+                statuses = [*statuses[-3:], int(status[1])]
+                awaiting_response = False
+        explicit = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
+        status = int(explicit[1]) if explicit else statuses[-1] if statuses else None
+        lower = detail.lower()
+        categories = (
+            ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
+            ("bad credentials", "bad_credentials"),
+            ("resource not accessible by integration", "integration_access_denied"),
+            ("personal access token", "personal_token_access_denied"),
+            ("permission denied", "access_denied"),
+            ("tls handshake timeout", "tls_timeout"), ("i/o timeout", "io_timeout"),
+            ("context deadline exceeded", "request_timeout"), ("client.timeout exceeded", "request_timeout"),
+            ("timeout awaiting response headers", "request_timeout"),
+            ("no such host", "dns_error"), ("temporary failure in name resolution", "dns_error"),
+            ("connection reset", "connection_reset"), ("connection refused", "connection_refused"),
+            ("x509:", "tls_certificate_error"), ("tls:", "tls_protocol_error"),
+            ("http2:", "http_protocol_error"), ("stream error", "http_protocol_error"),
+            ("unexpected eof", "response_truncated"), ("error reading response body", "response_read_error"),
+            ("unexpected end of json input", "response_parse_error"), ("invalid character", "response_parse_error"),
+            ("cannot unmarshal", "response_parse_error"), ("broken pipe", "output_write_error"),
+        )
+        category = "subprocess_timeout" if isinstance(error, subprocess.TimeoutExpired) else next(
+            (label for phrase, label in categories if phrase in lower),
+            "http_error" if status is not None and status >= 400 else "unclassified")
+        code = getattr(error, "returncode", None)
+        diagnostic("gh_api_failed " + json.dumps({
+            "classification": category, "http_status": status, "response_statuses": statuses,
+            "returncode": code if type(code) is int and abs(code) < 2 ** 31 else None,
+            "stderr_truncated": truncated,
+        }, sort_keys=True))
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
 
 
 def command(*args, timeout=45, binary=False):
@@ -93,26 +121,11 @@ def command(*args, timeout=45, binary=False):
         result = subprocess.check_output(args, text=not binary, stderr=subprocess.PIPE, timeout=timeout, **options)
     except subprocess.CalledProcessError as error:
         if args[:2] == ("gh", "api"):
-            detail = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else error.stderr or ""
-            status = re.search(r"\(HTTP ([1-5][0-9]{2})\)", detail)
-            classification = next((label for phrase, label in (
-                ("secondary rate limit", "secondary_rate_limit"), ("rate limit", "rate_limit"),
-                ("bad credentials", "bad_credentials"),
-                ("resource not accessible by integration", "integration_access_denied"),
-                ("personal access token", "personal_token_access_denied"),
-            ) if phrase in detail.lower()), "http_error" if status else "unclassified")
-            try:
-                diagnostic("gh_api_failed " + json.dumps({
-                    "classification": classification,
-                    "http_status": int(status[1]) if status else None, "returncode": error.returncode,
-                }, sort_keys=True))
-                headers = api_failure_headers(detail)
-                if headers:
-                    diagnostic("gh_api_response_quota " + json.dumps(headers, sort_keys=True))
-            except (OSError, ValueError):
-                pass
+            report_api_failure(error)
         raise
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
+        if args[:2] == ("gh", "api"):
+            report_api_failure(error)
         if deadline is not None and time.monotonic() >= deadline:
             raise CoordinationRefusal("follower_decision_publication_timeout") from None
         raise
