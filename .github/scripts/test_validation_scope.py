@@ -1652,12 +1652,16 @@ class CanonicalCoordinationTests(unittest.TestCase):
 
     def api(self, endpoint, *, timeout=45):
         if endpoint.endswith("/workflows/tests.yml"): return {"id": 7}
-        if "/workflows/tests.yml/runs?" in endpoint: return {"total_count": len(self.runs), "workflow_runs": list(self.runs.values())}
+        if "/workflows/tests.yml/runs?" in endpoint:
+            page = int(endpoint.split("&page=", 1)[1]) if "&page=" in endpoint else 1
+            runs = list(self.runs.values())
+            return {"total_count": len(runs), "workflow_runs": runs[(page - 1) * 100:page * 100]}
         if "/git/commits/" in endpoint: return self.commits[endpoint.rsplit("/", 1)[-1]]
         if "/pulls/" in endpoint:
             return {"base": {"ref": "dev" if endpoint.endswith("/10") else "uat"}, "head": {"sha": "a" * 40 if endpoint.endswith("/10") else "d" * 40, "ref": "feature" if endpoint.endswith("/10") else "dev", "repo": {"full_name": self.repository}}}
         if endpoint.startswith(f"repos/{self.repository}/actions/artifacts?per_page=100"):
-            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}", "workflow_run": {"id": number}}
+            artifacts = [{"id": number * 10 + index, "name": f"{prefix}-{number}-{self.runs[number]['run_attempt']}",
+                          "workflow_run": {"id": number}, "expired": False, "size_in_bytes": 1024}
                          for number in self.artifacts for index, prefix in enumerate(self.artifacts[number])]
             page = int(endpoint.split("&page=", 1)[1]) if "&page=" in endpoint else 1
             return {"total_count": len(artifacts), "artifacts": artifacts[(page - 1) * 100:page * 100]}
@@ -2143,7 +2147,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
                 return second if "&page=2" in endpoint else first
             with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"):
                 if scenario == "complete":
-                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifacts[0]["name"]: 200})
+                    self.assertEqual(policy.coordination_artifact_index(self.repository), {artifacts[0]["name"]: artifacts[0]})
                 else:
                     with self.assertRaises(policy.CoordinationRefusal): policy.coordination_artifact_index(self.repository)
 
@@ -2166,13 +2170,13 @@ class CanonicalCoordinationTests(unittest.TestCase):
                     response["artifacts"][0] = old[0]
                 return response
             with self.subTest(scenario=scenario), patch.object(policy, "api", side_effect=api), patch.object(policy.time, "sleep"):
-                self.assertEqual(policy.coordination_artifact_index(self.repository), {a["name"]: a["workflow_run"]["id"] for a in new})
+                self.assertEqual(policy.coordination_artifact_index(self.repository), {a["name"]: a for a in new})
                 self.assertEqual(len(base_reads), 3)  # unstable snapshot, retry, fresh anchor
 
     def test_stable_single_page_inventory_needs_no_retry_or_pagination(self):
         artifact = {"id": 1, "name": "ci-coordination-identity-200-1", "workflow_run": {"id": 200}}
         with patch.object(policy, "api", return_value={"total_count": 1, "artifacts": [artifact]}) as api, patch.object(policy, "pages") as pages, patch.object(policy.time, "sleep") as sleep:
-            self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: 200})
+            self.assertEqual(policy.coordination_artifact_index(self.repository), {artifact["name"]: artifact})
         self.assertEqual(api.call_count, 1)
         pages.assert_not_called()
         sleep.assert_not_called()
@@ -2276,10 +2280,10 @@ class CanonicalCoordinationTests(unittest.TestCase):
     def test_indexed_failed_peer_identity_disappearing_refuses_new_ownership(self):
         self.runs[100]["conclusion"] = "failure"
         original = policy.coordination_identity
-        def disappearance(repository, run):
+        def disappearance(repository, run, **kwargs):
             if run["id"] == 100:
                 raise policy.MissingEvidence("identity absent from now-complete per-run inventory")
-            return original(repository, run)
+            return original(repository, run, **kwargs)
         with self.server(), patch.object(policy, "coordination_identity", side_effect=disappearance), self.assertRaisesRegex(policy.CoordinationRefusal, "coordination_index_changed"):
             policy.canonical_selection(self.env())
         self.assertNotIn("ci-coordination-decision", self.artifacts[200])
@@ -2305,10 +2309,10 @@ class CanonicalCoordinationTests(unittest.TestCase):
         active = peak = 0
         checked = []
 
-        def identity(repository, run):
+        def identity(repository, run, **kwargs):
             nonlocal active, peak
             if run["id"] not in peers:
-                return original(repository, run)
+                return original(repository, run, **kwargs)
             with lock:
                 active += 1
                 peak = max(peak, active)
@@ -2316,7 +2320,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
                     ready.set()
             try:
                 self.assertTrue(ready.wait(3), "historical reads were serialized")
-                result = original(repository, run)
+                result = original(repository, run, **kwargs)
                 with lock:
                     checked.append(run["id"])
                 return result
@@ -2351,9 +2355,9 @@ class CanonicalCoordinationTests(unittest.TestCase):
         original = policy.coordination_identity
         checked = []
 
-        def identity(repository, run):
+        def identity(repository, run, **kwargs):
             checked.append(run["id"])
-            return original(repository, run)
+            return original(repository, run, **kwargs)
 
         with self.server(), patch.object(policy, "coordination_identity", side_effect=identity), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
             policy.canonical_selection(self.env())
@@ -2496,7 +2500,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
                 with lock: active[0] -= 1
         with patch.object(policy, "api", side_effect=api) as calls:
             result = policy.coordination_artifact_index(self.repository)
-        self.assertEqual(result, {a["name"]: a["workflow_run"]["id"] for a in artifacts})
+        self.assertEqual(result, {a["name"]: a for a in artifacts})
         self.assertEqual(sorted(pages), list(range(2, 50)))
         self.assertEqual((peak[0], active[0], calls.call_count), (4, 0, 50))
 
@@ -2516,6 +2520,310 @@ class CanonicalCoordinationTests(unittest.TestCase):
             api.assert_not_called()
         finally:
             policy._follower_read_deadline.reset(token)
+
+    def measured_historical_selection(self, *, legacy=False, api_override=None):
+        """Compare the old per-peer read strategy against indexed reads."""
+        counts = {"json": 0, "job_pages": 0, "archives": 0, "run_inventories": 0, "repository_pages": 0}
+        lock = threading.Lock()
+        native_identity = policy.coordination_identity
+
+        def api(endpoint, **kwargs):
+            with lock:
+                counts["json"] += 1
+                counts["run_inventories"] += int("/runs/" in endpoint and "/artifacts?" in endpoint)
+                counts["repository_pages"] += int("/actions/artifacts?" in endpoint)
+            result = api_override(endpoint, **kwargs) if api_override else self.api(endpoint, **kwargs)
+            return copy.deepcopy(result)
+
+        def pages(endpoint, **kwargs):
+            result = self.pages(endpoint, **kwargs)
+            with lock:
+                counts["job_pages"] += len(result)
+            return copy.deepcopy(result)
+
+        def command(*args, **kwargs):
+            if args[:2] == ("gh", "api"):
+                with lock:
+                    counts["archives"] += 1
+            return self.command(*args, **kwargs)
+
+        def identity(repository, run, **kwargs):
+            return native_identity(repository, run, **({} if legacy else kwargs))
+
+        final_read = contextlib.nullcontext() if not legacy else patch.object(policy, "revalidate_historical_inventory")
+        with self.server(), patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", side_effect=pages), patch.object(policy, "command", side_effect=command), patch.object(policy, "coordination_identity", side_effect=identity), final_read:
+            try:
+                result = ("decision", policy.canonical_selection(self.env()))
+            except (ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+                self.assertFalse(Path("ci-coordination-decision/coordination-decision.json").exists())
+                result = ("refusal", type(error).__name__, str(error))
+        counts["total"] = counts["json"] + counts["job_pages"] + counts["archives"]
+        return result, counts
+
+    def test_historical_snapshot_measured_request_savings_and_small_history_cost(self):
+        for peers in (0, 1, 8, 200):
+            self.setUp()
+            for number in range(300, 300 + peers):
+                self.failed_peer(number)
+            old, before = self.measured_historical_selection(legacy=True)
+            new, after = self.measured_historical_selection()
+            self.assertEqual(old, new)
+            final_pages = after["repository_pages"] - before["repository_pages"]
+            self.assertEqual(after["run_inventories"], before["run_inventories"] - peers)
+            self.assertEqual(after["total"], before["total"] - peers + final_pages)
+            self.assertEqual(after["archives"], before["archives"])
+            print("Historical request fixture: " + json.dumps({"peers": peers, "old": before, "new": after}, sort_keys=True))
+
+    def test_absent_historical_identity_costs_one_final_read_and_no_peer_download(self):
+        self.failed_peer(300)
+        self.artifacts[300].clear()
+        old, before = self.measured_historical_selection(legacy=True)
+        new, after = self.measured_historical_selection()
+        self.assertEqual(old, new)
+        self.assertEqual(after["total"], before["total"] + 1)
+        self.assertEqual(after["archives"], before["archives"])
+
+    def test_small_peer_set_with_large_inventory_reports_the_extra_final_page_cost(self):
+        self.failed_peer(300)
+        def api(endpoint, **kwargs):
+            if "/actions/artifacts?" not in endpoint: return self.api(endpoint, **kwargs)
+            rows = self.api(f"repos/{self.repository}/actions/artifacts?per_page=100")["artifacts"]
+            rows += [{"id": 10000 + n, "name": f"unrelated-{n}", "workflow_run": {"id": 999}} for n in range(200)]
+            page = int(endpoint.split("&page=", 1)[1]) if "&page=" in endpoint else 1
+            return {"total_count": len(rows), "artifacts": rows[(page - 1) * 100:page * 100]}
+        old, before = self.measured_historical_selection(legacy=True, api_override=api)
+        new, after = self.measured_historical_selection(api_override=api)
+        self.assertEqual(old, new)
+        self.assertEqual(after["total"], before["total"] + 3)
+        print("Small-peer large-inventory fixture: " + json.dumps({"old": before, "new": after}, sort_keys=True))
+
+    def test_indexed_reads_retain_the_original_per_run_thousand_artifact_bound(self):
+        self.failed_peer(300)
+        def api(endpoint, **kwargs):
+            if "/actions/artifacts?" not in endpoint: return self.api(endpoint, **kwargs)
+            rows = self.api(f"repos/{self.repository}/actions/artifacts?per_page=100")["artifacts"]
+            rows += [{"id": 10000 + n, "name": f"unrelated-{n}", "workflow_run": {"id": 300}} for n in range(1000)]
+            page = int(endpoint.split("&page=", 1)[1]) if "&page=" in endpoint else 1
+            return {"total_count": len(rows), "artifacts": rows[(page - 1) * 100:page * 100]}
+        result, _ = self.measured_historical_selection(api_override=api)
+        self.assertEqual(result[0], "refusal")
+        self.assertIn("artifact inventory exceeds", result[2])
+
+    def test_snapshot_static_decision_and_refusal_equivalence(self):
+        cases = ("reuse", "execute", "matching tree", "wrong repository", "wrong run", "wrong attempt", "wrong sha",
+                 "wrong native tree", "wrong native parents", "malformed", "missing job", "failed job", "skipped job",
+                 "cancelled job", "pending job", "failed upload", "legacy source")
+        for case in cases:
+            self.setUp()
+            self.failed_peer(300, matching=case == "matching tree")
+            proof = self.artifacts[300]["ci-coordination-identity"]
+            if case == "execute": self.artifacts[100].pop("validation-tree")
+            if case == "wrong repository": proof["repository"] = "fork/repo"
+            if case == "wrong run": proof["run_id"] = "301"
+            if case == "wrong attempt": proof["run_attempt"] = "2"
+            if case == "wrong sha": proof["head_sha"] = "f" * 40
+            if case == "wrong native tree": self.commits[proof["tested_sha"]]["tree"]["sha"] = "8" * 40
+            if case == "wrong native parents":
+                proof.update(tested_sha="6" * 40, base_sha="8" * 40, base_ref="dev", pull_number="300", event="pull_request")
+                self.runs[300].update(event="pull_request", head_branch="feature")
+                self.commits["6" * 40] = {"sha": "6" * 40, "tree": {"sha": proof["tree_sha"]}, "parents": [{"sha": proof["head_sha"]}, {"sha": proof["base_sha"]}]}
+            if case == "malformed": self.artifacts[300]["ci-coordination-identity"] = {}
+            if case == "missing job": self.jobs[300].clear()
+            if case in ("failed job", "skipped job", "cancelled job"):
+                self.jobs[300][0]["conclusion"] = {"failed job": "failure", "skipped job": "skipped", "cancelled job": "cancelled"}[case]
+            if case == "pending job": self.jobs[300][0].update(status="in_progress", conclusion=None)
+            if case == "failed upload": self.jobs[300][0]["steps"][-1]["conclusion"] = "failure"
+            if case == "legacy source":
+                self.artifacts[100]["validation-tree"]["required_jobs"] = [name for name in policy.POC_JOBS if name != policy.STATIC_JOB]
+            with self.subTest(case=case):
+                old, _ = self.measured_historical_selection(legacy=True)
+                new, _ = self.measured_historical_selection()
+                self.assertEqual(old, new)
+                self.assertEqual(new[0], "decision" if case in ("reuse", "execute", "legacy source") else "refusal")
+
+    def test_final_complete_inventory_detects_relevant_changes_with_stable_count(self):
+        for case in ("delete", "replace id", "expire", "resize", "metadata", "run binding", "duplicate", "publish absent", "run inventory grows"):
+            self.setUp()
+            self.failed_peer(300)
+            if case == "publish absent": self.artifacts[300].clear()
+            reads = 0
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                result = copy.deepcopy(self.api(endpoint, **kwargs))
+                if "/actions/artifacts?" in endpoint:
+                    reads += 1
+                    if reads > 1:
+                        name = "ci-coordination-identity-300-1"
+                        row = next((a for a in result["artifacts"] if a["name"] == name), None)
+                        if case == "delete": result["artifacts"].remove(row)
+                        if case == "replace id": row["id"] += 1
+                        if case == "expire": row["expired"] = True
+                        if case == "resize": row["size_in_bytes"] += 1
+                        if case == "metadata": row["updated_at"] = "changed"
+                        if case == "run binding": row["workflow_run"]["id"] = 301
+                        if case == "duplicate": result["artifacts"].append(dict(row, id=9999))
+                        if case == "publish absent": result["artifacts"].append({"id": 3000, "name": name, "workflow_run": {"id": 300}, "expired": False, "size_in_bytes": 1024})
+                        if case == "run inventory grows": result["artifacts"].append({"id": 9999, "name": "unrelated-historical-artifact", "workflow_run": {"id": 300}})
+                        result["total_count"] = len(result["artifacts"])
+                return result
+            with self.subTest(case=case):
+                result, _ = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "refusal")
+                self.assertEqual(reads, 2)
+
+    def test_final_inventory_does_not_invalidate_unrelated_publication(self):
+        self.failed_peer(300)
+        reads = 0
+        def api(endpoint, **kwargs):
+            nonlocal reads
+            result = copy.deepcopy(self.api(endpoint, **kwargs))
+            if "/actions/artifacts?" in endpoint:
+                reads += 1
+                if reads > 1:
+                    result["artifacts"].append({"id": 9999, "name": "unrelated-new-publication", "workflow_run": {"id": 999}})
+                    result["total_count"] += 1
+            return result
+        result, _ = self.measured_historical_selection(api_override=api)
+        self.assertEqual(result[0], "decision")
+
+    def test_indexed_descriptor_still_rejects_expiry_invalid_id_size_and_run_binding(self):
+        for key, value in (("expired", True), ("id", 0), ("id", True), ("size_in_bytes", 0), ("size_in_bytes", 1024 * 1024 + 1), ("workflow_run", {"id": 301})):
+            self.setUp()
+            self.failed_peer(300)
+            def api(endpoint, **kwargs):
+                result = copy.deepcopy(self.api(endpoint, **kwargs))
+                if "/actions/artifacts?" in endpoint:
+                    next(a for a in result["artifacts"] if a["name"] == "ci-coordination-identity-300-1")[key] = value
+                return result
+            with self.subTest(key=key, value=value):
+                result, _ = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "refusal")
+
+    def test_final_inventory_hard_errors_are_not_retried_or_converted_to_execution(self):
+        for error in (subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit"),
+                      subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503"), subprocess.TimeoutExpired("gh api", 45)):
+            self.setUp()
+            self.failed_peer(300)
+            reads = 0
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                if "/actions/artifacts?" in endpoint:
+                    reads += 1
+                    if reads == 2: raise error
+                return self.api(endpoint, **kwargs)
+            with self.subTest(error=type(error).__name__):
+                result, _ = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "refusal")
+                self.assertEqual(reads, 2)
+
+    def test_historical_native_attempt_and_jobs_are_still_read_fresh(self):
+        for case in ("attempt", "jobs"):
+            self.setUp()
+            self.failed_peer(300)
+            def api(endpoint, **kwargs):
+                result = copy.deepcopy(self.api(endpoint, **kwargs))
+                if endpoint.endswith("/runs/300") and case == "attempt": result["run_attempt"] = 2
+                return result
+            if case == "jobs": self.jobs[300][0]["steps"][-1]["conclusion"] = "failure"
+            with self.subTest(case=case):
+                result, _ = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "refusal")
+
+    def test_final_multipage_comparison_detects_changed_metadata_off_first_page(self):
+        for number in range(300, 500):
+            self.failed_peer(number)
+        base_reads = 0
+        def api(endpoint, **kwargs):
+            nonlocal base_reads
+            result = copy.deepcopy(self.api(endpoint, **kwargs))
+            if "/actions/artifacts?" in endpoint:
+                if "&page=" not in endpoint: base_reads += 1
+                if base_reads >= 3:
+                    for item in result["artifacts"]:
+                        if item["name"] == "ci-coordination-identity-499-1":
+                            item["size_in_bytes"] += 1
+            return result
+        result, counts = self.measured_historical_selection(api_override=api)
+        self.assertEqual(result[0], "refusal")
+        self.assertIn("coordination_inventory_changed_before_decision", result[2])
+        self.assertEqual(counts["repository_pages"], 8)
+        self.assertEqual(base_reads, 4)
+
+    def test_incomplete_final_inventory_cannot_prove_unchanged_absence(self):
+        self.failed_peer(300)
+        self.artifacts[300].clear()
+        reads = 0
+        def api(endpoint, **kwargs):
+            nonlocal reads
+            result = copy.deepcopy(self.api(endpoint, **kwargs))
+            if "/actions/artifacts?" in endpoint:
+                reads += 1
+                if reads > 1: result["total_count"] += 1
+            return result
+        with patch.object(policy.time, "sleep"):
+            result, _ = self.measured_historical_selection(api_override=api)
+        self.assertEqual(result[0], "refusal")
+        self.assertEqual(reads, 4)  # Initial read, then three bounded unstable passes.
+
+    def test_final_comparison_keeps_current_attempt_recheck_after_inventory(self):
+        self.failed_peer(300)
+        inventory_reads = 0
+        def api(endpoint, **kwargs):
+            nonlocal inventory_reads
+            result = copy.deepcopy(self.api(endpoint, **kwargs))
+            if "/actions/artifacts?" in endpoint: inventory_reads += 1
+            if endpoint.endswith("/runs/200") and inventory_reads >= 2: result["run_attempt"] = 2
+            return result
+        result, _ = self.measured_historical_selection(api_override=api)
+        self.assertEqual(result[0], "refusal")
+        self.assertIn("run_or_attempt_changed", result[2])
+
+    def test_historical_archive_http_failures_remain_hard_refusals_without_retry(self):
+        self.failed_peer(300)
+        for error in (subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit PRIVATE"),
+                      subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503 PRIVATE"), subprocess.TimeoutExpired("gh api", 45)):
+            calls = []
+            def command(*args, **kwargs):
+                if args[:2] == ("gh", "api") and "/artifacts/3000/zip" in args[2]:
+                    calls.append(args)
+                    raise error
+                return self.command(*args, **kwargs)
+            with self.subTest(error=type(error).__name__), self.server(), patch.object(policy, "command", side_effect=command), self.assertRaises(type(error)):
+                policy.canonical_selection(self.env())
+            self.assertEqual(len(calls), 1)
+
+    def test_descriptor_index_is_an_independent_snapshot_of_response_metadata(self):
+        row = {"id": 1, "name": "ci-coordination-identity-300-1", "workflow_run": {"id": 300}, "expired": False, "size_in_bytes": 1024}
+        with patch.object(policy, "api", return_value={"total_count": 1, "artifacts": [row]}):
+            index = policy.coordination_artifact_index(self.repository)
+        row["workflow_run"]["id"] = 301
+        row["size_in_bytes"] = 0
+        self.assertEqual(index[row["name"]]["workflow_run"]["id"], 300)
+        self.assertEqual(index[row["name"]]["size_in_bytes"], 1024)
+
+
+class LookupCounterTests(unittest.TestCase):
+    def test_numeric_metrics_distinguish_commands_pages_archives_and_failures(self):
+        secret = "PRIVATE_SIGNED_URL_TOKEN"
+        error = subprocess.CalledProcessError(1, ["gh", "api", secret], stderr=f"rate limit {secret} (HTTP 403)")
+        output = io.StringIO()
+        with patch.dict(policy._lookup_counts, {}, clear=True), patch.object(policy.subprocess, "check_output", side_effect=['{}', '[{}, {}]', b'zip', error]), contextlib.redirect_stderr(output):
+            self.assertEqual(policy.api(secret), {})
+            self.assertEqual(policy.pages(secret), [{}, {}])
+            self.assertEqual(policy.command("gh", "api", secret, binary=True), b'zip')
+            with patch.object(policy, "select_scope", side_effect=lambda: policy.api(secret)), self.assertRaises(subprocess.CalledProcessError):
+                policy.main()
+            self.assertEqual(policy._lookup_counts, {"api_commands": 4, "json_response_pages": 3, "archive_commands": 1})
+        self.assertNotIn(secret, output.getvalue())
+        metrics = json.loads(output.getvalue().split("CI lookup counts: ")[1])
+        self.assertTrue(all(type(value) is int and value >= 0 for value in metrics.values()))
+
+    def test_concurrent_counters_are_exact_and_emit_only_fixed_numeric_fields(self):
+        with patch.dict(policy._lookup_counts, {}, clear=True):
+            threads = [threading.Thread(target=lambda: [policy.count_lookup("api_commands") for _ in range(1000)]) for _ in range(4)]
+            for thread in threads: thread.start()
+            for thread in threads: thread.join()
+            self.assertEqual(policy._lookup_counts, {"api_commands": 4000})
 
 
 class ArtifactIdDownloadTests(unittest.TestCase):
