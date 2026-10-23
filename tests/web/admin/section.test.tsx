@@ -307,7 +307,7 @@ describe('Policies', () => {
                 screen.getByRole('table', { name: 'Investor eligibility' }),
             ).getAllByRole('row')[1],
         ).toHaveTextContent(
-            'Max investment / note · share of the raiseMost one investor may hold of a single raise.50%brs-2.0-inv-r01',
+            'Max investment / note · share of the raiseCap one investor can place in a single note.50%brs-2.0-inv-r01',
         );
         // Four groups have no rule in this fixture, so each shows its empty state.
         expect(screen.getAllByText('No rules to show yet.')).toHaveLength(4);

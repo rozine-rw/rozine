@@ -983,7 +983,8 @@ const fr: Catalog = {
     'admin.nav.risk': 'Centre des risques',
     'admin.section.risk.title': 'Centre des risques',
     'admin.section.risk.subtitle': 'Gestion des risques de toute la plateforme',
-    'admin.section.risk.search': 'Rechercher un cas par entreprise ou note…',
+    'admin.section.risk.search':
+        'Rechercher une note en difficulté par entreprise…',
     'admin.nav.compliance': 'Conformité',
     'admin.section.compliance.title': 'Tableau de bord de conformité',
     'admin.section.compliance.subtitle':
@@ -995,12 +996,12 @@ const fr: Catalog = {
     'admin.section.payments.subtitle':
         "Les mouvements d'argent sur la plateforme",
     'admin.section.payments.search':
-        'Rechercher un paiement par partie ou référence…',
+        'Rechercher un paiement par nom, référence, moyen…',
     'admin.nav.ratings': 'Notations',
     'admin.section.ratings.title': 'Notations',
     'admin.section.ratings.subtitle':
         'Les bandes en vigueur, ce qui les a fait évoluer et leurs pondérations',
-    'admin.section.ratings.search': 'Rechercher une notation par entreprise…',
+    'admin.section.ratings.search': 'Rechercher une entreprise…',
     'admin.nav.deferrals': "Reports d'échéance",
     'admin.section.deferrals.title': "Reports d'échéance",
     'admin.section.deferrals.subtitle':
@@ -1015,7 +1016,8 @@ const fr: Catalog = {
     'admin.section.finance.title': 'Tableau de bord financier',
     'admin.section.finance.subtitle':
         'Chaque source de revenus et le grand livre',
-    'admin.section.finance.search': 'Rechercher une écriture…',
+    'admin.section.finance.search':
+        'Rechercher dans le grand livre par type, partie, référence…',
     'admin.nav.messaging': 'Messagerie',
     'admin.section.messaging.title': 'Messagerie et automatisations',
     'admin.section.messaging.subtitle':
@@ -1030,12 +1032,14 @@ const fr: Catalog = {
     'admin.section.app_control.title': 'Centre de contrôle des applications',
     'admin.section.app_control.subtitle':
         'Tout ce qui compose les applications Investisseur, Entreprise et Auditeur',
-    'admin.section.app_control.search': 'Rechercher un réglage…',
+    'admin.section.app_control.search':
+        'Rechercher une entité par nom ou type…',
     'admin.nav.policies': 'Politiques',
     'admin.section.policies.title': 'Politiques et règles',
     'admin.section.policies.subtitle':
         "Toutes les règles qui régissent l'écosystème",
-    'admin.section.policies.search': 'Rechercher une politique…',
+    'admin.section.policies.search':
+        'Rechercher une règle par nom ou description…',
     'admin.nav.system_health': 'État du système',
     'admin.section.system_health.title': 'État du système',
     'admin.section.system_health.subtitle':
@@ -1235,14 +1239,13 @@ const fr: Catalog = {
         'Supplément versé aux investisseurs',
     'admin.design.deferrals.awaiting.title': 'En attente de votre décision',
     'admin.design.deferrals.awaiting.empty':
-        'Aucun plan en attente de décision à afficher pour le moment.',
+        'Rien en attente. Chaque plan a été décidé.',
     'admin.design.deferrals.live_plans.title': 'Plans en cours',
     'admin.design.deferrals.live_plans.sub': 'Approuvés et en cours.',
     'admin.design.deferrals.live_plans.empty':
         'Aucun plan en cours à afficher pour le moment.',
     'admin.design.deferrals.decided.title': 'Décidés',
-    'admin.design.deferrals.decided.empty':
-        'Aucune décision à afficher pour le moment.',
+    'admin.design.deferrals.decided.empty': "Rien n'a encore été décidé.",
     'admin.design.plus.tab.tiers': 'Niveaux Plus',
     'admin.design.plus.tab.institutions': 'Institutions',
     'admin.design.plus.tab.all': 'Tous les investisseurs',
@@ -1548,7 +1551,7 @@ const fr: Catalog = {
     'admin.design.policies.kyc.sub':
         "Ce que chaque partie doit fournir. Un élément requis bloque les opérations tant qu'il manque ; un élément non collecté n'est jamais demandé.",
     'admin.design.policies.penalties.sub':
-        'Comment Rozine traite les retards, les défauts et les nouvelles vérifications.',
+        'Comment Rozine traite les difficultés, les défauts et les infractions.',
     'admin.design.policies.limits.sub':
         "Garde-fous sur l'activité dans les deux applications.",
     'admin.design.policies.rules.empty':
@@ -1580,7 +1583,7 @@ const fr: Catalog = {
     'admin.section.applications.subtitle':
         'Examiner et souscrire les nouvelles demandes de RNP',
     'admin.section.applications.search':
-        'Rechercher par intitulé du titre ou identifiant de la demande',
+        'Rechercher une demande par entreprise ou identifiant…',
     'admin.section.disbursements.title': 'Décaissements',
     'admin.section.disbursements.subtitle':
         'Levées approuvées en attente de versement. Au-delà du seuil, deux personnes différentes doivent approuver chaque versement.',
@@ -1808,6 +1811,9 @@ const fr: Catalog = {
         'Rapports mensuels à temps · part de la conduite',
     'admin.policy.eyebrow': 'Défini dans les politiques',
     'admin.policy.open': 'Politiques',
+    'admin.policy.strip.audit_routing': "Bande de routage d'audit",
+    'admin.policy.strip.min_statement_years': 'Années de relevés min.',
+    'admin.policy.strip.kyc_reverify': 'Revérification KYC',
     'admin.policy.target_dscr': 'DSCR cible',
     'admin.policy.listing_audit': "Audit d'admission",
     'admin.policy.audit_routing': "Seuil d'orientation vers l'audit",
@@ -1867,9 +1873,9 @@ const fr: Catalog = {
     'admin.policy.hint.bank_signatories':
         'Un seul représentant officiel agit pour l’entreprise. Un second signataire n’est jamais exigé.',
     'admin.policy.hint.recovery_rate':
-        'Ce qui est recouvré après un défaut revient aux détenteurs. Rozine n’en garde rien et ne couvre pas les pertes.',
+        "Part de l'encours versée aux détenteurs en cas de défaut.",
     'admin.policy.hint.withdrawal_daily_cap':
-        'Aucun plafond journalier. Chaque retrait est limité, comme indiqué ci-dessus.',
+        "Montant maximum qu'un compte peut retirer par jour.",
     'admin.policy.term.pro_rata': 'La totalité, au prorata des détenteurs',
     'admin.policy.hint.platform_fee':
         "Prélevés sur la levée lors du versement à l'entreprise.",
@@ -1917,9 +1923,9 @@ const fr: Catalog = {
     'admin.policy.hint.registration_countries':
         "Où l'entreprise doit être immatriculée.",
     'admin.policy.hint.min_statement_years':
-        'Années de relevés bancaires ou MoMo exigées.',
+        'Années consécutives de relevés bancaires/MoMo exigées.',
     'admin.policy.hint.min_revenue':
-        "Chiffre d'affaires minimum sur les 12 derniers mois.",
+        "Chiffre d'affaires glissant minimum pour être admissible.",
     'admin.policy.hint.first_issue_months':
         'Mois de relevés audités avant une première levée.',
     'admin.policy.hint.repeat_issue_months':
@@ -1932,7 +1938,7 @@ const fr: Catalog = {
     'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
     'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
     'admin.policy.hint.concentration':
-        "Part maximale d'une levée détenue par un investisseur.",
+        "Plafond qu'un investisseur peut placer dans une seule note.",
     'admin.policy.hint.risk_statements':
         'Déclarations acceptées avant un premier investissement.',
     'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
@@ -1947,10 +1953,10 @@ const fr: Catalog = {
     'admin.policy.hint.identity_evidence':
         'Photos de chaque dossier : recto, verso et selfie.',
     'admin.policy.hint.kyc_reverify':
-        "Fréquence de la nouvelle vérification d'identité.",
+        "Mois avant qu'un utilisateur doive revérifier son KYC.",
     'admin.policy.hint.late_charge': 'Ajoutée à une échéance en retard.',
     'admin.policy.hint.miss_grace':
-        'Quand un paiement manqué devient un retard.',
+        "Jours avant qu'un paiement manqué soit signalé.",
     'admin.policy.hint.default_at':
         'Quand une échéance impayée devient un défaut.',
     'admin.policy.hint.auto_freeze':
@@ -2936,7 +2942,7 @@ const fr: Catalog = {
     'auditor.jobs.map_label_page':
         "Carte de votre rayon d'affectation de {radius} km avec {count} missions sur cette page à des positions approximatives",
     'auditor.jobs.map_badge_page': 'Rayon {radius} km · {count} sur cette page',
-    'auditor.jobs.assigned': 'Qui vous sont attribuées',
+    'auditor.jobs.assigned': 'En cours',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance} km',
     'auditor.jobs.sector_unavailable': 'Secteur indisponible',

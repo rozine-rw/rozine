@@ -181,6 +181,13 @@ test('Compliance opens the investor identity review queue for compliance officer
         ->assertRedirect(route('staff.investor-verifications.index'));
 });
 
+test('Messaging opens Messaging & Automations for whoever may read message history, and the design page otherwise', function (): void {
+    $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'messaging']))
+        ->assertRedirect(route('staff.messaging.index'));
+    $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'messaging']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'messaging'));
+});
+
 test('the frame shows the same two-letter initials as every other console page', function (): void {
     $user = sectionStaff(['analyst']);
     $user->forceFill(['name' => 'Erastus Nkurunziza'])->save();

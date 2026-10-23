@@ -329,6 +329,20 @@ export function policyValue(
         : t(`admin.policy.term.${item.term}`);
 }
 
+/** Rules the design's in-context read-outs name more briefly than the Policies page does (Admin.dc.html L3991–4016). */
+const PEEK_LABELS: Partial<
+    Record<
+        string,
+        | 'admin.policy.strip.audit_routing'
+        | 'admin.policy.strip.min_statement_years'
+        | 'admin.policy.strip.kyc_reverify'
+    >
+> = {
+    audit_routing: 'admin.policy.strip.audit_routing',
+    min_statement_years: 'admin.policy.strip.min_statement_years',
+    kyc_reverify: 'admin.policy.strip.kyc_reverify',
+};
+
 /** "SET IN POLICIES" — the rules governing this queue, read from the policy registry. */
 export function PolicyPeek({
     title,
@@ -385,13 +399,19 @@ export function PolicyPeek({
                             className="min-w-0 bg-rz-surface px-[13px] py-[9px]"
                         >
                             <dt
-                                title={t(`admin.policy.${item.key}`)}
+                                title={t(
+                                    PEEK_LABELS[item.key] ??
+                                        `admin.policy.${item.key}`,
+                                )}
                                 className={cn(
                                     'line-clamp-2 text-[10px] leading-[1.3] font-semibold',
                                     CAPTION,
                                 )}
                             >
-                                {t(`admin.policy.${item.key}`)}
+                                {t(
+                                    PEEK_LABELS[item.key] ??
+                                        `admin.policy.${item.key}`,
+                                )}
                             </dt>
                             <dd className="mt-[3px] truncate text-[13.5px] font-bold tracking-[-.01em] text-rz-ink">
                                 {policyValue(item, t)}
