@@ -12,6 +12,7 @@ use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use RuntimeException;
 
 final class EloquentStaffApplicationQueue implements StaffApplicationQueue
@@ -27,7 +28,9 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         $base = BusinessApplication::query()->where('status', 'submitted')->whereNotNull('current_submission_id');
         if ($search !== '') {
             $pattern = '%'.addcslashes($search, '%_\\').'%';
-            $base->where(fn (Builder $query): Builder => $query->whereLike('draft->title', $pattern)->orWhere('id', strtolower($search)));
+            $base->where(fn (Builder $query): Builder => $query->whereLike('draft->title', $pattern)->orWhere('id', strtolower($search))
+                ->orWhereExists(fn (QueryBuilder $profiles): QueryBuilder => $profiles->selectRaw('1')->from('business_profiles')
+                    ->whereColumn('business_profiles.id', 'business_applications.business_id')->whereLike('business_profiles.profile->name', $pattern)));
         }
         $released = BusinessApplicationRelease::query()->selectRaw('1')
             ->whereColumn('business_application_id', 'business_applications.id')->whereColumn('business_id', 'business_applications.business_id');
@@ -95,7 +98,8 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
             $result = $quote?->payload['result'] ?? [];
             $title = (string) ($quote?->payload['draft']['title'] ?? '');
             if (($result['eligible'] ?? true) || ! in_array($result['code'] ?? null, self::REJECTIONS, true)
-                || ($search !== '' && ! str_contains(mb_strtolower($title), mb_strtolower($search)) && $application->id !== strtolower($search))) {
+                || ($search !== '' && ! str_contains(mb_strtolower($title), mb_strtolower($search))
+                    && ! str_contains(mb_strtolower((string) $application->getAttribute('business_name')), mb_strtolower($search)) && $application->id !== strtolower($search))) {
                 continue;
             }
             $draft = $quote->payload['draft'];

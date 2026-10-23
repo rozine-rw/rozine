@@ -941,7 +941,7 @@ const en = {
     'admin.nav.risk': 'Risk Center',
     'admin.section.risk.title': 'Risk Center',
     'admin.section.risk.subtitle': 'Platform-wide risk management',
-    'admin.section.risk.search': 'Search risk cases by business or note…',
+    'admin.section.risk.search': 'Search distressed notes by business…',
     'admin.nav.compliance': 'Compliance',
     'admin.section.compliance.title': 'Compliance Dashboard',
     'admin.section.compliance.subtitle': 'KYC, AML and regulatory oversight',
@@ -949,12 +949,13 @@ const en = {
     'admin.nav.payments': 'Payments',
     'admin.section.payments.title': 'Payment Center',
     'admin.section.payments.subtitle': 'Money movement across the platform',
-    'admin.section.payments.search': 'Search payments by party or reference…',
+    'admin.section.payments.search':
+        'Search payments by name, reference, method…',
     'admin.nav.ratings': 'Ratings',
     'admin.section.ratings.title': 'Ratings',
     'admin.section.ratings.subtitle':
         'Live bands, what moved them, and the weights behind them',
-    'admin.section.ratings.search': 'Search ratings by business…',
+    'admin.section.ratings.search': 'Search businesses…',
     'admin.nav.deferrals': 'Deferrals',
     'admin.section.deferrals.title': 'Deferrals',
     'admin.section.deferrals.subtitle': 'Requests to move a repayment date',
@@ -967,7 +968,8 @@ const en = {
     'admin.nav.finance': 'Finance',
     'admin.section.finance.title': 'Finance Dashboard',
     'admin.section.finance.subtitle': 'Every revenue stream and the ledger',
-    'admin.section.finance.search': 'Search finance entries…',
+    'admin.section.finance.search':
+        'Search the ledger by type, party, reference…',
     'admin.nav.messaging': 'Messaging',
     'admin.section.messaging.title': 'Messaging & Automations',
     'admin.section.messaging.subtitle':
@@ -982,11 +984,11 @@ const en = {
     'admin.section.app_control.title': 'App Control Center',
     'admin.section.app_control.subtitle':
         'Everything across the Investor, Business & Auditor apps',
-    'admin.section.app_control.search': 'Search settings…',
+    'admin.section.app_control.search': 'Search entities by name or type…',
     'admin.nav.policies': 'Policies',
     'admin.section.policies.title': 'Policies & Rules',
     'admin.section.policies.subtitle': 'Every rule that governs the ecosystem',
-    'admin.section.policies.search': 'Search policies…',
+    'admin.section.policies.search': 'Search rules by name or description…',
     'admin.nav.system_health': 'System Health',
     'admin.section.system_health.title': 'System Health',
     'admin.section.system_health.subtitle':
@@ -1449,7 +1451,7 @@ const en = {
     'admin.design.policies.kyc.sub':
         'What each side must provide. Required blocks transacting until met; not collected is never asked for.',
     'admin.design.policies.penalties.sub':
-        'How Rozine handles late payments, defaults and re-verification.',
+        'How Rozine handles distress, defaults and violations.',
     'admin.design.policies.limits.sub':
         'Guardrails on activity across both apps.',
     'admin.design.policies.rules.empty': 'No rules to show yet.',
@@ -1477,7 +1479,7 @@ const en = {
     'admin.section.applications.subtitle':
         'Review and underwrite new RNP submissions',
     'admin.section.applications.search':
-        'Search by note title or application ID',
+        'Search applications by business or ID…',
     'admin.section.disbursements.title': 'Disbursements',
     'admin.section.disbursements.subtitle':
         'Approved raises awaiting release. Above the threshold, two different people must approve every release.',
@@ -1703,6 +1705,9 @@ const en = {
     'admin.engine.report_conduct': 'Monthly reports on time · share of conduct',
     'admin.policy.eyebrow': 'Set in Policies',
     'admin.policy.open': 'Policies',
+    'admin.policy.strip.audit_routing': 'Audit routing band',
+    'admin.policy.strip.min_statement_years': 'Min statement years',
+    'admin.policy.strip.kyc_reverify': 'KYC re-verify',
     'admin.policy.target_dscr': 'Target DSCR',
     'admin.policy.listing_audit': 'Listing audit',
     'admin.policy.audit_routing': 'Audit routing floor',
@@ -1758,9 +1763,9 @@ const en = {
     'admin.policy.hint.bank_signatories':
         'One official representative acts for the business. A second signatory is never required.',
     'admin.policy.hint.recovery_rate':
-        'What is recovered on a default goes to holders. Rozine keeps none and does not cover shortfalls.',
+        'Share of outstanding paid to holders on default.',
     'admin.policy.hint.withdrawal_daily_cap':
-        'No daily cap. Each withdrawal is limited instead, as set above.',
+        'Maximum an account can withdraw per day.',
     'admin.policy.term.pro_rata': 'All of it, pro rata to holders',
     'admin.policy.hint.platform_fee':
         'Taken from the raise when it is disbursed to the business.',
@@ -1800,9 +1805,8 @@ const en = {
     'admin.policy.hint.registration_countries':
         'Where a business must be registered.',
     'admin.policy.hint.min_statement_years':
-        'Years of bank or MoMo statements required.',
-    'admin.policy.hint.min_revenue':
-        'Minimum revenue over the trailing 12 months to qualify.',
+        'Consecutive years of bank/MoMo statements required.',
+    'admin.policy.hint.min_revenue': 'Minimum trailing revenue to qualify.',
     'admin.policy.hint.first_issue_months':
         'Months of statements audited before a first raise.',
     'admin.policy.hint.repeat_issue_months':
@@ -1815,7 +1819,7 @@ const en = {
     'admin.policy.hint.minimum_age': 'Youngest an investor may be.',
     'admin.policy.hint.min_investment': 'Smallest single investment allowed.',
     'admin.policy.hint.concentration':
-        'Most one investor may hold of a single raise.',
+        'Cap one investor can place in a single note.',
     'admin.policy.hint.risk_statements':
         'Statements an investor accepts before a first investment.',
     'admin.policy.hint.kyc_investor_id': 'Front and back of the document.',
@@ -1829,9 +1833,9 @@ const en = {
     'admin.policy.hint.identity_evidence':
         'Photos in each identity case: ID front, ID back and selfie.',
     'admin.policy.hint.kyc_reverify':
-        'How often a user must verify their identity again.',
+        'Months before a user must re-verify their KYC.',
     'admin.policy.hint.late_charge': 'Added to an overdue instalment.',
-    'admin.policy.hint.miss_grace': 'When a missed payment counts as late.',
+    'admin.policy.hint.miss_grace': 'Days before a missed payment is flagged.',
     'admin.policy.hint.default_at':
         'When an unpaid instalment becomes a default.',
     'admin.policy.hint.auto_freeze':
@@ -2791,7 +2795,7 @@ const en = {
     'auditor.jobs.map_label_page':
         'Map of your {radius} km dispatch radius with {count} jobs on this page at approximate positions',
     'auditor.jobs.map_badge_page': '{radius}km radius · {count} on this page',
-    'auditor.jobs.assigned': 'Assigned to you',
+    'auditor.jobs.assigned': 'In progress',
     'auditor.jobs.distance': 'Distance',
     'auditor.jobs.km': '{distance}km',
     'auditor.jobs.sector_unavailable': 'Sector unavailable',

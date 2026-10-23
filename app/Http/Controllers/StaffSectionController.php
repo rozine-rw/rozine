@@ -59,7 +59,10 @@ class StaffSectionController extends Controller
     /** The role the frame names, most privileged first. */
     private const ROLES = ['superadmin', 'compliance', 'approver', 'analyst'];
 
-    /** Compliance has one dashboard: whoever may review investor identities is sent to that live queue. */
+    /**
+     * Compliance and Messaging each have one live page: whoever may review investor identities is
+     * sent to that queue, and whoever may read message history to Messaging & Automations.
+     */
     public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, ReadSandboxUsage $sandbox,
         string $section): Response|RedirectResponse
     {
@@ -70,6 +73,9 @@ class StaffSectionController extends Controller
         $permissions = $staff['allowed_actions'];
         if ($section === 'compliance' && in_array('investors.verify', $permissions, true)) {
             return to_route('staff.investor-verifications.index');
+        }
+        if ($section === 'messaging' && in_array('messaging.view', $permissions, true)) {
+            return to_route('staff.messaging.index');
         }
         $name = (string) $request->user()?->name;
         /** @var array{from?: string|null, to?: string|null} $period */

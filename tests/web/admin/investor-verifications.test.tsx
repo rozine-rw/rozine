@@ -46,6 +46,7 @@ const queue = (
     policy: [
         { key: 'minimum_age', value: '18' },
         { key: 'complaint_resolve', value: '48 h' },
+        { key: 'kyc_reverify', value: 'not_set', term: 'not_set' },
     ],
     tabs: [
         {
@@ -226,7 +227,9 @@ describe('Compliance identity queue', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'Compliance rules in effect' }),
-        ).toHaveTextContent('Minimum age18Complaint resolved within48 h');
+        ).toHaveTextContent(
+            'Minimum age18Complaint resolved within48 hKYC re-verifyNot set',
+        );
     });
 
     it('lists submissions with their document, age and state, and pages on', () => {
