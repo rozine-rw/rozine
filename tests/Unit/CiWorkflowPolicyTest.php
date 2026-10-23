@@ -205,13 +205,36 @@ it('keeps full suites executable while naming POC evidence separately', function
     foreach (['php-shards', 'web', 'concurrency', 'negative-control-groups', 'admission'] as $name) {
         expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.full == 'true' }}");
     }
-    foreach (['poc-php', 'poc-web'] as $name) {
+    foreach (['poc-php', 'poc-php-static', 'poc-web'] as $name) {
         expect($workflow['jobs'][$name]['if'])->toBe("\${{ needs.plan.outputs.poc == 'true' }}")
             ->and($workflow['jobs'][$name]['timeout-minutes'])->toBe(9);
     }
-    expect(array_column($workflow['jobs']['poc-php']['steps'], 'name'))->toContain('Record POC validation tree', 'Publish POC validation tree', 'Require combined POC execution within ten minutes')
-        ->and($workflow['jobs']['validation-tree']['needs'])->not->toContain('poc-php', 'poc-web')
+    expect(array_column($workflow['jobs']['poc-php-static']['steps'], 'name'))->toContain('Record POC validation tree', 'Publish POC validation tree', 'Require combined POC execution within ten minutes')
+        ->and($workflow['jobs']['validation-tree']['needs'])->not->toContain('poc-php', 'poc-php-static', 'poc-web')
         ->and($workflow['jobs']['reuse-poc']['name'])->toBe('Reuse POC validation evidence');
+});
+
+it('isolates complete POC static checks while retaining the safety catalog and exact candidate', function (): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+    $static = $workflow['jobs']['poc-php-static'];
+    $steps = array_column($static['steps'], null, 'name');
+    $catalog = array_column($workflow['jobs']['poc-php']['steps'], null, 'name');
+
+    expect($static['needs'])->toBe('plan')
+        ->and($static['runs-on'])->toBe('ubuntu-latest')
+        ->and($static)->not->toHaveKey('services')
+        ->and($static['permissions'])->toBe(['contents' => 'read', 'actions' => 'read'])
+        ->and($steps['Checkout exact tested commit']['with'])->toBe([
+            'persist-credentials' => false, 'ref' => '${{ github.sha }}',
+        ])
+        ->and($steps['Run PHP formatting and full Pest-aware static analysis']['run'])->toBe('composer ci:check:php:static')
+        ->and($steps['Require combined POC execution within ten minutes']['run'])->toBe('python3 .github/scripts/check-poc-budget.py')
+        ->and($catalog['Run explicit POC PostgreSQL safety catalog without coverage replay']['run'])->toBe('python3 .github/scripts/run-poc-tests.py php')
+        ->and($catalog)->toHaveKeys([
+            'Prove deployment admission refuses missing scoped evidence',
+            'Prove scoped selection and evidence reuse fail closed',
+        ])
+        ->and($catalog)->not->toHaveKey('Record POC validation tree');
 });
 
 it('pins original POC provenance and budgets reuse before staging admission', function (): void {

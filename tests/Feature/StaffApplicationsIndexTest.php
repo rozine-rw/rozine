@@ -9,6 +9,7 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
+use App\Models\BusinessProfile;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -108,6 +109,10 @@ it('paginates submitted applications without exposing drafts and preserves filte
     expect($opened->json('data.review.links.close.url'))->toBe($next);
     $this->getJson(route('api.v1.staff.applications.index', ['search' => $first['application']->id]))->assertOk()
         ->assertJsonCount(1, 'data.applications')->assertJsonPath('data.applications.0.id', $first['application']->id);
+    $business = (string) $this->getJson(route('api.v1.staff.applications.index', ['search' => $first['application']->id]))->json('data.applications.0.business');
+    expect($business)->not->toBe('')
+        ->and($this->getJson(route('api.v1.staff.applications.index', ['search' => mb_strtoupper($business)]))->assertOk()->json('data.applications.*.id'))
+        ->toContain($first['application']->id);
     $this->getJson(route('api.v1.staff.applications.index', ['search' => 'missing']))->assertOk()->assertJsonCount(0, 'data.applications')
         ->assertJsonPath('data.tabs.0.count', 0)->assertJsonPath('data.pagination.next', null);
     foreach ([$draft['application']->id, (string) Str::ulid()] as $hidden) {
@@ -254,6 +259,9 @@ it('lists drafts the engine refused under Rejected with the reason, without a st
     $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'search' => 'no such title']))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('tabs.2.count', 0)->has('applications', 0));
     $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'search' => $refused['application']->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 1));
+    $refusedBusiness = (string) BusinessProfile::query()->whereKey($refused['application']->business_id)->value('profile->name');
+    $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'search' => mb_strtoupper($refusedBusiness)]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 1));
     $this->actingAs($user)->get(route('staff.applications.index', ['tab' => 'rejected', 'limit' => 1, 'before' => $refused['application']->id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->has('applications', 0));
