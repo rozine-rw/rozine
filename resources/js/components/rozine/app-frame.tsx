@@ -72,9 +72,9 @@ const SIDEBAR_ACTIVE: Record<Audience, string> = {
 /**
  * The role-app shell. On a phone: the screen fills the viewport with the design's frosted bottom
  * tab bar. On a wide screen: the design's desktop frame — a 182px sidebar beside the main pane on
- * the grey page — centred at the prototype's 1113px width (1057px inside its 28px padding), so
- * wider windows show page background around it as the design does. It keeps the window's height
- * rather than the prototype's fixed 750px, so long screens use the space they have.
+ * the grey page — centred and capped at `--rz-desktop-max`, which grows past the prototype's
+ * 1113px so wide windows give the screen their room rather than empty margins. It keeps the
+ * window's height rather than the prototype's fixed 750px, so long screens use the space they have.
  */
 export function AppFrame({
     audience,

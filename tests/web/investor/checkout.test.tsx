@@ -595,7 +595,7 @@ describe('Checkout: committed', () => {
         const { unmount } = render(<InvestorCheckout {...props()} />);
 
         expect(screen.getByRole('dialog', { name: 'Checkout' })).toHaveClass(
-            'w-[376px]',
+            'w-[min(480px,calc(100%-26px))]',
         );
         expect(screen.getByText('Pay with')).toBeInTheDocument();
         expect(
@@ -605,7 +605,7 @@ describe('Checkout: committed', () => {
 
         render(<InvestorCheckout {...props(minimalFixture)} />);
         expect(screen.getByRole('dialog', { name: 'Checkout' })).toHaveClass(
-            'w-[376px]',
+            'w-[min(480px,calc(100%-26px))]',
         );
         expect(screen.queryByRole('article')).not.toBeInTheDocument();
         expect(
