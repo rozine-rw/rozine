@@ -894,10 +894,8 @@ jobs:
       run: php artisan migrate --force
     - name: Build production assets
       run: npm run build
-    # Full read-only Pint/PHPStan checks and the unchanged isolated PostgreSQL
-    # safety catalog must all finish successfully before proof publication.
     - name: Run explicit POC PostgreSQL safety catalog without coverage replay
-      run: python3 .github/scripts/run-php-static-checks.py --poc
+      run: python3 .github/scripts/run-poc-tests.py php
     - name: Prove deployment admission refuses missing scoped evidence
       env:
         REQUIRE_REAL_RUNTIME_IDENTITIES: 'true'
@@ -913,6 +911,36 @@ jobs:
         path: coverage/poc
         if-no-files-found: error
         retention-days: 30
+  poc-php-static:
+    needs: plan
+    runs-on: ubuntu-latest
+    name: POC PHP static checks and validation evidence
+    if: ${{ needs.plan.outputs.poc == 'true' }}
+    timeout-minutes: 9
+    steps:
+    - name: Checkout exact tested commit
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+        ref: ${{ github.sha }}
+    - name: Setup PHP
+      uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
+      with:
+        php-version: '8.5'
+        tools: composer:v2
+        extensions: pdo_pgsql, pgsql, pcntl, posix
+        coverage: none
+    - name: Cache Composer downloads
+      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+      with:
+        path: ~/.cache/composer/files
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+    - name: Install PHP dependencies from lock file
+      run: composer install --no-interaction --no-progress --prefer-dist --optimize-autoloader
+    - name: Copy environment file
+      run: cp .env.example .env
+    - name: Run PHP formatting and full Pest-aware static analysis
+      run: composer ci:check:php:static
     - name: Record POC validation tree
       run: python3 .github/scripts/select-validation-scope.py record poc
       env:

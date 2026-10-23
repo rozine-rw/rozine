@@ -16,16 +16,16 @@ from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+from poc_validation import POC_JOBS, POC_STEPS, STATIC_JOB, static_evidence, catalog_evidence
+
 FULL_JOBS = [
     "Board sync offline tests", "PHP 8.5 quality gate", "TypeScript/React quality gate",
     "PostgreSQL concurrency lane", "PHP gate negative controls", "Deployment admission negative controls",
     *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
-POC_JOBS = ["Board sync offline tests", "POC PHP safety and static checks", "POC web safety and static checks"]
 REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
 REUSE_STEPS = ["Revalidate original POC proof without repeating passed tests", "Record original POC source", "Publish POC reuse receipt", "Require combined POC execution within ten minutes"]
-POC_STEPS = ["Record POC validation tree", "Publish POC validation tree", "Require combined POC execution within ten minutes"]
 MERGE_IDENTITY_STEPS = ["Record immutable PR merge identity", "Publish immutable PR merge identity"]
 IDENTITY_JOB = "Identify CI validation tree"
 IDENTITY_STEPS = ["Record immutable POC coordination identity", "Publish immutable POC coordination identity"]
@@ -151,7 +151,7 @@ def requested_scope(env):
 
 def validate_completed_budget(jobs, reused=False):
     names = REUSE_JOBS if reused else ["Select CI scope", *POC_JOBS]
-    names = [*names, *([IDENTITY_JOB] if any(job["name"] == IDENTITY_JOB for job in jobs) else [])]
+    names = [*names, *([IDENTITY_JOB] if not reused or any(job["name"] == IDENTITY_JOB for job in jobs) else [])]
     durations = {}
     for name in names:
         matches = [job for job in jobs if job["name"] == name]
@@ -192,7 +192,8 @@ def validate_proof(proof, run, jobs, commit, tree, repository, scope):
             raise ValueError(f"missing, duplicate or unsuccessful job: {name}")
     if scope == "poc":
         validate_completed_budget(jobs)
-        job = next(job for job in jobs if job["name"] == "POC PHP safety and static checks")
+        job = static_evidence(jobs, run)
+        catalog_evidence(jobs)
         if proof.get("required_steps") != POC_STEPS:
             raise ValueError("POC proof omits publication/budget controls")
         for name in POC_STEPS:
@@ -1021,6 +1022,8 @@ def record(env, scope):
              "run_id": env["GITHUB_RUN_ID"], "run_attempt": env["GITHUB_RUN_ATTEMPT"],
              "pull_number": env.get("PR_NUMBER", ""), "required_jobs": required}
     if scope == "poc":
+        if proof["tested_sha"] != env["GITHUB_SHA"]:
+            raise ValueError("POC proof checkout differs from exact candidate")
         proof["required_steps"] = POC_STEPS
     Path("ci-evidence").mkdir(exist_ok=True)
     Path("ci-evidence/tested-tree.json").write_text(json.dumps(proof, indent=2) + "\n")

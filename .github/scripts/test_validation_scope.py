@@ -34,6 +34,14 @@ policy = module("select-validation-scope.py")
 runner = module("run-poc-tests.py")
 budget = module("check-poc-budget.py")
 lint = module("check-workflow-lint.py")
+poc = module("poc_validation.py")
+
+
+def poc_job(name, run, start="2026-10-06T11:00:00Z", end="2026-10-06T11:00:20Z"):
+    steps = poc.STATIC_STEPS + poc.POC_STEPS if name == poc.STATIC_JOB else poc.CATALOG_STEPS if name == poc.CATALOG_JOB else []
+    return {"name": name, "status": "completed", "conclusion": "success", "started_at": start, "completed_at": end,
+            "run_id": run["id"], "run_attempt": run["run_attempt"], "head_sha": run["head_sha"],
+            "steps": [{"name": step, "status": "completed", "conclusion": "success"} for step in steps]}
 
 
 class ApiFailureDiagnosticTests(unittest.TestCase):
@@ -243,7 +251,8 @@ class ScopeTests(unittest.TestCase):
         jobs = [job("Select CI scope", "11:00:00", "11:00:10"), job("Board sync offline tests", "11:00:00", "11:00:20"),
                 job("POC PHP safety and static checks", "11:05:10", "11:09:10"), job("POC web safety and static checks", "11:05:10", "11:07:10")]
         jobs.append({"name": "Reuse POC validation evidence", "status": "completed", "conclusion": "skipped"})
-        self.assertEqual(budget.measure(jobs), (250, 550, 390))
+        jobs += [job(policy.STATIC_JOB, "11:05:10", "11:08:30"), job(policy.IDENTITY_JOB, "11:00:00", "11:00:00")]
+        self.assertEqual(budget.measure(jobs), (250, 550, 590))
         jobs[0]["conclusion"] = "skipped"
         with self.assertRaises(ValueError):
             budget.measure(jobs)
@@ -296,9 +305,9 @@ class ScopeTests(unittest.TestCase):
 
     def test_poc_proof_requires_successful_publication_and_budget_steps(self):
         self.proof.update(scope="poc", required_jobs=policy.POC_JOBS, required_steps=policy.POC_STEPS)
-        self.jobs = [{"name": name, "status": "completed", "started_at": "2026-10-06T11:00:00Z", "completed_at": "2026-10-06T11:00:20Z", "conclusion": "success", "steps": [{"name": step, "conclusion": "success"} for step in policy.POC_STEPS]} for name in ["Select CI scope", *policy.POC_JOBS]]
+        self.jobs = [poc_job(name, self.run) for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]]
         policy.validate_proof(self.proof, self.run, self.jobs, self.commit, "c" * 40, "rozine-rw/rozine", "poc")
-        php = next(job for job in self.jobs if job["name"] == "POC PHP safety and static checks")
+        php = next(job for job in self.jobs if job["name"] == policy.STATIC_JOB)
         php["completed_at"] = "2026-10-06T11:10:01Z"
         with self.assertRaises(ValueError):
             policy.validate_proof(self.proof, self.run, self.jobs, self.commit, "c" * 40, "rozine-rw/rozine", "poc")
@@ -452,8 +461,7 @@ class ScopeTests(unittest.TestCase):
         candidate = dict(original, id=100, head_branch="uat")
         original_proof = dict(self.proof, scope="poc", run_id="99", required_jobs=policy.POC_JOBS, required_steps=policy.POC_STEPS)
         candidate_proof = dict(original_proof, run_id="100")
-        jobs = [{"name": name, "status": "completed", "conclusion": "success", "started_at": "2026-10-06T11:00:00Z", "completed_at": "2026-10-06T11:00:20Z", "steps": [{"name": step, "conclusion": "success"} for step in policy.POC_STEPS]}
-                for name in ["Select CI scope", *policy.POC_JOBS]]
+        jobs = [poc_job(name, original) for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]]
         receipt = dict(candidate_proof, kind="reuse", source_run="99", source_attempt="2", required_jobs=policy.REUSE_JOBS, required_steps=policy.REUSE_STEPS)
         reused_jobs = [{"name": name, "status": "completed", "conclusion": "success", "started_at": "2026-10-06T11:00:00Z", "completed_at": "2026-10-06T11:00:20Z", "steps": [{"name": step, "conclusion": "success"} for step in policy.REUSE_STEPS]}
                        for name in policy.REUSE_JOBS]
@@ -478,7 +486,7 @@ class ScopeTests(unittest.TestCase):
                 def command(*args):
                     return "c" * 40 if args[-1] == "HEAD^{tree}" else "b" * 40
                 def run_jobs(repository, run):
-                    return reused_jobs if reused and run["id"] == 100 else jobs
+                    return reused_jobs if reused and run["id"] == 100 else [dict(job, run_id=run["id"], run_attempt=run["run_attempt"], head_sha=run["head_sha"]) for job in jobs]
                 with self.subTest(reused=reused, failed=failed), patch.object(policy, "command", side_effect=command), patch.object(policy, "api", side_effect=api), patch.object(policy, "download_evidence", side_effect=evidence), patch.object(policy, "run_jobs", side_effect=run_jobs):
                     if failed:
                         with self.assertRaises(ValueError): policy.staging_evidence(env)
@@ -553,6 +561,190 @@ class ScopeTests(unittest.TestCase):
         self.assertEqual(budget.measure(jobs), (40, 20, 60))
         jobs[-1]["conclusion"] = "cancelled"
         with self.assertRaises(ValueError): budget.measure(jobs)
+
+
+class SeparateStaticEvidenceTests(unittest.TestCase):
+    def setUp(self):
+        self.run = {"id": 99, "run_attempt": 2, "head_sha": "a" * 40, "status": "completed", "conclusion": "success",
+                    "event": "pull_request", "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
+        self.commit = {"sha": "b" * 40, "tree": {"sha": "c" * 40}, "parents": [{"sha": "d" * 40}, {"sha": "a" * 40}]}
+        self.proof = {"schema": 2, "scope": "poc", "required_jobs": policy.POC_JOBS.copy(), "required_steps": policy.POC_STEPS.copy(),
+                      "repository": "rozine-rw/rozine", "run_id": "99", "run_attempt": "2", "tested_sha": "b" * 40, "tree_sha": "c" * 40}
+        self.jobs = [poc_job(name, self.run) for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]]
+
+    def validate(self, jobs=None, proof=None):
+        policy.validate_proof(self.proof if proof is None else proof, self.run, self.jobs if jobs is None else jobs,
+                              self.commit, "c" * 40, "rozine-rw/rozine", "poc")
+
+    def test_every_aggregate_dependency_is_unique_complete_and_successful(self):
+        self.validate()
+        for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]:
+            for state in ["missing", "duplicate", "failure", "cancelled", "skipped", "timed_out", "pending", "queued", "in_progress"]:
+                jobs = copy.deepcopy(self.jobs); job = next(j for j in jobs if j["name"] == name)
+                if state == "missing": jobs.remove(job)
+                elif state == "duplicate": jobs.append(copy.deepcopy(job))
+                elif state in ("pending", "queued", "in_progress"): job.update(status=state, conclusion=None)
+                else: job["conclusion"] = state
+                with self.subTest(job=name, state=state), self.assertRaises(ValueError): self.validate(jobs=jobs)
+                # The gate measures its own running job only after its check/publication steps pass.
+                if name != poc.STATIC_JOB or state != "in_progress":
+                    with self.subTest(budget_job=name, state=state), self.assertRaises(ValueError): budget.measure(jobs)
+
+    def test_static_job_identity_and_tested_commit_are_exact(self):
+        for key, bad in [("run_id", 100), ("run_attempt", 1), ("head_sha", "e" * 40)]:
+            for value in [bad, None]:
+                jobs=copy.deepcopy(self.jobs); next(j for j in jobs if j["name"] == poc.STATIC_JOB)[key]=value
+                with self.subTest(key=key,value=value), self.assertRaises(ValueError):self.validate(jobs=jobs)
+        for key in ("tested_sha", "tree_sha", "run_id", "run_attempt"):
+            proof=dict(self.proof); proof[key]="e" * 40
+            with self.subTest(proof=key), self.assertRaises(ValueError):self.validate(proof=proof)
+
+    def test_static_and_catalog_steps_cannot_be_missing_skipped_pending_or_failed(self):
+        for name, required in [(poc.STATIC_JOB, poc.STATIC_STEPS+poc.POC_STEPS), (poc.CATALOG_JOB, poc.CATALOG_STEPS)]:
+            for step_name in required:
+                for state in ["missing", "duplicate", "failure", "cancelled", "skipped", "pending"]:
+                    jobs=copy.deepcopy(self.jobs); job=next(j for j in jobs if j["name"]==name); step=next(s for s in job["steps"] if s["name"]==step_name)
+                    if state=="missing": job["steps"].remove(step)
+                    elif state=="duplicate": job["steps"].append(copy.deepcopy(step))
+                    elif state=="pending": step.update(status="in_progress",conclusion=None)
+                    else: step["conclusion"]=state
+                    with self.subTest(job=name,step=step_name,state=state),self.assertRaises(ValueError):self.validate(jobs=jobs)
+
+    def test_old_poc_job_contract_is_rejected_including_claimed_new_contract(self):
+        legacy=dict(self.proof,required_jobs=[name for name in policy.POC_JOBS if name!=poc.STATIC_JOB])
+        with self.assertRaisesRegex(ValueError,"check set differs"):self.validate(proof=legacy)
+        jobs=[job for job in self.jobs if job["name"]!=poc.STATIC_JOB]
+        with self.assertRaises(ValueError):self.validate(jobs=jobs,proof=legacy)
+        with self.assertRaises(ValueError):self.validate(jobs=jobs)
+
+    def test_static_lane_counts_in_original_600_second_boundary(self):
+        start=datetime.datetime(2026,10,23,tzinfo=datetime.timezone.utc)
+        for total in (600,601):
+            jobs=copy.deepcopy(self.jobs)
+            for job in jobs:
+                duration=total-30 if job["name"]==poc.STATIC_JOB else 20 if job["name"]=="Select CI scope" else 10 if job["name"]==policy.IDENTITY_JOB else 5
+                job.update(started_at=start.isoformat(),completed_at=(start+datetime.timedelta(seconds=duration)).isoformat())
+            self.assertEqual(budget.measure(jobs)[0],total)
+            if total==600:policy.validate_completed_budget(jobs)
+            else:
+                with self.assertRaisesRegex(ValueError,"ten minutes"):policy.validate_completed_budget(jobs)
+
+    def run_budget(self,jobs,*,final_run=None,timeout=False):
+        with tempfile.TemporaryDirectory() as directory:
+            summary=Path(directory)/"summary"
+            env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_STEP_SUMMARY":str(summary)}
+            calls=[]
+            def output(args,**kwargs):
+                calls.append(args)
+                if "--paginate" in args:return json.dumps([{"jobs":jobs}])
+                run=self.run if len(calls)==1 or final_run is None else final_run
+                return json.dumps(run)
+            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,91] if timeout else lambda:0),patch.object(budget.time,"sleep"),contextlib.redirect_stdout(io.StringIO()):
+                budget.main()
+            self.assertTrue(summary.exists())
+            self.assertTrue(any("/attempts/2/jobs?" in args[-1] for args in calls))
+
+    def test_budget_orchestration_rechecks_static_identity_and_attempt(self):
+        self.run_budget(self.jobs)
+        for key,bad in [("run_id",100),("run_attempt",1),("head_sha","e"*40)]:
+            jobs=copy.deepcopy(self.jobs);next(j for j in jobs if j["name"]==poc.STATIC_JOB)[key]=bad
+            with self.subTest(key=key),self.assertRaises(ValueError):self.run_budget(jobs)
+        with self.assertRaisesRegex(ValueError,"attempt changed"):self.run_budget(self.jobs,final_run=dict(self.run,run_attempt=3))
+        for name in [poc.CATALOG_JOB,poc.WEB_JOB,poc.BOARD_JOB]:
+            jobs=copy.deepcopy(self.jobs);next(j for j in jobs if j["name"]==name).update(status="in_progress",conclusion=None)
+            with self.subTest(pending=name),self.assertRaisesRegex(ValueError,"queued/running"):self.run_budget(jobs,timeout=True)
+
+    def test_new_poc_record_is_exact_checkout_and_never_claims_legacy_job_set(self):
+        env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_SHA":"b"*40}
+        with tempfile.TemporaryDirectory() as directory,contextlib.chdir(directory):
+            with patch.object(policy,"command",side_effect=["e"*40,"c"*40]),self.assertRaises(ValueError):policy.record(env,"poc")
+            self.assertFalse(Path("ci-evidence/tested-tree.json").exists())
+            with patch.object(policy,"command",side_effect=["b"*40,"c"*40]):policy.record(env,"poc")
+            proof=json.loads(Path("ci-evidence/tested-tree.json").read_text());self.assertEqual(proof["required_jobs"],policy.POC_JOBS)
+            self.assertIn(poc.STATIC_JOB,proof["required_jobs"])
+
+
+    def test_unrelated_legacy_full_proofs_do_not_require_poc_jobs(self):
+        proof = dict(self.proof, scope="full", required_jobs=policy.FULL_JOBS.copy())
+        jobs = [{"name": name, "conclusion": "success"} for name in [*policy.FULL_JOBS, "Record validation tree"]]
+        policy.validate_proof(proof, self.run, jobs, self.commit, "c" * 40, "rozine-rw/rozine", "full")
+
+    def test_reuse_receipt_revalidates_original_contract_without_legacy_fallback(self):
+        source = dict(self.run, event="push", head_sha="b" * 40, head_branch="dev", workflow_id=7,
+                      path=".github/workflows/tests.yml", head_repository={"full_name": "rozine-rw/rozine"})
+        candidate = dict(source, id=100, head_branch="uat")
+        receipt = dict(self.proof, kind="reuse", run_id="100", source_run="99", source_attempt="2",
+                       required_jobs=policy.REUSE_JOBS, required_steps=policy.REUSE_STEPS)
+        receipt_jobs = [poc_job(name, candidate) for name in policy.REUSE_JOBS]
+        next(job for job in receipt_jobs if job["name"] == "Reuse POC validation evidence")["steps"] = [
+            {"name": name, "status": "completed", "conclusion": "success"} for name in policy.REUSE_STEPS]
+        env = {"GITHUB_REPOSITORY": "rozine-rw/rozine", "CANDIDATE_SHA": "b" * 40, "EVIDENCE_RUN": "100"}
+
+        def api(endpoint, **kwargs):
+            if endpoint.endswith("/workflows/tests.yml"):
+                return {"id": 7}
+            if endpoint.endswith("/100"):
+                return candidate
+            if endpoint.endswith("/99"):
+                return source
+            if "/git/commits/" in endpoint:
+                return self.commit
+            raise AssertionError(endpoint)
+
+        for legacy in (False, True):
+            original = dict(self.proof)
+            source_jobs = [poc_job(name, source) for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]]
+            if legacy:
+                original["required_jobs"] = [name for name in policy.POC_JOBS if name != poc.STATIC_JOB]
+                source_jobs = [job for job in source_jobs if job["name"] != poc.STATIC_JOB]
+
+            def evidence(repository, run, prefix="validation-tree"):
+                if run["id"] == 99:
+                    return original
+                if prefix == "validation-tree":
+                    raise policy.MissingEvidence("no executed proof")
+                return receipt
+
+            with self.subTest(legacy=legacy), patch.object(policy, "command", side_effect=["b" * 40, "c" * 40]), patch.object(policy, "api", side_effect=api), patch.object(policy, "download_evidence", side_effect=evidence), patch.object(policy, "run_jobs", side_effect=lambda repository, run: source_jobs if run["id"] == 99 else receipt_jobs), patch.object(policy, "reusable_run", return_value="99") as lookup:
+                if legacy:
+                    with self.assertRaisesRegex(ValueError, "check set differs"):
+                        policy.staging_evidence(env)
+                    lookup.assert_not_called()
+                else:
+                    result = policy.staging_evidence(env)
+                    self.assertEqual(result["source_run"], "99")
+                    self.assertIn(poc.STATIC_JOB, result["required_jobs"])
+                    lookup.assert_called_once()
+
+    def test_budget_owner_may_run_only_after_checks_and_publication_finish(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        jobs = copy.deepcopy(self.jobs)
+        for job in jobs:
+            job.update(started_at=(now-datetime.timedelta(seconds=10)).isoformat(), completed_at=now.isoformat())
+        static = next(job for job in jobs if job["name"] == poc.STATIC_JOB)
+        static.update(status="in_progress", conclusion=None, completed_at=None)
+        static["steps"][-1].update(status="in_progress", conclusion=None)
+        self.run_budget(jobs)
+        for required in poc.STATIC_STEPS + poc.POC_STEPS[:2]:
+            invalid = copy.deepcopy(jobs)
+            step = next(step for job in invalid if job["name"] == poc.STATIC_JOB for step in job["steps"] if step["name"] == required)
+            step.update(status="in_progress", conclusion=None)
+            with self.subTest(step=required), self.assertRaises(ValueError):
+                self.run_budget(invalid, timeout=True)
+
+    def test_budget_orchestration_refuses_incomplete_aggregate_dependencies(self):
+        for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]:
+            for state in ("failure", "cancelled", "skipped", "missing", "duplicate"):
+                jobs = copy.deepcopy(self.jobs)
+                job = next(job for job in jobs if job["name"] == name)
+                if state == "missing":
+                    jobs.remove(job)
+                elif state == "duplicate":
+                    jobs.append(copy.deepcopy(job))
+                else:
+                    job["conclusion"] = state
+                with self.subTest(job=name, state=state), self.assertRaises(ValueError):
+                    self.run_budget(jobs, timeout=True)
 
 
 class WorkflowHistoryTests(unittest.TestCase):
@@ -1320,7 +1512,7 @@ class CanonicalCoordinationTests(unittest.TestCase):
         self.artifacts[number]["validation-tree"] = {"schema": 2, "scope": "poc", "repository": self.repository,
             "tested_sha": identity["tested_sha"], "tree_sha": self.tree, "run_id": str(number), "run_attempt": str(run["run_attempt"]),
             "pull_number": identity.get("pull_number", ""), "required_jobs": policy.POC_JOBS, "required_steps": policy.POC_STEPS}
-        self.jobs[number] += [self.job(name, steps=policy.POC_STEPS if name == "POC PHP safety and static checks" else ()) for name in policy.POC_JOBS]
+        self.jobs[number] += [poc_job(name, run, "2026-10-07T09:00:00Z", "2026-10-07T09:00:20Z") for name in policy.POC_JOBS]
         run.update(status="completed", conclusion="success")
 
     def env(self, number=None, **extra):
@@ -1695,8 +1887,8 @@ class CanonicalCoordinationTests(unittest.TestCase):
         start_at = datetime.datetime(2026, 10, 16, tzinfo=datetime.timezone.utc)
         for seconds in [600, 601]:
             jobs = []
-            for name in ["Select CI scope", *policy.POC_JOBS]:
-                duration = seconds - 20 if name == "POC PHP safety and static checks" else (20 if name == "Select CI scope" else 1)
+            for name in [policy.IDENTITY_JOB, "Select CI scope", *policy.POC_JOBS]:
+                duration = seconds - 20 if name == "POC PHP safety and static checks" else (20 if name == "Select CI scope" else 0 if name == policy.IDENTITY_JOB else 1)
                 jobs.append({"name": name, "status": "completed", "conclusion": "success", "started_at": start_at.isoformat(), "completed_at": (start_at + datetime.timedelta(seconds=duration)).isoformat()})
             with self.subTest(combined_seconds=seconds):
                 if seconds == 600:
