@@ -928,6 +928,13 @@ describe('Deal edge states', () => {
             screen.getByRole('article', { name: 'GreenLeaf Agro' }),
         ).toHaveTextContent('Fully funded');
 
+        /* The photo takes up any spare height and the figures keep theirs, so the card is full. */
+        const card = screen.getByRole('article', { name: 'GreenLeaf Agro' });
+
+        expect(card.children[0]).toHaveClass('flex-1');
+        expect(card.children[1]).toHaveClass('shrink-0');
+        expect(card.parentElement?.parentElement).toHaveClass('max-h-[460px]');
+
         const industries = screen.getByRole('navigation', {
             name: 'Filter by industry',
         });

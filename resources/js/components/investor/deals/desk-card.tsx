@@ -28,7 +28,7 @@ export function DeskCard({
             aria-label={deal.name}
             className="flex size-full flex-col overflow-hidden rounded-[20px] border border-[#eef1f7] bg-rz-surface shadow-[0_26px_50px_-24px_rgba(20,45,95,.4)] dark:border-rz-border"
         >
-            <div className="relative h-[196px] min-h-0 overflow-hidden">
+            <div className="relative min-h-[120px] flex-1 basis-[196px] overflow-hidden">
                 <PhotoStrip
                     photos={deal.photos}
                     accent={deal.accent}
@@ -74,7 +74,7 @@ export function DeskCard({
                     </div>
                 </div>
             </div>
-            <div className="flex flex-1 flex-col px-[18px] pt-3.5 pb-4">
+            <div className="flex shrink-0 flex-col px-[18px] pt-3.5 pb-4">
                 <div className="flex items-start justify-between">
                     <div>
                         <p className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
