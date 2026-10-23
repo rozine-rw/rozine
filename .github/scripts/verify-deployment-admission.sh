@@ -148,7 +148,8 @@ fi
 run_attempt="$(echo "${run_json}" | jq -r '.run_attempt')"
 if [ "${TARGET_BRANCH}" = main ]; then
   echo "${run_json}" | jq -e --argjson workflow_id "${workflow_id}" --arg repository "${GITHUB_REPOSITORY}" '
-    .workflow_id == $workflow_id and .path == ".github/workflows/tests.yml" and
+    .workflow_id == $workflow_id and
+    (.path == ".github/workflows/tests.yml" or .path == ".github/workflows/tests.yml@main") and
     .repository.full_name == $repository and .head_repository.full_name == $repository and
     (.run_attempt | type == "number" and . >= 1 and . == floor)
   ' >/dev/null || refuse "production evidence has inappropriate workflow provenance or attempt."
