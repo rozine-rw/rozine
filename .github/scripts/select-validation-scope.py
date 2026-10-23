@@ -272,10 +272,15 @@ def successful_recovery(repository, source, tree):
     return decision["recovery"]
 
 
+def bounded_read_deadline():
+    return min([time.monotonic() + 45, *[value for value in
+               (_follower_read_deadline.get(), _recovery_read_deadline.get()) if value is not None]])
+
+
 def completed_recovery(env, tree, runs):
     # Probe only when a matching historical failure needs an exception. Share
     # one read deadline across candidates, nested native checks and history.
-    deadline = min(time.monotonic() + 45, _recovery_read_deadline.get() or float("inf"))
+    deadline = bounded_read_deadline()
     token = _recovery_read_deadline.set(deadline)
     try:
         candidates = sorted(runs, key=attempt_order, reverse=True)[:100]
@@ -922,7 +927,7 @@ def newer_run_blocks(repository, run, source, tree):
 
 def workflow_history(repository):
     endpoint = f"repos/{repository}/actions/workflows/tests.yml/runs?per_page=100"
-    deadline = time.monotonic() + 45
+    deadline = bounded_read_deadline()
 
     def remaining():
         seconds = deadline - time.monotonic()
@@ -943,7 +948,7 @@ def workflow_history(repository):
         if count > 1:
             readers = ThreadPoolExecutor(max_workers=4)
             try:
-                futures = {readers.submit(read_page, number): number for number in range(2, count + 1)}
+                futures = {readers.submit(contextvars.copy_context().run, read_page, number): number for number in range(2, count + 1)}
                 for future in as_completed(futures, timeout=remaining()):
                     responses[futures[future] - 1] = future.result()
             except TimeoutError:
@@ -979,7 +984,7 @@ def coordination_artifact_index(repository):
     # One bounded paginated request replaces a serial lookup for every old
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
-    deadline = time.monotonic() + 45
+    deadline = bounded_read_deadline()
     parent_deadline = _follower_read_deadline.get()
 
     def remaining():
@@ -1006,7 +1011,7 @@ def coordination_artifact_index(repository):
         if count > 1:
             readers = ThreadPoolExecutor(max_workers=4)
             try:
-                futures = {readers.submit(read_page, number): number for number in range(2, count + 1)}
+                futures = {readers.submit(contextvars.copy_context().run, read_page, number): number for number in range(2, count + 1)}
                 for future in as_completed(futures, timeout=remaining()):
                     responses[futures[future] - 1] = future.result()
             except TimeoutError:

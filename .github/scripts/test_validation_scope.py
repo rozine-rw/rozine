@@ -1114,9 +1114,9 @@ class WorkflowHistoryTests(unittest.TestCase):
         error = subprocess.CalledProcessError(1, "gh api", stderr="private API detail")
         original = policy.ThreadPoolExecutor
         class ObservedReaders(original):
-            def submit(self, function, number):
-                future = super().submit(function, number)
-                if number == 2:
+            def submit(self, function, *arguments):
+                future = super().submit(function, *arguments)
+                if arguments[-1] == 2:
                     # Keep the failed worker occupied until the collector has
                     # cancelled its queue, so scheduling races cannot mask it.
                     future.add_done_callback(lambda finished: cancelled.wait(timeout=2))
@@ -3127,6 +3127,22 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                 self.assertEqual(execute.call_args.kwargs["timeout"], 5)
             finally:
                 policy._recovery_read_deadline.reset(token)
+
+    def test_recovery_deadline_reaches_parallel_history_commands(self):
+        calls = []
+        def execute(arguments, **kwargs):
+            endpoint = arguments[-1]
+            calls.append((policy._recovery_read_deadline.get(), kwargs["timeout"]))
+            rows = [{"id": 101}] if "&page=2" in endpoint else [{"id": number} for number in range(1, 101)]
+            return json.dumps({"total_count": 101, "workflow_runs": rows})
+        with patch.object(policy.time, "monotonic", return_value=40), patch.object(policy.subprocess, "check_output", side_effect=execute):
+            token = policy._recovery_read_deadline.set(45)
+            try:
+                self.assertEqual(len(policy.workflow_history(self.repository)), 101)
+            finally:
+                policy._recovery_read_deadline.reset(token)
+        self.assertEqual(calls, [(45, 5), (45, 5), (45, 5)])
+        self.assertIsNone(policy._recovery_read_deadline.get())
 
     def test_unknown_terminal_conclusions_are_not_recovery_failures(self):
         for conclusion in ("mystery", "", None, True, 7):
