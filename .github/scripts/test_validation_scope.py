@@ -3031,7 +3031,7 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
         with self.server():
             self.finish_recovery()
             env = self.consumer()
-            original = policy.validate_source
+            original = policy.verify_recovery_source
             changed = False
             def after_source(*args):
                 nonlocal changed
@@ -3043,7 +3043,7 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                     self.artifacts[250], self.jobs[250] = {}, []
                     self.identity(250)
                 return result
-            with patch.object(policy, "validate_source", side_effect=after_source), self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
+            with patch.object(policy, "verify_recovery_source", side_effect=after_source), self.assertRaisesRegex(policy.CoordinationRefusal, "newer_matching_run_blocks_reuse"):
                 policy.reusable_run(dict(env, SOURCE_RUN="200", SOURCE_ATTEMPT="1"), "poc")
 
     def test_mandatory_static_and_catalog_steps_cannot_be_missing_or_pending(self):
@@ -3112,13 +3112,14 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
 
     def test_recovery_probe_has_one_shared_deadline_and_restores_context(self):
         clock = [0]
+        self.runs[200].update(status="completed", conclusion="success")
         with self.server(), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]):
             def slow(*args):
                 self.assertEqual(policy._recovery_read_deadline.get(), 45)
                 clock[0] = 46
                 return None
-            with patch.object(policy, "successful_recovery", side_effect=slow), self.assertRaisesRegex(policy.CoordinationRefusal, "recovery_evidence_lookup_timeout"):
-                policy.completed_recovery(self.env(), self.tree, [dict(self.runs[200], status="completed", conclusion="success")])
+            with patch.object(policy, "verify_recovery_source", side_effect=slow), self.assertRaisesRegex(policy.CoordinationRefusal, "recovery_evidence_lookup_timeout"):
+                policy.completed_recovery(self.consumer(), self.tree, list(self.runs.values()))
             self.assertIsNone(policy._recovery_read_deadline.get())
         with patch.object(policy.time, "monotonic", return_value=40), patch.object(policy.subprocess, "check_output", return_value="{}") as execute:
             token = policy._recovery_read_deadline.set(45)
@@ -3127,6 +3128,177 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                 self.assertEqual(execute.call_args.kwargs["timeout"], 5)
             finally:
                 policy._recovery_read_deadline.reset(token)
+
+    @contextlib.contextmanager
+    def delayed_recovery_reads(self, delay):
+        clock, calls = [0], []
+        lock = threading.Lock()
+        def tick(kind, target):
+            with lock:
+                limit = policy._recovery_read_deadline.get()
+                calls.append((kind, target))
+                if limit is not None and clock[0] + delay >= limit:
+                    clock[0] = limit
+                    raise policy.CoordinationRefusal("recovery_evidence_lookup_timeout")
+                clock[0] += delay
+        def api(endpoint, **kwargs):
+            tick("api", endpoint)
+            return self.api(endpoint, **kwargs)
+        def pages(endpoint, **kwargs):
+            tick("pages", endpoint)
+            return self.pages(endpoint, **kwargs)
+        def command(*args, **kwargs):
+            if args[:2] == ("gh", "api"):
+                tick("archive", args[2])
+            return self.command(*args, **kwargs)
+        with patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", side_effect=pages), patch.object(policy, "command", side_effect=command), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]):
+            yield clock, calls
+
+    def test_delayed_recovery_reads_fit_original_deadline_without_duplicate_archives(self):
+        for delay in (0, 0.75, 1):
+            self.setUp()
+            for number in (191, 201):
+                del self.runs[number], self.artifacts[number], self.jobs[number]
+            with self.subTest(delay=delay), self.server():
+                self.finish_recovery()
+                env = self.consumer()
+                with self.delayed_recovery_reads(delay) as (clock, calls):
+                    result = policy.completed_recovery(env, self.tree, list(self.runs.values()))
+                self.assertEqual(result[0]["id"], 200)
+                self.assertEqual(len(calls), 32)
+                self.assertEqual(clock[0], 32 * delay)
+                for index in (0, 1, 2):
+                    endpoint = f"repos/{self.repository}/actions/artifacts/{2000 + index}/zip"
+                    self.assertEqual(calls.count(("archive", endpoint)), 1)
+                self.assertIsNone(policy._recovery_read_deadline.get())
+
+    def test_excessive_latency_still_refuses_at_unchanged_45_second_cap(self):
+        for number in (191, 201):
+            del self.runs[number], self.artifacts[number], self.jobs[number]
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            with self.delayed_recovery_reads(1.5) as (clock, calls), self.assertRaisesRegex(policy.CoordinationRefusal, "recovery_evidence_lookup_timeout"):
+                policy.completed_recovery(env, self.tree, list(self.runs.values()))
+            self.assertEqual(clock[0], 45)
+            self.assertEqual(len(calls), 30)
+            self.assertIsNone(policy._recovery_read_deadline.get())
+
+    def test_canonical_selection_uses_one_verified_recovery_transaction(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            with patch.object(policy, "reusable_run", wraps=policy.reusable_run) as lookup:
+                result = policy.canonical_selection(env)
+            self.assertEqual((result["mode"], result["source_run"]), ("reuse", "200"))
+            self.assertEqual(lookup.call_count, 1)
+            self.assertTrue(lookup.call_args.kwargs["recovery_only"])
+
+    def test_covered_failed_identities_keep_original_binding_and_step_refusals(self):
+        for change in ("repository", "run attempt", "identity job", "identity step", "native tree"):
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                self.finish_recovery()
+                env = self.consumer()
+                if change == "repository": self.artifacts[191]["ci-coordination-identity"]["repository"] = "other/repo"
+                if change == "run attempt": self.artifacts[191]["ci-coordination-identity"]["run_attempt"] = "2"
+                if change == "identity job": self.jobs[191][0]["conclusion"] = "failure"
+                if change == "identity step": self.jobs[191][0]["steps"][0]["conclusion"] = "failure"
+                if change == "native tree": self.artifacts[191]["ci-coordination-identity"]["tree_sha"] = "f" * 40
+                with self.assertRaises(policy.CoordinationRefusal): policy.canonical_selection(env)
+                self.assertNotEqual(json.loads(Path("ci-coordination-decision/coordination-decision.json").read_text())["run_id"], "300")
+
+    def test_unrelated_history_classification_stays_outside_certificate_deadline(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            # Old unrelated failures must still get full identity validation;
+            # their classification cannot consume the source-lookup deadline.
+            for number in range(400, 408):
+                CanonicalCoordinationTests.failed_peer(self, number)
+            original = policy.coordination_identity
+            seen = []
+            def identity(repository, run, **kwargs):
+                if run["id"] >= 400:
+                    self.assertIsNone(policy._recovery_read_deadline.get())
+                    seen.append(run["id"])
+                return original(repository, run, **kwargs)
+            with patch.object(policy, "coordination_identity", side_effect=identity):
+                self.assertEqual(policy.canonical_selection(env)["source_run"], "200")
+            self.assertEqual(set(seen), set(range(400, 408)))
+
+    def test_final_refresh_refuses_evidence_changing_during_history_verification(self):
+        changes = ("expiry", "delete", "duplicate", "metadata", "source attempt", "source failure", "static job", "static SHA", "identity step", "selector step", "covered attempt", "new failure", "unknown active")
+        for change in changes:
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                self.finish_recovery()
+                env = self.consumer()
+                original = self.api
+                history_reads = 0
+                changed = False
+                def api(endpoint, **kwargs):
+                    nonlocal history_reads, changed
+                    if "/workflows/tests.yml/runs?" in endpoint:
+                        history_reads += 1
+                        if history_reads == 2:
+                            changed = True
+                            if change == "source attempt": self.runs[200]["run_attempt"] = 2
+                            if change == "source failure": self.runs[200]["conclusion"] = "failure"
+                            if change == "static job": next(job for job in self.jobs[200] if job["name"] == poc.STATIC_JOB)["conclusion"] = "skipped"
+                            if change == "static SHA": next(job for job in self.jobs[200] if job["name"] == poc.STATIC_JOB)["head_sha"] = "f" * 40
+                            if change in ("identity step", "selector step"):
+                                name = policy.IDENTITY_JOB if change == "identity step" else "Select CI scope"
+                                next(job for job in self.jobs[200] if job["name"] == name)["steps"][0]["conclusion"] = "failure"
+                            if change == "covered attempt": self.runs[190]["run_attempt"] = 2
+                            if change in ("new failure", "unknown active"):
+                                now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                                self.runs[250] = dict(self.runs[190], id=250, created_at=now, updated_at=now)
+                                self.artifacts[250], self.jobs[250] = {}, []
+                                if change == "new failure": self.identity(250)
+                                else: self.runs[250].update(status="in_progress", conclusion=None)
+                    result = copy.deepcopy(original(endpoint, **kwargs))
+                    if changed and "/runs/200/artifacts?" in endpoint:
+                        if change == "expiry": result["artifacts"][0]["expired"] = True
+                        if change == "delete": result["artifacts"].pop(0); result["total_count"] -= 1
+                        if change == "duplicate": result["artifacts"].append(dict(result["artifacts"][0], id=999999)); result["total_count"] += 1
+                        if change == "metadata": result["artifacts"][0]["size_in_bytes"] += 1
+                    return result
+                with patch.object(policy, "api", side_effect=api), self.assertRaises((ValueError, KeyError)):
+                    policy.completed_recovery(env, self.tree, list(self.runs.values()))
+                self.assertEqual(history_reads, 2)
+
+    def test_final_multipage_inventory_compares_relevant_metadata_off_page_one(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            original_api, original_pages = self.api, self.pages
+            reads = 0
+            def inventory():
+                real = copy.deepcopy(original_api(f"repos/{self.repository}/actions/runs/200/artifacts?per_page=100")["artifacts"])
+                other = [{"id": 900000 + n, "name": f"unrelated-{n}", "expired": False, "size_in_bytes": 100} for n in range(98)]
+                rows = real[:2] + other + real[2:]
+                if reads >= 4: rows[-1]["size_in_bytes"] += 1
+                return [{"total_count": 101, "artifacts": rows[:100]}, {"total_count": 101, "artifacts": rows[100:]}]
+            def api(endpoint, **kwargs):
+                nonlocal reads
+                if "/runs/200/artifacts?" in endpoint:
+                    reads += 1
+                    return inventory()[0]
+                return original_api(endpoint, **kwargs)
+            def pages(endpoint, **kwargs):
+                return inventory() if "/runs/200/artifacts?" in endpoint else original_pages(endpoint, **kwargs)
+            with patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", side_effect=pages), self.assertRaisesRegex(policy.CoordinationRefusal, "recovery_source_artifact_changed"):
+                policy.completed_recovery(env, self.tree, list(self.runs.values()))
+            self.assertEqual(reads, 4)
+
+    def test_a_later_transaction_cannot_reuse_cached_native_success(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            self.assertIsNotNone(policy.completed_recovery(env, self.tree, list(self.runs.values())))
+            self.runs[200]["run_attempt"] = 2
+            self.assertIsNone(policy.completed_recovery(env, self.tree, list(self.runs.values())))
 
     def test_recovery_deadline_reaches_parallel_history_commands(self):
         calls = []
