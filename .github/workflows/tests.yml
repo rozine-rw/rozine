@@ -15,6 +15,16 @@ on:
         default: auto
         type: choice
         options: [auto, poc, full]
+      recovery:
+        description: Explicit fresh complete POC execution on pinned dev; never reuse failed evidence
+        required: true
+        default: none
+        type: choice
+        options: [none, fresh-complete-poc]
+      expected_sha:
+        description: Exact current dev SHA required for fresh-complete-poc recovery
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -68,6 +78,8 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.ref }}
           PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           VALIDATION: ${{ inputs.validation }}
+          POC_RECOVERY: ${{ inputs.recovery }}
+          EXPECTED_CANDIDATE_SHA: ${{ inputs.expected_sha }}
         run: python3 .github/scripts/select-validation-scope.py record-coordination-identity
       - name: Publish immutable POC coordination identity
         if: ${{ steps.identity.outputs.coordinate == 'true' }}
@@ -112,6 +124,8 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.ref }}
           PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           VALIDATION: ${{ inputs.validation }}
+          POC_RECOVERY: ${{ inputs.recovery }}
+          EXPECTED_CANDIDATE_SHA: ${{ inputs.expected_sha }}
           COORDINATION_ACTIVE: ${{ needs.identity.outputs.coordinate }}
         run: python3 .github/scripts/select-validation-scope.py
       - name: Publish canonical validation decision
