@@ -300,26 +300,6 @@ def refresh_recovery_source(repository, verification, tree):
 
 
 
-def require_recovery_coverage(repository, tree, verification, failed_peers, matching_ids):
-    # Preserve the early historical refusal. Only a fully verified source can
-    # classify the remaining peers under its explicit native failure pins.
-    covered = {pin["id"]: pin for pin in verification["recovery"]["covered"]}
-    remaining = []
-    for run in failed_peers:
-        if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
-            continue
-        if run["id"] in matching_ids:
-            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
-        remaining.append(run)
-    with ThreadPoolExecutor(max_workers=4) as readers:
-        for start in range(0, len(remaining), 4):
-            batch = remaining[start:start + 4]
-            futures = [readers.submit(contextvars.copy_context().run, coordination_identity, repository, run) for run in batch]
-            for future in futures:
-                if future.result()["tree_sha"] == tree:
-                    raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
-
-
 def successful_recovery(repository, source, tree):
     verification = verify_recovery_source(repository, source, tree)
     return verification["recovery"] if verification else None
@@ -330,11 +310,11 @@ def bounded_read_deadline():
                (_follower_read_deadline.get(), _recovery_read_deadline.get()) if value is not None]])
 
 
-def completed_recovery(env, tree, runs, *, failed_peers=(), matching_ids=()):
+def completed_recovery(env, tree, runs):
     # One transaction, including final live guards, shares the same read cap.
     token = _recovery_read_deadline.set(bounded_read_deadline())
     try:
-        return reusable_run(env, "poc", recovery_only=True, failed_peers=failed_peers, matching_ids=matching_ids)
+        return reusable_run(env, "poc", recovery_only=True)
     finally:
         _recovery_read_deadline.reset(token)
 
@@ -739,7 +719,11 @@ def canonical_selection(env):
             raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
         failed_peers.append(run)
     matching_failed = []
-    classified = set()
+    # Native head equality is necessary for a recovery's historical pins.
+    # Rule out impossible certificates without spending another API request.
+    possible_recovery_heads = {run["head_sha"] for run in sorted(runs, key=attempt_order, reverse=True)[:100]
+                               if run["status"] == "completed" and run["conclusion"] == "success"
+                               and run["event"] == "workflow_dispatch" and run["head_branch"] == "dev"}
     # Each immutable identity still receives all native tree/job/attempt checks.
     # Bound independent reads instead of serially downloading every old proof.
     try:
@@ -749,11 +733,10 @@ def canonical_selection(env):
                 identities = readers.map(lambda run: coordination_identity(repository, run), batch)
                 for run, failed_identity in zip(batch, identities):
                     if failed_identity["tree_sha"] == tree:
+                        if intent or run["head_sha"] not in possible_recovery_heads:
+                            diagnostic("canonical_peer_unsuccessful", run)
+                            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
                         matching_failed.append(run)
-                        break
-                    classified.add(run["id"])
-                if matching_failed:
-                    break
     except MissingEvidence:
         raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
     deadline = time.monotonic() + 45
@@ -771,9 +754,7 @@ def canonical_selection(env):
     if len(owners) > 1:
         raise CoordinationRefusal("multiple_pending_validation_owners")
     if matching_failed:
-        certified = completed_recovery(env, tree, runs,
-            failed_peers=[run for run in failed_peers if run["id"] not in classified],
-            matching_ids={run["id"] for run in matching_failed}) if not intent else None
+        certified = completed_recovery(env, tree, runs)
         covered = {pin["id"]: pin for pin in certified[1]["covered"]} if certified else {}
         for run in matching_failed:
             if run["id"] not in covered or terminal_failure_pin(run) != covered[run["id"]]:
@@ -1140,7 +1121,7 @@ def source_proof_hints(repository, candidates, deadline):
         remaining()  # Joining speculative reads cannot outlive a real parent deadline.
 
 
-def reusable_run(env, scope, with_attempt=False, *, recovery_only=False, failed_peers=(), matching_ids=()):
+def reusable_run(env, scope, with_attempt=False, *, recovery_only=False):
     repository = env["GITHUB_REPOSITORY"]
     candidate = env["GITHUB_SHA"]
     if not re.fullmatch(SHA, candidate) or command("git", "rev-parse", "HEAD") != candidate:
@@ -1173,9 +1154,7 @@ def reusable_run(env, scope, with_attempt=False, *, recovery_only=False, failed_
                 verification = verify_recovery_source(repository, source, tree) if scope == "poc" else None
                 if recovery_only and verification is None:
                     continue
-                if verification:
-                    require_recovery_coverage(repository, tree, verification, failed_peers, matching_ids)
-                else:
+                if not verification:
                     validate_source(repository, source, tree, scope)
                 recovery = verification["recovery"] if verification else None
             except (OSError, subprocess.SubprocessError):

@@ -3194,6 +3194,39 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
             self.assertEqual(lookup.call_count, 1)
             self.assertTrue(lookup.call_args.kwargs["recovery_only"])
 
+    def test_covered_failed_identities_keep_original_binding_and_step_refusals(self):
+        for change in ("repository", "run attempt", "identity job", "identity step", "native tree"):
+            self.setUp()
+            with self.subTest(change=change), self.server():
+                self.finish_recovery()
+                env = self.consumer()
+                if change == "repository": self.artifacts[191]["ci-coordination-identity"]["repository"] = "other/repo"
+                if change == "run attempt": self.artifacts[191]["ci-coordination-identity"]["run_attempt"] = "2"
+                if change == "identity job": self.jobs[191][0]["conclusion"] = "failure"
+                if change == "identity step": self.jobs[191][0]["steps"][0]["conclusion"] = "failure"
+                if change == "native tree": self.artifacts[191]["ci-coordination-identity"]["tree_sha"] = "f" * 40
+                with self.assertRaises(policy.CoordinationRefusal): policy.canonical_selection(env)
+                self.assertNotEqual(json.loads(Path("ci-coordination-decision/coordination-decision.json").read_text())["run_id"], "300")
+
+    def test_unrelated_history_classification_stays_outside_certificate_deadline(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            # Old unrelated failures must still get full identity validation;
+            # their classification cannot consume the source-lookup deadline.
+            for number in range(400, 408):
+                CanonicalCoordinationTests.failed_peer(self, number)
+            original = policy.coordination_identity
+            seen = []
+            def identity(repository, run, **kwargs):
+                if run["id"] >= 400:
+                    self.assertIsNone(policy._recovery_read_deadline.get())
+                    seen.append(run["id"])
+                return original(repository, run, **kwargs)
+            with patch.object(policy, "coordination_identity", side_effect=identity):
+                self.assertEqual(policy.canonical_selection(env)["source_run"], "200")
+            self.assertEqual(set(seen), set(range(400, 408)))
+
     def test_final_refresh_refuses_evidence_changing_during_history_verification(self):
         changes = ("expiry", "delete", "duplicate", "metadata", "source attempt", "source failure", "static job", "static SHA", "identity step", "selector step", "covered attempt", "new failure", "unknown active")
         for change in changes:
