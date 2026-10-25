@@ -56,6 +56,8 @@ it('sends a Business member with no business on record back to the launcher inst
     $this->actingAs($user)->getJson(route('business.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
     app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
     $this->get(route('business.home'))->assertRedirectToRoute('dashboard');
+    $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->component('dashboard')->hasFlash('toast', ['type' => 'info',
+        'message' => 'Your business is not set up on Rozine yet. Email hello@rozine.rw and our team will start your business verification.']));
 });
 
 it('authorizes the Auditor home the same way and renders the designed Auditor Home there', function (): void {
