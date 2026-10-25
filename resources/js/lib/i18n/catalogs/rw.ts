@@ -725,6 +725,9 @@ const rw: Catalog = {
         'Ayinjiye {inflow} · {health} · yagenzuwe na {auditor}',
     'business.reports.row.in_audit':
         'Biri kwa {auditor} · bifungwa bitarenze {date}',
+    'business.reports.row.awaiting': 'Hakenewe umukono wawe',
+    'business.reports.row.awaiting_by':
+        'Shyiraho umukono cyangwa ujurire bitarenze {date}',
     'business.reports.row.annual': "Incamake y'umwaka wose",
     'business.reports.annual': "Raporo y'umwaka {year}",
     'business.reports.empty': 'Nta raporo irahari.',

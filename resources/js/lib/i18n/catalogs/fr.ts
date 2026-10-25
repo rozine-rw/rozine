@@ -729,6 +729,8 @@ const fr: Catalog = {
     'business.reports.row.filed':
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
+    'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",

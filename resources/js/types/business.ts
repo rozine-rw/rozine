@@ -818,11 +818,14 @@ export type ReportStatus = 'verified' | 'in_audit' | 'archived';
 /** The month's health as the audit recorded it. */
 export type ReportHealth = 'healthy' | 'watch' | 'at_risk';
 
-export type ReportPeriod = {
-    kind: 'monthly' | 'annual';
-    /** First day of the month or year, ISO date. */
-    starts_on: string;
-};
+export type ReportPeriod =
+    | {
+          kind: 'monthly' | 'annual';
+          /** First day of the month or year, ISO date. */
+          starts_on: string;
+      }
+    /** The pre-listing flash audit, which covers no single month. */
+    | { kind: 'flash'; starts_on: null };
 
 export type ReportRow = {
     id: string;
@@ -834,6 +837,10 @@ export type ReportRow = {
     auditor: string;
     /** While in audit: the day the CPA must seal it by. */
     seal_by: string | null;
+    /** Sealed and waiting for the business to co-sign or dispute it. */
+    awaiting_signature: boolean;
+    /** While it waits: when its co-sign window closes; null when the window has no end time. */
+    cosign_by: string | null;
     /** The report sheet, or audit prep while the audit is open. */
     link: RouteLink;
 };

@@ -704,6 +704,8 @@ const en = {
     'business.reports.row.filed':
         'Inflow {inflow} · {health} · audited by {auditor}',
     'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
+    'business.reports.row.awaiting': 'Needs your co-signature',
+    'business.reports.row.awaiting_by': 'Co-sign or dispute by {date}',
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
