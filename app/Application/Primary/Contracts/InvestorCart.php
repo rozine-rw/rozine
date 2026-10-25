@@ -47,4 +47,11 @@ interface InvestorCart
      * @return array{campaign_id: string, removed: bool, count: int}
      */
     public function remove(int $userId, int $contextRevision, string $campaignId): array;
+
+    /**
+     * Takes a campaign the Party has just bought out of its cart, inside the confirming purchase's
+     * transaction, so the cart holds only what is left to buy. The purchase already holds the
+     * Investor's authority, so no lock is taken here.
+     */
+    public function bought(string $partyId, string $campaignId): void;
 }

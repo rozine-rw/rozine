@@ -61,6 +61,11 @@ final readonly class EloquentInvestorCart implements InvestorCart
         });
     }
 
+    public function bought(string $partyId, string $campaignId): void
+    {
+        InvestorCartLine::query()->where('party_id', strtolower($partyId))->where('business_campaign_id', $campaignId)->delete();
+    }
+
     private function countFor(string $partyId): int
     {
         return InvestorCartLine::query()->where('party_id', $partyId)->count();
