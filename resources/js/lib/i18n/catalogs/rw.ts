@@ -103,6 +103,8 @@ const rw: Catalog = {
     'auth.register.confirm_label': 'Emeza ijambobanga',
     'auth.register.confirm_placeholder': 'Emeza ijambobanga',
     'auth.register.submit': 'Fungura konti',
+    'auth.register.sandbox.title': 'Mbere yo kwiyandikisha',
+    'auth.register.sandbox.acknowledge': 'Ndabyumvise, komeza',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
     'auth.brand.wordmark': 'rozine',

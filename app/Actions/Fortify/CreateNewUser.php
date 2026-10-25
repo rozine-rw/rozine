@@ -7,8 +7,10 @@ namespace App\Actions\Fortify;
 use App\Application\Identity\RegisterIdentity;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
@@ -27,12 +29,18 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
-        ])->validate();
+            'sandbox_notice_version' => ['required', 'string', Rule::in([SandboxNotice::VERSION])],
+            'sandbox_notice_sha256' => ['required', 'string', Rule::in([SandboxNotice::sha256()])],
+        ], array_fill_keys(['sandbox_notice_version.required', 'sandbox_notice_version.string', 'sandbox_notice_version.in',
+            'sandbox_notice_sha256.required', 'sandbox_notice_sha256.string', 'sandbox_notice_sha256.in'],
+            'Read and acknowledge the sandbox notice before you sign up.'))->validate();
 
         return User::query()->findOrFail($this->registerIdentity->handle(
             $input['name'],
             $input['email'],
             $input['password'],
+            $input['sandbox_notice_version'],
+            $input['sandbox_notice_sha256'],
         ));
     }
 }

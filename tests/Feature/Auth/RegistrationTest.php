@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use App\Notifications\Account\OneTimeCode;
 use Illuminate\Support\Facades\Notification;
@@ -20,6 +21,8 @@ test('registration screen can be rendered', function () {
 test('new users can register', function () {
     $response = $this->post(route('register.store'), [
         'name' => 'Test User',
+        'sandbox_notice_version' => SandboxNotice::VERSION,
+        'sandbox_notice_sha256' => SandboxNotice::sha256(),
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -35,6 +38,8 @@ test('new users can verify their email using the registration notification', fun
 
     $this->post(route('register.store'), [
         'name' => 'Test User',
+        'sandbox_notice_version' => SandboxNotice::VERSION,
+        'sandbox_notice_sha256' => SandboxNotice::sha256(),
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',

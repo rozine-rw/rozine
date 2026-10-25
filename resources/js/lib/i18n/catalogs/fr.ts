@@ -102,6 +102,8 @@ const fr: Catalog = {
     'auth.register.confirm_label': 'Confirmez le mot de passe',
     'auth.register.confirm_placeholder': 'Confirmez le mot de passe',
     'auth.register.submit': 'Créer un compte',
+    'auth.register.sandbox.title': 'Avant de vous inscrire',
+    'auth.register.sandbox.acknowledge': 'J’ai compris, continuer',
     'auth.register.have_account': 'Vous avez déjà un compte ?',
     'auth.register.log_in': 'Se connecter',
     'auth.brand.wordmark': 'rozine',

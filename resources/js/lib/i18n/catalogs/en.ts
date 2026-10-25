@@ -101,6 +101,8 @@ const en = {
     'auth.register.confirm_label': 'Confirm password',
     'auth.register.confirm_placeholder': 'Confirm password',
     'auth.register.submit': 'Create account',
+    'auth.register.sandbox.title': 'Before you sign up',
+    'auth.register.sandbox.acknowledge': 'I understand, continue',
     'auth.register.have_account': 'Already have an account?',
     'auth.register.log_in': 'Log in',
     'auth.brand.wordmark': 'rozine',

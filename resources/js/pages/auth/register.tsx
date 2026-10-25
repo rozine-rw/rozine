@@ -1,4 +1,5 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
+import { useState } from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -14,12 +15,20 @@ import type { AuthAudience } from '@/types';
 
 type Props = {
     passwordRules: string;
+    /** The CMA sandbox notice, word for word, with the version and digest the acknowledgement binds. */
+    sandboxNotice: { version: string; text: string; sha256: string };
     audience?: AuthAudience;
 };
 
-export default function Register({ passwordRules, audience = null }: Props) {
+export default function Register({
+    passwordRules,
+    sandboxNotice,
+    audience = null,
+}: Props) {
     const { t } = useTranslation();
     const brand = authBranding(audience, 'register');
+    /* The sign-up form opens only once the sandbox notice is acknowledged (BRS KYC-R01). */
+    const [acknowledged, setAcknowledged] = useState(false);
 
     setLayoutProps({
         title: brand.title,
@@ -27,6 +36,36 @@ export default function Register({ passwordRules, audience = null }: Props) {
         eyebrow: brand.eyebrow ?? '',
         audience,
     });
+
+    if (!acknowledged) {
+        return (
+            <>
+                <Head title={t('auth.register.head_title')} />
+                <section
+                    aria-labelledby="sandbox-notice-title"
+                    className="flex flex-col gap-4 rounded-xl border p-4"
+                >
+                    <h2
+                        id="sandbox-notice-title"
+                        className="text-base font-semibold"
+                    >
+                        {t('auth.register.sandbox.title')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {sandboxNotice.text}
+                    </p>
+                    <Button
+                        type="button"
+                        className="w-full"
+                        autoFocus
+                        onClick={() => setAcknowledged(true)}
+                    >
+                        {t('auth.register.sandbox.acknowledge')}
+                    </Button>
+                </section>
+            </>
+        );
+    }
 
     return (
         <>
@@ -39,6 +78,22 @@ export default function Register({ passwordRules, audience = null }: Props) {
             >
                 {({ processing, errors }) => (
                     <>
+                        <input
+                            type="hidden"
+                            name="sandbox_notice_version"
+                            value={sandboxNotice.version}
+                        />
+                        <input
+                            type="hidden"
+                            name="sandbox_notice_sha256"
+                            value={sandboxNotice.sha256}
+                        />
+                        <InputError
+                            message={
+                                errors.sandbox_notice_version ??
+                                errors.sandbox_notice_sha256
+                            }
+                        />
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="name">
