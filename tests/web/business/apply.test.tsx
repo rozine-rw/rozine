@@ -843,6 +843,60 @@ describe('Apply — step 2, the quote', () => {
         expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
     });
 
+    it('never resends a request the server refused with a 422 until the business changes it', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+
+        page.quote = null;
+        inertia.errors = { target: 'Use a multiple of RWF 5,000.' };
+        /* The 422 arrives a moment later, as over a network: the page renders it on its own. */
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    setTimeout(() => resolve(undefined), 200);
+                }),
+        );
+        render(<BusinessApply {...page} />);
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        expect(inertia.calls[0].url).toBe(
+            '/preview/business-apply-evaluations',
+        );
+        /* The 422 is in: the page is idle again, with the reason under the field. */
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(200);
+        });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Continue' }),
+            ).toBeEnabled(),
+        );
+        expect(
+            screen.getByText('Use a multiple of RWF 5,000.'),
+        ).toBeInTheDocument();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(5000);
+        });
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(
+            screen.queryByRole('button', { name: 'Saving…' }),
+        ).not.toBeInTheDocument();
+
+        inertia.errors = {};
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].body).toMatchObject({
+            target: '25000000',
+            term_months: 4,
+        });
+    });
+
     it('reads another login’s newer save afresh after a version conflict, keeping its banner once', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
