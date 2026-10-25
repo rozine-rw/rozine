@@ -1,5 +1,5 @@
 // Components
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
@@ -20,6 +20,17 @@ const CODE_LENGTH = 6;
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const { t } = useTranslation();
+
+    /*
+     * The auth frame keeps the props an earlier page set (register or log in name their own), so
+     * this page names its heading again: straight after signing up it must not still say so.
+     */
+    setLayoutProps({
+        title: 'auth.verify_email.layout_title',
+        description: 'auth.verify_email.layout_description',
+        eyebrow: '',
+        audience: null,
+    });
     const [code, setCode] = useState<string>('');
 
     return (
