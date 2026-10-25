@@ -186,7 +186,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         const panel = screen.getByRole('region', { name: 'Withdraw' });
 
         expect(panel).toHaveTextContent(
-            "Withdrawals aren't available on your account right now.",
+            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
         );
         expect(
             within(panel).queryByRole('button', { name: 'Confirm withdrawal' }),
@@ -205,7 +205,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         expect(
             screen.getByRole('region', { name: 'Withdraw' }),
         ).toHaveTextContent(
-            "Withdrawals aren't available on your account right now.",
+            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
         );
     });
 
@@ -348,7 +348,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         expect(
             screen.getByRole('region', { name: 'Withdraw' }),
         ).toHaveTextContent(
-            "Withdrawals aren't available on your account right now.",
+            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
         );
     });
 });

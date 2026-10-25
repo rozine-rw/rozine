@@ -941,7 +941,8 @@ const rw: Catalog = {
     'business.profile.linked.add': '+ Huza konti yakiriraho',
     'business.profile.linked.none':
         'Nta konti irahuzwa. Huza imwe kugira ngo ushyireho kandi ubikuze amafaranga.',
-    'business.profile.linked.empty': 'Nta konti irahuzwa.',
+    'business.profile.linked.empty':
+        'Nta konti irahuzwa. Guhuza konti bizafunguka iyi konti nimara kwemererwa kohereza no kwakira amafaranga. Amafaranga yawe azoherezwa kuri konti yemejwe uhuza hano.',
     'business.profile.linked.footnote':
         "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
     'business.profile.legal.updated':
@@ -2849,7 +2850,7 @@ const rw: Catalog = {
     'business.wallet.range.clear': 'Igihe cyose',
     'business.wallet.export.label': 'Kuramo raporo y’ikofi',
     'business.wallet.export.pdf': 'Kuramo PDF',
-    'business.wallet.export.csv': 'Kuramo Excel',
+    'business.wallet.export.csv': 'Kuramo CSV',
     'business.wallet.caption':
         'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
@@ -4450,7 +4451,7 @@ const rw: Catalog = {
     'investor.wallet.tx.title_short': 'Ibikorwa',
     'investor.wallet.tx.export': 'Kuramo',
     'investor.wallet.tx.pdf': 'Kuramo PDF',
-    'investor.wallet.tx.csv': 'Kuramo Excel',
+    'investor.wallet.tx.csv': 'Kuramo CSV',
     'investor.wallet.tx.ranges': "Igihe cy'ibikorwa",
     'investor.wallet.tx.range.today': 'Uyu munsi',
     'investor.wallet.tx.range.7d': 'Iminsi 7',
@@ -5441,7 +5442,8 @@ const rw: Catalog = {
     'investor.wallet.c3.policy': 'Amabwiriza yo kubitsa {version}.',
     'investor.wallet.c3.policy_minimum': 'Nibura {amount}.',
     'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}.',
-    'investor.wallet.c3.deposit_unavailable': 'Kubitsa ntibikunda ubu.',
+    'investor.wallet.c3.deposit_unavailable':
+        'Kubitsa ntibirafungurwa kuri iyi konti. Rozine izabifungura konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.intent_only':
         "Ibi byandika icyifuzo cyawe cyo kubitsa. Nta mafaranga ashyirwa kuri konti mbere y'uko ubwishyu bwemezwa.",
     'investor.wallet.c3.holds': 'Afashwe mu kwishyura',
@@ -5484,7 +5486,7 @@ const rw: Catalog = {
         'Inyemezabwishyu yo gushyira kuri konti',
     'investor.wallet.c3.funding': 'Kwimura amafaranga',
     'investor.wallet.c3.withdraw_unavailable':
-        'Kubikuza ntibishoboka kuri konti yawe ubu.',
+        'Kubikuza ntibirafungurwa kuri iyi konti. Bisaba konti yo kwakiriraho yemejwe muri Umwirondoro → Konti zihujwe, kandi bizafunguka konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.withdraw_available': 'Ayo ushobora kubikuza: {amount}',
     'investor.wallet.c3.provider_charge': "Amafaranga y'utanga serivisi",
     'investor.wallet.c3.withdraw_terms':

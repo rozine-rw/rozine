@@ -948,7 +948,8 @@ const fr: Catalog = {
     'business.profile.linked.add': '+ Lier un compte de versement',
     'business.profile.linked.none':
         'Aucun compte lié. Liez-en un pour déposer et retirer.',
-    'business.profile.linked.empty': 'Aucun compte lié.',
+    'business.profile.linked.empty':
+        "Aucun compte lié. L'ajout d'un compte s'ouvre dès que ce compte est autorisé à faire des mouvements d'argent. Vos versements arrivent sur le compte vérifié que vous liez ici.",
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
     'business.profile.legal.updated':
@@ -2861,7 +2862,7 @@ const fr: Catalog = {
     'business.wallet.range.clear': 'Depuis le début',
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
-    'business.wallet.export.csv': 'Télécharger Excel',
+    'business.wallet.export.csv': 'Télécharger le CSV',
     'business.wallet.caption':
         'Frais, versements et décaissements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
@@ -4467,7 +4468,7 @@ const fr: Catalog = {
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Exporter',
     'investor.wallet.tx.pdf': 'Télécharger le PDF',
-    'investor.wallet.tx.csv': 'Télécharger Excel',
+    'investor.wallet.tx.csv': 'Télécharger le CSV',
     'investor.wallet.tx.ranges': 'Période des transactions',
     'investor.wallet.tx.range.today': "Aujourd'hui",
     'investor.wallet.tx.range.7d': '7 jours',
@@ -5471,7 +5472,7 @@ const fr: Catalog = {
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
     'investor.wallet.c3.deposit_unavailable':
-        'Le dépôt ne vous est pas accessible pour le moment.',
+        "Les dépôts ne sont pas encore ouverts sur ce compte. Rozine les active dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.intent_only':
         "Cela enregistre votre demande de dépôt. Rien n'est crédité avant la confirmation du paiement.",
     'investor.wallet.c3.holds': 'Réservé pour un paiement',
@@ -5512,7 +5513,7 @@ const fr: Catalog = {
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
     'investor.wallet.c3.funding': 'Mouvements de fonds',
     'investor.wallet.c3.withdraw_unavailable':
-        'Les retraits ne sont pas disponibles sur votre compte pour le moment.',
+        "Les retraits ne sont pas encore ouverts sur ce compte. Ils demandent un compte de versement vérifié dans Profil → Comptes liés, et s'ouvrent dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
     'investor.wallet.c3.provider_charge': 'Frais du prestataire',
     'investor.wallet.c3.withdraw_terms':

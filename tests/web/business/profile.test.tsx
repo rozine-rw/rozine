@@ -420,7 +420,11 @@ describe('Linked accounts', () => {
         page.linked = { accounts: [], add: null, banks: [] };
         render(<BusinessProfile {...page} />);
 
-        expect(screen.getByText('No account linked yet.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('shows nothing until the accounts arrive', () => {

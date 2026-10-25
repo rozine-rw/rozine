@@ -410,7 +410,7 @@ describe('Business wallet history range and statement', () => {
             screen.getByRole('link', { name: /Download PDF/ }),
         ).toHaveAttribute('href', '/preview/business-wallet-statement.pdf');
         expect(
-            screen.getByRole('link', { name: /Download Excel/ }),
+            screen.getByRole('link', { name: /Download CSV/ }),
         ).toHaveAttribute('href', '/preview/business-wallet-statement.csv');
     });
 

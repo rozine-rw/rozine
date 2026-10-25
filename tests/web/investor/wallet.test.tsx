@@ -70,9 +70,9 @@ describe('Wallet (C3)', () => {
             screen.getByRole('link', { name: /Download PDF/u }),
         ).toHaveAttribute('href', '/investor/wallet/statement.pdf');
         expect(
-            screen.getByRole('link', { name: /Download Excel/u }),
+            screen.getByRole('link', { name: /Download CSV/u }),
         ).toHaveAttribute('href', '/investor/wallet/statement.csv');
-        fireEvent.click(screen.getByRole('link', { name: /Download Excel/u }));
+        fireEvent.click(screen.getByRole('link', { name: /Download CSV/u }));
         expect(
             screen.queryByRole('link', { name: /Download PDF/u }),
         ).not.toBeInTheDocument();
@@ -344,7 +344,9 @@ describe('Wallet (C3)', () => {
             }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByText("Deposit isn't available to you right now."),
+            screen.getByText(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -674,7 +676,9 @@ describe('Wallet (C3)', () => {
 
         render(<InvestorWallet {...props} />);
         expect(
-            screen.getByText("Deposit isn't available to you right now."),
+            screen.getByText(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -784,7 +788,9 @@ describe('Wallet (C3)', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.getByRole('region', { name: 'Add money' }),
-            ).toHaveTextContent("Deposit isn't available to you right now.");
+            ).toHaveTextContent(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            );
             expect(screen.queryByLabelText('AMOUNT')).not.toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Link an account' }),
@@ -809,7 +815,9 @@ describe('Wallet (C3)', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.getByRole('region', { name: 'Add money' }),
-            ).toHaveTextContent("Deposit isn't available to you right now.");
+            ).toHaveTextContent(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            );
             expect(
                 screen.queryByRole('button', { name: 'Confirm deposit' }),
             ).not.toBeInTheDocument();

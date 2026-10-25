@@ -909,7 +909,8 @@ const en = {
     'business.profile.linked.add': '+ Link a payout account',
     'business.profile.linked.none':
         'No account linked yet. Link one to deposit and withdraw.',
-    'business.profile.linked.empty': 'No account linked yet.',
+    'business.profile.linked.empty':
+        'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
@@ -2714,7 +2715,7 @@ const en = {
     'business.wallet.range.clear': 'All time',
     'business.wallet.export.label': 'Download statement',
     'business.wallet.export.pdf': 'Download PDF',
-    'business.wallet.export.csv': 'Download Excel',
+    'business.wallet.export.csv': 'Download CSV',
     'business.wallet.caption': 'Fees, payouts & disbursements settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
@@ -4286,7 +4287,7 @@ const en = {
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Export',
     'investor.wallet.tx.pdf': 'Download PDF',
-    'investor.wallet.tx.csv': 'Download Excel',
+    'investor.wallet.tx.csv': 'Download CSV',
     'investor.wallet.tx.ranges': 'Transaction period',
     'investor.wallet.tx.range.today': 'Today',
     'investor.wallet.tx.range.7d': '7 days',
@@ -5189,7 +5190,7 @@ const en = {
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
     'investor.wallet.c3.deposit_unavailable':
-        "Deposit isn't available to you right now.",
+        "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
     'investor.wallet.c3.intent_only':
         'This records your deposit request. Nothing is credited until the payment is confirmed.',
     'investor.wallet.c3.holds': 'Held for checkout',
@@ -5230,7 +5231,7 @@ const en = {
     'investor.wallet.c3.credit_receipt': 'Credit receipt',
     'investor.wallet.c3.funding': 'Move money',
     'investor.wallet.c3.withdraw_unavailable':
-        "Withdrawals aren't available on your account right now.",
+        "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_available': 'Available to withdraw: {amount}',
     'investor.wallet.c3.provider_charge': 'Provider charge',
     'investor.wallet.c3.withdraw_terms':
