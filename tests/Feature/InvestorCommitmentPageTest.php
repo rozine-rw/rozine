@@ -188,7 +188,10 @@ it('refuses to present facts that name another reservation', function (): void {
 });
 
 it('leaves any other refusal to the global handlers', function (): void {
-    $this->actingAs(User::factory()->create())->get(route('investor.commitments.show', $this->commitment))
+    $unlinked = User::factory()->create();
+    $this->actingAs($unlinked)->get(route('investor.commitments.show', $this->commitment))->assertForbidden()
+        ->assertInertia(fn ($page) => $page->component('identity/access-denied')->where('code', 'IDENTITY_NOT_LINKED'));
+    $this->actingAs($unlinked)->getJson(route('investor.commitments.show', $this->commitment))
         ->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
     app()->instance(PrimaryCommitmentView::class, Mockery::mock(PrimaryCommitmentView::class, function ($mock): void {
         $mock->shouldReceive('show')->andThrow(new CommandRejection('PRIMARY_TRANSACTION_REQUIRED', 503));
