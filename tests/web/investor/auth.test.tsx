@@ -708,10 +708,7 @@ describe('Verification submission', () => {
         expect(
             screen.getByRole('heading', { name: 'Under review' }),
         ).toBeInTheDocument();
-        expect(screen.getByRole('progressbar')).toHaveAttribute(
-            'aria-valuenow',
-            '100',
-        );
+        expect(screen.getByRole('progressbar')).toHaveValue(100);
         expect(
             screen.queryByRole('button', { name: 'Submit for verification' }),
         ).not.toBeInTheDocument();
@@ -877,6 +874,7 @@ describe('Verification submission', () => {
         const { rerender } = render(<InvestorVerification {...props} />);
 
         expect(screen.getByText(missing)).toBeInTheDocument();
+
         if (props.investor_type === 'individual') {
             rerender(
                 <InvestorVerification
@@ -886,6 +884,32 @@ describe('Verification submission', () => {
             );
         }
 
+        expect(screen.queryByText(missing)).not.toBeInTheDocument();
+    });
+
+    it('stops showing the missing-selfie error once the selfie is uploaded', () => {
+        const missing = 'Take a selfie to finish.';
+        inertia.errors = { selfie: missing };
+        const props = live(livenessFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The liveness fixture is an individual case.');
+        }
+
+        const { rerender } = render(
+            <InvestorVerification
+                {...props}
+                uploads={{ ...props.uploads, selfie: { status: 'missing' } }}
+            />,
+        );
+
+        expect(screen.getByText(missing)).toBeInTheDocument();
+        rerender(
+            <InvestorVerification
+                {...props}
+                uploads={{ ...props.uploads, selfie: { status: 'uploaded' } }}
+            />,
+        );
         expect(screen.queryByText(missing)).not.toBeInTheDocument();
     });
 });
