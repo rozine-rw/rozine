@@ -32,6 +32,9 @@ class AuditorProfileResource extends JsonResource
     /** The design's Profile sections (Auditor.dc.html L3528–3536), in its menu order. */
     public const SECTIONS = ['earnings', 'contact', 'accreditation', 'payout', 'availability', 'telemetry', 'security', 'learn', 'legal'];
 
+    /** The everyday names a link may use for a section: personal details, the academy and the terms. */
+    private const ALIASES = ['personal' => 'contact', 'academy' => 'learn', 'terms' => 'legal'];
+
     /** Where a request for no section, or an unknown one, lands. */
     private const DEFAULT_SECTION = 'accreditation';
 
@@ -53,7 +56,7 @@ class AuditorProfileResource extends JsonResource
             'server_time' => $data['server_time'],
             'allowed_actions' => $data['allowed_actions'],
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
-            'section' => in_array($page['section'], self::SECTIONS, true) ? $page['section'] : self::DEFAULT_SECTION,
+            'section' => in_array($section = self::ALIASES[$page['section']] ?? $page['section'], self::SECTIONS, true) ? $section : self::DEFAULT_SECTION,
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
             'quality_score' => null,
             'on_time_pct' => $page['on_time_pct'] ?? null,

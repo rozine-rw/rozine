@@ -144,6 +144,10 @@ it('renders a first-time Auditor profile from the protected facts with the contr
         $this->get(route('auditor.profile', ['section' => $section]))->assertInertia(fn (Assert $page): Assert => $page->where('section', $section));
     }
     $this->get(route('auditor.profile', ['section' => 'refer']))->assertInertia(fn (Assert $page): Assert => $page->where('section', 'accreditation'));
+    // The everyday names a link may use open their own sections.
+    foreach (['personal' => 'contact', 'academy' => 'learn', 'terms' => 'legal'] as $alias => $section) {
+        $this->get(route('auditor.profile', ['section' => $alias]))->assertInertia(fn (Assert $page): Assert => $page->where('section', $section));
+    }
     $this->assertDatabaseCount('auditor_profiles', 0);
 });
 

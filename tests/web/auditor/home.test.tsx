@@ -150,7 +150,7 @@ describe('Auditor Home', () => {
         expect(
             screen.getByRole('img', { name: 'Partner rating 99 out of 100' }),
         ).toBeInTheDocument();
-        expect(screen.getByText('Yield · OCT')).toBeInTheDocument();
+        expect(screen.getByText('Fees · OCT')).toBeInTheDocument();
         expect(screen.getByText('644K')).toBeInTheDocument();
         expect(screen.getByText('30')).toBeInTheDocument();
         expect(screen.getByText('Mar 2027')).toBeInTheDocument();
