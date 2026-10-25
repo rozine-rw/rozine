@@ -261,6 +261,40 @@ describe('authentication pages', () => {
         );
     });
 
+    it('shows a newer sandbox notice again before the form, and binds the new version', () => {
+        const { rerender } = render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
+
+        openRegisterForm();
+        expect(screen.getAllByRole('textbox')).toHaveLength(4);
+
+        const newer = {
+            version: 'brs-2.1-kyc-r01',
+            text: 'An updated sandbox notice.',
+            sha256: 'b'.repeat(64),
+        };
+
+        rerender(
+            <Register sandboxNotice={newer} passwordRules="minlength:12" />,
+        );
+        expect(screen.getByText(newer.text)).toBeInTheDocument();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+
+        openRegisterForm();
+        expect(screen.getByDisplayValue(newer.version)).toHaveAttribute(
+            'name',
+            'sandbox_notice_version',
+        );
+        expect(screen.getByDisplayValue(newer.sha256)).toHaveAttribute(
+            'name',
+            'sandbox_notice_sha256',
+        );
+    });
+
     it('says when the server refused a missing sandbox acknowledgement', () => {
         inertia.state.errors = {
             sandbox_notice_sha256:

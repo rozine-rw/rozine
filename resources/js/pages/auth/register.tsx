@@ -27,8 +27,13 @@ export default function Register({
 }: Props) {
     const { t } = useTranslation();
     const brand = authBranding(audience, 'register');
-    /* The sign-up form opens only once the sandbox notice is acknowledged (BRS KYC-R01). */
-    const [acknowledged, setAcknowledged] = useState(false);
+    /*
+     * The sign-up form opens only once the sandbox notice is acknowledged (BRS KYC-R01). The
+     * acknowledgement holds the digest of the notice read, so a newer notice the server sends back
+     * (say after a refusal) is shown again before the form.
+     */
+    const [acknowledgedSha, setAcknowledgedSha] = useState<string | null>(null);
+    const acknowledged = acknowledgedSha === sandboxNotice.sha256;
 
     setLayoutProps({
         title: brand.title,
@@ -58,7 +63,7 @@ export default function Register({
                         type="button"
                         className="w-full"
                         autoFocus
-                        onClick={() => setAcknowledged(true)}
+                        onClick={() => setAcknowledgedSha(sandboxNotice.sha256)}
                     >
                         {t('auth.register.sandbox.acknowledge')}
                     </Button>
