@@ -110,10 +110,24 @@ describe('what an investor is charged and offered', () => {
     it('prices a business between the floor and ceiling of the band', () => {
         const site = mountSite();
 
-        expect(site.bChargeFor(92, 6)).toBe(16);
+        expect(site.bChargeFor(92, 6)).toBe(15);
         expect(site.bChargeFor(40, 3)).toBe(14);
-        expect(site.bChargeFor(200, 99)).toBe(16);
+        expect(site.bChargeFor(200, 99)).toBe(15);
         expect(site.bChargeFor(-50, -5)).toBe(14);
+    });
+
+    it('never quotes a total return outside the BRS 10%–15% band, for any term or band', () => {
+        const site = mountSite();
+        const flats = [3, 4, 5, 6].flatMap((term) =>
+            [0, 1, 2].map((band) => site.flatFor(term, band)),
+        );
+
+        expect(Math.min(...flats)).toBeGreaterThanOrEqual(0.1);
+        expect(Math.max(...flats)).toBeLessThanOrEqual(0.15);
+        /* A stronger band never pays more, and a longer term never less. */
+        expect(site.flatFor(3, 0)).toBe(0.108);
+        expect(site.flatFor(6, 1)).toBe(0.129);
+        expect(site.flatFor(6, 2)).toBe(0.15);
     });
 });
 
