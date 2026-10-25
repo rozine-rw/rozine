@@ -219,32 +219,34 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
     /** @return array<string, mixed> */
     public function home(int $userId, int $contextRevision, string $businessId): array
     {
-        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business, array $identity): array {
+        [$home, $draft, $party] = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, function (array $business, array $identity): array {
             $entry = $this->entry($business, $identity);
             $draft = ($entry['application']['status'] ?? null) === 'draft' ? BusinessApplication::query()->whereKey($entry['application']['id'])->first() : null;
 
-            return [...$entry, 'profile' => $business['profile'], 'draft_title' => $draft?->draft['title'] ?? null,
-                'draft_signatures' => $draft === null ? null : $this->outstandingSignatures($draft, $business, $identity['party']['id'] ?? '')];
+            return [[...$entry, 'profile' => $business['profile'], 'draft_title' => $draft?->draft['title'] ?? null], $draft, (string) ($identity['party']['id'] ?? '')];
         });
+        $signing = $draft !== null && BusinessApplicationSignature::query()->where('business_application_id', $draft->id)
+            ->where('business_application_quote_id', $draft->current_quote_id)->exists();
+
+        return [...$home, 'draft_signatures' => $signing
+            ? $this->outstandingSignatures($this->review($userId, $contextRevision, $businessId, $draft->id)['acceptance']['signers'], $party) : null];
     }
 
     /**
-     * Who still has to sign an open draft's current offer, once one signature on it is in: the
-     * pending required signatories' names, and whether the person reading is one of them. Before
-     * the first signature, or once its offer is replaced, there is nothing to wait for.
+     * Who still has to sign an open draft's current offer, once signing on it has begun: the
+     * pending required signatories' names under the agreement as `review` binds it now (current
+     * offer, mandate and consent release), and whether the person reading is one of them. A new
+     * consent release therefore asks everyone to sign again. Nothing waits once all have signed.
      *
-     * @param  Business  $business
+     * @param  list<array{party_id: string, name: string, state: string}>  $signers
      * @return array{pending: list<string>, viewer_signs: bool}|null
      */
-    private function outstandingSignatures(BusinessApplication $draft, array $business, string $partyId): ?array
+    private function outstandingSignatures(array $signers, string $partyId): ?array
     {
-        $signed = BusinessApplicationSignature::query()->where('business_application_id', $draft->id)
-            ->where('business_application_quote_id', $draft->current_quote_id)->pluck('actor_party_id')->all();
-        $required = array_values(array_diff($business['mandate']['required_signatories'], $signed));
-        $pending = array_values(array_map(fn (array $person): string => $person['name'],
-            array_filter($business['mandate']['people'], fn (array $person): bool => in_array($person['party_id'], $required, true))));
+        $pending = array_values(array_filter($signers, fn (array $signer): bool => $signer['state'] === 'pending'));
 
-        return $signed === [] || $pending === [] ? null : ['pending' => $pending, 'viewer_signs' => in_array($partyId, $required, true)];
+        return $pending === [] ? null : ['pending' => array_column($pending, 'name'),
+            'viewer_signs' => in_array($partyId, array_column($pending, 'party_id'), true)];
     }
 
     /**

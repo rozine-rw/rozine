@@ -18,6 +18,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessAuthorityFixture as AuthorityFixture;
 use Tests\Support\BusinessQuoteFixture as QuoteFixture;
+use Tests\Support\ConsentFixture;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -253,4 +254,21 @@ it('asks a signatory still to sign a half-signed draft, and tells the rest of th
     // The last signature submits it: nothing waits on a signature any more.
     expect(QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture), 1)['code'])->toBe('APPLICATION_SUBMITTED')
         ->and($signing($users[0]))->toBe([])->and($signing($users[1]))->toBe([]);
+});
+
+it('asks every signatory to sign again once a new consent release replaces the agreement they signed', function (): void {
+    $fixture = QuoteFixture::ready(2);
+    $business = $fixture['audit']['business'];
+    $users = $fixture['audit']['authority']['users'];
+    $signing = fn (User $user): array => array_values(array_filter(($this->props)($user, $business)['today'],
+        fn (array $item): bool => in_array($item['kind'], ['application_signature', 'application_awaiting'], true)));
+
+    expect(QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SIGNATURE_RECORDED')
+        ->and($signing($users[0])[0]['kind'])->toBe('application_awaiting');
+    ConsentFixture::record($fixture['audit']['staff'], 1);
+    $pending = array_column(QuoteFixture::review($fixture)['acceptance']['signers'], 'name');
+
+    expect(array_column(QuoteFixture::review($fixture)['acceptance']['signers'], 'state'))->toBe(['pending', 'pending'])
+        ->and($signing($users[0]))->toHaveCount(1)->and($signing($users[0])[0])->toMatchArray(['kind' => 'application_signature', 'pending' => $pending])
+        ->and($signing($users[1])[0])->toMatchArray(['kind' => 'application_signature', 'pending' => $pending]);
 });

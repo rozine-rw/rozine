@@ -24,8 +24,8 @@ interface BusinessApplicationStore
 
     /**
      * One Business's landing entry, as `index` lists it, with its verified profile, the title of
-     * its open draft and, once a signature on its current offer is in, who still has to sign it,
-     * under current Business authority.
+     * its open draft and, once signing on its current offer has begun, who still has to sign the
+     * agreement as `review` binds it now, under current Business authority.
      *
      * @return array<string, mixed>
      */
