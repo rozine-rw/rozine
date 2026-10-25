@@ -430,7 +430,9 @@ const en = {
     'business.apply.raise.note_unit': 'A Rozine note is {price}.',
     'business.apply.raise.term_label': 'Term · months to repay',
     'business.apply.raise.term_any': '· any 3–6',
-    'business.apply.raise.you_receive': 'You receive',
+    'business.apply.raise.amount_raised': 'Amount raised',
+    'business.apply.raise.fee_at_payout':
+        'A 3% platform fee is deducted when this is paid out to you. You repay the full amount raised.',
     'business.apply.raise.interest': '+ Interest',
     'business.apply.raise.interest_basis': '({rate}% flat · {months} months)',
     'business.apply.raise.you_repay': 'You repay',

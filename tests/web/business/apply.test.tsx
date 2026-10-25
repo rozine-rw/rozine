@@ -2492,6 +2492,26 @@ describe('Apply — step 3, review & sign', () => {
     });
 });
 
+describe('Apply — the amount raised and the platform fee', () => {
+    it.each([
+        ['the raise', raiseStep],
+        ['review & sign', reviewStep],
+    ])(
+        'calls the offer the amount raised on %s, never cash received, and says the 3%% fee comes off at payout',
+        (_step, fixture) => {
+            render(<BusinessApply {...props(fixture)} />);
+
+            expect(screen.getByText('Amount raised')).toBeInTheDocument();
+            expect(screen.queryByText('You receive')).not.toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'A 3% platform fee is deducted when this is paid out to you. You repay the full amount raised.',
+                ),
+            ).toBeInTheDocument();
+        },
+    );
+});
+
 describe('Apply — submitted', () => {
     it('confirms the submission with its application ID and live review timeline', () => {
         render(<BusinessApply {...props(submittedStep)} />);

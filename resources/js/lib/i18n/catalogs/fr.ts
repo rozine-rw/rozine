@@ -446,7 +446,9 @@ const fr: Catalog = {
     'business.apply.raise.note_unit': 'Une note Rozine vaut {price}.',
     'business.apply.raise.term_label': 'Durée · mois de remboursement',
     'business.apply.raise.term_any': '· de 3 à 6',
-    'business.apply.raise.you_receive': 'Vous recevez',
+    'business.apply.raise.amount_raised': 'Montant levé',
+    'business.apply.raise.fee_at_payout':
+        'Des frais de plateforme de 3 % sont déduits lors du versement. Vous remboursez la totalité du montant levé.',
     'business.apply.raise.interest': '+ Intérêts',
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',

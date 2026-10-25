@@ -441,7 +441,9 @@ const rw: Catalog = {
     'business.apply.raise.note_unit': 'Urupapuro rumwe rwa Rozine ni {price}.',
     'business.apply.raise.term_label': 'Igihe · amezi yo kwishyura',
     'business.apply.raise.term_any': '· hagati ya 3 na 6',
-    'business.apply.raise.you_receive': 'Uhabwa',
+    'business.apply.raise.amount_raised': 'Igishoro gishakwa',
+    'business.apply.raise.fee_at_payout':
+        'Amafaranga ya serivisi ya 3% akurwaho iyo amafaranga akugezeho. Wishyura igishoro cyose cyabonetse.',
     'business.apply.raise.interest': '+ Inyungu',
     'business.apply.raise.interest_basis': '({rate}% · amezi {months})',
     'business.apply.raise.you_repay': 'Wishyura',
