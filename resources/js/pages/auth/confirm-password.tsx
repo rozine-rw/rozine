@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import {
     index as confirmOptions,
     store as confirmStore,
@@ -14,6 +14,17 @@ import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
     const { t } = useTranslation();
+
+    /*
+     * The auth frame keeps the props an earlier page set (register or log in name their own), so
+     * this page names its heading again: straight after signing up it must not still say so.
+     */
+    setLayoutProps({
+        title: 'auth.confirm_password.layout_title',
+        description: 'auth.confirm_password.layout_description',
+        eyebrow: '',
+        audience: null,
+    });
 
     return (
         <>

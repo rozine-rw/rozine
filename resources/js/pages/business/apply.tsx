@@ -288,6 +288,15 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 setHaltedKey(halted);
             }
         },
+        onInvalid: (sent) => {
+            /*
+             * A request the server could not accept (e.g. a target off the RWF 5,000 unit) waits
+             * for the business to change it: the autosave never resends it unchanged.
+             */
+            if (sent.name !== 'submit') {
+                setHaltedKey(payloadKey(sent.payload));
+            }
+        },
     });
 
     /** The last command sent, so the busy label names what is running. */

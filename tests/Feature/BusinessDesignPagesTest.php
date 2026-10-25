@@ -227,13 +227,25 @@ it('lists no report before the first sealed monthly report, and names no audit-c
                 'launcher' => ($this->link)('/dashboard'), 'close' => $reports]]);
 });
 
-it('leaves the pre-listing flash report off Reports', function (): void {
+it('lists the pre-listing flash report awaiting signature in audit, then under Published once co-signed', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
     $business = $fixture['audit']['business'];
+    $user = $fixture['audit']['authority']['users'][0];
+    $id = $fixture['report']->id;
+    $report = ($this->props)($user, 'business.audit-reports.show', ['business' => $business, 'report' => $id], 'business/audit-cosign')['report'];
+    $row = ['id' => $id, 'period' => ['kind' => 'flash', 'starts_on' => null], 'status' => 'in_audit', 'inflow' => null, 'health' => null,
+        'auditor' => $report['auditor']['name'], 'seal_by' => null, 'awaiting_signature' => true, 'cosign_by' => null,
+        'link' => ($this->link)("/business/{$business}/audit-reports/{$id}")];
 
-    expect(($this->props)($fixture['audit']['authority']['users'][0], 'business.reports', ['business' => $business], 'business/reports')['reports'])
-        ->toBe(['verified' => [], 'in_audit' => [], 'archived' => []]);
+    expect($report['kind'])->toBe('flash')
+        ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
+        ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
+
+    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
+
+    expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
+        ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false]], 'in_audit' => [], 'archived' => []]);
 });
 
 it('lists the latest sealed monthly report in audit until it is published, opening its co-sign page', function (): void {
@@ -243,16 +255,20 @@ it('lists the latest sealed monthly report in audit until it is published, openi
     $user = $fixture['audit']['authority']['users'][0];
     $id = $fixture['report']->id;
     $report = ($this->props)($user, 'business.audit-reports.show', ['business' => $business, 'report' => $id], 'business/audit-cosign')['report'];
+    $cosign = ($this->props)($user, 'business.audit-reports.show', ['business' => $business, 'report' => $id], 'business/audit-cosign')['cosign'];
     $row = ['id' => $id, 'period' => ['kind' => 'monthly', 'starts_on' => $report['period'].'-01'], 'status' => 'in_audit', 'inflow' => null, 'health' => null,
-        'auditor' => $report['auditor']['name'], 'seal_by' => null, 'link' => ($this->link)("/business/{$business}/audit-reports/{$id}")];
+        'auditor' => $report['auditor']['name'], 'seal_by' => null, 'awaiting_signature' => true, 'cosign_by' => $cosign['due_at'],
+        'link' => ($this->link)("/business/{$business}/audit-reports/{$id}")];
 
-    expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
+    // The 24-hour sign-off window has an end, and the row says when.
+    expect($cosign['due_at'])->toBeString()
+        ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
 
     expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
-        ->toBe(['verified' => [[...$row, 'status' => 'verified']], 'in_audit' => [], 'archived' => []]);
+        ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);
 });
 
 it('does not list a report its own page cannot open', function (): void {

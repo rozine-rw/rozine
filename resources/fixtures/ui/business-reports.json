@@ -20,7 +20,9 @@
                     "link": {
                         "url": "/preview/business-reports-may",
                         "method": "get"
-                    }
+                    },
+                    "awaiting_signature": false,
+                    "cosign_by": null
                 },
                 {
                     "id": "RPT-2026-04",
@@ -39,7 +41,9 @@
                     "link": {
                         "url": "/preview/business-reports-may",
                         "method": "get"
-                    }
+                    },
+                    "awaiting_signature": false,
+                    "cosign_by": null
                 },
                 {
                     "id": "RPT-2026-03",
@@ -58,7 +62,9 @@
                     "link": {
                         "url": "/preview/business-reports-may",
                         "method": "get"
-                    }
+                    },
+                    "awaiting_signature": false,
+                    "cosign_by": null
                 }
             ],
             "in_audit": [
@@ -76,7 +82,9 @@
                     "link": {
                         "url": "/preview/business-audit-prep",
                         "method": "get"
-                    }
+                    },
+                    "awaiting_signature": false,
+                    "cosign_by": null
                 }
             ],
             "archived": [
@@ -97,7 +105,9 @@
                     "link": {
                         "url": "/preview/business-reports-annual",
                         "method": "get"
-                    }
+                    },
+                    "awaiting_signature": false,
+                    "cosign_by": null
                 }
             ]
         },

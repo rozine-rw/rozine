@@ -309,13 +309,18 @@ function OfferCard({
             )}
         >
             <div className="flex flex-col gap-3">
-                <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-[13.5px] text-rz-slate">
-                        {t('business.apply.raise.you_receive')}
-                    </span>
-                    <span className="text-base font-bold whitespace-nowrap text-rz-ink">
-                        {formatRwf(quote.principal)}
-                    </span>
+                <div>
+                    <div className="flex items-baseline justify-between gap-3">
+                        <span className="text-[13.5px] text-rz-slate">
+                            {t('business.apply.raise.amount_raised')}
+                        </span>
+                        <span className="text-base font-bold whitespace-nowrap text-rz-ink">
+                            {formatRwf(quote.principal)}
+                        </span>
+                    </div>
+                    <p className="mt-[3px] text-right text-[10.5px] leading-normal text-rz-secondary">
+                        {t('business.apply.raise.fee_at_payout')}
+                    </p>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[13.5px] text-rz-slate">
