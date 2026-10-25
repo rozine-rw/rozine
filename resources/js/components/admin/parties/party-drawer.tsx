@@ -349,6 +349,16 @@ export function PartyDrawer({
                                         </li>
                                     ))}
                                 </ul>
+                                {party.committed &&
+                                    party.committed.amount !== '0' && (
+                                        <p className="mt-2 text-[12px] leading-[1.5] text-rz-muted">
+                                            {t('admin.parties.committed_note', {
+                                                amount: formatRwfShort(
+                                                    party.committed,
+                                                ),
+                                            })}
+                                        </p>
+                                    )}
                             </>
                         )}
                     </>

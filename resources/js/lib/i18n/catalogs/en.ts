@@ -2568,6 +2568,8 @@ const en = {
     'admin.parties.list.active_notes': 'Active notes',
     'admin.parties.list.holdings': 'Holdings',
     'admin.parties.list.engagements': 'Engagements',
+    'admin.parties.committed_note':
+        '{amount} is committed to raises whose notes are not issued yet. The portfolio counts it; it joins Holdings once the notes issue.',
     'admin.parties.list_empty': 'Nothing here yet.',
     'admin.parties.holding_detail': {
         one: '{amount} · {count} note',

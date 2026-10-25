@@ -2699,6 +2699,8 @@ const rw: Catalog = {
     'admin.parties.list.active_notes': 'Inyandiko zikora',
     'admin.parties.list.holdings': 'Imigabane',
     'admin.parties.list.engagements': 'Imirimo',
+    'admin.parties.committed_note':
+        '{amount} byemewe mu bikorwa inyandiko zabyo zitaratangwa. Bibarwa mu ishoramari; byinjira mu Migabane inyandiko zimaze gutangwa.',
     'admin.parties.list_empty': 'Nta kintu kirimo.',
     'admin.parties.holding_detail': {
         one: '{amount} · inyandiko {count}',

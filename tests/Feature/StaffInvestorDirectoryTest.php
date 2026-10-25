@@ -12,6 +12,7 @@ use App\Models\PrimaryHolding;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -141,8 +142,18 @@ test('rows carry real KYC states, ledger money and issued holdings, and the chip
             ->where('party.stats.2', ['key' => 'holdings', 'value' => ['kind' => 'count', 'value' => 2]])->has('party.list.rows', 1)
             ->where('party.list.key', 'holdings')->where('party.list.rows.0.tone', 'green')
             ->where('party.list.rows.0.detail', ['kind' => 'holding', 'value' => ['currency' => 'RWF', 'amount' => $principal], 'notes' => 1])
-            ->where('party.verification', null)->where('party.history', []));
+            ->where('party.verification', null)->where('party.history', [])->where('party.committed', ['currency' => 'RWF', 'amount' => '0']));
     expect($case->status)->toBe('submitted');
+});
+
+test("a person's committed cash shows beside their holdings until the notes issue", function (): void {
+    ['commitments' => $commitments] = PrimaryHoldingFixture::committed(['540'], fund: false);
+    $partyId = DB::table('primary_reservations')->where('id', $commitments[0]->primary_reservation_id)->value('party_id');
+
+    $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => $partyId]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.list.rows', [])->where('party.stats.2.value.value', 0)
+            ->where('party.committed', ['currency' => 'RWF', 'amount' => '2700000'])
+            ->where('party.stats.0.value.value', ['currency' => 'RWF', 'amount' => '2700000']));
 });
 
 test("a person's 360 carries their identity submission, its documents and history, and a case link opens it", function (): void {

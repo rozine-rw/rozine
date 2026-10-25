@@ -879,6 +879,8 @@ export type PartyDetail = {
     restrictions: (TrailEntry & { kind: 'freeze' | 'release' })[];
     /** An Investor's identity submission, reviewed in the 360; absent for other parties. */
     verification?: InvestorVerificationReview | null;
+    /** An Investor's cash committed to raises whose notes are not issued yet; absent for other parties. */
+    committed?: Money | null;
     /** An Audit Partner's registered office, which dispatch measures the 30 km from; absent for other parties. */
     office?: PartnerOffice | null;
     links: { close: RouteLink };

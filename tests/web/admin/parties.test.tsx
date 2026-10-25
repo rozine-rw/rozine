@@ -171,6 +171,37 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    it.each([
+        ['23300000', true],
+        ['0', false],
+    ] as const)(
+        'explains committed cash %s that is not a holding yet',
+        (amount, shown) => {
+            render(
+                <AdminParties
+                    {...props(investorsFixture)}
+                    party={{
+                        ...party(overdueFixture),
+                        list: { key: 'holdings', rows: [] },
+                        committed: { currency: 'RWF', amount },
+                    }}
+                />,
+            );
+
+            const note = screen.queryByText(
+                /is committed to raises whose notes are not issued yet/u,
+            );
+
+            if (shown) {
+                expect(note).toHaveTextContent(
+                    'RWF 23.3M is committed to raises whose notes are not issued yet. The portfolio counts it; it joins Holdings once the notes issue.',
+                );
+            } else {
+                expect(note).not.toBeInTheDocument();
+            }
+        },
+    );
+
     it('lists Audit Partners with their standing', () => {
         render(<AdminParties {...props(auditorsFixture)} />);
 

@@ -2711,6 +2711,8 @@ const fr: Catalog = {
     'admin.parties.list.active_notes': 'Titres actifs',
     'admin.parties.list.holdings': 'Positions',
     'admin.parties.list.engagements': 'Missions',
+    'admin.parties.committed_note':
+        "{amount} sont engagés dans des levées dont les titres ne sont pas encore émis. Le portefeuille les compte ; ils rejoignent les Positions à l'émission des titres.",
     'admin.parties.list_empty': "Rien pour l'instant.",
     'admin.parties.holding_detail': {
         one: '{amount} · {count} note',
