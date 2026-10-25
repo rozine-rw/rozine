@@ -50,6 +50,33 @@ it('says an offer closed, not that access must be checked, for an expired offer'
     );
 });
 
+it.each([
+    [
+        'ROLE_NOT_AVAILABLE',
+        "This app isn't on your account",
+        "Your account doesn't have access to this app yet.",
+    ],
+    [
+        'STAFF_ACCESS_REQUIRED',
+        'This page is for Rozine staff',
+        'Only Rozine staff can open this page.',
+    ],
+])(
+    'tells an account opening an app it never had (%s) so, not that it lost access',
+    (code, title, body) => {
+        render(<AccessDenied code={code} />);
+
+        expect(
+            screen.getByRole('heading', { name: title }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('alert')).toHaveTextContent(body);
+        expect(screen.queryByText(/no longer/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Choose an app' }),
+        ).toHaveAttribute('href', '/dashboard');
+    },
+);
+
 it('keeps the account-access wording for every other refusal code', () => {
     render(<AccessDenied code="ROLE_MEMBERSHIP_REQUIRED" />);
     expect(

@@ -49,6 +49,8 @@ type Options = {
         code: string,
         status: number,
     ) => void;
+    /** A 422 with field errors to correct: the command is not sent again unchanged. */
+    onInvalid?: (command: ApplicationCommand) => void;
 };
 
 /**
@@ -65,6 +67,7 @@ export function useApplicationCommand({
     refusal = null,
     onCompleted,
     onRefused,
+    onInvalid,
 }: Options) {
     return useOperationCommand<ApplicationCommand, OperationResource>({
         actions,
@@ -78,5 +81,6 @@ export function useApplicationCommand({
         refresh: reloadPreservingState,
         onCompleted,
         onRefused,
+        onInvalid,
     });
 }

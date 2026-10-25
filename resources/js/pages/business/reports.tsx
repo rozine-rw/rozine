@@ -7,7 +7,11 @@ import { ReportSheet } from '@/components/business/reports/report-sheet';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDayMonth, formatRwfShort } from '@/lib/rozine/format';
+import {
+    formatDateTime,
+    formatDayMonth,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     BusinessReportsProps,
@@ -49,12 +53,28 @@ export default function BusinessReports({
     links,
 }: BusinessReportsProps) {
     const { t, locale } = useTranslation();
-    const [tab, setTab] = useState<ReportStatus>(
-        report?.archived ? 'archived' : 'verified',
-    );
+    /* A report waiting for the business's signature opens first, so it is never missed. */
+    const [tab, setTab] = useState<ReportStatus>(() => {
+        if (report?.archived) {
+            return 'archived';
+        }
+
+        return report === null &&
+            reports.in_audit.some((row) => row.awaiting_signature)
+            ? 'in_audit'
+            : 'verified';
+    });
 
     /** A row whose seal date or filed figures were not read names only its Audit Partner. */
     const detail = (row: ReportRow): string => {
+        if (row.awaiting_signature) {
+            return row.cosign_by === null
+                ? t('business.reports.row.awaiting')
+                : t('business.reports.row.awaiting_by', {
+                      date: formatDateTime(row.cosign_by, locale),
+                  });
+        }
+
         if (row.status === 'in_audit' && row.seal_by !== null) {
             return t('business.reports.row.in_audit', {
                 auditor: row.auditor,

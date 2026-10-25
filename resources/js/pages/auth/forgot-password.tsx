@@ -1,5 +1,5 @@
 // Components
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -12,6 +12,17 @@ import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     const { t } = useTranslation();
+
+    /*
+     * The auth frame keeps the props an earlier page set (register or log in name their own), so
+     * this page names its heading again: straight after signing up it must not still say so.
+     */
+    setLayoutProps({
+        title: 'auth.forgot_password.layout_title',
+        description: 'auth.forgot_password.layout_description',
+        eyebrow: '',
+        audience: null,
+    });
 
     return (
         <>

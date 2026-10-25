@@ -161,6 +161,10 @@ export function StepRaise({
     const { t } = useTranslation();
     const [info, setInfo] = useState<'rate' | 'notes' | null>(null);
     const ready = quote?.status === 'ready' ? quote : null;
+    /* A refusal answers only the request it evaluated: an edited target is not refused yet. */
+    const refused = quote?.status === 'refused' && !quoting ? quote : null;
+    /* A cleared target is no request at all, so it is never read as a refused amount. */
+    const targetMissing = fields.target === '' && quote !== null;
     const words = countWords(fields.story);
     const titleLength = [...fields.title].length;
     const toggle = (which: 'rate' | 'notes') => () =>
@@ -249,17 +253,21 @@ export function StepRaise({
                         }
                         aria-invalid={
                             errors.target !== undefined ||
-                            quote?.status === 'refused' ||
+                            refused !== null ||
+                            targetMissing ||
                             undefined
                         }
                         className="w-full rounded-xl border border-rz-field-border bg-rz-field px-3.5 py-[13px] text-[15px] font-semibold text-rz-ink outline-none focus:border-rz-focus-border"
                     />
-                    <FieldError id="target-error">{errors.target}</FieldError>
+                    <FieldError id="target-error">
+                        {errors.target ??
+                            (targetMissing
+                                ? t('business.apply.raise.target_required')
+                                : undefined)}
+                    </FieldError>
                 </div>
 
-                {quote?.status === 'refused' && (
-                    <ErrorBanner>{quote.message}</ErrorBanner>
-                )}
+                {refused && <ErrorBanner>{refused.message}</ErrorBanner>}
 
                 <div className="flex gap-2" aria-busy={quoting || undefined}>
                     <div className="min-w-0 flex-1">
@@ -628,7 +636,7 @@ function Economics({
                 <div>
                     <div className="flex items-baseline justify-between gap-3">
                         <span className="text-[13.5px] text-rz-slate">
-                            {t('business.apply.raise.you_receive')}
+                            {t('business.apply.raise.amount_raised')}
                         </span>
                         <span className="text-base font-bold whitespace-nowrap text-rz-ink">
                             {quote ? formatRwf(quote.principal) : dash}
@@ -645,6 +653,22 @@ function Economics({
                                 })}
                             </p>
                         )}
+                    {quote &&
+                        quote.offered_principal.amount !==
+                            quote.requested_principal.amount && (
+                            <p className="mt-[3px] text-right text-[10.5px] leading-normal text-rz-secondary">
+                                {t('business.apply.raise.resized_reason', {
+                                    capacity: formatRwf(
+                                        quote.offered_principal,
+                                    ),
+                                })}
+                            </p>
+                        )}
+                    {quote && (
+                        <p className="mt-[3px] text-right text-[10.5px] leading-normal text-rz-secondary">
+                            {t('business.apply.raise.fee_at_payout')}
+                        </p>
+                    )}
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
                     <span className="text-[13.5px] text-rz-slate">

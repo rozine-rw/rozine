@@ -32,6 +32,13 @@ const rw: Catalog = {
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
+    'identity.denied.role_not_available.title':
+        'Iyi porogaramu ntiri kuri konti yawe',
+    'identity.denied.role_not_available.body':
+        'Konti yawe ntirabona uburenganzira kuri iyi porogaramu. Hitamo porogaramu, cyangwa usabe uburenganzira mu porogaramu zawe.',
+    'identity.denied.staff_only.title': 'Iyi paji ni iy’abakozi ba Rozine',
+    'identity.denied.staff_only.body':
+        'Abakozi ba Rozine ni bo bonyine bafungura iyi paji. Hitamo porogaramu kugira ngo usubire ku kazi kawe.',
     'identity.denied.verification_required.title':
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':
@@ -303,6 +310,13 @@ const rw: Catalog = {
     'business.today.cosign.sub':
         'CPA wawe yayifunze. Soma ibyabonetse mbere yo gushyiraho umukono.',
     'business.today.cosign.cta': 'Yisuzume kandi uyishyireho umukono',
+    'business.today.signature.kicker': 'Umukono wawe urakenewe',
+    'business.today.signature.sub':
+        'Umukono wawe urakenewe mbere y’uko iyi dosiye yoherezwa.',
+    'business.today.signature.cta': 'Suzuma kandi usinye',
+    'business.today.awaiting.kicker': 'Itegereje imikono',
+    'business.today.awaiting.sub': 'Turategereje ko {names} asinya.',
+    'business.today.awaiting.cta': 'Fungura dosiye',
     'business.today.declined.kicker': 'Ubusabe bwanzwe',
     'business.today.declined.sub':
         'Birenze ubushobozi bwawe bwemejwe — tuvugishe mbere yo kongera gusaba.',
@@ -434,7 +448,9 @@ const rw: Catalog = {
     'business.apply.raise.note_unit': 'Urupapuro rumwe rwa Rozine ni {price}.',
     'business.apply.raise.term_label': 'Igihe · amezi yo kwishyura',
     'business.apply.raise.term_any': '· hagati ya 3 na 6',
-    'business.apply.raise.you_receive': 'Uhabwa',
+    'business.apply.raise.amount_raised': 'Igishoro gishakwa',
+    'business.apply.raise.fee_at_payout':
+        'Amafaranga ya serivisi ya 3% akurwaho iyo amafaranga akugezeho. Wishyura igishoro cyose cyabonetse.',
     'business.apply.raise.interest': '+ Inyungu',
     'business.apply.raise.interest_basis': '({rate}% · amezi {months})',
     'business.apply.raise.you_repay': 'Wishyura',
@@ -718,6 +734,9 @@ const rw: Catalog = {
         'Ayinjiye {inflow} · {health} · yagenzuwe na {auditor}',
     'business.reports.row.in_audit':
         'Biri kwa {auditor} · bifungwa bitarenze {date}',
+    'business.reports.row.awaiting': 'Hakenewe umukono wawe',
+    'business.reports.row.awaiting_by':
+        'Shyiraho umukono cyangwa ujurire bitarenze {date}',
     'business.reports.row.annual': "Incamake y'umwaka wose",
     'business.reports.annual': "Raporo y'umwaka {year}",
     'business.reports.empty': 'Nta raporo irahari.',
@@ -922,7 +941,8 @@ const rw: Catalog = {
     'business.profile.linked.add': '+ Huza konti yakiriraho',
     'business.profile.linked.none':
         'Nta konti irahuzwa. Huza imwe kugira ngo ushyireho kandi ubikuze amafaranga.',
-    'business.profile.linked.empty': 'Nta konti irahuzwa.',
+    'business.profile.linked.empty':
+        'Nta konti irahuzwa. Guhuza konti bizafunguka iyi konti nimara kwemererwa kohereza no kwakira amafaranga. Amafaranga yawe azoherezwa kuri konti yemejwe uhuza hano.',
     'business.profile.linked.footnote':
         "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
     'business.profile.legal.updated':
@@ -2830,7 +2850,7 @@ const rw: Catalog = {
     'business.wallet.range.clear': 'Igihe cyose',
     'business.wallet.export.label': 'Kuramo raporo y’ikofi',
     'business.wallet.export.pdf': 'Kuramo PDF',
-    'business.wallet.export.csv': 'Kuramo Excel',
+    'business.wallet.export.csv': 'Kuramo CSV',
     'business.wallet.caption':
         'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
@@ -4431,7 +4451,7 @@ const rw: Catalog = {
     'investor.wallet.tx.title_short': 'Ibikorwa',
     'investor.wallet.tx.export': 'Kuramo',
     'investor.wallet.tx.pdf': 'Kuramo PDF',
-    'investor.wallet.tx.csv': 'Kuramo Excel',
+    'investor.wallet.tx.csv': 'Kuramo CSV',
     'investor.wallet.tx.ranges': "Igihe cy'ibikorwa",
     'investor.wallet.tx.range.today': 'Uyu munsi',
     'investor.wallet.tx.range.7d': 'Iminsi 7',
@@ -4898,6 +4918,9 @@ const rw: Catalog = {
 
     'business.apply.business.unavailable': 'Ntibiboneka',
     'business.apply.business.ineligible': 'Ntiremerewe gusaba igishoro',
+    'business.apply.raise.target_required': 'Andika amafaranga ushaka gushaka.',
+    'business.apply.raise.resized_reason':
+        '{capacity} ni yo menshi ushobora gushaka ubu: ubushobozi bwawe bwo kuguza ni bwo bushyiraho iki gipimo.',
     'business.apply.raise.resized':
         'Wasabye {requested} · iki ni cyo cyifuzo wemera iyo usinye',
     'business.apply.raise.schedule': 'Gahunda yo kwishyura',
@@ -5419,7 +5442,8 @@ const rw: Catalog = {
     'investor.wallet.c3.policy': 'Amabwiriza yo kubitsa {version}.',
     'investor.wallet.c3.policy_minimum': 'Nibura {amount}.',
     'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}.',
-    'investor.wallet.c3.deposit_unavailable': 'Kubitsa ntibikunda ubu.',
+    'investor.wallet.c3.deposit_unavailable':
+        'Kubitsa ntibirafungurwa kuri iyi konti. Rozine izabifungura konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.intent_only':
         "Ibi byandika icyifuzo cyawe cyo kubitsa. Nta mafaranga ashyirwa kuri konti mbere y'uko ubwishyu bwemezwa.",
     'investor.wallet.c3.holds': 'Afashwe mu kwishyura',
@@ -5462,7 +5486,7 @@ const rw: Catalog = {
         'Inyemezabwishyu yo gushyira kuri konti',
     'investor.wallet.c3.funding': 'Kwimura amafaranga',
     'investor.wallet.c3.withdraw_unavailable':
-        'Kubikuza ntibishoboka kuri konti yawe ubu.',
+        'Kubikuza ntibirafungurwa kuri iyi konti. Bisaba konti yo kwakiriraho yemejwe muri Umwirondoro → Konti zihujwe, kandi bizafunguka konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.withdraw_available': 'Ayo ushobora kubikuza: {amount}',
     'investor.wallet.c3.provider_charge': "Amafaranga y'utanga serivisi",
     'investor.wallet.c3.withdraw_terms':

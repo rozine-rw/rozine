@@ -414,6 +414,43 @@ describe('authentication pages', () => {
         expect(screen.getByLabelText('One-time code')).toHaveValue('');
     });
 
+    it.each([
+        ['verify email', VerifyEmail, 'verify_email'],
+        ['forgot password', ForgotPassword, 'forgot_password'],
+        ['confirm password', ConfirmPassword, 'confirm_password'],
+    ] as const)(
+        'names its own heading on %s, so the sign-up or log-in heading never stays',
+        (_name, Page, key) => {
+            inertia.layoutProps.mockClear();
+            render(<Page />);
+
+            expect(inertia.layoutProps).toHaveBeenCalledWith({
+                title: `auth.${key}.layout_title`,
+                description: `auth.${key}.layout_description`,
+                eyebrow: '',
+                audience: null,
+            });
+        },
+    );
+
+    it('names its own heading on reset password too', () => {
+        inertia.layoutProps.mockClear();
+        render(
+            <ResetPassword
+                token="t"
+                email="a@rozine.rw"
+                passwordRules="minlength:12"
+            />,
+        );
+
+        expect(inertia.layoutProps).toHaveBeenCalledWith({
+            title: 'auth.reset_password.layout_title',
+            description: 'auth.reset_password.layout_description',
+            eyebrow: '',
+            audience: null,
+        });
+    });
+
     it('renders verification status and processing branches', () => {
         inertia.state.processing = true;
         const { rerender } = render(

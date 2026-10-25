@@ -170,6 +170,36 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         ctaTone={GREEN_TEXT}
                     />
                 );
+            case 'application_signature':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('document', 'amber')}
+                        iconTile={AMBER_TILE}
+                        dot="bg-[#c2661f]"
+                        kicker={t('business.today.signature.kicker')}
+                        title={item.title}
+                        sub={t('business.today.signature.sub')}
+                        cta={t('business.today.signature.cta')}
+                        ctaTone="text-rz-ink"
+                    />
+                );
+            case 'application_awaiting':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('hourglass', 'blue')}
+                        iconTile={GREEN_TILE}
+                        dot="bg-rz-accent-app-text"
+                        kicker={t('business.today.awaiting.kicker')}
+                        title={item.title}
+                        sub={t('business.today.awaiting.sub', {
+                            names: item.pending.join(', '),
+                        })}
+                        cta={t('business.today.awaiting.cta')}
+                        ctaTone={GREEN_TEXT}
+                    />
+                );
             case 'application_declined':
                 return (
                     <TodoCard

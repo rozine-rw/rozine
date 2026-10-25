@@ -177,6 +177,20 @@ it('replaces stale Inertia home content with a denied page while keeping JSON er
         ->assertJsonPath('component', 'identity/access-denied')->assertJsonMissingPath('props.identity');
 });
 
+it('shows the access page, never raw JSON, when a browser opens another app\'s page', function (string $path, string $code): void {
+    [$user] = bookmarkParticipant('business');
+    app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
+
+    $this->actingAs($user)->get($path)->assertForbidden()->assertInertia(fn (Assert $page): Assert => $page
+        ->component('identity/access-denied')->where('code', $code));
+    $this->getJson($path)->assertForbidden()->assertExactJson(['message' => $code, 'code' => $code]);
+})->with([
+    'a shared deal link' => ['/investor/deals', 'ROLE_NOT_AVAILABLE'],
+    'the investor market' => ['/investor/market', 'ROLE_NOT_AVAILABLE'],
+    'the staff dashboard' => ['/admin/dashboard', 'STAFF_ACCESS_REQUIRED'],
+    'a staff section' => ['/admin/businesses', 'STAFF_ACCESS_REQUIRED'],
+]);
+
 it('rolls back and reapplies the checkpoint schema without disturbing identity accounts', function (): void {
     $user = User::factory()->create();
     $migration = require database_path('migrations/2026_09_24_020204_create_staff_access_and_role_bookmarks.php');

@@ -30,6 +30,13 @@ const en = {
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.role_not_available.title':
+        "This app isn't on your account",
+    'identity.denied.role_not_available.body':
+        "Your account doesn't have access to this app yet. Choose an app, or request access from your apps.",
+    'identity.denied.staff_only.title': 'This page is for Rozine staff',
+    'identity.denied.staff_only.body':
+        'Only Rozine staff can open this page. Choose an app to go back to your own work.',
     'identity.denied.verification_required.title':
         'Identity verification required',
     'identity.denied.verification_required.body':
@@ -295,6 +302,13 @@ const en = {
     'business.today.cosign.sub':
         'Your CPA sealed it. Read the findings before you co-sign.',
     'business.today.cosign.cta': 'Review & co-sign',
+    'business.today.signature.kicker': 'Signature needed',
+    'business.today.signature.sub':
+        'Your signature is needed before this application can be submitted.',
+    'business.today.signature.cta': 'Review & sign',
+    'business.today.awaiting.kicker': 'Awaiting signatures',
+    'business.today.awaiting.sub': 'Waiting for {names} to sign.',
+    'business.today.awaiting.cta': 'Open application',
     'business.today.declined.kicker': 'Application declined',
     'business.today.declined.sub':
         'Outside your approved capacity — talk to us before resubmitting.',
@@ -423,7 +437,9 @@ const en = {
     'business.apply.raise.note_unit': 'A Rozine note is {price}.',
     'business.apply.raise.term_label': 'Term · months to repay',
     'business.apply.raise.term_any': '· any 3–6',
-    'business.apply.raise.you_receive': 'You receive',
+    'business.apply.raise.amount_raised': 'Amount raised',
+    'business.apply.raise.fee_at_payout':
+        'A 3% platform fee is deducted when this is paid out to you. You repay the full amount raised.',
     'business.apply.raise.interest': '+ Interest',
     'business.apply.raise.interest_basis': '({rate}% flat · {months} months)',
     'business.apply.raise.you_repay': 'You repay',
@@ -697,6 +713,8 @@ const en = {
     'business.reports.row.filed':
         'Inflow {inflow} · {health} · audited by {auditor}',
     'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
+    'business.reports.row.awaiting': 'Needs your co-signature',
+    'business.reports.row.awaiting_by': 'Co-sign or dispute by {date}',
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
@@ -891,7 +909,8 @@ const en = {
     'business.profile.linked.add': '+ Link a payout account',
     'business.profile.linked.none':
         'No account linked yet. Link one to deposit and withdraw.',
-    'business.profile.linked.empty': 'No account linked yet.',
+    'business.profile.linked.empty':
+        'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
@@ -2696,7 +2715,7 @@ const en = {
     'business.wallet.range.clear': 'All time',
     'business.wallet.export.label': 'Download statement',
     'business.wallet.export.pdf': 'Download PDF',
-    'business.wallet.export.csv': 'Download Excel',
+    'business.wallet.export.csv': 'Download CSV',
     'business.wallet.caption': 'Fees, payouts & disbursements settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
@@ -4268,7 +4287,7 @@ const en = {
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Export',
     'investor.wallet.tx.pdf': 'Download PDF',
-    'investor.wallet.tx.csv': 'Download Excel',
+    'investor.wallet.tx.csv': 'Download CSV',
     'investor.wallet.tx.ranges': 'Transaction period',
     'investor.wallet.tx.range.today': 'Today',
     'investor.wallet.tx.range.7d': '7 days',
@@ -4713,6 +4732,9 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.raise.target_required': 'Enter how much you want to raise.',
+    'business.apply.raise.resized_reason':
+        '{capacity} is the most you can raise right now: your borrowing capacity sets this limit.',
     'business.apply.raise.resized':
         'You asked for {requested} · this is the offer you accept when you sign',
     'business.apply.raise.schedule': 'Repayment schedule',
@@ -5168,7 +5190,7 @@ const en = {
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
     'investor.wallet.c3.deposit_unavailable':
-        "Deposit isn't available to you right now.",
+        "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
     'investor.wallet.c3.intent_only':
         'This records your deposit request. Nothing is credited until the payment is confirmed.',
     'investor.wallet.c3.holds': 'Held for checkout',
@@ -5209,7 +5231,7 @@ const en = {
     'investor.wallet.c3.credit_receipt': 'Credit receipt',
     'investor.wallet.c3.funding': 'Move money',
     'investor.wallet.c3.withdraw_unavailable':
-        "Withdrawals aren't available on your account right now.",
+        "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_available': 'Available to withdraw: {amount}',
     'investor.wallet.c3.provider_charge': 'Provider charge',
     'investor.wallet.c3.withdraw_terms':

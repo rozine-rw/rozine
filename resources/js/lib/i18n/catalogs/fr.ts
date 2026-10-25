@@ -30,6 +30,14 @@ const fr: Catalog = {
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
+    'identity.denied.role_not_available.title':
+        'Cette application n’est pas sur votre compte',
+    'identity.denied.role_not_available.body':
+        'Votre compte n’a pas encore accès à cette application. Choisissez une application ou demandez l’accès depuis vos applications.',
+    'identity.denied.staff_only.title':
+        'Cette page est réservée à l’équipe Rozine',
+    'identity.denied.staff_only.body':
+        'Seule l’équipe Rozine peut ouvrir cette page. Choisissez une application pour revenir à votre travail.',
     'identity.denied.verification_required.title':
         'Vérification d’identité requise',
     'identity.denied.verification_required.body':
@@ -306,6 +314,13 @@ const fr: Catalog = {
     'business.today.cosign.sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
     'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.signature.kicker': 'Signature requise',
+    'business.today.signature.sub':
+        'Votre signature est requise avant que cette demande puisse être soumise.',
+    'business.today.signature.cta': 'Examiner et signer',
+    'business.today.awaiting.kicker': 'En attente de signatures',
+    'business.today.awaiting.sub': 'En attente de la signature de {names}.',
+    'business.today.awaiting.cta': 'Ouvrir la demande',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',
@@ -439,7 +454,9 @@ const fr: Catalog = {
     'business.apply.raise.note_unit': 'Une note Rozine vaut {price}.',
     'business.apply.raise.term_label': 'Durée · mois de remboursement',
     'business.apply.raise.term_any': '· de 3 à 6',
-    'business.apply.raise.you_receive': 'Vous recevez',
+    'business.apply.raise.amount_raised': 'Montant levé',
+    'business.apply.raise.fee_at_payout':
+        'Des frais de plateforme de 3 % sont déduits lors du versement. Vous remboursez la totalité du montant levé.',
     'business.apply.raise.interest': '+ Intérêts',
     'business.apply.raise.interest_basis':
         '({rate} % forfaitaire · {months} mois)',
@@ -722,6 +739,8 @@ const fr: Catalog = {
     'business.reports.row.filed':
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
+    'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
@@ -929,7 +948,8 @@ const fr: Catalog = {
     'business.profile.linked.add': '+ Lier un compte de versement',
     'business.profile.linked.none':
         'Aucun compte lié. Liez-en un pour déposer et retirer.',
-    'business.profile.linked.empty': 'Aucun compte lié.',
+    'business.profile.linked.empty':
+        "Aucun compte lié. L'ajout d'un compte s'ouvre dès que ce compte est autorisé à faire des mouvements d'argent. Vos versements arrivent sur le compte vérifié que vous liez ici.",
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
     'business.profile.legal.updated':
@@ -2842,7 +2862,7 @@ const fr: Catalog = {
     'business.wallet.range.clear': 'Depuis le début',
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
-    'business.wallet.export.csv': 'Télécharger Excel',
+    'business.wallet.export.csv': 'Télécharger le CSV',
     'business.wallet.caption':
         'Frais, versements et décaissements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
@@ -4448,7 +4468,7 @@ const fr: Catalog = {
     'investor.wallet.tx.title_short': 'Transactions',
     'investor.wallet.tx.export': 'Exporter',
     'investor.wallet.tx.pdf': 'Télécharger le PDF',
-    'investor.wallet.tx.csv': 'Télécharger Excel',
+    'investor.wallet.tx.csv': 'Télécharger le CSV',
     'investor.wallet.tx.ranges': 'Période des transactions',
     'investor.wallet.tx.range.today': "Aujourd'hui",
     'investor.wallet.tx.range.7d': '7 jours',
@@ -4918,6 +4938,10 @@ const fr: Catalog = {
 
     'business.apply.business.unavailable': 'Indisponible',
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.raise.target_required':
+        'Indiquez le montant que vous souhaitez lever.',
+    'business.apply.raise.resized_reason':
+        '{capacity} est le maximum que vous pouvez lever actuellement : votre capacité d’emprunt fixe cette limite.',
     'business.apply.raise.resized':
         "Vous avez demandé {requested} · voici l'offre que vous acceptez en signant",
     'business.apply.raise.schedule': 'Échéancier de remboursement',
@@ -5448,7 +5472,7 @@ const fr: Catalog = {
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
     'investor.wallet.c3.deposit_unavailable':
-        'Le dépôt ne vous est pas accessible pour le moment.',
+        "Les dépôts ne sont pas encore ouverts sur ce compte. Rozine les active dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.intent_only':
         "Cela enregistre votre demande de dépôt. Rien n'est crédité avant la confirmation du paiement.",
     'investor.wallet.c3.holds': 'Réservé pour un paiement',
@@ -5489,7 +5513,7 @@ const fr: Catalog = {
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
     'investor.wallet.c3.funding': 'Mouvements de fonds',
     'investor.wallet.c3.withdraw_unavailable':
-        'Les retraits ne sont pas disponibles sur votre compte pour le moment.',
+        "Les retraits ne sont pas encore ouverts sur ce compte. Ils demandent un compte de versement vérifié dans Profil → Comptes liés, et s'ouvrent dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
     'investor.wallet.c3.provider_charge': 'Frais du prestataire',
     'investor.wallet.c3.withdraw_terms':
