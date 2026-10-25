@@ -89,7 +89,7 @@ export default class Home extends Component<SiteProps, SiteState> {
             H: { open: '' },
         },
         {
-            depIdx: 22,
+            depIdx: 25,
             term: 6,
             band: 1,
             faq: 0,
@@ -313,9 +313,13 @@ export default class Home extends Component<SiteProps, SiteState> {
     rwf(n: number) {
         return 'RWF ' + Math.round(n || 0).toLocaleString('en-US');
     }
+    /**
+     * The amount at slider step `i`, on a log scale from RWF 5,000 to RWF 50M: one investor may
+     * hold at most half of a raise (BRS INV-R01), and a raise is at most RWF 100M.
+     */
     depFor(i: any) {
         const lo = 5000,
-            hi = 200e6,
+            hi = 50e6,
             t = Math.max(0, Math.min(40, +i || 0)) / 40;
         const v = lo * Math.pow(hi / lo, t);
 
@@ -1614,7 +1618,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                         }}
                                                     >
                                                         <span>RWF 5,000</span>
-                                                        <span>RWF 200M</span>
+                                                        <span>RWF 50M</span>
                                                     </div>
                                                     <div
                                                         style={{

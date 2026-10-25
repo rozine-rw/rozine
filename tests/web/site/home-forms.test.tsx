@@ -308,7 +308,7 @@ describe('the card a signup can keep', () => {
                 sent: true,
                 name: 'Diane Uwase',
                 country: 'Rwanda',
-                depIdx: 22,
+                depIdx: 25,
                 term: 6,
             });
         });

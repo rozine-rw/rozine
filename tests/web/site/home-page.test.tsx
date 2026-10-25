@@ -211,11 +211,14 @@ describe('the investor calculator', () => {
         });
 
         expect(slider).toBeInTheDocument();
-        expect(site.invVals().depStr).toBe('RWF 200,000,000');
+        expect(site.invVals().depStr).toBe('RWF 50,000,000');
     });
 
     it('reaches the floor and the ceiling of what may be pledged', () => {
         const site = mountSite();
+
+        expect(site.invVals().depStr).toBe('RWF 1,500,000');
+        expect(screen.getByText('RWF 50M')).toBeInTheDocument();
 
         act(() => {
             site.setState({ depIdx: 0 });
@@ -225,7 +228,7 @@ describe('the investor calculator', () => {
         act(() => {
             site.setState({ depIdx: 40 });
         });
-        expect(site.invVals().depStr).toBe('RWF 200,000,000');
+        expect(site.invVals().depStr).toBe('RWF 50,000,000');
     });
 });
 
