@@ -4233,6 +4233,7 @@ const fr: Catalog = {
     'investor.kyc.country': 'PAYS DE RÉSIDENCE',
     'investor.kyc.dob': 'DATE DE NAISSANCE',
     'investor.kyc.dob_placeholder': 'JJ / MM / AAAA',
+    'investor.kyc.dob_hint': 'Jour, mois et année, par exemple 15 / 06 / 1990.',
     'investor.kyc.id_number': 'NUMÉRO DE PIÈCE',
     'investor.kyc.upload_front': 'Envoyer le recto',
     'investor.kyc.upload_back': 'Envoyer le verso',

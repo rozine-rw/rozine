@@ -783,7 +783,7 @@ describe('Verification submission', () => {
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             step: 'personal',
-            date_of_birth: '02/05/1990',
+            date_of_birth: '02 / 05 / 1990',
             expected_revision: 4,
         });
     });
@@ -841,6 +841,45 @@ describe('Verification submission', () => {
         expect(
             screen.queryByText('Choose a PDF, PNG or JPEG of at most 10 MB.'),
         ).not.toBeInTheDocument();
+    });
+
+    it('formats a typed date of birth and says the format before the first try', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorVerification {...live(personalFixture, {})} />);
+        expect(
+            screen.getByText(
+                'Day, month and year, for example 15 / 06 / 1990.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(screen.getByLabelText('DATE OF BIRTH'), '15061990');
+
+        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue(
+            '15 / 06 / 1990',
+        );
+        await user.clear(screen.getByLabelText('DATE OF BIRTH'));
+        await user.type(screen.getByLabelText('DATE OF BIRTH'), '1.5.1990');
+        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue('1.5.1990');
+    });
+
+    it('stops showing the missing-photo error once both sides are uploaded', () => {
+        const missing =
+            'Upload both sides of your ID, or the passport photo page.';
+        inertia.errors = { id_front: missing };
+        const props = live(documentFixture, {});
+        const { rerender } = render(<InvestorVerification {...props} />);
+
+        expect(screen.getByText(missing)).toBeInTheDocument();
+        if (props.investor_type === 'individual') {
+            rerender(
+                <InvestorVerification
+                    {...props}
+                    uploads={{ ...props.uploads, back: { status: 'uploaded' } }}
+                />,
+            );
+        }
+
+        expect(screen.queryByText(missing)).not.toBeInTheDocument();
     });
 });
 

@@ -4218,6 +4218,7 @@ const rw: Catalog = {
     'investor.kyc.country': 'IGIHUGU UTUYEMO',
     'investor.kyc.dob': "ITARIKI Y'AMAVUKO",
     'investor.kyc.dob_placeholder': 'UU / UK / UMWAKA',
+    'investor.kyc.dob_hint': "Umunsi, ukwezi n'umwaka, urugero 15 / 06 / 1990.",
     'investor.kyc.id_number': "NIMERO Y'INDANGAMUNTU",
     'investor.kyc.upload_front': 'Ohereza imbere',
     'investor.kyc.upload_back': 'Ohereza inyuma',

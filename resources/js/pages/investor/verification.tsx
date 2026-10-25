@@ -106,6 +106,22 @@ function Upload({
     );
 }
 
+/**
+ * Typed digits become DD / MM / YYYY as they are entered, the one form the server reads. Anything
+ * else typed (a pasted date with dots, say) is left for the server to read or refuse.
+ */
+function dateOfBirth(value: string): string {
+    if (!/^[0-9 /]*$/u.test(value)) {
+        return value;
+    }
+
+    const digits = value.replace(/\D/gu, '').slice(0, 8);
+
+    return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)]
+        .filter((part) => part !== '')
+        .join(' / ');
+}
+
 function Chips<T extends string>({
     label,
     options,
@@ -226,9 +242,19 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     const data = form.data;
     const set = (key: string, value: string | boolean) =>
         form.setData(key, value);
-    const failure = uploadError ?? Object.values(form.errors)[0];
     const submission: Partial<KycSubmission> =
         props.investor_type === 'individual' ? props : {};
+    // An upload error from the last Continue stops showing once the files it asked for are in.
+    const answered = (field: string) =>
+        props.investor_type === 'individual' &&
+        ((field === 'id_front' &&
+            props.uploads.front.status !== 'missing' &&
+            (data.id_type === 'passport' ||
+                props.uploads.back.status !== 'missing')) ||
+            (field === 'selfie' && props.uploads.selfie.status !== 'missing'));
+    const failure =
+        uploadError ??
+        Object.entries(form.errors).find(([field]) => !answered(field))?.[1];
     const locked = submission.status === 'submitted';
 
     const submit = (event: FormEvent) => {
@@ -249,6 +275,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
         label: string,
         placeholder: string,
         inputMode?: 'numeric',
+        format: (value: string) => string = (value) => value,
     ) => (
         <div className="min-w-0 flex-1">
             <label htmlFor={key} className={LABEL}>
@@ -257,7 +284,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
             <input
                 id={key}
                 value={String(data[key])}
-                onChange={(event) => set(key, event.target.value)}
+                onChange={(event) => set(key, format(event.target.value))}
                 inputMode={inputMode}
                 placeholder={placeholder}
                 className={FIELD}
@@ -327,11 +354,18 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                     {props.country}
                                 </p>
                             </div>
-                            {text(
-                                'date_of_birth',
-                                t('investor.kyc.dob'),
-                                t('investor.kyc.dob_placeholder'),
-                            )}
+                            <div>
+                                {text(
+                                    'date_of_birth',
+                                    t('investor.kyc.dob'),
+                                    t('investor.kyc.dob_placeholder'),
+                                    'numeric',
+                                    dateOfBirth,
+                                )}
+                                <p className="mt-1.5 text-[11.5px] text-rz-secondary">
+                                    {t('investor.kyc.dob_hint')}
+                                </p>
+                            </div>
                         </div>
                     )}
 

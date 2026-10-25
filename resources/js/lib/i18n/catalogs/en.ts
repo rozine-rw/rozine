@@ -4055,6 +4055,7 @@ const en = {
     'investor.kyc.country': 'COUNTRY OF RESIDENCE',
     'investor.kyc.dob': 'DATE OF BIRTH',
     'investor.kyc.dob_placeholder': 'DD / MM / YYYY',
+    'investor.kyc.dob_hint': 'Day, month and year, for example 15 / 06 / 1990.',
     'investor.kyc.id_number': 'ID NUMBER',
     'investor.kyc.upload_front': 'Upload front',
     'investor.kyc.upload_back': 'Upload back',
