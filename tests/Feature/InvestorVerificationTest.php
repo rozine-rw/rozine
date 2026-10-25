@@ -138,10 +138,11 @@ test('each answer is checked before the step moves on', function (string $step, 
     'impossible birth date' => ['personal', ['date_of_birth' => '30 / 02 / 1990'], 'date_of_birth', 'Enter your date of birth as DD / MM / YYYY.'],
     'too old to be real' => ['personal', ['date_of_birth' => '31 / 12 / 1899'], 'date_of_birth', 'Enter your date of birth as DD / MM / YYYY.'],
     'under 18' => ['personal', ['date_of_birth' => '07 / 10 / 2008'], 'date_of_birth', 'You must be at least 18 to invest.'],
-    'unknown document' => ['document', ['id_type' => 'voter_card', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID, passport or driving licence.'],
+    'unknown document' => ['document', ['id_type' => 'voter_card', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID or passport.'],
+    'driving licence (BRS KYC-R02)' => ['document', ['id_type' => 'drivers_license', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID or passport.'],
     'short ID number' => ['document', ['id_type' => 'national_id', 'id_number' => '1199'], 'id_number', 'Enter the 16-digit number on the card.'],
     'bad passport number' => ['document', ['id_type' => 'passport', 'id_number' => 'P-1'], 'id_number', 'Enter the passport number, 6 to 12 letters or digits.'],
-    'missing ID back' => ['document', ['id_type' => 'drivers_license', 'id_number' => '1199080012345678'], 'id_front', 'Upload both sides of your ID, or the passport photo page.'],
+    'missing ID back' => ['document', ['id_type' => 'national_id', 'id_number' => '1199080012345678'], 'id_front', 'Upload both sides of your ID, or the passport photo page.'],
 ]);
 
 test('a person who turns 18 today may continue', function (): void {

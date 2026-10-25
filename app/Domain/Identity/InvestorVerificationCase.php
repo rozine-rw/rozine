@@ -159,14 +159,19 @@ final class InvestorVerificationCase
         return $date->format('d / m / Y');
     }
 
-    /** @return array{'national_id'|'passport'|'drivers_license', string} */
+    /**
+     * BRS KYC-R02 verifies an individual by national ID or passport only. A driving licence saved
+     * before that rule is refused here too, so it can be neither submitted nor approved.
+     *
+     * @return array{'national_id'|'passport', string}
+     */
     private function document(string $type, string $number): array
     {
         $number = strtoupper((string) preg_replace('/\s+/', '', $number));
         $valid = match ($type) {
-            'national_id', 'drivers_license' => preg_match('/^[0-9]{16}$/D', $number) === 1,
+            'national_id' => preg_match('/^[0-9]{16}$/D', $number) === 1,
             'passport' => preg_match('/^[A-Z0-9]{6,12}$/D', $number) === 1,
-            default => throw new CommandRejection('VERIFICATION_ID_TYPE_INVALID', 422, fieldErrors: ['id_type' => ['Choose a national ID, passport or driving licence.']]),
+            default => throw new CommandRejection('VERIFICATION_ID_TYPE_INVALID', 422, fieldErrors: ['id_type' => ['Choose a national ID or passport.']]),
         };
         if (! $valid) {
             throw new CommandRejection('VERIFICATION_ID_NUMBER_INVALID', 422, fieldErrors: ['id_number' => [$type === 'passport'

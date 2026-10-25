@@ -343,11 +343,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                     label={t(
                                         'investor.signup.identity.id_type',
                                     )}
-                                    options={[
-                                        'national_id',
-                                        'passport',
-                                        'drivers_license',
-                                    ]}
+                                    options={['national_id', 'passport']}
                                     value={data.id_type as IdDocument}
                                     onChange={(value) => set('id_type', value)}
                                     render={(value) =>

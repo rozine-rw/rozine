@@ -479,9 +479,11 @@ describe('Verification', () => {
             screen.getByRole('progressbar', { name: 'Verification progress' }),
         ).toHaveValue(33);
         expect(screen.getByText('Front uploaded')).toBeInTheDocument();
-        await user.click(
-            screen.getByRole('radio', { name: 'Driver’s License' }),
-        );
+        // BRS KYC-R02: an individual verifies with a national ID or passport only.
+        expect(
+            screen.getAllByRole('radio').map((radio) => radio.textContent),
+        ).toEqual(['National ID', 'Passport']);
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
         const file = new File(['id'], 'back.jpg', { type: 'image/jpeg' });
 
         await user.upload(screen.getByLabelText('Upload back'), file);
