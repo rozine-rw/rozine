@@ -1188,7 +1188,7 @@ const en = {
     'admin.design.payments.approvals.title': 'Approval queue',
     'admin.design.payments.approvals.empty':
         'Nothing awaiting approval to show yet.',
-    'admin.design.ratings.kpi.rated': 'Businesses rated',
+    'admin.design.ratings.kpi.rated': 'Published ratings',
     'admin.design.ratings.kpi.changed': 'Band changed',
     'admin.design.ratings.kpi.trending_down': 'Trending down',
     'admin.design.ratings.kpi.pinned': 'Pinned by staff',
@@ -1196,6 +1196,8 @@ const en = {
     'admin.design.ratings.tab.trending_down': 'Trending down',
     'admin.design.ratings.tab.all': 'All businesses',
     'admin.design.ratings.book.title': 'The rating book',
+    'admin.design.ratings.book.sub':
+        'Businesses whose rating was published with a raise. Ratings on applications still under review are provisional and show in the Applications queue.',
     'admin.design.ratings.book.empty': 'No ratings to show yet.',
     'admin.design.deferrals.kpi.this_month': 'Deferrals this month',
     'admin.design.deferrals.kpi.live': 'Live',
@@ -2069,7 +2071,7 @@ const en = {
     'admin.applications.col.sector': 'Sector',
     'admin.applications.col.requested': 'Requested',
     'admin.applications.col.capacity': 'Capacity used',
-    'admin.applications.col.rating': 'Rating',
+    'admin.applications.col.rating': 'Engine rating',
     'admin.applications.col.submitted': 'Submitted',
     'admin.applications.col.decision': 'Decision · Actions',
     'admin.applications.terms': '{term}mo · {rate}% flat',

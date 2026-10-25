@@ -1251,7 +1251,7 @@ const fr: Catalog = {
     'admin.design.payments.approvals.title': "File d'approbation",
     'admin.design.payments.approvals.empty':
         "Rien en attente d'approbation à afficher pour le moment.",
-    'admin.design.ratings.kpi.rated': 'Entreprises notées',
+    'admin.design.ratings.kpi.rated': 'Notations publiées',
     'admin.design.ratings.kpi.changed': 'Bande modifiée',
     'admin.design.ratings.kpi.trending_down': 'En baisse',
     'admin.design.ratings.kpi.pinned': 'Fixées par le personnel',
@@ -1259,6 +1259,8 @@ const fr: Catalog = {
     'admin.design.ratings.tab.trending_down': 'En baisse',
     'admin.design.ratings.tab.all': 'Toutes les entreprises',
     'admin.design.ratings.book.title': 'Le registre des notations',
+    'admin.design.ratings.book.sub':
+        "Entreprises dont la notation a été publiée avec une levée. Les notations des demandes en cours d'examen sont provisoires et figurent dans la file des demandes.",
     'admin.design.ratings.book.empty':
         'Aucune notation à afficher pour le moment.',
     'admin.design.deferrals.kpi.this_month': 'Reports ce mois-ci',
@@ -2196,7 +2198,7 @@ const fr: Catalog = {
     'admin.applications.col.sector': 'Secteur',
     'admin.applications.col.requested': 'Demandé',
     'admin.applications.col.capacity': 'Capacité utilisée',
-    'admin.applications.col.rating': 'Notation',
+    'admin.applications.col.rating': 'Notation du moteur',
     'admin.applications.col.submitted': 'Soumise',
     'admin.applications.col.decision': 'Décision · Actions',
     'admin.applications.terms': '{term} mois · {rate} % fixe',

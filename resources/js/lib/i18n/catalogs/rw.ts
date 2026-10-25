@@ -1243,7 +1243,7 @@ const rw: Catalog = {
     'admin.design.payments.approvals.title': 'Umurongo wo kwemeza',
     'admin.design.payments.approvals.empty':
         'Nta kintu gitegereje kwemezwa cyo kwerekana ubu.',
-    'admin.design.ratings.kpi.rated': 'Ibigo byahawe amanota',
+    'admin.design.ratings.kpi.rated': 'Amanota yatangajwe',
     'admin.design.ratings.kpi.changed': 'Icyiciro cyahindutse',
     'admin.design.ratings.kpi.trending_down': 'Biri kumanuka',
     'admin.design.ratings.kpi.pinned': "Byashyizweho n'abakozi",
@@ -1251,6 +1251,8 @@ const rw: Catalog = {
     'admin.design.ratings.tab.trending_down': 'Biri kumanuka',
     'admin.design.ratings.tab.all': 'Ibigo byose',
     'admin.design.ratings.book.title': "Igitabo cy'amanota",
+    'admin.design.ratings.book.sub':
+        "Ibigo amanota yabyo yatangajwe hamwe n'igikorwa cyo gukusanya. Amanota y'ubusabe bukisuzumwa ni ay'agateganyo kandi agaragara ku rutonde rw'ubusabe.",
     'admin.design.ratings.book.empty': 'Nta manota yo kwerekana ubu.',
     'admin.design.deferrals.kpi.this_month': 'Gusubika uku kwezi',
     'admin.design.deferrals.kpi.live': 'Birakomeje',
@@ -2192,7 +2194,7 @@ const rw: Catalog = {
     'admin.applications.col.sector': 'Urwego',
     'admin.applications.col.requested': 'Ayasabwe',
     'admin.applications.col.capacity': 'Ubushobozi bwakoreshejwe',
-    'admin.applications.col.rating': 'Amanota',
+    'admin.applications.col.rating': 'Amanota ya moteri',
     'admin.applications.col.submitted': 'Byoherejwe',
     'admin.applications.col.decision': 'Icyemezo · Ibikorwa',
     'admin.applications.terms': 'Amezi {term} · {rate}% rimwe',

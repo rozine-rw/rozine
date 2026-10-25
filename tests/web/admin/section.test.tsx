@@ -664,7 +664,12 @@ describe('The rating book', () => {
 
         expect(
             screen.getByRole('region', { name: 'Ratings' }),
-        ).toHaveTextContent('Businesses rated1');
+        ).toHaveTextContent('Published ratings1');
+        expect(
+            screen.getByText(
+                'Businesses whose rating was published with a raise. Ratings on applications still under review are provisional and show in the Applications queue.',
+            ),
+        ).toBeInTheDocument();
         expect(
             within(
                 screen.getByRole('table', { name: 'The rating book' }),
