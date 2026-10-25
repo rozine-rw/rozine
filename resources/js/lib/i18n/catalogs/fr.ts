@@ -1387,6 +1387,8 @@ const fr: Catalog = {
         'Le rapport mensuel d’une entreprise détenue est scellé',
     'admin.messaging.trigger.primary.raise_funded':
         'Une levée où l’investisseur s’est engagé est entièrement financée',
+    'admin.messaging.trigger.primary.commitment_confirmed':
+        'L’investisseur confirme un achat',
     'admin.messaging.trigger.primary.holding_issued':
         'Des titres sont émis pour l’investisseur',
     'admin.messaging.trigger.security.password_changed':
@@ -2519,6 +2521,7 @@ const fr: Catalog = {
     'admin.parties.health.distressed': 'En difficulté',
     'admin.parties.health.active': 'Actif',
     'admin.parties.health.kyc_pending': 'KYC en attente',
+    'admin.parties.health.licence_pending': 'Licence en attente',
     'admin.parties.health.frozen': 'Gelé',
     'admin.parties.health.not_tracked': 'Non suivi',
     'admin.parties.kyc.verified': 'Vérifié',
@@ -3793,20 +3796,20 @@ const fr: Catalog = {
     'investor.cart.in_cart_remove': 'Dans le panier · Retirer',
     'investor.cart.update_failed':
         "Nous n'avons pas pu mettre à jour votre panier. Actualisez et réessayez.",
-    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.count': { one: '{count} offre', other: '{count} offres' },
     'investor.cart.total': 'TOTAL DU PANIER',
     'investor.cart.remove': 'Retirer {name} du panier',
     'investor.cart.filled_remove': 'Entièrement financée · Retirer',
     'investor.cart.filled_note': {
-        one: '{count} note est entièrement financée et ne sera pas payée.',
-        other: '{count} notes sont entièrement financées et ne seront pas payées.',
+        one: '{count} offre est entièrement financée et ne sera pas payée.',
+        other: '{count} offres sont entièrement financées et ne seront pas payées.',
     },
     'investor.cart.target_of': 'sur {amount}',
     'investor.cart.units': { one: 'note', other: 'notes' },
     'investor.cart.quantity': 'Nombre de notes dans {name}',
     'investor.cart.checkout': 'Payer',
     'investor.cart.checkout_note':
-        'Pour le moment, chaque note se paie séparément : ouvrez son paiement pour la réserver et la payer.',
+        'Pour le moment, chaque offre se paie séparément : ouvrez son paiement pour la réserver et la payer.',
     'investor.cart.before_charge':
         'Le montant récupéré est avant les frais sur les gains. Chaque paiement indique le montant exact.',
     'investor.common.back': 'Retour',
@@ -5484,6 +5487,10 @@ const fr: Catalog = {
     'investor.wallet.c3.policy': 'Règle de dépôt {version}.',
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.deposit_between':
+        'Saisissez un montant entre {minimum} et {maximum}.',
+    'investor.wallet.c3.deposit_at_least': 'Saisissez au moins {amount}.',
+    'investor.wallet.c3.deposit_at_most': 'Saisissez au plus {amount}.',
     'investor.wallet.c3.deposit_unavailable':
         "Les dépôts ne sont pas encore ouverts sur ce compte. Rozine les active dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.intent_only':
@@ -5956,7 +5963,7 @@ const fr: Catalog = {
     'investor.checkout.c3.held_amount': 'Réservé sur le disponible',
     'investor.checkout.c3.release': 'Libérer ces titres',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirmer engage le montant réservé. Vous pouvez annuler sans frais jusqu'au financement complet de la levée.",
+        "Confirmer engage le montant réservé. Un engagement confirmé est définitif et ne peut pas être annulé. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
     'investor.checkout.c3.at_maturity': {
         one: 'Retour sur {count} mois',
         other: 'Retour sur {count} mois',
@@ -6074,6 +6081,9 @@ const fr: Catalog = {
     'investor.notices.primary.raise_funded.title': 'Levée financée',
     'investor.notices.primary.raise_funded.body':
         "La levée de {business} est entièrement financée. Vos {amount} pour {units} titres sont réservés jusqu'à l'envoi des fonds.",
+    'investor.notices.primary.commitment_confirmed.title': 'Achat confirmé',
+    'investor.notices.primary.commitment_confirmed.body':
+        'Vous avez engagé {amount} dans {business} pour {units} titres, avec des frais sur gains de {rate} %. Référence {reference}.',
     'investor.notices.primary.holding_issued.title': 'Investissement confirmé',
     'investor.notices.primary.holding_issued.body':
         "Vos {units} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
@@ -6136,7 +6146,7 @@ const fr: Catalog = {
     'investor.primary.status.expired': 'Non rempli — remboursé',
     'investor.primary.status.failed_closing': 'Clôturé — remboursé',
     'investor.primary.status_body.confirmed':
-        "La levée est encore ouverte. Vous pouvez annuler sans frais jusqu'à son financement complet.",
+        "La levée est encore ouverte. Votre engagement est définitif ; si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
     'investor.primary.status_body.awaiting_disbursement':
         "La levée est entièrement financée : l'annulation est verrouillée. Les titres sont émis une fois le versement confirmé.",
     'investor.primary.status_body.in_flight_pending':

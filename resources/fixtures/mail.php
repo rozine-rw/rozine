@@ -28,6 +28,7 @@ use App\Notifications\Business\ReportingWindowOpen;
 use App\Notifications\Investor\InvestmentConfirmed;
 use App\Notifications\Investor\PaymentDelayed;
 use App\Notifications\Investor\PayoutReceived;
+use App\Notifications\Investor\PurchaseConfirmed;
 use App\Notifications\Investor\RaiseExpired as InvestorRaiseExpired;
 use App\Notifications\Investor\ReportPublished;
 use App\Notifications\Investor\VerificationDecided;
@@ -52,6 +53,7 @@ return [
     'investor.verification-approved' => fn () => VerificationDecided::approved($link('/investor')),
     'investor.verification-rejected' => fn () => VerificationDecided::rejected('the name on your ID does not match your account', $link('/investor')),
     'investor.investment-confirmed' => fn () => new InvestmentConfirmed($business, '150000', 30, '24840', '174840', $on('2027-04-07'), 'RZ-PRI-7Q4K2M', $link('/investor')),
+    'investor.purchase-confirmed' => fn () => new PurchaseConfirmed($business, '500000', 100, 'standard', 1500, 'RZC-01K7NQ0C2Y', $link('/investor')),
     'investor.deposit-received' => fn () => new WalletTransferCompleted(WalletTransfer::Deposit, '200000', 'MTN MoMo ·· 4821', 'RZ-DEP-3H8N1C', '212500', $on('2026-10-07 14:42'), $link('/investor/wallet')),
     'investor.withdrawal-sent' => fn () => new WalletTransferCompleted(WalletTransfer::Withdrawal, '50000', 'Bank of Kigali ·· 0193', 'RZ-WDR-9T2V6P', '162500', $on('2026-10-07 16:05'), $link('/investor/wallet')),
     'investor.payout-received' => fn () => new PayoutReceived($business, '29140', '25000', '4140', 2, 6, $on('2026-12-07'), $link('/investor')),

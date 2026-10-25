@@ -836,6 +836,7 @@ export type PartyDetail = {
         | 'watch'
         | 'distressed'
         | 'kyc_pending'
+        | 'licence_pending'
         | 'frozen'
         | 'not_tracked';
     stats: { key: PartyStatKey; value: StatValue }[];

@@ -37,7 +37,7 @@ class StaffAuditorDirectoryResource extends JsonResource
     private const ROLES = ['superadmin', 'compliance', 'approver'];
 
     /** How a partner's standing reads in the 360's header. */
-    private const HEALTH = ['active' => 'active', 'pending' => 'kyc_pending', 'licence_expired' => 'watch', 'suspended' => 'distressed'];
+    private const HEALTH = ['active' => 'active', 'pending' => 'licence_pending', 'licence_expired' => 'watch', 'suspended' => 'distressed'];
 
     /** How each accreditation event reads in the 360's activity. */
     private const EVENTS = [

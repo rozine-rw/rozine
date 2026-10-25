@@ -30,6 +30,7 @@ use App\Domain\Primary\UnitOrdinals;
 use App\Domain\Primary\UnitRights;
 use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
+use App\Models\InvestorCartLine;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -215,6 +216,12 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     if ($posting->replayed) {
                         throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
                     }
+                    $this->notices->record($partyId, PartyNoticeKind::CommitmentConfirmed, ['business' => $this->campaigns->presentation($campaignId)['business'],
+                        'amount' => (string) $root->principal, 'currency' => 'RWF', 'units' => (string) $root->units, 'fee_tier' => $terms->earningsFee['tier'],
+                        'fee_rate_bps' => (string) $terms->earningsFee['rate_bps'], 'reference' => 'RZC-'.strtoupper(substr((string) $commitment->id, -10)),
+                        'commitment_id' => (string) $commitment->id, 'campaign_id' => $campaignId], 'commitment-confirmed:'.$commitment->id);
+                    // A bought deal leaves the cart: the cart holds what the Investor has yet to buy.
+                    InvestorCartLine::query()->where('party_id', strtolower($partyId))->where('business_campaign_id', $campaignId)->delete();
 
                     return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
                 } catch (PrimaryViolation $exception) {

@@ -1304,6 +1304,8 @@ const en = {
         "A held business's monthly report is sealed",
     'admin.messaging.trigger.primary.raise_funded':
         'A raise the investor committed to is fully funded',
+    'admin.messaging.trigger.primary.commitment_confirmed':
+        'The investor confirms a purchase',
     'admin.messaging.trigger.primary.holding_issued':
         'Notes are issued to the investor',
     'admin.messaging.trigger.security.password_changed':
@@ -2382,6 +2384,7 @@ const en = {
     'admin.parties.health.distressed': 'Distressed',
     'admin.parties.health.active': 'Active',
     'admin.parties.health.kyc_pending': 'KYC pending',
+    'admin.parties.health.licence_pending': 'Licence pending',
     'admin.parties.health.frozen': 'Frozen',
     'admin.parties.health.not_tracked': 'Not tracked',
     'admin.parties.kyc.verified': 'Verified',
@@ -3621,20 +3624,20 @@ const en = {
     'investor.cart.in_cart_remove': 'In cart · Remove',
     'investor.cart.update_failed':
         "We couldn't update your cart. Refresh and try again.",
-    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.count': { one: '{count} deal', other: '{count} deals' },
     'investor.cart.total': 'CART TOTAL',
     'investor.cart.remove': 'Remove {name} from cart',
     'investor.cart.filled_remove': 'Fully funded · Remove',
     'investor.cart.filled_note': {
-        one: "{count} note is fully funded and won't be checked out.",
-        other: "{count} notes are fully funded and won't be checked out.",
+        one: "{count} deal is fully funded and won't be checked out.",
+        other: "{count} deals are fully funded and won't be checked out.",
     },
     'investor.cart.target_of': 'of {amount}',
     'investor.cart.units': { one: 'note', other: 'notes' },
     'investor.cart.quantity': 'Number of notes in {name}',
     'investor.cart.checkout': 'Check out',
     'investor.cart.checkout_note':
-        'Each note checks out on its own for now: open its checkout to reserve and pay.',
+        'Each deal checks out on its own for now: open its checkout to reserve and pay.',
     'investor.cart.before_charge':
         'Get back is before the charge on earnings. Each checkout shows the exact amount.',
     'investor.common.back': 'Back',
@@ -5202,6 +5205,10 @@ const en = {
     'investor.wallet.c3.policy': 'Deposit policy {version}.',
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.deposit_between':
+        'Enter an amount between {minimum} and {maximum}.',
+    'investor.wallet.c3.deposit_at_least': 'Enter at least {amount}.',
+    'investor.wallet.c3.deposit_at_most': 'Enter at most {amount}.',
     'investor.wallet.c3.deposit_unavailable':
         "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
     'investor.wallet.c3.intent_only':
@@ -5659,7 +5666,7 @@ const en = {
     'investor.checkout.c3.held_amount': 'Held from Available',
     'investor.checkout.c3.release': 'Release these notes',
     'investor.checkout.c3.confirm_fine_print':
-        'Confirming commits your held amount. You can cancel, fee-free, until the raise is fully funded.',
+        "Confirming commits your held amount. A confirmed commitment is final and can't be cancelled. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.checkout.c3.at_maturity': {
         one: 'Back over {count} month',
         other: 'Back over {count} months',
@@ -5778,6 +5785,9 @@ const en = {
     'investor.notices.primary.raise_funded.title': 'Raise funded',
     'investor.notices.primary.raise_funded.body':
         'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.commitment_confirmed.title': 'Purchase confirmed',
+    'investor.notices.primary.commitment_confirmed.body':
+        'You committed {amount} to {business} for {units} notes, at a {rate}% earnings fee. Reference {reference}.',
     'investor.notices.primary.holding_issued.title': 'Investment confirmed',
     'investor.notices.primary.holding_issued.body':
         'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
@@ -5839,7 +5849,7 @@ const en = {
     'investor.primary.status.expired': "Didn't fill — refunded",
     'investor.primary.status.failed_closing': 'Closed — refunded',
     'investor.primary.status_body.confirmed':
-        "The raise is still open. You can cancel, fee-free, until it's fully funded.",
+        "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
     'investor.primary.status_body.awaiting_disbursement':
         'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
     'investor.primary.status_body.in_flight_pending':
