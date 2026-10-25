@@ -1221,6 +1221,8 @@ describe('Deals in C3 states', () => {
 
         expect(await screen.findByTestId('head')).toBeInTheDocument();
         expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        // No rationale means no empty "Rozine assessment" heading either.
+        expect(screen.queryByText('Rozine assessment')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();

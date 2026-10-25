@@ -148,21 +148,24 @@ export function DealPanel({
                         </div>
                     </Section>
 
-                    <Section
-                        title={t('investor.deal.assessment')}
-                        variant="desk"
-                        badge={
-                            <SourceBadge kind="business_blue" variant="desk">
-                                {t('investor.deal.assessed_by_rozine')}
-                            </SourceBadge>
-                        }
-                    >
-                        {deal.rationale !== null && (
+                    {deal.rationale !== null && (
+                        <Section
+                            title={t('investor.deal.assessment')}
+                            variant="desk"
+                            badge={
+                                <SourceBadge
+                                    kind="business_blue"
+                                    variant="desk"
+                                >
+                                    {t('investor.deal.assessed_by_rozine')}
+                                </SourceBadge>
+                            }
+                        >
                             <p className="mt-2.5 rounded-xl border border-rz-border bg-rz-surface p-[13px] text-[11.5px] leading-[1.55] text-rz-secondary">
                                 {deal.rationale}
                             </p>
-                        )}
-                    </Section>
+                        </Section>
+                    )}
 
                     {deal.track_record !== null && (
                         <Section
