@@ -4910,6 +4910,9 @@ const rw: Catalog = {
 
     'business.apply.business.unavailable': 'Ntibiboneka',
     'business.apply.business.ineligible': 'Ntiremerewe gusaba igishoro',
+    'business.apply.raise.target_required': 'Andika amafaranga ushaka gushaka.',
+    'business.apply.raise.resized_reason':
+        '{capacity} ni yo menshi ushobora gushaka ubu: ubushobozi bwawe bwo kuguza ni bwo bushyiraho iki gipimo.',
     'business.apply.raise.resized':
         'Wasabye {requested} · iki ni cyo cyifuzo wemera iyo usinye',
     'business.apply.raise.schedule': 'Gahunda yo kwishyura',

@@ -4929,6 +4929,10 @@ const fr: Catalog = {
 
     'business.apply.business.unavailable': 'Indisponible',
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.raise.target_required':
+        'Indiquez le montant que vous souhaitez lever.',
+    'business.apply.raise.resized_reason':
+        '{capacity} est le maximum que vous pouvez lever actuellement : votre capacité d’emprunt fixe cette limite.',
     'business.apply.raise.resized':
         "Vous avez demandé {requested} · voici l'offre que vous acceptez en signant",
     'business.apply.raise.schedule': 'Échéancier de remboursement',

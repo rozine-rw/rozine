@@ -4724,6 +4724,9 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.raise.target_required': 'Enter how much you want to raise.',
+    'business.apply.raise.resized_reason':
+        '{capacity} is the most you can raise right now: your borrowing capacity sets this limit.',
     'business.apply.raise.resized':
         'You asked for {requested} · this is the offer you accept when you sign',
     'business.apply.raise.schedule': 'Repayment schedule',

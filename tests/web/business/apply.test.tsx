@@ -2492,6 +2492,54 @@ describe('Apply — step 3, review & sign', () => {
     });
 });
 
+describe('Apply — what the target field says', () => {
+    it('asks for a target once it is cleared, instead of calling an empty request unaffordable', async () => {
+        const user = userEvent.setup();
+        const page = props(refusedStep);
+
+        page.allowed_actions = ['application.save'];
+        render(<BusinessApply {...page} />);
+
+        const refusal = (page.quote as { message: string }).message;
+
+        expect(screen.getByText(refusal)).toBeInTheDocument();
+        expect(
+            screen.queryByText('Enter how much you want to raise.'),
+        ).not.toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText('Fundraising target (RWF)'));
+
+        expect(screen.queryByText(refusal)).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Enter how much you want to raise.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByLabelText('Fundraising target (RWF)'),
+        ).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('says why an offer is below the request: the most the business can raise now', () => {
+        const page = props(raiseStep);
+        const base = page.quote as ReadyQuote;
+        const rwf = (amount: string) => ({ currency: 'RWF' as const, amount });
+
+        page.application.target = rwf('12000000');
+        page.quote = {
+            ...base,
+            requested_principal: rwf('12000000'),
+            offered_principal: rwf('10800000'),
+            principal: rwf('10800000'),
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText(
+                'RWF 10,800,000 is the most you can raise right now: your borrowing capacity sets this limit.',
+            ),
+        ).toBeInTheDocument();
+    });
+});
+
 describe('Apply — the amount raised and the platform fee', () => {
     it.each([
         ['the raise', raiseStep],
