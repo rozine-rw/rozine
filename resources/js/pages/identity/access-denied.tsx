@@ -152,22 +152,21 @@ export default function AccessDenied({ code, status }: Props) {
 
     const expired = code === 'ASSIGNMENT_ACCEPTANCE_EXPIRED';
     const verificationRequired = code === 'IDENTITY_VERIFICATION_REQUIRED';
-    const title = expired
-        ? t('identity.denied.expired_offer.title')
+    /* An app the account never had, or a staff page, is not access it lost. */
+    const copy = expired
+        ? 'identity.denied.expired_offer'
         : verificationRequired
-          ? t('identity.denied.verification_required.title')
-          : t('identity.denied.title');
+          ? 'identity.denied.verification_required'
+          : code === 'ROLE_NOT_AVAILABLE'
+            ? 'identity.denied.role_not_available'
+            : code === 'STAFF_ACCESS_REQUIRED'
+              ? 'identity.denied.staff_only'
+              : 'identity.denied';
 
     return (
         <ErrorFrame
-            title={title}
-            body={
-                expired
-                    ? t('identity.denied.expired_offer.body')
-                    : verificationRequired
-                      ? t('identity.denied.verification_required.body')
-                      : t('identity.denied.body')
-            }
+            title={t(`${copy}.title`)}
+            body={t(`${copy}.body`)}
             alert="body"
         >
             {verificationRequired && (

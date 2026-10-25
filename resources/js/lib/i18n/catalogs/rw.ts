@@ -32,6 +32,13 @@ const rw: Catalog = {
     'identity.denied.title': 'Uburenganzira bugomba kugenzurwa',
     'identity.denied.body':
         'Konti yawe nticyemerewe gufungura uru rupapuro mu nshingano wahisemo. Hitamo porogaramu wongere kugenzura uburenganzira bwawe.',
+    'identity.denied.role_not_available.title':
+        'Iyi porogaramu ntiri kuri konti yawe',
+    'identity.denied.role_not_available.body':
+        'Konti yawe ntirabona uburenganzira kuri iyi porogaramu. Hitamo porogaramu, cyangwa usabe uburenganzira mu porogaramu zawe.',
+    'identity.denied.staff_only.title': 'Iyi paji ni iy’abakozi ba Rozine',
+    'identity.denied.staff_only.body':
+        'Abakozi ba Rozine ni bo bonyine bafungura iyi paji. Hitamo porogaramu kugira ngo usubire ku kazi kawe.',
     'identity.denied.verification_required.title':
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':

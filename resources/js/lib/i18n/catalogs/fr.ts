@@ -30,6 +30,14 @@ const fr: Catalog = {
     'identity.denied.title': 'Votre accès doit être vérifié',
     'identity.denied.body':
         'Votre compte ne peut plus ouvrir cette page avec le rôle sélectionné. Choisissez une application pour actualiser votre accès.',
+    'identity.denied.role_not_available.title':
+        'Cette application n’est pas sur votre compte',
+    'identity.denied.role_not_available.body':
+        'Votre compte n’a pas encore accès à cette application. Choisissez une application ou demandez l’accès depuis vos applications.',
+    'identity.denied.staff_only.title':
+        'Cette page est réservée à l’équipe Rozine',
+    'identity.denied.staff_only.body':
+        'Seule l’équipe Rozine peut ouvrir cette page. Choisissez une application pour revenir à votre travail.',
     'identity.denied.verification_required.title':
         'Vérification d’identité requise',
     'identity.denied.verification_required.body':

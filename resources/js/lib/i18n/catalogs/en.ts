@@ -30,6 +30,13 @@ const en = {
     'identity.denied.title': 'Access needs to be checked',
     'identity.denied.body':
         'Your account can no longer open this page in the selected role. Choose an app to refresh your access.',
+    'identity.denied.role_not_available.title':
+        "This app isn't on your account",
+    'identity.denied.role_not_available.body':
+        "Your account doesn't have access to this app yet. Choose an app, or request access from your apps.",
+    'identity.denied.staff_only.title': 'This page is for Rozine staff',
+    'identity.denied.staff_only.body':
+        'Only Rozine staff can open this page. Choose an app to go back to your own work.',
     'identity.denied.verification_required.title':
         'Identity verification required',
     'identity.denied.verification_required.body':
