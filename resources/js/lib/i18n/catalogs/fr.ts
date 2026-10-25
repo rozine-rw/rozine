@@ -38,6 +38,10 @@ const fr: Catalog = {
         'Cette page est réservée à l’équipe Rozine',
     'identity.denied.staff_only.body':
         'Seule l’équipe Rozine peut ouvrir cette page. Choisissez une application pour revenir à votre travail.',
+    'identity.denied.verification_pending.title':
+        "Votre vérification d'identité est en cours d'examen",
+    'identity.denied.verification_pending.body':
+        "Notre équipe Conformité vérifie les informations que vous avez envoyées. Cette page s'ouvrira dès que votre identité sera confirmée.",
     'identity.denied.verification_required.title':
         'Vérification d’identité requise',
     'identity.denied.verification_required.body':
@@ -196,6 +200,8 @@ const fr: Catalog = {
         "Votre identité n'est pas encore configurée",
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Votre connexion n'est liée à aucune identité vérifiée ; aucune application ne peut encore s'ouvrir.",
+    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body':
+        "Votre vérification d'identité est entre les mains de notre équipe Conformité. Vous pourrez investir dès qu'elle sera confirmée.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Prêt à investir ?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Un pouvoir de signature est requis',
@@ -4218,6 +4224,9 @@ const fr: Catalog = {
     'investor.kyc.document.title': "Vérifiez votre pièce d'identité",
     'investor.kyc.document.subtitle':
         'Choisissez un type de document et envoyez des photos nettes.',
+    'investor.kyc.review.title': "En cours d'examen",
+    'investor.kyc.review.subtitle':
+        'Vos informations sont entre les mains de notre équipe Conformité. Nous vous préviendrons dès que votre identité sera confirmée.',
     'investor.kyc.liveness.title': 'Contrôle de présence',
     'investor.kyc.liveness.subtitle':
         "Un selfie rapide confirme que c'est bien vous.",
@@ -4547,6 +4556,7 @@ const fr: Catalog = {
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTEUR',
     'investor.profile.personal.cell': 'CELLULE',
+    'investor.profile.personal.under_review': "En cours d'examen",
     'investor.profile.personal.not_provided': 'Non renseigné',
     'investor.profile.security.two_factor': 'Authentification à deux facteurs',
     'investor.profile.security.two_factor_on':

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Identity\GetInvestorVerification;
 use App\Domain\Identity\InvestorVerificationCase;
 use App\Domain\Identity\VerificationDocument;
 use App\Domain\Operations\CommandRejection;
@@ -297,4 +298,28 @@ test('history and documents are immutable and the schema refuses invalid rows', 
         ->and(fn () => DB::table('investor_verification_versions')->delete())->toThrow(QueryException::class)
         ->and(fn () => DB::table('investor_verifications')->update(['status' => 'submitted']))->toThrow(QueryException::class)
         ->and(fn () => DB::table('investor_verifications')->update(['status' => 'pending']))->toThrow(QueryException::class);
+});
+
+test('once a check is with Compliance, the launcher and refused pages say it is under review instead of asking again', function (): void {
+    $pages = fn (): array => [
+        $this->actingAs($this->person)->get(route('dashboard'))->assertOk()->viewData('page')['props']['verification'],
+        $this->actingAs($this->person)->get(route('investor.wallet'))->assertForbidden()
+            ->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'IDENTITY_VERIFICATION_REQUIRED'))
+            ->viewData('page')['props']['verification'],
+    ];
+
+    expect($pages())->toBe(['required', 'required']);
+    kycReady($this->person);
+    $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => kycRevision($this->person)]))
+        ->assertSessionHasNoErrors();
+
+    expect($pages())->toBe(['pending', 'pending']);
+});
+
+test('the verification stage describes only an unverified person', function (): void {
+    $stage = app(GetInvestorVerification::class);
+
+    expect($stage->stage(User::factory()->create(['party_id' => Party::factory()->verified()])->id))->toBeNull()
+        ->and($stage->stage(User::factory()->create()->id))->toBeNull()
+        ->and($stage->stage($this->person->id))->toBe('required');
 });

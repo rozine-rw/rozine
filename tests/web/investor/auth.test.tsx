@@ -706,8 +706,15 @@ describe('Verification submission', () => {
             'Your details are with our Compliance team.',
         );
         expect(
-            screen.getByRole('button', { name: 'Submit for verification' }),
-        ).toBeDisabled();
+            screen.getByRole('heading', { name: 'Under review' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('progressbar')).toHaveAttribute(
+            'aria-valuenow',
+            '100',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Submit for verification' }),
+        ).not.toBeInTheDocument();
         expect(screen.getByLabelText('Tap to capture selfie')).toBeDisabled();
         unmount();
 

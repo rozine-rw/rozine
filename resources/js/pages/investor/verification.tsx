@@ -218,7 +218,13 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     const step: Step = viewing ?? props.step;
     const index = steps.indexOf(step);
     const last = index === steps.length - 1;
-    const percent = Math.round((index / 3) * 100);
+    const submitted =
+        props.investor_type === 'individual' && props.status === 'submitted';
+    // Sent for review, every step is done: the bar is full and nothing is left to submit.
+    const percent = submitted ? 100 : Math.round((index / 3) * 100);
+    const heading: `investor.kyc.${Step | 'review'}` = submitted
+        ? 'investor.kyc.review'
+        : `investor.kyc.${step}`;
     const form = useForm<Record<string, string | boolean | null>>(
         props.investor_type === 'individual'
             ? {
@@ -255,7 +261,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     const failure =
         uploadError ??
         Object.entries(form.errors).find(([field]) => !answered(field))?.[1];
-    const locked = submission.status === 'submitted';
+    const locked = submitted;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -293,10 +299,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     );
 
     return (
-        <InvestorAuthFrame
-            title={t(`investor.kyc.${step}.title`)}
-            layout="column"
-        >
+        <InvestorAuthFrame title={t(`${heading}.title`)} layout="column">
             <form
                 onSubmit={submit}
                 className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14"
@@ -337,10 +340,10 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                     )}
                 </p>
                 <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
-                    {t(`investor.kyc.${step}.title`)}
+                    {t(`${heading}.title`)}
                 </h1>
                 <p className="mt-1.5 text-[13.5px] text-rz-secondary">
-                    {t(`investor.kyc.${step}.subtitle`)}
+                    {t(`${heading}.subtitle`)}
                 </p>
 
                 {props.investor_type === 'individual' &&
@@ -715,14 +718,20 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                         )}
                     </p>
                 )}
-                <button
-                    type="submit"
-                    disabled={form.processing || locked}
-                    aria-busy={form.processing || undefined}
-                    className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70"
-                >
-                    {t(last ? 'investor.kyc.submit' : 'investor.auth.continue')}
-                </button>
+                {!locked && (
+                    <button
+                        type="submit"
+                        disabled={form.processing}
+                        aria-busy={form.processing || undefined}
+                        className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70"
+                    >
+                        {t(
+                            last
+                                ? 'investor.kyc.submit'
+                                : 'investor.auth.continue',
+                        )}
+                    </button>
+                )}
                 {index > 0 && !locked && (
                     <button
                         type="button"

@@ -39,6 +39,10 @@ const rw: Catalog = {
     'identity.denied.staff_only.title': 'Iyi paji ni iy’abakozi ba Rozine',
     'identity.denied.staff_only.body':
         'Abakozi ba Rozine ni bo bonyine bafungura iyi paji. Hitamo porogaramu kugira ngo usubire ku kazi kawe.',
+    'identity.denied.verification_pending.title':
+        "Igenzura ry'umwirondoro wawe riracyasuzumwa",
+    'identity.denied.verification_pending.body':
+        'Itsinda ryacu rishinzwe kubahiriza amategeko rirasuzuma amakuru wohereje. Uru rupapuro ruzafunguka umwirondoro wawe nimara kwemezwa.',
     'identity.denied.verification_required.title':
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':
@@ -193,6 +197,8 @@ const rw: Catalog = {
         'Umwirondoro wawe ntabwo urategurwa',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
+    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body':
+        "Igenzura ry'umwirondoro wawe riri mu itsinda ryacu rishinzwe kubahiriza amategeko. Uzashobora gushora imari nirimara kwemezwa.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Witeguye gushora imari?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
@@ -4204,6 +4210,9 @@ const rw: Catalog = {
     'investor.kyc.document.title': 'Emeza indangamuntu yawe',
     'investor.kyc.document.subtitle':
         "Hitamo ubwoko bw'icyangombwa wohereze amafoto agaragara neza.",
+    'investor.kyc.review.title': 'Birasuzumwa',
+    'investor.kyc.review.subtitle':
+        'Amakuru yawe ari mu itsinda ryacu rishinzwe kubahiriza amategeko. Tuzakumenyesha umwirondoro wawe nimara kwemezwa.',
     'investor.kyc.liveness.title': 'Kwemeza ko uri muzima',
     'investor.kyc.liveness.subtitle':
         'Ifoto yawe yihuse yemeza ko ari wowe koko.',
@@ -4530,6 +4539,7 @@ const rw: Catalog = {
     'investor.profile.personal.district': 'AKARERE',
     'investor.profile.personal.sector': 'UMURENGE',
     'investor.profile.personal.cell': 'AKAGARI',
+    'investor.profile.personal.under_review': 'Birasuzumwa',
     'investor.profile.personal.not_provided': 'Ntibyatanzwe',
     'investor.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
     'investor.profile.security.two_factor_on':

@@ -26,6 +26,11 @@ import type {
 type LauncherProps = {
     identity: IdentityContext;
     staff_access?: StaffAccess;
+    /**
+     * Where a person asked to verify stands: their check is with Compliance ('pending') or not
+     * sent yet ('required'). Absent or null for everyone else.
+     */
+    verification?: 'pending' | 'required' | null;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
@@ -59,6 +64,7 @@ const CARD =
 export default function Launcher({
     identity,
     staff_access,
+    verification,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -67,7 +73,7 @@ export default function Launcher({
     const [failure, setFailure] = useState<string | null>(null);
     const [opening, setOpening] = useState(false);
     const refreshing = useAccessRefresh(
-        ['identity', 'staff_access'],
+        ['identity', 'staff_access', 'verification'],
         preview_links === undefined,
     );
     const canSelect = identity.allowed_actions.includes('identity.select_role');
@@ -300,26 +306,40 @@ export default function Launcher({
                                         ))}
                                     </ul>
                                     {identity.code ===
-                                        'IDENTITY_VERIFICATION_REQUIRED' && (
-                                        <p
-                                            role="status"
-                                            className="mt-4 text-sm text-rz-body"
-                                        >
-                                            {t(
-                                                'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title',
-                                            )}{' '}
-                                            <a
-                                                href={
-                                                    investorVerification().url
-                                                }
-                                                className="font-semibold text-rz-accent-text"
+                                        'IDENTITY_VERIFICATION_REQUIRED' &&
+                                        verification === 'pending' && (
+                                            <p
+                                                role="status"
+                                                className="mt-4 text-sm text-rz-body"
                                             >
                                                 {t(
-                                                    'suite.blocker.action.verify_identity',
+                                                    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body',
                                                 )}
-                                            </a>
-                                        </p>
-                                    )}
+                                            </p>
+                                        )}
+                                    {identity.code ===
+                                        'IDENTITY_VERIFICATION_REQUIRED' &&
+                                        verification !== 'pending' && (
+                                            <p
+                                                role="status"
+                                                className="mt-4 text-sm text-rz-body"
+                                            >
+                                                {t(
+                                                    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title',
+                                                )}{' '}
+                                                <a
+                                                    href={
+                                                        investorVerification()
+                                                            .url
+                                                    }
+                                                    className="font-semibold text-rz-accent-text"
+                                                >
+                                                    {t(
+                                                        'suite.blocker.action.verify_identity',
+                                                    )}
+                                                </a>
+                                            </p>
+                                        )}
                                 </>
                             ) : (
                                 <BlockerCard code={identity.code} />

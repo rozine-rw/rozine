@@ -90,7 +90,10 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                     back={wide ? null : props.links.overview}
                 />
                 {sub === 'personal' && (
-                    <PersonalInformation personal={props.personal} />
+                    <PersonalInformation
+                        personal={props.personal}
+                        kyc={props.identity.kyc}
+                    />
                 )}
                 {sub === 'security' && (
                     <SecurityCenter

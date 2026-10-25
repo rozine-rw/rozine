@@ -37,6 +37,10 @@ const en = {
     'identity.denied.staff_only.title': 'This page is for Rozine staff',
     'identity.denied.staff_only.body':
         'Only Rozine staff can open this page. Choose an app to go back to your own work.',
+    'identity.denied.verification_pending.title':
+        'Your identity check is under review',
+    'identity.denied.verification_pending.body':
+        'Our Compliance team is checking the details you sent. This page opens once your identity is confirmed.',
     'identity.denied.verification_required.title':
         'Identity verification required',
     'identity.denied.verification_required.body':
@@ -188,6 +192,8 @@ const en = {
         'Your identity is not set up yet',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
+    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body':
+        "Your identity check is with our Compliance team. You can invest once it's confirmed.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Ready to invest?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
@@ -4040,6 +4046,9 @@ const en = {
     'investor.kyc.document.title': 'Verify your ID',
     'investor.kyc.document.subtitle':
         'Choose a document type and upload clear photos.',
+    'investor.kyc.review.title': 'Under review',
+    'investor.kyc.review.subtitle':
+        "Your details are with our Compliance team. We'll let you know once your identity is confirmed.",
     'investor.kyc.liveness.title': 'Liveness check',
     'investor.kyc.liveness.subtitle':
         "A quick selfie confirms it's really you.",
@@ -4366,6 +4375,7 @@ const en = {
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTOR',
     'investor.profile.personal.cell': 'CELL',
+    'investor.profile.personal.under_review': 'Under review',
     'investor.profile.personal.not_provided': 'Not provided',
     'investor.profile.security.two_factor': 'Two-factor authentication',
     'investor.profile.security.two_factor_on':
