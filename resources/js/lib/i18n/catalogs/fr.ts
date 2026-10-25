@@ -1023,8 +1023,7 @@ const fr: Catalog = {
     'admin.section.payments.title': 'Centre des paiements',
     'admin.section.payments.subtitle':
         "Les mouvements d'argent sur la plateforme",
-    'admin.section.payments.search':
-        'Rechercher un paiement par nom, référence, moyen…',
+    'admin.section.payments.search': 'Rechercher un paiement…',
     'admin.nav.ratings': 'Notations',
     'admin.section.ratings.title': 'Notations',
     'admin.section.ratings.subtitle':
@@ -1627,7 +1626,7 @@ const fr: Catalog = {
     'admin.section.businesses.title': 'Annuaire des entreprises',
     'admin.section.businesses.subtitle':
         'Toutes les entreprises vérifiées de la plateforme',
-    'admin.section.businesses.search': 'Rechercher par nom, secteur, statut…',
+    'admin.section.businesses.search': 'Rechercher une entreprise…',
     'admin.section.investors.title': 'Annuaire des investisseurs',
     'admin.section.investors.subtitle':
         'Gérer les comptes investisseurs et le KYC',
@@ -1647,7 +1646,7 @@ const fr: Catalog = {
     'admin.section.events.title': 'Activité et audit',
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
-    'admin.section.events.search': 'Rechercher par utilisateur, action, objet…',
+    'admin.section.events.search': 'Rechercher dans le journal…',
     'admin.search.label': 'Rechercher sur cette page',
     'admin.search.empty_title': 'Aucun résultat sur cette page',
     'admin.search.empty_body':
@@ -6751,7 +6750,7 @@ const fr: Catalog = {
     'admin.section.book.subtitle':
         'Chaque titre en cours et sa santé, tels que le système central enregistre leur service. Lecture seule.',
     'admin.section.book.search': 'Rechercher par entreprise ou titre…',
-    'admin.section.exceptions.title': 'Exceptions',
+    'admin.section.exceptions.title': 'Centre des risques',
     'admin.section.exceptions.subtitle':
         "Arriérés, suspensions et écarts, chacun daté et attribué jusqu'à sa résolution. Lecture seule.",
     'admin.section.exceptions.search':

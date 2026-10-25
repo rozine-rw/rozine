@@ -976,8 +976,7 @@ const en = {
     'admin.nav.payments': 'Payments',
     'admin.section.payments.title': 'Payment Center',
     'admin.section.payments.subtitle': 'Money movement across the platform',
-    'admin.section.payments.search':
-        'Search payments by name, reference, method…',
+    'admin.section.payments.search': 'Search payments…',
     'admin.nav.ratings': 'Ratings',
     'admin.section.ratings.title': 'Ratings',
     'admin.section.ratings.subtitle':
@@ -1522,8 +1521,7 @@ const en = {
     'admin.section.businesses.title': 'Business Directory',
     'admin.section.businesses.subtitle':
         'All verified businesses on the platform',
-    'admin.section.businesses.search':
-        'Search businesses by name, industry, status…',
+    'admin.section.businesses.search': 'Search businesses…',
     'admin.section.investors.title': 'Investor Directory',
     'admin.section.investors.subtitle': 'Manage investor accounts and KYC',
     'admin.section.investors.search': 'Search investors by name or KYC…',
@@ -1544,7 +1542,7 @@ const en = {
     'admin.section.events.title': 'Activity & Audit',
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
-    'admin.section.events.search': 'Search the trail by user, action, object…',
+    'admin.section.events.search': 'Search the trail…',
     'admin.search.label': 'Search this page',
     'admin.search.empty_title': 'No matches on this page',
     'admin.search.empty_body':
@@ -6479,7 +6477,7 @@ const en = {
     'admin.section.book.subtitle':
         'Every live note and its health, as the core records its servicing. Read-only.',
     'admin.section.book.search': 'Search by business or note…',
-    'admin.section.exceptions.title': 'Exceptions',
+    'admin.section.exceptions.title': 'Risk Center',
     'admin.section.exceptions.subtitle':
         'Arrears, halts and variances, each aged and owned until it is resolved. Read-only.',
     'admin.section.exceptions.search': 'Search by business or reference…',

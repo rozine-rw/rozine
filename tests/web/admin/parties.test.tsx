@@ -477,6 +477,24 @@ describe('Party directories', () => {
         expect(within(jean).getByText('Huye')).toBeInTheDocument();
     });
 
+    it("shows a staff member's every role in full across the overview", () => {
+        const fixture = props(staffFixture);
+        const roles = 'Compliance, Approver, Treasury, Analyst';
+
+        fixture.party = {
+            ...party(frozenFixture),
+            kind: 'staff',
+            stats: [{ key: 'role', value: { kind: 'text', value: roles } }],
+        };
+        render(<AdminParties {...fixture} />);
+
+        const tile = within(screen.getByRole('dialog')).getByText(roles);
+
+        expect(tile).toHaveClass('break-words');
+        expect(tile).not.toHaveClass('truncate');
+        expect(tile.parentElement).toHaveClass('col-span-2', 'sm:col-span-3');
+    });
+
     it('lists the admin action log, newest first, or says it is empty', () => {
         const fixture = props(staffFixture);
 

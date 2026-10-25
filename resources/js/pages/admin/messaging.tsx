@@ -112,7 +112,7 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
 
 /**
  * Messaging & Automations (design T2327–2462). It opens on Automations, as the design does, or
- * on History when a search is in force. Automations lists every notice the platform sends as its
+ * on History, the tab its address names. Automations lists every notice the platform sends as its
  * event happens, by audience, and Templates every transactional email; neither can be edited
  * yet, so nothing is offered. History lists every notice that went out, newest first: who it
  * reached, the message, its category, the automation behind it and whether it arrived, the
@@ -121,10 +121,8 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
 export default function AdminMessaging(props: AdminMessagingProps) {
     const { t } = useTranslation();
     const searched = props.search !== '';
-    /* A search, or a page of older history, came from the History tab, so it reopens there. */
-    const [tab, setTab] = useState<Tab>(
-        searched || props.newest !== null ? 'history' : 'automations',
-    );
+    /* The page lives at /admin/messaging/history, so it opens on History. */
+    const [tab, setTab] = useState<Tab>('history');
 
     return (
         <AdminFrame section="messaging" searchQuery={SEARCH_QUERY} {...props}>

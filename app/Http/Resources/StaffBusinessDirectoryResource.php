@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 /**
  * The designed Business directory (`admin/parties`, kind business) from live records: the four
@@ -90,7 +91,7 @@ class StaffBusinessDirectoryResource extends JsonResource
         $row = $business['row'];
 
         return ['id' => $row['business_id'], 'kind' => 'business', 'name' => $row['name'],
-            'subtitle' => implode(' · ', array_filter([$row['sector'], $row['company_code'] === null ? '' : 'RDB '.$row['company_code'], $row['district']],
+            'subtitle' => implode(' · ', array_filter([$row['sector'], $row['company_code'] === null ? '' : (Str::startsWith(Str::upper($row['company_code']), 'RDB') ? $row['company_code'] : 'RDB '.$row['company_code']), $row['district']],
                 fn (string $part): bool => $part !== '')),
             'health' => 'not_tracked',
             'stats' => [['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $row['active_notes']]],

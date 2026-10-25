@@ -1015,8 +1015,7 @@ const rw: Catalog = {
     'admin.nav.payments': 'Ubwishyu',
     'admin.section.payments.title': "Ikigo cy'ubwishyu",
     'admin.section.payments.subtitle': 'Uko amafaranga agenda ku rubuga',
-    'admin.section.payments.search':
-        'Shakisha ubwishyu ukoresheje izina, nimero, uburyo…',
+    'admin.section.payments.search': 'Shakisha ubwishyu…',
     'admin.nav.ratings': 'Amanota',
     'admin.section.ratings.title': 'Amanota',
     'admin.section.ratings.subtitle':
@@ -1609,8 +1608,7 @@ const rw: Catalog = {
         'Shakisha ukoresheje ikigo, inyandiko cyangwa indango…',
     'admin.section.businesses.title': "Urutonde rw'ibigo",
     'admin.section.businesses.subtitle': 'Ibigo byose byemejwe biri ku rubuga',
-    'admin.section.businesses.search':
-        'Shakisha ibigo ukoresheje izina, urwego, imiterere…',
+    'admin.section.businesses.search': 'Shakisha ibigo…',
     'admin.section.investors.title': "Urutonde rw'abashoramari",
     'admin.section.investors.subtitle': "Gucunga konti z'abashoramari na KYC",
     'admin.section.investors.search':
@@ -1633,8 +1631,7 @@ const rw: Catalog = {
     'admin.section.events.title': "Ibikorwa n'igenzura",
     'admin.section.events.subtitle':
         'Inyandiko idahinduka ya buri gikorwa — tondeka ukoresheje uwakoze, igikorwa cyangwa ikintu',
-    'admin.section.events.search':
-        'Shakisha ukoresheje ukoresha, igikorwa, ikintu…',
+    'admin.section.events.search': 'Shakisha mu byakozwe…',
     'admin.search.label': 'Shakisha kuri uru rupapuro',
     'admin.search.empty_title': 'Nta bihuye kuri uru rupapuro',
     'admin.search.empty_body':
@@ -6719,7 +6716,7 @@ const rw: Catalog = {
         'Buri nyandiko ikora n’uko ihagaze, nk’uko sisitemu nkuru ibyandika. Gusoma gusa.',
     'admin.section.book.search':
         'Shakisha ukoresheje ubucuruzi, inyandiko cyangwa nimero…',
-    'admin.section.exceptions.title': 'Ibidasanzwe',
+    'admin.section.exceptions.title': "Ikigo cy'ingaruka",
     'admin.section.exceptions.subtitle':
         'Ibirarane, ibyahagaritswe n’ibinyuranyo, buri kimwe gifite igihe kimaze n’ugikurikirana kugeza gikemutse. Gusoma gusa.',
     'admin.section.exceptions.search':

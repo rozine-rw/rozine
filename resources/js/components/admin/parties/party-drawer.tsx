@@ -300,12 +300,24 @@ export function PartyDrawer({
                             {party.stats.map((stat) => (
                                 <div
                                     key={stat.key}
-                                    className="min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5"
+                                    className={cn(
+                                        'min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5',
+                                        // A text figure (a staff member's roles) takes the row and wraps in full.
+                                        stat.value.kind === 'text' &&
+                                            'col-span-2 sm:col-span-3',
+                                    )}
                                 >
                                     <div className="truncate text-[10.5px] font-semibold text-rz-muted">
                                         {t(`admin.parties.stat.${stat.key}`)}
                                     </div>
-                                    <div className="mt-[3px] truncate text-[15px] font-bold text-rz-ink">
+                                    <div
+                                        className={cn(
+                                            'mt-[3px] text-[15px] font-bold text-rz-ink',
+                                            stat.value.kind === 'text'
+                                                ? 'break-words'
+                                                : 'truncate',
+                                        )}
+                                    >
                                         {format(stat.value)}
                                     </div>
                                 </div>
