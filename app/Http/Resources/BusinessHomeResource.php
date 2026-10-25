@@ -17,7 +17,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
  * way in from the web app. The bearer transport keeps reaching it from its business list. While a
  * monthly audit is open, Today also carries its window, linked to "Get ready for your audit" on the
- * web.
+ * web. An open draft with a signature on its current offer asks each signatory still to sign for
+ * theirs, and tells everyone else on the mandate who it is waiting for.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -42,6 +43,10 @@ class BusinessHomeResource extends JsonResource
         $report = $entry['audit_report'] ?? null;
         $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'],
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
+        $signing = $entry['draft_signatures'] ?? null;
+        $signature = $signing === null || $draft === null ? [] : [['kind' => $signing['viewer_signs'] ? 'application_signature' : 'application_awaiting',
+            'title' => (string) $entry['draft_title'], 'pending' => $signing['pending'],
+            'link' => self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])]];
         $audit = $data['audit_window'] ?? null;
         $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
             'days_left' => $audit['days_left'], 'sealed_by' => $audit['seal_by'], 'link' => self::link($request, 'business.audit-prep', ['business' => $business])]];
@@ -50,7 +55,7 @@ class BusinessHomeResource extends JsonResource
             'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => $data['unread_notices'],
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => [...$cosign, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+            'today' => [...$cosign, ...$signature, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
             'notes' => $notes, 'headroom' => $raises['sizing']['headroom'] ?? null,

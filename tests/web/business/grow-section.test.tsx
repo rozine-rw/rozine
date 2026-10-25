@@ -126,7 +126,7 @@ describe('Home — starting a raise', () => {
         renderGrow(link('/business/apply'), entry);
 
         expect(
-            screen.getByRole('link', { name: 'Apply for a raise' }),
+            screen.getByRole('link', { name: 'Continue application' }),
         ).toHaveAttribute('href', '/business/apply');
         expect(
             screen.queryByRole('button', { name: 'Apply for a raise' }),

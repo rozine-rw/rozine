@@ -223,8 +223,28 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             $entry = $this->entry($business, $identity);
             $draft = ($entry['application']['status'] ?? null) === 'draft' ? BusinessApplication::query()->whereKey($entry['application']['id'])->first() : null;
 
-            return [...$entry, 'profile' => $business['profile'], 'draft_title' => $draft?->draft['title'] ?? null];
+            return [...$entry, 'profile' => $business['profile'], 'draft_title' => $draft?->draft['title'] ?? null,
+                'draft_signatures' => $draft === null ? null : $this->outstandingSignatures($draft, $business, $identity['party']['id'] ?? '')];
         });
+    }
+
+    /**
+     * Who still has to sign an open draft's current offer, once one signature on it is in: the
+     * pending required signatories' names, and whether the person reading is one of them. Before
+     * the first signature, or once its offer is replaced, there is nothing to wait for.
+     *
+     * @param  Business  $business
+     * @return array{pending: list<string>, viewer_signs: bool}|null
+     */
+    private function outstandingSignatures(BusinessApplication $draft, array $business, string $partyId): ?array
+    {
+        $signed = BusinessApplicationSignature::query()->where('business_application_id', $draft->id)
+            ->where('business_application_quote_id', $draft->current_quote_id)->pluck('actor_party_id')->all();
+        $required = array_values(array_diff($business['mandate']['required_signatories'], $signed));
+        $pending = array_values(array_map(fn (array $person): string => $person['name'],
+            array_filter($business['mandate']['people'], fn (array $person): bool => in_array($person['party_id'], $required, true))));
+
+        return $signed === [] || $pending === [] ? null : ['pending' => $pending, 'viewer_signs' => in_array($partyId, $required, true)];
     }
 
     /**

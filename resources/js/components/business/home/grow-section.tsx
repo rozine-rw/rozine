@@ -125,7 +125,9 @@ export function GrowSection({
 
             {links.apply !== null ? (
                 <Link href={links.apply} className={CTA}>
-                    <ApplyLabel>{t('business.grow.apply')}</ApplyLabel>
+                    <ApplyLabel>
+                        {t('business.note.continue_application')}
+                    </ApplyLabel>
                 </Link>
             ) : (
                 createApplication !== null && (

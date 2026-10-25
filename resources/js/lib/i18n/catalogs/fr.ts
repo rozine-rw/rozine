@@ -306,6 +306,13 @@ const fr: Catalog = {
     'business.today.cosign.sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
     'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.signature.kicker': 'Signature requise',
+    'business.today.signature.sub':
+        'Votre signature est requise avant que cette demande puisse être soumise.',
+    'business.today.signature.cta': 'Examiner et signer',
+    'business.today.awaiting.kicker': 'En attente de signatures',
+    'business.today.awaiting.sub': 'En attente de la signature de {names}.',
+    'business.today.awaiting.cta': 'Ouvrir la demande',
     'business.today.declined.kicker': 'Demande refusée',
     'business.today.declined.sub':
         'Au-delà de votre capacité approuvée — contactez-nous avant de soumettre à nouveau.',

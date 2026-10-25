@@ -224,3 +224,33 @@ it('starts a raise where the mandate allows it, and resumes an open draft', func
         ->and($resumed['create_application'])->toBeNull()
         ->and($resumed['notes'])->toBe([]);
 });
+
+it('asks a signatory still to sign a half-signed draft, and tells the rest of the mandate who it waits for', function (): void {
+    $fixture = QuoteFixture::ready(2);
+    $business = $fixture['audit']['business'];
+    $users = $fixture['audit']['authority']['users'];
+    $signing = fn (User $user): array => array_values(array_filter(($this->props)($user, $business)['today'],
+        fn (array $item): bool => in_array($item['kind'], ['application_signature', 'application_awaiting'], true)));
+
+    // Nobody has signed yet: the draft is still being prepared, not waiting on anyone.
+    expect($signing($users[0]))->toBe([])->and($signing($users[1]))->toBe([]);
+
+    expect(QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SIGNATURE_RECORDED');
+    $pending = array_column(array_filter(QuoteFixture::review($fixture)['acceptance']['signers'],
+        fn (array $signer): bool => $signer['state'] === 'pending'), 'name');
+    $card = ['title' => $fixture['application']->refresh()->draft['title'], 'pending' => $pending,
+        'link' => ($this->props)($users[0], $business)['links']['apply']];
+
+    expect($pending)->toHaveCount(1)
+        ->and($card['link'])->toBe(['url' => "/business/{$business}/applications/{$fixture['application']->id}", 'method' => 'get'])
+        ->and($signing($users[1]))->toBe([['kind' => 'application_signature', ...$card]])
+        ->and($signing($users[0]))->toBe([['kind' => 'application_awaiting', ...$card]]);
+    Sanctum::actingAs($users[1], ['business:read']);
+    $this->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()
+        ->assertJsonPath('data.today.0.kind', 'application_signature')
+        ->assertJsonPath('data.today.0.link.url', "/api/v1/business/{$business}/applications/{$fixture['application']->id}");
+
+    // The last signature submits it: nothing waits on a signature any more.
+    expect(QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture), 1)['code'])->toBe('APPLICATION_SUBMITTED')
+        ->and($signing($users[0]))->toBe([])->and($signing($users[1]))->toBe([]);
+});

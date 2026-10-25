@@ -23,8 +23,9 @@ interface BusinessApplicationStore
     public function index(int $userId, int $contextRevision, ?string $before = null, int $limit = 20): array;
 
     /**
-     * One Business's landing entry, as `index` lists it, with its verified profile and the title
-     * of its open draft, under current Business authority.
+     * One Business's landing entry, as `index` lists it, with its verified profile, the title of
+     * its open draft and, once a signature on its current offer is in, who still has to sign it,
+     * under current Business authority.
      *
      * @return array<string, mixed>
      */

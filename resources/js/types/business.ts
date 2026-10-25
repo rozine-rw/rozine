@@ -105,6 +105,21 @@ export type BusinessTodo =
           link: RouteLink;
       }
     | {
+          /** An open draft whose current offer still needs this person's signature. */
+          kind: 'application_signature';
+          title: string;
+          /** The names of every required signatory still to sign, this person included. */
+          pending: string[];
+          link: RouteLink;
+      }
+    | {
+          /** An open draft signed by part of the mandate, waiting for the people named. */
+          kind: 'application_awaiting';
+          title: string;
+          pending: string[];
+          link: RouteLink;
+      }
+    | {
           kind: 'application_declined';
           title: string;
           reason: string | null;

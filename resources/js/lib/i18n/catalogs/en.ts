@@ -295,6 +295,13 @@ const en = {
     'business.today.cosign.sub':
         'Your CPA sealed it. Read the findings before you co-sign.',
     'business.today.cosign.cta': 'Review & co-sign',
+    'business.today.signature.kicker': 'Signature needed',
+    'business.today.signature.sub':
+        'Your signature is needed before this application can be submitted.',
+    'business.today.signature.cta': 'Review & sign',
+    'business.today.awaiting.kicker': 'Awaiting signatures',
+    'business.today.awaiting.sub': 'Waiting for {names} to sign.',
+    'business.today.awaiting.cta': 'Open application',
     'business.today.declined.kicker': 'Application declined',
     'business.today.declined.sub':
         'Outside your approved capacity — talk to us before resubmitting.',

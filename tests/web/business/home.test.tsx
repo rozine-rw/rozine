@@ -246,6 +246,18 @@ describe('Business Home', () => {
                 link: link('/business/b1/audit-reports/r1'),
             },
             {
+                kind: 'application_signature',
+                title: 'Solar Dryer',
+                pending: ['Aline Uwase'],
+                link: link('/business/b1/applications/a1'),
+            },
+            {
+                kind: 'application_awaiting',
+                title: 'Solar Dryer',
+                pending: ['Aline Uwase', 'Eric Ntwari'],
+                link: link('/business/b1/applications/a2'),
+            },
+            {
                 kind: 'application_declined',
                 title: 'Solar Roof',
                 reason: null,
@@ -285,6 +297,23 @@ describe('Business Home', () => {
         expect(
             screen.getByRole('link', { name: /Review & co-sign/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
+        expect(screen.getByText('Signature needed')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your signature is needed before this application can be submitted.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review & sign/ }),
+        ).toHaveAttribute('href', '/business/b1/applications/a1');
+        expect(screen.getByText('Awaiting signatures')).toBeInTheDocument();
+        expect(
+            screen.getByText('Waiting for Aline Uwase, Eric Ntwari to sign.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Open application/ }),
+        ).toHaveAttribute('href', '/business/b1/applications/a2');
+        expect(screen.getAllByText('Solar Dryer')).toHaveLength(2);
         expect(screen.getAllByText('Application declined')).toHaveLength(2);
         expect(
             screen.getByText(
