@@ -695,7 +695,9 @@ describe('Compliance figures and decisions', () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 
         expect(screen.getByText('97.8%')).toBeInTheDocument();
-        expect(screen.getByText('44 of 45 verified')).toBeInTheDocument();
+        expect(
+            screen.getByText('44 of 45 in-app submissions'),
+        ).toBeInTheDocument();
         expect(screen.getByText('AML alerts')).toBeInTheDocument();
         expect(screen.getByText('Sanctions hits')).toBeInTheDocument();
         expect(screen.getAllByText('Not connected')).toHaveLength(2);

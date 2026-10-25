@@ -65,7 +65,7 @@ function Row({ row }: { row: AuditRegisterRow }) {
             <span role="cell" className="min-w-0">
                 <span className="block text-[12.5px] font-semibold text-rz-ink">
                     {row.period === null
-                        ? '—'
+                        ? t('admin.audit_reports.period_flash')
                         : formatMonthYearLong(row.period, locale)}
                 </span>
                 <span className="mt-0.5 block text-[11px] text-rz-muted">
@@ -73,11 +73,15 @@ function Row({ row }: { row: AuditRegisterRow }) {
                         ? t('admin.audit_reports.cosign_by', {
                               date: formatDateTime(row.cosign_by, locale),
                           })
-                        : row.due_at === null
-                          ? '—'
-                          : t('admin.audit_reports.due', {
-                                date: formatDate(row.due_at, locale),
-                            })}
+                        : row.sealed_at !== null
+                          ? t('admin.audit_reports.sealed_on', {
+                                date: formatDate(row.sealed_at, locale),
+                            })
+                          : row.due_at === null
+                            ? '—'
+                            : t('admin.audit_reports.due', {
+                                  date: formatDate(row.due_at, locale),
+                              })}
                 </span>
             </span>
             <span role="cell" className="min-w-0">

@@ -28,6 +28,10 @@ import type { ApplicationRow, C3AdminApplicationsProps } from '@/types/admin';
 const GRID =
     'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(92px,0.6fr)_minmax(0,0.9fr)_minmax(0,1.5fr)] gap-3 px-5';
 
+/** The same table without the capacity column, while no application has a capacity figure yet. */
+const GRID_WITHOUT_CAPACITY =
+    'grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(92px,0.6fr)_minmax(0,0.9fr)_minmax(0,1.5fr)] gap-3 px-5';
+
 /** Capacity-bar colour follows the rating band, as the design's queue draws it. */
 const BAND_FILL = {
     strong: 'bg-[#17795a] dark:bg-[#3fcda0]',
@@ -44,9 +48,11 @@ const SEARCH_QUERY = { param: 'search', clears: ['before', 'application'] };
 function QueueRow({
     row,
     ago,
+    capacity,
 }: {
     row: ApplicationRow;
     ago: (iso: string) => string;
+    capacity: boolean;
 }) {
     const { t } = useTranslation();
     const decisionReason = useDecisionReason();
@@ -56,7 +62,7 @@ function QueueRow({
         <div
             role="row"
             className={cn(
-                GRID,
+                capacity ? GRID : GRID_WITHOUT_CAPACITY,
                 ROW_RULE,
                 'relative items-center py-3.5 transition-colors duration-100 hover:bg-[#f5f8fd] dark:hover:bg-rz-surface-sunken',
             )}
@@ -81,8 +87,11 @@ function QueueRow({
                             {row.business}
                         </Link>
                     )}
-                    <div className="truncate text-[11px] text-rz-faint">
-                        {row.note_title} · {row.id}
+                    <div
+                        className="truncate text-[11px] text-rz-faint"
+                        title={row.id}
+                    >
+                        {row.note_title}
                     </div>
                 </div>
             </div>
@@ -104,7 +113,7 @@ function QueueRow({
                           })}
                 </div>
             </div>
-            {row.capacity_used_pct === null ? (
+            {!capacity ? null : row.capacity_used_pct === null ? (
                 <span role="cell" className="text-[11px] text-rz-faint">
                     {t('admin.applications.capacity_unavailable')}
                 </span>
@@ -220,6 +229,9 @@ const BEACON_RELOADS = [
 export default function AdminApplications(props: C3AdminApplicationsProps) {
     const { t } = useTranslation();
     const next = props.pagination?.next ?? null;
+    const capacity = props.applications.some(
+        (row) => row.capacity_used_pct !== null,
+    );
     const ago = useRelativeLabel(props.server_time);
 
     return (
@@ -278,11 +290,22 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
                     )
                 }
             >
-                <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
+                <div
+                    role="row"
+                    className={cn(
+                        capacity ? GRID : GRID_WITHOUT_CAPACITY,
+                        TABLE_HEAD,
+                        'py-[13px]',
+                    )}
+                >
                     <HeadCell>{t('admin.applications.col.business')}</HeadCell>
                     <HeadCell>{t('admin.applications.col.sector')}</HeadCell>
                     <HeadCell>{t('admin.applications.col.requested')}</HeadCell>
-                    <HeadCell>{t('admin.applications.col.capacity')}</HeadCell>
+                    {capacity && (
+                        <HeadCell>
+                            {t('admin.applications.col.capacity')}
+                        </HeadCell>
+                    )}
                     <HeadCell>{t('admin.applications.col.rating')}</HeadCell>
                     <HeadCell>{t('admin.applications.col.submitted')}</HeadCell>
                     <HeadCell end>
@@ -290,7 +313,12 @@ export default function AdminApplications(props: C3AdminApplicationsProps) {
                     </HeadCell>
                 </div>
                 {props.applications.map((row) => (
-                    <QueueRow key={row.id} row={row} ago={ago} />
+                    <QueueRow
+                        key={row.id}
+                        row={row}
+                        ago={ago}
+                        capacity={capacity}
+                    />
                 ))}
             </TableCard>
         </AdminFrame>

@@ -171,6 +171,11 @@ describe('Admin Today', () => {
 
         expect(screen.getAllByText('RWF 3.7B')).toHaveLength(2);
         expect(screen.getByText('Fees in, minus payouts')).toBeInTheDocument();
+        expect(screen.getByText('Capital Issued')).toBeInTheDocument();
+        expect(
+            screen.getByText('Principal of issued notes'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Open Notes')).toBeInTheDocument();
         expect(screen.getByText('9 of 165 notes')).toBeInTheDocument();
         expect(screen.getByText('RWF 753,000')).toBeInTheDocument();
         expect(screen.getByText('5.5%')).toBeInTheDocument();

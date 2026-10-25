@@ -109,7 +109,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
 
 });
 
-it('reminds the Business while a sealed monthly report waits for it, downloads the seal as a PDF, and stops once it is disputed', function (): void {
+it('reminds the Business while a sealed monthly report waits for it, offers no PDF link until it is published, and stops once it is disputed', function (): void {
     $fixture = AuditSealingFixture::ready(kind: 'monthly', findings: true);
     $staff = $fixture['audit']['staff'];
     $report = $fixture['report'];
@@ -127,7 +127,8 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
         'sealed_at' => $seal->payload['sealed_at'], 'digest' => substr($seal->digest, 0, 12), 'variance_pct' => '0.0', 'variance_flagged' => true])
         ->and($row['cosign_by'])->not->toBeNull()->and($row['reminded_at'])->toBeNull()
         ->and($row['links']['remind'])->toBe(['url' => '/admin/reports/'.$assignment.'/remind', 'method' => 'post'])
-        ->and($row['links']['pdf'])->toBe(['url' => '/admin/reports/'.$report->id.'/pdf', 'method' => 'get']);
+        // The Business may still co-sign or dispute it, so no PDF is offered yet.
+        ->and($row['links']['pdf'])->toBeNull();
 
     actingAs($staff)->post(route('staff.reports.remind', $assignment))->assertRedirect();
     $notice = PartyNotice::query()->where('kind', 'business.report_review_closing')->sole();

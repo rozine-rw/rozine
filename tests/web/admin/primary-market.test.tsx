@@ -118,7 +118,7 @@ describe('Primary Market Monitor', () => {
             ).getByRole('link', { name: 'Primary Market' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(screen.getByText('Active Raises')).toBeInTheDocument();
-        expect(screen.getByText('Capital In Flight')).toBeInTheDocument();
+        expect(screen.getByText('Raised in Live Raises')).toBeInTheDocument();
         expect(screen.getByText('40%')).toBeInTheDocument();
         expect(screen.getByText('75%')).toBeInTheDocument();
 
