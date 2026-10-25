@@ -84,8 +84,9 @@ it('refuses to register anyone who did not acknowledge exactly the current notic
 it('keeps every acknowledgement as it was recorded', function (): void {
     $this->post(route('register.store'), sandboxNoticeSignUp())->assertSessionHasNoErrors();
 
-    expect(fn () => DB::table('sandbox_notice_acknowledgements')->update(['version' => 'changed']))->toThrow(QueryException::class);
-    expect(fn () => DB::table('sandbox_notice_acknowledgements')->delete())->toThrow(QueryException::class);
+    // Each attempt runs in its own savepoint, so the refused write leaves the test's transaction usable.
+    expect(fn () => DB::transaction(fn () => DB::table('sandbox_notice_acknowledgements')->update(['version' => 'changed'])))->toThrow(QueryException::class);
+    expect(fn () => DB::transaction(fn () => DB::table('sandbox_notice_acknowledgements')->delete()))->toThrow(QueryException::class);
     expect(SandboxNoticeAcknowledgement::query()->sole()->version)->toBe(SandboxNotice::VERSION);
 });
 
