@@ -638,6 +638,11 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         $source = $parties->get($user->party_id);
         $party = $identity === null ? $source : $parties->get($identity->party_id);
 
+        // A staff approval of an ID already verified for someone else is a duplicate, not an operator's reconciliation.
+        if ($approve !== null && $identity !== null && $identity->party_id !== $user->party_id) {
+            throw new IdentityViolation('IDENTITY_VERIFIED_FOR_ANOTHER_PERSON', 409);
+        }
+
         if (($approve !== null && $identity !== null) || ($source !== null && ($source->kind !== 'person'
             || ($source->id !== $identity?->party_id && ($source->memberships()->exists() || $source->verifiedIdentity()->exists()))))) {
             throw new IdentityViolation('IDENTITY_RECONCILIATION_REQUIRED', 409);
