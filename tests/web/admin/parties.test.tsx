@@ -951,6 +951,164 @@ describe('Party 360', () => {
         ).toBeInTheDocument();
     });
 
+    it('says an Audit Partner gets no jobs without a verified office, and records one with its evidence', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '2c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+        );
+        const fixture = props(licenceFixture);
+
+        fixture.party = {
+            ...party(licenceFixture),
+            office: {
+                state: 'missing',
+                latitude: null,
+                longitude: null,
+                uncertainty_m: null,
+                verified_at: null,
+                reference: null,
+                revision: 0,
+                verify: {
+                    url: '/admin/auditors/aud_claude/office',
+                    method: 'post',
+                },
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const office = screen.getByRole('region', {
+            name: 'Registered office',
+        });
+
+        expect(within(office).getByText('Not verified')).toBeInTheDocument();
+        expect(office).toHaveTextContent(
+            'No office location is on record, so this partner is not offered jobs.',
+        );
+        await user.click(
+            within(office).getByRole('button', {
+                name: 'Record verified office',
+            }),
+        );
+        const form = within(office).getByRole('form', {
+            name: 'Verify the registered office',
+        });
+        const submit = within(form).getByRole('button', {
+            name: 'Record as verified',
+        });
+
+        expect(submit).toBeDisabled();
+        await user.type(within(form).getByLabelText('Latitude'), '-1.9441');
+        await user.type(within(form).getByLabelText('Longitude'), '30.0619');
+        await user.type(within(form).getByLabelText('Accuracy (metres)'), '50');
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'ICPAR register',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'Confirmed by phone.',
+        );
+        await user.click(submit);
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/auditors/aud_claude/office',
+                data: {
+                    latitude: '-1.9441',
+                    longitude: '30.0619',
+                    uncertainty_m: '50',
+                    reference: 'ICPAR register',
+                    reason: 'Confirmed by phone.',
+                    request_id: '2c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+                    expected_revision: 0,
+                },
+            },
+        ]);
+        expect(
+            within(office).queryByRole('form', {
+                name: 'Verify the registered office',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['verified', 'Verified', 'Verify office again', null],
+        [
+            'expired',
+            'Verification lapsed',
+            'Verify office again',
+            'This office was verified more than a year ago',
+        ],
+    ] as const)(
+        'shows a %s office with its point, date and evidence',
+        async (state, chip, button, note) => {
+            const fixture = props(licenceFixture);
+
+            fixture.party = {
+                ...party(licenceFixture),
+                office: {
+                    state,
+                    latitude: '-1.9441000',
+                    longitude: '30.0619000',
+                    uncertainty_m: 20,
+                    verified_at: '2026-09-24T10:00:00Z',
+                    reference: 'ICPAR register entry',
+                    revision: 2,
+                    verify: {
+                        url: '/admin/auditors/aud_claude/office',
+                        method: 'post',
+                    },
+                },
+            };
+            const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+            await user.click(screen.getByRole('tab', { name: 'Controls' }));
+            const office = screen.getByRole('region', {
+                name: 'Registered office',
+            });
+
+            expect(within(office).getByText(chip)).toBeInTheDocument();
+            expect(office).toHaveTextContent('-1.9441000, 30.0619000 (±20 m)');
+            expect(office).toHaveTextContent('24 Sept 2026');
+            expect(office).toHaveTextContent('ICPAR register entry');
+            expect(
+                within(office).getByRole('button', { name: button }),
+            ).toBeInTheDocument();
+            if (note === null) {
+                expect(office).not.toHaveTextContent('not offered jobs');
+            } else {
+                expect(office).toHaveTextContent(note);
+            }
+        },
+    );
+
+    it('shows the office read-only to a viewer who may not verify it', async () => {
+        const fixture = props(licenceFixture);
+
+        fixture.party = {
+            ...party(licenceFixture),
+            office: {
+                state: 'missing',
+                latitude: null,
+                longitude: null,
+                uncertainty_m: null,
+                verified_at: null,
+                reference: null,
+                revision: 0,
+                verify: null,
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const office = screen.getByRole('region', {
+            name: 'Registered office',
+        });
+
+        expect(within(office).queryByRole('button')).not.toBeInTheDocument();
+    });
+
     it('opens on the decision the review queue chose, with its reason stage ready', () => {
         const fixture = props(licenceFixture);
         const detail = party(licenceFixture);

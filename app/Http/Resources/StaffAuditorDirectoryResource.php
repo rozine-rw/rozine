@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Auditor\VerifiedAuditLocation;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,16 +18,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * carries verify and reject, which run the accreditation review that already exists. Every licence
  * waiting for review is also queued above the directory, as the design's ICPAR verification desk
  * (a first licence) and partner change requests (a renewal): approving or rejecting one opens that
- * partner's 360 on the decision's reason stage, since every decision carries a reason.
+ * partner's 360 on the decision's reason stage, since every decision carries a reason. The 360
+ * shows the registered office dispatch measures the 30 km from: verified, lapsed after 365 days
+ * (engineering contract), or missing, and in the console staff may record a newly verified one.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type QueueEntry from \App\Application\Auditor\Contracts\AuditorDirectoryStore
+ * @phpstan-import-type Location from \App\Application\Auditor\Contracts\AuditLocationStore
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, chip: string, search: string,
- *     queue: list<QueueEntry>, partner: Detail|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
+ *     queue: list<QueueEntry>, partner: Detail|null, office?: Location|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffAuditorDirectoryResource extends JsonResource
@@ -78,7 +82,9 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'link' => $link([...$position, 'auditor' => $row['party_id']])], $page['rows'])],
             'desk' => self::queue(array_filter($page['queue'], fn (array $entry): bool => ! $entry['renewal']), $link, $position, $verify),
             'requests' => self::queue(array_filter($page['queue'], fn (array $entry): bool => $entry['renewal']), $link, $position, $verify),
-            'party' => $page['partner'] === null ? null : self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide'])];
+            'party' => $page['partner'] === null ? null : [...self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide']),
+                'office' => ($page['office'] ?? null) === null ? null : self::office($page['office'], $prefix === ''
+                    ? ['url' => route('staff.auditors.office.verify', ['party' => $page['partner']['row']['party_id']], false), 'method' => 'post'] : null)]];
     }
 
     /**
@@ -97,6 +103,23 @@ class StaffAuditorDirectoryResource extends JsonResource
             'links' => ['review' => $link([...$position, 'auditor' => $entry['party_id']]),
                 ...($verify ? ['approve' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'approve']),
                     'reject' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'reject'])] : [])]], $entries));
+    }
+
+    /**
+     * The office as last verified, and where the viewer may record a new verification.
+     *
+     * @param  Location  $office
+     * @param  array{url: string, method: string}|null  $verify
+     * @return array<string, mixed>
+     */
+    private static function office(array $office, ?array $verify): array
+    {
+        $state = $office['state'];
+        $point = $state['point'];
+
+        return ['state' => VerifiedAuditLocation::standing($state, now()->toDateTimeImmutable()), 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
+            'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $office['revision'],
+            'verify' => $verify];
     }
 
     /**

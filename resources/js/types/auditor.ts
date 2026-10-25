@@ -600,6 +600,11 @@ export type AuditorJobsProps = AuditorPageContract &
         radius_km: number;
         flash_hours: number;
         /**
+         * Whether dispatch can measure the radius from this partner's registered office: verified by
+         * Rozine within the last year, lapsed, or not on record. Null or absent where not served.
+         */
+        office?: 'verified' | 'expired' | 'missing' | null;
+        /**
          * Offers to this partner and their accepted work: the server splits one bounded page into
          * these two lists, and `pagination` covers the page as a whole.
          */

@@ -2731,6 +2731,37 @@ const fr: Catalog = {
     'admin.parties.verify_licence': '✓ Valider la licence',
     'admin.parties.reject': 'Refuser',
     'admin.parties.licence_title': 'Licence ICPAR et vérification',
+    'admin.parties.office.title': 'Bureau enregistré',
+    'admin.parties.office.status': "Lieu d'affectation",
+    'admin.parties.office.state.verified': 'Vérifié',
+    'admin.parties.office.state.expired': 'Vérification expirée',
+    'admin.parties.office.state.missing': 'Non vérifié',
+    'admin.parties.office.note.missing':
+        "Aucun bureau n'est enregistré, donc ce partenaire ne reçoit pas de missions. Les missions ne vont qu'aux partenaires dont le bureau vérifié est à moins de 30 km de l'entreprise.",
+    'admin.parties.office.note.expired':
+        "Ce bureau a été vérifié il y a plus d'un an, donc ce partenaire ne reçoit pas de missions tant qu'il n'est pas vérifié à nouveau.",
+    'admin.parties.office.coordinates': 'Coordonnées',
+    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.office.verified_on': 'Vérifié le',
+    'admin.parties.office.evidence': 'Preuve vérifiée',
+    'admin.parties.office.record': 'Enregistrer le bureau vérifié',
+    'admin.parties.office.reverify': 'Vérifier le bureau à nouveau',
+    'admin.parties.office.form': 'Vérifier le bureau enregistré',
+    'admin.parties.office.form_body':
+        "Saisissez les coordonnées du bureau vérifiées avec la preuve. L'affectation ajoute la précision à la distance, donc une marge large peut exclure des entreprises.",
+    'admin.parties.office.field.latitude': 'Latitude',
+    'admin.parties.office.field.longitude': 'Longitude',
+    'admin.parties.office.field.uncertainty_m': 'Précision (mètres)',
+    'admin.parties.office.field.reference': 'Preuve vérifiée',
+    'admin.parties.office.field.reason': 'Motif',
+    'admin.parties.office.placeholder.latitude': '-1.9441',
+    'admin.parties.office.placeholder.longitude': '30.0619',
+    'admin.parties.office.placeholder.uncertainty_m': '50',
+    'admin.parties.office.placeholder.reference':
+        "ex. registre de l'ICPAR, visite sur place",
+    'admin.parties.office.placeholder.reason':
+        "ex. Adresse du bureau confirmée au registre de l'ICPAR et par téléphone.",
+    'admin.parties.office.cta': 'Enregistrer comme vérifié',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',
@@ -3000,6 +3031,10 @@ const fr: Catalog = {
     'auditor.jobs.view_file': 'Voir le dossier complet →',
     'auditor.jobs.decline': 'Refuser',
     'auditor.jobs.declare_conflict': 'Déclarer un conflit',
+    'auditor.jobs.office.missing':
+        "Rozine n'a pas encore vérifié l'adresse de votre bureau, donc aucune mission ne peut vous être envoyée. Les missions vont aux partenaires dont le bureau est à moins de {radius} km de l'entreprise. Contactez les Opérations d'audit pour la faire vérifier.",
+    'auditor.jobs.office.expired':
+        "L'adresse de votre bureau a été vérifiée il y a plus d'un an, donc aucune nouvelle mission ne peut vous être envoyée tant que Rozine ne l'a pas vérifiée à nouveau. Contactez les Opérations d'audit.",
     'auditor.jobs.empty':
         "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
     'auditor.monthly.title': 'Rapports mensuels',

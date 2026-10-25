@@ -585,6 +585,32 @@ describe('Auditor Jobs', () => {
         expect(screen.queryByText('Audits to open')).not.toBeInTheDocument();
     });
 
+    it.each([
+        [
+            'missing',
+            "Rozine hasn't verified your office location yet, so no jobs can be sent to you. Jobs go to partners whose office is within 30 km of the business. Contact Audit Operations to have it verified.",
+        ],
+        [
+            'expired',
+            'Your office location was verified more than a year ago, so no new jobs can be sent to you until Rozine verifies it again. Contact Audit Operations.',
+        ],
+    ] as const)(
+        'says why no jobs arrive while the office is %s',
+        (office, message) => {
+            render(<AuditorJobs {...props(emptyFixture)} office={office} />);
+
+            expect(screen.getByRole('status', { name: '' })).toHaveTextContent(
+                message,
+            );
+        },
+    );
+
+    it('says nothing about a verified office', () => {
+        render(<AuditorJobs {...props(emptyFixture)} office="verified" />);
+
+        expect(screen.queryByText(/office location/u)).not.toBeInTheDocument();
+    });
+
     it('explains an empty area and an empty month', () => {
         render(<AuditorJobs {...props(emptyFixture)} />);
 

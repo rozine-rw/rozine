@@ -2719,6 +2719,37 @@ const rw: Catalog = {
     'admin.parties.verify_licence': '✓ Emeza uruhushya',
     'admin.parties.reject': 'Anga',
     'admin.parties.licence_title': 'Uruhushya rwa ICPAR no kwemeza',
+    'admin.parties.office.title': 'Ibiro byanditswe',
+    'admin.parties.office.status': 'Aho yoherezwa ava',
+    'admin.parties.office.state.verified': 'Byemejwe',
+    'admin.parties.office.state.expired': 'Kwemeza byarangiye',
+    'admin.parties.office.state.missing': 'Ntibyemejwe',
+    'admin.parties.office.note.missing':
+        'Nta biro byanditswe, bityo uyu mufatanyabikorwa ntahabwa akazi. Akazi gahabwa abafatanyabikorwa bafite ibiro byemejwe biri muri km 30 uvuye ku kigo.',
+    'admin.parties.office.note.expired':
+        'Ibi biro byemejwe hashize umwaka urenga, bityo uyu mufatanyabikorwa ntahabwa akazi kugeza byongeye kwemezwa.',
+    'admin.parties.office.coordinates': 'Aho biherereye',
+    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.office.verified_on': 'Byemejwe ku wa',
+    'admin.parties.office.evidence': 'Ibimenyetso byagenzuwe',
+    'admin.parties.office.record': 'Andika ibiro byemejwe',
+    'admin.parties.office.reverify': 'Ongera wemeze ibiro',
+    'admin.parties.office.form': 'Emeza ibiro byanditswe',
+    'admin.parties.office.form_body':
+        'Andika aho ibiro biherereye wagenzuye ukoresheje ibimenyetso. Kohereza byongera ubusobanuro ku ntera, bityo ikinyuranyo kinini gishobora gusiga ibigo hanze.',
+    'admin.parties.office.field.latitude': 'Latitude',
+    'admin.parties.office.field.longitude': 'Longitude',
+    'admin.parties.office.field.uncertainty_m': 'Ubusobanuro (metero)',
+    'admin.parties.office.field.reference': 'Ibimenyetso byagenzuwe',
+    'admin.parties.office.field.reason': 'Impamvu',
+    'admin.parties.office.placeholder.latitude': '-1.9441',
+    'admin.parties.office.placeholder.longitude': '30.0619',
+    'admin.parties.office.placeholder.uncertainty_m': '50',
+    'admin.parties.office.placeholder.reference':
+        'urugero: urutonde rwa ICPAR, gusura aho biri',
+    'admin.parties.office.placeholder.reason':
+        "urugero: Aderesi y'ibiro yemejwe ku rutonde rwa ICPAR no kuri telefoni.",
+    'admin.parties.office.cta': 'Andika ko byemejwe',
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',
@@ -2988,6 +3019,10 @@ const rw: Catalog = {
     'auditor.jobs.view_file': 'Reba ubusabe bwose →',
     'auditor.jobs.decline': 'Anga',
     'auditor.jobs.declare_conflict': 'Tangaza inyungu bwite',
+    'auditor.jobs.office.missing':
+        "Rozine ntiremeza aho ibiro byawe biherereye, bityo nta kazi gashobora koherezwa. Akazi gahabwa abafatanyabikorwa bafite ibiro biri muri km {radius} uvuye ku kigo. Vugana n'Ishami ry'Igenzura kugira ngo bibyemeze.",
+    'auditor.jobs.office.expired':
+        "Aho ibiro byawe biherereye byemejwe hashize umwaka urenga, bityo nta kazi gashya koherezwa kugeza Rozine yongeye kubyemeza. Vugana n'Ishami ry'Igenzura.",
     'auditor.jobs.empty':
         'Nta murimo ufunguye mu karere kawe. Tuzakumenyesha igihe dosiye yo ku rwego rwa 2 ikeneye igenzura mu birometero {radius}.',
     'auditor.monthly.title': 'Raporo za buri kwezi',

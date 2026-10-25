@@ -2588,6 +2588,37 @@ const en = {
     'admin.parties.verify_licence': '✓ Verify licence',
     'admin.parties.reject': 'Reject',
     'admin.parties.licence_title': 'ICPAR licence & verification',
+    'admin.parties.office.title': 'Registered office',
+    'admin.parties.office.status': 'Dispatch location',
+    'admin.parties.office.state.verified': 'Verified',
+    'admin.parties.office.state.expired': 'Verification lapsed',
+    'admin.parties.office.state.missing': 'Not verified',
+    'admin.parties.office.note.missing':
+        'No office location is on record, so this partner is not offered jobs. Jobs only go to partners whose verified office is within 30 km of the business.',
+    'admin.parties.office.note.expired':
+        'This office was verified more than a year ago, so this partner is not offered jobs until it is verified again.',
+    'admin.parties.office.coordinates': 'Coordinates',
+    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.office.verified_on': 'Verified on',
+    'admin.parties.office.evidence': 'Evidence checked',
+    'admin.parties.office.record': 'Record verified office',
+    'admin.parties.office.reverify': 'Verify office again',
+    'admin.parties.office.form': 'Verify the registered office',
+    'admin.parties.office.form_body':
+        'Enter the office coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put businesses out of range.',
+    'admin.parties.office.field.latitude': 'Latitude',
+    'admin.parties.office.field.longitude': 'Longitude',
+    'admin.parties.office.field.uncertainty_m': 'Accuracy (metres)',
+    'admin.parties.office.field.reference': 'Evidence checked',
+    'admin.parties.office.field.reason': 'Reason',
+    'admin.parties.office.placeholder.latitude': '-1.9441',
+    'admin.parties.office.placeholder.longitude': '30.0619',
+    'admin.parties.office.placeholder.uncertainty_m': '50',
+    'admin.parties.office.placeholder.reference':
+        'e.g. ICPAR register entry, site visit',
+    'admin.parties.office.placeholder.reason':
+        'e.g. Office address confirmed on the ICPAR register and by phone.',
+    'admin.parties.office.cta': 'Record as verified',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',
@@ -2851,6 +2882,10 @@ const en = {
     'auditor.jobs.view_file': 'View full application →',
     'auditor.jobs.decline': 'Decline',
     'auditor.jobs.declare_conflict': 'Declare a conflict',
+    'auditor.jobs.office.missing':
+        "Rozine hasn't verified your office location yet, so no jobs can be sent to you. Jobs go to partners whose office is within {radius} km of the business. Contact Audit Operations to have it verified.",
+    'auditor.jobs.office.expired':
+        'Your office location was verified more than a year ago, so no new jobs can be sent to you until Rozine verifies it again. Contact Audit Operations.',
     'auditor.jobs.empty':
         "No open jobs in your area. We'll ping you the moment a Tier 2 deal needs a field check within {radius}km.",
     'auditor.monthly.title': 'Monthly reports',

@@ -318,6 +318,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     foreach (['approve', 'reject'] as $decision) {
         Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
     }
+    Route::post('{party}/office', [StaffAuditorDirectoryController::class, 'office'])->whereUlid('party')->name('office.verify');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {

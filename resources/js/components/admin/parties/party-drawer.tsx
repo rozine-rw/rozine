@@ -7,6 +7,7 @@ import {
 } from '@/components/admin/format';
 import { KycReview } from '@/components/admin/kyc-review';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
+import { PartnerOfficeSection } from '@/components/admin/parties/partner-office';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
 import { TrailList } from '@/components/admin/trail-list';
@@ -568,6 +569,14 @@ export function PartyDrawer({
                                     ])}
                                 </div>
                             </section>
+                        )}
+                        {party.office && (
+                            <PartnerOfficeSection
+                                office={party.office}
+                                viewer={viewer}
+                                section={SECTION}
+                                box={BOX}
+                            />
                         )}
 
                         <section

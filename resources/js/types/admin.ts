@@ -825,6 +825,21 @@ export type PartyListRow = {
         | { kind: 'holding'; value: Money; notes: number };
 };
 
+/** A partner's registered office as staff last verified it; lapsed after 365 days. */
+export type PartnerOffice = {
+    state: 'verified' | 'expired' | 'missing';
+    latitude: string | null;
+    longitude: string | null;
+    /** How many metres the point may be off. */
+    uncertainty_m: number | null;
+    verified_at: string | null;
+    /** The evidence the verifier checked. */
+    reference: string | null;
+    revision: number;
+    /** Where the viewer records a newly verified office, or null when they may not. */
+    verify: RouteAction | null;
+};
+
 export type PartyDetail = {
     id: string;
     kind: PartyKind;
@@ -864,6 +879,8 @@ export type PartyDetail = {
     restrictions: (TrailEntry & { kind: 'freeze' | 'release' })[];
     /** An Investor's identity submission, reviewed in the 360; absent for other parties. */
     verification?: InvestorVerificationReview | null;
+    /** An Audit Partner's registered office, which dispatch measures the 30 km from; absent for other parties. */
+    office?: PartnerOffice | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
