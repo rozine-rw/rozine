@@ -1381,6 +1381,8 @@ const en = {
         'Investment confirmed',
     'admin.messaging.template.investor.payment_delayed': 'Payment delayed',
     'admin.messaging.template.investor.payout_received': 'Payout received',
+    'admin.messaging.template.investor.purchase_confirmed':
+        'Purchase confirmed',
     'admin.messaging.template.investor.raise_expired': 'Raise expired',
     'admin.messaging.template.investor.report_published': 'Report published',
     'admin.messaging.template.investor.verification_decided':

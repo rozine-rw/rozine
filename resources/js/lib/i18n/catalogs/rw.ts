@@ -1456,6 +1456,7 @@ const rw: Catalog = {
         'Ishoramari ryemejwe',
     'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',
     'admin.messaging.template.investor.payout_received': 'Amafaranga yakiriwe',
+    'admin.messaging.template.investor.purchase_confirmed': 'Kugura byemejwe',
     'admin.messaging.template.investor.raise_expired':
         'Igihe cyo gukusanya cyarangiye',
     'admin.messaging.template.investor.report_published': 'Raporo yasohotse',

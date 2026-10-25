@@ -1469,6 +1469,7 @@ const fr: Catalog = {
         'Investissement confirmé',
     'admin.messaging.template.investor.payment_delayed': 'Paiement retardé',
     'admin.messaging.template.investor.payout_received': 'Versement reçu',
+    'admin.messaging.template.investor.purchase_confirmed': 'Achat confirmé',
     'admin.messaging.template.investor.raise_expired': 'Levée expirée',
     'admin.messaging.template.investor.report_published': 'Rapport publié',
     'admin.messaging.template.investor.verification_decided':
