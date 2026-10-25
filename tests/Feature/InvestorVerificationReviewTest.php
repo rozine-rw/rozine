@@ -378,7 +378,7 @@ test('an existing membership is never reset by an approval', function (): void {
     (new RoleMembership)->forceFill(['party_id' => $this->person->party_id, 'role' => 'investor', 'status' => 'revoked', 'revision' => 3])->save();
 
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))
-        ->assertSessionHasErrors(['form' => 'This ID is already verified for another person, or the account needs an identity operator. It cannot be approved here.']);
+        ->assertSessionHasErrors(['form' => 'This account needs an identity operator: it has several accounts, or its Party already holds roles or another identity. It cannot be approved here.']);
     expect(RoleMembership::query()->sole()->only(['status', 'revision']))->toBe(['status' => 'revoked', 'revision' => 3])
         ->and(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
         ->and($case->refresh()->status)->toBe('submitted');
