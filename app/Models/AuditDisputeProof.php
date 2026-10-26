@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Casts\StoredFile;
 use Database\Factories\AuditDisputeProofFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +25,6 @@ class AuditDisputeProof extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['content' => StoredFile::class, 'filename' => 'encrypted', 'size_bytes' => 'integer', 'created_at' => 'immutable_datetime'];
+        return ['content' => 'encrypted', 'filename' => 'encrypted', 'size_bytes' => 'integer', 'created_at' => 'immutable_datetime'];
     }
 }

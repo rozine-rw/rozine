@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Casts\StoredFile;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,6 +32,6 @@ class InvestorVerificationDocument extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['filename' => 'encrypted', 'content' => StoredFile::class, 'size_bytes' => 'integer'];
+        return ['filename' => 'encrypted', 'content' => 'encrypted', 'size_bytes' => 'integer'];
     }
 }
