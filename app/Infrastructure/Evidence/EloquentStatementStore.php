@@ -102,7 +102,16 @@ final class EloquentStatementStore implements StatementStore
     public function get(int $userId, int $contextRevision, string $businessId): array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
-            fn (): array => $this->manifest(StatementEvidence::query()->where('business_id', $businessId)->first(), true));
+            function (array $business, array $identity) use ($businessId): array {
+                $canUpload = false;
+                foreach ($business['mandate']['people'] as $person) {
+                    if ($person['party_id'] === ($identity['party']['id'] ?? null)) {
+                        $canUpload = in_array('application.save', $person['permissions'], true);
+                    }
+                }
+
+                return $this->manifest(StatementEvidence::query()->where('business_id', $businessId)->first(), $canUpload);
+            });
     }
 
     /** @return Original */
@@ -457,8 +466,8 @@ final class EloquentStatementStore implements StatementStore
     }
 
     /**
-     * Receipts, journals and Audit Partners only ever see generated names; the Business reading its own
-     * manifest sees the names it uploaded, as its own download already does.
+     * Receipts, journals, Audit Partners and view-only Business members only ever see generated names;
+     * a member who may upload and download the statements sees the names they were uploaded with.
      *
      * @return Manifest
      */
