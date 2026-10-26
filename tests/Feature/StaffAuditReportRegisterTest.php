@@ -68,7 +68,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
     $period = now('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');
     $due = (string) app(AuditReportWindow::class)->dueAt($period);
     $row = ['id' => $assignment->id, 'business' => 'Synthetic business', 'kind' => 'monthly', 'period' => $period.'-01',
-        'auditor' => $partner['user']->name, 'licence' => null, 'status' => 'not_started',
+        'auditor' => $partner['user']->name, 'licence' => 'SYNTHETIC-CPA', 'status' => 'not_started',
         'due_at' => now()->parse($due)->utc()->format('Y-m-d\TH:i:s\Z'), 'cosign_by' => null, 'sealed_at' => null, 'digest' => null,
         'variance_pct' => null, 'variance_flagged' => false, 'owes' => 'auditor', 'reminded_at' => null, 'links' => ['pdf' => null, 'remind' => null]];
 
@@ -191,7 +191,7 @@ it('lists the replacement partner\'s unopened work instead of the withdrawn pred
 
     $row = auditRegister($fixture['audit']['staff'], ['chip' => 'owed'])['rows'][0];
     expect($row)->toMatchArray(['id' => $assignment->id, 'auditor' => $replacement['user']->name,
-        'status' => 'not_started', 'owes' => 'auditor', 'sealed_at' => null, 'digest' => null, 'licence' => null])
+        'status' => 'not_started', 'owes' => 'auditor', 'sealed_at' => null, 'digest' => null, 'licence' => 'SYNTHETIC-CPA'])
         ->and($row['links']['pdf'])->toBeNull()->and($row['links']['remind'])->not->toBeNull();
     actingAs($fixture['audit']['staff'])->post($row['links']['remind']['url'])->assertRedirect();
     expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->sole()->party_id)->toBe($replacement['party']->id);

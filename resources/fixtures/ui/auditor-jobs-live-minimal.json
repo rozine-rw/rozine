@@ -126,6 +126,7 @@
             }
         ],
         "monthly": null,
+        "office": "verified",
         "decline_options": [
             {
                 "code": "unavailable",
