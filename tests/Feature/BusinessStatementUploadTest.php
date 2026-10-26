@@ -159,7 +159,7 @@ it('serves statements over the API with its own receipts and scopes', function (
     $this->getJson("/api/v1/business/{$business}/statements/{$document}")->assertForbidden();
 });
 
-it('keeps another business and a view-only member away from the originals', function (): void {
+it('keeps another business and a view-only member away from the originals and their uploaded names', function (): void {
     $fixture = DraftFixture::make('organization', 2);
     $other = DraftFixture::make();
     $business = $fixture['business']->id;
@@ -171,7 +171,9 @@ it('keeps another business and a view-only member away from the originals', func
     BusinessAuthorityFixture::configure($authority, 1);
 
     $viewer = $authority['users'][1];
-    expect(statementUploadPage($viewer, "/business/{$business}/applications/{$fixture['application']->id}")['documents'])->toHaveCount(1);
+    $documents = statementUploadPage($viewer, "/business/{$business}/applications/{$fixture['application']->id}")['documents'];
+    expect($documents)->toHaveCount(1)
+        ->and($documents[0]['filename'])->toStartWith("statement-{$document}.");
     $this->actingAs($viewer)->get("/business/{$business}/statements/{$document}")->assertForbidden();
     $this->actingAs($viewer)->post("/business/{$business}/statements",
         statementUploadForm(UploadedFile::fake()->createWithContent('bank.csv', StatementFixture::csv('5')), 1), ['Accept' => 'application/json'])

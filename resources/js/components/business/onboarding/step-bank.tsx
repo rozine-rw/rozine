@@ -232,7 +232,7 @@ export function StepBank({
                 aria-describedby="account-number-error"
                 id="account_number"
                 inputMode="numeric"
-                maxLength={16}
+                maxLength={20}
                 value={data.account_number}
                 onChange={(event) =>
                     form.setData(

@@ -91,7 +91,10 @@ export function KycReview({
                 >
                     {t('admin.kyc.documents')}
                 </h3>
-                <KycDocuments documents={review.documents} />
+                <KycDocuments
+                    documents={review.documents}
+                    idType={review.id_type}
+                />
             </section>
             {review.decision && (
                 <section

@@ -5,7 +5,7 @@ import { formatCount } from '@/components/admin/format';
 import { LABEL } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { InvestorVerificationDocument } from '@/types/admin';
+import type { InvestorVerificationDocument, KycIdType } from '@/types/admin';
 
 const isImage = (document: InvestorVerificationDocument): boolean =>
     document.media_type.startsWith('image/');
@@ -20,8 +20,11 @@ const DOWNLOAD =
  */
 export function KycDocuments({
     documents,
+    idType,
 }: {
     documents: InvestorVerificationDocument[];
+    /** A passport has one photo page, so its front is named for that page. */
+    idType?: KycIdType;
 }) {
     const { t } = useTranslation();
     const current = documents.filter((document) => document.current);
@@ -35,7 +38,11 @@ export function KycDocuments({
             size: formatCount(Math.ceil(document.size_bytes / 1024)),
         });
     const slot = (document: InvestorVerificationDocument): string =>
-        t(`admin.kyc.slot.${document.slot}`);
+        t(
+            idType === 'passport' && document.slot === 'front'
+                ? 'admin.kyc.slot.passport'
+                : `admin.kyc.slot.${document.slot}`,
+        );
     const download = (document: InvestorVerificationDocument) => (
         <a
             href={document.link.url}

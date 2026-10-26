@@ -360,6 +360,7 @@ export default function AdminEvents(props: AdminEventsProps) {
                             <input
                                 type="date"
                                 aria-label={t('admin.events.from')}
+                                max={filters.to ?? undefined}
                                 value={filters.from ?? ''}
                                 onChange={(event) =>
                                     apply({
@@ -375,6 +376,7 @@ export default function AdminEvents(props: AdminEventsProps) {
                             <input
                                 type="date"
                                 aria-label={t('admin.events.to')}
+                                min={filters.from ?? undefined}
                                 value={filters.to ?? ''}
                                 onChange={(event) =>
                                     apply({

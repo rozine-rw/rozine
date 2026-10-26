@@ -1,4 +1,5 @@
 import { Link, router, useForm } from '@inertiajs/react';
+import { FileText } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
@@ -107,19 +108,115 @@ function Upload({
 }
 
 /**
- * Typed digits become DD / MM / YYYY as they are entered, the one form the server reads. Anything
- * else typed (a pasted date with dots, say) is left for the server to read or refuse.
+ * The server reads and keeps a date of birth day first (DD / MM / YYYY); the date control speaks
+ * YYYY-MM-DD. These two convert between them.
  */
-function dateOfBirth(value: string): string {
-    if (!/^[0-9 /]*$/u.test(value)) {
-        return value;
+function isoDate(value: string): string {
+    const parts =
+        /^\s*(\d{1,2})\s*[/.-]\s*(\d{1,2})\s*[/.-]\s*(\d{4})\s*$/u.exec(value);
+
+    return parts === null
+        ? ''
+        : `${parts[3]}-${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+}
+
+function dayFirst(iso: string): string {
+    const [year, month, day] = iso.split('-');
+
+    return iso === '' ? '' : `${day} / ${month} / ${year}`;
+}
+
+/** The latest birthday that is at least 18 years before today, as YYYY-MM-DD. */
+function adultBy(today: Date): string {
+    const year = String(today.getFullYear() - 18).padStart(4, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
+const EARLIEST_BIRTH = '1900-01-01';
+
+/**
+ * The same refusals the server makes, shown as soon as a date is picked: an impossible or
+ * pre-1900 date, or one less than 18 years ago. The server stays the authority.
+ */
+function birthDateProblem(
+    iso: string,
+    latest: string,
+): 'dob_invalid' | 'dob_minor' | null {
+    if (iso === '') {
+        return null;
     }
 
-    const digits = value.replace(/\D/gu, '').slice(0, 8);
+    const [year, month, day] = iso.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
 
-    return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)]
-        .filter((part) => part !== '')
-        .join(' / ');
+    if (
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() !== month - 1 ||
+        date.getUTCDate() !== day ||
+        iso < EARLIEST_BIRTH
+    ) {
+        return 'dob_invalid';
+    }
+
+    return iso > latest ? 'dob_minor' : null;
+}
+
+/** The server's number rules (16 digits on a national ID, 6 to 12 letters or digits on a passport). */
+const ID_NUMBER: Record<'national_id' | 'passport', RegExp> = {
+    national_id: /^[0-9]{16}$/u,
+    passport: /^[A-Z0-9]{6,12}$/u,
+};
+
+/**
+ * What the person sent for one slot, shown back to them: the image itself, or the file name for
+ * a PDF. The file comes from their own no-store route, never a public URL.
+ */
+function Preview({
+    state,
+    round = false,
+}: {
+    state: UploadState;
+    round?: boolean;
+}) {
+    if (state.link === undefined) {
+        return null;
+    }
+
+    return state.media_type?.startsWith('image/') ? (
+        <img
+            src={state.link.url}
+            alt=""
+            className={
+                round
+                    ? 'absolute inset-0 size-full rounded-full object-cover opacity-90'
+                    : 'mx-auto mb-1.5 h-20 w-full rounded-lg object-cover'
+            }
+        />
+    ) : (
+        <span className="mx-auto mb-1.5 flex max-w-full items-center justify-center gap-1.5 text-rz-slate">
+            <FileText aria-hidden="true" className="size-5 shrink-0" />
+            <span className="truncate text-[11.5px]">{state.filename}</span>
+        </span>
+    );
+}
+
+/** Opens what was sent for one slot in a new tab, outside the tile so it never opens the picker. */
+function ViewUpload({ state, label }: { state: UploadState; label: string }) {
+    const { t } = useTranslation();
+
+    return state.link === undefined ? null : (
+        <a
+            href={state.link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1.5 block text-center text-[12px] font-semibold text-rz-accent-app-text underline-offset-2 hover:underline"
+        >
+            {t('investor.kyc.view_upload', { slot: label })}
+        </a>
+    );
 }
 
 function Chips<T extends string>({
@@ -213,6 +310,8 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
     // server's step returns once that earlier step is saved.
     const [viewing, setViewing] = useState<Step | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [idNumberTouched, setIdNumberTouched] = useState(false);
+    const [latestBirth] = useState(() => adultBy(new Date()));
     const steps: readonly Step[] =
         props.investor_type === 'individual' ? PERSONAL_STEPS : ENTITY_STEPS;
     const step: Step = viewing ?? props.step;
@@ -262,9 +361,37 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
         uploadError ??
         Object.entries(form.errors).find(([field]) => !answered(field))?.[1];
     const locked = submitted;
+    const birth = isoDate(String(data.date_of_birth ?? ''));
+    const birthProblem =
+        props.investor_type === 'individual'
+            ? birthDateProblem(birth, latestBirth)
+            : null;
+    const idType: 'national_id' | 'passport' =
+        data.id_type === 'passport' ? 'passport' : 'national_id';
+    const idNumber = String(data.id_number ?? '')
+        .replace(/\s+/gu, '')
+        .toUpperCase();
+    const idNumberProblem =
+        idNumberTouched && idNumber !== '' && !ID_NUMBER[idType].test(idNumber);
+    // A passport has one photo page; a national ID has a front and a back.
+    const sides =
+        idType === 'passport'
+            ? (['front'] as const)
+            : (['front', 'back'] as const);
+    const sideLabel = (side: 'front' | 'back', uploaded: boolean) =>
+        t(
+            idType === 'passport'
+                ? `investor.kyc.${uploaded ? 'uploaded' : 'upload'}_passport`
+                : `investor.kyc.${uploaded ? 'uploaded' : 'upload'}_${side}`,
+        );
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+
+        if (step === 'personal' && birthProblem !== null) {
+            return;
+        }
+
         form.transform((values) => ({
             ...values,
             step,
@@ -358,15 +485,45 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                 </p>
                             </div>
                             <div>
-                                {text(
-                                    'date_of_birth',
-                                    t('investor.kyc.dob'),
-                                    t('investor.kyc.dob_placeholder'),
-                                    'numeric',
-                                    dateOfBirth,
-                                )}
-                                <p className="mt-1.5 text-[11.5px] text-rz-secondary">
-                                    {t('investor.kyc.dob_hint')}
+                                <label
+                                    htmlFor="date_of_birth"
+                                    className={LABEL}
+                                >
+                                    {t('investor.kyc.dob')}
+                                </label>
+                                <input
+                                    id="date_of_birth"
+                                    type="date"
+                                    min={EARLIEST_BIRTH}
+                                    max={latestBirth}
+                                    value={birth}
+                                    onChange={(event) =>
+                                        set(
+                                            'date_of_birth',
+                                            dayFirst(event.target.value),
+                                        )
+                                    }
+                                    aria-invalid={birthProblem !== null}
+                                    aria-describedby="date_of_birth_hint"
+                                    className={FIELD}
+                                />
+                                <p
+                                    id="date_of_birth_hint"
+                                    role={
+                                        birthProblem === null
+                                            ? undefined
+                                            : 'alert'
+                                    }
+                                    className={cn(
+                                        'mt-1.5 text-[11.5px]',
+                                        birthProblem === null
+                                            ? 'text-rz-secondary'
+                                            : 'text-rz-danger-text',
+                                    )}
+                                >
+                                    {t(
+                                        `investor.kyc.${birthProblem ?? 'dob_hint'}`,
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -390,48 +547,99 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                 />
                             </div>
                             <div className="mt-3.5">
-                                {text(
-                                    'id_number',
-                                    t('investor.kyc.id_number'),
-                                    '1 1990 8 0012345 6 78',
-                                )}
+                                <label htmlFor="id_number" className={LABEL}>
+                                    {t('investor.kyc.id_number')}
+                                </label>
+                                <input
+                                    id="id_number"
+                                    value={String(data.id_number ?? '')}
+                                    onChange={(event) =>
+                                        set('id_number', event.target.value)
+                                    }
+                                    onBlur={() => setIdNumberTouched(true)}
+                                    inputMode={
+                                        idType === 'national_id'
+                                            ? 'numeric'
+                                            : 'text'
+                                    }
+                                    autoCapitalize="characters"
+                                    placeholder={
+                                        idType === 'national_id'
+                                            ? '1 1990 8 0012345 6 78'
+                                            : 'PC1234567'
+                                    }
+                                    aria-invalid={idNumberProblem}
+                                    aria-describedby="id_number_hint"
+                                    className={FIELD}
+                                />
+                                <p
+                                    id="id_number_hint"
+                                    role={idNumberProblem ? 'alert' : undefined}
+                                    className={cn(
+                                        'mt-1.5 text-[11.5px]',
+                                        idNumberProblem
+                                            ? 'text-rz-danger-text'
+                                            : 'text-rz-secondary',
+                                    )}
+                                >
+                                    {t(
+                                        idNumberProblem
+                                            ? `investor.kyc.id_invalid.${idType}`
+                                            : `investor.kyc.id_hint.${idType}`,
+                                    )}
+                                </p>
                             </div>
                             <div className="mt-3.5 flex gap-3">
-                                {(['front', 'back'] as const).map((side) => {
+                                {sides.map((side) => {
                                     const state = props.uploads[side];
+                                    const uploaded = state.status !== 'missing';
 
                                     return (
-                                        <Upload
-                                            onError={setUploadError}
+                                        <div
                                             key={side}
-                                            slot={`id_${side}`}
-                                            action={props.actions.upload}
-                                            submission={submission}
-                                            state={state}
-                                            label={t(
-                                                `investor.kyc.upload_${side}`,
-                                            )}
-                                            className="flex-1 rounded-2xl px-2.5 py-[22px] text-center"
+                                            className="min-w-0 flex-1"
                                         >
-                                            <span className="text-[22px]">
-                                                <Icon
-                                                    name={
-                                                        state.status ===
-                                                        'missing'
-                                                            ? 'camera'
-                                                            : 'check-badge'
-                                                    }
-                                                    tone="green"
-                                                />
-                                            </span>
-                                            <span className="mt-1.5 block text-xs font-semibold text-rz-slate">
-                                                {t(
-                                                    state.status === 'missing'
-                                                        ? `investor.kyc.upload_${side}`
-                                                        : `investor.kyc.uploaded_${side}`,
+                                            <Upload
+                                                onError={setUploadError}
+                                                slot={`id_${side}`}
+                                                action={props.actions.upload}
+                                                submission={submission}
+                                                state={state}
+                                                label={sideLabel(side, false)}
+                                                className="block rounded-2xl px-2.5 py-[22px] text-center"
+                                            >
+                                                {state.link === undefined ? (
+                                                    <span className="text-[22px]">
+                                                        <Icon
+                                                            name={
+                                                                uploaded
+                                                                    ? 'check-badge'
+                                                                    : 'camera'
+                                                            }
+                                                            tone="green"
+                                                        />
+                                                    </span>
+                                                ) : (
+                                                    <Preview state={state} />
                                                 )}
-                                            </span>
-                                        </Upload>
+                                                <span className="mt-1.5 block text-xs font-semibold text-rz-slate">
+                                                    {sideLabel(side, uploaded)}
+                                                </span>
+                                                {uploaded && !locked && (
+                                                    <span className="mt-0.5 block text-[11px] text-rz-secondary">
+                                                        {t(
+                                                            'investor.kyc.replace',
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </Upload>
+                                            <ViewUpload
+                                                state={state}
+                                                label={t(
+                                                    `investor.kyc.slot.${idType === 'passport' ? 'passport' : side}`,
+                                                )}
+                                            />
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -448,9 +656,10 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                             state={props.uploads.selfie}
                             label={t('investor.kyc.selfie')}
                             capture="user"
-                            className="mx-auto mt-[22px] flex size-[200px] flex-col items-center justify-center rounded-full border-2"
+                            className="relative mx-auto mt-[22px] flex size-[200px] flex-col items-center justify-center overflow-hidden rounded-full border-2"
                         >
-                            <span className="text-[33px]">
+                            <Preview state={props.uploads.selfie} round />
+                            <span className="relative text-[33px]">
                                 <Icon
                                     name={
                                         props.uploads.selfie.status ===
@@ -460,7 +669,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                     }
                                 />
                             </span>
-                            <span className="mt-2.5 max-w-[140px] text-center text-[13px] font-semibold text-rz-slate">
+                            <span className="relative mt-2.5 max-w-[140px] rounded-md bg-rz-page/80 px-1.5 text-center text-[13px] font-semibold text-rz-slate">
                                 {t(
                                     props.uploads.selfie.status === 'missing'
                                         ? 'investor.kyc.selfie'
@@ -468,6 +677,13 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                 )}
                             </span>
                         </Upload>
+                    )}
+                {props.investor_type === 'individual' &&
+                    step === 'liveness' && (
+                        <ViewUpload
+                            state={props.uploads.selfie}
+                            label={t('investor.kyc.selfie_slot')}
+                        />
                     )}
 
                 {props.investor_type === 'institution' && step === 'entity' && (

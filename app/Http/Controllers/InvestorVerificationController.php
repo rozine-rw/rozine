@@ -17,9 +17,12 @@ use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * An unverified person's Investor identity submission (MVP-INVESTOR-SCR-03). The page posts plain
@@ -40,7 +43,8 @@ class InvestorVerificationController extends Controller
     public function show(Request $request, GetInvestorVerification $verification): Response|RedirectResponse|InvestorVerificationResource
     {
         abort_if($request->routeIs('api.*') && ! $request->user()?->tokenCan('investor:read'), 403);
-        $submission = $verification->handle((int) $request->user()?->getAuthIdentifier());
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $submission = [...$verification->handle($userId), 'documents' => $verification->uploads($userId)];
         if ($request->routeIs('api.*')) {
             return new InvestorVerificationResource($submission);
         }
@@ -49,6 +53,26 @@ class InvestorVerificationController extends Controller
         }
 
         return Inertia::render('investor/verification', (new InvestorVerificationResource($submission))->resolve($request));
+    }
+
+    /**
+     * The person's own upload on one side, shown back to them in place. Every stored type is a
+     * signature-checked PDF, PNG or JPEG; nosniff keeps the browser to it and the sandbox stops a
+     * PDF from running anything.
+     */
+    public function document(Request $request, GetInvestorVerification $verification): SymfonyResponse
+    {
+        abort_if($request->routeIs('api.*') && ! $request->user()?->tokenCan('investor:read'), 403);
+        $document = $verification->document((int) $request->user()?->getAuthIdentifier(), (string) $request->route('side'));
+
+        return response($document['content'], 200, [
+            'Content-Type' => $document['media_type'],
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_INLINE, $document['filename'],
+                str_replace('%', '_', Str::ascii($document['filename'])) ?: 'document'),
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
+            'Cache-Control' => 'no-store, private',
+        ]);
     }
 
     public function save(SaveVerificationRequest $request, SaveInvestorVerification $action): RedirectResponse|OperationResource
