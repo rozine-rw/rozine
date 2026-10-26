@@ -334,6 +334,13 @@ test('production rejects non-live database identities including encoded urls', f
     ['url', 'pgsql://rozine_demo:secret@example.test/rozine'],
 ]);
 
+test('the shipped disks pass the non-live guard when their provider settings are empty', function (string $environment) {
+    $isolation = isolatedConfiguration($environment);
+    config(['filesystems.disks' => (require config_path('filesystems.php'))['disks']]);
+
+    expect(fn () => $isolation->configure())->not->toThrow(LogicException::class);
+})->with(['demo', 'staging', 'uat']);
+
 test('provider secrets are rejected without appearing in the exception', function (string $key) {
     $isolation = isolatedConfiguration();
     config([$key => 'sentinel-do-not-expose']);
