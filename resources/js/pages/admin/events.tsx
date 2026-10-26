@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
@@ -139,6 +139,10 @@ export default function AdminEvents(props: AdminEventsProps) {
     const { t } = useTranslation();
     const [exporting, setExporting] = useState(false);
     const { filters } = props;
+    // A range typed straight into the address bar comes back refused; say why instead of clearing it.
+    const { from: refusedFrom, to: refusedTo } = usePage().props
+        .errors as Partial<Record<'from' | 'to', string>>;
+    const refused = refusedTo ?? refusedFrom;
     const active =
         filters.q !== '' ||
         filters.preset !== null ||
@@ -397,6 +401,14 @@ export default function AdminEvents(props: AdminEventsProps) {
                                 >
                                     {t('admin.events.clear')}
                                 </button>
+                            )}
+                            {refused !== undefined && (
+                                <p
+                                    role="alert"
+                                    className="basis-full text-[11.5px] font-semibold text-rz-danger-text"
+                                >
+                                    {t('admin.trend.refused')}
+                                </p>
                             )}
                         </div>
                     </div>
