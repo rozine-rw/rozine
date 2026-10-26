@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessPhotos;
 use App\Models\BusinessPhoto;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
@@ -90,7 +91,7 @@ it('refuses to serve a photo whose bytes no longer match their digest', function
 it('keeps the photo rules in the database too', function (array $change): void {
     $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
 
-    expect(fn () => DB::table('business_photos')->where('id', $photo['id'])->update($change))->toThrow(Illuminate\Database\QueryException::class);
+    expect(fn () => DB::table('business_photos')->where('id', $photo['id'])->update($change))->toThrow(QueryException::class);
 })->with([
     'position' => [['position' => 7]],
     'caption' => [['caption' => ' ']],
