@@ -1734,6 +1734,7 @@ const fr: Catalog = {
     'admin.kyc.slot.front': "Recto de la pièce d'identité",
     'admin.kyc.slot.back': "Verso de la pièce d'identité",
     'admin.kyc.slot.selfie': 'Selfie',
+    'admin.kyc.slot.passport': 'Page photo du passeport',
     'admin.kyc.document.replaced': 'Remplacé',
     'admin.kyc.document.meta': '{name} · {size} Ko',
     'admin.kyc.document.open': 'Télécharger {name}',
@@ -4339,7 +4340,8 @@ const fr: Catalog = {
     'investor.kyc.country': 'PAYS DE RÉSIDENCE',
     'investor.kyc.dob': 'DATE DE NAISSANCE',
     'investor.kyc.dob_placeholder': 'JJ / MM / AAAA',
-    'investor.kyc.dob_hint': 'Jour, mois et année, par exemple 15 / 06 / 1990.',
+    'investor.kyc.dob_hint':
+        'Choisissez votre date de naissance. Vous devez avoir au moins 18 ans.',
     'investor.kyc.id_number': 'NUMÉRO DE PIÈCE',
     'investor.kyc.upload_front': 'Envoyer le recto',
     'investor.kyc.upload_back': 'Envoyer le verso',
@@ -4347,6 +4349,24 @@ const fr: Catalog = {
     'investor.kyc.uploaded_back': 'Verso envoyé',
     'investor.kyc.selfie': 'Touchez pour prendre un selfie',
     'investor.kyc.selfie_done': 'Selfie enregistré',
+    'investor.kyc.upload_passport': 'Envoyer la page photo du passeport',
+    'investor.kyc.uploaded_passport': 'Page photo du passeport envoyée',
+    'investor.kyc.replace': 'Touchez pour remplacer',
+    'investor.kyc.view_upload': 'Voir {slot}',
+    'investor.kyc.selfie_slot': 'votre selfie',
+    'investor.kyc.slot.front': 'le recto',
+    'investor.kyc.slot.back': 'le verso',
+    'investor.kyc.slot.passport': 'la page photo',
+    'investor.kyc.dob_invalid': 'Saisissez une date de naissance valide.',
+    'investor.kyc.dob_minor': 'Vous devez avoir au moins 18 ans pour investir.',
+    'investor.kyc.id_hint.national_id':
+        'Les 16 chiffres de votre carte d’identité nationale.',
+    'investor.kyc.id_hint.passport':
+        '6 à 12 lettres ou chiffres, tels qu’imprimés sur la page photo.',
+    'investor.kyc.id_invalid.national_id':
+        'Saisissez le numéro à 16 chiffres de la carte.',
+    'investor.kyc.id_invalid.passport':
+        'Saisissez le numéro de passeport, 6 à 12 lettres ou chiffres.',
     'investor.kyc.entity_type': "TYPE D'ENTITÉ",
     'investor.kyc.entity.fund': "Fonds d'investissement",
     'investor.kyc.entity.sacco': 'SACCO',

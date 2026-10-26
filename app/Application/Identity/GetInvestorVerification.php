@@ -19,6 +19,26 @@ final class GetInvestorVerification
     }
 
     /**
+     * What the person's current uploads are, by side, so their own page can show them again.
+     *
+     * @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}>
+     */
+    public function uploads(int $userId): array
+    {
+        return $this->store->uploads($userId);
+    }
+
+    /**
+     * The person's own current upload on one side, to look at before they submit.
+     *
+     * @return array{filename: string, media_type: string, content: string}
+     */
+    public function document(int $userId, string $side): array
+    {
+        return $this->store->ownDocument($userId, $side);
+    }
+
+    /**
      * Where an unverified person's own identity check stands, for pages that ask them to verify:
      * 'pending' once it is with Compliance, 'required' before that. Null for anyone it does not
      * describe (a verified person, an organisation, an unlinked sign-in), so those pages keep

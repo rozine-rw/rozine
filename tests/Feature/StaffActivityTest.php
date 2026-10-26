@@ -121,6 +121,7 @@ test('presets count back from now and a date range covers whole Kigali days', fu
         ->assertInertia(fn (Assert $page) => $page->where('filters', ['q' => '', 'preset' => 'today', 'from' => null, 'to' => null]));
     $this->actingAs($officer)->get(route('staff.events.index', ['from' => '2026-09-01', 'to' => '2026-10-01']))
         ->assertInertia(fn (Assert $page) => $page->where('filters', ['q' => '', 'preset' => null, 'from' => '2026-09-01', 'to' => '2026-10-01']));
+    $this->actingAs($officer)->get(route('staff.events.index', ['from' => '2026-10-01', 'to' => '2026-09-01']))->assertSessionHasErrors('to');
 });
 
 test('the trail answers over the API with the read ability and links API routes', function (): void {

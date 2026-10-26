@@ -89,6 +89,12 @@ function SubmissionForm({
 }) {
     const { t } = useTranslation();
     const center = useAuditorCommands();
+    // An expired certificate is refused by the server; the picker starts at today so it is not offered.
+    const [today] = useState(() => {
+        const now = new Date();
+
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    });
     const [fields, setFields] = useState<SubmissionFields>({
         licence,
         expires_on: '',
@@ -136,6 +142,7 @@ function SubmissionForm({
                 <input
                     id="auditor-expiry"
                     type="date"
+                    min={today}
                     value={fields.expires_on}
                     onChange={(event) => set('expires_on', event.target.value)}
                     className={INPUT}

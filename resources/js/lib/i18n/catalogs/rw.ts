@@ -1719,6 +1719,7 @@ const rw: Catalog = {
     'admin.kyc.slot.front': "Imbere h'indangamuntu",
     'admin.kyc.slot.back': "Inyuma h'indangamuntu",
     'admin.kyc.slot.selfie': 'Ifoto yawe',
+    'admin.kyc.slot.passport': "Urupapuro rw'ifoto rwa pasiporo",
     'admin.kyc.document.replaced': 'Yasimbuwe',
     'admin.kyc.document.meta': '{name} · {size} KB',
     'admin.kyc.document.open': 'Kuramo {name}',
@@ -4326,7 +4327,8 @@ const rw: Catalog = {
     'investor.kyc.country': 'IGIHUGU UTUYEMO',
     'investor.kyc.dob': "ITARIKI Y'AMAVUKO",
     'investor.kyc.dob_placeholder': 'UU / UK / UMWAKA',
-    'investor.kyc.dob_hint': "Umunsi, ukwezi n'umwaka, urugero 15 / 06 / 1990.",
+    'investor.kyc.dob_hint':
+        'Hitamo itariki wavukiyeho. Ugomba kuba ufite nibura imyaka 18.',
     'investor.kyc.id_number': "NIMERO Y'INDANGAMUNTU",
     'investor.kyc.upload_front': 'Ohereza imbere',
     'investor.kyc.upload_back': 'Ohereza inyuma',
@@ -4334,6 +4336,25 @@ const rw: Catalog = {
     'investor.kyc.uploaded_back': 'Inyuma hoherejwe',
     'investor.kyc.selfie': 'Kanda ufate ifoto yawe',
     'investor.kyc.selfie_done': 'Ifoto yafashwe',
+    'investor.kyc.upload_passport': "Ohereza urupapuro rw'ifoto rwa pasiporo",
+    'investor.kyc.uploaded_passport':
+        "Urupapuro rw'ifoto rwa pasiporo rwoherejwe",
+    'investor.kyc.replace': 'Kanda usimbuze',
+    'investor.kyc.view_upload': 'Reba {slot}',
+    'investor.kyc.selfie_slot': 'ifoto yawe',
+    'investor.kyc.slot.front': 'imbere',
+    'investor.kyc.slot.back': 'inyuma',
+    'investor.kyc.slot.passport': "urupapuro rw'ifoto",
+    'investor.kyc.dob_invalid': "Andika itariki y'amavuko nyayo.",
+    'investor.kyc.dob_minor':
+        'Ugomba kuba ufite nibura imyaka 18 kugira ngo ushore imari.',
+    'investor.kyc.id_hint.national_id': 'Imibare 16 iri ku ndangamuntu yawe.',
+    'investor.kyc.id_hint.passport':
+        "Inyuguti cyangwa imibare 6 kugeza kuri 12, nk'uko biri ku rupapuro rw'ifoto.",
+    'investor.kyc.id_invalid.national_id':
+        "Andika nimero y'imibare 16 iri ku ndangamuntu.",
+    'investor.kyc.id_invalid.passport':
+        'Andika nimero ya pasiporo, inyuguti cyangwa imibare 6 kugeza kuri 12.',
     'investor.kyc.entity_type': "UBWOKO BW'IKIGO",
     'investor.kyc.entity.fund': "Ikigega cy'ishoramari",
     'investor.kyc.entity.sacco': 'SACCO',

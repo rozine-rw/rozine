@@ -98,6 +98,16 @@ export function CapitalRaisedPanel({
                                 aria-label={t(
                                     `admin.today.capital.${end}_date`,
                                 )}
+                                min={
+                                    end === 'to'
+                                        ? range.fromDate || undefined
+                                        : undefined
+                                }
+                                max={
+                                    end === 'from'
+                                        ? range.toDate || undefined
+                                        : undefined
+                                }
                                 value={range[`${end}Date`]}
                                 onChange={(event) =>
                                     change(`${end}Date`, event.target.value)

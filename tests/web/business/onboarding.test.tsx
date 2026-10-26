@@ -376,6 +376,19 @@ describe('Business bank account', () => {
         ]);
     });
 
+    it('takes bank account numbers up to the 20 digits the server accepts', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessOnboarding {...props(bankFixture)} />);
+
+        const number = screen.getByRole('textbox', { name: 'Account number' });
+
+        await user.type(number, '123456789012345678901');
+
+        expect(number).toHaveAttribute('maxLength', '20');
+        expect(number).toHaveValue('12345678901234567890');
+    });
+
     it('asks for more signatories when the mandate needs them', async () => {
         const user = userEvent.setup();
         const account = props(bankFixture);
