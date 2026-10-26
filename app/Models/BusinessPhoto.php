@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property 'image/jpeg'|'image/png'|'image/webp' $media_type
  * @property int $size_bytes
  * @property string $sha256
- * @property string $content base64 of the image bytes
+ * @property string|null $content base64 of the image bytes, when they are kept in the row
+ * @property string|null $url the public media URL, when the bytes are on the media disk
  */
 class BusinessPhoto extends Model
 {

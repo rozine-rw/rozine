@@ -62,7 +62,57 @@ return [
             'report' => false,
         ],
 
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('R2_BUCKET'),
+            'endpoint' => env('R2_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+            'throw' => true,
+            'report' => false,
+        ],
+
+        'r2-media' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('R2_MEDIA_BUCKET'),
+            'url' => env('R2_MEDIA_URL'),
+            'endpoint' => env('R2_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Uploaded Files Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk that holds uploaded documents and photos. Empty keeps them in
+    | the database columns, as before; staging sets "r2".
+    |
+    */
+
+    'files_disk' => env('FILES_DISK') ?: null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Media Disk
+    |--------------------------------------------------------------------------
+    |
+    | The public disk that serves business photos by URL. Empty keeps them in
+    | the database behind the app's photo route; staging sets "r2-media".
+    | Private files never use this disk.
+    |
+    */
+
+    'media_disk' => env('MEDIA_DISK') ?: null,
 
     /*
     |--------------------------------------------------------------------------
