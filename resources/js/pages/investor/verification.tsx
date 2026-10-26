@@ -298,6 +298,36 @@ function Check({
 }
 
 /**
+ * The document type picked before the document step is saved. It lives on this device only, so a
+ * reload after uploading a passport page keeps Passport instead of falling back to National ID.
+ */
+const ID_TYPE_DRAFT = 'rozine.kyc.id_type';
+
+const readIdTypeDraft = (): string | null => {
+    try {
+        const stored = window.localStorage.getItem(ID_TYPE_DRAFT);
+
+        return stored === 'passport' || stored === 'national_id'
+            ? stored
+            : null;
+    } catch {
+        return null;
+    }
+};
+
+const writeIdTypeDraft = (value: string | null): void => {
+    try {
+        if (value === null) {
+            window.localStorage.removeItem(ID_TYPE_DRAFT);
+        } else {
+            window.localStorage.setItem(ID_TYPE_DRAFT, value);
+        }
+    } catch {
+        /* Storage can be blocked; the choice then lasts for this visit only. */
+    }
+};
+
+/**
  * Investor verification (design L3553–3656) — the MVP "investor verification" screens. Individuals
  * give their date of birth, an identity document (front and back) and a liveness selfie; institutions
  * give the entity (RDB company code — the design's TIN field is removed, BRS AC-9), the authorised
@@ -328,7 +358,10 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
         props.investor_type === 'individual'
             ? {
                   date_of_birth: props.date_of_birth,
-                  id_type: props.id_type,
+                  id_type:
+                      props.id_number === ''
+                          ? (readIdTypeDraft() ?? props.id_type)
+                          : props.id_type,
                   id_number: props.id_number,
               }
             : {
@@ -399,7 +432,13 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
         }));
         form.post(last ? props.actions.submit.url : props.actions.save.url, {
             preserveScroll: true,
-            onSuccess: () => setViewing(null),
+            onSuccess: () => {
+                if (step === 'document') {
+                    writeIdTypeDraft(null);
+                }
+
+                setViewing(null);
+            },
         });
     };
 
@@ -539,7 +578,10 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                     )}
                                     options={['national_id', 'passport']}
                                     value={data.id_type as IdDocument}
-                                    onChange={(value) => set('id_type', value)}
+                                    onChange={(value) => {
+                                        set('id_type', value);
+                                        writeIdTypeDraft(value);
+                                    }}
                                     render={(value) =>
                                         t(`investor.signup.id.${value}`)
                                     }
