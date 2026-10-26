@@ -197,6 +197,23 @@ describe('Ledger', () => {
 });
 
 describe('Event log', () => {
+    it('says why a reversed date range from the address bar was refused', () => {
+        inertia.errors = {
+            to: 'The to field must be a date after or equal to from.',
+        };
+        render(<AdminEvents {...eventProps(eventsFixture)} />);
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Choose a To date on or after the From date.',
+        );
+    });
+
+    it('shows no range warning when nothing was refused', () => {
+        render(<AdminEvents {...eventProps(eventsFixture)} />);
+
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
     it('lists who did what, when and from where, and opens each row to its before and after', async () => {
         const { user } = renderWithUser(
             <AdminEvents {...eventProps(eventsFixture)} />,
