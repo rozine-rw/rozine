@@ -102,7 +102,7 @@ final class EloquentStatementStore implements StatementStore
     public function get(int $userId, int $contextRevision, string $businessId): array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
-            fn (): array => $this->manifest(StatementEvidence::query()->where('business_id', $businessId)->first()));
+            fn (): array => $this->manifest(StatementEvidence::query()->where('business_id', $businessId)->first(), true));
     }
 
     /** @return Original */
@@ -456,21 +456,26 @@ final class EloquentStatementStore implements StatementStore
         return 'statement-'.$documentId.($mediaType === 'application/pdf' ? '.pdf' : '.csv');
     }
 
-    /** @return Manifest */
-    private function manifest(?StatementEvidence $evidence): array
+    /**
+     * Receipts, journals and Audit Partners only ever see generated names; the Business reading its own
+     * manifest sees the names it uploaded, as its own download already does.
+     *
+     * @return Manifest
+     */
+    private function manifest(?StatementEvidence $evidence, bool $uploadedNames = false): array
     {
         if ($evidence === null) {
             return ['revision' => 0, 'documents' => []];
         }
         $originals = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->orderBy('evidence_revision')
-            ->get(['id', 'sha256', 'media_type', 'size_bytes', 'created_at']);
+            ->get(['id', 'filename', 'sha256', 'media_type', 'size_bytes', 'created_at']);
         $extractions = StatementExtraction::query()->whereIn('statement_original_id', $originals->modelKeys())
             ->orderByDesc('revision')->get(['id', 'statement_original_id', 'revision', 'parser_version', 'status', 'reason_codes', 'record_count'])
             ->unique('statement_original_id')->keyBy('statement_original_id');
         $documents = [];
         foreach ($originals as $original) {
             $extraction = $extractions->get($original->id) ?? throw new RuntimeException('Statement extraction is missing.');
-            $documents[] = ['id' => $original->id, 'filename' => $this->displayName($original->id, $original->media_type), 'sha256' => $original->sha256,
+            $documents[] = ['id' => $original->id, 'filename' => $uploadedNames ? $original->filename : $this->displayName($original->id, $original->media_type), 'sha256' => $original->sha256,
                 'media_type' => $original->media_type, 'size_bytes' => $original->size_bytes, 'received_at' => $original->created_at->toIso8601String(),
                 'extraction' => ['id' => $extraction->id, 'revision' => $extraction->revision, 'parser_version' => $extraction->parser_version,
                     'status' => $extraction->status, 'reason_codes' => $extraction->reason_codes, 'record_count' => $extraction->record_count]];
