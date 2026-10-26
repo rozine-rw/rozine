@@ -34,8 +34,9 @@ class BusinessStatementController extends Controller
 
     public function index(Request $request, GetStatementEvidence $statements): BusinessStatementsResource
     {
-        abort_if(! $request->user()?->tokenCan('business:read'), 403);
-        $userId = (int) $request->user()?->getAuthIdentifier();
+        $user = $request->user();
+        abort_if($user === null || ! $user->tokenCan('business:read'), 403);
+        $userId = (int) $user->getAuthIdentifier();
         $business = (string) $request->route('business');
 
         return new BusinessStatementsResource(['business_id' => $business,

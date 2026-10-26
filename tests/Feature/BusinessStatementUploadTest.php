@@ -13,6 +13,8 @@ use Tests\Support\BusinessApplicationFixture as DraftFixture;
 use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\StatementFixture;
 
+use function Pest\Laravel\actingAs;
+
 beforeEach(function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-09-25T03:00:00Z'));
     $this->withoutVite();
@@ -26,7 +28,7 @@ beforeEach(function (): void {
 function statementUploadPage(User $user, string $path): array
 {
     $statements = [];
-    test()->actingAs($user)->get($path)->assertOk()->assertInertia(function (Assert $page) use (&$statements): Assert {
+    actingAs($user)->get($path)->assertOk()->assertInertia(function (Assert $page) use (&$statements): Assert {
         $statements = $page->toArray()['props']['statements'];
 
         return $page->component('business/apply');
