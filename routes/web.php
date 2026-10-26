@@ -30,6 +30,7 @@ use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
 use App\Http\Controllers\InvestorComplaintController;
+use App\Http\Controllers\InvestorDealPhotoController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorHoldingController;
 use App\Http\Controllers\InvestorMarketController;
@@ -154,6 +155,11 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('commitments/{commitment}/cancel', [InvestorPrimaryController::class, 'cancel'])->whereUlid('commitment')->name('primary.cancel');
     Route::get('deals/{campaign}/primary-operations/{request_id}', [InvestorPrimaryController::class, 'operation'])->whereUlid('campaign')->whereUuid('request_id')
         ->name('primary.operations.show');
+});
+
+// Published Business photos load many to a page and may be cached, so they sit outside the no-store Investor group.
+Route::middleware(['auth', 'verified', 'throttle:600,1'])->prefix('investor')->name('investor.')->group(function (): void {
+    Route::get('deals/{campaign}/photos/{photo}', InvestorDealPhotoController::class)->whereUlid(['campaign', 'photo'])->name('deals.photo');
 });
 
 Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.')->group(function (): void {

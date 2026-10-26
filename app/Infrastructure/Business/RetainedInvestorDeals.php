@@ -6,6 +6,7 @@ namespace App\Infrastructure\Business;
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\BusinessPhotos;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
@@ -21,7 +22,7 @@ use RuntimeException;
 /**
  * Projects retained publications for Investors. Only the allowlisted aggregates leave this class:
  * the business name, industry and district, the published rating, the immutable accepted draft's
- * story and use of funds, average monthly revenue and the publication's own economics. No
+ * story and use of funds, average monthly revenue, the photos the Business published and the publication's own economics. No
  * address, company code, officer, statement, raw evidence or Auditor original is ever read out.
  * An open raise keeps its own lifecycle: `funded` needs the retained funding lock, and a full or
  * elapsed raise without one stays pending settlement rather than borrowing a settled state.
@@ -38,7 +39,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
 
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
         private CampaignProgress $progress, private CanonicalJson $json, private AuditReportPublicationStore $reports,
-        private PublishedMonthlyReports $monthly) {}
+        private PublishedMonthlyReports $monthly, private BusinessPhotos $photos) {}
 
     public function deals(): array
     {
@@ -116,7 +117,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'accent' => self::ACCENTS[hexdec(substr(hash('sha256', $payload['business_id']), 0, 6)) % count(self::ACCENTS)],
             'industry' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
             'rating' => ['band' => $rating['band'], 'score' => $rating['score']], 'audited' => $audit !== null,
-            'just_listed' => now()->subHours(self::JUST_LISTED_HOURS)->lt($payload['recorded_at']), 'photos' => [],
+            'just_listed' => now()->subHours(self::JUST_LISTED_HOURS)->lt($payload['recorded_at']), 'photos' => $this->photos($campaignId, $payload['business_id']),
             'raised' => ['currency' => 'RWF', 'amount' => $raised], 'target' => ['currency' => 'RWF', 'amount' => (string) $principal],
             'funded_pct' => $funded ? '100.0' : $progress['funded_pct'],
             'left_to_fill' => ['currency' => 'RWF', 'amount' => $funded ? '0' : $progress['remaining']['amount']],
@@ -139,6 +140,19 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'audit' => $audit === null ? null : ['standard' => null, 'partner' => $audit['partner'], 'licence' => $audit['licence'],
                 'verified_on' => $audit['verified_on'], 'digest' => $audit['digest'], 'reconciliation_statement' => null, 'tolerance' => null],
             'updates' => $this->updates($campaignId), 'overdue_report' => null];
+    }
+
+    /**
+     * The Business's published photos as the card and the Photos section show them. The URL carries
+     * the bytes' digest, so a replaced photo is never served from a stale browser cache.
+     *
+     * @return list<array{url: string, caption: string}>
+     */
+    private function photos(string $campaignId, string $businessId): array
+    {
+        return array_map(fn (array $photo): array => ['url' => route('investor.deals.photo',
+            ['campaign' => $campaignId, 'photo' => $photo['id'], 'v' => substr($photo['sha256'], 0, 12)], false), 'caption' => $photo['caption']],
+            $this->photos->published($businessId));
     }
 
     /**
