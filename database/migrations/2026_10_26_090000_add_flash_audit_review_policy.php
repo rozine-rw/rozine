@@ -33,7 +33,11 @@ return new class extends Migration
         });
     }
 
-    /** Every review rule, for the policies listed (a SQL list of quoted policy versions). */
+    /**
+     * Every review rule, for the policies listed.
+     *
+     * @param  literal-string  $policies  a SQL list of quoted policy versions
+     */
     private function install(string $policies): void
     {
         $flash = $policies === self::REVIEWED ? <<<'SQL'

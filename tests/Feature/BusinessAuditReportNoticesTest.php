@@ -37,12 +37,12 @@ it('tells the Business a sealed monthly report awaits its approval, with the win
         ->assertJsonPath('data.notices.0.link', ['url' => "/business/{$business->id}/audit-reports/{$fixture['report']->id}", 'method' => 'get']);
 });
 
-it('tells the Business a sealed flash report awaits its approval, with no window to state', function (): void {
+it('tells the Business a sealed flash report awaits its approval within its 24-hour window', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);
 
     expect(PartyNotice::query()->where('kind', 'business.report_sealed')->sole()->facts)
-        ->toMatchArray(['period' => null, 'due_at' => null, 'report_id' => $fixture['report']->id]);
+        ->toMatchArray(['period' => null, 'due_at' => AuditReportPublication::query()->sole()->due_at->utc()->format('Y-m-d\TH:i:s\Z'), 'report_id' => $fixture['report']->id]);
 });
 
 it('reminds the Business once as its monthly review window closes, and never after it co-signs', function (): void {

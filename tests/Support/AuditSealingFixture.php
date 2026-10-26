@@ -18,6 +18,7 @@ use App\Models\AuditSigningKey;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Mockery;
+use Mockery\Expectation;
 use PragmaRX\Google2FA\Google2FA;
 use RuntimeException;
 
@@ -115,7 +116,12 @@ final class AuditSealingFixture
             $seal->forceFill(['payload' => $payload, 'audit_signing_key_id' => $signature['key_id'], 'jws' => $signature['jws']]);
         });
         $legacy = Mockery::mock(AuditReportPublicationStore::class);
-        $legacy->shouldReceive('open')->once()->andReturnUsing(function (string $reportId, string $digest, array $payload) use ($store): void {
+        $legacy->shouldReceive('open');
+        $expectation = $legacy->mockery_findExpectation('open', []);
+        if (! $expectation instanceof Expectation) {
+            throw new RuntimeException('The legacy publication boundary was not registered.');
+        }
+        $expectation->once()->andReturnUsing(function (string $reportId, string $digest, array $payload) use ($store): void {
             $store->open($reportId, $digest, array_diff_key($payload, ['publication_policy' => true]));
         });
         app()->instance(AuditReportPublicationStore::class, $legacy);

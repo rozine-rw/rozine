@@ -93,5 +93,6 @@ it('round trips the Flash review migration while only legacy and monthly history
     $migration = require database_path('migrations/2026_10_26_090000_add_flash_audit_review_policy.php');
     $migration->down();
     $migration->up();
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
     expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
 });

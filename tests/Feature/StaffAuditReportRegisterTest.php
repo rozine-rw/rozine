@@ -10,6 +10,7 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Models\AuditAssignment;
+use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\PartyNotice;
 use App\Models\User;
@@ -154,9 +155,18 @@ it('reminds the Business while a sealed monthly report waits for it, offers no P
     actingAs($staff)->postJson(route('staff.reports.remind', (string) Str::ulid()))->assertNotFound();
 });
 
-it('counts a sealed Flash Audit on time while it waits for the Business, with no co-sign deadline to remind', function (): void {
+it('gives a sealed Flash Audit the 24-hour co-sign deadline of the Business', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
+
+    $row = auditRegister($fixture['audit']['staff'])['rows'][0];
+    expect($row)->toMatchArray(['kind' => 'flash', 'status' => 'awaiting_cosign', 'owes' => 'business',
+        'cosign_by' => AuditReportPublication::query()->sole()->due_at->utc()->format('Y-m-d\TH:i:s\Z')]);
+});
+
+it('counts an earlier sealed Flash Audit on time while it waits for the Business, with no co-sign deadline to remind', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::sealLegacy($fixture);
 
     $page = auditRegister($fixture['audit']['staff']);
     expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => null])

@@ -59,11 +59,7 @@ it('projects sealed jobs as awaiting co-sign and removes published jobs from act
     expect($page['stage']['verification'])->toBe(['url' => ($api ? '/api/v1' : '').'/audit-seals/'.$fixture['report']->id, 'method' => 'get']);
     $this->travel(25)->hours();
     expect($read()['assigned'][0]['status'])->toBe('awaiting_cosign');
-    if ($kind === 'monthly') {
-        expect(app(AuditReportPublicationStore::class)->advanceDue()['published'])->toBe(1);
-    } else {
-        expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
-    }
+    expect(app(AuditReportPublicationStore::class)->advanceDue()['published'])->toBe(1);
     expect($read()['assigned'])->toBeEmpty();
     $this->travel(25)->hours();
     expect($read()['assigned'])->toBeEmpty();
