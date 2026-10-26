@@ -257,7 +257,7 @@ export const upload = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 const show6c274aa71c74367bc259c610668b9f5f = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -272,7 +272,7 @@ show6c274aa71c74367bc259c610668b9f5f.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show6c274aa71c74367bc259c610668b9f5f.url = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -298,7 +298,7 @@ show6c274aa71c74367bc259c610668b9f5f.url = (args: { business: string | number, d
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show6c274aa71c74367bc259c610668b9f5f.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -308,7 +308,7 @@ show6c274aa71c74367bc259c610668b9f5f.get = (args: { business: string | number, d
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show6c274aa71c74367bc259c610668b9f5f.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -318,7 +318,7 @@ show6c274aa71c74367bc259c610668b9f5f.head = (args: { business: string | number, 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 const show6c274aa71c74367bc259c610668b9f5fForm = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -328,7 +328,7 @@ const show6c274aa71c74367bc259c610668b9f5fForm = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show6c274aa71c74367bc259c610668b9f5fForm.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -338,7 +338,7 @@ show6c274aa71c74367bc259c610668b9f5fForm.get = (args: { business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show6c274aa71c74367bc259c610668b9f5fForm.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -354,7 +354,7 @@ show6c274aa71c74367bc259c610668b9f5fForm.head = (args: { business: string | numb
 show6c274aa71c74367bc259c610668b9f5f.form = show6c274aa71c74367bc259c610668b9f5fForm
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 const showca1cd626a0286b1e6ba18630cd315c26 = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -369,7 +369,7 @@ showca1cd626a0286b1e6ba18630cd315c26.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 showca1cd626a0286b1e6ba18630cd315c26.url = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -395,7 +395,7 @@ showca1cd626a0286b1e6ba18630cd315c26.url = (args: { business: string | number, d
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 showca1cd626a0286b1e6ba18630cd315c26.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -405,7 +405,7 @@ showca1cd626a0286b1e6ba18630cd315c26.get = (args: { business: string | number, d
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 showca1cd626a0286b1e6ba18630cd315c26.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -415,7 +415,7 @@ showca1cd626a0286b1e6ba18630cd315c26.head = (args: { business: string | number, 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 const showca1cd626a0286b1e6ba18630cd315c26Form = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -425,7 +425,7 @@ const showca1cd626a0286b1e6ba18630cd315c26Form = (args: { business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 showca1cd626a0286b1e6ba18630cd315c26Form.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -435,7 +435,7 @@ showca1cd626a0286b1e6ba18630cd315c26Form.get = (args: { business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/business/{business}/statements/{document}'
 */
 showca1cd626a0286b1e6ba18630cd315c26Form.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

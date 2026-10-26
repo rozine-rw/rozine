@@ -64,7 +64,7 @@ it('lets a new business upload a statement on step 1 and lists it as received bu
     $statements = statementUploadPage($user, $path);
     expect($statements['revision'])->toBe(1)
         ->and($statements['documents'])->toHaveCount(1)
-        ->and($statements['documents'][0])->toMatchArray(['id' => $original->id, 'media_type' => 'application/pdf', 'reading' => 'reading',
+        ->and($statements['documents'][0])->toMatchArray(['id' => $original->id, 'filename' => 'bank-august.pdf', 'media_type' => 'application/pdf', 'reading' => 'reading',
             'received_at' => '2026-09-25T03:00:00+00:00', 'link' => ['url' => "/business/{$business}/statements/{$original->id}", 'method' => 'get']]);
 
     $download = $this->get($statements['documents'][0]['link']['url'])->assertOk()
@@ -90,6 +90,23 @@ it('downloads a statement whose name is not plain ASCII', function (): void {
     Sanctum::actingAs($user, ['business:read']);
     $this->getJson("/api/v1/business/{$business}/statements/{$original->id}")->assertOk()
         ->assertHeader('Content-Disposition', "attachment; filename=etat.csv; filename*=utf-8''%C3%A9tat.csv");
+});
+
+it('says so when the same statement is uploaded again, without adding a row', function (): void {
+    $fixture = DraftFixture::make();
+    $user = $fixture['authority']['users'][0];
+    $business = $fixture['business']->id;
+    $path = "/business/{$business}/applications/{$fixture['application']->id}";
+    $upload = fn (string $name, int $revision) => $this->actingAs($user)->from($path)->post("/business/{$business}/statements",
+        statementUploadForm(UploadedFile::fake()->createWithContent($name, StatementFixture::csv()), $revision));
+
+    $upload('momo-august.csv', 0)->assertRedirect($path)->assertSessionHasNoErrors();
+    $upload('momo-august-copy.csv', 1)->assertRedirect($path)
+        ->assertSessionHasErrors(['file' => 'You already uploaded this statement. It is in the list above.']);
+
+    $statements = statementUploadPage($user, $path);
+    expect($statements['revision'])->toBe(1)
+        ->and(array_column($statements['documents'], 'filename'))->toBe(['momo-august.csv']);
 });
 
 it('shows a refused upload as a form error on the page without keeping anything', function (): void {
