@@ -7,7 +7,10 @@ import { formatCount, formatDate, formatRwfShort } from '@/lib/rozine/format';
 
 const KIGALI = 'Africa/Kigali';
 
-/** The ledger and audit-trail clock: "2026-09-23 19:37:23", Kigali time, as the design writes it. */
+/**
+ * The ledger and audit-trail clock: "2026-09-23 19:37:23 CAT", Kigali time as the design writes
+ * it, labelled with its zone so no one reads it as their own.
+ */
 export const formatTimestamp = (iso: string): string => {
     const parts = Object.fromEntries(
         new Intl.DateTimeFormat('en-GB', {
@@ -24,7 +27,7 @@ export const formatTimestamp = (iso: string): string => {
             .map((part) => [part.type, part.value]),
     );
 
-    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+    return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second} CAT`;
 };
 
 export type RelativeTime =

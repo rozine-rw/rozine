@@ -334,7 +334,7 @@ describe('Compliance review drawer', () => {
         expect(within(facts).getByText('National ID')).toBeInTheDocument();
         expect(within(facts).getByText('1199080012345678')).toBeInTheDocument();
         expect(
-            within(facts).getByText('2026-10-06 10:00:00'),
+            within(facts).getByText('2026-10-06 10:00:00 CAT'),
         ).toBeInTheDocument();
 
         const documents = within(drawer).getByRole('region', {

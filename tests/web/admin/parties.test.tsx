@@ -766,7 +766,7 @@ describe('Party 360', () => {
 
         expect(
             within(drawer).getByText(
-                'Frozen by Grace Kalisa at 2026-09-18 10:20:00. See Controls for the reason and release.',
+                'Frozen by Grace Kalisa at 2026-09-18 10:20:00 CAT. See Controls for the reason and release.',
             ),
         ).toBeInTheDocument();
         expect(
@@ -784,7 +784,7 @@ describe('Party 360', () => {
         await user.click(within(drawer).getByRole('tab', { name: 'Controls' }));
         expect(
             within(drawer).getByText(
-                'Frozen by Grace Kalisa · 2026-09-18 10:20:00',
+                'Frozen by Grace Kalisa · 2026-09-18 10:20:00 CAT',
             ),
         ).toBeInTheDocument();
         expect(
