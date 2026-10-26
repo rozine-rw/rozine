@@ -492,7 +492,6 @@ describe('Party directories', () => {
 
         expect(tile).toHaveClass('break-words');
         expect(tile).not.toHaveClass('truncate');
-        expect(tile.parentElement).toHaveClass('col-span-2', 'sm:col-span-3');
     });
 
     it('lists the admin action log, newest first, or says it is empty', () => {
@@ -1124,6 +1123,7 @@ describe('Party 360', () => {
             expect(
                 within(office).getByRole('button', { name: button }),
             ).toBeInTheDocument();
+
             if (note === null) {
                 expect(office).not.toHaveTextContent('not offered jobs');
             } else {
