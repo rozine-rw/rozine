@@ -160,14 +160,14 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
         ->assertOk()->inertiaPage()['props']['capital_raised'];
     $labels = fn (array $chart): array => array_column($chart['bars'], 'label');
     expect($window('2027-03-02T00:00', '2027-03-02T12:00'))->toMatchArray(['grain' => 'hour', 'from' => '2027-03-02T00:00:00+02:00', 'to' => '2027-03-02T12:00:00+02:00'])
-        ->and($labels($window('2027-03-02T00:00', '2027-03-02T12:00')))->toBe(['02 00:00'])
-        ->and($labels($window('2027-02-20T00:00', '2027-03-10T00:00')))->toBe(['03-02'])
+        ->and($labels($window('2027-03-02T00:00', '2027-03-02T12:00')))->toBe(['02/03 00:00'])
+        ->and($labels($window('2027-02-20T00:00', '2027-03-10T00:00')))->toBe(['02/03'])
         ->and($window('2027-01-01T00:00', '2028-06-30T00:00')['grain'])->toBe('month')
         ->and($window('2027-01-01T00:00', '2028-06-30T00:00')['bars'])->toBe([
             ['label' => '01/2027', 'amount' => ['currency' => 'RWF', 'amount' => $principals[0]], 'height_pct' => 100],
             ['label' => '03/2027', 'amount' => ['currency' => 'RWF', 'amount' => $principals[1]], 'height_pct' => 100]])
         ->and($window('2020-01-01T00:00', '2030-01-01T00:00')['grain'])->toBe('year')
-        ->and($labels($window('2027-03-01T00:00')))->toBe(['2027-03'])
+        ->and($labels($window('2027-03-01T00:00')))->toBe(['03/2027'])
         ->and($window('2027-03-03T00:00', '2027-03-04T00:00')['bars'])->toBe([]);
     $this->actingAs($viewer)->get(route('staff.dashboard', ['from' => '1 March']))->assertSessionHasErrors('from');
 });
