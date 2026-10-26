@@ -1,3 +1,4 @@
+import { StatementUpload } from '@/components/business/apply/statement-upload';
 import { StepHeading } from '@/components/business/apply/step-heading';
 import { bareCompanyCode } from '@/components/business/home/business-hero';
 import { Icon } from '@/components/rozine/icon';
@@ -10,6 +11,7 @@ import {
 import type { Money } from '@/types';
 import type {
     ApplicationEvidence,
+    BusinessStatements,
     EvidencePeriod,
     MandateRole,
 } from '@/types/business';
@@ -133,10 +135,22 @@ function IneligibleNotice({ message }: { message: string }) {
 
 /**
  * Step 1 — "Business & finances" (design L365–446): eligibility, the verified identity, the
- * financial record the engine rated, existing debt, and the approved capacity. Read-only: evidence
- * is corrected through its own review route, never edited in an application.
+ * financial record the engine rated, existing debt, and the approved capacity. The figures are
+ * read-only: evidence is corrected through its own review route, never edited in an application.
+ * Statements are uploaded here, and count only once an Audit Partner has verified them.
  */
-export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
+export function StepBusiness({
+    evidence,
+    statements,
+    identityContextRevision,
+    canUpload,
+}: {
+    evidence: ApplicationEvidence;
+    /** The web page's statements; the bearer read has none to show. */
+    statements?: BusinessStatements;
+    identityContextRevision: number;
+    canUpload: boolean;
+}) {
     const { t } = useTranslation();
     const figure = useFigure();
     const officerRole = useOfficerRole();
@@ -169,6 +183,14 @@ export function StepBusiness({ evidence }: { evidence: ApplicationEvidence }) {
 
                 {eligibility.status === 'ineligible' && (
                     <IneligibleNotice message={eligibility.message} />
+                )}
+
+                {statements !== undefined && (
+                    <StatementUpload
+                        statements={statements}
+                        identityContextRevision={identityContextRevision}
+                        canUpload={canUpload}
+                    />
                 )}
 
                 <div className="mt-[13px] rounded-2xl border border-rz-border bg-rz-surface p-4">

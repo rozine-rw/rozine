@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { formatTimestamp } from '@/components/admin/format';
 import type { DesignColumn } from '@/components/admin/section-designs';
 import {
     CAPTION,
@@ -12,7 +13,6 @@ import {
     TableCard,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminMessagingProps,
@@ -66,7 +66,7 @@ const RULE_GRID =
 const SEARCH_QUERY = { param: 'q', clears: ['before'] };
 
 function HistoryLine({ row }: { row: MessageHistoryRow }) {
-    const { t, locale } = useTranslation();
+    const { t } = useTranslation();
 
     return (
         <div role="row" className={cn(GRID, ROW_RULE, 'items-center py-3')}>
@@ -104,7 +104,7 @@ function HistoryLine({ row }: { row: MessageHistoryRow }) {
                 role="cell"
                 className="text-right text-[11px] whitespace-nowrap text-rz-faint"
             >
-                {formatDateTime(row.at, locale)}
+                {formatTimestamp(row.at)}
             </span>
         </div>
     );

@@ -3,6 +3,14 @@
     "props": {
         "contract_version": "business-application-v1",
         "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+        "statements": {
+            "revision": 0,
+            "documents": [],
+            "upload": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements",
+                "method": "post"
+            }
+        },
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [

@@ -1528,8 +1528,7 @@ const en = {
     'admin.section.applications.title': 'Applications Queue',
     'admin.section.applications.subtitle':
         'Review and underwrite new RNP submissions',
-    'admin.section.applications.search':
-        'Search applications by business or ID…',
+    'admin.section.applications.search': 'Search business or ID…',
     'admin.section.disbursements.title': 'Disbursements',
     'admin.section.disbursements.subtitle':
         'Approved raises awaiting release. Above the threshold, two different people must approve every release.',
@@ -4840,6 +4839,18 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.statements.title': 'Bank & Mobile Money statements',
+    'business.apply.statements.body':
+        'Upload the original statement of every bank and Mobile Money account the business uses (PDF, or a CSV export; up to 10 MB each). Rozine reads them, then an Audit Partner verifies them before your figures and capacity appear here.',
+    'business.apply.statements.empty': 'No statements received yet.',
+    'business.apply.statements.upload': 'Upload a statement',
+    'business.apply.statements.uploading': 'Uploading…',
+    'business.apply.statements.failed':
+        'We could not keep this statement. Try again.',
+    'business.apply.statements.received': 'Received {date}',
+    'business.apply.statements.reading.reading': 'Reading',
+    'business.apply.statements.reading.read': 'Read · awaiting verification',
+    'business.apply.statements.reading.needs_review': 'Our team will check it',
     'business.apply.raise.target_required': 'Enter how much you want to raise.',
     'business.apply.raise.resized_reason':
         '{capacity} is the most you can raise right now: your borrowing capacity sets this limit.',

@@ -1617,8 +1617,7 @@ const rw: Catalog = {
     'admin.section.applications.title': "Umurongo w'ubusabe",
     'admin.section.applications.subtitle':
         'Suzuma kandi wemeze ubusabe bushya bwa RNP',
-    'admin.section.applications.search':
-        'Shakisha ubusabe ukoresheje ikigo cyangwa nimero…',
+    'admin.section.applications.search': 'Shakisha ikigo cyangwa nimero…',
     'admin.section.disbursements.title': 'Kwishyura',
     'admin.section.disbursements.subtitle':
         "Amafaranga yemejwe ategereje kwishyurwa. Hejuru y'urugero, abantu babiri batandukanye bagomba kwemeza buri kwishyura.",
@@ -5029,6 +5028,19 @@ const rw: Catalog = {
 
     'business.apply.business.unavailable': 'Ntibiboneka',
     'business.apply.business.ineligible': 'Ntiremerewe gusaba igishoro',
+    'business.apply.statements.title': 'Raporo za banki na Mobile Money',
+    'business.apply.statements.body':
+        "Ohereza raporo y'umwimerere ya buri konti ya banki na Mobile Money ikigo gikoresha (PDF, cyangwa CSV; buri imwe itarenze MB 10). Rozine irazisoma, hanyuma Audit Partner akazigenzura mbere y'uko imibare yawe n'ubushobozi bwawe bigaragara hano.",
+    'business.apply.statements.empty': 'Nta raporo iraboneka.',
+    'business.apply.statements.upload': 'Ohereza raporo',
+    'business.apply.statements.uploading': 'Biroherezwa…',
+    'business.apply.statements.failed':
+        'Ntitwashoboye kubika iyi raporo. Ongera ugerageze.',
+    'business.apply.statements.received': 'Yakiriwe {date}',
+    'business.apply.statements.reading.reading': 'Irimo gusomwa',
+    'business.apply.statements.reading.read': 'Yasomwe · itegereje kugenzurwa',
+    'business.apply.statements.reading.needs_review':
+        'Itsinda ryacu rizayigenzura',
     'business.apply.raise.target_required': 'Andika amafaranga ushaka gushaka.',
     'business.apply.raise.resized_reason':
         '{capacity} ni yo menshi ushobora gushaka ubu: ubushobozi bwawe bwo kuguza ni bwo bushyiraho iki gipimo.',

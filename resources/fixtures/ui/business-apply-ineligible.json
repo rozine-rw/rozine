@@ -3,6 +3,51 @@
     "props": {
         "contract_version": "business-application-v1",
         "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+        "statements": {
+            "revision": 3,
+            "documents": [
+                {
+                    "id": "01k6p4c1a2b3c4d5e6f7g8h9j0",
+                    "filename": "statement-01k6p4c1a2b3c4d5e6f7g8h9j0.pdf",
+                    "media_type": "application/pdf",
+                    "size_bytes": 182344,
+                    "received_at": "2026-09-23T08:10:00+00:00",
+                    "reading": "read",
+                    "link": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/01k6p4c1a2b3c4d5e6f7g8h9j0",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "01k6p4c1a2b3c4d5e6f7g8h9j1",
+                    "filename": "statement-01k6p4c1a2b3c4d5e6f7g8h9j1.csv",
+                    "media_type": "text/csv",
+                    "size_bytes": 4096,
+                    "received_at": "2026-09-24T07:02:00+00:00",
+                    "reading": "reading",
+                    "link": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/01k6p4c1a2b3c4d5e6f7g8h9j1",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "01k6p4c1a2b3c4d5e6f7g8h9j2",
+                    "filename": "statement-01k6p4c1a2b3c4d5e6f7g8h9j2.pdf",
+                    "media_type": "application/pdf",
+                    "size_bytes": 90211,
+                    "received_at": "2026-09-24T07:05:00+00:00",
+                    "reading": "needs_review",
+                    "link": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/01k6p4c1a2b3c4d5e6f7g8h9j2",
+                        "method": "get"
+                    }
+                }
+            ],
+            "upload": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements",
+                "method": "post"
+            }
+        },
         "identity_context_revision": 4,
         "server_time": "2026-09-24T09:15:00+02:00",
         "allowed_actions": [

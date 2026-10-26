@@ -71,7 +71,7 @@ class StaffActivityResource extends JsonResource
     ];
 
     /** How a target with no recorded name reads, before its ID. */
-    private const TARGETS = ['party' => 'Party', 'auditor.party' => 'Audit Partner', 'business' => 'Business', 'business_profile' => 'Business',
+    private const TARGETS = ['party' => 'Party', 'auditor.party' => 'Audit Partner', 'business' => 'Business', 'business_profile' => 'Business', 'business.entity' => 'Business',
         'campaign' => 'Note', 'application' => 'Application', 'audit.assignment' => 'Audit', 'audit.report' => 'Audit report',
         'primary_reservation' => 'Reservation', 'investor_wallet' => 'Investor wallet', 'business_wallet' => 'Business wallet', 'complaint' => 'Complaint'];
 

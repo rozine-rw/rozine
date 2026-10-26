@@ -1634,8 +1634,7 @@ const fr: Catalog = {
     'admin.section.applications.title': 'File des demandes',
     'admin.section.applications.subtitle':
         'Examiner et souscrire les nouvelles demandes de RNP',
-    'admin.section.applications.search':
-        'Rechercher une demande par entreprise ou identifiant…',
+    'admin.section.applications.search': 'Entreprise ou identifiant…',
     'admin.section.disbursements.title': 'Décaissements',
     'admin.section.disbursements.subtitle':
         'Levées approuvées en attente de versement. Au-delà du seuil, deux personnes différentes doivent approuver chaque versement.',
@@ -5047,6 +5046,19 @@ const fr: Catalog = {
 
     'business.apply.business.unavailable': 'Indisponible',
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.statements.title': 'Relevés bancaires et Mobile Money',
+    'business.apply.statements.body':
+        "Téléversez le relevé original de chaque compte bancaire et Mobile Money de l'entreprise (PDF, ou export CSV ; 10 Mo maximum chacun). Rozine les lit, puis un Audit Partner les vérifie avant que vos chiffres et votre capacité n'apparaissent ici.",
+    'business.apply.statements.empty': 'Aucun relevé reçu pour le moment.',
+    'business.apply.statements.upload': 'Téléverser un relevé',
+    'business.apply.statements.uploading': 'Téléversement…',
+    'business.apply.statements.failed':
+        "Nous n'avons pas pu conserver ce relevé. Réessayez.",
+    'business.apply.statements.received': 'Reçu le {date}',
+    'business.apply.statements.reading.reading': 'Lecture en cours',
+    'business.apply.statements.reading.read': 'Lu · en attente de vérification',
+    'business.apply.statements.reading.needs_review':
+        'Notre équipe va le vérifier',
     'business.apply.raise.target_required':
         'Indiquez le montant que vous souhaitez lever.',
     'business.apply.raise.resized_reason':
