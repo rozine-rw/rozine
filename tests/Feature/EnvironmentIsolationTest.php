@@ -341,6 +341,77 @@ test('the shipped disks pass the non-live guard when their provider settings are
     expect(fn () => $isolation->configure())->not->toThrow(LogicException::class);
 })->with(['demo', 'staging', 'uat']);
 
+/**
+ * Staging's R2 disks as the server's .env would state them, with both switches on.
+ *
+ * @return array<string, mixed>
+ */
+function stagingFileStorage(): array
+{
+    $r2 = fn (string $bucket): array => ['driver' => 's3', 'key' => 'r2-test-key', 'secret' => 'r2-test-secret', 'region' => 'auto',
+        'bucket' => $bucket, 'endpoint' => 'https://'.str_repeat('a', 32).'.r2.cloudflarestorage.com', 'use_path_style_endpoint' => false, 'throw' => true];
+
+    return [
+        'filesystems.files_disk' => 'r2',
+        'filesystems.media_disk' => 'r2-media',
+        'filesystems.disks.r2' => $r2('rozine-staging'),
+        'filesystems.disks.r2-media' => [...$r2('rozine-staging-media'), 'url' => 'https://media-staging.example.test'],
+    ];
+}
+
+test('staging keeps the R2 disks its switches select, with their credentials', function (string $environment) {
+    $isolation = isolatedConfiguration($environment);
+    config(stagingFileStorage());
+    $isolation->configure();
+
+    expect($isolation->stagingFileDisks())->toBe(['r2', 'r2-media'])
+        ->and(array_keys(config('filesystems.disks')))->toBe(['local', 'public', 'r2', 'r2-media'])
+        ->and(config('filesystems.disks.r2.bucket'))->toBe('rozine-staging')
+        ->and(config('filesystems.disks.r2-media.url'))->toBe('https://media-staging.example.test');
+})->with(['staging', 'uat']);
+
+test('staging keeps only the R2 disk a switch selects', function () {
+    $isolation = isolatedConfiguration('uat');
+    config([...stagingFileStorage(), 'filesystems.media_disk' => null, 'filesystems.disks.r2-media' => ['driver' => 's3']]);
+    $isolation->configure();
+
+    expect(array_keys(config('filesystems.disks')))->toBe(['local', 'public', 'r2']);
+});
+
+test('R2 credentials are refused on staging without its switch and anywhere off staging', function (string $environment, array $switches, string $error) {
+    $isolation = isolatedConfiguration($environment);
+    config([...stagingFileStorage(), ...$switches]);
+
+    expect(fn () => $isolation->configure())->toThrow(LogicException::class, $error);
+})->with([
+    'staging without switches' => ['uat', ['filesystems.files_disk' => null, 'filesystems.media_disk' => null], 'ISOLATION_PROVIDER_CREDENTIALS_DENIED'],
+    'demo with switches' => ['demo', [], 'ISOLATION_FILE_DISK_DENIED'],
+    'a switch naming the other disk' => ['uat', ['filesystems.files_disk' => 'r2-media'], 'ISOLATION_FILE_DISK_DENIED'],
+    'a switch naming a local disk' => ['uat', ['filesystems.files_disk' => 'local'], 'ISOLATION_FILE_DISK_DENIED'],
+]);
+
+test('a selected R2 disk must name an R2 account endpoint with its key, secret and bucket', function (string $setting, mixed $value) {
+    $isolation = isolatedConfiguration('uat');
+    config([...stagingFileStorage(), 'filesystems.disks.r2.'.$setting => $value]);
+
+    expect(fn () => $isolation->configure())->toThrow(LogicException::class, 'ISOLATION_FILE_DISK_DENIED');
+})->with([
+    'another driver' => ['driver', 'local'],
+    'another endpoint' => ['endpoint', 'https://s3.amazonaws.com'],
+    'a plain-text endpoint' => ['endpoint', 'http://'.str_repeat('a', 32).'.r2.cloudflarestorage.com'],
+    'no endpoint' => ['endpoint', null],
+    'no key' => ['key', ''],
+    'no secret' => ['secret', null],
+    'no bucket' => ['bucket', ''],
+]);
+
+test('staging still refuses any other credentialed disk next to its R2 disks', function () {
+    $isolation = isolatedConfiguration('uat');
+    config([...stagingFileStorage(), 'filesystems.disks.s3' => ['driver' => 's3', 'key' => 'aws-test-key', 'secret' => 'aws-test-secret', 'bucket' => 'elsewhere']]);
+
+    expect(fn () => $isolation->configure())->toThrow(LogicException::class, 'ISOLATION_PROVIDER_CREDENTIALS_DENIED');
+});
+
 test('provider secrets are rejected without appearing in the exception', function (string $key) {
     $isolation = isolatedConfiguration();
     config([$key => 'sentinel-do-not-expose']);
