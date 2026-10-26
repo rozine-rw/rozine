@@ -10,9 +10,14 @@ import {
     useRelativeLabel,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDate, formatRwfShort } from '@/lib/rozine/format';
+import {
+    formatDate,
+    formatRwf,
+    formatRwfChart,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { Money, RouteLink } from '@/types';
+import type { RouteLink } from '@/types';
 import type { AdminTodayProps, FunnelStage } from '@/types/admin';
 
 const CAPTION = 'mt-1.5 text-[11px] text-rz-muted';
@@ -28,9 +33,6 @@ function Untracked() {
 
 const DATE_INPUT =
     'relative rounded-lg border border-rz-hairline bg-rz-surface px-[7px] py-[5px] text-[11px] text-rz-ink uppercase outline-none [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-auto [&::-webkit-calendar-picker-indicator]:w-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0';
-
-const short = (money: Money): string =>
-    formatRwfShort(money).replace('RWF ', '');
 
 /** "Capital raised": the server's buckets for the chosen window, refetched when it changes. */
 export function CapitalRaisedPanel({
@@ -142,10 +144,11 @@ export function CapitalRaisedPanel({
                     <div
                         key={bar.label}
                         data-testid="chart-bar"
+                        title={formatRwf(bar.amount)}
                         className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
-                            {short(bar.amount)}
+                            {formatRwfChart(bar.amount)}
                         </span>
                         <div
                             className="w-full rounded-t-md bg-[#1e3aff] dark:bg-[#3d57ff]"

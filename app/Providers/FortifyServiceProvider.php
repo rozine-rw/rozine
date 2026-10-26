@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -77,6 +78,7 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::registerView(fn (Request $request) => Inertia::render('auth/register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'sandboxNotice' => SandboxNotice::toArray(),
             'audience' => self::audience($request),
         ]));
 

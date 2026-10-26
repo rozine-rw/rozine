@@ -479,9 +479,11 @@ describe('Verification', () => {
             screen.getByRole('progressbar', { name: 'Verification progress' }),
         ).toHaveValue(33);
         expect(screen.getByText('Front uploaded')).toBeInTheDocument();
-        await user.click(
-            screen.getByRole('radio', { name: 'Driver’s License' }),
-        );
+        // BRS KYC-R02: an individual verifies with a national ID or passport only.
+        expect(
+            screen.getAllByRole('radio').map((radio) => radio.textContent),
+        ).toEqual(['National ID', 'Passport']);
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
         const file = new File(['id'], 'back.jpg', { type: 'image/jpeg' });
 
         await user.upload(screen.getByLabelText('Upload back'), file);
@@ -704,8 +706,12 @@ describe('Verification submission', () => {
             'Your details are with our Compliance team.',
         );
         expect(
-            screen.getByRole('button', { name: 'Submit for verification' }),
-        ).toBeDisabled();
+            screen.getByRole('heading', { name: 'Under review' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('progressbar')).toHaveValue(100);
+        expect(
+            screen.queryByRole('button', { name: 'Submit for verification' }),
+        ).not.toBeInTheDocument();
         expect(screen.getByLabelText('Tap to capture selfie')).toBeDisabled();
         unmount();
 
@@ -781,7 +787,7 @@ describe('Verification submission', () => {
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             step: 'personal',
-            date_of_birth: '02/05/1990',
+            date_of_birth: '02 / 05 / 1990',
             expected_revision: 4,
         });
     });
@@ -839,6 +845,72 @@ describe('Verification submission', () => {
         expect(
             screen.queryByText('Choose a PDF, PNG or JPEG of at most 10 MB.'),
         ).not.toBeInTheDocument();
+    });
+
+    it('formats a typed date of birth and says the format before the first try', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorVerification {...live(personalFixture, {})} />);
+        expect(
+            screen.getByText(
+                'Day, month and year, for example 15 / 06 / 1990.',
+            ),
+        ).toBeInTheDocument();
+        await user.type(screen.getByLabelText('DATE OF BIRTH'), '15061990');
+
+        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue(
+            '15 / 06 / 1990',
+        );
+        await user.clear(screen.getByLabelText('DATE OF BIRTH'));
+        await user.type(screen.getByLabelText('DATE OF BIRTH'), '1.5.1990');
+        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue('1.5.1990');
+    });
+
+    it('stops showing the missing-photo error once both sides are uploaded', () => {
+        const missing =
+            'Upload both sides of your ID, or the passport photo page.';
+        inertia.errors = { id_front: missing };
+        const props = live(documentFixture, {});
+        const { rerender } = render(<InvestorVerification {...props} />);
+
+        expect(screen.getByText(missing)).toBeInTheDocument();
+
+        if (props.investor_type === 'individual') {
+            rerender(
+                <InvestorVerification
+                    {...props}
+                    uploads={{ ...props.uploads, back: { status: 'uploaded' } }}
+                />,
+            );
+        }
+
+        expect(screen.queryByText(missing)).not.toBeInTheDocument();
+    });
+
+    it('stops showing the missing-selfie error once the selfie is uploaded', () => {
+        const missing = 'Take a selfie to finish.';
+        inertia.errors = { selfie: missing };
+        const props = live(livenessFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The liveness fixture is an individual case.');
+        }
+
+        const { rerender } = render(
+            <InvestorVerification
+                {...props}
+                uploads={{ ...props.uploads, selfie: { status: 'missing' } }}
+            />,
+        );
+
+        expect(screen.getByText(missing)).toBeInTheDocument();
+        rerender(
+            <InvestorVerification
+                {...props}
+                uploads={{ ...props.uploads, selfie: { status: 'uploaded' } }}
+            />,
+        );
+        expect(screen.queryByText(missing)).not.toBeInTheDocument();
     });
 });
 

@@ -234,6 +234,22 @@ export function CartToggle({
     );
 }
 
+/**
+ * What one note returns at maturity before the earnings fee, while no quote is in hand: its price
+ * plus the flat return, rounded half up per note as the cart and checkout compute it
+ * (`GetInvestorCheckout::flatReturn`, `rate_pct` in tenths of a percent).
+ */
+export function unquotedGetBack(
+    deal: Pick<C3DealCard, 'unit_price' | 'rate_pct'>,
+): number {
+    const price = Number(deal.unit_price.amount);
+
+    return (
+        price +
+        Math.round((price * Number(deal.rate_pct.replace('.', ''))) / 1000)
+    );
+}
+
 type InvestBarProps = {
     deal: C3DealCard;
     /** The server's quote for this deal, or null while it is not the focused one. */
@@ -472,9 +488,16 @@ export function InvestBar({
                         <span className="mr-[3px]">
                             {t('investor.money.rwf')}
                         </span>
-                        {current === null
-                            ? '—'
-                            : formatAmount(current.maturity_value)}
+                        {current !== null
+                            ? formatAmount(current.maturity_value)
+                            : checkout !== null
+                              ? formatAmount({
+                                    ...deal.unit_price,
+                                    amount: String(
+                                        unquotedGetBack(deal) * units,
+                                    ),
+                                })
+                              : '—'}
                     </p>
                 </div>
             </div>

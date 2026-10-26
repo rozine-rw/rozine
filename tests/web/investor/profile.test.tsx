@@ -460,6 +460,21 @@ describe('Profile', () => {
         expect(field('COUNTRY')).toBe('Unknown');
     });
 
+    it('shows the identity fields as under review while the check is with Compliance', () => {
+        const pending = profile(personalFixture);
+
+        pending.identity.kyc = 'pending';
+        pending.personal.id_type = null;
+        pending.personal.id_number = null;
+        render(<InvestorProfile {...pending} />);
+        const field = (label: string) =>
+            screen.getByText(label).nextElementSibling?.textContent;
+
+        expect(field('ID TYPE')).toBe('Under review');
+        expect(field('ID NUMBER')).toBe('Under review');
+        expect(field('COUNTRY')).toBe('Under review');
+    });
+
     it('reports two-factor sign-in and opens the security settings for it and the password', () => {
         const { unmount } = render(
             <InvestorProfile {...profile(securityFixture)} />,

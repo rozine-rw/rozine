@@ -50,6 +50,33 @@ it('says an offer closed, not that access must be checked, for an expired offer'
     );
 });
 
+it.each([
+    [
+        'ROLE_NOT_AVAILABLE',
+        "This app isn't on your account",
+        "Your account doesn't have access to this app yet.",
+    ],
+    [
+        'STAFF_ACCESS_REQUIRED',
+        'This page is for Rozine staff',
+        'Only Rozine staff can open this page.',
+    ],
+])(
+    'tells an account opening an app it never had (%s) so, not that it lost access',
+    (code, title, body) => {
+        render(<AccessDenied code={code} />);
+
+        expect(
+            screen.getByRole('heading', { name: title }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('alert')).toHaveTextContent(body);
+        expect(screen.queryByText(/no longer/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Choose an app' }),
+        ).toHaveAttribute('href', '/dashboard');
+    },
+);
+
 it('keeps the account-access wording for every other refusal code', () => {
     render(<AccessDenied code="ROLE_MEMBERSHIP_REQUIRED" />);
     expect(
@@ -174,6 +201,28 @@ it('sends a verification refusal to identity verification inside the branded pag
     expect(
         screen.getByRole('link', { name: 'Verify your identity' }),
     ).toHaveAttribute('href', '/investor/verification');
+    expect(screen.getByRole('link', { name: 'Choose an app' })).toHaveAttribute(
+        'href',
+        '/dashboard',
+    );
+});
+
+it('says a verification already with Compliance is under review, with nothing to send again', () => {
+    render(
+        <AccessDenied
+            code="IDENTITY_VERIFICATION_REQUIRED"
+            status={403}
+            verification="pending"
+        />,
+    );
+    expect(
+        screen.getByRole('heading', {
+            name: 'Your identity check is under review',
+        }),
+    ).toBeInTheDocument();
+    expect(
+        screen.queryByRole('link', { name: 'Verify your identity' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Choose an app' })).toHaveAttribute(
         'href',
         '/dashboard',

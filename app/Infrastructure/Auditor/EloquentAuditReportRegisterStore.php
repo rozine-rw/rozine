@@ -9,6 +9,7 @@ use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Models\AuditAssignment;
+use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
 use Carbon\CarbonImmutable;
@@ -21,8 +22,9 @@ use Illuminate\Support\Facades\DB;
  * An assignment's kind and clock sit in its encrypted state, so the accepted and completed
  * assignments are read and sorted here; the network is small. Each takes its newest report, that
  * report's seal and its publication. The Business is named as the seal recorded it once sealed,
- * else as its profile names it now. A Flash Audit's report waits for the Business with no review
- * deadline, so only a monthly one can be reminded to the Business. A reminder is remembered per
+ * else as its profile names it now; the licence is the sealed one, else the partner's licence on file. Only a report sealed
+ * under a 24-hour review policy has a deadline, so only it can be reminded to the Business; a Flash
+ * report sealed before 26 Oct 2026 waits with none. A reminder is remembered per
  * recipient, so nudging one party leaves the other's Remind in place.
  *
  * @phpstan-import-type RegisterRow from AuditReportRegisterStore
@@ -96,6 +98,8 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
             ->selectRaw("id, entity_party_id, profile->>'name' AS name")->get()->keyBy('id');
         $partners = DB::table('users')->whereIn('party_id', $assignments->pluck('party_id')->all())->orderBy('id')
             ->get(['party_id', 'name'])->unique('party_id')->pluck('name', 'party_id');
+        $licences = AuditorProfile::query()->whereIn('party_id', $assignments->pluck('party_id')->all())->get()
+            ->mapWithKeys(fn (AuditorProfile $profile): array => [$profile->party_id => $profile->state['standing']['licence']]);
         $reminders = DB::table('party_notices')->where('event_key', 'like', 'staff-audit-reminder:%')
             ->whereIn(DB::raw("split_part(event_key, ':', 2)"), $assignments->modelKeys())
             ->selectRaw("split_part(event_key, ':', 2) || ':' || split_part(event_key, ':', 3) || ':' || party_id AS recipient, max(created_at) AS at")->groupBy('recipient')->pluck('at', 'recipient');
@@ -123,7 +127,7 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
                 'business' => $payload['business']['profile']['name'] ?? (string) ($business->name ?? ''),
                 'kind' => $state['kind'] === 'routine' ? 'monthly' : 'flash', 'period' => $period,
                 'auditor' => $assignment->party_id === null ? null : (string) ($partners[$assignment->party_id] ?? ''), 'auditor_party_id' => $assignment->party_id,
-                'licence' => $payload['report']['licence'] ?? null, 'status' => $status,
+                'licence' => $payload['report']['licence'] ?? $licences->get((string) $assignment->party_id), 'status' => $status,
                 'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z'),
                 'sealed_at' => $payload['sealed_at'] ?? null,
                 'cosign_by' => $status === 'awaiting_cosign' && $publication?->due_at !== null ? CarbonImmutable::parse($publication->due_at)->utc()->format('Y-m-d\TH:i:s\Z') : null,

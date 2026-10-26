@@ -28,6 +28,7 @@ class InvestorNoticesResource extends JsonResource
         'primary.refunded' => ['investor.wallet', []],
         'primary.report_published' => ['investor.portfolio', []],
         'primary.raise_funded' => ['investor.portfolio', []],
+        'primary.commitment_confirmed' => ['investor.commitments.show', ['commitment' => ':commitment_id']],
         'primary.holding_issued' => ['investor.holdings.show', ['holding' => ':holding_id']],
         'security.password_changed' => ['investor.profile', ['section' => 'security']],
         'security.new_device' => ['investor.profile', ['section' => 'security']],

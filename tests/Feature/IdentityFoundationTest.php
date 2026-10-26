@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\RegisterIdentity;
+use App\Domain\Identity\SandboxNotice;
 use App\Http\Resources\IdentityContextResource;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -22,6 +23,8 @@ it('registers an unverified Party without accepting supplied authority', functio
 
     $this->post(route('register.store'), [
         'name' => 'Alpha Participant',
+        'sandbox_notice_version' => SandboxNotice::VERSION,
+        'sandbox_notice_sha256' => SandboxNotice::sha256(),
         'email' => 'alpha@example.test',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -49,7 +52,7 @@ it('registers an unverified Party without accepting supplied authority', functio
 it('rolls back the new Party when account creation fails', function (): void {
     $user = User::factory()->create();
 
-    expect(fn () => app(RegisterIdentity::class)->handle('Duplicate', $user->email, 'password'))
+    expect(fn () => app(RegisterIdentity::class)->handle('Duplicate', $user->email, 'password', SandboxNotice::VERSION, SandboxNotice::sha256()))
         ->toThrow(QueryException::class);
 
     $this->assertDatabaseCount('parties', 0);
@@ -61,6 +64,8 @@ it('does not create a Party when registration validation fails', function (): vo
 
     $this->post(route('register.store'), [
         'name' => 'Alpha Participant',
+        'sandbox_notice_version' => SandboxNotice::VERSION,
+        'sandbox_notice_sha256' => SandboxNotice::sha256(),
         'email' => 'not-an-email',
         'password' => 'password',
         'password_confirmation' => 'different',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\EnterSoleApp;
+use App\Application\Identity\GetInvestorVerification;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Http\Middleware\HandleAppearance;
@@ -59,9 +60,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 return redirect()->to($request->fullUrl());
             }
 
-            if (! $request->expectsJson() && $request->routeIs('investor.home', 'investor.wallet', 'investor.verification', 'investor.portfolio', 'investor.profile', 'investor.verified', 'business.home', 'auditor.home', 'auditor.profile',
-                'auditor.jobs.index', 'auditor.jobs.show', 'auditor.conflicts.index', 'auditor.conflicts.show', 'auditor.portfolio.index', 'auditor.reports.show', 'auditor.engagement.show', 'business.applications.show', 'business.applications.publish.show', 'business.campaigns.show', 'staff.applications.show', 'staff.applications.operations.show', 'business.audit-reports.show', 'staff.audit.show', 'staff.audit.operations.show', 'staff.disbursements.index', 'staff.disbursements.show', 'staff.investor-verifications.index', 'staff.investors.index', 'staff.sections.show', 'staff.staging-mail-testers.index', 'admin.home', 'identity.roles.resume')) {
-                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])
+            // A page read in the browser gets the access page, whichever app it belongs to; commands,
+            // lookups and the API keep their JSON answer.
+            // A person asked to verify whose check is already with Compliance is told it is under review.
+            if (! $request->expectsJson() && $request->isMethod('GET') && ! $request->is('api/*')) {
+                $verification = $exception->reason === 'IDENTITY_VERIFICATION_REQUIRED' && $request->user() !== null
+                    ? app(GetInvestorVerification::class)->stage((int) $request->user()->getAuthIdentifier()) : null;
+
+                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status, 'verification' => $verification])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
 

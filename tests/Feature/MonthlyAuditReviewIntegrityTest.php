@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Application\Auditor\AmendAuditReport;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
-use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Evidence\Contracts\StatementStore;
@@ -16,7 +15,6 @@ use App\Models\AuditDisputeProof;
 use App\Models\AuditPublicationEvent;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
-use App\Models\AuditReportSeal;
 use App\Models\AuditSigningKeyRevocation;
 use App\Models\CommandOperation;
 use App\Models\Party;
@@ -126,7 +124,7 @@ it('protects delivery time and event history against direct mutation and refuses
 
 it('round trips the inactive migration without changing retained legacy publications', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $publication = DB::table('audit_report_publications')->first();
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     $migration = require database_path('migrations/2026_09_26_103442_add_monthly_audit_review_policy.php');
@@ -138,7 +136,7 @@ it('round trips the inactive migration without changing retained legacy publicat
 
 it('records legacy, amended and withdrawn-evidence dispute refusals without changing publications', function (string $state, string $code): void {
     $fixture = Fixture::ready(kind: $state === 'legacy' ? 'flash' : 'monthly');
-    Fixture::seal($fixture);
+    $state === 'legacy' ? Fixture::sealLegacy($fixture) : Fixture::seal($fixture);
     if ($state === 'amended') {
         app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->revision + 1, (string) Str::uuid());
     } elseif ($state === 'withdrawn') {
@@ -315,28 +313,7 @@ it('preserves pre-policy monthly seals and their all-signers by-the-seventh publ
     $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
     $fixture = Fixture::ready(2, 'monthly');
     $store = app(AuditReportPublicationStore::class);
-    $event = 'eloquent.creating: '.AuditReportSeal::class;
-    Event::listen($event, function (AuditReportSeal $seal): void {
-        $payload = array_diff_key($seal->payload, ['publication_policy' => true]);
-        $signature = app(AuditReportCryptography::class)->sign($payload);
-        $seal->forceFill(['payload' => $payload, 'audit_signing_key_id' => $signature['key_id'], 'jws' => $signature['jws']]);
-    });
-    $this->mock(AuditReportPublicationStore::class, function (MockInterface $mock) use ($store): void {
-        $mock->shouldReceive('open');
-        $expectation = $mock->mockery_findExpectation('open', []);
-        if (! $expectation instanceof Expectation) {
-            throw new RuntimeException('The legacy publication boundary was not registered.');
-        }
-        $expectation->once()->andReturnUsing(function (string $reportId, string $digest, array $payload) use ($store): void {
-            $store->open($reportId, $digest, array_diff_key($payload, ['publication_policy' => true]));
-        });
-    });
-    try {
-        expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
-    } finally {
-        Event::forget($event);
-        app()->instance(AuditReportPublicationStore::class, $store);
-    }
+    expect(Fixture::sealLegacy($fixture)['code'])->toBe('AUDIT_SEALED');
     $publication = AuditReportPublication::query()->firstOrFail();
     expect($publication->policy_version)->toBe('audit-publication-legacy')->and($publication->delivered_at)->toBeNull()
         ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGNATURE_RECORDED');

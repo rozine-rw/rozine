@@ -334,7 +334,7 @@ describe('Compliance review drawer', () => {
         expect(within(facts).getByText('National ID')).toBeInTheDocument();
         expect(within(facts).getByText('1199080012345678')).toBeInTheDocument();
         expect(
-            within(facts).getByText('2026-10-06 10:00:00'),
+            within(facts).getByText('2026-10-06 10:00:00 CAT'),
         ).toBeInTheDocument();
 
         const documents = within(drawer).getByRole('region', {
@@ -695,7 +695,9 @@ describe('Compliance figures and decisions', () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 
         expect(screen.getByText('97.8%')).toBeInTheDocument();
-        expect(screen.getByText('44 of 45 verified')).toBeInTheDocument();
+        expect(
+            screen.getByText('44 of 45 in-app submissions'),
+        ).toBeInTheDocument();
         expect(screen.getByText('AML alerts')).toBeInTheDocument();
         expect(screen.getByText('Sanctions hits')).toBeInTheDocument();
         expect(screen.getAllByText('Not connected')).toHaveLength(2);

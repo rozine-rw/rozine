@@ -3,21 +3,26 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
 use App\Domain\Operations\CommandRejection;
 use App\Models\LedgerEntry;
+use App\Models\PartyNotice;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use App\Notifications\Investor\PurchaseConfirmed;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 beforeEach(function (): void {
+    Notification::fake();
     $this->freezeSecond();
     InvestorWalletFixture::policy(maximum: null);
     $this->campaign = PrimaryReservationFixture::campaign();
@@ -33,6 +38,24 @@ beforeEach(function (): void {
     $this->refund = fn (string $requestId): array => $checkout->refund($this->investor['user']->id, 1, $this->campaign->id, $this->root->id, 2, $requestId);
 });
 
+it('tells the Investor, in-app and by e-mail, the business, amount and locked fee of a confirmed purchase (INV-R05)', function (): void {
+    $business = app(PrimaryCampaignSource::class)->presentation($this->campaign->id)['business'];
+    $notice = PartyNotice::query()->where('kind', 'primary.commitment_confirmed')->sole();
+    $reference = 'RZC-'.strtoupper(substr($this->commitment, -10));
+
+    expect($notice->party_id)->toBe($this->investor['user']->party_id)
+        ->and($notice->event_key)->toBe('commitment-confirmed:'.$this->commitment)
+        ->and($notice->facts)->toEqual(['business' => $business, 'amount' => '15000', 'currency' => 'RWF', 'units' => '3', 'fee_tier' => 'standard',
+            'fee_rate_bps' => '1500', 'reference' => $reference, 'commitment_id' => $this->commitment, 'campaign_id' => $this->campaign->id]);
+    Notification::assertSentTo($this->investor['user'], PurchaseConfirmed::class, fn (PurchaseConfirmed $mail): bool => $mail->businessName === $business
+        && $mail->amount === '15000' && $mail->notes === 3 && $mail->feeRateBps === 1500 && $mail->reference === $reference
+        && str_ends_with($mail->url, '/investor/commitments/'.$this->commitment));
+
+    $this->actingAs($this->investor['user'])->getJson(route('investor.notices'))->assertOk()
+        ->assertJsonPath('data.notices.0.kind', 'primary.commitment_confirmed')
+        ->assertJsonPath('data.notices.0.link', ['url' => '/investor/commitments/'.$this->commitment, 'method' => 'get']);
+});
+
 it('renders a confirmed commitment from its retained facts and recorded confirmation', function (): void {
     $props = $this->actingAs($this->investor['user'])->get(route('investor.commitments.show', $this->commitment))->assertOk()
         ->assertInertia(fn ($page) => $page->component('investor/commitment'))->viewData('page')['props'];
@@ -41,7 +64,7 @@ it('renders a confirmed commitment from its retained facts and recorded confirma
 
     expect([$props['contract_version'], $props['allowed_actions'], $props['refusal']])->toBe(['investor-primary-v1', [], null])
         ->and($commitment)->toMatchArray(['id' => $this->commitment, 'revision' => 2, 'campaign_id' => $this->campaign->id,
-            'deal_name' => $this->campaign->payload['title'], 'units' => '3', 'ordinals' => [['first' => '1', 'last' => '3']],
+            'deal_name' => app(PrimaryCampaignSource::class)->presentation($this->campaign->id)['business'], 'units' => '3', 'ordinals' => [['first' => '1', 'last' => '3']],
             'principal' => ['currency' => 'RWF', 'amount' => '15000'], 'rights' => $this->root->payload['rights'], 'state' => 'confirmed',
             'cancelled_by' => null, 'closing' => null, 'refund' => null, 'holding' => null, 'allowed_actions' => [],
             'actions' => ['cancel' => null], 'link' => $link])
@@ -188,7 +211,10 @@ it('refuses to present facts that name another reservation', function (): void {
 });
 
 it('leaves any other refusal to the global handlers', function (): void {
-    $this->actingAs(User::factory()->create())->get(route('investor.commitments.show', $this->commitment))
+    $unlinked = User::factory()->create();
+    $this->actingAs($unlinked)->get(route('investor.commitments.show', $this->commitment))->assertForbidden()
+        ->assertInertia(fn ($page) => $page->component('identity/access-denied')->where('code', 'IDENTITY_NOT_LINKED'));
+    $this->actingAs($unlinked)->getJson(route('investor.commitments.show', $this->commitment))
         ->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
     app()->instance(PrimaryCommitmentView::class, Mockery::mock(PrimaryCommitmentView::class, function ($mock): void {
         $mock->shouldReceive('show')->andThrow(new CommandRejection('PRIMARY_TRANSACTION_REQUIRED', 503));

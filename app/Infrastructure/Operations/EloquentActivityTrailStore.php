@@ -31,6 +31,17 @@ final class EloquentActivityTrailStore implements ActivityTrailStore
                     WHEN 'user' THEN (SELECT u.name FROM users u WHERE u.id::text = trail.target_id)
                     WHEN 'membership' THEN (SELECT u.name FROM role_memberships m JOIN users u ON u.party_id = m.party_id
                         WHERE m.id = trail.target_id ORDER BY u.id LIMIT 1)
+                    WHEN 'party' THEN COALESCE((SELECT u.name FROM users u WHERE u.party_id IN (lower(trail.target_id), upper(trail.target_id)) ORDER BY u.id LIMIT 1),
+                        (SELECT b.profile->>'name' FROM business_profiles b WHERE b.entity_party_id IN (lower(trail.target_id), upper(trail.target_id))))
+                    WHEN 'auditor.party' THEN (SELECT u.name FROM users u WHERE u.party_id IN (lower(trail.target_id), upper(trail.target_id)) ORDER BY u.id LIMIT 1)
+                    WHEN 'business' THEN (SELECT b.profile->>'name' FROM business_profiles b WHERE b.id IN (lower(trail.target_id), upper(trail.target_id)))
+                    WHEN 'business_profile' THEN (SELECT b.profile->>'name' FROM business_profiles b WHERE b.id IN (lower(trail.target_id), upper(trail.target_id)))
+                    WHEN 'campaign' THEN (SELECT b.profile->>'name' FROM business_campaigns c JOIN business_profiles b ON b.id = c.business_id
+                        WHERE c.id IN (lower(trail.target_id), upper(trail.target_id)))
+                    WHEN 'application' THEN (SELECT b.profile->>'name' FROM business_applications a JOIN business_profiles b ON b.id = a.business_id
+                        WHERE a.id IN (lower(trail.target_id), upper(trail.target_id)))
+                    WHEN 'audit.assignment' THEN (SELECT b.profile->>'name' FROM audit_assignments a JOIN business_profiles b ON b.id = a.business_id
+                        WHERE a.id IN (lower(trail.target_id), upper(trail.target_id)))
                 END AS target_name");
         $trail = DB::query()->fromSub($named, 'entries')
             ->when($search !== '', function (Builder $query) use ($search): void {

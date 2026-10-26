@@ -7,6 +7,7 @@ import {
 } from '@/components/admin/format';
 import { KycReview } from '@/components/admin/kyc-review';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
+import { DispatchLocationSection } from '@/components/admin/parties/dispatch-location';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
 import { TrailList } from '@/components/admin/trail-list';
@@ -54,6 +55,7 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     kyc_pending: 'amber',
+    licence_pending: 'amber',
     frozen: 'red',
     not_tracked: 'grey',
 };
@@ -298,12 +300,24 @@ export function PartyDrawer({
                             {party.stats.map((stat) => (
                                 <div
                                     key={stat.key}
-                                    className="min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5"
+                                    className={cn(
+                                        'min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5',
+                                        // A text figure (a staff member's roles) takes the row and wraps in full.
+                                        stat.value.kind === 'text' &&
+                                            'col-span-2 sm:col-span-3',
+                                    )}
                                 >
                                     <div className="truncate text-[10.5px] font-semibold text-rz-muted">
                                         {t(`admin.parties.stat.${stat.key}`)}
                                     </div>
-                                    <div className="mt-[3px] truncate text-[15px] font-bold text-rz-ink">
+                                    <div
+                                        className={cn(
+                                            'mt-[3px] text-[15px] font-bold text-rz-ink',
+                                            stat.value.kind === 'text'
+                                                ? 'break-words'
+                                                : 'truncate',
+                                        )}
+                                    >
                                         {format(stat.value)}
                                     </div>
                                 </div>
@@ -347,6 +361,16 @@ export function PartyDrawer({
                                         </li>
                                     ))}
                                 </ul>
+                                {party.committed &&
+                                    party.committed.amount !== '0' && (
+                                        <p className="mt-2 text-[12px] leading-[1.5] text-rz-muted">
+                                            {t('admin.parties.committed_note', {
+                                                amount: formatRwfShort(
+                                                    party.committed,
+                                                ),
+                                            })}
+                                        </p>
+                                    )}
                             </>
                         )}
                     </>
@@ -567,6 +591,24 @@ export function PartyDrawer({
                                     ])}
                                 </div>
                             </section>
+                        )}
+                        {party.office && (
+                            <DispatchLocationSection
+                                kind="office"
+                                location={party.office}
+                                viewer={viewer}
+                                section={SECTION}
+                                box={BOX}
+                            />
+                        )}
+                        {party.premises && (
+                            <DispatchLocationSection
+                                kind="premises"
+                                location={party.premises}
+                                viewer={viewer}
+                                section={SECTION}
+                                box={BOX}
+                            />
                         )}
 
                         <section

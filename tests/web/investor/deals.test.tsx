@@ -123,6 +123,21 @@ describe('Deals on a phone', () => {
         expect(screen.queryByText(/withdraw/iu)).not.toBeInTheDocument();
     });
 
+    it('fills Get back from the price and rate while the server sends no quote', () => {
+        const unquoted = deals();
+
+        unquoted.quote = null;
+        render(<InvestorDeals {...unquoted} />);
+
+        const bar = screen.getByRole('region', {
+            name: 'Invest in GreenLeaf Agro',
+        });
+
+        expect(bar).toHaveTextContent('RWF5,000');
+        expect(bar).toHaveTextContent('RWF5,675');
+        expect(bar).not.toHaveTextContent('RWF—');
+    });
+
     it('re-quotes a new quantity from the server instead of multiplying', () => {
         vi.useFakeTimers();
         render(<InvestorDeals {...deals()} />);
@@ -1221,6 +1236,8 @@ describe('Deals in C3 states', () => {
 
         expect(await screen.findByTestId('head')).toBeInTheDocument();
         expect(screen.queryByText(rationale)).not.toBeInTheDocument();
+        // No rationale means no empty "Rozine assessment" heading either.
+        expect(screen.queryByText('Rozine assessment')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: /^Notifications/u }),
         ).not.toBeInTheDocument();

@@ -17,16 +17,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * carries verify and reject, which run the accreditation review that already exists. Every licence
  * waiting for review is also queued above the directory, as the design's ICPAR verification desk
  * (a first licence) and partner change requests (a renewal): approving or rejecting one opens that
- * partner's 360 on the decision's reason stage, since every decision carries a reason.
+ * partner's 360 on the decision's reason stage, since every decision carries a reason. The 360
+ * shows the registered office dispatch measures the 30 km from: verified, lapsed after 365 days
+ * (engineering contract), or missing, and in the console staff may record a newly verified one.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type QueueEntry from \App\Application\Auditor\Contracts\AuditorDirectoryStore
+ * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, chip: string, search: string,
- *     queue: list<QueueEntry>, partner: Detail|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
+ *     queue: list<QueueEntry>, partner: Detail|null, office?: ReviewedLocation|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffAuditorDirectoryResource extends JsonResource
@@ -37,7 +40,7 @@ class StaffAuditorDirectoryResource extends JsonResource
     private const ROLES = ['superadmin', 'compliance', 'approver'];
 
     /** How a partner's standing reads in the 360's header. */
-    private const HEALTH = ['active' => 'active', 'pending' => 'kyc_pending', 'licence_expired' => 'watch', 'suspended' => 'distressed'];
+    private const HEALTH = ['active' => 'active', 'pending' => 'licence_pending', 'licence_expired' => 'watch', 'suspended' => 'distressed'];
 
     /** How each accreditation event reads in the 360's activity. */
     private const EVENTS = [
@@ -78,7 +81,9 @@ class StaffAuditorDirectoryResource extends JsonResource
                 'link' => $link([...$position, 'auditor' => $row['party_id']])], $page['rows'])],
             'desk' => self::queue(array_filter($page['queue'], fn (array $entry): bool => ! $entry['renewal']), $link, $position, $verify),
             'requests' => self::queue(array_filter($page['queue'], fn (array $entry): bool => $entry['renewal']), $link, $position, $verify),
-            'party' => $page['partner'] === null ? null : self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide'])];
+            'party' => $page['partner'] === null ? null : [...self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide']),
+                'office' => ($page['office'] ?? null) === null ? null : self::location($page['office'], $prefix === ''
+                    ? ['url' => route('staff.auditors.office.verify', ['party' => $page['partner']['row']['party_id']], false), 'method' => 'post'] : null)]];
     }
 
     /**
@@ -97,6 +102,25 @@ class StaffAuditorDirectoryResource extends JsonResource
             'links' => ['review' => $link([...$position, 'auditor' => $entry['party_id']]),
                 ...($verify ? ['approve' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'approve']),
                     'reject' => $link([...$position, 'auditor' => $entry['party_id'], 'decide' => 'reject'])] : [])]], $entries));
+    }
+
+    /**
+     * A dispatch location as last verified (a partner's office or a Business's premises), and where
+     * the viewer may record a new verification.
+     *
+     * @param  ReviewedLocation  $reviewed
+     * @param  array{url: string, method: string}|null  $verify  where to record a verification; it carries the time it is offered at
+     * @return array<string, mixed>
+     */
+    public static function location(array $reviewed, ?array $verify): array
+    {
+        $location = $reviewed['location'];
+        $state = $location['state'];
+        $point = $state['point'];
+
+        return ['state' => $reviewed['standing'], 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
+            'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $location['revision'],
+            'verify' => $verify === null ? null : [...$verify, 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]];
     }
 
     /**

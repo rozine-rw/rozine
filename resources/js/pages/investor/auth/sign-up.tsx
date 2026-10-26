@@ -371,7 +371,6 @@ export default function InvestorSignUp({
                                                     [
                                                         'national_id',
                                                         'passport',
-                                                        'drivers_license',
                                                     ] as IdDocument[]
                                                 ).map((document) => (
                                                     <Chip

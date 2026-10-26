@@ -70,9 +70,9 @@ describe('Wallet (C3)', () => {
             screen.getByRole('link', { name: /Download PDF/u }),
         ).toHaveAttribute('href', '/investor/wallet/statement.pdf');
         expect(
-            screen.getByRole('link', { name: /Download Excel/u }),
+            screen.getByRole('link', { name: /Download CSV/u }),
         ).toHaveAttribute('href', '/investor/wallet/statement.csv');
-        fireEvent.click(screen.getByRole('link', { name: /Download Excel/u }));
+        fireEvent.click(screen.getByRole('link', { name: /Download CSV/u }));
         expect(
             screen.queryByRole('link', { name: /Download PDF/u }),
         ).not.toBeInTheDocument();
@@ -344,7 +344,9 @@ describe('Wallet (C3)', () => {
             }),
         ).not.toBeInTheDocument();
         expect(
-            screen.getByText("Deposit isn't available to you right now."),
+            screen.getByText(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -627,6 +629,59 @@ describe('Wallet (C3)', () => {
         ).toBeDisabled();
     });
 
+    it('names the policy bounds for an amount outside them and credits nothing', () => {
+        const props = wallet(depositFixture);
+        const quote = props.funding.quote!;
+
+        quote.amount = { currency: 'RWF', amount: '6000000' };
+        quote.credited = { currency: 'RWF', amount: '6000000' };
+        quote.refusal = 'VALIDATION_FAILED';
+        const { unmount } = render(<InvestorWallet {...props} />);
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        expect(within(panel).getByRole('alert')).toHaveTextContent(
+            'Enter an amount between RWF 1,000 and RWF 5,000,000.',
+        );
+        expect(panel).toHaveTextContent('Credited once confirmed—');
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeDisabled();
+        unmount();
+
+        const bounds = (
+            minimum: string | null,
+            maximum: string | null,
+            text: string,
+        ) => {
+            const next = wallet(depositFixture);
+
+            next.funding.quote = { ...quote };
+            next.funding.policy = {
+                ...next.funding.policy!,
+                minimum:
+                    minimum === null
+                        ? null
+                        : { currency: 'RWF', amount: minimum },
+                maximum:
+                    maximum === null
+                        ? null
+                        : { currency: 'RWF', amount: maximum },
+            };
+            const view = render(<InvestorWallet {...next} />);
+
+            expect(screen.getByRole('alert')).toHaveTextContent(text);
+            view.unmount();
+        };
+
+        bounds('1000', null, 'Enter at least RWF 1,000.');
+        bounds(null, '5000000', 'Enter at most RWF 5,000,000.');
+        bounds(
+            null,
+            null,
+            'Some details need correcting before this can go ahead.',
+        );
+    });
+
     it('shows a field error the server returns', async () => {
         const user = userEvent.setup();
 
@@ -674,7 +729,9 @@ describe('Wallet (C3)', () => {
 
         render(<InvestorWallet {...props} />);
         expect(
-            screen.getByText("Deposit isn't available to you right now."),
+            screen.getByText(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            ),
         ).toBeInTheDocument();
     });
 
@@ -784,7 +841,9 @@ describe('Wallet (C3)', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.getByRole('region', { name: 'Add money' }),
-            ).toHaveTextContent("Deposit isn't available to you right now.");
+            ).toHaveTextContent(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            );
             expect(screen.queryByLabelText('AMOUNT')).not.toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Link an account' }),
@@ -809,7 +868,9 @@ describe('Wallet (C3)', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.getByRole('region', { name: 'Add money' }),
-            ).toHaveTextContent("Deposit isn't available to you right now.");
+            ).toHaveTextContent(
+                "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
+            );
             expect(
                 screen.queryByRole('button', { name: 'Confirm deposit' }),
             ).not.toBeInTheDocument();
@@ -862,6 +923,7 @@ describe('Wallet (C3)', () => {
             );
             expect(inertia.visit).not.toHaveBeenCalled();
             expect(inertia.reload).toHaveBeenCalledTimes(1);
+            expect(screen.getByLabelText('AMOUNT')).toHaveValue('');
             expect(inertia.reload).toHaveBeenCalledWith(
                 expect.objectContaining({ only: RELOADED }),
             );

@@ -221,15 +221,22 @@ function MenuRow({
 /**
  * Personal information (design L3893–3916), read-only: there is no command to change these
  * details, so the design's inputs are shown as fields and its "Save changes" is left out. The ID
- * number arrives already masked; phone and address are not collected yet.
+ * number arrives already masked; phone and address are not collected yet. The document shows
+ * once Compliance approves it, so while the check is with them it reads as under review.
  */
 export function PersonalInformation({
     personal,
+    kyc,
 }: {
     personal: InvestorProfileProps['personal'];
+    kyc: KycState;
 }) {
     const { t } = useTranslation();
     const idType = personal.id_type ?? 'national_id';
+    const reviewing =
+        kyc === 'pending'
+            ? t('investor.profile.personal.under_review')
+            : undefined;
 
     return (
         <>
@@ -257,6 +264,7 @@ export function PersonalInformation({
                             ? null
                             : t(`investor.signup.id.${personal.id_type}`)
                     }
+                    empty={reviewing}
                     className="col-span-4"
                 />
                 <Field
@@ -266,6 +274,7 @@ export function PersonalInformation({
                             : 'investor.profile.personal.id_number',
                     )}
                     value={personal.id_number}
+                    empty={reviewing}
                     className="col-span-6 min-w-0"
                 />
             </dl>
@@ -276,7 +285,10 @@ export function PersonalInformation({
                 <Field
                     label={t('investor.profile.personal.country')}
                     value={personal.country}
-                    empty={t('investor.profile.personal.country_unknown')}
+                    empty={
+                        reviewing ??
+                        t('investor.profile.personal.country_unknown')
+                    }
                     className="col-span-2"
                 />
                 <Field

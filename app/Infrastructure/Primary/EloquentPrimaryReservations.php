@@ -9,6 +9,7 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\PrimaryCampaignReturns;
 use App\Application\Primary\PrimaryFundingCandidate;
@@ -48,7 +49,7 @@ use Throwable;
  */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims, private PartyNotices $notices) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims, private PartyNotices $notices, private InvestorCart $cart) {}
 
     public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array
     {
@@ -215,6 +216,11 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     if ($posting->replayed) {
                         throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
                     }
+                    $this->notices->record($partyId, PartyNoticeKind::CommitmentConfirmed, ['business' => $this->campaigns->presentation($campaignId)['business'],
+                        'amount' => (string) $root->principal, 'currency' => 'RWF', 'units' => (string) $root->units, 'fee_tier' => $terms->earningsFee['tier'],
+                        'fee_rate_bps' => (string) $terms->earningsFee['rate_bps'], 'reference' => 'RZC-'.strtoupper(substr((string) $commitment->id, -10)),
+                        'commitment_id' => (string) $commitment->id, 'campaign_id' => $campaignId], 'commitment-confirmed:'.$commitment->id);
+                    $this->cart->bought($partyId, $campaignId);
 
                     return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
                 } catch (PrimaryViolation $exception) {

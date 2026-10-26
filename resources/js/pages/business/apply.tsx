@@ -288,6 +288,15 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 setHaltedKey(halted);
             }
         },
+        onInvalid: (sent) => {
+            /*
+             * A request the server could not accept (e.g. a target off the RWF 5,000 unit) waits
+             * for the business to change it: the autosave never resends it unchanged.
+             */
+            if (sent.name !== 'submit') {
+                setHaltedKey(payloadKey(sent.payload));
+            }
+        },
     });
 
     /** The last command sent, so the busy label names what is running. */
@@ -558,7 +567,14 @@ export default function BusinessApply(props: BusinessApplyProps) {
             )}
             <form id="business-apply" onSubmit={submit} noValidate>
                 {step === 'business' && (
-                    <StepBusiness evidence={props.evidence} />
+                    <StepBusiness
+                        evidence={props.evidence}
+                        statements={props.statements}
+                        identityContextRevision={
+                            props.identity_context_revision
+                        }
+                        canUpload={canSave}
+                    />
                 )}
                 {step === 'raise' && (
                     <StepRaise

@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,17 @@ type Props = {
 
 export default function ResetPassword({ token, email, passwordRules }: Props) {
     const { t } = useTranslation();
+
+    /*
+     * The auth frame keeps the props an earlier page set (register or log in name their own), so
+     * this page names its heading again: straight after signing up it must not still say so.
+     */
+    setLayoutProps({
+        title: 'auth.reset_password.layout_title',
+        description: 'auth.reset_password.layout_description',
+        eyebrow: '',
+        audience: null,
+    });
 
     return (
         <>

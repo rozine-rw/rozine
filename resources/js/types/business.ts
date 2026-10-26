@@ -102,6 +102,25 @@ export type BusinessTodo =
           /** The latest sealed audit report, waiting for the business's co-signatures. */
           kind: 'audit_cosign';
           report_kind: 'flash' | 'monthly';
+          /** When the 24-hour window to co-sign or dispute closes; null when the report has none. */
+          due_at: string | null;
+          /** Whole hours left in that window, rounded up; null when there is none. */
+          hours_left: number | null;
+          link: RouteLink;
+      }
+    | {
+          /** An open draft whose current offer still needs this person's signature. */
+          kind: 'application_signature';
+          title: string;
+          /** The names of every required signatory still to sign, this person included. */
+          pending: string[];
+          link: RouteLink;
+      }
+    | {
+          /** An open draft signed by part of the mandate, waiting for the people named. */
+          kind: 'application_awaiting';
+          title: string;
+          pending: string[];
           link: RouteLink;
       }
     | {
@@ -214,6 +233,8 @@ export type BusinessAuditReportEntry = {
     id: string;
     kind: 'flash' | 'monthly';
     status: BusinessAuditReportStatus;
+    /** When its 24-hour review window closes; null for a report sealed before it had one. */
+    due_at: string | null;
     link: RouteLink;
 };
 
@@ -554,6 +575,29 @@ export type ApplyPreviewOutcome =
     | { kind: 'unconfirmed'; command: ApplicationCommand }
     | { kind: 'refused'; code: string };
 
+/** How far Rozine has got reading one received statement; reading verifies nothing. */
+export type StatementReading = 'reading' | 'read' | 'needs_review';
+
+export type BusinessStatement = {
+    id: string;
+    filename: string;
+    media_type: 'application/pdf' | 'text/csv';
+    size_bytes: number;
+    /** When it was received, ISO 8601. */
+    received_at: string;
+    reading: StatementReading;
+    /** The original, as uploaded. */
+    link: RouteLink;
+};
+
+/** The business's own bank and Mobile Money statements (BRS APP-B01). */
+export type BusinessStatements = {
+    /** Sent as `expected_revision` with the next upload. */
+    revision: number;
+    documents: BusinessStatement[];
+    upload: RouteAction;
+};
+
 export type BusinessApplyProps = {
     contract_version: 'business-application-v1';
     business_id: string;
@@ -573,6 +617,8 @@ export type BusinessApplyProps = {
      * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
+    /** The web page's statements, so step 1 can take the next upload; the bearer read leaves it out. */
+    statements?: BusinessStatements;
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     links: {
@@ -803,11 +849,14 @@ export type ReportStatus = 'verified' | 'in_audit' | 'archived';
 /** The month's health as the audit recorded it. */
 export type ReportHealth = 'healthy' | 'watch' | 'at_risk';
 
-export type ReportPeriod = {
-    kind: 'monthly' | 'annual';
-    /** First day of the month or year, ISO date. */
-    starts_on: string;
-};
+export type ReportPeriod =
+    | {
+          kind: 'monthly' | 'annual';
+          /** First day of the month or year, ISO date. */
+          starts_on: string;
+      }
+    /** The pre-listing flash audit, which covers no single month. */
+    | { kind: 'flash'; starts_on: null };
 
 export type ReportRow = {
     id: string;
@@ -819,6 +868,10 @@ export type ReportRow = {
     auditor: string;
     /** While in audit: the day the CPA must seal it by. */
     seal_by: string | null;
+    /** Sealed and waiting for the business to co-sign or dispute it. */
+    awaiting_signature: boolean;
+    /** While it waits: when its co-sign window closes; null when the window has no end time. */
+    cosign_by: string | null;
     /** The report sheet, or audit prep while the audit is open. */
     link: RouteLink;
 };

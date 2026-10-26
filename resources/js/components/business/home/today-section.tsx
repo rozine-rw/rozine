@@ -5,6 +5,7 @@ import type { IconName, IconTone } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import {
     formatDate,
+    formatDateTime,
     formatDayMonth,
     formatMonthYearLong,
     formatRwf,
@@ -165,8 +166,47 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         title={t(
                             `business.audit_cosign.kind.${item.report_kind}`,
                         )}
-                        sub={t('business.today.cosign.sub')}
+                        sub={
+                            item.due_at !== null &&
+                            item.hours_left !== null &&
+                            item.hours_left > 0
+                                ? t('business.today.cosign.due', {
+                                      date: formatDateTime(item.due_at, locale),
+                                      hours: item.hours_left,
+                                  })
+                                : t('business.today.cosign.sub')
+                        }
                         cta={t('business.today.cosign.cta')}
+                        ctaTone={GREEN_TEXT}
+                    />
+                );
+            case 'application_signature':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('document', 'amber')}
+                        iconTile={AMBER_TILE}
+                        dot="bg-[#c2661f]"
+                        kicker={t('business.today.signature.kicker')}
+                        title={item.title}
+                        sub={t('business.today.signature.sub')}
+                        cta={t('business.today.signature.cta')}
+                        ctaTone="text-rz-ink"
+                    />
+                );
+            case 'application_awaiting':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('hourglass', 'blue')}
+                        iconTile={GREEN_TILE}
+                        dot="bg-rz-accent-app-text"
+                        kicker={t('business.today.awaiting.kicker')}
+                        title={item.title}
+                        sub={t('business.today.awaiting.sub', {
+                            names: item.pending.join(', '),
+                        })}
+                        cta={t('business.today.awaiting.cta')}
                         ctaTone={GREEN_TEXT}
                     />
                 );

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Auditor\AmendAuditReport;
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Models\AuditReportPublication;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -58,11 +59,7 @@ it('projects sealed jobs as awaiting co-sign and removes published jobs from act
     expect($page['stage']['verification'])->toBe(['url' => ($api ? '/api/v1' : '').'/audit-seals/'.$fixture['report']->id, 'method' => 'get']);
     $this->travel(25)->hours();
     expect($read()['assigned'][0]['status'])->toBe('awaiting_cosign');
-    if ($kind === 'monthly') {
-        expect(app(AuditReportPublicationStore::class)->advanceDue()['published'])->toBe(1);
-    } else {
-        expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
-    }
+    expect(app(AuditReportPublicationStore::class)->advanceDue()['published'])->toBe(1);
     expect($read()['assigned'])->toBeEmpty();
     $this->travel(25)->hours();
     expect($read()['assigned'])->toBeEmpty();
@@ -76,7 +73,8 @@ it('links the Business list only to its own latest unamended sealed report, and 
     Sanctum::actingAs($user, ['business:read']);
     $read = fn (): array => $this->getJson('/api/v1/business')->assertOk()->json('data.entries');
     $link = ['url' => '/api/v1/business/'.$fixture['audit']['business'].'/audit-reports/'.$fixture['report']->id, 'method' => 'get'];
-    expect($read()[0]['audit_report'])->toBe(['id' => $fixture['report']->id, 'kind' => 'flash', 'status' => 'pending', 'link' => $link]);
+    $due = AuditReportPublication::query()->sole()->due_at->utc()->format('Y-m-d\TH:i:s\Z');
+    expect($read()[0]['audit_report'])->toBe(['id' => $fixture['report']->id, 'kind' => 'flash', 'status' => 'pending', 'due_at' => $due, 'link' => $link]);
     Fixture::cosign($fixture);
     expect($read()[0]['audit_report']['status'])->toBe('published');
     app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->refresh()->revision, (string) Str::uuid());

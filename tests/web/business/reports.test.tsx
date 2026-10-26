@@ -85,6 +85,53 @@ describe('Business Reports', () => {
         ).toHaveAttribute('href', '/preview/business-reports-annual');
     });
 
+    it('opens on a sealed report waiting for the business, flash or monthly, with its co-sign deadline', () => {
+        const page = props(emptyFixture);
+        const row = {
+            status: 'in_audit' as const,
+            inflow: null,
+            health: null,
+            auditor: 'CPA Jean-Paul M.',
+            seal_by: null,
+            awaiting_signature: true,
+        };
+
+        page.reports.in_audit = [
+            {
+                ...row,
+                id: 'RPT-FLASH',
+                period: { kind: 'flash', starts_on: null },
+                cosign_by: null,
+                link: { url: '/business/b1/audit-reports/f1', method: 'get' },
+            },
+            {
+                ...row,
+                id: 'RPT-2026-09',
+                period: { kind: 'monthly', starts_on: '2026-09-01' },
+                cosign_by: '2026-10-26T09:15:00+02:00',
+                link: { url: '/business/b1/audit-reports/m1', method: 'get' },
+            },
+        ];
+        render(<BusinessReports {...page} />);
+
+        expect(screen.getByRole('tab', { name: 'In audit' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        const list = within(screen.getByRole('tabpanel', { name: 'In audit' }));
+
+        expect(
+            list.getByRole('link', { name: /^Flash audit report/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/f1');
+        expect(list.getByText('Needs your co-signature')).toBeInTheDocument();
+        expect(
+            list.getByRole('link', { name: /^September 2026/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/m1');
+        expect(
+            list.getByText(/^Co-sign or dispute by 26 Oct/),
+        ).toBeInTheDocument();
+    });
+
     it('names only the Audit Partner where no figures or seal date were read, and says when a tab is empty', async () => {
         const user = userEvent.setup();
         const page = props(listFixture);

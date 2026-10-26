@@ -96,6 +96,7 @@ describe('Messaging History', () => {
                 />,
             );
 
+            fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
             const rules = screen.getByRole('table', {
                 name: 'Businesses automations',
             });
@@ -125,8 +126,7 @@ describe('Messaging History', () => {
         );
         expect(
             screen.getByRole('tab', { name: 'Automations' }),
-        ).toHaveAttribute('aria-selected', 'true');
-        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
+        ).toHaveAttribute('aria-selected', 'false');
         expect(screen.getByRole('tab', { name: 'History' })).toHaveAttribute(
             'aria-selected',
             'true',
@@ -214,7 +214,6 @@ describe('Messaging History', () => {
 
     it('shows an empty history before any notice went out', () => {
         render(<AdminMessaging {...props({ history: [], older: null })} />);
-        fireEvent.click(screen.getByRole('tab', { name: 'History' }));
 
         expect(
             screen.getByText('No messages to show yet.'),
@@ -257,6 +256,7 @@ describe('Messaging History', () => {
             />,
         );
 
+        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
         expect(screen.getByText('2 automations live')).toBeInTheDocument();
         expect(
             screen
@@ -331,6 +331,7 @@ describe('Messaging History', () => {
             />,
         );
 
+        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
         expect(rowOf('Audit report reminder')).toHaveTextContent(
             'Staff reminds the Audit Partner about a report',
         );
@@ -338,6 +339,7 @@ describe('Messaging History', () => {
 
     it('keeps automations, templates and campaigns at their empty state', () => {
         render(<AdminMessaging {...props()} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'Automations' }));
 
         expect(screen.getByText('0 automations live')).toBeInTheDocument();
         expect(

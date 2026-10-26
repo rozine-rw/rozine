@@ -29,6 +29,9 @@ class StaffAuditReportRegisterResource extends JsonResource
         'disputed' => ['disputed', 'escalated'],
     ];
 
+    /** The states whose sealed report may be downloaded: not while the Business may still co-sign or dispute it. */
+    private const array DOWNLOADABLE = ['sealed', 'published', 'amended'];
+
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
@@ -48,7 +51,7 @@ class StaffAuditReportRegisterResource extends JsonResource
             'variance_flagged' => $row['variance_flagged'],
             'owes' => $row['owes'], 'reminded_at' => $row['reminded_at'],
             'links' => [
-                'pdf' => $row['report_id'] !== null && $row['sealed_at'] !== null
+                'pdf' => $row['report_id'] !== null && $row['sealed_at'] !== null && in_array($row['status'], self::DOWNLOADABLE, true)
                     ? ['url' => route('staff.reports.pdf', ['report' => $row['report_id']], false), 'method' => 'get'] : null,
                 'remind' => $manage && $row['owes'] !== null
                     && ($row['reminded_at'] === null || CarbonImmutable::parse($row['reminded_at'])->setTimezone('Africa/Kigali')->format('Y-m-d') !== $today)

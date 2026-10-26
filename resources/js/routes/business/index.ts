@@ -3,13 +3,14 @@ import auditReports from './audit-reports'
 import repayments from './repayments'
 import profile937a89 from './profile'
 import complaints from './complaints'
+import statements from './statements'
 import notices from './notices'
 import wallet from './wallet'
 import applications from './applications'
 import campaigns from './campaigns'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -24,7 +25,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -33,7 +34,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -43,7 +44,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -53,7 +54,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +64,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +74,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -696,6 +697,7 @@ const business = {
     complaints: Object.assign(complaints, complaints),
     rating: Object.assign(rating, rating),
     auditPrep: Object.assign(auditPrep, auditPrep),
+    statements: Object.assign(statements, statements),
     notices: Object.assign(notices, notices),
     wallet: Object.assign(wallet, wallet),
     applications: Object.assign(applications, applications),

@@ -89,7 +89,7 @@ export default class Home extends Component<SiteProps, SiteState> {
             H: { open: '' },
         },
         {
-            depIdx: 22,
+            depIdx: 25,
             term: 6,
             band: 1,
             faq: 0,
@@ -227,9 +227,20 @@ export default class Home extends Component<SiteProps, SiteState> {
 
         return B.find((b) => dep >= b[0])![1];
     }
+    /**
+     * The flat total return for a term and a band, as the pricing engine sets it (BRS v2.0 §3):
+     * 10% plus 1.6 points per rating point below 5.0, plus the term premium, kept within 10%–15%.
+     * Each band is priced at an illustrative rating within it.
+     */
+    flatFor(term: number, band: number) {
+        const rating = [4.5, 3.5, 2.0][band];
+        const raw = 10 + (5 - rating) * 1.6 + (term - 3) / 6;
+
+        return Math.round(Math.min(15, Math.max(10, raw)) * 10) / 1000;
+    }
     _sync() {
         const s = this.state;
-        const flat = (2 * s.term + 4 + s.band * 2) / 100;
+        const flat = this.flatFor(s.term, s.band);
         const dep = this.depFor(s.depIdx),
             ret = dep * flat * (1 - this.chargeFor(dep) / 100);
 
@@ -302,9 +313,13 @@ export default class Home extends Component<SiteProps, SiteState> {
     rwf(n: number) {
         return 'RWF ' + Math.round(n || 0).toLocaleString('en-US');
     }
+    /**
+     * The amount at slider step `i`, on a log scale from RWF 5,000 to RWF 50M: one investor may
+     * hold at most half of a raise (BRS INV-R01), and a raise is at most RWF 100M.
+     */
     depFor(i: any) {
         const lo = 5000,
-            hi = 200e6,
+            hi = 50e6,
             t = Math.max(0, Math.min(40, +i || 0)) / 40;
         const v = lo * Math.pow(hi / lo, t);
 
@@ -344,8 +359,8 @@ export default class Home extends Component<SiteProps, SiteState> {
 
     invVals() {
         const s = this.state;
-        // flat = 2*term + 4 + bandOffset (0/2/4); Rozine's return charge comes off the profit.
-        const flat = (2 * s.term + 4 + s.band * 2) / 100;
+        // The engine's flat return for the term and band; Rozine's return charge comes off the profit.
+        const flat = this.flatFor(s.term, s.band);
         const dep = this.depFor(s.depIdx);
         const charge = this.chargeFor(dep);
         const ret = dep * flat * (1 - charge / 100);
@@ -523,7 +538,7 @@ export default class Home extends Component<SiteProps, SiteState> {
         const off = Math.round((1 - (s - 40) / 52) * 4 * 2) / 2;
 
         return (
-            Math.round(Math.max(10, Math.min(20, 2 * mm + 4 + off)) * 10) / 10
+            Math.round(Math.max(10, Math.min(15, 2 * mm + 4 + off)) * 10) / 10
         );
     }
 
@@ -1467,7 +1482,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                 <span
                                                     style={{ color: '#1e3aff' }}
                                                 >
-                                                    18%
+                                                    15%
                                                 </span>{' '}
                                                 lending to profitable
                                                 businesses.
@@ -1603,7 +1618,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                         }}
                                                     >
                                                         <span>RWF 5,000</span>
-                                                        <span>RWF 200M</span>
+                                                        <span>RWF 50M</span>
                                                     </div>
                                                     <div
                                                         style={{
@@ -3394,7 +3409,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                                 '-.03em',
                                                         }}
                                                     >
-                                                        You earn up to 18%
+                                                        You earn up to 15%
                                                     </h3>
                                                     <p
                                                         style={{
@@ -3408,7 +3423,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                         Invest from RWF 5,000,
                                                         for 3 to 6 months. Every
                                                         business carries its own
-                                                        flat rate, up to 18%,
+                                                        flat rate, up to 15%,
                                                         shown to you before you
                                                         invest.
                                                     </p>
@@ -5678,7 +5693,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                                                 '12px',
                                                                         }}
                                                                     >
-                                                                        at 18%
+                                                                        at 15%
                                                                         for 6
                                                                         months
                                                                     </div>
@@ -5719,7 +5734,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                                                 }}
                                                                             >
                                                                                 RWF
-                                                                                90,000
+                                                                                75,000
                                                                             </span>
                                                                         </div>
                                                                         <div
@@ -5753,7 +5768,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                                             >
                                                                                 −
                                                                                 RWF
-                                                                                9,000
+                                                                                7,500
                                                                             </span>
                                                                         </div>
                                                                         <div
@@ -5784,7 +5799,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                                                 }}
                                                                             >
                                                                                 RWF
-                                                                                81,000
+                                                                                67,500
                                                                             </span>
                                                                         </div>
                                                                     </div>
@@ -10102,7 +10117,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                             color: 'rgba(255,255,255,.65)',
                                                         }}
                                                     >
-                                                        One flat charge (18%)
+                                                        One flat charge (15%)
                                                     </span>
                                                     <span
                                                         style={{
@@ -10111,7 +10126,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                             color: '#fff',
                                                         }}
                                                     >
-                                                        RWF 900,000
+                                                        RWF 750,000
                                                     </span>
                                                 </div>
                                                 <div
@@ -10140,7 +10155,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                             color: '#fff',
                                                         }}
                                                     >
-                                                        RWF 5,900,000
+                                                        RWF 5,750,000
                                                     </span>
                                                 </div>
                                                 <div
@@ -10169,7 +10184,7 @@ export default class Home extends Component<SiteProps, SiteState> {
                                                             color: '#4ecb9d',
                                                         }}
                                                     >
-                                                        RWF 983,333
+                                                        RWF 958,333
                                                     </span>
                                                 </div>
                                             </div>

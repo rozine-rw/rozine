@@ -13,7 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * platform does not record yet are not invented: no country is captured at sign-up, and no
  * Investor can be frozen or fall KYC-overdue, so those read empty or zero. The person's identity
  * submission rides on the 360 with the same documents and decisions as the review queue. The 360
- * lists the person's holdings by Business, largest first, with the principal and the notes held.
+ * lists the person's holdings by Business, largest first, with the principal and the notes held,
+ * and the cash committed to raises whose notes are not issued yet, which the portfolio also counts.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Identity\Contracts\InvestorDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Identity\Contracts\InvestorDirectoryStore
@@ -89,6 +90,8 @@ class StaffInvestorDirectoryResource extends JsonResource
             'list' => ['key' => 'holdings', 'rows' => array_map(fn (array $holding): array => ['id' => $holding['business_id'], 'title' => $holding['name'],
                 'tone' => 'green', 'detail' => ['kind' => 'holding', 'value' => ['currency' => 'RWF', 'amount' => $holding['principal']], 'notes' => $holding['notes']]],
                 $party['holdings'])],
+            // Cash committed to raises still filling or awaiting issue: in the portfolio, not yet a holding.
+            'committed' => ['currency' => 'RWF', 'amount' => $party['committed']],
             'history' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'], 'actor' => $entry['actor'],
                 'action' => ['code' => $entry['command'], 'label' => self::COMMANDS[$entry['command']][0] ?? $entry['command'], 'tone' => self::COMMANDS[$entry['command']][1] ?? 'grey'],
                 'reason' => $entry['reason']], $party['history']),

@@ -69,8 +69,10 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
             ->groupBy('bp.id')->orderByRaw('sum(h.principal) DESC')->orderByRaw("bp.profile->>'name'")
             ->selectRaw("bp.id AS business_id, bp.profile->>'name' AS name, sum(h.principal) AS principal, count(DISTINCT h.business_campaign_id) AS notes")->get();
 
+        $committed = DB::table('parties')->where('id', $partyId)->selectRaw(self::CASH."('investor_committed')), 0)::text AS committed")->value('committed');
+
         return ['row' => $row,
-            'restricted_since' => $restriction === null ? null : (string) $restriction,
+            'restricted_since' => $restriction === null ? null : (string) $restriction, 'committed' => (string) $committed,
             'holdings' => array_values($holdings->map(fn (object $holding): array => ['business_id' => (string) $holding->business_id,
                 'name' => (string) $holding->name, 'principal' => (string) $holding->principal, 'notes' => (int) $holding->notes])->all()),
             'history' => array_values($history->map(function (object $version): array {

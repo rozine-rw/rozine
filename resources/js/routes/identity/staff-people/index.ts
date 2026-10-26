@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IdentityManagementController::record
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 export const record = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ record.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::record
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 record.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ record.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::record
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 record.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ record.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::record
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 const recordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const recordForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::record
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 recordForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

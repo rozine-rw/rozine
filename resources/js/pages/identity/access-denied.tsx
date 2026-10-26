@@ -14,6 +14,8 @@ type Props = {
      * above failed on the server's side.
      */
     status?: number;
+    /** For a refusal asking for verification: whether the person's own check is already with Compliance. */
+    verification?: 'pending' | 'required' | null;
 };
 
 /**
@@ -139,7 +141,7 @@ function ServiceUnavailable() {
  * offer whose acceptance window closed is no access problem, so it says the offer closed. The
  * status and its meaning are the server's; only the wording follows it.
  */
-export default function AccessDenied({ code, status }: Props) {
+export default function AccessDenied({ code, status, verification }: Props) {
     const { t } = useTranslation();
 
     if (status === 404) {
@@ -151,23 +153,28 @@ export default function AccessDenied({ code, status }: Props) {
     }
 
     const expired = code === 'ASSIGNMENT_ACCEPTANCE_EXPIRED';
-    const verificationRequired = code === 'IDENTITY_VERIFICATION_REQUIRED';
-    const title = expired
-        ? t('identity.denied.expired_offer.title')
-        : verificationRequired
-          ? t('identity.denied.verification_required.title')
-          : t('identity.denied.title');
+    /* A check already with Compliance is under review: nothing to send again. */
+    const underReview =
+        code === 'IDENTITY_VERIFICATION_REQUIRED' && verification === 'pending';
+    const verificationRequired =
+        code === 'IDENTITY_VERIFICATION_REQUIRED' && !underReview;
+    /* An app the account never had, or a staff page, is not access it lost. */
+    const copy = expired
+        ? 'identity.denied.expired_offer'
+        : underReview
+          ? 'identity.denied.verification_pending'
+          : verificationRequired
+            ? 'identity.denied.verification_required'
+            : code === 'ROLE_NOT_AVAILABLE'
+              ? 'identity.denied.role_not_available'
+              : code === 'STAFF_ACCESS_REQUIRED'
+                ? 'identity.denied.staff_only'
+                : 'identity.denied';
 
     return (
         <ErrorFrame
-            title={title}
-            body={
-                expired
-                    ? t('identity.denied.expired_offer.body')
-                    : verificationRequired
-                      ? t('identity.denied.verification_required.body')
-                      : t('identity.denied.body')
-            }
+            title={t(`${copy}.title`)}
+            body={t(`${copy}.body`)}
             alert="body"
         >
             {verificationRequired && (

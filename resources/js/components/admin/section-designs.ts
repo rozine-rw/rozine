@@ -256,6 +256,7 @@ export const SECTION_DESIGNS: Record<
         ],
         blocks: [
             ratings.block('book', {
+                sub: ratings.sub('book'),
                 columns: ['business', 'sector', 'band', 'change', 'reason'],
             }),
             ratings.block('weights', {

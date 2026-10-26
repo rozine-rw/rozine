@@ -19,6 +19,7 @@ use App\Notifications\Business\ReportingWindowOpen;
 use App\Notifications\Investor\InvestmentConfirmed;
 use App\Notifications\Investor\PaymentDelayed;
 use App\Notifications\Investor\PayoutReceived;
+use App\Notifications\Investor\PurchaseConfirmed;
 use App\Notifications\Investor\RaiseExpired as InvestorRaiseExpired;
 use App\Notifications\Investor\ReportPublished;
 use App\Notifications\Investor\VerificationDecided;
@@ -131,6 +132,19 @@ test('an investment receipt shows the francs in and back and states the risk of 
         ->and($text)->toContain('Maturity date: 7 Apr 2027')
         ->and($text)->toContain('Reference: RZ-PRI-7Q4K2M')
         ->and($text)->toContain('Returns are projected, not guaranteed. You can lose some or all of the money you invest.');
+});
+
+test('a purchase receipt names the business, the amount and the locked earnings fee (INV-R05)', function () {
+    [$mail, , $text] = rozineMail(new PurchaseConfirmed('Umuganda Supply', '500000', 100, 'standard', 1500, 'RZC-01K7NQ0C2Y', 'https://rozine.test/investor'));
+
+    expect($mail->subject)->toBe('Purchase confirmed: Umuganda Supply')
+        ->and($text)->toContain('You committed RWF 500,000 to Umuganda Supply. A confirmed commitment is final.')
+        ->and($text)->toContain('Business: Umuganda Supply')
+        ->and($text)->toContain('Amount invested: RWF 500,000')
+        ->and($text)->toContain('Notes: 100 notes')
+        ->and($text)->toContain('Earnings fee: 15.0% (Standard)')
+        ->and($text)->toContain('Reference: RZC-01K7NQ0C2Y')
+        ->and($text)->toContain('Returns are projected, not guaranteed.');
 });
 
 test('a single note is counted in the singular', function () {

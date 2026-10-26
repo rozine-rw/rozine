@@ -238,12 +238,52 @@ describe('Business Home', () => {
         );
     });
 
+    it('says by when a sealed report must be co-signed or disputed, and how many hours are left', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                today={[
+                    {
+                        kind: 'audit_cosign',
+                        report_kind: 'flash',
+                        due_at: '2026-10-27T13:00:00Z',
+                        hours_left: 5,
+                        link: link('/business/b1/audit-reports/r1'),
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.getByText(/^Co-sign or dispute by .+ · 5 h left$/u),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'Your CPA sealed it. Read the findings before you co-sign.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders every kind of Today item with its call to act', () => {
         const today: BusinessTodo[] = [
             {
                 kind: 'audit_cosign',
                 report_kind: 'flash',
+                due_at: null,
+                hours_left: null,
                 link: link('/business/b1/audit-reports/r1'),
+            },
+            {
+                kind: 'application_signature',
+                title: 'Solar Dryer',
+                pending: ['Aline Uwase'],
+                link: link('/business/b1/applications/a1'),
+            },
+            {
+                kind: 'application_awaiting',
+                title: 'Solar Dryer',
+                pending: ['Aline Uwase', 'Eric Ntwari'],
+                link: link('/business/b1/applications/a2'),
             },
             {
                 kind: 'application_declined',
@@ -285,6 +325,23 @@ describe('Business Home', () => {
         expect(
             screen.getByRole('link', { name: /Review & co-sign/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
+        expect(screen.getByText('Signature needed')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your signature is needed before this application can be submitted.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review & sign/ }),
+        ).toHaveAttribute('href', '/business/b1/applications/a1');
+        expect(screen.getByText('Awaiting signatures')).toBeInTheDocument();
+        expect(
+            screen.getByText('Waiting for Aline Uwase, Eric Ntwari to sign.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Open application/ }),
+        ).toHaveAttribute('href', '/business/b1/applications/a2');
+        expect(screen.getAllByText('Solar Dryer')).toHaveLength(2);
         expect(screen.getAllByText('Application declined')).toHaveLength(2);
         expect(
             screen.getByText(

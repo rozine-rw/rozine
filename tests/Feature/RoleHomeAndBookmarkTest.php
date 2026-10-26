@@ -56,6 +56,8 @@ it('sends a Business member with no business on record back to the launcher inst
     $this->actingAs($user)->getJson(route('business.home'))->assertForbidden()->assertJsonPath('code', 'ACTIVE_ROLE_REQUIRED');
     app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
     $this->get(route('business.home'))->assertRedirectToRoute('dashboard');
+    $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->component('dashboard')->hasFlash('toast', ['type' => 'info',
+        'message' => 'Your business is not set up on Rozine yet. Email hello@rozine.rw and our team will start your business verification.']));
 });
 
 it('authorizes the Auditor home the same way and renders the designed Auditor Home there', function (): void {
@@ -176,6 +178,20 @@ it('replaces stale Inertia home content with a denied page while keeping JSON er
     $this->withHeaders(['X-Inertia' => 'true', 'X-Inertia-Version' => $version])->get(route('investor.home'))->assertForbidden()
         ->assertJsonPath('component', 'identity/access-denied')->assertJsonMissingPath('props.identity');
 });
+
+it('shows the access page, never raw JSON, when a browser opens another app\'s page', function (string $path, string $code): void {
+    [$user] = bookmarkParticipant('business');
+    app(SelectActiveRole::class)->handle($user->id, 'business', 0, (string) Str::uuid());
+
+    $this->actingAs($user)->get($path)->assertForbidden()->assertInertia(fn (Assert $page): Assert => $page
+        ->component('identity/access-denied')->where('code', $code));
+    $this->getJson($path)->assertForbidden()->assertExactJson(['message' => $code, 'code' => $code]);
+})->with([
+    'a shared deal link' => ['/investor/deals', 'ROLE_NOT_AVAILABLE'],
+    'the investor market' => ['/investor/market', 'ROLE_NOT_AVAILABLE'],
+    'the staff dashboard' => ['/admin/dashboard', 'STAFF_ACCESS_REQUIRED'],
+    'a staff section' => ['/admin/businesses', 'STAFF_ACCESS_REQUIRED'],
+]);
 
 it('rolls back and reapplies the checkpoint schema without disturbing identity accounts', function (): void {
     $user = User::factory()->create();

@@ -118,7 +118,7 @@ describe('Primary Market Monitor', () => {
             ).getByRole('link', { name: 'Primary Market' }),
         ).toHaveAttribute('aria-current', 'page');
         expect(screen.getByText('Active Raises')).toBeInTheDocument();
-        expect(screen.getByText('Capital In Flight')).toBeInTheDocument();
+        expect(screen.getByText('Raised in Live Raises')).toBeInTheDocument();
         expect(screen.getByText('40%')).toBeInTheDocument();
         expect(screen.getByText('75%')).toBeInTheDocument();
 
@@ -126,7 +126,7 @@ describe('Primary Market Monitor', () => {
 
         expect(trend).toHaveTextContent('Last 14 days · grouped by day');
         expect(within(trend).getByText('10-14')).toBeInTheDocument();
-        expect(within(trend).getByText('2.5M')).toBeInTheDocument();
+        expect(within(trend).getByText('RWF 2.5M')).toBeInTheDocument();
         expect(
             within(trend).queryByText('No funding to chart yet.'),
         ).not.toBeInTheDocument();

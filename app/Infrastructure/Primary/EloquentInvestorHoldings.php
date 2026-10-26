@@ -77,13 +77,13 @@ final readonly class EloquentInvestorHoldings implements InvestorHoldings
                 AND NOT EXISTS (SELECT 1 FROM business_campaign_closures k WHERE k.business_campaign_id = r.business_campaign_id)
             ORDER BY c.id DESC", [$userId]);
 
-        $titles = [];
+        $names = [];
         $pending = [];
         foreach ($rows as $row) {
             $row = (array) $row;
             $campaignId = (string) $row['business_campaign_id'];
-            $titles[$campaignId] ??= $this->campaigns->presentation($campaignId)['title'];
-            $pending[] = ['commitment_id' => (string) $row['id'], 'campaign_id' => $campaignId, 'deal_name' => $titles[$campaignId], 'units' => (string) $row['units'],
+            $names[$campaignId] ??= $this->campaigns->presentation($campaignId)['business'];
+            $pending[] = ['commitment_id' => (string) $row['id'], 'campaign_id' => $campaignId, 'deal_name' => $names[$campaignId], 'units' => (string) $row['units'],
                 'principal' => ['currency' => 'RWF', 'amount' => (string) $row['principal']], 'funded' => (bool) $row['funded']];
         }
 

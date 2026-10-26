@@ -843,6 +843,60 @@ describe('Apply — step 2, the quote', () => {
         expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
     });
 
+    it('never resends a request the server refused with a 422 until the business changes it', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+        const page = props(raiseStep);
+
+        page.quote = null;
+        inertia.errors = { target: 'Use a multiple of RWF 5,000.' };
+        /* The 422 arrives a moment later, as over a network: the page renders it on its own. */
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    setTimeout(() => resolve(undefined), 200);
+                }),
+        );
+        render(<BusinessApply {...page} />);
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        expect(inertia.calls[0].url).toBe(
+            '/preview/business-apply-evaluations',
+        );
+        /* The 422 is in: the page is idle again, with the reason under the field. */
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(200);
+        });
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Continue' }),
+            ).toBeEnabled(),
+        );
+        expect(
+            screen.getByText('Use a multiple of RWF 5,000.'),
+        ).toBeInTheDocument();
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(5000);
+        });
+
+        expect(inertia.calls).toHaveLength(1);
+        expect(
+            screen.queryByRole('button', { name: 'Saving…' }),
+        ).not.toBeInTheDocument();
+
+        inertia.errors = {};
+        await typeRequest(user);
+        act(() => {
+            vi.advanceTimersByTime(450);
+        });
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1].body).toMatchObject({
+            target: '25000000',
+            term_months: 4,
+        });
+    });
+
     it('reads another login’s newer save afresh after a version conflict, keeping its banner once', async () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
         const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -2436,6 +2490,92 @@ describe('Apply — step 3, review & sign', () => {
         expect(screen.queryByText(/service fee/iu)).not.toBeInTheDocument();
         expect(screen.queryByText(/Total payable/u)).not.toBeInTheDocument();
     });
+});
+
+describe('Apply — what the target field says', () => {
+    it('asks for a target once it is cleared, instead of calling an empty request unaffordable', async () => {
+        const user = userEvent.setup();
+        const page = props(refusedStep);
+
+        page.allowed_actions = ['application.save'];
+        render(<BusinessApply {...page} />);
+
+        const refusal = (page.quote as { message: string }).message;
+
+        expect(screen.getByText(refusal)).toBeInTheDocument();
+        expect(
+            screen.queryByText('Enter how much you want to raise.'),
+        ).not.toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText('Fundraising target (RWF)'));
+
+        expect(screen.queryByText(refusal)).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Enter how much you want to raise.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByLabelText('Fundraising target (RWF)'),
+        ).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('blanks the offer once the target is cleared, instead of showing the last amount priced', async () => {
+        const user = userEvent.setup();
+        const page = props(raiseStep);
+
+        page.allowed_actions = ['application.save'];
+        render(<BusinessApply {...page} />);
+        const offer = formatRwf((page.quote as ReadyQuote).principal);
+
+        expect(screen.getAllByText(offer).length).toBeGreaterThan(0);
+
+        await user.clear(screen.getByLabelText('Fundraising target (RWF)'));
+
+        expect(screen.queryByText(offer)).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Enter how much you want to raise.'),
+        ).toBeInTheDocument();
+    });
+
+    it('says why an offer is below the request: the most the business can raise now', () => {
+        const page = props(raiseStep);
+        const base = page.quote as ReadyQuote;
+        const rwf = (amount: string) => ({ currency: 'RWF' as const, amount });
+
+        page.application.target = rwf('12000000');
+        page.quote = {
+            ...base,
+            requested_principal: rwf('12000000'),
+            offered_principal: rwf('10800000'),
+            principal: rwf('10800000'),
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText(
+                'RWF 10,800,000 is the most you can raise right now: your borrowing capacity sets this limit.',
+            ),
+        ).toBeInTheDocument();
+    });
+});
+
+describe('Apply — the amount raised and the platform fee', () => {
+    it.each([
+        ['the raise', raiseStep],
+        ['review & sign', reviewStep],
+    ])(
+        'calls the offer the amount raised on %s, never cash received, and says the 3%% fee comes off at payout',
+        (_step, fixture) => {
+            render(<BusinessApply {...props(fixture)} />);
+
+            expect(screen.getByText('Amount raised')).toBeInTheDocument();
+            expect(screen.queryByText('You receive')).not.toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'A 3% platform fee is deducted when this is paid out to you. You repay the full amount raised.',
+                ),
+            ).toBeInTheDocument();
+        },
+    );
 });
 
 describe('Apply — submitted', () => {

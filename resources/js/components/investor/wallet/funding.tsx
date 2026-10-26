@@ -242,6 +242,33 @@ type DepositPanelProps<Name extends string> = {
     payload?: Record<string, unknown>;
 };
 
+/** A deposit outside the policy's bounds, named by those bounds where the policy sets them. */
+function depositBounds(
+    policy: { minimum: Money | null; maximum: Money | null },
+    t: ReturnType<typeof useTranslation>['t'],
+): string {
+    if (policy.minimum !== null && policy.maximum !== null) {
+        return t('investor.wallet.c3.deposit_between', {
+            minimum: formatRwf(policy.minimum),
+            maximum: formatRwf(policy.maximum),
+        });
+    }
+
+    if (policy.minimum !== null) {
+        return t('investor.wallet.c3.deposit_at_least', {
+            amount: formatRwf(policy.minimum),
+        });
+    }
+
+    if (policy.maximum !== null) {
+        return t('investor.wallet.c3.deposit_at_most', {
+            amount: formatRwf(policy.maximum),
+        });
+    }
+
+    return t('settlement.refusal.VALIDATION_FAILED');
+}
+
 /**
  * The deposit panel (design L2880–2923).
  * The fee and what is credited come from the server's quote under a versioned deposit policy; a
@@ -277,6 +304,8 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         allowed,
         preview,
         only: ['wallet', 'funding', 'deposits', 'history', 'allowed_actions'],
+        /* A recorded intent clears the amount, so the next deposit starts afresh. */
+        onCompleted: () => setAmountState(''),
     });
 
     useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -348,10 +377,10 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     };
 
     const refusal = quote?.refusal ?? null;
+    /* An amount outside the policy prices nothing, so nothing reads as credited. */
+    const priced = quote !== null && refusal === null && amount !== '';
     const ready =
-        quote !== null &&
-        refusal === null &&
-        amount !== '' &&
+        priced &&
         method !== '' &&
         !pricing &&
         !command.busy &&
@@ -430,7 +459,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                         {t('investor.wallet.fee')}
                     </dt>
                     <dd className="text-xs font-semibold text-rz-ink">
-                        {quote === null ? '—' : formatRwf(quote.fee)}
+                        {priced ? formatRwf(quote.fee) : '—'}
                     </dd>
                 </div>
                 <div className="flex justify-between gap-2.5 py-[9px]">
@@ -438,7 +467,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                         {t('investor.wallet.c3.credited_on_success')}
                     </dt>
                     <dd className="text-xs font-bold text-[#157357] dark:text-[#3fcda0]">
-                        {quote === null ? '—' : formatRwf(quote.credited)}
+                        {priced ? formatRwf(quote.credited) : '—'}
                     </dd>
                 </div>
             </dl>
@@ -460,7 +489,9 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     className="mt-[11px] flex items-center gap-2 rounded-[10px] border border-[#fdeaea] bg-[rgba(229,72,77,.08)] px-3 py-2.5 text-xs font-semibold text-rz-danger-text dark:border-[rgba(255,107,111,.25)]"
                 >
                     <Icon name="warning" tone="red" />
-                    {t(`settlement.refusal.${refusal}`)}
+                    {refusal === 'VALIDATION_FAILED'
+                        ? depositBounds(policy, t)
+                        : t(`settlement.refusal.${refusal}`)}
                 </div>
             )}
             {command.errors.amount !== undefined && (

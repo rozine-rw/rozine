@@ -11,6 +11,7 @@ interface IdentityRepository
 {
     public function accountName(int $userId): string;
 
+    /** Creates the person's Party and account, recording their acknowledgement of the current sandbox notice. */
     public function register(string $name, string $email, string $password): int;
 
     /** @return AccessSnapshot */

@@ -3,15 +3,18 @@ import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime } from '@/lib/rozine/format';
 import type { AuditCosign } from '@/types/business-audit';
 
-/** The persisted policy with the 24-hour sign-off or dispute window and automatic approval (N6). */
-export const MONTHLY_REVIEW_POLICY = 'monthly-review-2026-09-26';
+/** The persisted policies with the 24-hour sign-off or dispute window and automatic approval (N6). */
+export const REVIEW_POLICIES: readonly AuditCosign['policy_version'][] = [
+    'monthly-review-2026-09-26',
+    'flash-review-2026-10-26',
+];
 
 /**
- * Whether the report was sealed under the 24-hour review policy. Anything else — an earlier
- * monthly policy, Flash, or no policy recorded — keeps its original wording and deadline.
+ * Whether the report was sealed under a 24-hour review policy, monthly or Flash. A report sealed
+ * before its kind had one keeps its original wording and deadline.
  */
-export const underMonthlyReview = (cosign: AuditCosign): boolean =>
-    cosign.policy_version === MONTHLY_REVIEW_POLICY;
+export const underReviewWindow = (cosign: AuditCosign): boolean =>
+    REVIEW_POLICIES.includes(cosign.policy_version);
 
 /**
  * The open 24-hour window, in Robert's held C5 wording (#99): when the report arrived, when the

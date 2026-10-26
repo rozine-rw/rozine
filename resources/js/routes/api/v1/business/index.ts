@@ -3,11 +3,12 @@ import auditReports from './audit-reports'
 import repayments from './repayments'
 import notices from './notices'
 import wallet from './wallet'
+import statements from './statements'
 import applications from './applications'
 import campaigns from './campaigns'
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -22,7 +23,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -31,7 +32,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -41,7 +42,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -51,7 +52,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -61,7 +62,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -71,7 +72,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Api\V1\BusinessApplicationController::index
-* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:36
+* @see app/Http/Controllers/Api/V1/BusinessApplicationController.php:38
 * @route '/api/v1/business'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -192,6 +193,7 @@ const business = {
     show: Object.assign(show, show),
     notices: Object.assign(notices, notices),
     wallet: Object.assign(wallet, wallet),
+    statements: Object.assign(statements, statements),
     applications: Object.assign(applications, applications),
     campaigns: Object.assign(campaigns, campaigns),
 }

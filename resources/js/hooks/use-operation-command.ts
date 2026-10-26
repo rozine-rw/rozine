@@ -92,6 +92,11 @@ type Options<C extends OperationCommand, R> = {
     refresh: () => Promise<void>;
     onCompleted: (command: C, resource: R, completion: Completion) => void;
     onRefused: (command: C, code: string, status: number) => void;
+    /**
+     * A validation refusal (HTTP 422) left for the page to correct. The page is told, so it does
+     * not send the same command again on its own while nothing has changed.
+     */
+    onInvalid?: (command: C) => void;
 };
 
 /**
@@ -117,6 +122,7 @@ export function useOperationCommand<
     refresh,
     onCompleted,
     onRefused,
+    onInvalid,
 }: Options<C, R>) {
     const http = useHttp<Record<string, never>, R>();
     const held = useRef<C | null>(initial?.held ?? null);
@@ -251,6 +257,7 @@ export function useOperationCommand<
                 ? { kind: 'refused', code: fallbackCode(422), status: 422 }
                 : null,
         );
+        onInvalid?.(command);
     };
 
     const lookUp = async (command: C) => {

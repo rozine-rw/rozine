@@ -1,8 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 import licence from './licence'
+import office from './office'
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +18,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -26,7 +27,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -36,7 +37,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -46,7 +47,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +57,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -66,7 +67,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::index
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:42
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:56
 * @route '/admin/auditors'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -84,6 +85,7 @@ index.form = indexForm
 const auditors = {
     index: Object.assign(index, index),
     licence: Object.assign(licence, licence),
+    office: Object.assign(office, office),
 }
 
 export default auditors

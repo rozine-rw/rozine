@@ -22,6 +22,7 @@ use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
+use App\Http\Controllers\BusinessStatementController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
@@ -214,6 +215,8 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
+    Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
+    Route::get('{business}/statements/{document}', [BusinessStatementController::class, 'show'])->whereUlid(['business', 'document'])->name('statements.show');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.notices.')->group(function (): void {
@@ -267,6 +270,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
     Route::post('staff-people', [IdentityManagementController::class, 'staffPerson'])->name('staff-people.record');
     Route::post('memberships', [IdentityManagementController::class, 'membership'])->name('memberships.update');
     Route::post('active-role', [IdentityManagementController::class, 'selectRole'])->name('active-role.store');
+    Route::post('investor-access', [IdentityManagementController::class, 'addInvestor'])->name('investor-access.store');
     Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
@@ -312,12 +316,15 @@ Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index']
 
 Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
+Route::post('admin/businesses/{business}/premises', [StaffBusinessDirectoryController::class, 'premises'])->whereUlid('business')
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.premises.verify');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/auditors')->name('staff.auditors.')->group(function (): void {
     Route::get('/', [StaffAuditorDirectoryController::class, 'index'])->name('index');
     foreach (['approve', 'reject'] as $decision) {
         Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
     }
+    Route::post('{party}/office', [StaffAuditorDirectoryController::class, 'office'])->whereUlid('party')->name('office.verify');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {
