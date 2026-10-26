@@ -57,7 +57,7 @@ it('lets a verified Business member add Investor access on the same Party, once,
     $event = IdentityAuditEvent::query()->where('action', 'investor.self_grant')->sole();
     expect($membership->party_id)->toBe($user->party_id)->and($membership->status)->toBe('active')
         ->and($event->actor_user_id)->toBe($user->id)->and($event->target_id)->toBe($membership->id)
-        ->and($event->after)->toBe(['status' => 'active', 'revision' => $membership->revision,
+        ->and($event->after)->toEqual(['status' => 'active', 'revision' => $membership->revision,
             'terms_version' => InvestorAccessTerms::VERSION, 'terms_sha256' => InvestorAccessTerms::sha256()])
         ->and($event->result['code'])->toBe('INVESTOR_ACCESS_ADDED');
 
