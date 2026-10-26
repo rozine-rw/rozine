@@ -45,6 +45,7 @@ const clone = <T,>(fixture: { props: unknown }) =>
 beforeEach(() => {
     resetInertia();
     setWide(false);
+    window.localStorage.clear();
 });
 
 describe('Intro', () => {
@@ -942,6 +943,90 @@ describe('Verification submission', () => {
                 '6 to 12 letters or digits, as printed on the photo page.',
             ),
         ).toBeInTheDocument();
+    });
+
+    it('keeps a picked passport across a reload until the document step is saved', async () => {
+        const user = userEvent.setup();
+        const document = clone<InvestorVerificationProps>(documentFixture);
+        const { unmount } = render(<InvestorVerification {...document} />);
+
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        unmount();
+
+        const { unmount: unmountReloaded } = render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        expect(screen.getByRole('radio', { name: 'Passport' })).toBeChecked();
+        expect(
+            screen.getByLabelText('Upload passport photo page'),
+        ).toBeInTheDocument();
+        expect(screen.queryByLabelText('Upload back')).not.toBeInTheDocument();
+
+        inertia.succeed = true;
+        await user.type(screen.getByLabelText('ID NUMBER'), 'PC1234567');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts.at(-1)?.data).toMatchObject({
+            step: 'document',
+            id_type: 'passport',
+        });
+        unmountReloaded();
+
+        render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        expect(
+            screen.getByRole('radio', { name: 'National ID' }),
+        ).toBeChecked();
+    });
+
+    it('falls back to the saved document type when the device cannot keep the draft', async () => {
+        const user = userEvent.setup();
+
+        window.localStorage.setItem('rozine.kyc.id_type', 'drivers_license');
+        const { unmount } = render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        expect(
+            screen.getByRole('radio', { name: 'National ID' }),
+        ).toBeChecked();
+        unmount();
+
+        const blocked = () => {
+            throw new Error('storage blocked');
+        };
+        const getItem = vi
+            .spyOn(Storage.prototype, 'getItem')
+            .mockImplementation(blocked);
+        const setItem = vi
+            .spyOn(Storage.prototype, 'setItem')
+            .mockImplementation(blocked);
+        const removeItem = vi
+            .spyOn(Storage.prototype, 'removeItem')
+            .mockImplementation(blocked);
+
+        render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        expect(screen.getByRole('radio', { name: 'Passport' })).toBeChecked();
+        inertia.succeed = true;
+        await user.type(screen.getByLabelText('ID NUMBER'), 'PC1234567');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts.at(-1)?.data).toMatchObject({
+            id_type: 'passport',
+        });
+
+        getItem.mockRestore();
+        setItem.mockRestore();
+        removeItem.mockRestore();
     });
 
     it('shows each upload back to its owner, opens it, and offers to replace it', () => {
