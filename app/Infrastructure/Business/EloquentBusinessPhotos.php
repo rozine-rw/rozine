@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\BusinessPhotos;
+use App\Domain\Business\PhotoBytes;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessPhoto;
 use App\Models\BusinessProfile;
 use InvalidArgumentException;
@@ -22,7 +24,8 @@ final class EloquentBusinessPhotos implements BusinessPhotos
 
     public function file(string $campaignId, string $photoId): array
     {
-        $businessId = BusinessCampaign::query()->whereKey($campaignId)->value('business_id');
+        $businessId = BusinessCampaign::query()->whereKey($campaignId)
+            ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'))->value('business_id');
         $photo = is_string($businessId) ? BusinessPhoto::query()->where('business_id', $businessId)->find($photoId) : null;
         if ($photo === null) {
             throw new CommandRejection('BUSINESS_PHOTO_NOT_FOUND', 404);
@@ -42,7 +45,8 @@ final class EloquentBusinessPhotos implements BusinessPhotos
             throw new InvalidArgumentException('BUSINESS_PHOTO_BUSINESS_UNKNOWN');
         }
         if ($position < 1 || $position > self::MAX_PHOTOS || $caption === '' || mb_strlen($caption) > 80
-            || ! in_array($mediaType, self::MEDIA_TYPES, true) || $bytes === '' || strlen($bytes) > self::MAX_BYTES) {
+            || ! in_array($mediaType, self::MEDIA_TYPES, true) || $bytes === '' || strlen($bytes) > self::MAX_BYTES
+            || ! PhotoBytes::whole($bytes, $mediaType)) {
             throw new InvalidArgumentException('BUSINESS_PHOTO_INVALID');
         }
         $sha256 = hash('sha256', $bytes);

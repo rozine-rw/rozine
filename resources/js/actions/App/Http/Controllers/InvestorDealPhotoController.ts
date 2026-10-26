@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 const InvestorDealPhotoController = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ InvestorDealPhotoController.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 InvestorDealPhotoController.url = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ InvestorDealPhotoController.url = (args: { campaign: string | number, photo: str
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 InvestorDealPhotoController.get = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ InvestorDealPhotoController.get = (args: { campaign: string | number, photo: str
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 InvestorDealPhotoController.head = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +62,7 @@ InvestorDealPhotoController.head = (args: { campaign: string | number, photo: st
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 const InvestorDealPhotoControllerForm = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +72,7 @@ const InvestorDealPhotoControllerForm = (args: { campaign: string | number, phot
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 InvestorDealPhotoControllerForm.get = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ InvestorDealPhotoControllerForm.get = (args: { campaign: string | number, photo:
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 InvestorDealPhotoControllerForm.head = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
