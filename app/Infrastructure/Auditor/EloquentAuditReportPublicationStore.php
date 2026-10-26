@@ -61,10 +61,11 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     public function open(string $reportId, string $digest, array $payload): void
     {
         $this->completeAmendment($reportId);
-        $monthly = ($payload['publication_policy'] ?? null) === MonthlyReportReview::POLICY;
+        $policy = $payload['publication_policy'] ?? null;
+        $monthly = MonthlyReportReview::reviewed(is_string($policy) ? $policy : null);
         $deliveredAt = $monthly ? CarbonImmutable::parse($payload['sealed_at']) : null;
         $publication = new AuditReportPublication;
-        $publication->forceFill(['policy_version' => $monthly ? MonthlyReportReview::POLICY : MonthlyReportReview::LEGACY_POLICY,
+        $publication->forceFill(['policy_version' => $monthly ? $policy : MonthlyReportReview::LEGACY_POLICY,
             'delivered_at' => $deliveredAt, 'due_at' => $deliveredAt?->addHours(24), 'audit_report_id' => $reportId, 'business_id' => $payload['business']['id'],
             'mandate_version' => $payload['business']['mandate_version'], 'report_revision' => $payload['sealed_revision'],
             'digest' => $digest, 'revision' => 1, 'status' => 'pending'])->save();
@@ -105,7 +106,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     public function remindClosing(int $limit = 100): int
     {
         $now = now('UTC');
-        $due = AuditReportPublication::query()->where('policy_version', MonthlyReportReview::POLICY)->where('status', 'pending')
+        $due = AuditReportPublication::query()->whereIn('policy_version', MonthlyReportReview::REVIEW_POLICIES)->where('status', 'pending')
             ->where('due_at', '>', $now)->where('due_at', '<=', $now->copy()->addHours(self::CLOSING_REMINDER_HOURS))
             ->orderBy('due_at')->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id', 'due_at']);
         foreach ($due as $publication) {
@@ -153,16 +154,18 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             });
     }
 
-    /** @return array{id: string, kind: string, status: string}|null */
+    /** @return array{id: string, kind: string, status: string, due_at: string|null}|null */
     public function latestForBusiness(string $businessId): ?array
     {
         $report = AuditReport::query()->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
             ->where('audit_reports.business_id', $businessId)->where('audit_reports.status', 'sealed')
             ->whereNotExists(fn (Builder $query): Builder => $query->selectRaw('1')->from('audit_reports as amendments')
                 ->whereColumn('amendments.amends_id', 'audit_reports.id'))
-            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status']);
+            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status', 'publications.due_at']);
+        $due = $report?->getAttribute('due_at');
 
-        return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status')];
+        return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status'),
+            'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z')];
     }
 
     /** @return array<string, mixed> */
@@ -484,7 +487,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
     private function monthly(AuditReportPublication $publication): bool
     {
-        return $publication->policy_version === MonthlyReportReview::POLICY;
+        return MonthlyReportReview::reviewed($publication->policy_version);
     }
 
     /** @param array<string, mixed> $payload */
@@ -717,7 +720,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     /** @return array{inspected: int, published: int, blocked: array<string, string>, next_cursor: string|null} */
     public function advanceDue(int $limit = 100, ?string $after = null): array
     {
-        $ids = AuditReportPublication::query()->where('policy_version', MonthlyReportReview::POLICY)->where('status', 'pending')
+        $ids = AuditReportPublication::query()->whereIn('policy_version', MonthlyReportReview::REVIEW_POLICIES)->where('status', 'pending')
             ->where('due_at', '<=', now('UTC'))->when($after !== null, fn ($query) => $query->where('id', '>', $after))
             ->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id']);
         $published = 0;

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::approve
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 export const approve = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ approve.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::approve
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 approve.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ approve.url = (args: { party: string | number } | [party: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::approve
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 approve.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ approve.post = (args: { party: string | number } | [party: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::approve
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 const approveForm = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const approveForm = (args: { party: string | number } | [party: string | number 
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::approve
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/approve'
 */
 approveForm.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -75,7 +75,7 @@ approve.form = approveForm
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::reject
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 export const reject = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +90,7 @@ reject.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::reject
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 reject.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -117,7 +117,7 @@ reject.url = (args: { party: string | number } | [party: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::reject
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 reject.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -127,7 +127,7 @@ reject.post = (args: { party: string | number } | [party: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::reject
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 const rejectForm = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -137,7 +137,7 @@ const rejectForm = (args: { party: string | number } | [party: string | number ]
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::reject
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:63
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:79
 * @route '/api/v1/staff/auditors/{party}/licence/reject'
 */
 rejectForm.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

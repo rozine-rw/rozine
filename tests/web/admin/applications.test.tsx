@@ -765,13 +765,16 @@ describe('Staff release', () => {
 });
 
 describe('The live staff applications index (#147)', () => {
-    it('shows unavailable capacity and the localized release-review reason, never an invented figure', () => {
+    it('leaves out the capacity column while no row has one, and shows the localized release-review reason', () => {
         render(<AdminApplications {...props(liveFixture)} />);
 
-        const rows = screen.getAllByRole('row').slice(1);
+        const [head, ...rows] = screen.getAllByRole('row');
 
         expect(rows).toHaveLength(2);
-        expect(within(rows[0]).getByText('Not available')).toBeInTheDocument();
+        expect(head).not.toHaveTextContent('Capacity');
+        expect(
+            within(rows[0]).queryByText('Not available'),
+        ).not.toBeInTheDocument();
         expect(
             within(rows[0]).queryByRole('progressbar'),
         ).not.toBeInTheDocument();

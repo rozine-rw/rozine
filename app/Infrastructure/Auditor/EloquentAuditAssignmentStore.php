@@ -22,6 +22,7 @@ use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
+use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Identity\IdentityViolation;
@@ -587,7 +588,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
             $state = $record->state;
             $reviews = AuditReport::query()->join('audit_report_publications as publication', 'publication.audit_report_id', '=', 'audit_reports.id')
-                ->where('audit_reports.assignment_id', $assignmentId)->where('publication.policy_version', 'monthly-review-2026-09-26')
+                ->where('audit_reports.assignment_id', $assignmentId)->whereIn('publication.policy_version', MonthlyReportReview::REVIEW_POLICIES)
                 ->orderBy('audit_reports.id')->get(['audit_reports.id', 'publication.status']);
 
             return ['audit_reviews' => array_values($reviews->map(fn (AuditReport $report): array => ['report_id' => $report->id, 'status' => $report->status])->all()), 'id' => $record->id, 'business_id' => $record->business_id, 'revision' => $record->revision, 'kind' => $state['kind'],

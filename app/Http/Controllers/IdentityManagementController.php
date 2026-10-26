@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Identity\AddInvestorAccess;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\ChangeMembership;
 use App\Application\Identity\RecordStaffPerson;
 use App\Application\Identity\ResolveVerifiedPerson;
 use App\Application\Identity\SelectActiveRole;
+use App\Http\Requests\Identity\AddInvestorAccessRequest;
 use App\Http\Requests\Identity\ChangeMembershipRequest;
 use App\Http\Requests\Identity\RecordStaffPersonRequest;
 use App\Http\Requests\Identity\ResolvePersonRequest;
@@ -53,6 +55,14 @@ class IdentityManagementController extends Controller
         return new IdentityContextResource($action->handle(
             (int) $request->user()?->getAuthIdentifier(), (string) $request->validated('role'),
             (int) $request->validated('expected_revision'), (string) $request->validated('request_id'),
+        ));
+    }
+
+    public function addInvestor(AddInvestorAccessRequest $request, AddInvestorAccess $action): IdentityContextResource
+    {
+        return new IdentityContextResource($action->handle(
+            (int) $request->user()?->getAuthIdentifier(), (int) $request->validated('expected_revision'),
+            (string) $request->validated('terms_version'), (string) $request->validated('terms_sha256'), (string) $request->validated('request_id'),
         ));
     }
 

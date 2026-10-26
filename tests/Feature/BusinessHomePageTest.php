@@ -79,13 +79,16 @@ it('offers a released application for publication before anything is listed', fu
 });
 
 it('leads Today with a sealed audit report awaiting co-signatures, opening its co-sign page, until it is signed', function (string $kind): void {
+    $this->freezeSecond();
     $fixture = AuditSealingFixture::ready(kind: $kind);
     AuditSealingFixture::seal($fixture);
+    $due = now('UTC')->addHours(24)->format('Y-m-d\TH:i:s\Z');
     $business = $fixture['audit']['business'];
     $user = $fixture['audit']['authority']['users'][0];
     $url = "/business/{$business}/audit-reports/{$fixture['report']->id}";
 
-    expect(($this->props)($user, $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind, 'link' => ['url' => $url, 'method' => 'get']]]);
+    expect(($this->props)($user, $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind, 'due_at' => $due, 'hours_left' => 24,
+        'link' => ['url' => $url, 'method' => 'get']]]);
     $this->get($url)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/audit-cosign')
         ->where('report.id', $fixture['report']->id));
     Sanctum::actingAs($user, ['business:read']);

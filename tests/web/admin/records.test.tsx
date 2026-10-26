@@ -28,7 +28,7 @@ describe('Ledger', () => {
         );
 
         expect(screen.getByText('1,932 entries')).toBeInTheDocument();
-        expect(screen.getByText('2026-09-23 20:36:51')).toBeInTheDocument();
+        expect(screen.getByText('2026-09-23 20:36:51 CAT')).toBeInTheDocument();
         expect(
             screen.getByText('Rozine Platform → Diane Uwase, CPA'),
         ).toBeInTheDocument();
@@ -131,12 +131,12 @@ describe('Ledger', () => {
         expect(within(drawer).getByText('op_7f3c21a9e4')).toBeInTheDocument();
         expect(
             within(drawer).getByText(
-                'Posted by System · disbursement dsb_0598 · 2026-09-23 16:20:37',
+                'Posted by System · disbursement dsb_0598 · 2026-09-23 16:20:37 CAT',
             ),
         ).toBeInTheDocument();
         expect(
             within(drawer).getByText(
-                'Flow started by PARTY-7F3K2Q9D · 2026-09-23 16:20:37. Later movements in the same flow keep this origin.',
+                'Flow started by PARTY-7F3K2Q9D · 2026-09-23 16:20:37 CAT. Later movements in the same flow keep this origin.',
             ),
         ).toBeInTheDocument();
         const postings = within(drawer).getByRole('table', {
@@ -208,7 +208,7 @@ describe('Event log', () => {
             ),
         ).toBeInTheDocument();
         expect(screen.getByText('8 entries')).toBeInTheDocument();
-        expect(screen.getByText('2026-09-23 19:37:23')).toBeInTheDocument();
+        expect(screen.getByText('2026-09-23 19:37:23 CAT')).toBeInTheDocument();
 
         const approved = screen.getByRole('button', { name: 'Approved RNP' });
 

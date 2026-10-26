@@ -93,7 +93,7 @@ describe('Admin Notes', () => {
         render(<AdminNotes {...props()} />);
 
         expect(screen.getByText('Total Notes')).toBeInTheDocument();
-        expect(screen.getByText('Capital Raised')).toBeInTheDocument();
+        expect(screen.getByText('Capital Issued')).toBeInTheDocument();
         const tabs = screen.getByRole('navigation', { name: 'Notes by state' });
         expect(
             within(tabs).getByRole('link', { name: 'All 2' }),

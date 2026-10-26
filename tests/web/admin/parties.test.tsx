@@ -171,6 +171,37 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    it.each([
+        ['23300000', true],
+        ['0', false],
+    ] as const)(
+        'explains committed cash %s that is not a holding yet',
+        (amount, shown) => {
+            render(
+                <AdminParties
+                    {...props(investorsFixture)}
+                    party={{
+                        ...party(overdueFixture),
+                        list: { key: 'holdings', rows: [] },
+                        committed: { currency: 'RWF', amount },
+                    }}
+                />,
+            );
+
+            const note = screen.queryByText(
+                /is committed to raises whose notes are not issued yet/u,
+            );
+
+            if (shown) {
+                expect(note).toHaveTextContent(
+                    'RWF 23.3M is committed to raises whose notes are not issued yet. The portfolio counts it; it joins Holdings once the notes issue.',
+                );
+            } else {
+                expect(note).not.toBeInTheDocument();
+            }
+        },
+    );
+
     it('lists Audit Partners with their standing', () => {
         render(<AdminParties {...props(auditorsFixture)} />);
 
@@ -446,6 +477,23 @@ describe('Party directories', () => {
         expect(within(jean).getByText('Huye')).toBeInTheDocument();
     });
 
+    it("shows a staff member's every role in full across the overview", () => {
+        const fixture = props(staffFixture);
+        const roles = 'Compliance, Approver, Treasury, Analyst';
+
+        fixture.party = {
+            ...party(frozenFixture),
+            kind: 'staff',
+            stats: [{ key: 'role', value: { kind: 'text', value: roles } }],
+        };
+        render(<AdminParties {...fixture} />);
+
+        const tile = within(screen.getByRole('dialog')).getByText(roles);
+
+        expect(tile).toHaveClass('break-words');
+        expect(tile).not.toHaveClass('truncate');
+    });
+
     it('lists the admin action log, newest first, or says it is empty', () => {
         const fixture = props(staffFixture);
 
@@ -718,7 +766,7 @@ describe('Party 360', () => {
 
         expect(
             within(drawer).getByText(
-                'Frozen by Grace Kalisa at 2026-09-18 10:20:00. See Controls for the reason and release.',
+                'Frozen by Grace Kalisa at 2026-09-18 10:20:00 CAT. See Controls for the reason and release.',
             ),
         ).toBeInTheDocument();
         expect(
@@ -736,7 +784,7 @@ describe('Party 360', () => {
         await user.click(within(drawer).getByRole('tab', { name: 'Controls' }));
         expect(
             within(drawer).getByText(
-                'Frozen by Grace Kalisa · 2026-09-18 10:20:00',
+                'Frozen by Grace Kalisa · 2026-09-18 10:20:00 CAT',
             ),
         ).toBeInTheDocument();
         expect(
@@ -949,6 +997,243 @@ describe('Party 360', () => {
                 name: 'Reject licence for Claude Mukamana, CPA',
             }),
         ).toBeInTheDocument();
+    });
+
+    it('says an Audit Partner gets no jobs without a verified office, and records one with its evidence', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '2c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+        );
+        const fixture = props(licenceFixture);
+
+        fixture.party = {
+            ...party(licenceFixture),
+            office: {
+                state: 'missing',
+                latitude: null,
+                longitude: null,
+                uncertainty_m: null,
+                verified_at: null,
+                reference: null,
+                revision: 0,
+                verify: {
+                    url: '/admin/auditors/aud_claude/office',
+                    method: 'post',
+                    verified_at: '2026-10-26T05:00:00Z',
+                },
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const office = screen.getByRole('region', {
+            name: 'Registered office',
+        });
+
+        expect(within(office).getByText('Not verified')).toBeInTheDocument();
+        expect(office).toHaveTextContent(
+            'No office location is on record, so this partner is not offered jobs.',
+        );
+        await user.click(
+            within(office).getByRole('button', {
+                name: 'Record verified office',
+            }),
+        );
+        const form = within(office).getByRole('form', {
+            name: 'Verify the registered office',
+        });
+        const submit = within(form).getByRole('button', {
+            name: 'Record as verified',
+        });
+
+        expect(submit).toBeDisabled();
+        await user.type(within(form).getByLabelText('Latitude'), '-1.9441');
+        await user.type(within(form).getByLabelText('Longitude'), '30.0619');
+        await user.type(within(form).getByLabelText('Accuracy (metres)'), '50');
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'ICPAR register',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'Confirmed by phone.',
+        );
+        await user.click(submit);
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/auditors/aud_claude/office',
+                data: {
+                    latitude: '-1.9441',
+                    longitude: '30.0619',
+                    uncertainty_m: '50',
+                    reference: 'ICPAR register',
+                    reason: 'Confirmed by phone.',
+                    request_id: '2c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+                    expected_revision: 0,
+                    verified_at: '2026-10-26T05:00:00Z',
+                },
+            },
+        ]);
+        expect(
+            within(office).queryByRole('form', {
+                name: 'Verify the registered office',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it.each([
+        ['verified', 'Verified', 'Verify office again', null],
+        [
+            'expired',
+            'Verification lapsed',
+            'Verify office again',
+            'This office was verified more than a year ago',
+        ],
+    ] as const)(
+        'shows a %s office with its point, date and evidence',
+        async (state, chip, button, note) => {
+            const fixture = props(licenceFixture);
+
+            fixture.party = {
+                ...party(licenceFixture),
+                office: {
+                    state,
+                    latitude: '-1.9441000',
+                    longitude: '30.0619000',
+                    uncertainty_m: 20,
+                    verified_at: '2026-09-24T10:00:00Z',
+                    reference: 'ICPAR register entry',
+                    revision: 2,
+                    verify: {
+                        url: '/admin/auditors/aud_claude/office',
+                        method: 'post',
+                        verified_at: '2026-10-26T05:00:00Z',
+                    },
+                },
+            };
+            const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+            await user.click(screen.getByRole('tab', { name: 'Controls' }));
+            const office = screen.getByRole('region', {
+                name: 'Registered office',
+            });
+
+            expect(within(office).getByText(chip)).toBeInTheDocument();
+            expect(office).toHaveTextContent('-1.9441000, 30.0619000 (±20 m)');
+            expect(office).toHaveTextContent('24 Sept 2026');
+            expect(office).toHaveTextContent('ICPAR register entry');
+            expect(
+                within(office).getByRole('button', { name: button }),
+            ).toBeInTheDocument();
+
+            if (note === null) {
+                expect(office).not.toHaveTextContent('not offered jobs');
+            } else {
+                expect(office).toHaveTextContent(note);
+            }
+        },
+    );
+
+    it('says no Audit Partner is dispatched to a Business without verified premises, and records them', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '3c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+        );
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            premises: {
+                state: 'expired',
+                latitude: '-2.6000000',
+                longitude: '29.7400000',
+                uncertainty_m: 30,
+                verified_at: '2025-09-24T08:00:00Z',
+                reference: 'Site visit',
+                revision: 2,
+                verify: {
+                    url: '/admin/businesses/biz_1/premises',
+                    method: 'post',
+                    verified_at: '2026-10-26T05:00:00Z',
+                },
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const premises = screen.getByRole('region', {
+            name: 'Business premises',
+        });
+
+        expect(
+            within(premises).getByText('Verification lapsed'),
+        ).toBeInTheDocument();
+        expect(premises).toHaveTextContent(
+            'no Audit Partner is dispatched here until they are verified again',
+        );
+        await user.click(
+            within(premises).getByRole('button', {
+                name: 'Verify premises again',
+            }),
+        );
+        const form = within(premises).getByRole('form', {
+            name: 'Verify the business premises',
+        });
+
+        await user.type(within(form).getByLabelText('Latitude'), '-2.6');
+        await user.type(within(form).getByLabelText('Longitude'), '29.74');
+        await user.type(within(form).getByLabelText('Accuracy (metres)'), '30');
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'Site visit',
+        );
+        await user.type(within(form).getByLabelText('Reason'), 'Visited.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Record as verified' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/premises',
+                data: {
+                    latitude: '-2.6',
+                    longitude: '29.74',
+                    uncertainty_m: '30',
+                    reference: 'Site visit',
+                    reason: 'Visited.',
+                    request_id: '3c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+                    expected_revision: 2,
+                    verified_at: '2026-10-26T05:00:00Z',
+                },
+            },
+        ]);
+    });
+
+    it('shows the office read-only to a viewer who may not verify it', async () => {
+        const fixture = props(licenceFixture);
+
+        fixture.party = {
+            ...party(licenceFixture),
+            office: {
+                state: 'missing',
+                latitude: null,
+                longitude: null,
+                uncertainty_m: null,
+                verified_at: null,
+                reference: null,
+                revision: 0,
+                verify: null,
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const office = screen.getByRole('region', {
+            name: 'Registered office',
+        });
+
+        expect(within(office).queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('opens on the decision the review queue chose, with its reason stage ready', () => {

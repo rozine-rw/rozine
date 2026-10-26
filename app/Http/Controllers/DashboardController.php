@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Identity\AddInvestorAccess;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\GetStaffAccess;
@@ -17,9 +18,10 @@ class DashboardController extends Controller
 {
     /**
      * The launcher. A person asked to verify their identity also gets where their own check stands,
-     * so one already with Compliance is told it is under review instead of being asked again.
+     * so one already with Compliance is told it is under review instead of being asked again. A
+     * Business member who may add Investor access gets the terms they accept to do so.
      */
-    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification): Response
+    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $context = $identity->handle($userId);
@@ -28,6 +30,8 @@ class DashboardController extends Controller
             'staff_access' => (new StaffAccessResource($staff->handle($userId)))->resolve($request),
             'identity' => (new IdentityContextResource($context))->resolve($request),
             'verification' => $context['code'] === 'IDENTITY_VERIFICATION_REQUIRED' ? $verification->stage($userId) : null,
+            'investor_access' => in_array('identity.add_investor', $context['allowed_actions'], true) ? ['terms' => $investor->terms(),
+                'link' => ['url' => route('identity.investor-access.store', absolute: false), 'method' => 'post']] : null,
         ]);
     }
 }

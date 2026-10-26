@@ -28,7 +28,7 @@ describe('Exceptions', () => {
     it('lists every open arrears, halt and variance with its age, owner and record, read-only', () => {
         render(<AdminExceptions {...props(exceptionsFixture)} />);
 
-        expect(screen.getByTestId('head')).toHaveTextContent('Exceptions');
+        expect(screen.getByTestId('head')).toHaveTextContent('Risk Center');
         expect(
             within(nav()).getByRole('link', { name: 'Risk Center' }),
         ).toHaveAttribute('aria-current', 'page');
@@ -261,7 +261,7 @@ describe('Exceptions', () => {
 
         const row = rowOf('AUD-00ABCD');
 
-        expect(row).toHaveTextContent('Overdue audit');
+        expect(row).toHaveTextContent('Overdue flash audit');
         expect(row).toHaveTextContent('Sebeya Logistics');
         expect(row).toHaveTextContent(
             'Flash audit unfinished after 24 hours: offered to a partner, not yet accepted',
@@ -269,7 +269,7 @@ describe('Exceptions', () => {
         expect(
             within(
                 screen.getByRole('navigation', { name: 'Filter by kind' }),
-            ).getByRole('link', { name: /Overdue audit/ }),
+            ).getByRole('link', { name: /Overdue flash audit/ }),
         ).toHaveAttribute('href', '/admin/exceptions?kind=audit');
     });
 });

@@ -180,6 +180,22 @@ const fr: Catalog = {
     'suite.app.open': "Ouvrir l'application →",
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
+    'suite.app.add_access': 'Commencer à investir →',
+    'suite.app.investor.add':
+        "Ajoutez l'accès Investisseur à votre identité vérifiée. Aucune nouvelle vérification d'identité.",
+    'suite.add_investor.title': "Ajouter l'accès Investisseur",
+    'suite.add_investor.body':
+        'Votre identité est déjà vérifiée pour votre compte Entreprise : elle ne vous sera pas redemandée. Lisez et acceptez les conditions Investisseur pour commencer à investir.',
+    'suite.add_investor.accept':
+        "J'ai lu et j'accepte ces conditions Investisseur.",
+    'suite.add_investor.confirm': "Ajouter l'accès Investisseur",
+    'suite.add_investor.cancel': 'Annuler',
+    'suite.add_investor.network_error':
+        "Nous n'avons pas pu ajouter l'accès Investisseur. Vérifiez votre connexion et réessayez.",
+    'suite.add_investor.terms_changed':
+        'Les conditions Investisseur ont changé. Actualisez votre accès et relisez-les.',
+    'suite.add_investor.unavailable':
+        "L'accès Investisseur ne peut pas être ajouté ici à ce compte. Actualisez votre accès ou contactez Rozine.",
     'suite.app.investor.preview':
         "Parcourez dès maintenant les offres ouvertes. L'investissement s'ouvre une fois votre identité vérifiée.",
     'suite.app.investor.title': 'Investisseur',
@@ -322,6 +338,8 @@ const fr: Catalog = {
     'business.today.cosign.sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
     'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.cosign.due':
+        'Cosignez ou contestez avant le {date} · {hours} h restantes',
     'business.today.signature.kicker': 'Signature requise',
     'business.today.signature.sub':
         'Votre signature est requise avant que cette demande puisse être soumise.',
@@ -1023,8 +1041,7 @@ const fr: Catalog = {
     'admin.section.payments.title': 'Centre des paiements',
     'admin.section.payments.subtitle':
         "Les mouvements d'argent sur la plateforme",
-    'admin.section.payments.search':
-        'Rechercher un paiement par nom, référence, moyen…',
+    'admin.section.payments.search': 'Rechercher un paiement…',
     'admin.nav.ratings': 'Notations',
     'admin.section.ratings.title': 'Notations',
     'admin.section.ratings.subtitle':
@@ -1170,7 +1187,7 @@ const fr: Catalog = {
     'admin.design.notes.kpi.total': 'Total des notes',
     'admin.design.notes.kpi.live': 'Levées en cours',
     'admin.design.notes.kpi.repaying': 'En remboursement',
-    'admin.design.notes.kpi.raised': 'Capital levé',
+    'admin.design.notes.kpi.raised': 'Capital émis',
     'admin.design.notes.tab.all': 'Toutes',
     'admin.design.notes.tab.live': 'En cours',
     'admin.design.notes.tab.repaying': 'En remboursement',
@@ -1180,8 +1197,9 @@ const fr: Catalog = {
     'admin.design.notes.notes.empty': 'Aucune note à afficher pour le moment.',
     'admin.design.primary_market.kpi.active': 'Levées actives',
     'admin.design.primary_market.kpi.active.sub': 'En cours',
-    'admin.design.primary_market.kpi.in_flight': 'Capital en cours',
-    'admin.design.primary_market.kpi.in_flight.sub': 'Levé à ce jour',
+    'admin.design.primary_market.kpi.in_flight': 'Levé par les levées actives',
+    'admin.design.primary_market.kpi.in_flight.sub':
+        'Engagé dans les levées en cours',
     'admin.design.primary_market.kpi.fill': 'Remplissage moyen',
     'admin.design.primary_market.kpi.fill.sub': "De l'objectif",
     'admin.design.primary_market.kpi.completion': "Taux d'achèvement",
@@ -1250,7 +1268,7 @@ const fr: Catalog = {
     'admin.design.payments.approvals.title': "File d'approbation",
     'admin.design.payments.approvals.empty':
         "Rien en attente d'approbation à afficher pour le moment.",
-    'admin.design.ratings.kpi.rated': 'Entreprises notées',
+    'admin.design.ratings.kpi.rated': 'Notations publiées',
     'admin.design.ratings.kpi.changed': 'Bande modifiée',
     'admin.design.ratings.kpi.trending_down': 'En baisse',
     'admin.design.ratings.kpi.pinned': 'Fixées par le personnel',
@@ -1258,6 +1276,8 @@ const fr: Catalog = {
     'admin.design.ratings.tab.trending_down': 'En baisse',
     'admin.design.ratings.tab.all': 'Toutes les entreprises',
     'admin.design.ratings.book.title': 'Le registre des notations',
+    'admin.design.ratings.book.sub':
+        "Entreprises dont la notation a été publiée avec une levée. Les notations des demandes en cours d'examen sont provisoires et figurent dans la file des demandes.",
     'admin.design.ratings.book.empty':
         'Aucune notation à afficher pour le moment.',
     'admin.design.deferrals.kpi.this_month': 'Reports ce mois-ci',
@@ -1624,7 +1644,7 @@ const fr: Catalog = {
     'admin.section.businesses.title': 'Annuaire des entreprises',
     'admin.section.businesses.subtitle':
         'Toutes les entreprises vérifiées de la plateforme',
-    'admin.section.businesses.search': 'Rechercher par nom, secteur, statut…',
+    'admin.section.businesses.search': 'Rechercher une entreprise…',
     'admin.section.investors.title': 'Annuaire des investisseurs',
     'admin.section.investors.subtitle':
         'Gérer les comptes investisseurs et le KYC',
@@ -1644,7 +1664,7 @@ const fr: Catalog = {
     'admin.section.events.title': 'Activité et audit',
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
-    'admin.section.events.search': 'Rechercher par utilisateur, action, objet…',
+    'admin.section.events.search': 'Rechercher dans le journal…',
     'admin.search.label': 'Rechercher sur cette page',
     'admin.search.empty_title': 'Aucun résultat sur cette page',
     'admin.search.empty_body':
@@ -1688,8 +1708,9 @@ const fr: Catalog = {
     'admin.kyc.col.decision': 'Décision',
     'admin.kyc.review': 'Examiner',
     'admin.kyc.review_named': 'Examiner {name}',
-    'admin.kyc.stats.completion': 'Taux de KYC',
-    'admin.kyc.stats.completion_sub': '{verified} sur {total} vérifiés',
+    'admin.kyc.stats.completion': 'Dossiers KYC approuvés',
+    'admin.kyc.stats.completion_sub':
+        "{verified} sur {total} soumissions dans l'app",
     'admin.kyc.stats.percent': '{value} %',
     'admin.kyc.stats.pending': 'Examens en attente',
     'admin.kyc.stats.turnaround': 'Délai moyen {hours} h',
@@ -2040,6 +2061,7 @@ const fr: Catalog = {
     'admin.finance.stream.audit_partner_share':
         'Frais de plateforme · part Audit Partner (à payer)',
     'admin.finance.stream.deposit_fees': 'Frais de dépôt',
+    'admin.finance.collected_untracked': 'Pas encore suivi',
     'admin.finance.paid_by.business': 'Entreprises',
     'admin.finance.paid_by.investor': 'Investisseurs',
     'admin.finance.paid_by.seller': 'Vendeur',
@@ -2069,13 +2091,13 @@ const fr: Catalog = {
     'admin.today.command.review_queue': "File d'examen",
     'admin.today.command.audit_desk': "Bureau d'audit",
     'admin.today.command.policies': 'Politiques',
-    'admin.today.kpi.capital_raised': 'Capital total levé',
-    'admin.today.kpi.capital_raised_trend': 'Sur tous les titres',
+    'admin.today.kpi.capital_raised': 'Capital émis',
+    'admin.today.kpi.capital_raised_trend': 'Principal des titres émis',
     'admin.today.kpi.active_businesses': 'Entreprises actives',
     'admin.today.kpi.active_businesses_trend': 'Sur la plateforme',
     'admin.today.kpi.verified_investors': 'Investisseurs vérifiés',
     'admin.today.kpi.verified_investors_trend': 'KYC validé',
-    'admin.today.kpi.outstanding_notes': 'Titres en cours',
+    'admin.today.kpi.outstanding_notes': 'Titres ouverts',
     'admin.today.kpi.outstanding_notes_trend':
         'En ligne · financement · remboursement',
     'admin.today.kpi.treasury_position': 'Position de trésorerie',
@@ -2194,7 +2216,7 @@ const fr: Catalog = {
     'admin.applications.col.sector': 'Secteur',
     'admin.applications.col.requested': 'Demandé',
     'admin.applications.col.capacity': 'Capacité utilisée',
-    'admin.applications.col.rating': 'Notation',
+    'admin.applications.col.rating': 'Notation du moteur',
     'admin.applications.col.submitted': 'Soumise',
     'admin.applications.col.decision': 'Décision · Actions',
     'admin.applications.terms': '{term} mois · {rate} % fixe',
@@ -2359,7 +2381,7 @@ const fr: Catalog = {
         "ex. MTN confirme l'annulation complète de MM-88213 ; destination revérifiée.",
     'admin.parties.policy_title': "Règles d'éligibilité des entreprises",
     'admin.parties.filter': 'Filtrer par statut',
-    'admin.audit_reports.title': 'Suivi de conformité des audits mensuels',
+    'admin.audit_reports.title': "Suivi des rapports d'audit",
     'admin.audit_reports.caption':
         "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
     'admin.audit_reports.field.title':
@@ -2382,6 +2404,8 @@ const fr: Catalog = {
     'admin.audit_reports.monthly': 'Audit mensuel',
     'admin.audit_reports.flash': 'Audit flash',
     'admin.audit_reports.due': 'Échéance {date}',
+    'admin.audit_reports.sealed_on': 'Scellé le {date}',
+    'admin.audit_reports.period_flash': 'Sur demande',
     'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
     'admin.audit_reports.remind': 'Relancer',
     'admin.audit_reports.remind_auditor':
@@ -2394,7 +2418,7 @@ const fr: Catalog = {
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
     'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
-    'admin.audit_reports.stats.overdue': 'SLA dépassé',
+    'admin.audit_reports.stats.overdue': 'Rapports en retard',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
@@ -2707,6 +2731,8 @@ const fr: Catalog = {
     'admin.parties.list.active_notes': 'Titres actifs',
     'admin.parties.list.holdings': 'Positions',
     'admin.parties.list.engagements': 'Missions',
+    'admin.parties.committed_note':
+        "{amount} sont engagés dans des levées dont les titres ne sont pas encore émis. Le portefeuille les compte ; ils rejoignent les Positions à l'émission des titres.",
     'admin.parties.list_empty': "Rien pour l'instant.",
     'admin.parties.holding_detail': {
         one: '{amount} · {count} note',
@@ -2727,6 +2753,68 @@ const fr: Catalog = {
     'admin.parties.verify_licence': '✓ Valider la licence',
     'admin.parties.reject': 'Refuser',
     'admin.parties.licence_title': 'Licence ICPAR et vérification',
+    'admin.parties.office.title': 'Bureau enregistré',
+    'admin.parties.office.status': "Lieu d'affectation",
+    'admin.parties.office.state.verified': 'Vérifié',
+    'admin.parties.office.state.expired': 'Vérification expirée',
+    'admin.parties.office.state.missing': 'Non vérifié',
+    'admin.parties.office.note.missing':
+        "Aucun bureau n'est enregistré, donc ce partenaire ne reçoit pas de missions. Les missions ne vont qu'aux partenaires dont le bureau vérifié est à moins de 30 km de l'entreprise.",
+    'admin.parties.office.note.expired':
+        "Ce bureau a été vérifié il y a plus d'un an, donc ce partenaire ne reçoit pas de missions tant qu'il n'est pas vérifié à nouveau.",
+    'admin.parties.office.coordinates': 'Coordonnées',
+    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.office.verified_on': 'Vérifié le',
+    'admin.parties.office.evidence': 'Preuve vérifiée',
+    'admin.parties.office.record': 'Enregistrer le bureau vérifié',
+    'admin.parties.office.reverify': 'Vérifier le bureau à nouveau',
+    'admin.parties.office.form': 'Vérifier le bureau enregistré',
+    'admin.parties.office.form_body':
+        "Saisissez les coordonnées du bureau vérifiées avec la preuve. L'affectation ajoute la précision à la distance, donc une marge large peut exclure des entreprises.",
+    'admin.parties.office.field.latitude': 'Latitude',
+    'admin.parties.office.field.longitude': 'Longitude',
+    'admin.parties.office.field.uncertainty_m': 'Précision (mètres)',
+    'admin.parties.office.field.reference': 'Preuve vérifiée',
+    'admin.parties.office.field.reason': 'Motif',
+    'admin.parties.office.placeholder.latitude': '-1.9441',
+    'admin.parties.office.placeholder.longitude': '30.0619',
+    'admin.parties.office.placeholder.uncertainty_m': '50',
+    'admin.parties.office.placeholder.reference':
+        "ex. registre de l'ICPAR, visite sur place",
+    'admin.parties.office.placeholder.reason':
+        "ex. Adresse du bureau confirmée au registre de l'ICPAR et par téléphone.",
+    'admin.parties.office.cta': 'Enregistrer comme vérifié',
+    'admin.parties.premises.title': 'Locaux de l’entreprise',
+    'admin.parties.premises.status': 'Lieu de dispatch',
+    'admin.parties.premises.state.verified': 'Vérifié',
+    'admin.parties.premises.state.expired': 'Vérification expirée',
+    'admin.parties.premises.state.missing': 'Non vérifié',
+    'admin.parties.premises.note.missing':
+        'Aucun emplacement des locaux n’est enregistré, aucun Partenaire d’audit ne peut donc être dépêché ici. Les missions ne vont qu’aux partenaires dont le bureau vérifié est à moins de 30 km de ces locaux.',
+    'admin.parties.premises.note.expired':
+        'Ces locaux ont été vérifiés il y a plus d’un an : aucun Partenaire d’audit n’est dépêché ici avant une nouvelle vérification.',
+    'admin.parties.premises.coordinates': 'Coordonnées',
+    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.premises.verified_on': 'Vérifié le',
+    'admin.parties.premises.evidence': 'Preuve vérifiée',
+    'admin.parties.premises.record': 'Enregistrer les locaux vérifiés',
+    'admin.parties.premises.reverify': 'Vérifier à nouveau les locaux',
+    'admin.parties.premises.form': 'Vérifier les locaux de l’entreprise',
+    'admin.parties.premises.form_body':
+        'Saisissez les coordonnées des locaux vérifiées par rapport aux preuves. Le dispatch ajoute la précision à la distance : une marge large peut mettre des partenaires hors de portée.',
+    'admin.parties.premises.field.latitude': 'Latitude',
+    'admin.parties.premises.field.longitude': 'Longitude',
+    'admin.parties.premises.field.uncertainty_m': 'Précision (mètres)',
+    'admin.parties.premises.field.reference': 'Preuve vérifiée',
+    'admin.parties.premises.field.reason': 'Motif',
+    'admin.parties.premises.placeholder.latitude': '-1.9441',
+    'admin.parties.premises.placeholder.longitude': '30.0619',
+    'admin.parties.premises.placeholder.uncertainty_m': '50',
+    'admin.parties.premises.placeholder.reference':
+        'ex. visite sur place, adresse enregistrée au RDB',
+    'admin.parties.premises.placeholder.reason':
+        'ex. Locaux confirmés lors d’une visite et avec l’adresse RDB.',
+    'admin.parties.premises.cta': 'Enregistrer comme vérifié',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',
@@ -2922,8 +3010,8 @@ const fr: Catalog = {
     'auditor.home.greeting.morning': 'Bonjour,',
     'auditor.home.greeting.afternoon': 'Bon après-midi,',
     'auditor.home.greeting.evening': 'Bonsoir,',
-    'auditor.home.tile.yield': 'Rendement · {month}',
-    'auditor.home.tile.deals': 'Dossiers',
+    'auditor.home.tile.yield': 'Honoraires · {month}',
+    'auditor.home.tile.deals': 'Missions',
     'auditor.home.tile.licence': 'Licence',
     'auditor.rating.word': 'Note',
     'auditor.rating.label': 'Note du partenaire {score} sur 100',
@@ -2996,6 +3084,10 @@ const fr: Catalog = {
     'auditor.jobs.view_file': 'Voir le dossier complet →',
     'auditor.jobs.decline': 'Refuser',
     'auditor.jobs.declare_conflict': 'Déclarer un conflit',
+    'auditor.jobs.office.missing':
+        "Rozine n'a pas encore vérifié l'adresse de votre bureau, donc aucune mission ne peut vous être envoyée. Les missions vont aux partenaires dont le bureau est à moins de {radius} km de l'entreprise. Contactez les Opérations d'audit pour la faire vérifier.",
+    'auditor.jobs.office.expired':
+        "L'adresse de votre bureau a été vérifiée il y a plus d'un an, donc aucune nouvelle mission ne peut vous être envoyée tant que Rozine ne l'a pas vérifiée à nouveau. Contactez les Opérations d'audit.",
     'auditor.jobs.empty':
         "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
     'auditor.monthly.title': 'Rapports mensuels',
@@ -6708,7 +6800,7 @@ const fr: Catalog = {
     'admin.section.book.subtitle':
         'Chaque titre en cours et sa santé, tels que le système central enregistre leur service. Lecture seule.',
     'admin.section.book.search': 'Rechercher par entreprise ou titre…',
-    'admin.section.exceptions.title': 'Exceptions',
+    'admin.section.exceptions.title': 'Centre des risques',
     'admin.section.exceptions.subtitle':
         "Arriérés, suspensions et écarts, chacun daté et attribué jusqu'à sa résolution. Lecture seule.",
     'admin.section.exceptions.search':
@@ -6755,7 +6847,7 @@ const fr: Catalog = {
     'admin.exceptions.kind.arrears': 'Arriérés',
     'admin.exceptions.kind.halt': 'Suspension',
     'admin.exceptions.kind.variance': 'Écart',
-    'admin.exceptions.kind.audit': 'Audit en retard',
+    'admin.exceptions.kind.audit': 'Audit éclair en retard',
     'admin.exceptions.kind.complaint': 'Réclamation',
     'admin.exceptions.col.reference': 'Référence',
     'admin.exceptions.col.kind': 'Type',
@@ -6860,7 +6952,7 @@ const fr: Catalog = {
     'admin.section.coverage.subtitle':
         'Partenaires d’audit et audits ouverts dans chaque district, et si le district est couvert. Lecture seule.',
     'admin.section.coverage.search': 'Rechercher par district ou province…',
-    'admin.section.reports.title': 'Rapports mensuels',
+    'admin.section.reports.title': "Rapports d'audit",
     'admin.section.reports.subtitle':
         'Rapports de performance des entreprises publiés pour les investisseurs',
     'admin.section.reports.search': 'Rechercher…',

@@ -15,8 +15,10 @@ import { edit as security } from '@/routes/security';
 import { dashboard as staffDashboard } from '@/routes/staff';
 import { notice as verificationNotice } from '@/routes/verification';
 import type {
+    AddInvestorAccessInput,
     IdentityCode,
     IdentityContext,
+    InvestorAccessOffer,
     RoleApp,
     RouteLink,
     SelectActiveRoleInput,
@@ -31,6 +33,8 @@ type LauncherProps = {
      * sent yet ('required'). Absent or null for everyone else.
      */
     verification?: 'pending' | 'required' | null;
+    /** Sent while a verified Business member may add Investor access to their own Party (#380). */
+    investor_access?: InvestorAccessOffer | null;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
@@ -65,6 +69,7 @@ export default function Launcher({
     identity,
     staff_access,
     verification,
+    investor_access,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -72,6 +77,7 @@ export default function Launcher({
     const pending = useRef<SelectActiveRoleInput | null>(null);
     const [failure, setFailure] = useState<string | null>(null);
     const [opening, setOpening] = useState(false);
+    const [addingInvestor, setAddingInvestor] = useState(false);
     const refreshing = useAccessRefresh(
         ['identity', 'staff_access', 'verification'],
         preview_links === undefined,
@@ -81,6 +87,11 @@ export default function Launcher({
     const canAdmin =
         staff_access?.can_open_admin === true &&
         staff_access.allowed_actions.includes('admin.open');
+    const investorOffer =
+        identity.allowed_actions.includes('identity.add_investor') &&
+        preview_links === undefined
+            ? (investor_access ?? null)
+            : null;
     const mfaRequired =
         identity.available_roles.includes('auditor') && !canSelect;
 
@@ -278,6 +289,27 @@ export default function Launcher({
                                                         />
                                                     </button>
                                                 ) : role === 'investor' &&
+                                                  investorOffer !== null ? (
+                                                    <button
+                                                        type="button"
+                                                        aria-expanded={
+                                                            addingInvestor
+                                                        }
+                                                        aria-controls="add-investor-access"
+                                                        onClick={() =>
+                                                            setAddingInvestor(
+                                                                true,
+                                                            )
+                                                        }
+                                                        className={CARD}
+                                                    >
+                                                        <AppCardBody
+                                                            role={role}
+                                                            summary="suite.app.investor.add"
+                                                            action="suite.app.add_access"
+                                                        />
+                                                    </button>
+                                                ) : role === 'investor' &&
                                                   identity.code ===
                                                       'IDENTITY_VERIFICATION_REQUIRED' ? (
                                                     <Link
@@ -305,6 +337,31 @@ export default function Launcher({
                                             </li>
                                         ))}
                                     </ul>
+                                    {investorOffer !== null &&
+                                        addingInvestor && (
+                                            <AddInvestorAccess
+                                                key={investorOffer.terms.sha256}
+                                                offer={investorOffer}
+                                                expectedRevision={
+                                                    identity.context_revision
+                                                }
+                                                onCancel={() =>
+                                                    setAddingInvestor(false)
+                                                }
+                                                onAdded={(context) => {
+                                                    pending.current = {
+                                                        role: 'investor',
+                                                        expected_revision:
+                                                            context.context_revision,
+                                                        request_id:
+                                                            crypto.randomUUID(),
+                                                    };
+                                                    void selectRole(
+                                                        pending.current,
+                                                    );
+                                                }}
+                                            />
+                                        )}
                                     {identity.code ===
                                         'IDENTITY_VERIFICATION_REQUIRED' &&
                                         verification === 'pending' && (
@@ -385,8 +442,15 @@ function AppCardBody({
     action,
 }: {
     role: RoleApp;
-    summary: `suite.app.${RoleApp}.description` | 'suite.app.investor.preview';
-    action: 'suite.app.open' | 'suite.app.browse' | 'suite.app.request_access';
+    summary:
+        | `suite.app.${RoleApp}.description`
+        | 'suite.app.investor.preview'
+        | 'suite.app.investor.add';
+    action:
+        | 'suite.app.open'
+        | 'suite.app.browse'
+        | 'suite.app.request_access'
+        | 'suite.app.add_access';
 }) {
     const { t } = useTranslation();
 
@@ -407,6 +471,132 @@ function AppCardBody({
                 {t(action)}
             </span>
         </>
+    );
+}
+
+/**
+ * A verified Business member adds Investor access to the Party they already hold (#380): no second
+ * identity check, but the Investor terms are accepted by version and digest first. Once added, the
+ * launcher opens the Investor app as it would any available role.
+ */
+function AddInvestorAccess({
+    offer,
+    expectedRevision,
+    onCancel,
+    onAdded,
+}: {
+    offer: InvestorAccessOffer;
+    expectedRevision: number;
+    onCancel: () => void;
+    onAdded: (context: IdentityContext) => void;
+}) {
+    const { t } = useTranslation();
+    const command = useHttp<
+        AddInvestorAccessInput,
+        { data: IdentityContext }
+    >();
+    const [requestId] = useState(() => crypto.randomUUID());
+    const [accepted, setAccepted] = useState(false);
+    const [failure, setFailure] = useState<string | null>(null);
+
+    async function add() {
+        let errorCode = 'NETWORK_ERROR';
+        setFailure(null);
+        command.transform(() => ({
+            expected_revision: expectedRevision,
+            terms_version: offer.terms.version,
+            terms_sha256: offer.terms.sha256,
+            accepted,
+            request_id: requestId,
+        }));
+
+        try {
+            const response = await command.submit(offer.link, {
+                onHttpException: (response) => {
+                    try {
+                        const { code } = JSON.parse(response.data) as {
+                            code?: unknown;
+                        };
+                        errorCode =
+                            typeof code === 'string' ? code : 'REQUEST_FAILED';
+                    } catch {
+                        errorCode = 'REQUEST_FAILED';
+                    }
+                },
+                onError: () => {
+                    errorCode = 'VALIDATION_ERROR';
+                },
+            });
+
+            if (!response.data.available_roles.includes('investor')) {
+                setFailure('INVESTOR_ACCESS_UNAVAILABLE');
+
+                return;
+            }
+
+            onAdded(response.data);
+        } catch {
+            setFailure(errorCode);
+        }
+    }
+
+    return (
+        <section
+            id="add-investor-access"
+            aria-labelledby="add-investor-access-title"
+            className="mt-4 flex max-w-xl flex-col gap-3 rounded-[18px] border border-rz-hairline bg-rz-surface p-5"
+        >
+            <h2
+                id="add-investor-access-title"
+                className="text-base font-semibold text-rz-ink"
+            >
+                {t('suite.add_investor.title')}
+            </h2>
+            <p className="text-sm text-rz-body">
+                {t('suite.add_investor.body')}
+            </p>
+            <p className="rounded-xl bg-rz-accent-tint p-3 text-[13px] leading-normal text-rz-ink">
+                {offer.terms.text}
+            </p>
+            <label className="flex items-start gap-2.5 text-sm text-rz-ink">
+                <input
+                    type="checkbox"
+                    checked={accepted}
+                    onChange={(event) => setAccepted(event.target.checked)}
+                    className="mt-0.5 size-4 shrink-0"
+                />
+                {t('suite.add_investor.accept')}
+            </label>
+            {failure && (
+                <p role="alert" className="text-sm text-rz-danger-text">
+                    {t(
+                        failure === 'NETWORK_ERROR'
+                            ? 'suite.add_investor.network_error'
+                            : failure === 'INVESTOR_TERMS_CHANGED'
+                              ? 'suite.add_investor.terms_changed'
+                              : 'suite.add_investor.unavailable',
+                    )}
+                </p>
+            )}
+            <div className="flex gap-2.5">
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="h-10 rounded-[11px] border border-rz-hairline px-4 text-sm font-semibold text-rz-body"
+                >
+                    {t('suite.add_investor.cancel')}
+                </button>
+                <button
+                    type="button"
+                    disabled={!accepted || command.processing}
+                    aria-busy={command.processing || undefined}
+                    onClick={() => void add()}
+                    className="h-10 flex-1 rounded-[11px] bg-rz-accent px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {t('suite.add_investor.confirm')}
+                </button>
+            </div>
+        </section>
     );
 }
 

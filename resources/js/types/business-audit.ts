@@ -70,15 +70,15 @@ export type AuditCosign = {
     /** At most 100 characters, retained with this Party's signature. */
     your_note: string;
     /**
-     * When the window closes. Under `monthly-review-2026-09-26` it is `delivered_at` + 24 hours and
-     * authoritative; a legacy monthly report keeps its by-the-7th date; null for Flash.
+     * When the window closes. Under a review policy it is `delivered_at` + 24 hours and
+     * authoritative; a legacy monthly report keeps its by-the-7th date; null for a legacy Flash.
      */
     due_at: string | null;
     overdue: boolean;
     /**
-     * The persisted co-sign policy (N6). `monthly-review-2026-09-26` is the 24-hour sign-off or
-     * dispute window; `audit-publication-legacy` is a Flash report or a monthly report sealed
-     * before it, which keeps its original wording, deadline and signature rules.
+     * The persisted co-sign policy (N6). `monthly-review-2026-09-26` and `flash-review-2026-10-26`
+     * are the 24-hour sign-off or dispute window; `audit-publication-legacy` is a report sealed
+     * before its kind had one, which keeps its original wording, deadline and signature rules.
      */
     policy_version: AuditPublicationPolicy;
     /**

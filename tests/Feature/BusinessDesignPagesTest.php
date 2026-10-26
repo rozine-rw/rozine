@@ -9,6 +9,7 @@ use App\Domain\Underwriting\EngineScorecard;
 use App\Domain\Wallet\PayoutAccount;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
+use App\Models\AuditReportPublication;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationSubmission;
@@ -235,8 +236,8 @@ it('lists the pre-listing flash report awaiting signature in audit, then under P
     $id = $fixture['report']->id;
     $report = ($this->props)($user, 'business.audit-reports.show', ['business' => $business, 'report' => $id], 'business/audit-cosign')['report'];
     $row = ['id' => $id, 'period' => ['kind' => 'flash', 'starts_on' => null], 'status' => 'in_audit', 'inflow' => null, 'health' => null,
-        'auditor' => $report['auditor']['name'], 'seal_by' => null, 'awaiting_signature' => true, 'cosign_by' => null,
-        'link' => ($this->link)("/business/{$business}/audit-reports/{$id}")];
+        'auditor' => $report['auditor']['name'], 'seal_by' => null, 'awaiting_signature' => true,
+        'cosign_by' => AuditReportPublication::query()->sole()->due_at->utc()->toAtomString(), 'link' => ($this->link)("/business/{$business}/audit-reports/{$id}")];
 
     expect($report['kind'])->toBe('flash')
         ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
@@ -245,7 +246,7 @@ it('lists the pre-listing flash report awaiting signature in audit, then under P
     expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
-        ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false]], 'in_audit' => [], 'archived' => []]);
+        ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);
 });
 
 it('lists the latest sealed monthly report in audit until it is published, opening its co-sign page', function (): void {

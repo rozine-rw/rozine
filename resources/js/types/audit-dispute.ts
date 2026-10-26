@@ -6,13 +6,15 @@ import type { RouteLink } from './routing';
  */
 
 /**
- * The persisted publication policy a sealed report carries. Only `monthly-review-2026-09-26` is
- * the 24-hour sign-off or dispute window; `audit-publication-legacy` is a Flash report or a monthly
- * report sealed before it, which keeps its original deadline and signature rules.
+ * The persisted publication policy a sealed report carries. `monthly-review-2026-09-26` (monthly)
+ * and `flash-review-2026-10-26` (Flash, from 26 Oct 2026) are the 24-hour sign-off or dispute
+ * window; `audit-publication-legacy` is a report sealed before its kind had one, which keeps its
+ * original deadline and signature rules.
  */
 export type AuditPublicationPolicy =
     | 'audit-publication-legacy'
-    | 'monthly-review-2026-09-26';
+    | 'monthly-review-2026-09-26'
+    | 'flash-review-2026-10-26';
 
 /**
  * Why a published report was published: every required signature, automatic approval at the end

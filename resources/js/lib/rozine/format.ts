@@ -33,6 +33,22 @@ export const formatRwfShort = (money: Money): string => {
     return `RWF ${millions % 1 === 0 ? millions.toFixed(0) : millions.toFixed(1)}M`;
 };
 
+/**
+ * A chart bar's amount, compact on one scale whatever its size: "RWF 0", "RWF 500K", "RWF 49.3M",
+ * "RWF 1.6B". The bar carries the full amount in its title.
+ */
+export const formatRwfChart = (money: Money): string => {
+    const value = francs(money);
+
+    if (value >= 1e6) {
+        return formatRwfShort(money);
+    }
+
+    return value === 0
+        ? 'RWF 0'
+        : `RWF ${Math.max(1, Math.round(value / 1e3))}K`;
+};
+
 /** A quick-amount chip: "100K", "500K", "1M", "5M". */
 export const formatChip = (money: Money): string => {
     const value = francs(money);

@@ -83,7 +83,7 @@ describe('Audit reports register', () => {
         },
     );
 
-    it('offers Remind only where the server allows it, and the sealed PDF', () => {
+    it('offers Remind only where the server allows it, and the PDF once published', () => {
         render(<AdminAuditReports {...props()} />);
 
         const awaiting = rowOf('Musanze Agro Traders');
@@ -92,13 +92,15 @@ describe('Audit reports register', () => {
             within(awaiting).getByRole('button', { name: 'Remind' }),
         ).toHaveAttribute('data-method', 'post');
         expect(
-            within(awaiting).getByRole('link', {
-                name: 'Download the sealed report for Musanze Agro Traders (PDF)',
-            }),
-        ).toHaveAttribute('href', '/preview/admin-audit-reports');
+            within(awaiting).queryByRole('link', { name: /PDF/u }),
+        ).not.toBeInTheDocument();
+
+        const published = rowOf('Kigali Fresh Foods Ltd');
+        expect(published).toHaveTextContent('Sealed 5 Jan 2027');
+        expect(published).not.toHaveTextContent(/Due/u);
         expect(
-            within(awaiting).getByRole('link', {
-                name: 'Download the sealed report for Musanze Agro Traders (PDF)',
+            within(published).getByRole('link', {
+                name: 'Download the sealed report for Kigali Fresh Foods Ltd (PDF)',
             }),
         ).toHaveClass('bg-rz-surface', 'text-[#7a5d33]', 'dark:text-[#f0a060]');
 
@@ -108,10 +110,11 @@ describe('Audit reports register', () => {
             within(overdue).queryByRole('button', { name: 'Remind' }),
         ).not.toBeInTheDocument();
         expect(overdue).toHaveTextContent('Reminded');
+        expect(overdue).toHaveTextContent('ICPAR-2022-0198');
         expect(within(overdue).queryByRole('link')).not.toBeInTheDocument();
     });
 
-    it('shows an unstarted Flash Audit without inventing a period, deadline or partner', () => {
+    it('shows an unstarted Flash Audit as on demand, without inventing a deadline or partner', () => {
         const fixture = props();
         const row = {
             ...fixture.rows[0],
@@ -142,7 +145,8 @@ describe('Audit reports register', () => {
 
         expect(audit).toHaveTextContent('Flash Audit');
         expect(audit).toHaveTextContent('Audit not opened');
-        expect(within(audit).getAllByText('—')).toHaveLength(4);
+        expect(audit).toHaveTextContent('On demand');
+        expect(within(audit).getAllByText('—')).toHaveLength(3);
         expect(audit).not.toHaveTextContent(/Due|sha256/u);
         expect(
             within(audit).getByRole('button', { name: 'Remind' }),

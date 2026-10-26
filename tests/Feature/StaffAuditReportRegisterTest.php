@@ -10,6 +10,7 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Models\AuditAssignment;
+use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\PartyNotice;
 use App\Models\User;
@@ -68,7 +69,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
     $period = now('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');
     $due = (string) app(AuditReportWindow::class)->dueAt($period);
     $row = ['id' => $assignment->id, 'business' => 'Synthetic business', 'kind' => 'monthly', 'period' => $period.'-01',
-        'auditor' => $partner['user']->name, 'licence' => null, 'status' => 'not_started',
+        'auditor' => $partner['user']->name, 'licence' => 'SYNTHETIC-CPA', 'status' => 'not_started',
         'due_at' => now()->parse($due)->utc()->format('Y-m-d\TH:i:s\Z'), 'cosign_by' => null, 'sealed_at' => null, 'digest' => null,
         'variance_pct' => null, 'variance_flagged' => false, 'owes' => 'auditor', 'reminded_at' => null, 'links' => ['pdf' => null, 'remind' => null]];
 
@@ -109,7 +110,7 @@ it('lists every audit with its state for any staff member, and reminds the partn
 
 });
 
-it('reminds the Business while a sealed monthly report waits for it, downloads the seal as a PDF, and stops once it is disputed', function (): void {
+it('reminds the Business while a sealed monthly report waits for it, offers no PDF link until it is published, and stops once it is disputed', function (): void {
     $fixture = AuditSealingFixture::ready(kind: 'monthly', findings: true);
     $staff = $fixture['audit']['staff'];
     $report = $fixture['report'];
@@ -127,7 +128,8 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
         'sealed_at' => $seal->payload['sealed_at'], 'digest' => substr($seal->digest, 0, 12), 'variance_pct' => '0.0', 'variance_flagged' => true])
         ->and($row['cosign_by'])->not->toBeNull()->and($row['reminded_at'])->toBeNull()
         ->and($row['links']['remind'])->toBe(['url' => '/admin/reports/'.$assignment.'/remind', 'method' => 'post'])
-        ->and($row['links']['pdf'])->toBe(['url' => '/admin/reports/'.$report->id.'/pdf', 'method' => 'get']);
+        // The Business may still co-sign or dispute it, so no PDF is offered yet.
+        ->and($row['links']['pdf'])->toBeNull();
 
     actingAs($staff)->post(route('staff.reports.remind', $assignment))->assertRedirect();
     $notice = PartyNotice::query()->where('kind', 'business.report_review_closing')->sole();
@@ -153,9 +155,18 @@ it('reminds the Business while a sealed monthly report waits for it, downloads t
     actingAs($staff)->postJson(route('staff.reports.remind', (string) Str::ulid()))->assertNotFound();
 });
 
-it('counts a sealed Flash Audit on time while it waits for the Business, with no co-sign deadline to remind', function (): void {
+it('gives a sealed Flash Audit the 24-hour co-sign deadline of the Business', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
+
+    $row = auditRegister($fixture['audit']['staff'])['rows'][0];
+    expect($row)->toMatchArray(['kind' => 'flash', 'status' => 'awaiting_cosign', 'owes' => 'business',
+        'cosign_by' => AuditReportPublication::query()->sole()->due_at->utc()->format('Y-m-d\TH:i:s\Z')]);
+});
+
+it('counts an earlier sealed Flash Audit on time while it waits for the Business, with no co-sign deadline to remind', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::sealLegacy($fixture);
 
     $page = auditRegister($fixture['audit']['staff']);
     expect($page['rows'][0])->toMatchArray(['kind' => 'flash', 'period' => null, 'status' => 'awaiting_cosign', 'owes' => null, 'cosign_by' => null])
@@ -190,7 +201,7 @@ it('lists the replacement partner\'s unopened work instead of the withdrawn pred
 
     $row = auditRegister($fixture['audit']['staff'], ['chip' => 'owed'])['rows'][0];
     expect($row)->toMatchArray(['id' => $assignment->id, 'auditor' => $replacement['user']->name,
-        'status' => 'not_started', 'owes' => 'auditor', 'sealed_at' => null, 'digest' => null, 'licence' => null])
+        'status' => 'not_started', 'owes' => 'auditor', 'sealed_at' => null, 'digest' => null, 'licence' => 'SYNTHETIC-CPA'])
         ->and($row['links']['pdf'])->toBeNull()->and($row['links']['remind'])->not->toBeNull();
     actingAs($fixture['audit']['staff'])->post($row['links']['remind']['url'])->assertRedirect();
     expect(PartyNotice::query()->where('kind', 'auditor.report_reminder')->sole()->party_id)->toBe($replacement['party']->id);

@@ -6,10 +6,12 @@ namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditLocationStore;
 use App\Application\Business\WithBusinessReview;
+use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\WithVerifiedParties;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\VerifiedAuditLocation;
+use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditLocation;
@@ -29,6 +31,7 @@ final class EloquentAuditLocationStore implements AuditLocationStore
         private WithBusinessReview $businesses,
         private OperationJournal $journal,
         private VerifiedAuditLocation $locations,
+        private AuthorizeActiveRole $roles,
     ) {}
 
     /** @return array<string, mixed> */
@@ -51,6 +54,16 @@ final class EloquentAuditLocationStore implements AuditLocationStore
     public function get(int $actorId, string $kind, string $subjectId): array
     {
         return $this->withAccess($actorId, $kind, $subjectId, false, fn (?AuditLocation $location): array => $this->snapshot($location, $kind, $subjectId));
+    }
+
+    public function ownOffice(int $userId, int $contextRevision): string
+    {
+        return $this->roles->handle($userId, 'auditor', null, $contextRevision, function (array $identity): string {
+            $partyId = $identity['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
+
+            return VerifiedAuditLocation::standing(AuditLocation::query()->where('office_party_id', $partyId)->first()->state ?? $this->locations->empty(),
+                now()->toDateTimeImmutable());
+        });
     }
 
     /**

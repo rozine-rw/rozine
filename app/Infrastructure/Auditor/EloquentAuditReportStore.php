@@ -114,7 +114,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                         $payload = ['business' => $business, 'auditor_name' => $this->identities->accountName($userId), 'report' => $preview['payload'], 'digest' => $preview['digest'], 'sources' => $preview['sources'],
                             'assignment' => $assignment, 'sealed_revision' => $record->revision + 1, 'sealed_at' => $at,
                             'author_party_id' => $assignment['party_id'], 'actor_user_id' => $userId, 'synthetic' => true,
-                            'publication_policy' => $record->kind === 'monthly' ? MonthlyReportReview::POLICY : MonthlyReportReview::LEGACY_POLICY];
+                            'publication_policy' => MonthlyReportReview::policyFor($record->kind)];
                         $signature = $this->cryptography->sign($payload);
                         $proofId = $this->stepUpProofs->consume($userId, $assignment['party_id'], $contextRevision, $record->id, $record->revision, $preview['digest'], $proof);
                         $seal = new AuditReportSeal;

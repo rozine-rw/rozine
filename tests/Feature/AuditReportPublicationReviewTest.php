@@ -30,7 +30,7 @@ beforeEach(function (): void {
 
 it('withdraws an amended parent without changing its retained signature and records a recoverable refusal', function (): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $signedRequest = (string) Str::uuid();
     $signed = Fixture::cosign($fixture, overrides: ['requestId' => $signedRequest]);
     $signature = AuditReportSignature::query()->firstOrFail();
@@ -60,7 +60,7 @@ it('withdraws an amended parent without changing its retained signature and reco
 
 it('publishes only the amendment while retaining an already published parent as history', function (bool $publishParent): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     if ($publishParent) {
         Fixture::cosign($fixture);
     }

@@ -377,7 +377,8 @@ describe('Finance', () => {
         const region = screen.getByRole('region', {
             name: 'Finance Dashboard',
         });
-        expect(within(region).getAllByText('—')).toHaveLength(6);
+        expect(within(region).getAllByText('—')).toHaveLength(5);
+        expect(within(region).getAllByText('Not tracked yet')).toHaveLength(1);
         expect(region).toHaveTextContent('All revenueRWF 2M');
         expect(region).toHaveTextContent(
             'Primary marketRWF 1.8MPlatform fee, Rozine share',
@@ -398,7 +399,7 @@ describe('Finance', () => {
                     name: 'Secondary market',
                 }),
             ).getAllByRole('row')[1],
-        ).toHaveTextContent('Resale fee2%Seller—');
+        ).toHaveTextContent('Resale fee2%SellerNot tracked yet');
         const residual = screen.getByRole('table', {
             name: 'Cost recovery and residuals',
         });
@@ -664,7 +665,12 @@ describe('The rating book', () => {
 
         expect(
             screen.getByRole('region', { name: 'Ratings' }),
-        ).toHaveTextContent('Businesses rated1');
+        ).toHaveTextContent('Published ratings1');
+        expect(
+            screen.getByText(
+                'Businesses whose rating was published with a raise. Ratings on applications still under review are provisional and show in the Applications queue.',
+            ),
+        ).toBeInTheDocument();
         expect(
             within(
                 screen.getByRole('table', { name: 'The rating book' }),

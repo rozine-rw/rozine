@@ -1,7 +1,7 @@
 import { SectionLabel } from '@/components/business/audit-cosign/report-summary';
 import {
     ReviewWindow,
-    underMonthlyReview,
+    underReviewWindow,
 } from '@/components/business/audit-cosign/review-window';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDayMonth } from '@/lib/rozine/format';
@@ -11,8 +11,8 @@ import type { AuditCosign, AuditReport } from '@/types/business-audit';
 /**
  * Where the co-signatures stand, as the server counts them: signed against required, each
  * mandated signatory with the current person marked, and when the window closes. A report under
- * the 24-hour review policy shows its open window with a countdown; a legacy monthly report keeps
- * its by-the-7th date; a Flash report has no deadline, so none is shown. A disputed report shows
+ * a 24-hour review policy, monthly or Flash, shows its open window with a countdown; a legacy
+ * monthly report keeps its by-the-7th date; a legacy Flash report has no deadline, so none is shown. A disputed report shows
  * no deadline at all: its window is paused or closed, and it is never called overdue.
  */
 export function CosignStatus({
@@ -26,7 +26,7 @@ export function CosignStatus({
 }) {
     const { t, locale } = useTranslation();
     const disputed = cosign.dispute !== null;
-    const reviewPolicy = underMonthlyReview(cosign);
+    const reviewPolicy = underReviewWindow(cosign);
     const published = (publishedAt: string): string => {
         switch (cosign.published_reason) {
             case 'auto_approved':
