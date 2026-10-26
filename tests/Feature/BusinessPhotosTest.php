@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessPhotos;
 use App\Models\BusinessPhoto;
+use App\Models\Party;
+use App\Models\StaffAccount;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -92,6 +97,22 @@ it('does not serve a photo through another business\'s campaign, an unknown camp
     $this->actingAs($user)->get(route('investor.deals.photo', ['campaign' => '01JZZZZZZZZZZZZZZZZZZZZZZZ', 'photo' => $photo['id']]))->assertNotFound();
     auth()->logout();
     $this->get(route('investor.deals.photo', ['campaign' => $this->campaign->id, 'photo' => $photo['id']]))->assertRedirect(route('login'));
+});
+
+it('serves photos to whoever may read the deals, and only while the deal is open', function (): void {
+    $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+    $url = route('investor.deals.photo', ['campaign' => $this->campaign->id, 'photo' => $photo['id']]);
+    $staff = User::factory()->withTwoFactor()->create();
+    StaffAccount::factory()->create(['user_id' => $staff->id]);
+
+    $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get($url)->assertOk();
+    $this->actingAs(User::query()->findOrFail($this->campaign->actor_user_id))->getJson($url)->assertForbidden();
+    $this->actingAs($staff)->getJson($url)->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
+    $this->actingAs(User::factory()->create(['party_id' => Party::factory()->verified()]))->getJson($url)->assertForbidden();
+
+    app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id, 1, 'Changed plans.',
+        (string) Str::uuid());
+    $this->actingAs($this->investor['user'])->getJson($url)->assertNotFound()->assertJsonPath('code', 'BUSINESS_PHOTO_NOT_FOUND');
 });
 
 it('refuses to serve a photo whose bytes no longer match their digest', function (string $content): void {

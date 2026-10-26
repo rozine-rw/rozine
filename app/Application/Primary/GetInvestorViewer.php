@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary;
 
+use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\GetInvestorVerification;
 use App\Application\Wallet\Contracts\WalletStore;
 use App\Domain\Identity\IdentityViolation;
@@ -18,7 +19,7 @@ use App\Domain\Identity\IdentityViolation;
  */
 final class GetInvestorViewer
 {
-    public function __construct(private WalletStore $wallets, private GetInvestorVerification $verification) {}
+    public function __construct(private WalletStore $wallets, private GetInvestorVerification $verification, private AuthorizeActiveRole $roles) {}
 
     /** @return Viewer */
     public function handle(int $userId, ?int $contextRevision): array
@@ -39,5 +40,17 @@ final class GetInvestorViewer
         }
 
         return ['identity_context_revision' => (int) $wallet['identity_context_revision'], 'wallet' => $wallet, 'verification' => null];
+    }
+
+    /** Refuses anyone `handle` would refuse, without reading a wallet, for reads that only need the person let in. */
+    public function admit(int $userId): void
+    {
+        try {
+            $this->roles->handle($userId, 'investor', null, null, fn (): null => null);
+        } catch (IdentityViolation $violation) {
+            if ($violation->reason !== 'IDENTITY_VERIFICATION_REQUIRED' || $this->verification->handle($userId)['verified']) {
+                throw $violation;
+            }
+        }
     }
 }

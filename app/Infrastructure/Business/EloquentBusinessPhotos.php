@@ -7,6 +7,7 @@ namespace App\Infrastructure\Business;
 use App\Application\Business\Contracts\BusinessPhotos;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCampaign;
+use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessPhoto;
 use App\Models\BusinessProfile;
 use InvalidArgumentException;
@@ -22,7 +23,8 @@ final class EloquentBusinessPhotos implements BusinessPhotos
 
     public function file(string $campaignId, string $photoId): array
     {
-        $businessId = BusinessCampaign::query()->whereKey($campaignId)->value('business_id');
+        $businessId = BusinessCampaign::query()->whereKey($campaignId)
+            ->whereNotIn('id', BusinessCampaignClosure::query()->select('business_campaign_id'))->value('business_id');
         $photo = is_string($businessId) ? BusinessPhoto::query()->where('business_id', $businessId)->find($photoId) : null;
         if ($photo === null) {
             throw new CommandRejection('BUSINESS_PHOTO_NOT_FOUND', 404);

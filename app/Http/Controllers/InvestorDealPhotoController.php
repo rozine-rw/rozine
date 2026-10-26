@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Business\GetBusinessPhoto;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /** One published Business photo for the deal card and the deal's Photos section (`investor.deals.photo`). */
 class InvestorDealPhotoController extends Controller
 {
-    public function __invoke(GetBusinessPhoto $action, string $campaign, string $photo): Response
+    public function __invoke(Request $request, GetBusinessPhoto $action, string $campaign, string $photo): Response
     {
-        $file = $action->handle($campaign, $photo);
+        $file = $action->handle((int) $request->user()?->getAuthIdentifier(), $campaign, $photo);
 
         // The URL names the bytes' digest, so a browser may keep them for a day.
         return response($file['bytes'], 200, [
