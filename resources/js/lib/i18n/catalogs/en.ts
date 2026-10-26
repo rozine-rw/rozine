@@ -1933,6 +1933,7 @@ const en = {
     'admin.finance.stream.audit_partner_share':
         'Platform fee · Audit Partner share (payable)',
     'admin.finance.stream.deposit_fees': 'Deposit fees',
+    'admin.finance.collected_untracked': 'Not tracked yet',
     'admin.finance.paid_by.business': 'Businesses',
     'admin.finance.paid_by.investor': 'Investors',
     'admin.finance.paid_by.seller': 'Seller',

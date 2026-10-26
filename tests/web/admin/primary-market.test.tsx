@@ -126,7 +126,7 @@ describe('Primary Market Monitor', () => {
 
         expect(trend).toHaveTextContent('Last 14 days · grouped by day');
         expect(within(trend).getByText('10-14')).toBeInTheDocument();
-        expect(within(trend).getByText('2.5M')).toBeInTheDocument();
+        expect(within(trend).getByText('RWF 2.5M')).toBeInTheDocument();
         expect(
             within(trend).queryByText('No funding to chart yet.'),
         ).not.toBeInTheDocument();

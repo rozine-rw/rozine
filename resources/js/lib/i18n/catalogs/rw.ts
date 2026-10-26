@@ -2052,6 +2052,7 @@ const rw: Catalog = {
     'admin.finance.stream.audit_partner_share':
         "Amafaranga ya platform · umugabane w'Audit Partner (ugomba kwishyurwa)",
     'admin.finance.stream.deposit_fees': 'Amafaranga yo kubitsa',
+    'admin.finance.collected_untracked': 'Ntibirakurikiranwa',
     'admin.finance.paid_by.business': 'Ibigo',
     'admin.finance.paid_by.investor': 'Abashoramari',
     'admin.finance.paid_by.seller': 'Ugurisha',

@@ -14,7 +14,7 @@ import {
     useStatFormatter,
 } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatRwf, formatRwfShort } from '@/lib/rozine/format';
+import { formatRwf, formatRwfChart } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminPrimaryMarketProps,
@@ -66,10 +66,11 @@ function TrendPanel({ trend }: { trend: AdminPrimaryMarketProps['trend'] }) {
                     <div
                         key={bar.label}
                         data-testid="chart-bar"
+                        title={formatRwf(bar.amount)}
                         className="flex h-full max-w-14 min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
                     >
                         <span className="text-[8.5px] font-bold whitespace-nowrap text-[#1428a8] dark:text-[#99a3ff]">
-                            {formatRwfShort(bar.amount).replace('RWF ', '')}
+                            {formatRwfChart(bar.amount)}
                         </span>
                         <div
                             className="w-full rounded-t-md bg-[#1e3aff] dark:bg-[#3d57ff]"

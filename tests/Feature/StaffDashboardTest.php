@@ -164,8 +164,8 @@ test('issued notes fill capital raised, outstanding notes, verified Investors an
         ->and($labels($window('2027-02-20T00:00', '2027-03-10T00:00')))->toBe(['03-02'])
         ->and($window('2027-01-01T00:00', '2028-06-30T00:00')['grain'])->toBe('month')
         ->and($window('2027-01-01T00:00', '2028-06-30T00:00')['bars'])->toBe([
-            ['label' => '2027-01', 'amount' => ['currency' => 'RWF', 'amount' => $principals[0]], 'height_pct' => 100],
-            ['label' => '2027-03', 'amount' => ['currency' => 'RWF', 'amount' => $principals[1]], 'height_pct' => 100]])
+            ['label' => '01/2027', 'amount' => ['currency' => 'RWF', 'amount' => $principals[0]], 'height_pct' => 100],
+            ['label' => '03/2027', 'amount' => ['currency' => 'RWF', 'amount' => $principals[1]], 'height_pct' => 100]])
         ->and($window('2020-01-01T00:00', '2030-01-01T00:00')['grain'])->toBe('year')
         ->and($labels($window('2027-03-01T00:00')))->toBe(['2027-03'])
         ->and($window('2027-03-03T00:00', '2027-03-04T00:00')['bars'])->toBe([]);

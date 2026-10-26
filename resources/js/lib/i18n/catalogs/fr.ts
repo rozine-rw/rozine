@@ -2059,6 +2059,7 @@ const fr: Catalog = {
     'admin.finance.stream.audit_partner_share':
         'Frais de plateforme · part Audit Partner (à payer)',
     'admin.finance.stream.deposit_fees': 'Frais de dépôt',
+    'admin.finance.collected_untracked': 'Pas encore suivi',
     'admin.finance.paid_by.business': 'Entreprises',
     'admin.finance.paid_by.investor': 'Investisseurs',
     'admin.finance.paid_by.seller': 'Vendeur',

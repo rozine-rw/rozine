@@ -377,7 +377,8 @@ describe('Finance', () => {
         const region = screen.getByRole('region', {
             name: 'Finance Dashboard',
         });
-        expect(within(region).getAllByText('—')).toHaveLength(6);
+        expect(within(region).getAllByText('—')).toHaveLength(5);
+        expect(within(region).getAllByText('Not tracked yet')).toHaveLength(1);
         expect(region).toHaveTextContent('All revenueRWF 2M');
         expect(region).toHaveTextContent(
             'Primary marketRWF 1.8MPlatform fee, Rozine share',
@@ -398,7 +399,7 @@ describe('Finance', () => {
                     name: 'Secondary market',
                 }),
             ).getAllByRole('row')[1],
-        ).toHaveTextContent('Resale fee2%Seller—');
+        ).toHaveTextContent('Resale fee2%SellerNot tracked yet');
         const residual = screen.getByRole('table', {
             name: 'Cost recovery and residuals',
         });
