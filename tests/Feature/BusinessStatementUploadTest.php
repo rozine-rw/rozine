@@ -73,6 +73,25 @@ it('lets a new business upload a statement on step 1 and lists it as received bu
         ->and($download->headers->get('Content-Disposition'))->toStartWith('attachment;');
 });
 
+it('downloads a statement whose name is not plain ASCII', function (): void {
+    $fixture = DraftFixture::make();
+    $user = $fixture['authority']['users'][0];
+    $business = $fixture['business']->id;
+    $path = "/business/{$business}/applications/{$fixture['application']->id}";
+
+    $this->actingAs($user)->from($path)->post("/business/{$business}/statements",
+        statementUploadForm(UploadedFile::fake()->createWithContent('état.csv', StatementFixture::csv()), 0))
+        ->assertRedirect($path)->assertSessionHasNoErrors();
+
+    $original = StatementOriginal::query()->sole();
+    expect($this->get("/business/{$business}/statements/{$original->id}")->assertOk()->headers->get('Content-Disposition'))
+        ->toBe("attachment; filename=etat.csv; filename*=utf-8''%C3%A9tat.csv");
+
+    Sanctum::actingAs($user, ['business:read']);
+    $this->getJson("/api/v1/business/{$business}/statements/{$original->id}")->assertOk()
+        ->assertHeader('Content-Disposition', "attachment; filename=etat.csv; filename*=utf-8''%C3%A9tat.csv");
+});
+
 it('shows a refused upload as a form error on the page without keeping anything', function (): void {
     $fixture = DraftFixture::make();
     $user = $fixture['authority']['users'][0];

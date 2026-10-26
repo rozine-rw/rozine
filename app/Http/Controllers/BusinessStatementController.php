@@ -14,6 +14,7 @@ use App\Http\Resources\OperationResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,7 +75,8 @@ class BusinessStatementController extends Controller
             'Content-Type' => $document['media_type'], 'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; sandbox",
         ]);
-        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition('attachment', $document['filename']));
+        $response->headers->set('Content-Disposition', HeaderUtils::makeDisposition('attachment', $document['filename'],
+            str_replace('%', '_', Str::ascii($document['filename'])) ?: 'statement'));
 
         return $response;
     }

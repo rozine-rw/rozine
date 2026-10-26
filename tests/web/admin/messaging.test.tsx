@@ -139,6 +139,7 @@ describe('Messaging History', () => {
         expect(mail).toHaveTextContent('Automation');
         expect(mail).toHaveTextContent('Email failed');
         expect(mail).toHaveTextContent('Email');
+        expect(mail).toHaveTextContent('2027-01-22 10:15:00 CAT');
 
         const inApp = rowOf('Kigali Bakery');
 
