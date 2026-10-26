@@ -174,7 +174,7 @@ upload.form = uploadForm
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 export const show = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -189,7 +189,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show.url = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -215,7 +215,7 @@ show.url = (args: { business: string | number, document: string | number } | [bu
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -225,7 +225,7 @@ show.get = (args: { business: string | number, document: string | number } | [bu
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 show.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -235,7 +235,7 @@ show.head = (args: { business: string | number, document: string | number } | [b
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 const showForm = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -245,7 +245,7 @@ const showForm = (args: { business: string | number, document: string | number }
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 showForm.get = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -255,7 +255,7 @@ showForm.get = (args: { business: string | number, document: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessStatementController::show
-* @see app/Http/Controllers/BusinessStatementController.php:68
+* @see app/Http/Controllers/BusinessStatementController.php:72
 * @route '/api/v1/business/{business}/statements/{document}'
 */
 showForm.head = (args: { business: string | number, document: string | number } | [business: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

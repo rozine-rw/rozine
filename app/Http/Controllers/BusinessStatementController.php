@@ -62,6 +62,10 @@ class BusinessStatementController extends Controller
                 : $fields);
         }
 
+        if ($result['revision'] === (int) $request->validated('expected_revision')) {
+            throw ValidationException::withMessages(['file' => ['You already uploaded this statement. It is in the list above.']]);
+        }
+
         return redirect()->back();
     }
 
