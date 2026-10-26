@@ -24,6 +24,22 @@ final class VerifiedAuditLocation
     }
 
     /**
+     * Whether dispatch can measure from this location: verified within the last 365 days
+     * (engineering contract), lapsed, or missing because none was verified or it moved since.
+     *
+     * @param  State  $state
+     * @return 'verified'|'expired'|'missing'
+     */
+    public static function standing(array $state, DateTimeImmutable $now): string
+    {
+        if ($state['point'] === null || $state['verified_at'] === null) {
+            return 'missing';
+        }
+
+        return new DateTimeImmutable($state['verified_at']) < $now->modify('-365 days') ? 'expired' : 'verified';
+    }
+
+    /**
      * @param  State  $state
      * @return State
      */

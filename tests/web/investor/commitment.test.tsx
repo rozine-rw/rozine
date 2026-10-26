@@ -55,7 +55,7 @@ describe('Commitment', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "The raise is still open. You can cancel, fee-free, until it's fully funded.",
+                "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
             ),
         ).toBeInTheDocument();
 

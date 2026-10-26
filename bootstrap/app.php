@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\EnterSoleApp;
+use App\Application\Identity\GetInvestorVerification;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Http\Middleware\HandleAppearance;
@@ -61,8 +62,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // A page read in the browser gets the access page, whichever app it belongs to; commands,
             // lookups and the API keep their JSON answer.
+            // A person asked to verify whose check is already with Compliance is told it is under review.
             if (! $request->expectsJson() && $request->isMethod('GET') && ! $request->is('api/*')) {
-                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status])
+                $verification = $exception->reason === 'IDENTITY_VERIFICATION_REQUIRED' && $request->user() !== null
+                    ? app(GetInvestorVerification::class)->stage((int) $request->user()->getAuthIdentifier()) : null;
+
+                return Inertia::render('identity/access-denied', ['code' => $exception->reason, 'status' => $exception->status, 'verification' => $verification])
                     ->toResponse($request)->setStatusCode($exception->status);
             }
 

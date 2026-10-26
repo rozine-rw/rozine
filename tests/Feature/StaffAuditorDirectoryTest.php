@@ -136,7 +136,7 @@ test('rows carry real standing, licences and engagements, and the chips and sear
             ->where('party.history.1.action.label', 'Submitted a licence for verification')->where('party.history.1.actor', 'Claude Niyonzima')
             ->where('party.kyc', null)->where('party.actions', []));
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $joined['party']->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('party.health', 'kyc_pending')->where('party.licence', null)->where('party.history', [])
+        ->assertInertia(fn (Assert $page) => $page->where('party.health', 'licence_pending')->where('party.licence', null)->where('party.history', [])
             ->where('party.list.rows', []));
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => auditorDirectoryStanding('Gloria Ineza', 'active', now('Africa/Kigali')->subDay()->format('Y-m-d'))->party_id]))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('party.health', 'watch')->where('party.licence.state', 'expired'));

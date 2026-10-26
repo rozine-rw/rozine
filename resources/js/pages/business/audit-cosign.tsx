@@ -142,7 +142,8 @@ function StateCard({ icon, children }: { icon: IconName; children: string }) {
  * a remount, so the acceptance starts unticked on the current facts, and its banner is carried
  * across that remount. A denial stays on the page as it is.
  *
- * N6 (`cosign.policy_version` `monthly-review-2026-09-26`): one signatory signs off or disputes
+ * N6 (`cosign.policy_version` `monthly-review-2026-09-26`, or `flash-review-2026-10-26` for a
+ * Flash report): one signatory signs off or disputes
  * within 24 hours of delivery, and an unsigned report is approved automatically at the end of the
  * window. A dispute is offered only when `allowed_actions` lists `report.dispute` and
  * `actions.dispute` is sent; it carries supporting text, proof files or both, as multipart through

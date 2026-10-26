@@ -32,7 +32,7 @@ beforeEach(function (): void {
 
 it('requires every independently attributed Party signature before publication and retains original retries', function (): void {
     $fixture = Fixture::ready(2);
-    expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
+    expect(Fixture::sealLegacy($fixture)['code'])->toBe('AUDIT_SEALED');
     $request = (string) Str::uuid();
     $first = Fixture::cosign($fixture, overrides: ['requestId' => $request, 'note' => "Reviewed\r\nagainst originals."]);
     expect($first['code'])->toBe('REPORT_COSIGNATURE_RECORDED')->and($first['revision'])->toBe(2);
@@ -107,7 +107,7 @@ it('serves the co-sign contract and one-signature publication through both trans
     $parameters = ['business' => $fixture['audit']['business'], 'report' => $fixture['report']->id];
     $response = $this->get(route($prefix.'show', $parameters))->assertOk();
     $page = $api ? $response->json('data') : $response->viewData('page')['props'];
-    expect($page['contract_version'])->toBe('business-audit-report-v1')->and($page['allowed_actions'])->toBe(['report.cosign'])
+    expect($page['contract_version'])->toBe('business-audit-report-v1')->and($page['allowed_actions'])->toBe(['report.cosign', 'report.dispute'])
         ->and($page['report']['findings'][0])->toHaveKeys(['code', 'title', 'body', 'evidence_ids'])
         ->and($page['report']['findings'][0]['body'])->toBe('Reported: 38,000,000. Observed: 37,000,000. Difference: -1,000,000.')
         ->and($page['report']['auditor_note'])->toBe('Observed difference retained for review.');
@@ -142,7 +142,7 @@ it('rolls back a signature and its receipt when publication cannot advance', fun
 
 it('rejects direct signature mutation and publication without retained signatures', function (): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $publication = AuditReportPublication::query()->firstOrFail();
     expect(fn () => DB::transaction(function () use ($publication): void {
         $publication->forceFill(['revision' => 2, 'status' => 'published', 'published_at' => now()])->save();

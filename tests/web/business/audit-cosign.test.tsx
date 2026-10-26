@@ -980,6 +980,24 @@ describe('Business audit co-sign — N6 review window copy', () => {
         }
     });
 
+    it('gives a Flash report sealed under its review policy the same 24-hour window', () => {
+        const page = props(n6OpenFixture);
+
+        page.report.kind = 'flash';
+        page.report.period = null;
+        page.cosign.policy_version = 'flash-review-2026-10-26';
+        setup(page);
+
+        expect(
+            screen.getByRole('note', { name: '24-hour review window' }),
+        ).toHaveTextContent(
+            `Sign off or dispute by ${formatDateTime(page.cosign.due_at!, 'en')}`,
+        );
+        expect(
+            screen.getByRole('button', { name: 'Submit a dispute' }),
+        ).toBeEnabled();
+    });
+
     it('says the window has ended, never overdue, once due_at has passed before the server publishes', () => {
         const page = props(n6OpenFixture);
 

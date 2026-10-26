@@ -386,6 +386,21 @@ describe('Suite launcher', () => {
             screen.getByRole('link', { name: 'Verify your identity →' }),
         ).toHaveAttribute('href', '/investor/verification');
     });
+    it('says a check already with Compliance is under review instead of asking for it again', () => {
+        render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                verification="pending"
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Your identity check is with our Compliance team. You can invest once it's confirmed.",
+        );
+        expect(
+            screen.queryByRole('link', { name: 'Verify your identity →' }),
+        ).not.toBeInTheDocument();
+    });
     it.each<[Exclude<IdentityCode, 'IDENTITY_READY'>, string, string, string]>([
         [
             'EMAIL_VERIFICATION_REQUIRED',
@@ -530,5 +545,220 @@ describe('Rozine logo', () => {
             'true',
         );
         expect(screen.getByTestId('mark')).not.toHaveAttribute('role');
+    });
+});
+
+describe('Adding Investor access to a verified Business member', () => {
+    const businessMember: IdentityContext = {
+        ...ready,
+        available_roles: ['business'],
+        allowed_actions: ['identity.select_role', 'identity.add_investor'],
+        context_revision: 4,
+    };
+    const offer = {
+        terms: {
+            version: 'investor-access-2026-10-26',
+            text: 'I accept the Rozine Investor Terms.',
+            sha256: 'a'.repeat(64),
+        },
+        link: { url: '/identity/investor-access', method: 'post' as const },
+    };
+
+    it('asks for the Investor terms, then adds the role and opens the Investor app', async () => {
+        mocks.command.submit
+            .mockResolvedValueOnce({
+                data: {
+                    ...businessMember,
+                    available_roles: ['investor', 'business'],
+                    allowed_actions: ['identity.select_role'],
+                },
+            })
+            .mockResolvedValueOnce({ data: selected('investor') });
+        render(<Launcher identity={businessMember} investor_access={offer} />);
+
+        const investor = screen.getAllByRole('listitem')[0];
+
+        expect(within(investor).queryByRole('link')).not.toBeInTheDocument();
+        await userEvent.click(
+            within(investor).getByRole('button', {
+                name: /Start investing →/u,
+            }),
+        );
+
+        const panel = screen.getByRole('region', {
+            name: 'Add Investor access',
+        });
+        const confirm = within(panel).getByRole('button', {
+            name: 'Add Investor access',
+        });
+
+        expect(panel).toHaveTextContent('I accept the Rozine Investor Terms.');
+        expect(confirm).toBeDisabled();
+        await userEvent.click(
+            within(panel).getByRole('checkbox', {
+                name: 'I have read and accept these Investor terms.',
+            }),
+        );
+        await userEvent.click(confirm);
+
+        expect(mocks.command.submit.mock.calls[0][0]).toEqual(offer.link);
+        expect(mocks.command.transform.mock.calls[0][0]()).toEqual({
+            expected_revision: 4,
+            terms_version: 'investor-access-2026-10-26',
+            terms_sha256: 'a'.repeat(64),
+            accepted: true,
+            request_id: expect.any(String),
+        });
+        expect(mocks.command.transform.mock.calls[1][0]()).toEqual({
+            role: 'investor',
+            expected_revision: 4,
+            request_id: expect.any(String),
+        });
+        expect(mocks.visit).toHaveBeenCalledWith(
+            expect.objectContaining({ url: '/identity/roles/investor/resume' }),
+        );
+    });
+
+    it('asks again when the Investor terms change while the panel is open', async () => {
+        const { rerender } = render(
+            <Launcher identity={businessMember} investor_access={offer} />,
+        );
+        await userEvent.click(
+            screen.getByRole('button', { name: /Start investing →/u }),
+        );
+        await userEvent.click(screen.getByRole('checkbox'));
+        expect(screen.getByRole('checkbox')).toBeChecked();
+
+        rerender(
+            <Launcher
+                identity={businessMember}
+                investor_access={{
+                    ...offer,
+                    terms: {
+                        version: 'investor-access-2026-11-01',
+                        text: 'I accept the revised Rozine Investor Terms.',
+                        sha256: 'b'.repeat(64),
+                    },
+                }}
+            />,
+        );
+
+        const panel = screen.getByRole('region', {
+            name: 'Add Investor access',
+        });
+
+        expect(panel).toHaveTextContent(
+            'I accept the revised Rozine Investor Terms.',
+        );
+        expect(within(panel).getByRole('checkbox')).not.toBeChecked();
+        expect(
+            within(panel).getByRole('button', { name: 'Add Investor access' }),
+        ).toBeDisabled();
+    });
+
+    it.each([
+        ['INVESTOR_TERMS_CHANGED', 'The Investor terms have changed.'],
+        ['INVESTOR_ACCESS_UNAVAILABLE', "Investor access can't be added"],
+        ['NETWORK_ERROR', 'We could not add Investor access.'],
+    ])(
+        'explains a refused grant (%s) and keeps the panel open',
+        async (code, message) => {
+            mocks.command.submit.mockImplementation(async (_route, options) => {
+                if (code !== 'NETWORK_ERROR') {
+                    options.onHttpException({
+                        status: 409,
+                        data: JSON.stringify({ code }),
+                    });
+                }
+
+                throw new Error(code);
+            });
+            render(
+                <Launcher identity={businessMember} investor_access={offer} />,
+            );
+            await userEvent.click(
+                screen.getByRole('button', { name: /Start investing →/u }),
+            );
+            await userEvent.click(screen.getByRole('checkbox'));
+            await userEvent.click(
+                screen.getByRole('button', { name: 'Add Investor access' }),
+            );
+
+            expect(await screen.findByRole('alert')).toHaveTextContent(message);
+            expect(screen.getAllByRole('listitem')).toHaveLength(3);
+            expect(mocks.visit).not.toHaveBeenCalled();
+        },
+    );
+
+    it.each([
+        ['an unreadable body', 'not-json'],
+        ['no code', '{}'],
+    ])('treats a refusal with %s as unavailable', async (_label, data) => {
+        mocks.command.submit.mockImplementation(async (_route, options) => {
+            options.onHttpException({ status: 500, data });
+
+            throw new Error('failed');
+        });
+        render(<Launcher identity={businessMember} investor_access={offer} />);
+        await userEvent.click(
+            screen.getByRole('button', { name: /Start investing →/u }),
+        );
+        await userEvent.click(screen.getByRole('checkbox'));
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Add Investor access' }),
+        );
+
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "Investor access can't be added",
+        );
+    });
+
+    it('says the grant is unavailable when the answer still lacks the Investor role, or a field was refused', async () => {
+        mocks.command.submit
+            .mockResolvedValueOnce({ data: businessMember })
+            .mockImplementationOnce(async (_route, options) => {
+                options.onError({ accepted: 'required' });
+
+                throw new Error('invalid');
+            });
+        render(<Launcher identity={businessMember} investor_access={offer} />);
+        await userEvent.click(
+            screen.getByRole('button', { name: /Start investing →/u }),
+        );
+        await userEvent.click(screen.getByRole('checkbox'));
+
+        const confirm = screen.getByRole('button', {
+            name: 'Add Investor access',
+        });
+
+        await userEvent.click(confirm);
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "Investor access can't be added",
+        );
+        await userEvent.click(confirm);
+        expect(await screen.findByRole('alert')).toHaveTextContent(
+            "Investor access can't be added",
+        );
+        expect(mocks.visit).not.toHaveBeenCalled();
+    });
+
+    it('closes the panel on cancel, and asks for access when the server sends no offer', async () => {
+        const { unmount } = render(
+            <Launcher identity={businessMember} investor_access={offer} />,
+        );
+
+        await userEvent.click(
+            screen.getByRole('button', { name: /Start investing →/u }),
+        );
+        await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(
+            screen.queryByRole('region', { name: 'Add Investor access' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(<Launcher identity={businessMember} />);
+        expect(
+            within(screen.getAllByRole('listitem')[0]).getByRole('link'),
+        ).toHaveTextContent(/Request access →$/u);
     });
 });

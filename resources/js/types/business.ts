@@ -102,6 +102,10 @@ export type BusinessTodo =
           /** The latest sealed audit report, waiting for the business's co-signatures. */
           kind: 'audit_cosign';
           report_kind: 'flash' | 'monthly';
+          /** When the 24-hour window to co-sign or dispute closes; null when the report has none. */
+          due_at: string | null;
+          /** Whole hours left in that window, rounded up; null when there is none. */
+          hours_left: number | null;
           link: RouteLink;
       }
     | {
@@ -229,6 +233,8 @@ export type BusinessAuditReportEntry = {
     id: string;
     kind: 'flash' | 'monthly';
     status: BusinessAuditReportStatus;
+    /** When its 24-hour review window closes; null for a report sealed before it had one. */
+    due_at: string | null;
     link: RouteLink;
 };
 

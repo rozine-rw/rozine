@@ -23,8 +23,11 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Detail array{
  *     row: DirectoryRow, restricted_since: string|null,
  *     history: list<array{id: string, at: string, actor: string, command: string, reason: string|null}>,
- *     holdings: list<array{business_id: string, name: string, principal: string, notes: int}>
+ *     holdings: list<array{business_id: string, name: string, principal: string, notes: int}>, committed: string
  * }
+ *
+ * `committed` is the cash the person has committed to raises whose notes are not issued yet; the
+ * portfolio counts it, the holdings do not.
  */
 interface InvestorDirectoryStore
 {

@@ -267,10 +267,7 @@
                 "owes": "business",
                 "reminded_at": null,
                 "links": {
-                    "pdf": {
-                        "url": "/preview/admin-audit-reports",
-                        "method": "get"
-                    },
+                    "pdf": null,
                     "remind": {
                         "url": "/preview/admin-audit-reports",
                         "method": "get"
@@ -283,7 +280,7 @@
                 "kind": "monthly",
                 "period": "2026-12-01",
                 "auditor": "Diane Uwase",
-                "licence": null,
+                "licence": "ICPAR-2022-0198",
                 "status": "overdue",
                 "due_at": "2027-01-07T21:59:59Z",
                 "cosign_by": null,
@@ -315,10 +312,7 @@
                 "owes": null,
                 "reminded_at": null,
                 "links": {
-                    "pdf": {
-                        "url": "/preview/admin-audit-reports",
-                        "method": "get"
-                    },
+                    "pdf": null,
                     "remind": null
                 }
             }
@@ -340,10 +334,7 @@
                 "owes": null,
                 "reminded_at": null,
                 "links": {
-                    "pdf": {
-                        "url": "/preview/admin-audit-reports",
-                        "method": "get"
-                    },
+                    "pdf": null,
                     "remind": null
                 },
                 "variance_flagged": true

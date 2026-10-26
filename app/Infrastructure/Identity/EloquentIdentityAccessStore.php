@@ -10,7 +10,9 @@ use App\Application\Identity\VerifyAuthenticator;
 use App\Domain\Identity\ActiveRolePolicy;
 use App\Domain\Identity\BookmarkDestination;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\InvestorAccessTerms;
 use App\Domain\Identity\MembershipTransitions;
+use App\Domain\Identity\RoleAccess;
 use App\Domain\Identity\StaffPermission;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
@@ -41,6 +43,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         private IdentityRepository $identities,
         private MembershipTransitions $transitions,
         private ActiveRolePolicy $roles,
+        private RoleAccess $access,
         private BookmarkDestination $destinations,
         private VerifyAuthenticator $authenticator,
     ) {}
@@ -638,6 +641,11 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         $source = $parties->get($user->party_id);
         $party = $identity === null ? $source : $parties->get($identity->party_id);
 
+        // A staff approval of an ID already verified for someone else is a duplicate, not an operator's reconciliation.
+        if ($approve !== null && $identity !== null && $identity->party_id !== $user->party_id) {
+            throw new IdentityViolation('IDENTITY_VERIFIED_FOR_ANOTHER_PERSON', 409);
+        }
+
         if (($approve !== null && $identity !== null) || ($source !== null && ($source->kind !== 'person'
             || ($source->id !== $identity?->party_id && ($source->memberships()->exists() || $source->verifiedIdentity()->exists()))))) {
             throw new IdentityViolation('IDENTITY_RECONCILIATION_REQUIRED', 409);
@@ -797,6 +805,41 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $after = ['membership_id' => $membership['id'], 'membership_revision' => $membership['revision'], 'context_revision' => $expectedRevision + 1];
             $this->record('user:'.$userId, $userId, 'user', (string) $userId, 'role.select', $reason, $requestId, $hash,
                 $before, $after, $after);
+        }, 3);
+    }
+
+    /** @return array<string, mixed> */
+    public function addOwnInvestorAccess(int $userId, int $expectedRevision, string $termsVersion, string $termsSha256, string $requestId): array
+    {
+        return DB::transaction(function () use ($userId, $expectedRevision, $termsVersion, $termsSha256, $requestId): array {
+            $user = User::query()->lockForUpdate()->findOrFail($userId);
+            $party = $this->lockParty($user->party_id);
+            $reason = 'Verified person added Investor access to their own Party.';
+            $hash = $this->requestHash(['investor.self_grant', $expectedRevision, $termsVersion, $termsSha256], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$userId, $requestId, $hash)) !== null) {
+                return $replay;
+            }
+            if ($termsVersion !== InvestorAccessTerms::VERSION || ! hash_equals(InvestorAccessTerms::sha256(), $termsSha256)) {
+                throw new IdentityViolation('INVESTOR_TERMS_CHANGED', 409);
+            }
+            $identity = $this->identities->forUser($userId);
+            if ($identity['context_revision'] !== $expectedRevision) {
+                throw new IdentityViolation('ACTIVE_ROLE_REVISION_CONFLICT', 409);
+            }
+            $access = $this->access->evaluate($identity['email_verified'], $identity['party']['kind'] ?? null,
+                $identity['party']['verified'] ?? false, $identity['memberships']);
+            if ($party === null || $access['code'] !== 'IDENTITY_READY' || ! $this->access->mayAddInvestor($identity['memberships'])) {
+                throw new IdentityViolation('INVESTOR_ACCESS_UNAVAILABLE', 409);
+            }
+
+            [$membership, , $revision] = $this->transitionMembership($party, 'investor', 'active', 0);
+            $result = ['code' => 'INVESTOR_ACCESS_ADDED', 'party_id' => $party->id, 'membership' => [
+                'id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision,
+            ]];
+            $this->record('user:'.$userId, $userId, 'membership', $membership->id, 'investor.self_grant', $reason, $requestId, $hash,
+                [], ['status' => 'active', 'revision' => $revision, 'terms_version' => $termsVersion, 'terms_sha256' => $termsSha256], $result);
+
+            return $result;
         }, 3);
     }
 

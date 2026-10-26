@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 final class EloquentOperationsDashboardStore implements OperationsDashboardStore
 {
     /** How each bucket is labelled under the bar. */
-    private const LABELS = ['year' => 'YYYY', 'month' => 'YYYY-MM', 'day' => 'MM-DD', 'hour' => 'DD HH24:00'];
+    private const LABELS = ['year' => 'YYYY', 'month' => 'MM/YYYY', 'day' => 'DD/MM', 'hour' => 'DD/MM HH24:00'];
 
     /** The postings that credit a deposit, Investor and Business. */
     private const DEPOSITS = ['deposit_credit', 'business_deposit_credit'];

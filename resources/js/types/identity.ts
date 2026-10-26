@@ -21,7 +21,28 @@ export type IdentityContext = {
     available_roles: MarketplaceRole[];
     active_role: MarketplaceRole | null;
     context_revision: number;
-    allowed_actions: ('identity.select_role' | 'identity.view_role')[];
+    allowed_actions: (
+        | 'identity.select_role'
+        | 'identity.view_role'
+        | 'identity.add_investor'
+    )[];
+};
+
+/**
+ * What a verified Business member accepts to add Investor access to their own Party, and where
+ * the launcher sends that acceptance. The server sends it only while the person may add it.
+ */
+export type InvestorAccessOffer = {
+    terms: { version: string; text: string; sha256: string };
+    link: { url: string; method: 'post' };
+};
+
+export type AddInvestorAccessInput = {
+    expected_revision: number;
+    terms_version: string;
+    terms_sha256: string;
+    accepted: boolean;
+    request_id: string;
 };
 
 export type IdentityMutation = {

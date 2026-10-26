@@ -12,6 +12,7 @@ import {
     formatMonthYear,
     formatMonthYearLong,
     formatRwf,
+    formatRwfChart,
     formatRwfShort,
 } from '@/lib/rozine/format';
 
@@ -32,6 +33,14 @@ describe('Rozine display formatting', () => {
         expect(formatRwfShort(money(18000000))).toBe('RWF 18M');
         expect(formatRwfShort(money(11900000))).toBe('RWF 11.9M');
         expect(formatRwfShort(money(1600000000))).toBe('RWF 1.6B');
+    });
+
+    it('writes chart amounts on one compact scale, always in RWF', () => {
+        expect(formatRwfChart(money(0))).toBe('RWF 0');
+        expect(formatRwfChart(money(400))).toBe('RWF 1K');
+        expect(formatRwfChart(money(500000))).toBe('RWF 500K');
+        expect(formatRwfChart(money(49300000))).toBe('RWF 49.3M');
+        expect(formatRwfChart(money(1600000000))).toBe('RWF 1.6B');
     });
 
     it('writes stat-tile millions without the currency', () => {

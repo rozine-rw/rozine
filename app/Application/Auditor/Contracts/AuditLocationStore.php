@@ -19,4 +19,11 @@ interface AuditLocationStore
 
     /** @return Location */
     public function get(int $actorId, string $kind, string $subjectId): array;
+
+    /**
+     * The signed-in Audit Partner's own office, as dispatch sees it, with no coordinates or evidence.
+     *
+     * @return 'verified'|'expired'|'missing'
+     */
+    public function ownOffice(int $userId, int $contextRevision): string;
 }

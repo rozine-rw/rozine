@@ -118,6 +118,17 @@ export function JobsBody({
                         engagement={props.engagement}
                         className="mt-3.5"
                     />
+                    {(props.office === 'missing' ||
+                        props.office === 'expired') && (
+                        <p
+                            role="status"
+                            className="mt-3.5 rounded-2xl border-[1.5px] border-[#f0d18f] bg-rz-surface p-[13px] text-[13px] leading-[1.45] text-rz-ink dark:border-[rgba(240,160,96,.45)]"
+                        >
+                            {t(`auditor.jobs.office.${props.office}`, {
+                                radius: props.radius_km,
+                            })}
+                        </p>
+                    )}
                     {notice}
                     <RadiusMap
                         radiusKm={props.radius_km}

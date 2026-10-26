@@ -34,19 +34,21 @@ export function AcceptForm({
     return (
         <div className={cn(CARD, 'mt-3.5 p-[15px]')}>
             <label className="flex cursor-pointer items-start gap-2.5">
-                <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(event) => setChecked(event.target.checked)}
-                    aria-invalid={acceptanceRequired || undefined}
-                    aria-describedby={acceptanceRequired ? errorId : undefined}
-                    className="peer sr-only"
-                />
-                <span
-                    aria-hidden
-                    className="mt-px flex size-5 shrink-0 items-center justify-center rounded-[7px] border-2 border-[#d3dae6] bg-rz-surface text-white peer-checked:border-rz-accent-fill peer-checked:bg-rz-accent-fill peer-focus-visible:ring-2 peer-focus-visible:ring-rz-focus-border dark:border-rz-border"
-                >
-                    {checked && <Tick className="size-3.5" />}
+                {/* The native checkbox is the visible box, so pointer, keyboard and assistive technology all reach the same control. */}
+                <span className="relative mt-px flex size-5 shrink-0">
+                    <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(event) => setChecked(event.target.checked)}
+                        aria-invalid={acceptanceRequired || undefined}
+                        aria-describedby={
+                            acceptanceRequired ? errorId : undefined
+                        }
+                        className="size-5 cursor-pointer appearance-none rounded-[7px] border-2 border-[#d3dae6] bg-rz-surface outline-none checked:border-rz-accent-fill checked:bg-rz-accent-fill focus-visible:ring-2 focus-visible:ring-rz-focus-border dark:border-rz-border"
+                    />
+                    {checked && (
+                        <Tick className="pointer-events-none absolute inset-0 m-auto size-3.5 text-white" />
+                    )}
                 </span>
                 <span className="text-[13px] leading-[1.5] text-rz-ink">
                     {t('auditor.engagement.accept_label')}

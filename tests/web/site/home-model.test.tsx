@@ -98,9 +98,9 @@ describe('what an investor is charged and offered', () => {
         const site = mountSite();
 
         expect(site.depFor(0)).toBe(5_000);
-        expect(site.depFor(40)).toBe(200_000_000);
+        expect(site.depFor(40)).toBe(50_000_000);
         expect(site.depFor(-5)).toBe(5_000);
-        expect(site.depFor(99)).toBe(200_000_000);
+        expect(site.depFor(99)).toBe(50_000_000);
         expect(site.depFor(null)).toBe(5_000);
         [8, 16, 24, 32].forEach((index) => {
             expect(site.depFor(index) % 5_000).toBe(0);

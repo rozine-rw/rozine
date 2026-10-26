@@ -51,7 +51,7 @@ describe('Auditor display formatting', () => {
             </I18nContext>,
         );
 
-        expect(screen.getByText('Rendement · OCT')).toBeInTheDocument();
+        expect(screen.getByText('Honoraires · OCT')).toBeInTheDocument();
         /* The Portfolio's due list opens on the current month: « oct. » reads OCT on its tiles. */
         expect(
             screen.getAllByText('OCT', { selector: 'span' }).length,

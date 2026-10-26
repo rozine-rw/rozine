@@ -49,7 +49,34 @@ class StaffActivityResource extends JsonResource
         'investor.verification.approve' => ['Approved an identity submission', 'green'],
         'investor.verification.reject' => ['Rejected an identity submission', 'red'],
         'business.authority.configure' => ['Configured a Business mandate', 'purple'], 'consent.release.record' => ['Recorded a consent release', 'blue'],
+        'investor.self_grant' => ['Added Investor access', 'green'], 'investor.risk.acknowledge' => ['Acknowledged the investment risks', 'grey'],
+        'verification.save' => ['Saved an identity step', 'grey'], 'verification.upload' => ['Uploaded an identity document', 'grey'],
+        'verification.submit' => ['Submitted identity for review', 'blue'], 'availability.update' => ['Updated audit availability', 'grey'],
+        'accreditation.submit' => ['Submitted a licence', 'blue'], 'accreditation.renew' => ['Renewed a licence', 'blue'],
+        'accreditation.withdraw' => ['Withdrew a licence submission', 'amber'], 'accreditation.review' => ['Reviewed a licence', 'purple'],
+        'audit.assignment.request' => ['Requested an audit', 'blue'], 'audit.assignment.advance' => ['Moved an audit to its next partner', 'amber'],
+        'audit.engagement.accept' => ['Accepted an audit engagement', 'green'], 'audit.engagement.record' => ['Recorded an audit engagement', 'blue'],
+        'audit.independence.review' => ['Reviewed auditor independence', 'purple'], 'conflict.declare' => ['Declared a conflict of interest', 'amber'],
+        'audit.start' => ['Started an audit', 'blue'], 'audit.save_step' => ['Saved an audit step', 'grey'], 'audit.seal' => ['Sealed an audit report', 'green'],
+        'audit.amend' => ['Amended an audit report', 'amber'], 'audit.dispute.uphold' => ['Upheld a report dispute', 'amber'],
+        'audit.location.verify' => ['Verified a dispatch location', 'green'], 'audit.location.invalidate' => ['Marked a dispatch location moved', 'amber'],
+        'report.cosign' => ['Co-signed an audit report', 'green'], 'report.dispute' => ['Disputed an audit report', 'amber'],
+        'statement.ingest' => ['Uploaded a bank statement', 'blue'], 'statement.reconcile' => ['Reconciled a bank statement', 'blue'],
+        'statement.verify' => ['Verified a bank statement', 'green'], 'primary.cancel' => ['Cancelled a commitment', 'amber'],
+        'wallet.withdraw' => ['Requested a withdrawal', 'blue'], 'wallet.link_method' => ['Linked a payout account', 'blue'],
+        'wallet.unlink_method' => ['Unlinked a payout account', 'grey'], 'business.wallet.link_method' => ['Linked a Business payout account', 'blue'],
+        'business.wallet.unlink_method' => ['Unlinked a Business payout account', 'grey'], 'complaint.open' => ['Opened a complaint', 'amber'],
+        'complaint.reply' => ['Replied to a complaint', 'blue'], 'audit.source.fixture' => ['Loaded synthetic audit sources', 'grey'],
+        'business.credit.fixture' => ['Loaded synthetic credit facts', 'grey'],
     ];
+
+    /** How a target with no recorded name reads, before its ID. */
+    private const TARGETS = ['party' => 'Party', 'auditor.party' => 'Audit Partner', 'business' => 'Business', 'business_profile' => 'Business',
+        'campaign' => 'Note', 'application' => 'Application', 'audit.assignment' => 'Audit', 'audit.report' => 'Audit report',
+        'primary_reservation' => 'Reservation', 'investor_wallet' => 'Investor wallet', 'business_wallet' => 'Business wallet', 'complaint' => 'Complaint'];
+
+    /** Targets named after a person, which read as just the name. */
+    private const PEOPLE = ['user', 'membership', 'party', 'auditor.party'];
 
     /** The access fields an identity entry's before/after may show. */
     private const FIELDS = ['enabled', 'roles', 'status'];
@@ -74,7 +101,7 @@ class StaffActivityResource extends JsonResource
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
             'events' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'],
                 'actor' => $entry['actor'] ?? self::SOURCES['console'], 'action' => self::action($entry['code'], $entry['outcome']['status'] ?? null),
-                'target' => $entry['target_name'] ?? ucfirst(str_replace(['.', '_'], ' ', $entry['target_type'])).' '.$entry['target_id'],
+                'target' => self::target($entry),
                 'source' => self::SOURCES[$entry['actor_kind']], 'reason' => $entry['reason'], 'changes' => self::changes($entry)], $page['entries']),
             'total' => $page['total'], 'filters' => $filters, 'more' => $more, 'export' => ['state' => 'idle'], 'actions' => (object) []];
     }
@@ -90,6 +117,23 @@ class StaffActivityResource extends JsonResource
         [$label, $tone] = self::ACTIONS[$code] ?? [ucfirst(str_replace(['.', '_'], ' ', $code)), 'grey'];
 
         return $status === 'rejected' ? ['code' => $code, 'label' => $label.' (refused)', 'tone' => 'red'] : ['code' => $code, 'label' => $label, 'tone' => $tone];
+    }
+
+    /**
+     * What an entry acted on: a person by name, anything else by its kind and the name it belongs
+     * to, or by its kind and ID (upper-cased, as IDs are shown elsewhere) when it has no name.
+     *
+     * @param  TrailEntry  $entry
+     */
+    private static function target(array $entry): string
+    {
+        $type = $entry['target_type'];
+        $kind = self::TARGETS[$type] ?? ucfirst(str_replace(['.', '_'], ' ', $type));
+        if ($entry['target_name'] !== null) {
+            return in_array($type, self::PEOPLE, true) ? $entry['target_name'] : $kind.' · '.$entry['target_name'];
+        }
+
+        return $kind.' '.strtoupper($entry['target_id']);
     }
 
     /**

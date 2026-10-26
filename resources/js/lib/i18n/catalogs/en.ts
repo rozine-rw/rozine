@@ -37,6 +37,10 @@ const en = {
     'identity.denied.staff_only.title': 'This page is for Rozine staff',
     'identity.denied.staff_only.body':
         'Only Rozine staff can open this page. Choose an app to go back to your own work.',
+    'identity.denied.verification_pending.title':
+        'Your identity check is under review',
+    'identity.denied.verification_pending.body':
+        'Our Compliance team is checking the details you sent. This page opens once your identity is confirmed.',
     'identity.denied.verification_required.title':
         'Identity verification required',
     'identity.denied.verification_required.body':
@@ -97,6 +101,8 @@ const en = {
     'auth.register.confirm_label': 'Confirm password',
     'auth.register.confirm_placeholder': 'Confirm password',
     'auth.register.submit': 'Create account',
+    'auth.register.sandbox.title': 'Before you sign up',
+    'auth.register.sandbox.acknowledge': 'I understand, continue',
     'auth.register.have_account': 'Already have an account?',
     'auth.register.log_in': 'Log in',
     'auth.brand.wordmark': 'rozine',
@@ -166,6 +172,21 @@ const en = {
     'suite.app.open': 'Open app →',
     'suite.app.browse': 'Browse deals →',
     'suite.app.request_access': 'Request access →',
+    'suite.app.add_access': 'Start investing →',
+    'suite.app.investor.add':
+        'Add Investor access to your verified identity. No second identity check.',
+    'suite.add_investor.title': 'Add Investor access',
+    'suite.add_investor.body':
+        'Your identity is already verified for your Business account, so you will not be asked to verify it again. Read and accept the Investor terms to start investing.',
+    'suite.add_investor.accept': 'I have read and accept these Investor terms.',
+    'suite.add_investor.confirm': 'Add Investor access',
+    'suite.add_investor.cancel': 'Cancel',
+    'suite.add_investor.network_error':
+        'We could not add Investor access. Check your connection and try again.',
+    'suite.add_investor.terms_changed':
+        'The Investor terms have changed. Refresh your access and read them again.',
+    'suite.add_investor.unavailable':
+        "Investor access can't be added to this account here. Refresh your access, or contact Rozine.",
     'suite.app.investor.preview':
         'Browse open deals now. Investing opens once your identity is verified.',
     'suite.app.investor.title': 'Investor',
@@ -188,6 +209,8 @@ const en = {
         'Your identity is not set up yet',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         'Your sign-in is not linked to a verified identity, so no app can open yet.',
+    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body':
+        "Your identity check is with our Compliance team. You can invest once it's confirmed.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title': 'Ready to invest?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
         'Signing authority is needed',
@@ -302,6 +325,8 @@ const en = {
     'business.today.cosign.sub':
         'Your CPA sealed it. Read the findings before you co-sign.',
     'business.today.cosign.cta': 'Review & co-sign',
+    'business.today.cosign.due':
+        'Co-sign or dispute by {date} · {hours} h left',
     'business.today.signature.kicker': 'Signature needed',
     'business.today.signature.sub':
         'Your signature is needed before this application can be submitted.',
@@ -968,8 +993,7 @@ const en = {
     'admin.nav.payments': 'Payments',
     'admin.section.payments.title': 'Payment Center',
     'admin.section.payments.subtitle': 'Money movement across the platform',
-    'admin.section.payments.search':
-        'Search payments by name, reference, method…',
+    'admin.section.payments.search': 'Search payments…',
     'admin.nav.ratings': 'Ratings',
     'admin.section.ratings.title': 'Ratings',
     'admin.section.ratings.subtitle':
@@ -1109,7 +1133,7 @@ const en = {
     'admin.design.notes.kpi.total': 'Total Notes',
     'admin.design.notes.kpi.live': 'Live Raises',
     'admin.design.notes.kpi.repaying': 'Repaying',
-    'admin.design.notes.kpi.raised': 'Capital Raised',
+    'admin.design.notes.kpi.raised': 'Capital Issued',
     'admin.design.notes.tab.all': 'All',
     'admin.design.notes.tab.live': 'Live',
     'admin.design.notes.tab.repaying': 'Repaying',
@@ -1119,8 +1143,9 @@ const en = {
     'admin.design.notes.notes.empty': 'No notes to show yet.',
     'admin.design.primary_market.kpi.active': 'Active Raises',
     'admin.design.primary_market.kpi.active.sub': 'Live now',
-    'admin.design.primary_market.kpi.in_flight': 'Capital In Flight',
-    'admin.design.primary_market.kpi.in_flight.sub': 'Raised so far',
+    'admin.design.primary_market.kpi.in_flight': 'Raised in Live Raises',
+    'admin.design.primary_market.kpi.in_flight.sub':
+        'Committed to raises still filling',
     'admin.design.primary_market.kpi.fill': 'Avg Fill',
     'admin.design.primary_market.kpi.fill.sub': 'Of target',
     'admin.design.primary_market.kpi.completion': 'Completion Rate',
@@ -1179,7 +1204,7 @@ const en = {
     'admin.design.payments.approvals.title': 'Approval queue',
     'admin.design.payments.approvals.empty':
         'Nothing awaiting approval to show yet.',
-    'admin.design.ratings.kpi.rated': 'Businesses rated',
+    'admin.design.ratings.kpi.rated': 'Published ratings',
     'admin.design.ratings.kpi.changed': 'Band changed',
     'admin.design.ratings.kpi.trending_down': 'Trending down',
     'admin.design.ratings.kpi.pinned': 'Pinned by staff',
@@ -1187,6 +1212,8 @@ const en = {
     'admin.design.ratings.tab.trending_down': 'Trending down',
     'admin.design.ratings.tab.all': 'All businesses',
     'admin.design.ratings.book.title': 'The rating book',
+    'admin.design.ratings.book.sub':
+        'Businesses whose rating was published with a raise. Ratings on applications still under review are provisional and show in the Applications queue.',
     'admin.design.ratings.book.empty': 'No ratings to show yet.',
     'admin.design.deferrals.kpi.this_month': 'Deferrals this month',
     'admin.design.deferrals.kpi.live': 'Live',
@@ -1296,6 +1323,8 @@ const en = {
         "A held business's monthly report is sealed",
     'admin.messaging.trigger.primary.raise_funded':
         'A raise the investor committed to is fully funded',
+    'admin.messaging.trigger.primary.commitment_confirmed':
+        'The investor confirms a purchase',
     'admin.messaging.trigger.primary.holding_issued':
         'Notes are issued to the investor',
     'admin.messaging.trigger.security.password_changed':
@@ -1371,6 +1400,8 @@ const en = {
         'Investment confirmed',
     'admin.messaging.template.investor.payment_delayed': 'Payment delayed',
     'admin.messaging.template.investor.payout_received': 'Payout received',
+    'admin.messaging.template.investor.purchase_confirmed':
+        'Purchase confirmed',
     'admin.messaging.template.investor.raise_expired': 'Raise expired',
     'admin.messaging.template.investor.report_published': 'Report published',
     'admin.messaging.template.investor.verification_decided':
@@ -1507,8 +1538,7 @@ const en = {
     'admin.section.businesses.title': 'Business Directory',
     'admin.section.businesses.subtitle':
         'All verified businesses on the platform',
-    'admin.section.businesses.search':
-        'Search businesses by name, industry, status…',
+    'admin.section.businesses.search': 'Search businesses…',
     'admin.section.investors.title': 'Investor Directory',
     'admin.section.investors.subtitle': 'Manage investor accounts and KYC',
     'admin.section.investors.search': 'Search investors by name or KYC…',
@@ -1529,7 +1559,7 @@ const en = {
     'admin.section.events.title': 'Activity & Audit',
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
-    'admin.section.events.search': 'Search the trail by user, action, object…',
+    'admin.section.events.search': 'Search the trail…',
     'admin.search.label': 'Search this page',
     'admin.search.empty_title': 'No matches on this page',
     'admin.search.empty_body':
@@ -1573,8 +1603,9 @@ const en = {
     'admin.kyc.col.decision': 'Decision',
     'admin.kyc.review': 'Review',
     'admin.kyc.review_named': 'Review {name}',
-    'admin.kyc.stats.completion': 'KYC completion',
-    'admin.kyc.stats.completion_sub': '{verified} of {total} verified',
+    'admin.kyc.stats.completion': 'KYC cases approved',
+    'admin.kyc.stats.completion_sub':
+        '{verified} of {total} in-app submissions',
     'admin.kyc.stats.percent': '{value}%',
     'admin.kyc.stats.pending': 'Pending reviews',
     'admin.kyc.stats.turnaround': 'Avg {hours}h turnaround',
@@ -1904,6 +1935,7 @@ const en = {
     'admin.finance.stream.audit_partner_share':
         'Platform fee · Audit Partner share (payable)',
     'admin.finance.stream.deposit_fees': 'Deposit fees',
+    'admin.finance.collected_untracked': 'Not tracked yet',
     'admin.finance.paid_by.business': 'Businesses',
     'admin.finance.paid_by.investor': 'Investors',
     'admin.finance.paid_by.seller': 'Seller',
@@ -1933,13 +1965,13 @@ const en = {
     'admin.today.command.review_queue': 'Review queue',
     'admin.today.command.audit_desk': 'Audit desk',
     'admin.today.command.policies': 'Policies',
-    'admin.today.kpi.capital_raised': 'Total Capital Raised',
-    'admin.today.kpi.capital_raised_trend': 'Across all notes',
+    'admin.today.kpi.capital_raised': 'Capital Issued',
+    'admin.today.kpi.capital_raised_trend': 'Principal of issued notes',
     'admin.today.kpi.active_businesses': 'Active Businesses',
     'admin.today.kpi.active_businesses_trend': 'On the platform',
     'admin.today.kpi.verified_investors': 'Verified Investors',
     'admin.today.kpi.verified_investors_trend': 'KYC cleared',
-    'admin.today.kpi.outstanding_notes': 'Outstanding Notes',
+    'admin.today.kpi.outstanding_notes': 'Open Notes',
     'admin.today.kpi.outstanding_notes_trend': 'Live · funding · repaying',
     'admin.today.kpi.treasury_position': 'Treasury Position',
     'admin.today.kpi.treasury_positive': 'Fees in, minus payouts',
@@ -2055,7 +2087,7 @@ const en = {
     'admin.applications.col.sector': 'Sector',
     'admin.applications.col.requested': 'Requested',
     'admin.applications.col.capacity': 'Capacity used',
-    'admin.applications.col.rating': 'Rating',
+    'admin.applications.col.rating': 'Engine rating',
     'admin.applications.col.submitted': 'Submitted',
     'admin.applications.col.decision': 'Decision · Actions',
     'admin.applications.terms': '{term}mo · {rate}% flat',
@@ -2218,7 +2250,7 @@ const en = {
         'e.g. MTN confirmed reference MM-88213 reversed in full; destination re-verified.',
     'admin.parties.policy_title': 'Business eligibility rules',
     'admin.parties.filter': 'Filter by status',
-    'admin.audit_reports.title': 'Monthly audit compliance tracker',
+    'admin.audit_reports.title': 'Audit report tracker',
     'admin.audit_reports.caption':
         'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to co-sign or dispute.',
     'admin.audit_reports.field.title': 'Field Flash Audit operations',
@@ -2238,6 +2270,8 @@ const en = {
     'admin.audit_reports.monthly': 'Monthly audit',
     'admin.audit_reports.flash': 'Flash Audit',
     'admin.audit_reports.due': 'Due {date}',
+    'admin.audit_reports.sealed_on': 'Sealed {date}',
+    'admin.audit_reports.period_flash': 'On demand',
     'admin.audit_reports.cosign_by': 'Co-sign by {date}',
     'admin.audit_reports.remind': 'Remind',
     'admin.audit_reports.remind_auditor':
@@ -2250,7 +2284,7 @@ const en = {
         'Download the sealed report for {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audited & published',
     'admin.audit_reports.stats.awaiting_cosign': 'Awaiting sign-off',
-    'admin.audit_reports.stats.overdue': 'SLA breached',
+    'admin.audit_reports.stats.overdue': 'Overdue reports',
     'admin.audit_reports.stats.on_time': 'On-time audit rate',
     'admin.audit_reports.chip.all': 'All',
     'admin.audit_reports.chip.owed': 'Owed by a partner',
@@ -2374,6 +2408,7 @@ const en = {
     'admin.parties.health.distressed': 'Distressed',
     'admin.parties.health.active': 'Active',
     'admin.parties.health.kyc_pending': 'KYC pending',
+    'admin.parties.health.licence_pending': 'Licence pending',
     'admin.parties.health.frozen': 'Frozen',
     'admin.parties.health.not_tracked': 'Not tracked',
     'admin.parties.kyc.verified': 'Verified',
@@ -2551,6 +2586,8 @@ const en = {
     'admin.parties.list.active_notes': 'Active notes',
     'admin.parties.list.holdings': 'Holdings',
     'admin.parties.list.engagements': 'Engagements',
+    'admin.parties.committed_note':
+        '{amount} is committed to raises whose notes are not issued yet. The portfolio counts it; it joins Holdings once the notes issue.',
     'admin.parties.list_empty': 'Nothing here yet.',
     'admin.parties.holding_detail': {
         one: '{amount} · {count} note',
@@ -2571,6 +2608,68 @@ const en = {
     'admin.parties.verify_licence': '✓ Verify licence',
     'admin.parties.reject': 'Reject',
     'admin.parties.licence_title': 'ICPAR licence & verification',
+    'admin.parties.office.title': 'Registered office',
+    'admin.parties.office.status': 'Dispatch location',
+    'admin.parties.office.state.verified': 'Verified',
+    'admin.parties.office.state.expired': 'Verification lapsed',
+    'admin.parties.office.state.missing': 'Not verified',
+    'admin.parties.office.note.missing':
+        'No office location is on record, so this partner is not offered jobs. Jobs only go to partners whose verified office is within 30 km of the business.',
+    'admin.parties.office.note.expired':
+        'This office was verified more than a year ago, so this partner is not offered jobs until it is verified again.',
+    'admin.parties.office.coordinates': 'Coordinates',
+    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.office.verified_on': 'Verified on',
+    'admin.parties.office.evidence': 'Evidence checked',
+    'admin.parties.office.record': 'Record verified office',
+    'admin.parties.office.reverify': 'Verify office again',
+    'admin.parties.office.form': 'Verify the registered office',
+    'admin.parties.office.form_body':
+        'Enter the office coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put businesses out of range.',
+    'admin.parties.office.field.latitude': 'Latitude',
+    'admin.parties.office.field.longitude': 'Longitude',
+    'admin.parties.office.field.uncertainty_m': 'Accuracy (metres)',
+    'admin.parties.office.field.reference': 'Evidence checked',
+    'admin.parties.office.field.reason': 'Reason',
+    'admin.parties.office.placeholder.latitude': '-1.9441',
+    'admin.parties.office.placeholder.longitude': '30.0619',
+    'admin.parties.office.placeholder.uncertainty_m': '50',
+    'admin.parties.office.placeholder.reference':
+        'e.g. ICPAR register entry, site visit',
+    'admin.parties.office.placeholder.reason':
+        'e.g. Office address confirmed on the ICPAR register and by phone.',
+    'admin.parties.office.cta': 'Record as verified',
+    'admin.parties.premises.title': 'Business premises',
+    'admin.parties.premises.status': 'Dispatch location',
+    'admin.parties.premises.state.verified': 'Verified',
+    'admin.parties.premises.state.expired': 'Verification lapsed',
+    'admin.parties.premises.state.missing': 'Not verified',
+    'admin.parties.premises.note.missing':
+        'No premises location is on record, so no Audit Partner can be dispatched here. Jobs only go to partners whose verified office is within 30 km of these premises.',
+    'admin.parties.premises.note.expired':
+        'These premises were verified more than a year ago, so no Audit Partner is dispatched here until they are verified again.',
+    'admin.parties.premises.coordinates': 'Coordinates',
+    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.premises.verified_on': 'Verified on',
+    'admin.parties.premises.evidence': 'Evidence checked',
+    'admin.parties.premises.record': 'Record verified premises',
+    'admin.parties.premises.reverify': 'Verify premises again',
+    'admin.parties.premises.form': 'Verify the business premises',
+    'admin.parties.premises.form_body':
+        'Enter the premises coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put partners out of range.',
+    'admin.parties.premises.field.latitude': 'Latitude',
+    'admin.parties.premises.field.longitude': 'Longitude',
+    'admin.parties.premises.field.uncertainty_m': 'Accuracy (metres)',
+    'admin.parties.premises.field.reference': 'Evidence checked',
+    'admin.parties.premises.field.reason': 'Reason',
+    'admin.parties.premises.placeholder.latitude': '-1.9441',
+    'admin.parties.premises.placeholder.longitude': '30.0619',
+    'admin.parties.premises.placeholder.uncertainty_m': '50',
+    'admin.parties.premises.placeholder.reference':
+        'e.g. site visit, RDB registered address',
+    'admin.parties.premises.placeholder.reason':
+        'e.g. Premises confirmed on a site visit and against the RDB address.',
+    'admin.parties.premises.cta': 'Record as verified',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',
@@ -2761,8 +2860,8 @@ const en = {
     'auditor.home.greeting.morning': 'Good morning,',
     'auditor.home.greeting.afternoon': 'Good afternoon,',
     'auditor.home.greeting.evening': 'Good evening,',
-    'auditor.home.tile.yield': 'Yield · {month}',
-    'auditor.home.tile.deals': 'Deals',
+    'auditor.home.tile.yield': 'Fees · {month}',
+    'auditor.home.tile.deals': 'Jobs',
     'auditor.home.tile.licence': 'Licence',
     'auditor.rating.word': 'Rating',
     'auditor.rating.label': 'Partner rating {score} out of 100',
@@ -2834,6 +2933,10 @@ const en = {
     'auditor.jobs.view_file': 'View full application →',
     'auditor.jobs.decline': 'Decline',
     'auditor.jobs.declare_conflict': 'Declare a conflict',
+    'auditor.jobs.office.missing':
+        "Rozine hasn't verified your office location yet, so no jobs can be sent to you. Jobs go to partners whose office is within {radius} km of the business. Contact Audit Operations to have it verified.",
+    'auditor.jobs.office.expired':
+        'Your office location was verified more than a year ago, so no new jobs can be sent to you until Rozine verifies it again. Contact Audit Operations.',
     'auditor.jobs.empty':
         "No open jobs in your area. We'll ping you the moment a Tier 2 deal needs a field check within {radius}km.",
     'auditor.monthly.title': 'Monthly reports',
@@ -3613,20 +3716,20 @@ const en = {
     'investor.cart.in_cart_remove': 'In cart · Remove',
     'investor.cart.update_failed':
         "We couldn't update your cart. Refresh and try again.",
-    'investor.cart.count': { one: '{count} note', other: '{count} notes' },
+    'investor.cart.count': { one: '{count} deal', other: '{count} deals' },
     'investor.cart.total': 'CART TOTAL',
     'investor.cart.remove': 'Remove {name} from cart',
     'investor.cart.filled_remove': 'Fully funded · Remove',
     'investor.cart.filled_note': {
-        one: "{count} note is fully funded and won't be checked out.",
-        other: "{count} notes are fully funded and won't be checked out.",
+        one: "{count} deal is fully funded and won't be checked out.",
+        other: "{count} deals are fully funded and won't be checked out.",
     },
     'investor.cart.target_of': 'of {amount}',
     'investor.cart.units': { one: 'note', other: 'notes' },
     'investor.cart.quantity': 'Number of notes in {name}',
     'investor.cart.checkout': 'Check out',
     'investor.cart.checkout_note':
-        'Each note checks out on its own for now: open its checkout to reserve and pay.',
+        'Each deal checks out on its own for now: open its checkout to reserve and pay.',
     'investor.cart.before_charge':
         'Get back is before the charge on earnings. Each checkout shows the exact amount.',
     'investor.common.back': 'Back',
@@ -4040,6 +4143,9 @@ const en = {
     'investor.kyc.document.title': 'Verify your ID',
     'investor.kyc.document.subtitle':
         'Choose a document type and upload clear photos.',
+    'investor.kyc.review.title': 'Under review',
+    'investor.kyc.review.subtitle':
+        "Your details are with our Compliance team. We'll let you know once your identity is confirmed.",
     'investor.kyc.liveness.title': 'Liveness check',
     'investor.kyc.liveness.subtitle':
         "A quick selfie confirms it's really you.",
@@ -4055,6 +4161,7 @@ const en = {
     'investor.kyc.country': 'COUNTRY OF RESIDENCE',
     'investor.kyc.dob': 'DATE OF BIRTH',
     'investor.kyc.dob_placeholder': 'DD / MM / YYYY',
+    'investor.kyc.dob_hint': 'Day, month and year, for example 15 / 06 / 1990.',
     'investor.kyc.id_number': 'ID NUMBER',
     'investor.kyc.upload_front': 'Upload front',
     'investor.kyc.upload_back': 'Upload back',
@@ -4365,6 +4472,7 @@ const en = {
     'investor.profile.personal.district': 'DISTRICT',
     'investor.profile.personal.sector': 'SECTOR',
     'investor.profile.personal.cell': 'CELL',
+    'investor.profile.personal.under_review': 'Under review',
     'investor.profile.personal.not_provided': 'Not provided',
     'investor.profile.security.two_factor': 'Two-factor authentication',
     'investor.profile.security.two_factor_on':
@@ -5189,6 +5297,10 @@ const en = {
     'investor.wallet.c3.policy': 'Deposit policy {version}.',
     'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
     'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.deposit_between':
+        'Enter an amount between {minimum} and {maximum}.',
+    'investor.wallet.c3.deposit_at_least': 'Enter at least {amount}.',
+    'investor.wallet.c3.deposit_at_most': 'Enter at most {amount}.',
     'investor.wallet.c3.deposit_unavailable':
         "Deposits aren't open on this account yet. Rozine turns them on once the account is cleared for money movement.",
     'investor.wallet.c3.intent_only':
@@ -5646,7 +5758,7 @@ const en = {
     'investor.checkout.c3.held_amount': 'Held from Available',
     'investor.checkout.c3.release': 'Release these notes',
     'investor.checkout.c3.confirm_fine_print':
-        'Confirming commits your held amount. You can cancel, fee-free, until the raise is fully funded.',
+        "Confirming commits your held amount. A confirmed commitment is final and can't be cancelled. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.checkout.c3.at_maturity': {
         one: 'Back over {count} month',
         other: 'Back over {count} months',
@@ -5765,6 +5877,9 @@ const en = {
     'investor.notices.primary.raise_funded.title': 'Raise funded',
     'investor.notices.primary.raise_funded.body':
         'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.commitment_confirmed.title': 'Purchase confirmed',
+    'investor.notices.primary.commitment_confirmed.body':
+        'You committed {amount} to {business} for {units} notes, at a {rate}% earnings fee. Reference {reference}.',
     'investor.notices.primary.holding_issued.title': 'Investment confirmed',
     'investor.notices.primary.holding_issued.body':
         'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
@@ -5826,7 +5941,7 @@ const en = {
     'investor.primary.status.expired': "Didn't fill — refunded",
     'investor.primary.status.failed_closing': 'Closed — refunded',
     'investor.primary.status_body.confirmed':
-        "The raise is still open. You can cancel, fee-free, until it's fully funded.",
+        "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
     'investor.primary.status_body.awaiting_disbursement':
         'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
     'investor.primary.status_body.in_flight_pending':
@@ -6411,7 +6526,7 @@ const en = {
     'admin.section.book.subtitle':
         'Every live note and its health, as the core records its servicing. Read-only.',
     'admin.section.book.search': 'Search by business or note…',
-    'admin.section.exceptions.title': 'Exceptions',
+    'admin.section.exceptions.title': 'Risk Center',
     'admin.section.exceptions.subtitle':
         'Arrears, halts and variances, each aged and owned until it is resolved. Read-only.',
     'admin.section.exceptions.search': 'Search by business or reference…',
@@ -6456,7 +6571,7 @@ const en = {
     'admin.exceptions.kind.arrears': 'Arrears',
     'admin.exceptions.kind.halt': 'Halt',
     'admin.exceptions.kind.variance': 'Variance',
-    'admin.exceptions.kind.audit': 'Overdue audit',
+    'admin.exceptions.kind.audit': 'Overdue flash audit',
     'admin.exceptions.kind.complaint': 'Complaint',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
@@ -6560,7 +6675,7 @@ const en = {
     'admin.section.coverage.subtitle':
         'Audit Partners and open audits in every district, and whether the district is covered. Read-only.',
     'admin.section.coverage.search': 'Search by district or province…',
-    'admin.section.reports.title': 'Monthly Reports',
+    'admin.section.reports.title': 'Audit Reports',
     'admin.section.reports.subtitle':
         'Business performance reports published to investors',
     'admin.section.reports.search': 'Search…',

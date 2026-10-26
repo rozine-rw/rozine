@@ -69,6 +69,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
+    'primary.commitment_confirmed': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
+                <path d="M8 10h8M8 14h5" {...stroke} />
+            </>
+        ),
+    },
     'primary.holding_issued': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -573,6 +583,14 @@ function body(
                 business: notice.facts.business,
                 amount: formatRwf(notice.facts),
                 units: notice.facts.units,
+            });
+        case 'primary.commitment_confirmed':
+            return t('investor.notices.primary.commitment_confirmed.body', {
+                business: notice.facts.business,
+                units: notice.facts.units,
+                amount: formatRwf(notice.facts),
+                rate: (Number(notice.facts.fee_rate_bps) / 100).toFixed(1),
+                reference: notice.facts.reference,
             });
         case 'primary.holding_issued':
             return t('investor.notices.primary.holding_issued.body', {

@@ -138,6 +138,15 @@ interface IdentityAccessStore
     public function selectRole(int $userId, string $role, int $expectedRevision, string $requestId): void;
 
     /**
+     * A verified Business member adds an active Investor membership to their own Party, accepting the
+     * Investor access terms by version and digest, without a second identity check (issue #380). The
+     * grant is its own identity audit event; a replay of the request returns its first answer.
+     *
+     * @return array<string, mixed>
+     */
+    public function addOwnInvestorAccess(int $userId, int $expectedRevision, string $termsVersion, string $termsSha256, string $requestId): array;
+
+    /**
      * @template TResult
      *
      * @param  Closure(AccessSnapshot): TResult  $operation

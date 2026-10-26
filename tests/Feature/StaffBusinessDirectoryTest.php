@@ -164,7 +164,7 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->where('party.list.rows.0.detail.value', 'failed'));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $bakery->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('party.subtitle', 'Food · RDB RDB-77 · Huye')->where('party.kyc.state', 'pending')
+        ->assertInertia(fn (Assert $page) => $page->where('party.subtitle', 'Food · RDB-77 · Huye')->where('party.kyc.state', 'pending')
             ->where('party.list', ['key' => 'active_notes', 'rows' => []])
             ->where('party.history.0.action', ['code' => 'business.authority.revoke', 'label' => 'Authority revoked', 'tone' => 'red'])
             ->where('party.history.0.reason', 'Mandate withdrawn.')

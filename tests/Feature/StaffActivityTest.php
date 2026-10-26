@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Models\BusinessCampaign;
+use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\IdentityAuditEvent;
 use App\Models\Party;
@@ -71,10 +73,10 @@ test('rows come from the identity log and the command journal, newest first, wit
 
     $this->actingAs($officer)->get(route('staff.events.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('total', 6)->has('events', 6)
-            ->where('events.2.action', ['code' => 'audit.location.verify', 'label' => 'Audit location verify', 'tone' => 'grey'])
-            ->where('events.2.target', 'Audit location loc-1')->where('events.2.changes', [])->where('events.2.reason', null)
+            ->where('events.2.action', ['code' => 'audit.location.verify', 'label' => 'Verified a dispatch location', 'tone' => 'green'])
+            ->where('events.2.target', 'Audit location LOC-1')->where('events.2.changes', [])->where('events.2.reason', null)
             ->where('events.3.action', ['code' => 'disbursement.approve', 'label' => 'Approved a disbursement (refused)', 'tone' => 'red'])
-            ->where('events.3.actor', 'Eric Ndoli')->where('events.3.source', 'Admin console')->where('events.3.target', 'Disbursement disb-1')
+            ->where('events.3.actor', 'Eric Ndoli')->where('events.3.source', 'Admin console')->where('events.3.target', 'Disbursement DISB-1')
             ->where('events.3.changes', [['field' => 'outcome', 'before' => null, 'after' => 'SELF_APPROVAL_FORBIDDEN']])
             ->where('events.4.action', ['code' => 'primary.confirm', 'label' => 'Confirmed a purchase', 'tone' => 'green'])
             ->where('events.4.actor', 'Aline Uwase')->where('events.4.source', 'Participant app')
@@ -133,4 +135,24 @@ test('the trail answers over the API with the read ability and links API routes'
         ->assertJsonPath('data.total', 3);
     Sanctum::actingAs($officer, ['staff:investors:read']);
     $this->getJson('/api/v1/staff/activity')->assertForbidden();
+});
+
+test('the trail names the person or Business an entry acted on instead of its ID', function (): void {
+    $officer = trailStaff(['compliance']);
+    $party = Party::factory()->verified()->create();
+    User::factory()->for($party)->create(['name' => 'Grace Ingabire']);
+    $campaign = BusinessCampaign::factory()->create();
+    $business = BusinessProfile::query()->whereKey($campaign->business_id)->sole();
+    $business->forceFill(['profile' => [...$business->profile, 'name' => 'Works Bridge']])->save();
+    $at = now();
+    foreach ([['party', strtoupper($party->id), 'investor.risk.acknowledge'], ['business', $business->id, 'business.profile.update'],
+        ['campaign', strtoupper($campaign->id), 'campaign.cancel'], ['application', $campaign->business_application_id, 'application.save'],
+        ['business_profile', $business->id, 'business.profile.update'], ['auditor.party', $party->id, 'accreditation.review']] as [$type, $id, $command]) {
+        CommandOperation::factory()->create(['command' => $command, 'target_type' => $type, 'target_id' => $id, 'created_at' => $at = $at->addMinute()]);
+    }
+
+    $this->actingAs($officer)->get(route('staff.events.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('events.0.target', 'Grace Ingabire')->where('events.0.action.label', 'Reviewed a licence')
+            ->where('events.1.target', 'Business · Works Bridge')->where('events.2.target', 'Application · Works Bridge')
+            ->where('events.3.target', 'Note · Works Bridge')->where('events.4.target', 'Business · Works Bridge')->where('events.5.target', 'Grace Ingabire'));
 });

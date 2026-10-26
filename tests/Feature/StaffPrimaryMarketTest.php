@@ -73,7 +73,7 @@ it('lists a live publication with its fill, terms and days left, and offers no m
             ['key' => 'in_flight', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '15000']]],
             ['key' => 'fill', 'value' => ['kind' => 'percent', 'value' => $props['stats'][2]['value']['value']]], ['key' => 'completion', 'value' => ['kind' => 'percent', 'value' => '0']]])
         ->and($props['trend'])->toBe(['from' => $today->subDays(13)->toIso8601String(), 'to' => null, 'grain' => 'day', 'custom' => false,
-            'bars' => [['label' => $today->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'height_pct' => 100]]])
+            'bars' => [['label' => $today->format('d/m'), 'amount' => ['currency' => 'RWF', 'amount' => '15000'], 'height_pct' => 100]]])
         ->and($props['raises'])->toBe([['id' => $campaign->id, 'reference' => 'RSE-'.Str::upper(Str::substr($campaign->id, -6)),
             'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'], 'district' => $evidence['business']['district'],
             'rating' => ['band' => $evidence['rating']['band'], 'score' => $evidence['rating']['score']],

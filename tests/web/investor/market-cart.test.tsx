@@ -395,19 +395,19 @@ describe('Cart with notes', () => {
     it('shows each line with the deal facts and its return, and a total of the open lines only', () => {
         render(<InvestorCart {...cart()} />);
 
-        expect(screen.getByText('2 notes')).toBeInTheDocument();
+        expect(screen.getByText('2 deals')).toBeInTheDocument();
         expect(screen.getByTestId('cart-total')).toHaveTextContent('70,000');
         expect(screen.getByTestId('cart-get-back')).toHaveTextContent(
             'RWF 79,550',
         );
         expect(
             screen.getByText(
-                "1 note is fully funded and won't be checked out.",
+                "1 deal is fully funded and won't be checked out.",
             ),
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Each note checks out on its own for now: open its checkout to reserve and pay.',
+                'Each deal checks out on its own for now: open its checkout to reserve and pay.',
             ),
         ).toBeInTheDocument();
 
@@ -573,7 +573,7 @@ describe('Cart with notes', () => {
             ),
         ).toBeInTheDocument();
         expect(screen.getByTestId('cart-total')).toHaveTextContent('20,000');
-        expect(screen.getByText('1 note')).toBeInTheDocument();
+        expect(screen.getByText('1 deal')).toBeInTheDocument();
         expect(
             screen.getByRole('region', { name: 'CART TOTAL' }),
         ).toBeInTheDocument();

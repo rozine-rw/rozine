@@ -5,6 +5,7 @@ import type { IconName, IconTone } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import {
     formatDate,
+    formatDateTime,
     formatDayMonth,
     formatMonthYearLong,
     formatRwf,
@@ -165,7 +166,16 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         title={t(
                             `business.audit_cosign.kind.${item.report_kind}`,
                         )}
-                        sub={t('business.today.cosign.sub')}
+                        sub={
+                            item.due_at !== null &&
+                            item.hours_left !== null &&
+                            item.hours_left > 0
+                                ? t('business.today.cosign.due', {
+                                      date: formatDateTime(item.due_at, locale),
+                                      hours: item.hours_left,
+                                  })
+                                : t('business.today.cosign.sub')
+                        }
                         cta={t('business.today.cosign.cta')}
                         ctaTone={GREEN_TEXT}
                     />

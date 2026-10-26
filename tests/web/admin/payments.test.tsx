@@ -131,7 +131,7 @@ describe('Payment Center', () => {
 
         expect(movement).toHaveTextContent('Last 14 days · grouped by day');
         expect(within(movement).getByText('10-14')).toBeInTheDocument();
-        expect(within(movement).getByText('2.5M')).toBeInTheDocument();
+        expect(within(movement).getByText('RWF 2.5M')).toBeInTheDocument();
 
         const held = rowOf('WDR-00AAAA');
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Models\BusinessCampaign;
 use App\Models\DisbursementIntent;
 use App\Models\PrimaryHolding;
@@ -254,7 +255,7 @@ it('lists purchases awaiting issue apart from the Holdings: confirmed while the 
 
     $this->actingAs($user)->get(route('investor.portfolio'))->assertOk()->assertInertia(fn (Assert $page) => $page->where('holdings', [])
         ->where('totals.invested', ['currency' => 'RWF', 'amount' => '0'])
-        ->where('commitments', [['id' => $commitment->id, 'deal_name' => $page->toArray()['props']['commitments'][0]['deal_name'], 'units' => '1080',
+        ->where('commitments', [['id' => $commitment->id, 'deal_name' => app(PrimaryCampaignSource::class)->presentation((string) PrimaryReservationRecord::query()->whereKey($commitment->primary_reservation_id)->value('business_campaign_id'))['business'], 'units' => '1080',
             'principal' => ['currency' => 'RWF', 'amount' => '5400000'], 'state' => $state, 'closing' => $closing,
             'link' => ['url' => '/investor/commitments/'.$commitment->id, 'method' => 'get']]]));
     $this->get(route('investor.commitments.show', $commitment->id))->assertOk()

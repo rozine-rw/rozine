@@ -160,11 +160,12 @@ export function StepRaise({
 }: StepRaiseProps) {
     const { t } = useTranslation();
     const [info, setInfo] = useState<'rate' | 'notes' | null>(null);
-    const ready = quote?.status === 'ready' ? quote : null;
-    /* A refusal answers only the request it evaluated: an edited target is not refused yet. */
-    const refused = quote?.status === 'refused' && !quoting ? quote : null;
     /* A cleared target is no request at all, so it is never read as a refused amount. */
     const targetMissing = fields.target === '' && quote !== null;
+    /* An offer answers only the amount it priced: once the target is cleared, nothing is offered. */
+    const ready = quote?.status === 'ready' && !targetMissing ? quote : null;
+    /* A refusal answers only the request it evaluated: an edited target is not refused yet. */
+    const refused = quote?.status === 'refused' && !quoting ? quote : null;
     const words = countWords(fields.story);
     const titleLength = [...fields.title].length;
     const toggle = (which: 'rate' | 'notes') => () =>

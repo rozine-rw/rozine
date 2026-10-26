@@ -1477,6 +1477,16 @@ export type InvestorNotice = {
           facts: Money & { business: string; title: string; units: string };
       }
     | {
+          kind: 'primary.commitment_confirmed';
+          facts: Money & {
+              business: string;
+              units: string;
+              fee_tier: string;
+              fee_rate_bps: string;
+              reference: string;
+          };
+      }
+    | {
           kind: 'primary.holding_issued';
           facts: Money & {
               business: string;

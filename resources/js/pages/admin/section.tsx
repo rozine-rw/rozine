@@ -447,9 +447,11 @@ function rowsOf(
                     stream.paid_by === null
                         ? NO_FIGURE
                         : t(`admin.finance.paid_by.${stream.paid_by}`),
-                    stream.collected === null
-                        ? NO_FIGURE
-                        : formatRwf(stream.collected),
+                    stream.collected !== null
+                        ? formatRwf(stream.collected)
+                        : stream.paid_by === null
+                          ? NO_FIGURE
+                          : t('admin.finance.collected_untracked'),
                 ],
             }));
     }

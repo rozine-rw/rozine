@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 const RoleHomeControllere709e67aade7642dd3bd8469e0997d3b = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.url = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.get = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.head = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 const RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm.get = (options?: RouteQue
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/investor'
 */
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm.head = (options?: RouteQu
 RoleHomeControllere709e67aade7642dd3bd8469e0997d3b.form = RoleHomeControllere709e67aade7642dd3bd8469e0997d3bForm
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 const RoleHomeController813da5a24c0bb640ea94a1923c9f0b54 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.url = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.get = (options?: RouteQueryOp
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ RoleHomeController813da5a24c0bb640ea94a1923c9f0b54.head = (options?: RouteQueryO
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 const RoleHomeController813da5a24c0bb640ea94a1923c9f0b54Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const RoleHomeController813da5a24c0bb640ea94a1923c9f0b54Form = (options?: RouteQ
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 RoleHomeController813da5a24c0bb640ea94a1923c9f0b54Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ RoleHomeController813da5a24c0bb640ea94a1923c9f0b54Form.get = (options?: RouteQue
 
 /**
 * @see \App\Http\Controllers\RoleHomeController::__invoke
-* @see app/Http/Controllers/RoleHomeController.php:20
+* @see app/Http/Controllers/RoleHomeController.php:22
 * @route '/business'
 */
 RoleHomeController813da5a24c0bb640ea94a1923c9f0b54Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -74,7 +74,7 @@ it('sums the last fourteen days of deposits and payouts, charts them per day and
             ['key' => 'deposits', 'value' => ['currency' => 'RWF', 'amount' => '300500'], 'count' => 1],
             ['key' => 'withdrawals', 'value' => ['currency' => 'RWF', 'amount' => '100000'], 'count' => 1],
             ['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => '0'], 'count' => 0]])
-        ->and($props['bars'])->toBe([['label' => now('Africa/Kigali')->format('m-d'), 'amount' => ['currency' => 'RWF', 'amount' => '400500'], 'height_pct' => 100]])
+        ->and($props['bars'])->toBe([['label' => now('Africa/Kigali')->format('d/m'), 'amount' => ['currency' => 'RWF', 'amount' => '400500'], 'height_pct' => 100]])
         ->and($props['payouts'])->toBe([$row($held, '20000', 'pending'), $row($unknown, '5000', 'unknown')])
         ->and($props['nav']['payments'])->toBe(['url' => '/admin/payments', 'method' => 'get'])
         ->and($props['policy'])->toBe([['key' => 'platform_fee', 'value' => '3%'], ['key' => 'cpa_share', 'value' => '40%'],

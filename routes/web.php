@@ -267,6 +267,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
     Route::post('staff-people', [IdentityManagementController::class, 'staffPerson'])->name('staff-people.record');
     Route::post('memberships', [IdentityManagementController::class, 'membership'])->name('memberships.update');
     Route::post('active-role', [IdentityManagementController::class, 'selectRole'])->name('active-role.store');
+    Route::post('investor-access', [IdentityManagementController::class, 'addInvestor'])->name('investor-access.store');
     Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
@@ -312,12 +313,15 @@ Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index']
 
 Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
+Route::post('admin/businesses/{business}/premises', [StaffBusinessDirectoryController::class, 'premises'])->whereUlid('business')
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.premises.verify');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/auditors')->name('staff.auditors.')->group(function (): void {
     Route::get('/', [StaffAuditorDirectoryController::class, 'index'])->name('index');
     foreach (['approve', 'reject'] as $decision) {
         Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
     }
+    Route::post('{party}/office', [StaffAuditorDirectoryController::class, 'office'])->whereUlid('party')->name('office.verify');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {

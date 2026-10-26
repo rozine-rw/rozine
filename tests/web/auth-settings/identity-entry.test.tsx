@@ -207,6 +207,28 @@ it('sends a verification refusal to identity verification inside the branded pag
     );
 });
 
+it('says a verification already with Compliance is under review, with nothing to send again', () => {
+    render(
+        <AccessDenied
+            code="IDENTITY_VERIFICATION_REQUIRED"
+            status={403}
+            verification="pending"
+        />,
+    );
+    expect(
+        screen.getByRole('heading', {
+            name: 'Your identity check is under review',
+        }),
+    ).toBeInTheDocument();
+    expect(
+        screen.queryByRole('link', { name: 'Verify your identity' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Choose an app' })).toHaveAttribute(
+        'href',
+        '/dashboard',
+    );
+});
+
 it('offers only the way back to the apps for other refusals', () => {
     render(<AccessDenied code="ROLE_MEMBERSHIP_REQUIRED" status={403} />);
     expect(screen.getAllByRole('link')).toHaveLength(1);

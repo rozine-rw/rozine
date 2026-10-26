@@ -58,6 +58,8 @@ type Options<Name extends string> = {
     preview?: C3PreviewOutcome<Name>;
     /** The props a refresh reloads; undefined reloads them all. */
     only?: string[];
+    /** Runs once the server confirms the command, before its next page or refresh. */
+    onCompleted?: () => void;
 };
 
 /**
@@ -75,6 +77,7 @@ export function useC3Command<Name extends string>({
     allowed,
     preview,
     only,
+    onCompleted,
 }: Options<Name>) {
     const scope = only === undefined ? {} : { only };
     const [last, setLast] = useState<Name | null>(
@@ -90,6 +93,8 @@ export function useC3Command<Name extends string>({
         initial: seedFromPreview(preview),
         refresh: () => reloadPreservingState(scope),
         onCompleted: (_sent, resource) => {
+            onCompleted?.();
+
             if (resource.data === null || resource.data.next === null) {
                 void reloadPreservingState(scope);
 

@@ -825,6 +825,27 @@ export type PartyListRow = {
         | { kind: 'holding'; value: Money; notes: number };
 };
 
+/**
+ * A dispatch location as staff last verified it, a partner's registered office or a Business's
+ * premises; lapsed after 365 days.
+ */
+export type DispatchLocation = {
+    state: 'verified' | 'expired' | 'missing';
+    latitude: string | null;
+    longitude: string | null;
+    /** How many metres the point may be off. */
+    uncertainty_m: number | null;
+    verified_at: string | null;
+    /** The evidence the verifier checked. */
+    reference: string | null;
+    revision: number;
+    /**
+     * Where the viewer records a newly verified location, with the time the server offered the
+     * form (the verification's time), or null when they may not.
+     */
+    verify: (RouteAction & { verified_at: string }) | null;
+};
+
 export type PartyDetail = {
     id: string;
     kind: PartyKind;
@@ -836,6 +857,7 @@ export type PartyDetail = {
         | 'watch'
         | 'distressed'
         | 'kyc_pending'
+        | 'licence_pending'
         | 'frozen'
         | 'not_tracked';
     stats: { key: PartyStatKey; value: StatValue }[];
@@ -863,6 +885,12 @@ export type PartyDetail = {
     restrictions: (TrailEntry & { kind: 'freeze' | 'release' })[];
     /** An Investor's identity submission, reviewed in the 360; absent for other parties. */
     verification?: InvestorVerificationReview | null;
+    /** An Investor's cash committed to raises whose notes are not issued yet; absent for other parties. */
+    committed?: Money | null;
+    /** An Audit Partner's registered office, which dispatch measures the 30 km from; absent for other parties. */
+    office?: DispatchLocation | null;
+    /** A Business's premises, which dispatch measures the 30 km to; sent only to viewers who verify Businesses. */
+    premises?: DispatchLocation | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
@@ -2024,6 +2052,7 @@ export type MessageTemplate = {
         | 'investor.investment_confirmed'
         | 'investor.payment_delayed'
         | 'investor.payout_received'
+        | 'investor.purchase_confirmed'
         | 'investor.raise_expired'
         | 'investor.report_published'
         | 'investor.verification_decided'
