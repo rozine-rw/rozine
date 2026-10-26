@@ -567,7 +567,14 @@ export default function BusinessApply(props: BusinessApplyProps) {
             )}
             <form id="business-apply" onSubmit={submit} noValidate>
                 {step === 'business' && (
-                    <StepBusiness evidence={props.evidence} />
+                    <StepBusiness
+                        evidence={props.evidence}
+                        statements={props.statements}
+                        identityContextRevision={
+                            props.identity_context_revision
+                        }
+                        canUpload={canSave}
+                    />
                 )}
                 {step === 'raise' && (
                     <StepRaise

@@ -20,6 +20,7 @@ use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
+use App\Http\Controllers\BusinessStatementController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
@@ -93,6 +94,12 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::post('{business}/wallet/deposits', [BusinessWalletController::class, 'deposit'])->whereUlid('business')->name('deposit');
     Route::post('{business}/wallet/withdrawals', [BusinessWalletController::class, 'withdraw'])->whereUlid('business')->name('withdraw');
     Route::get('{business}/wallet-operations/{request_id}', [BusinessWalletController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.statements.')->group(function (): void {
+    Route::get('{business}/statements', [BusinessStatementController::class, 'index'])->whereUlid('business')->name('index');
+    Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('upload');
+    Route::get('{business}/statements/{document}', [BusinessStatementController::class, 'show'])->whereUlid(['business', 'document'])->name('show');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.applications.')->group(function (): void {

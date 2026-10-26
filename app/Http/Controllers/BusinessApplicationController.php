@@ -13,6 +13,7 @@ use App\Application\Business\ListBusinessApplications;
 use App\Application\Business\ProjectBusinessApplicationOperation;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Business\SubmitBusinessApplication;
+use App\Application\Evidence\GetStatementEvidence;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Business\CreateApplicationRequest;
 use App\Http\Requests\Business\EvaluateApplicationRequest;
@@ -24,6 +25,7 @@ use App\Http\Requests\Business\SubmitApplicationRequest;
 use App\Http\Resources\BusinessApplicationResource;
 use App\Http\Resources\BusinessApplicationsResource;
 use App\Http\Resources\BusinessHomeResource;
+use App\Http\Resources\BusinessStatementsResource;
 use App\Http\Resources\OperationResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -43,8 +45,11 @@ class BusinessApplicationController extends Controller
             $request->validated('before'), (int) ($request->validated('limit') ?? 20)));
     }
 
-    /** The web page draws the wizard over the business's real Home, as the design does; the bearer read stays Home-free. */
-    public function show(ShowApplicationRequest $request, GetBusinessApplicationPage $page, GetBusinessHome $home): Response|BusinessApplicationResource
+    /**
+     * The web page draws the wizard over the business's real Home, as the design does, with the business's statements
+     * so step 1 can take the next upload; the bearer read stays Home-free and reads statements from their own route.
+     */
+    public function show(ShowApplicationRequest $request, GetBusinessApplicationPage $page, GetBusinessHome $home, GetStatementEvidence $statements): Response|BusinessApplicationResource
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = (int) ($request->validated('identity_context_revision') ?? $this->identity->context($userId, 'business')['context_revision']);
@@ -55,6 +60,7 @@ class BusinessApplicationController extends Controller
         }
 
         return Inertia::render('business/apply', [...$resource->resolve($request),
+            'statements' => (new BusinessStatementsResource(['business_id' => $business, 'manifest' => $statements->handle($userId, $revision, $business)]))->toArray($request),
             'home' => (new BusinessHomeResource($home->handle($userId, $revision, $business)))->toArray($request)]);
     }
 

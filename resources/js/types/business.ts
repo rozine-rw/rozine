@@ -575,6 +575,29 @@ export type ApplyPreviewOutcome =
     | { kind: 'unconfirmed'; command: ApplicationCommand }
     | { kind: 'refused'; code: string };
 
+/** How far Rozine has got reading one received statement; reading verifies nothing. */
+export type StatementReading = 'reading' | 'read' | 'needs_review';
+
+export type BusinessStatement = {
+    id: string;
+    filename: string;
+    media_type: 'application/pdf' | 'text/csv';
+    size_bytes: number;
+    /** When it was received, ISO 8601. */
+    received_at: string;
+    reading: StatementReading;
+    /** The original, as uploaded. */
+    link: RouteLink;
+};
+
+/** The business's own bank and Mobile Money statements (BRS APP-B01). */
+export type BusinessStatements = {
+    /** Sent as `expected_revision` with the next upload. */
+    revision: number;
+    documents: BusinessStatement[];
+    upload: RouteAction;
+};
+
 export type BusinessApplyProps = {
     contract_version: 'business-application-v1';
     business_id: string;
@@ -594,6 +617,8 @@ export type BusinessApplyProps = {
      * bearer read) opens the sheet over an empty backdrop with no stand-in balances.
      */
     home: BusinessHomeProps | null;
+    /** The web page's statements, so step 1 can take the next upload; the bearer read leaves it out. */
+    statements?: BusinessStatements;
     /** The shell's navigation for this page, read instead of `home.links`. */
     shell_links: BusinessShellLinks;
     links: {
