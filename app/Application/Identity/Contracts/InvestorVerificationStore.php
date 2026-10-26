@@ -33,6 +33,20 @@ interface InvestorVerificationStore
     /** @return array<string, mixed> */
     public function upload(int $userId, int $contextRevision, int $expectedRevision, string $slot, string $filename, string $content, string $requestId): array;
 
+    /**
+     * What the person's current uploads are, by side, for them to look at again: never the bytes.
+     *
+     * @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}>
+     */
+    public function uploads(int $userId): array;
+
+    /**
+     * The person's own current upload on one side (front, back or selfie), integrity-checked.
+     *
+     * @return array{filename: string, media_type: string, content: string}
+     */
+    public function ownDocument(int $userId, string $side): array;
+
     /** @return array<string, mixed> */
     public function submit(int $userId, int $contextRevision, int $expectedRevision, string $requestId): array;
 

@@ -119,6 +119,8 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
     Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
+    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie'])
+        ->name('verification.document');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
     Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');

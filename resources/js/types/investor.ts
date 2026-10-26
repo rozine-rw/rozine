@@ -841,7 +841,13 @@ export type KycStep = 'personal' | 'document' | 'liveness';
 
 export type KycInstitutionStep = 'entity' | 'representative' | 'declarations';
 
-export type UploadState = { status: 'missing' | 'uploaded' | 'verified' };
+export type UploadState = {
+    status: 'missing' | 'uploaded' | 'verified';
+    /** The person's own current file, shown back to them; only on an individual's ID and selfie. */
+    filename?: string;
+    media_type?: string;
+    link?: RouteLink;
+};
 
 export type EntityType =
     | 'fund'

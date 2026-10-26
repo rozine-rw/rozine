@@ -76,6 +76,44 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
             });
     }
 
+    /** @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}> */
+    public function uploads(int $userId): array
+    {
+        return $this->own($userId, null, function (User $user, Party $party, ?InvestorVerification $record): array {
+            $current = array_filter($record->state['uploads'] ?? []);
+            $documents = InvestorVerificationDocument::query()->where('investor_verification_id', $record?->id)
+                ->whereIn('id', array_values($current))->get(['id', 'filename', 'media_type'])->keyBy('id');
+            $uploads = [];
+            foreach ($current as $side => $documentId) {
+                $document = $documents->get($documentId);
+                if ($document !== null) {
+                    $uploads[$side] = ['filename' => $document->filename, 'media_type' => $document->media_type];
+                }
+            }
+
+            /** @var array<'front'|'back'|'selfie', array{filename: string, media_type: string}> $uploads */
+            return $uploads;
+        });
+    }
+
+    /** @return array{filename: string, media_type: string, content: string} */
+    public function ownDocument(int $userId, string $side): array
+    {
+        return $this->own($userId, null, function (User $user, Party $party, ?InvestorVerification $record) use ($side): array {
+            $documentId = $record?->state['uploads'][$side] ?? null;
+            $document = $documentId === null ? null
+                : InvestorVerificationDocument::query()->where('investor_verification_id', $record?->id)->find($documentId);
+            if ($document === null) {
+                throw new CommandRejection('VERIFICATION_DOCUMENT_NOT_FOUND', 404);
+            }
+            if (! hash_equals($document->sha256, hash('sha256', $document->content))) {
+                throw new CommandRejection('VERIFICATION_DOCUMENT_INTEGRITY_FAILED', 409);
+            }
+
+            return ['filename' => $document->filename, 'media_type' => $document->media_type, 'content' => $document->content];
+        });
+    }
+
     /** @return array<string, mixed> */
     public function submit(int $userId, int $contextRevision, int $expectedRevision, string $requestId): array
     {

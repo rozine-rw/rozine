@@ -18,6 +18,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Sanctum\Sanctum;
 
 use function Pest\Laravel\actingAs;
 
@@ -268,6 +269,44 @@ test('a rejected case is corrected from an earlier step, keeps its history and i
         ->and(InvestorVerificationVersion::query()->where('revision', '>', 6)->orderBy('revision')->pluck('command')->all())
         ->toBe(['verification.save', 'verification.upload', 'verification.save', 'verification.submit'])
         ->and(CommandOperation::query()->get()->every(fn (CommandOperation $operation): bool => $operation->result['policy_version'] === 'engineering-2026-10-06.1'))->toBeTrue();
+});
+
+test('a person sees each of their own uploads again, and nobody else can', function (): void {
+    kycSave($this->person, 'personal', ['date_of_birth' => '1/5/1990']);
+    kycUpload($this->person, 'id_front');
+
+    $this->actingAs($this->person)->get(route('investor.verification'))
+        ->assertInertia(fn (Assert $page) => $page->where('uploads.front', ['status' => 'uploaded', 'filename' => 'id.png', 'media_type' => 'image/png',
+            'link' => ['url' => '/investor/verification/documents/front', 'method' => 'get']])->where('uploads.back', ['status' => 'missing']));
+    $response = $this->actingAs($this->person)->get('/investor/verification/documents/front')->assertOk()
+        ->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeader('Cache-Control', 'no-store, private');
+    expect($response->getContent())->toBe("\x89PNG\r\n\x1a\nsynthetic identity image")
+        ->and($response->headers->get('Content-Disposition'))->toStartWith('inline;');
+
+    $this->actingAs($this->person)->get('/investor/verification/documents/back')->assertNotFound();
+    $this->actingAs($this->person)->get('/investor/verification/documents/certificate')->assertNotFound();
+    $other = User::factory()->create(['party_id' => Party::factory()]);
+    $this->actingAs($other)->get('/investor/verification/documents/front')->assertNotFound();
+
+    $case = InvestorVerification::query()->sole();
+    $tampered = new InvestorVerificationDocument;
+    $tampered->forceFill(['investor_verification_id' => $case->id, 'slot' => 'back', 'filename' => 'back.png', 'media_type' => 'image/png',
+        'size_bytes' => 4, 'sha256' => str_repeat('0', 64), 'content' => 'fake', 'actor_user_id' => $this->person->id])->save();
+    $case->forceFill(['state' => [...$case->state, 'uploads' => [...$case->state['uploads'], 'back' => $tampered->id]]])->save();
+    $this->actingAs($this->person)->get('/investor/verification/documents/back')->assertConflict();
+});
+
+test('the API shows uploads back to their owner with a read token only', function (): void {
+    kycSave($this->person, 'personal', ['date_of_birth' => '1/5/1990']);
+    kycUpload($this->person, 'id_front');
+
+    Sanctum::actingAs($this->person, ['investor:read']);
+    $this->getJson('/api/v1/investor/verification')->assertOk()
+        ->assertJsonPath('data.uploads.front.link.url', '/api/v1/investor/verification/documents/front');
+    $this->get('/api/v1/investor/verification/documents/front')->assertOk()->assertHeader('Content-Type', 'image/png');
+    Sanctum::actingAs($this->person, ['investor:command']);
+    $this->get('/api/v1/investor/verification/documents/front')->assertForbidden();
 });
 
 test('approved uploads read as verified', function (): void {

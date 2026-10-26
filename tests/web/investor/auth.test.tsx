@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorAccess from '@/pages/investor/auth/access';
@@ -458,10 +458,9 @@ describe('Verification', () => {
 
         expect(screen.getByText('IDENTITY VERIFICATION')).toBeInTheDocument();
         expect(screen.getByText('Rwanda')).toBeInTheDocument();
-        await user.type(
-            screen.getByLabelText('DATE OF BIRTH'),
-            '01 / 02 / 1990',
-        );
+        fireEvent.change(screen.getByLabelText('DATE OF BIRTH'), {
+            target: { value: '1990-02-01' },
+        });
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0]).toMatchObject({
             url: '/preview/investor-verification-document',
@@ -483,13 +482,38 @@ describe('Verification', () => {
         expect(
             screen.getAllByRole('radio').map((radio) => radio.textContent),
         ).toEqual(['National ID', 'Passport']);
-        await user.click(screen.getByRole('radio', { name: 'Passport' }));
         const file = new File(['id'], 'back.jpg', { type: 'image/jpeg' });
 
         await user.upload(screen.getByLabelText('Upload back'), file);
         expect(inertia.routerPost).toHaveBeenCalledWith(
             '/preview/investor-verification-document',
             { slot: 'id_back', file },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onError: expect.any(Function),
+                onSuccess: expect.any(Function),
+            },
+        );
+        // A passport has one photo page: no back, and its own number guidance.
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        expect(screen.queryByLabelText('Upload back')).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Passport photo page uploaded'),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('ID NUMBER')).toHaveAttribute(
+            'placeholder',
+            'PC1234567',
+        );
+        const page = new File(['id'], 'passport.jpg', { type: 'image/jpeg' });
+
+        await user.upload(
+            screen.getByLabelText('Upload passport photo page'),
+            page,
+        );
+        expect(inertia.routerPost).toHaveBeenLastCalledWith(
+            '/preview/investor-verification-document',
+            { slot: 'id_front', file: page },
             {
                 forceFormData: true,
                 preserveScroll: true,
@@ -782,8 +806,7 @@ describe('Verification submission', () => {
         ).toBeInTheDocument();
         const dob = screen.getByLabelText('DATE OF BIRTH');
 
-        await user.clear(dob);
-        await user.type(dob, '02/05/1990');
+        fireEvent.change(dob, { target: { value: '1990-05-02' } });
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             step: 'personal',
@@ -847,23 +870,133 @@ describe('Verification submission', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('formats a typed date of birth and says the format before the first try', async () => {
+    it('picks a date of birth from a date control and refuses an impossible or under-18 one inline', async () => {
         const user = userEvent.setup();
 
         render(<InvestorVerification {...live(personalFixture, {})} />);
+        const dob = screen.getByLabelText('DATE OF BIRTH');
+        const now = new Date();
+
+        expect(dob).toHaveAttribute('type', 'date');
+        expect(dob).toHaveAttribute('min', '1900-01-01');
+        expect(dob).toHaveAttribute(
+            'max',
+            `${now.getFullYear() - 18}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+        );
         expect(
             screen.getByText(
-                'Day, month and year, for example 15 / 06 / 1990.',
+                'Pick the day you were born. You must be at least 18.',
             ),
         ).toBeInTheDocument();
-        await user.type(screen.getByLabelText('DATE OF BIRTH'), '15061990');
 
-        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue(
-            '15 / 06 / 1990',
+        fireEvent.change(dob, {
+            target: { value: `${now.getFullYear() - 10}-01-01` },
+        });
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'You must be at least 18 to invest.',
         );
-        await user.clear(screen.getByLabelText('DATE OF BIRTH'));
-        await user.type(screen.getByLabelText('DATE OF BIRTH'), '1.5.1990');
-        expect(screen.getByLabelText('DATE OF BIRTH')).toHaveValue('1.5.1990');
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts).toHaveLength(0);
+
+        fireEvent.change(dob, { target: { value: '1899-12-31' } });
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Enter a real date of birth.',
+        );
+
+        fireEvent.change(dob, { target: { value: '1990-06-15' } });
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts[0].data).toMatchObject({
+            date_of_birth: '15 / 06 / 1990',
+        });
+    });
+
+    it('checks the ID number for the chosen document once the field is left', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorVerification {...live(documentFixture, {})} />);
+        const number = screen.getByLabelText('ID NUMBER');
+
+        expect(
+            screen.getByText('The 16 digits on your national ID.'),
+        ).toBeInTheDocument();
+        await user.type(number, '12345');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        await user.tab();
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Enter the 16-digit number on the card.',
+        );
+        await user.clear(number);
+        await user.type(number, '1 1990 8 0012345 6 78');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Enter the passport number, 6 to 12 letters or digits.',
+        );
+        await user.clear(number);
+        await user.type(number, 'pc1234567');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        expect(
+            screen.getByText(
+                '6 to 12 letters or digits, as printed on the photo page.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('shows each upload back to its owner, opens it, and offers to replace it', () => {
+        const props = live(documentFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The document fixture is an individual case.');
+        }
+
+        const { rerender } = render(
+            <InvestorVerification
+                {...props}
+                uploads={{
+                    ...props.uploads,
+                    front: {
+                        status: 'uploaded',
+                        filename: 'front.jpg',
+                        media_type: 'image/jpeg',
+                        link: {
+                            url: '/investor/verification/documents/front',
+                            method: 'get',
+                        },
+                    },
+                    back: {
+                        status: 'uploaded',
+                        filename: 'back.pdf',
+                        media_type: 'application/pdf',
+                        link: {
+                            url: '/investor/verification/documents/back',
+                            method: 'get',
+                        },
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('presentation')).toHaveAttribute(
+            'src',
+            '/investor/verification/documents/front',
+        );
+        expect(screen.getByText('back.pdf')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'View the front' }),
+        ).toHaveAttribute('href', '/investor/verification/documents/front');
+        expect(
+            screen.getByRole('link', { name: 'View the back' }),
+        ).toHaveAttribute('target', '_blank');
+        expect(screen.getAllByText('Tap to replace')).toHaveLength(2);
+
+        rerender(
+            <InvestorVerification
+                {...live(livenessFixture, { status: 'submitted' })}
+            />,
+        );
+        expect(screen.queryByText('Tap to replace')).not.toBeInTheDocument();
     });
 
     it('stops showing the missing-photo error once both sides are uploaded', () => {

@@ -18,7 +18,7 @@ class ListActivityTrailRequest extends FormRequest
     public function rules(): array
     {
         return ['q' => ['sometimes', 'nullable', 'string', 'max:120'], 'preset' => ['sometimes', 'nullable', 'string', 'in:today,7d,30d'],
-            'from' => ['sometimes', 'nullable', 'date_format:Y-m-d'], 'to' => ['sometimes', 'nullable', 'date_format:Y-m-d'],
+            'from' => ['sometimes', 'nullable', 'date_format:Y-m-d'], 'to' => ['sometimes', 'nullable', 'date_format:Y-m-d', 'after_or_equal:from'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:500']];
     }
 }
