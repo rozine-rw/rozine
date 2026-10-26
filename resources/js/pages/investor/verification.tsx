@@ -1,4 +1,4 @@
-import { Link, router, useForm } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { FileText } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
@@ -298,14 +298,19 @@ function Check({
 }
 
 /**
- * The document type picked before the document step is saved. It lives on this device only, so a
- * reload after uploading a passport page keeps Passport instead of falling back to National ID.
+ * The document type picked before the document step is saved. It lives on this device only, per
+ * signed-in account, so a reload after uploading a passport page keeps Passport instead of falling
+ * back to National ID, and another account on the same browser never inherits it.
  */
-const ID_TYPE_DRAFT = 'rozine.kyc.id_type';
+const idTypeDraftKey = (userId: number) => `rozine.kyc.id_type.${userId}`;
 
-const readIdTypeDraft = (): string | null => {
+const readIdTypeDraft = (userId: number | null): string | null => {
+    if (userId === null) {
+        return null;
+    }
+
     try {
-        const stored = window.localStorage.getItem(ID_TYPE_DRAFT);
+        const stored = window.localStorage.getItem(idTypeDraftKey(userId));
 
         return stored === 'passport' || stored === 'national_id'
             ? stored
@@ -315,12 +320,19 @@ const readIdTypeDraft = (): string | null => {
     }
 };
 
-const writeIdTypeDraft = (value: string | null): void => {
+const writeIdTypeDraft = (
+    userId: number | null,
+    value: string | null,
+): void => {
+    if (userId === null) {
+        return;
+    }
+
     try {
         if (value === null) {
-            window.localStorage.removeItem(ID_TYPE_DRAFT);
+            window.localStorage.removeItem(idTypeDraftKey(userId));
         } else {
-            window.localStorage.setItem(ID_TYPE_DRAFT, value);
+            window.localStorage.setItem(idTypeDraftKey(userId), value);
         }
     } catch {
         /* Storage can be blocked; the choice then lasts for this visit only. */
@@ -336,6 +348,10 @@ const writeIdTypeDraft = (value: string | null): void => {
  */
 export default function InvestorVerification(props: InvestorVerificationProps) {
     const { t } = useTranslation();
+    const { auth } = usePage().props as {
+        auth?: { user?: { id: number } | null };
+    };
+    const userId = auth?.user?.id ?? null;
     // A participant can step back to correct an earlier answer (for example after a rejection); the
     // server's step returns once that earlier step is saved.
     const [viewing, setViewing] = useState<Step | null>(null);
@@ -360,7 +376,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                   date_of_birth: props.date_of_birth,
                   id_type:
                       props.id_number === ''
-                          ? (readIdTypeDraft() ?? props.id_type)
+                          ? (readIdTypeDraft(userId) ?? props.id_type)
                           : props.id_type,
                   id_number: props.id_number,
               }
@@ -434,7 +450,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
             preserveScroll: true,
             onSuccess: () => {
                 if (step === 'document') {
-                    writeIdTypeDraft(null);
+                    writeIdTypeDraft(userId, null);
                 }
 
                 setViewing(null);
@@ -580,7 +596,7 @@ export default function InvestorVerification(props: InvestorVerificationProps) {
                                     value={data.id_type as IdDocument}
                                     onChange={(value) => {
                                         set('id_type', value);
-                                        writeIdTypeDraft(value);
+                                        writeIdTypeDraft(userId, value);
                                     }}
                                     render={(value) =>
                                         t(`investor.signup.id.${value}`)

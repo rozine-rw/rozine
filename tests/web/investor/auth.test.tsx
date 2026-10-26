@@ -947,6 +947,7 @@ describe('Verification submission', () => {
 
     it('keeps a picked passport across a reload until the document step is saved', async () => {
         const user = userEvent.setup();
+        inertia.shared = { auth: { user: { id: 7 } } };
         const document = clone<InvestorVerificationProps>(documentFixture);
         const { unmount } = render(<InvestorVerification {...document} />);
 
@@ -983,10 +984,45 @@ describe('Verification submission', () => {
         ).toBeChecked();
     });
 
+    it('never carries one account’s unsaved passport choice into another account', async () => {
+        const user = userEvent.setup();
+        inertia.shared = { auth: { user: { id: 7 } } };
+        const { unmount } = render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        unmount();
+
+        inertia.shared = { auth: { user: { id: 8 } } };
+        const { unmount: unmountOther } = render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        expect(
+            screen.getByRole('radio', { name: 'National ID' }),
+        ).toBeChecked();
+        unmountOther();
+
+        // With no signed-in account nothing is kept on the device at all.
+        inertia.shared = {};
+        render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        expect(window.localStorage.length).toBe(1);
+    });
+
     it('falls back to the saved document type when the device cannot keep the draft', async () => {
         const user = userEvent.setup();
 
-        window.localStorage.setItem('rozine.kyc.id_type', 'drivers_license');
+        inertia.shared = { auth: { user: { id: 7 } } };
+        window.localStorage.setItem('rozine.kyc.id_type.7', 'drivers_license');
         const { unmount } = render(
             <InvestorVerification
                 {...clone<InvestorVerificationProps>(documentFixture)}

@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessPhotos;
 use App\Models\BusinessPhoto;
+use App\Models\Party;
+use App\Models\StaffAccount;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PhotoBytesFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 beforeEach(function (): void {
@@ -15,29 +21,33 @@ beforeEach(function (): void {
     $this->campaign = PrimaryReservationFixture::campaign();
     $this->investor = PrimaryReservationFixture::investor();
     $this->photos = app(BusinessPhotos::class);
-    $this->jpeg = "\xFF\xD8\xFF\xE0".str_repeat('a', 64);
+    $this->jpeg = PhotoBytesFixture::jpeg();
+    $this->png = PhotoBytesFixture::png();
+    $this->webp = PhotoBytesFixture::webp();
 });
 
 it('puts a photo at a position, changes nothing when put again and replaces it with new bytes', function (): void {
     $first = $this->photos->put($this->campaign->business_id, 1, '  Layer house  ', 'image/jpeg', $this->jpeg);
     $again = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
-    $replaced = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/png', "\x89PNG");
-    $this->photos->put($this->campaign->business_id, 2, 'Egg room', 'image/webp', 'RIFF');
+    $replaced = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/png', $this->png);
+    $this->photos->put($this->campaign->business_id, 2, 'Egg room', 'image/webp', $this->webp);
 
     expect($first['changed'])->toBeTrue()
         ->and($again)->toBe(['id' => $first['id'], 'changed' => false])
         ->and($replaced)->toBe(['id' => $first['id'], 'changed' => true])
         ->and(BusinessPhoto::query()->count())->toBe(2)
         ->and($this->photos->published($this->campaign->business_id))->toBe([
-            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', "\x89PNG")],
-            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', 'RIFF')],
+            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', $this->png)],
+            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', $this->webp)],
         ]);
 });
 
 it('refuses an unknown business and a photo outside the allowed position, caption, type or size', function (string $business, int $position, string $caption, string $type, ?int $size, string $reason): void {
     $businessId = $business === 'known' ? $this->campaign->business_id : '01JZZZZZZZZZZZZZZZZZZZZZZZ';
 
-    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, $size === null ? $this->jpeg : str_repeat('a', $size)))
+    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, match ($size) {
+        null => $this->jpeg, 0 => '', default => str_pad($this->jpeg, $size, 'a')
+    }))
         ->toThrow(InvalidArgumentException::class, $reason);
 })->with([
     'unknown business' => ['unknown', 1, 'Shop', 'image/jpeg', null, 'BUSINESS_PHOTO_BUSINESS_UNKNOWN'],
@@ -48,6 +58,22 @@ it('refuses an unknown business and a photo outside the allowed position, captio
     'gif' => ['known', 1, 'Shop', 'image/gif', null, 'BUSINESS_PHOTO_INVALID'],
     'empty file' => ['known', 1, 'Shop', 'image/jpeg', 0, 'BUSINESS_PHOTO_INVALID'],
     'over 5 MB' => ['known', 1, 'Shop', 'image/jpeg', BusinessPhotos::MAX_BYTES + 1, 'BUSINESS_PHOTO_INVALID'],
+]);
+
+it('refuses bytes that are not a whole image of the type they are labelled as', function (string $type, string $bytes): void {
+    expect(fn () => $this->photos->put($this->campaign->business_id, 1, 'Shop', $type, $bytes))
+        ->toThrow(InvalidArgumentException::class, 'BUSINESS_PHOTO_INVALID');
+})->with([
+    'text as JPEG' => ['image/jpeg', '<?php echo 1;'],
+    'PNG as JPEG' => ['image/jpeg', PhotoBytesFixture::png()],
+    'JPEG as PNG' => ['image/png', PhotoBytesFixture::jpeg()],
+    'RIFF audio as WebP' => ['image/webp', 'RIFF'.pack('V', 12).'WAVExxxx'],
+    'JPEG signature on garbage' => ['image/jpeg', "\xFF\xD8\xFF\xE0".str_repeat('a', 64)."\xFF\xD9"],
+    'PNG signature on garbage' => ['image/png', "\x89PNG\r\n\x1A\n".str_repeat('b', 64)],
+    'WebP signature on garbage' => ['image/webp', 'RIFF'.pack('V', 68).'WEBP'.str_repeat('c', 60)],
+    'JPEG cut short' => ['image/jpeg', substr(PhotoBytesFixture::jpeg(), 0, -3)],
+    'PNG cut short' => ['image/png', substr(PhotoBytesFixture::png(), 0, -1)],
+    'WebP cut short' => ['image/webp', substr(PhotoBytesFixture::webp(), 0, -1)],
 ]);
 
 it('shows the published photos on the deal card and the deal, and serves each one', function (): void {
@@ -78,6 +104,22 @@ it('does not serve a photo through another business\'s campaign, an unknown camp
     $this->actingAs($user)->get(route('investor.deals.photo', ['campaign' => '01JZZZZZZZZZZZZZZZZZZZZZZZ', 'photo' => $photo['id']]))->assertNotFound();
     auth()->logout();
     $this->get(route('investor.deals.photo', ['campaign' => $this->campaign->id, 'photo' => $photo['id']]))->assertRedirect(route('login'));
+});
+
+it('serves photos to whoever may read the deals, and only while the deal is open', function (): void {
+    $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+    $url = route('investor.deals.photo', ['campaign' => $this->campaign->id, 'photo' => $photo['id']]);
+    $staff = User::factory()->withTwoFactor()->create();
+    StaffAccount::factory()->create(['user_id' => $staff->id]);
+
+    $this->actingAs(User::factory()->create(['party_id' => Party::factory()]))->get($url)->assertOk();
+    $this->actingAs(User::query()->findOrFail($this->campaign->actor_user_id))->getJson($url)->assertForbidden();
+    $this->actingAs($staff)->getJson($url)->assertForbidden()->assertJsonPath('code', 'IDENTITY_NOT_LINKED');
+    $this->actingAs(User::factory()->create(['party_id' => Party::factory()->verified()]))->getJson($url)->assertForbidden();
+
+    app(BusinessCampaignStore::class)->cancel($this->campaign->actor_user_id, 1, $this->campaign->business_id, $this->campaign->id, 1, 'Changed plans.',
+        (string) Str::uuid());
+    $this->actingAs($this->investor['user'])->getJson($url)->assertNotFound()->assertJsonPath('code', 'BUSINESS_PHOTO_NOT_FOUND');
 });
 
 it('refuses to serve a photo whose bytes no longer match their digest', function (string $content): void {

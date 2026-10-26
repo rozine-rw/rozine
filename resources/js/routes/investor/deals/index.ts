@@ -100,7 +100,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 export const photo = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ photo.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 photo.url = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ photo.url = (args: { campaign: string | number, photo: string | number } | [camp
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 photo.get = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -151,7 +151,7 @@ photo.get = (args: { campaign: string | number, photo: string | number } | [camp
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 photo.head = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -161,7 +161,7 @@ photo.head = (args: { campaign: string | number, photo: string | number } | [cam
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 const photoForm = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ const photoForm = (args: { campaign: string | number, photo: string | number } |
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 photoForm.get = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -181,7 +181,7 @@ photoForm.get = (args: { campaign: string | number, photo: string | number } | [
 
 /**
 * @see \App\Http\Controllers\InvestorDealPhotoController::__invoke
-* @see app/Http/Controllers/InvestorDealPhotoController.php:13
+* @see app/Http/Controllers/InvestorDealPhotoController.php:14
 * @route '/investor/deals/{campaign}/photos/{photo}'
 */
 photoForm.head = (args: { campaign: string | number, photo: string | number } | [campaign: string | number, photo: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

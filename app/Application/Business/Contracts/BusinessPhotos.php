@@ -27,8 +27,8 @@ interface BusinessPhotos
     public function published(string $businessId): array;
 
     /**
-     * One photo of the Business behind a campaign; rejected with 404 when the photo is not that
-     * Business's, and with 409 when its bytes no longer match their pinned digest.
+     * One photo of the Business behind an open campaign; rejected with 404 when the campaign is
+     * closed or the photo is not that Business's, and with 409 when its bytes no longer match their pinned digest.
      *
      * @return array{media_type: string, sha256: string, bytes: string}
      */
