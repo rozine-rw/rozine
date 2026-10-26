@@ -5,6 +5,7 @@ import BusinessRepaymentController from './BusinessRepaymentController'
 import BusinessHomeController from './BusinessHomeController'
 import BusinessNoticesController from './BusinessNoticesController'
 import BusinessWalletController from './BusinessWalletController'
+import BusinessStatementController from './BusinessStatementController'
 import StaffDisbursementController from './StaffDisbursementController'
 import AuditOperationsController from './AuditOperationsController'
 import AuditorNoticesController from './AuditorNoticesController'
@@ -72,6 +73,7 @@ const Controllers = {
     BusinessHomeController: Object.assign(BusinessHomeController, BusinessHomeController),
     BusinessNoticesController: Object.assign(BusinessNoticesController, BusinessNoticesController),
     BusinessWalletController: Object.assign(BusinessWalletController, BusinessWalletController),
+    BusinessStatementController: Object.assign(BusinessStatementController, BusinessStatementController),
     StaffDisbursementController: Object.assign(StaffDisbursementController, StaffDisbursementController),
     AuditOperationsController: Object.assign(AuditOperationsController, AuditOperationsController),
     AuditorNoticesController: Object.assign(AuditorNoticesController, AuditorNoticesController),
