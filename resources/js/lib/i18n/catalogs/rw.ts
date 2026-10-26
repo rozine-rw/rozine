@@ -1617,8 +1617,7 @@ const rw: Catalog = {
     'admin.section.applications.title': "Umurongo w'ubusabe",
     'admin.section.applications.subtitle':
         'Suzuma kandi wemeze ubusabe bushya bwa RNP',
-    'admin.section.applications.search':
-        'Shakisha ubusabe ukoresheje ikigo cyangwa nimero…',
+    'admin.section.applications.search': 'Shakisha ikigo cyangwa nimero…',
     'admin.section.disbursements.title': 'Kwishyura',
     'admin.section.disbursements.subtitle':
         "Amafaranga yemejwe ategereje kwishyurwa. Hejuru y'urugero, abantu babiri batandukanye bagomba kwemeza buri kwishyura.",

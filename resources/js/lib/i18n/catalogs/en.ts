@@ -1528,8 +1528,7 @@ const en = {
     'admin.section.applications.title': 'Applications Queue',
     'admin.section.applications.subtitle':
         'Review and underwrite new RNP submissions',
-    'admin.section.applications.search':
-        'Search applications by business or ID…',
+    'admin.section.applications.search': 'Search business or ID…',
     'admin.section.disbursements.title': 'Disbursements',
     'admin.section.disbursements.subtitle':
         'Approved raises awaiting release. Above the threshold, two different people must approve every release.',

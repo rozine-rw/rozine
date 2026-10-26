@@ -34,6 +34,7 @@ final class EloquentActivityTrailStore implements ActivityTrailStore
                     WHEN 'party' THEN COALESCE((SELECT u.name FROM users u WHERE u.party_id IN (lower(trail.target_id), upper(trail.target_id)) ORDER BY u.id LIMIT 1),
                         (SELECT b.profile->>'name' FROM business_profiles b WHERE b.entity_party_id IN (lower(trail.target_id), upper(trail.target_id))))
                     WHEN 'auditor.party' THEN (SELECT u.name FROM users u WHERE u.party_id IN (lower(trail.target_id), upper(trail.target_id)) ORDER BY u.id LIMIT 1)
+                    WHEN 'business.entity' THEN (SELECT b.profile->>'name' FROM business_profiles b WHERE b.entity_party_id IN (lower(trail.target_id), upper(trail.target_id)))
                     WHEN 'business' THEN (SELECT b.profile->>'name' FROM business_profiles b WHERE b.id IN (lower(trail.target_id), upper(trail.target_id)))
                     WHEN 'business_profile' THEN (SELECT b.profile->>'name' FROM business_profiles b WHERE b.id IN (lower(trail.target_id), upper(trail.target_id)))
                     WHEN 'campaign' THEN (SELECT b.profile->>'name' FROM business_campaigns c JOIN business_profiles b ON b.id = c.business_id

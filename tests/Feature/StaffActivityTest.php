@@ -147,12 +147,14 @@ test('the trail names the person or Business an entry acted on instead of its ID
     $at = now();
     foreach ([['party', strtoupper($party->id), 'investor.risk.acknowledge'], ['business', $business->id, 'business.profile.update'],
         ['campaign', strtoupper($campaign->id), 'campaign.cancel'], ['application', $campaign->business_application_id, 'application.save'],
-        ['business_profile', $business->id, 'business.profile.update'], ['auditor.party', $party->id, 'accreditation.review']] as [$type, $id, $command]) {
+        ['business_profile', $business->id, 'business.profile.update'], ['auditor.party', $party->id, 'accreditation.review'],
+        ['business.entity', strtoupper($business->entity_party_id), 'business.authority.configure']] as [$type, $id, $command]) {
         CommandOperation::factory()->create(['command' => $command, 'target_type' => $type, 'target_id' => $id, 'created_at' => $at = $at->addMinute()]);
     }
 
     $this->actingAs($officer)->get(route('staff.events.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('events.0.target', 'Grace Ingabire')->where('events.0.action.label', 'Reviewed a licence')
-            ->where('events.1.target', 'Business · Works Bridge')->where('events.2.target', 'Application · Works Bridge')
-            ->where('events.3.target', 'Note · Works Bridge')->where('events.4.target', 'Business · Works Bridge')->where('events.5.target', 'Grace Ingabire'));
+        ->assertInertia(fn (Assert $page) => $page->where('events.0.target', 'Business · Works Bridge')->where('events.0.action.label', 'Configured a Business mandate')
+            ->where('events.1.target', 'Grace Ingabire')->where('events.1.action.label', 'Reviewed a licence')
+            ->where('events.2.target', 'Business · Works Bridge')->where('events.3.target', 'Application · Works Bridge')
+            ->where('events.4.target', 'Note · Works Bridge')->where('events.5.target', 'Business · Works Bridge')->where('events.6.target', 'Grace Ingabire'));
 });
