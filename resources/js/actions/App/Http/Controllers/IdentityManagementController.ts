@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/IdentityManagementController.php:22
+* @see app/Http/Controllers/IdentityManagementController.php:24
 * @route '/identity/people/resolve'
 */
 export const resolvePerson = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ resolvePerson.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/IdentityManagementController.php:22
+* @see app/Http/Controllers/IdentityManagementController.php:24
 * @route '/identity/people/resolve'
 */
 resolvePerson.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ resolvePerson.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/IdentityManagementController.php:22
+* @see app/Http/Controllers/IdentityManagementController.php:24
 * @route '/identity/people/resolve'
 */
 resolvePerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ resolvePerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/IdentityManagementController.php:22
+* @see app/Http/Controllers/IdentityManagementController.php:24
 * @route '/identity/people/resolve'
 */
 const resolvePersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const resolvePersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::resolvePerson
-* @see app/Http/Controllers/IdentityManagementController.php:22
+* @see app/Http/Controllers/IdentityManagementController.php:24
 * @route '/identity/people/resolve'
 */
 resolvePersonForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ resolvePerson.form = resolvePersonForm
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::staffPerson
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 export const staffPerson = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ staffPerson.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::staffPerson
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 staffPerson.url = (options?: RouteQueryOptions) => {
@@ -81,7 +81,7 @@ staffPerson.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::staffPerson
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 staffPerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ staffPerson.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::staffPerson
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 const staffPersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -101,7 +101,7 @@ const staffPersonForm = (options?: RouteQueryOptions): RouteFormDefinition<'post
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::staffPerson
-* @see app/Http/Controllers/IdentityManagementController.php:31
+* @see app/Http/Controllers/IdentityManagementController.php:33
 * @route '/identity/staff-people'
 */
 staffPersonForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -113,7 +113,7 @@ staffPerson.form = staffPersonForm
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::membership
-* @see app/Http/Controllers/IdentityManagementController.php:41
+* @see app/Http/Controllers/IdentityManagementController.php:43
 * @route '/identity/memberships'
 */
 export const membership = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ membership.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::membership
-* @see app/Http/Controllers/IdentityManagementController.php:41
+* @see app/Http/Controllers/IdentityManagementController.php:43
 * @route '/identity/memberships'
 */
 membership.url = (options?: RouteQueryOptions) => {
@@ -137,7 +137,7 @@ membership.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::membership
-* @see app/Http/Controllers/IdentityManagementController.php:41
+* @see app/Http/Controllers/IdentityManagementController.php:43
 * @route '/identity/memberships'
 */
 membership.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -147,7 +147,7 @@ membership.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::membership
-* @see app/Http/Controllers/IdentityManagementController.php:41
+* @see app/Http/Controllers/IdentityManagementController.php:43
 * @route '/identity/memberships'
 */
 const membershipForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -157,7 +157,7 @@ const membershipForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::membership
-* @see app/Http/Controllers/IdentityManagementController.php:41
+* @see app/Http/Controllers/IdentityManagementController.php:43
 * @route '/identity/memberships'
 */
 membershipForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -169,7 +169,7 @@ membership.form = membershipForm
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::selectRole
-* @see app/Http/Controllers/IdentityManagementController.php:51
+* @see app/Http/Controllers/IdentityManagementController.php:53
 * @route '/identity/active-role'
 */
 export const selectRole = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -184,7 +184,7 @@ selectRole.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::selectRole
-* @see app/Http/Controllers/IdentityManagementController.php:51
+* @see app/Http/Controllers/IdentityManagementController.php:53
 * @route '/identity/active-role'
 */
 selectRole.url = (options?: RouteQueryOptions) => {
@@ -193,7 +193,7 @@ selectRole.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::selectRole
-* @see app/Http/Controllers/IdentityManagementController.php:51
+* @see app/Http/Controllers/IdentityManagementController.php:53
 * @route '/identity/active-role'
 */
 selectRole.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -203,7 +203,7 @@ selectRole.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::selectRole
-* @see app/Http/Controllers/IdentityManagementController.php:51
+* @see app/Http/Controllers/IdentityManagementController.php:53
 * @route '/identity/active-role'
 */
 const selectRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -213,7 +213,7 @@ const selectRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::selectRole
-* @see app/Http/Controllers/IdentityManagementController.php:51
+* @see app/Http/Controllers/IdentityManagementController.php:53
 * @route '/identity/active-role'
 */
 selectRoleForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -224,8 +224,64 @@ selectRoleForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'>
 selectRole.form = selectRoleForm
 
 /**
+* @see \App\Http\Controllers\IdentityManagementController::addInvestor
+* @see app/Http/Controllers/IdentityManagementController.php:61
+* @route '/identity/investor-access'
+*/
+export const addInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addInvestor.url(options),
+    method: 'post',
+})
+
+addInvestor.definition = {
+    methods: ["post"],
+    url: '/identity/investor-access',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\IdentityManagementController::addInvestor
+* @see app/Http/Controllers/IdentityManagementController.php:61
+* @route '/identity/investor-access'
+*/
+addInvestor.url = (options?: RouteQueryOptions) => {
+    return addInvestor.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\IdentityManagementController::addInvestor
+* @see app/Http/Controllers/IdentityManagementController.php:61
+* @route '/identity/investor-access'
+*/
+addInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: addInvestor.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\IdentityManagementController::addInvestor
+* @see app/Http/Controllers/IdentityManagementController.php:61
+* @route '/identity/investor-access'
+*/
+const addInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: addInvestor.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\IdentityManagementController::addInvestor
+* @see app/Http/Controllers/IdentityManagementController.php:61
+* @route '/identity/investor-access'
+*/
+addInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: addInvestor.url(options),
+    method: 'post',
+})
+
+addInvestor.form = addInvestorForm
+
+/**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 export const role = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -240,7 +296,7 @@ role.definition = {
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 role.url = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -267,7 +323,7 @@ role.url = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 role.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -277,7 +333,7 @@ role.get = (args: { role: string | number } | [role: string | number ] | string 
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 role.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -287,7 +343,7 @@ role.head = (args: { role: string | number } | [role: string | number ] | string
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 const roleForm = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -297,7 +353,7 @@ const roleForm = (args: { role: string | number } | [role: string | number ] | s
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 roleForm.get = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -307,7 +363,7 @@ roleForm.get = (args: { role: string | number } | [role: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\IdentityManagementController::role
-* @see app/Http/Controllers/IdentityManagementController.php:59
+* @see app/Http/Controllers/IdentityManagementController.php:69
 * @route '/identity/roles/{role}'
 */
 roleForm.head = (args: { role: string | number } | [role: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -322,6 +378,6 @@ roleForm.head = (args: { role: string | number } | [role: string | number ] | st
 
 role.form = roleForm
 
-const IdentityManagementController = { resolvePerson, staffPerson, membership, selectRole, role }
+const IdentityManagementController = { resolvePerson, staffPerson, membership, selectRole, addInvestor, role }
 
 export default IdentityManagementController
