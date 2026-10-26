@@ -347,11 +347,22 @@ const writeIdTypeDraft = (
  * investors have no transaction capacity (CFG-01), so this gates buying.
  */
 export default function InvestorVerification(props: InvestorVerificationProps) {
-    const { t } = useTranslation();
     const { auth } = usePage().props as {
         auth?: { user?: { id: number } | null };
     };
     const userId = auth?.user?.id ?? null;
+
+    // Everything the form holds belongs to one account, so a change of signed-in account starts it afresh.
+    return (
+        <VerificationForm key={userId ?? 'guest'} userId={userId} {...props} />
+    );
+}
+
+function VerificationForm({
+    userId,
+    ...props
+}: InvestorVerificationProps & { userId: number | null }) {
+    const { t } = useTranslation();
     // A participant can step back to correct an earlier answer (for example after a rejection); the
     // server's step returns once that earlier step is saved.
     const [viewing, setViewing] = useState<Step | null>(null);
