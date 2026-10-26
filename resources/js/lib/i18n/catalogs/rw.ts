@@ -334,6 +334,8 @@ const rw: Catalog = {
     'business.today.cosign.sub':
         'CPA wawe yayifunze. Soma ibyabonetse mbere yo gushyiraho umukono.',
     'business.today.cosign.cta': 'Yisuzume kandi uyishyireho umukono',
+    'business.today.cosign.due':
+        'Emeza cyangwa ujurire bitarenze {date} · hasigaye amasaha {hours}',
     'business.today.signature.kicker': 'Umukono wawe urakenewe',
     'business.today.signature.sub':
         'Umukono wawe urakenewe mbere y’uko iyi dosiye yoherezwa.',

@@ -1038,7 +1038,7 @@ export type SealedStage = SealedRecord & {
      * report is not disputed.
      */
     dispute: AuditDispute | null;
-    /** The persisted publication policy (N6); only `monthly-review-2026-09-26` is the 24-hour window. */
+    /** The persisted publication policy (N6); every policy but the legacy one is the 24-hour window. */
     policy_version: AuditPublicationPolicy;
     /** When the sealed report reached the Business's app; null under the legacy policy. */
     delivered_at: string | null;

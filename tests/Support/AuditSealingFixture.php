@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Application\Auditor\ConfirmAuditStepUp;
+use App\Application\Auditor\Contracts\AuditReportCryptography;
+use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\CosignAuditReport;
 use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\SealAuditReport;
 use App\Application\Auditor\StartAuditReport;
 use App\Models\AuditReport;
+use App\Models\AuditReportSeal;
 use App\Models\AuditSigningKey;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Mockery;
 use PragmaRX\Google2FA\Google2FA;
 use RuntimeException;
 
@@ -91,6 +96,35 @@ final class AuditSealingFixture
     {
         return app(SealAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id,
             $fixture['report']->revision, $fields ?? $fixture['fields'], $proof ?? self::proof($fixture)['proof'], $request ?? (string) Str::uuid());
+    }
+
+    /**
+     * Seals the report as it was sealed before its kind had a 24-hour review window: no publication
+     * policy in the signed payload, so the publication opens under the legacy all-signers rule.
+     *
+     * @param  array<string, mixed>  $fixture
+     * @return array<string, mixed>
+     */
+    public static function sealLegacy(array $fixture): array
+    {
+        $store = app(AuditReportPublicationStore::class);
+        $event = 'eloquent.creating: '.AuditReportSeal::class;
+        Event::listen($event, function (AuditReportSeal $seal): void {
+            $payload = array_diff_key($seal->payload, ['publication_policy' => true]);
+            $signature = app(AuditReportCryptography::class)->sign($payload);
+            $seal->forceFill(['payload' => $payload, 'audit_signing_key_id' => $signature['key_id'], 'jws' => $signature['jws']]);
+        });
+        $legacy = Mockery::mock(AuditReportPublicationStore::class);
+        $legacy->shouldReceive('open')->once()->andReturnUsing(function (string $reportId, string $digest, array $payload) use ($store): void {
+            $store->open($reportId, $digest, array_diff_key($payload, ['publication_policy' => true]));
+        });
+        app()->instance(AuditReportPublicationStore::class, $legacy);
+        try {
+            return self::seal($fixture);
+        } finally {
+            Event::forget($event);
+            app()->instance(AuditReportPublicationStore::class, $store);
+        }
     }
 
     /** @param array<string, mixed> $fixture

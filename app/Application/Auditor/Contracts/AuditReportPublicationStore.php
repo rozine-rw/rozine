@@ -16,9 +16,10 @@ interface AuditReportPublicationStore
 
     /**
      * The caller holds current Business view authority. Return only the latest unamended
-     * sealed report's navigation metadata; the destination rechecks publication authority.
+     * sealed report's navigation metadata, with when its 24-hour review closes (null under the
+     * legacy policy); the destination rechecks publication authority.
      *
-     * @return array{id: string, kind: string, status: string}|null
+     * @return array{id: string, kind: string, status: string, due_at: string|null}|null
      */
     public function latestForBusiness(string $businessId): ?array;
 

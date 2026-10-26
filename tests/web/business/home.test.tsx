@@ -238,11 +238,39 @@ describe('Business Home', () => {
         );
     });
 
+    it('says by when a sealed report must be co-signed or disputed, and how many hours are left', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                today={[
+                    {
+                        kind: 'audit_cosign',
+                        report_kind: 'flash',
+                        due_at: '2026-10-27T13:00:00Z',
+                        hours_left: 5,
+                        link: link('/business/b1/audit-reports/r1'),
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.getByText(/^Co-sign or dispute by .+ · 5 h left$/u),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'Your CPA sealed it. Read the findings before you co-sign.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
     it('renders every kind of Today item with its call to act', () => {
         const today: BusinessTodo[] = [
             {
                 kind: 'audit_cosign',
                 report_kind: 'flash',
+                due_at: null,
+                hours_left: null,
                 link: link('/business/b1/audit-reports/r1'),
             },
             {

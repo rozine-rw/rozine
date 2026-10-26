@@ -12,7 +12,25 @@ final class MonthlyReportReview
 {
     public const POLICY = 'monthly-review-2026-09-26';
 
+    /** The same 24-hour window for a Flash (listing) report, sealed from 26 Oct 2026 (BRS OD-07, #363). */
+    public const FLASH_POLICY = 'flash-review-2026-10-26';
+
+    /** Every report sealed before its kind had a review window keeps this policy. */
     public const LEGACY_POLICY = 'audit-publication-legacy';
+
+    /** The policies under which one signatory signs off or disputes within 24 hours, and silence approves. */
+    public const REVIEW_POLICIES = [self::POLICY, self::FLASH_POLICY];
+
+    /** The review policy a report of this kind is sealed under. */
+    public static function policyFor(string $kind): string
+    {
+        return $kind === 'monthly' ? self::POLICY : self::FLASH_POLICY;
+    }
+
+    public static function reviewed(?string $policy): bool
+    {
+        return in_array($policy, self::REVIEW_POLICIES, true);
+    }
 
     public function dueAt(DateTimeImmutable $deliveredAt): string
     {

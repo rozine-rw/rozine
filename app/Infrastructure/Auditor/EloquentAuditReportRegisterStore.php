@@ -22,8 +22,9 @@ use Illuminate\Support\Facades\DB;
  * An assignment's kind and clock sit in its encrypted state, so the accepted and completed
  * assignments are read and sorted here; the network is small. Each takes its newest report, that
  * report's seal and its publication. The Business is named as the seal recorded it once sealed,
- * else as its profile names it now; the licence is the sealed one, else the partner's licence on file. A Flash Audit's report waits for the Business with no review
- * deadline, so only a monthly one can be reminded to the Business. A reminder is remembered per
+ * else as its profile names it now; the licence is the sealed one, else the partner's licence on file. Only a report sealed
+ * under a 24-hour review policy has a deadline, so only it can be reminded to the Business; a Flash
+ * report sealed before 26 Oct 2026 waits with none. A reminder is remembered per
  * recipient, so nudging one party leaves the other's Remind in place.
  *
  * @phpstan-import-type RegisterRow from AuditReportRegisterStore

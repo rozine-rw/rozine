@@ -325,6 +325,8 @@ const en = {
     'business.today.cosign.sub':
         'Your CPA sealed it. Read the findings before you co-sign.',
     'business.today.cosign.cta': 'Review & co-sign',
+    'business.today.cosign.due':
+        'Co-sign or dispute by {date} · {hours} h left',
     'business.today.signature.kicker': 'Signature needed',
     'business.today.signature.sub':
         'Your signature is needed before this application can be submitted.',
