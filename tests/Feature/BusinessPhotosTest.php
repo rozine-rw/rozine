@@ -16,28 +16,30 @@ beforeEach(function (): void {
     $this->investor = PrimaryReservationFixture::investor();
     $this->photos = app(BusinessPhotos::class);
     $this->jpeg = "\xFF\xD8\xFF\xE0".str_repeat('a', 64);
+    $this->png = "\x89PNG\r\n\x1A\n".str_repeat('b', 64);
+    $this->webp = 'RIFF'.pack('V', 68).'WEBP'.str_repeat('c', 60);
 });
 
 it('puts a photo at a position, changes nothing when put again and replaces it with new bytes', function (): void {
     $first = $this->photos->put($this->campaign->business_id, 1, '  Layer house  ', 'image/jpeg', $this->jpeg);
     $again = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
-    $replaced = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/png', "\x89PNG");
-    $this->photos->put($this->campaign->business_id, 2, 'Egg room', 'image/webp', 'RIFF');
+    $replaced = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/png', $this->png);
+    $this->photos->put($this->campaign->business_id, 2, 'Egg room', 'image/webp', $this->webp);
 
     expect($first['changed'])->toBeTrue()
         ->and($again)->toBe(['id' => $first['id'], 'changed' => false])
         ->and($replaced)->toBe(['id' => $first['id'], 'changed' => true])
         ->and(BusinessPhoto::query()->count())->toBe(2)
         ->and($this->photos->published($this->campaign->business_id))->toBe([
-            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', "\x89PNG")],
-            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', 'RIFF')],
+            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', $this->png)],
+            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', $this->webp)],
         ]);
 });
 
 it('refuses an unknown business and a photo outside the allowed position, caption, type or size', function (string $business, int $position, string $caption, string $type, ?int $size, string $reason): void {
     $businessId = $business === 'known' ? $this->campaign->business_id : '01JZZZZZZZZZZZZZZZZZZZZZZZ';
 
-    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, $size === null ? $this->jpeg : str_repeat('a', $size)))
+    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, match ($size) { null => $this->jpeg, 0 => '', default => str_pad($this->jpeg, $size, 'a') }))
         ->toThrow(InvalidArgumentException::class, $reason);
 })->with([
     'unknown business' => ['unknown', 1, 'Shop', 'image/jpeg', null, 'BUSINESS_PHOTO_BUSINESS_UNKNOWN'],
@@ -48,6 +50,16 @@ it('refuses an unknown business and a photo outside the allowed position, captio
     'gif' => ['known', 1, 'Shop', 'image/gif', null, 'BUSINESS_PHOTO_INVALID'],
     'empty file' => ['known', 1, 'Shop', 'image/jpeg', 0, 'BUSINESS_PHOTO_INVALID'],
     'over 5 MB' => ['known', 1, 'Shop', 'image/jpeg', BusinessPhotos::MAX_BYTES + 1, 'BUSINESS_PHOTO_INVALID'],
+]);
+
+it('refuses bytes that are not the image type they are labelled as', function (string $type, string $bytes): void {
+    expect(fn () => $this->photos->put($this->campaign->business_id, 1, 'Shop', $type, $bytes))
+        ->toThrow(InvalidArgumentException::class, 'BUSINESS_PHOTO_INVALID');
+})->with([
+    'text as JPEG' => ['image/jpeg', '<?php echo 1;'],
+    'PNG as JPEG' => ['image/jpeg', "\x89PNG\r\n\x1A\nxxxx"],
+    'JPEG as PNG' => ['image/png', "\xFF\xD8\xFF\xE0xxxx"],
+    'RIFF audio as WebP' => ['image/webp', 'RIFF'.pack('V', 12).'WAVExxxx'],
 ]);
 
 it('shows the published photos on the deal card and the deal, and serves each one', function (): void {
