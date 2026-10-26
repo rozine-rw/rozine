@@ -121,6 +121,7 @@ export function PhotoFill({
                 <img
                     src={photo.url}
                     alt=""
+                    decoding="async"
                     className="size-full object-cover"
                     draggable={false}
                 />
