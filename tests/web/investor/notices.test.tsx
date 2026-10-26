@@ -117,6 +117,37 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(within(panel).getByLabelText('2 unread')).toHaveTextContent('2');
     });
 
+    it('words a confirmed purchase with its business, amount and locked fee (INV-R05)', async () => {
+        const user = userEvent.setup();
+        const page = notices();
+
+        page.notices = [
+            {
+                ...page.notices[0],
+                kind: 'primary.commitment_confirmed',
+                facts: {
+                    business: 'Umuganda Supply',
+                    units: '100',
+                    amount: '500000',
+                    currency: 'RWF',
+                    fee_tier: 'standard',
+                    fee_rate_bps: '1500',
+                    reference: 'RZC-01K7NQ0C2Y',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        inertia.queue.push(answers({ data: page }));
+        const panel = await openBell(user);
+        const [item] = await within(panel).findAllByRole('button', {
+            name: /Umuganda/u,
+        });
+
+        expect(item).toHaveTextContent(
+            'Purchase confirmedYou committed RWF 500,000 to Umuganda Supply for 100 notes, at a 15.0% earnings fee. Reference RZC-01K7NQ0C2Y.',
+        );
+    });
+
     it('marks a notice read on the way to its record, and opens a read one directly', async () => {
         const user = userEvent.setup();
         render(<InvestorDeals {...deals()} />);

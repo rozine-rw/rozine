@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Domain\Identity\SandboxNotice;
 use App\Models\Party;
 use App\Models\RoleMembership;
+use App\Models\SandboxNoticeAcknowledgement;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Fortify\Features;
 
 /** @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy */
@@ -26,6 +29,7 @@ final class EloquentIdentityRepository implements IdentityRepository
             $user = new User(['name' => $name, 'email' => $email, 'password' => $password]);
             $user->party()->associate($party);
             $user->save();
+            $this->acknowledgeSandboxNotice($party->id);
 
             return $user->id;
         });
@@ -73,5 +77,15 @@ final class EloquentIdentityRepository implements IdentityRepository
     {
         /** @var array<string, 'person'|'organization'> */
         return Party::query()->whereKey($partyIds)->pluck('kind', 'id')->all();
+    }
+
+    private function acknowledgeSandboxNotice(string $partyId): void
+    {
+        $at = now('UTC')->toDateTimeImmutable();
+        $id = strtolower((string) Str::ulid());
+        $digest = hash('sha256', implode("\n", ['sandbox-notice-acknowledgement-1', $id, $partyId,
+            SandboxNotice::VERSION, SandboxNotice::sha256(), $at->format('Y-m-d\TH:i:s.u\Z')]));
+        (new SandboxNoticeAcknowledgement)->forceFill(['id' => $id, 'party_id' => $partyId, 'version' => SandboxNotice::VERSION,
+            'notice_sha256' => SandboxNotice::sha256(), 'sha256' => $digest, 'acknowledged_at' => $at])->save();
     }
 }

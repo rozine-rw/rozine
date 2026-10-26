@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\InvestorCart;
+use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\ManageInvestorCart;
 use App\Domain\Operations\CommandRejection;
 use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorCartLine;
 use App\Models\Party;
+use App\Models\PrimaryReservationRecord;
+use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
@@ -96,6 +100,21 @@ it('takes a line out, and taking it out again changes nothing', function (): voi
     ($this->remove)()->assertOk()->assertJsonPath('data.removed', false);
 
     expect(($this->cart)()['cart']['lines'])->toBe([]);
+});
+
+it('takes a deal out of the cart once its purchase is confirmed', function (): void {
+    ($this->add)('3')->assertOk();
+    $checkout = app(PrimaryCheckout::class);
+    $checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, '3', (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+    $root = PrimaryReservationRecord::query()->sole();
+    $initial = PrimaryReservationVersion::query()->sole()->payload;
+    expect(InvestorCartLine::query()->count())->toBe(1);
+
+    $checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $root->id, 1, $initial['terms']['disclosure_version'],
+        $initial['disclosure_sha256'], (string) Str::uuid(), PrimaryReservationFixture::terms(...));
+
+    expect(InvestorCartLine::query()->count())->toBe(0)
+        ->and(($this->cart)()['cart']['lines'])->toBe([]);
 });
 
 it('keeps a deal that filled in the cart marked filled, out of checkout, and refuses to add or change it', function (): void {
@@ -209,6 +228,8 @@ it('refuses a new line once the cart is full', function (): void {
         {
             return ['campaign_id' => $campaignId, 'removed' => false, 'count' => 0];
         }
+
+        public function bought(string $partyId, string $campaignId): void {}
     });
 
     expect(fn () => app(ManageInvestorCart::class)->add($this->investor['user']->id, 1, $this->campaign->id, 1))

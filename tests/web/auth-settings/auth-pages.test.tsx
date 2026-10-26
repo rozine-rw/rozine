@@ -17,6 +17,19 @@ import ResetPassword from '@/pages/auth/reset-password';
 import TwoFactorChallenge from '@/pages/auth/two-factor-challenge';
 import VerifyEmail from '@/pages/auth/verify-email';
 
+const sandboxNotice = {
+    version: 'brs-2.0-kyc-r01',
+    text: "Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
+    sha256: 'a'.repeat(64),
+};
+
+/** Acknowledges the sandbox notice, which opens the sign-up form. */
+function openRegisterForm() {
+    fireEvent.click(
+        screen.getByRole('button', { name: 'I understand, continue' }),
+    );
+}
+
 type FormState = {
     processing: boolean;
     errors: Record<string, string>;
@@ -220,6 +233,88 @@ describe('authentication pages', () => {
         ).toHaveAttribute('href', '/register');
     });
 
+    it('shows the sandbox notice before the sign-up form and sends the version it showed', () => {
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { name: 'Before you sign up' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText(sandboxNotice.text)).toBeInTheDocument();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(inertia.forms).toHaveLength(0);
+
+        openRegisterForm();
+
+        expect(screen.getAllByRole('textbox')).toHaveLength(4);
+        expect(screen.getByDisplayValue(sandboxNotice.version)).toHaveAttribute(
+            'name',
+            'sandbox_notice_version',
+        );
+        expect(screen.getByDisplayValue(sandboxNotice.sha256)).toHaveAttribute(
+            'name',
+            'sandbox_notice_sha256',
+        );
+    });
+
+    it('shows a newer sandbox notice again before the form, and binds the new version', () => {
+        const { rerender } = render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
+
+        openRegisterForm();
+        expect(screen.getAllByRole('textbox')).toHaveLength(4);
+
+        const newer = {
+            version: 'brs-2.1-kyc-r01',
+            text: 'An updated sandbox notice.',
+            sha256: 'b'.repeat(64),
+        };
+
+        rerender(
+            <Register sandboxNotice={newer} passwordRules="minlength:12" />,
+        );
+        expect(screen.getByText(newer.text)).toBeInTheDocument();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+
+        openRegisterForm();
+        expect(screen.getByDisplayValue(newer.version)).toHaveAttribute(
+            'name',
+            'sandbox_notice_version',
+        );
+        expect(screen.getByDisplayValue(newer.sha256)).toHaveAttribute(
+            'name',
+            'sandbox_notice_sha256',
+        );
+    });
+
+    it('says when the server refused a missing sandbox acknowledgement', () => {
+        inertia.state.errors = {
+            sandbox_notice_sha256:
+                'Read and acknowledge the sandbox notice before you sign up.',
+        };
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
+        openRegisterForm();
+
+        expect(
+            screen.getByText(
+                'Read and acknowledge the sandbox notice before you sign up.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('renders register processing, password rules, and all errors', () => {
         inertia.state.processing = true;
         inertia.state.errors = {
@@ -228,8 +323,14 @@ describe('authentication pages', () => {
             password: 'Password weak.',
             password_confirmation: 'Passwords differ.',
         };
-        const { rerender } = render(<Register passwordRules="minlength:12" />);
+        const { rerender } = render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
 
+        openRegisterForm();
         expect(screen.getByText('Name required.')).toBeInTheDocument();
         expect(screen.getByText('Email required.')).toBeInTheDocument();
         expect(screen.getByText('Password weak.')).toBeInTheDocument();
@@ -243,7 +344,14 @@ describe('authentication pages', () => {
 
         inertia.state.processing = false;
         inertia.state.errors = {};
-        rerender(<Register key="idle" passwordRules="minlength:12" />);
+        rerender(
+            <Register
+                sandboxNotice={sandboxNotice}
+                key="idle"
+                passwordRules="minlength:12"
+            />,
+        );
+        openRegisterForm();
         expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
     });
 
@@ -288,13 +396,20 @@ describe('authentication pages', () => {
         );
         cleanup();
 
-        render(<Register passwordRules="minlength:12" audience="business" />);
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+                audience="business"
+            />,
+        );
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
             title: 'auth.brand.business.register_title',
             description: 'auth.brand.business.register_description',
             eyebrow: 'auth.brand.business.eyebrow',
             audience: 'business',
         });
+        openRegisterForm();
         expect(screen.getByText(/Already registered\?/)).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute(
             'href',
@@ -302,7 +417,13 @@ describe('authentication pages', () => {
         );
         cleanup();
 
-        render(<Register passwordRules="minlength:12" audience="investor" />);
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+                audience="investor"
+            />,
+        );
         expect(inertia.layoutProps).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 description: 'auth.brand.investor.register_description',
@@ -311,7 +432,13 @@ describe('authentication pages', () => {
         );
         cleanup();
 
-        render(<Register passwordRules="minlength:12" audience="auditor" />);
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+                audience="auditor"
+            />,
+        );
         expect(inertia.layoutProps).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 description: 'auth.brand.auditor.register_description',
@@ -319,7 +446,12 @@ describe('authentication pages', () => {
         );
         cleanup();
 
-        render(<Register passwordRules="minlength:12" />);
+        render(
+            <Register
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
         expect(inertia.layoutProps).toHaveBeenLastCalledWith({
             title: 'auth.register.layout_title',
             description: 'auth.register.layout_description',

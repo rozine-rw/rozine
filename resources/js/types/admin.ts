@@ -836,6 +836,7 @@ export type PartyDetail = {
         | 'watch'
         | 'distressed'
         | 'kyc_pending'
+        | 'licence_pending'
         | 'frozen'
         | 'not_tracked';
     stats: { key: PartyStatKey; value: StatValue }[];
@@ -2024,6 +2025,7 @@ export type MessageTemplate = {
         | 'investor.investment_confirmed'
         | 'investor.payment_delayed'
         | 'investor.payout_received'
+        | 'investor.purchase_confirmed'
         | 'investor.raise_expired'
         | 'investor.report_published'
         | 'investor.verification_decided'

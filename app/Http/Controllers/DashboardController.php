@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Identity\GetIdentityContext;
+use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\GetStaffAccess;
 use App\Http\Resources\IdentityContextResource;
 use App\Http\Resources\StaffAccessResource;
@@ -14,13 +15,19 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff): Response
+    /**
+     * The launcher. A person asked to verify their identity also gets where their own check stands,
+     * so one already with Compliance is told it is under review instead of being asked again.
+     */
+    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification): Response
     {
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $context = $identity->handle($userId);
+
         return Inertia::render('dashboard', [
-            'staff_access' => (new StaffAccessResource($staff->handle((int) $request->user()?->getAuthIdentifier())))->resolve($request),
-            'identity' => (new IdentityContextResource(
-                $identity->handle((int) $request->user()?->getAuthIdentifier()),
-            ))->resolve($request),
+            'staff_access' => (new StaffAccessResource($staff->handle($userId)))->resolve($request),
+            'identity' => (new IdentityContextResource($context))->resolve($request),
+            'verification' => $context['code'] === 'IDENTITY_VERIFICATION_REQUIRED' ? $verification->stage($userId) : null,
         ]);
     }
 }

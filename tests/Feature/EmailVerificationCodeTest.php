@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Identity\EmailVerificationCode;
+use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use App\Notifications\Account\OneTimeCode;
 use App\Notifications\Account\OneTimeCodePurpose;
@@ -27,6 +28,8 @@ test('registering sends the onboarding code email, not a link', function () {
 
     $this->post(route('register.store'), [
         'name' => 'Aline Uwase',
+        'sandbox_notice_version' => SandboxNotice::VERSION,
+        'sandbox_notice_sha256' => SandboxNotice::sha256(),
         'email' => 'aline@example.test',
         'password' => 'password',
         'password_confirmation' => 'password',

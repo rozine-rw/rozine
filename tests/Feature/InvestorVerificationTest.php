@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Identity\GetInvestorVerification;
 use App\Domain\Identity\InvestorVerificationCase;
 use App\Domain\Identity\VerificationDocument;
 use App\Domain\Operations\CommandRejection;
@@ -138,10 +139,11 @@ test('each answer is checked before the step moves on', function (string $step, 
     'impossible birth date' => ['personal', ['date_of_birth' => '30 / 02 / 1990'], 'date_of_birth', 'Enter your date of birth as DD / MM / YYYY.'],
     'too old to be real' => ['personal', ['date_of_birth' => '31 / 12 / 1899'], 'date_of_birth', 'Enter your date of birth as DD / MM / YYYY.'],
     'under 18' => ['personal', ['date_of_birth' => '07 / 10 / 2008'], 'date_of_birth', 'You must be at least 18 to invest.'],
-    'unknown document' => ['document', ['id_type' => 'voter_card', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID, passport or driving licence.'],
+    'unknown document' => ['document', ['id_type' => 'voter_card', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID or passport.'],
+    'driving licence (BRS KYC-R02)' => ['document', ['id_type' => 'drivers_license', 'id_number' => '1199080012345678'], 'id_type', 'Choose a national ID or passport.'],
     'short ID number' => ['document', ['id_type' => 'national_id', 'id_number' => '1199'], 'id_number', 'Enter the 16-digit number on the card.'],
     'bad passport number' => ['document', ['id_type' => 'passport', 'id_number' => 'P-1'], 'id_number', 'Enter the passport number, 6 to 12 letters or digits.'],
-    'missing ID back' => ['document', ['id_type' => 'drivers_license', 'id_number' => '1199080012345678'], 'id_front', 'Upload both sides of your ID, or the passport photo page.'],
+    'missing ID back' => ['document', ['id_type' => 'national_id', 'id_number' => '1199080012345678'], 'id_front', 'Upload both sides of your ID, or the passport photo page.'],
 ]);
 
 test('a person who turns 18 today may continue', function (): void {
@@ -296,4 +298,28 @@ test('history and documents are immutable and the schema refuses invalid rows', 
         ->and(fn () => DB::table('investor_verification_versions')->delete())->toThrow(QueryException::class)
         ->and(fn () => DB::table('investor_verifications')->update(['status' => 'submitted']))->toThrow(QueryException::class)
         ->and(fn () => DB::table('investor_verifications')->update(['status' => 'pending']))->toThrow(QueryException::class);
+});
+
+test('once a check is with Compliance, the launcher and refused pages say it is under review instead of asking again', function (): void {
+    $pages = fn (): array => [
+        $this->actingAs($this->person)->get(route('dashboard'))->assertOk()->viewData('page')['props']['verification'],
+        $this->actingAs($this->person)->get(route('investor.wallet'))->assertForbidden()
+            ->assertInertia(fn (Assert $page) => $page->component('identity/access-denied')->where('code', 'IDENTITY_VERIFICATION_REQUIRED'))
+            ->viewData('page')['props']['verification'],
+    ];
+
+    expect($pages())->toBe(['required', 'required']);
+    kycReady($this->person);
+    $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => kycRevision($this->person)]))
+        ->assertSessionHasNoErrors();
+
+    expect($pages())->toBe(['pending', 'pending']);
+});
+
+test('the verification stage describes only an unverified person', function (): void {
+    $stage = app(GetInvestorVerification::class);
+
+    expect($stage->stage(User::factory()->create(['party_id' => Party::factory()->verified()])->id))->toBeNull()
+        ->and($stage->stage(User::factory()->create()->id))->toBeNull()
+        ->and($stage->stage($this->person->id))->toBe('required');
 });

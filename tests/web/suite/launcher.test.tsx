@@ -386,6 +386,21 @@ describe('Suite launcher', () => {
             screen.getByRole('link', { name: 'Verify your identity →' }),
         ).toHaveAttribute('href', '/investor/verification');
     });
+    it('says a check already with Compliance is under review instead of asking for it again', () => {
+        render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                verification="pending"
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "Your identity check is with our Compliance team. You can invest once it's confirmed.",
+        );
+        expect(
+            screen.queryByRole('link', { name: 'Verify your identity →' }),
+        ).not.toBeInTheDocument();
+    });
     it.each<[Exclude<IdentityCode, 'IDENTITY_READY'>, string, string, string]>([
         [
             'EMAIL_VERIFICATION_REQUIRED',

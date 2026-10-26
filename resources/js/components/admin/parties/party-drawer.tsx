@@ -54,6 +54,7 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     kyc_pending: 'amber',
+    licence_pending: 'amber',
     frozen: 'red',
     not_tracked: 'grey',
 };

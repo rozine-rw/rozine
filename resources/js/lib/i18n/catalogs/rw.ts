@@ -39,6 +39,10 @@ const rw: Catalog = {
     'identity.denied.staff_only.title': 'Iyi paji ni iy’abakozi ba Rozine',
     'identity.denied.staff_only.body':
         'Abakozi ba Rozine ni bo bonyine bafungura iyi paji. Hitamo porogaramu kugira ngo usubire ku kazi kawe.',
+    'identity.denied.verification_pending.title':
+        "Igenzura ry'umwirondoro wawe riracyasuzumwa",
+    'identity.denied.verification_pending.body':
+        'Itsinda ryacu rishinzwe kubahiriza amategeko rirasuzuma amakuru wohereje. Uru rupapuro ruzafunguka umwirondoro wawe nimara kwemezwa.',
     'identity.denied.verification_required.title':
         'Igenzura ry’umwirondoro rirakenewe',
     'identity.denied.verification_required.body':
@@ -99,6 +103,8 @@ const rw: Catalog = {
     'auth.register.confirm_label': 'Emeza ijambobanga',
     'auth.register.confirm_placeholder': 'Emeza ijambobanga',
     'auth.register.submit': 'Fungura konti',
+    'auth.register.sandbox.title': 'Mbere yo kwiyandikisha',
+    'auth.register.sandbox.acknowledge': 'Ndabyumvise, komeza',
     'auth.register.have_account': 'Usanzwe ufite konti?',
     'auth.register.log_in': 'Injira',
     'auth.brand.wordmark': 'rozine',
@@ -193,6 +199,8 @@ const rw: Catalog = {
         'Umwirondoro wawe ntabwo urategurwa',
     'suite.blocker.IDENTITY_NOT_LINKED.body':
         "Konti yawe ntirahuzwa n'umwirondoro wagenzuwe, bityo nta porogaramu irafunguka.",
+    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body':
+        "Igenzura ry'umwirondoro wawe riri mu itsinda ryacu rishinzwe kubahiriza amategeko. Uzashobora gushora imari nirimara kwemezwa.",
     'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title':
         'Witeguye gushora imari?',
     'suite.blocker.PARTY_AUTHORITY_REQUIRED.title':
@@ -1367,6 +1375,8 @@ const rw: Catalog = {
         'Raporo y’ukwezi y’ikigo ufitemo imigabane ifunzwe',
     'admin.messaging.trigger.primary.raise_funded':
         'Ikusanya umushoramari yiyemeje ryuzuye',
+    'admin.messaging.trigger.primary.commitment_confirmed':
+        'Umushoramari yemeje kugura',
     'admin.messaging.trigger.primary.holding_issued':
         'Impapuro z’umwenda zihawe umushoramari',
     'admin.messaging.trigger.security.password_changed':
@@ -1446,6 +1456,7 @@ const rw: Catalog = {
         'Ishoramari ryemejwe',
     'admin.messaging.template.investor.payment_delayed': 'Kwishyura byatinze',
     'admin.messaging.template.investor.payout_received': 'Amafaranga yakiriwe',
+    'admin.messaging.template.investor.purchase_confirmed': 'Kugura byemejwe',
     'admin.messaging.template.investor.raise_expired':
         'Igihe cyo gukusanya cyarangiye',
     'admin.messaging.template.investor.report_published': 'Raporo yasohotse',
@@ -2501,6 +2512,7 @@ const rw: Catalog = {
     'admin.parties.health.distressed': 'Biri mu bibazo',
     'admin.parties.health.active': 'Irakora',
     'admin.parties.health.kyc_pending': 'KYC itegerejwe',
+    'admin.parties.health.licence_pending': 'Uruhushya rutegerejwe',
     'admin.parties.health.frozen': 'Byahagaritswe',
     'admin.parties.health.not_tracked': 'Ntibikurikiranwa',
     'admin.parties.kyc.verified': 'Byemejwe',
@@ -3770,20 +3782,23 @@ const rw: Catalog = {
     'investor.cart.in_cart_remove': 'Iri mu gitebo · Kuramo',
     'investor.cart.update_failed':
         'Ntitwashoboye kuvugurura igitebo cyawe. Ongera ufungure maze wongere ugerageze.',
-    'investor.cart.count': { one: 'Noti {count}', other: 'Noti {count}' },
+    'investor.cart.count': {
+        one: 'Amahirwe {count}',
+        other: 'Amahirwe {count}',
+    },
     'investor.cart.total': 'IGITERANYO CY’IGITEBO',
     'investor.cart.remove': 'Kura {name} mu gitebo',
     'investor.cart.filled_remove': 'Yujujwe · Kuramo',
     'investor.cart.filled_note': {
-        one: 'Noti {count} yujujwe kandi ntizishyurwa.',
-        other: 'Noti {count} zujujwe kandi ntizishyurwa.',
+        one: 'Amahirwe {count} yujujwe kandi ntazishyurwa.',
+        other: 'Amahirwe {count} yujujwe kandi ntazishyurwa.',
     },
     'investor.cart.target_of': 'kuri {amount}',
     'investor.cart.units': { one: 'noti', other: 'noti' },
     'investor.cart.quantity': 'Umubare wa noti muri {name}',
     'investor.cart.checkout': 'Ishyura',
     'investor.cart.checkout_note':
-        'Kuri ubu buri noti yishyurwa ukwayo: fungura aho kuyishyura kugira ngo uyifate kandi uyishyure.',
+        'Kuri ubu buri mahirwe yishyurwa ukwayo: fungura aho kuyishyura kugira ngo uyafate kandi uyishyure.',
     'investor.cart.before_charge':
         'Amafaranga usubizwa ni mbere yo gukuraho igiciro ku nyungu. Buri kwishyura kwerekana amafaranga nyayo.',
     'investor.common.back': 'Subira inyuma',
@@ -4204,6 +4219,9 @@ const rw: Catalog = {
     'investor.kyc.document.title': 'Emeza indangamuntu yawe',
     'investor.kyc.document.subtitle':
         "Hitamo ubwoko bw'icyangombwa wohereze amafoto agaragara neza.",
+    'investor.kyc.review.title': 'Birasuzumwa',
+    'investor.kyc.review.subtitle':
+        'Amakuru yawe ari mu itsinda ryacu rishinzwe kubahiriza amategeko. Tuzakumenyesha umwirondoro wawe nimara kwemezwa.',
     'investor.kyc.liveness.title': 'Kwemeza ko uri muzima',
     'investor.kyc.liveness.subtitle':
         'Ifoto yawe yihuse yemeza ko ari wowe koko.',
@@ -4218,6 +4236,7 @@ const rw: Catalog = {
     'investor.kyc.country': 'IGIHUGU UTUYEMO',
     'investor.kyc.dob': "ITARIKI Y'AMAVUKO",
     'investor.kyc.dob_placeholder': 'UU / UK / UMWAKA',
+    'investor.kyc.dob_hint': "Umunsi, ukwezi n'umwaka, urugero 15 / 06 / 1990.",
     'investor.kyc.id_number': "NIMERO Y'INDANGAMUNTU",
     'investor.kyc.upload_front': 'Ohereza imbere',
     'investor.kyc.upload_back': 'Ohereza inyuma',
@@ -4529,6 +4548,7 @@ const rw: Catalog = {
     'investor.profile.personal.district': 'AKARERE',
     'investor.profile.personal.sector': 'UMURENGE',
     'investor.profile.personal.cell': 'AKAGARI',
+    'investor.profile.personal.under_review': 'Birasuzumwa',
     'investor.profile.personal.not_provided': 'Ntibyatanzwe',
     'investor.profile.security.two_factor': 'Kwinjira mu byiciro bibiri',
     'investor.profile.security.two_factor_on':
@@ -5442,6 +5462,10 @@ const rw: Catalog = {
     'investor.wallet.c3.policy': 'Amabwiriza yo kubitsa {version}.',
     'investor.wallet.c3.policy_minimum': 'Nibura {amount}.',
     'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}.',
+    'investor.wallet.c3.deposit_between':
+        'Andika amafaranga ari hagati ya {minimum} na {maximum}.',
+    'investor.wallet.c3.deposit_at_least': 'Andika nibura {amount}.',
+    'investor.wallet.c3.deposit_at_most': 'Andika atarenze {amount}.',
     'investor.wallet.c3.deposit_unavailable':
         'Kubitsa ntibirafungurwa kuri iyi konti. Rozine izabifungura konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.intent_only':
@@ -5906,7 +5930,7 @@ const rw: Catalog = {
     'investor.checkout.c3.held_amount': 'Afashwe ku aboneka',
     'investor.checkout.c3.release': 'Rekura izi mpapuro',
     'investor.checkout.c3.confirm_fine_print':
-        'Kwemeza bishyira amafaranga yafashwe mu cyiyemezo. Ushobora guhagarika nta kiguzi kugeza imari yose ibonetse.',
+        'Kwemeza bishyira amafaranga yafashwe mu cyiyemezo. Icyiyemezo cyemejwe ni ntakuka, ntigishobora guhagarikwa. Niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
     'investor.checkout.c3.at_maturity': {
         one: 'Bigaruka mu kwezi {count}',
         other: 'Bigaruka mu mezi {count}',
@@ -6028,6 +6052,9 @@ const rw: Catalog = {
     'investor.notices.primary.raise_funded.title': 'Ikusanyamari ryuzuye',
     'investor.notices.primary.raise_funded.body':
         "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {units} ibitswe kugeza amafaranga yoherejwe.",
+    'investor.notices.primary.commitment_confirmed.title': 'Kugura byemejwe',
+    'investor.notices.primary.commitment_confirmed.body':
+        'Wiyemeje {amount} muri {business} ku mpapuro {units}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
     'investor.notices.primary.holding_issued.title': 'Ishoramari ryemejwe',
     'investor.notices.primary.holding_issued.body':
         'Impapuro zawe {units} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
@@ -6088,7 +6115,7 @@ const rw: Catalog = {
     'investor.primary.status.expired': 'Ntibyuzuye — byasubijwe',
     'investor.primary.status.failed_closing': 'Byafunzwe — byasubijwe',
     'investor.primary.status_body.confirmed':
-        'Igikorwa kiracyafunguye. Ushobora guhagarika nta kiguzi kugeza imari yose ibonetse.',
+        'Igikorwa kiracyafunguye. Icyiyemezo cyawe ni ntakuka; niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
     'investor.primary.status_body.awaiting_disbursement':
         'Imari yose yabonetse, guhagarika byafunzwe. Impapuro zitangwa kwishyura ikigo bimaze kwemezwa.',
     'investor.primary.status_body.in_flight_pending':

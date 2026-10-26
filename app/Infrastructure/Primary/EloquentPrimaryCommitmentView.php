@@ -75,7 +75,7 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
         $inFlight = $state === 'funded' ? $this->disbursements->inFlight($facts['campaign_id']) : null;
 
         return ['identity_context_revision' => $context, 'commitment' => ['id' => $commitmentId, 'revision' => $facts['revision'],
-            'campaign_id' => $facts['campaign_id'], 'reservation_id' => $facts['reservation_id'], 'deal_name' => $campaign['title'],
+            'campaign_id' => $facts['campaign_id'], 'reservation_id' => $facts['reservation_id'], 'deal_name' => $campaign['business'],
             'units' => $units, 'ordinals' => $facts['ordinal_ranges'], 'principal' => $facts['principal'], 'rights' => $facts['rights'],
             'state' => $state, 'cancelled_by' => $refund !== null ? 'investor' : ($returned !== null && $campaign['closure'] === 'cancelled' ? 'business' : null), 'closing' => match (true) {
                 $state !== 'funded' => null,

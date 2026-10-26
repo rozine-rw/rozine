@@ -178,6 +178,11 @@ describe('Auditor engagement terms', () => {
         const view = renderWithUser(<AuditorEngagement {...props()} />);
         const box = screen.getByRole('checkbox', { name: LABEL });
 
+        // The native box is the visible control, never a hidden input behind a drawn one.
+        expect(box).not.toHaveClass('sr-only');
+        expect(box).toBeVisible();
+        box.focus();
+        expect(box).toHaveFocus();
         expect(box).not.toBeChecked();
         expect(acceptButton()).toBeDisabled();
 

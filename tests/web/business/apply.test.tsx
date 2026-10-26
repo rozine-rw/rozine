@@ -2518,6 +2518,24 @@ describe('Apply — what the target field says', () => {
         ).toHaveAttribute('aria-invalid', 'true');
     });
 
+    it('blanks the offer once the target is cleared, instead of showing the last amount priced', async () => {
+        const user = userEvent.setup();
+        const page = props(raiseStep);
+
+        page.allowed_actions = ['application.save'];
+        render(<BusinessApply {...page} />);
+        const offer = formatRwf((page.quote as ReadyQuote).principal);
+
+        expect(screen.getAllByText(offer).length).toBeGreaterThan(0);
+
+        await user.clear(screen.getByLabelText('Fundraising target (RWF)'));
+
+        expect(screen.queryByText(offer)).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Enter how much you want to raise.'),
+        ).toBeInTheDocument();
+    });
+
     it('says why an offer is below the request: the most the business can raise now', () => {
         const page = props(raiseStep);
         const base = page.quote as ReadyQuote;
