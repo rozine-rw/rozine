@@ -69,6 +69,7 @@ it('shows the published photos on the deal card and the deal, and serves each on
 
 it('does not serve a photo through another business\'s campaign, an unknown campaign or to a guest', function (): void {
     $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+    $this->travel(1)->minute();
     $other = PrimaryReservationFixture::campaign();
     $user = $this->investor['user'];
 

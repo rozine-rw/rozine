@@ -16,8 +16,8 @@ final class EloquentBusinessPhotos implements BusinessPhotos
 {
     public function published(string $businessId): array
     {
-        return BusinessPhoto::query()->where('business_id', $businessId)->orderBy('position')->get(['id', 'caption', 'sha256'])
-            ->map(fn (BusinessPhoto $photo): array => ['id' => $photo->id, 'caption' => $photo->caption, 'sha256' => $photo->sha256])->values()->all();
+        return array_values(BusinessPhoto::query()->where('business_id', $businessId)->orderBy('position')->get(['id', 'caption', 'sha256'])
+            ->map(fn (BusinessPhoto $photo): array => ['id' => $photo->id, 'caption' => $photo->caption, 'sha256' => $photo->sha256])->all());
     }
 
     public function file(string $campaignId, string $photoId): array
