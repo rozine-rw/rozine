@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Domain\Identity\InvestorAccessTerms;
 
 final class AddInvestorAccess
 {
@@ -21,5 +22,15 @@ final class AddInvestorAccess
         $this->access->addOwnInvestorAccess($userId, $expectedRevision, $termsVersion, $termsSha256, $requestId);
 
         return $this->identity->handle($userId);
+    }
+
+    /**
+     * The terms a person accepts to add Investor access, bound by version and digest.
+     *
+     * @return array{version: string, text: string, sha256: string}
+     */
+    public function terms(): array
+    {
+        return InvestorAccessTerms::toArray();
     }
 }

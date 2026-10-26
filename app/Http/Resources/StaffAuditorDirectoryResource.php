@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\VerifiedAuditLocation;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,11 +25,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type Counts from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Auditor\Contracts\AuditorDirectoryStore
  * @phpstan-import-type QueueEntry from \App\Application\Auditor\Contracts\AuditorDirectoryStore
- * @phpstan-import-type Location from \App\Application\Auditor\Contracts\AuditLocationStore
+ * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, licences_expiring: int, active_audits: int, chip: string, search: string,
- *     queue: list<QueueEntry>, partner: Detail|null, office?: Location|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
+ *     queue: list<QueueEntry>, partner: Detail|null, office?: ReviewedLocation|null, decide: 'approve'|'reject'|null, roles: list<string>, permissions: list<string>
  * }
  */
 class StaffAuditorDirectoryResource extends JsonResource
@@ -109,16 +108,17 @@ class StaffAuditorDirectoryResource extends JsonResource
      * A dispatch location as last verified (a partner's office or a Business's premises), and where
      * the viewer may record a new verification.
      *
-     * @param  Location  $location
+     * @param  ReviewedLocation  $reviewed
      * @param  array{url: string, method: string}|null  $verify
      * @return array<string, mixed>
      */
-    public static function location(array $location, ?array $verify): array
+    public static function location(array $reviewed, ?array $verify): array
     {
+        $location = $reviewed['location'];
         $state = $location['state'];
         $point = $state['point'];
 
-        return ['state' => VerifiedAuditLocation::standing($state, now()->toDateTimeImmutable()), 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
+        return ['state' => $reviewed['standing'], 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
             'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $location['revision'],
             'verify' => $verify];
     }

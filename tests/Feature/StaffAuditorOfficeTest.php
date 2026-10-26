@@ -18,7 +18,10 @@ beforeEach(function (): void {
     StaffFixture::provision($this->officer, ['compliance'], 'Audit Partner network assignment.');
 });
 
-/** @return array<string, int|string> */
+/**
+ * @param  array<string, int|string>  $overrides
+ * @return array<string, int|string>
+ */
 function officeVerification(int $revision = 0, array $overrides = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'expected_revision' => $revision, 'latitude' => '-1.9441', 'longitude' => '30.0619',

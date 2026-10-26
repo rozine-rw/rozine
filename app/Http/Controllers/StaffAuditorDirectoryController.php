@@ -9,7 +9,6 @@ use App\Application\Auditor\GetAuditLocation;
 use App\Application\Auditor\RecordAuditorStanding;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Identity\GetStaffAccess;
-use App\Domain\Operations\CommandRejection;
 use App\Http\Requests\Staff\DecideAuditorLicenceRequest;
 use App\Http\Requests\Staff\ListAuditorDirectoryRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
@@ -66,7 +65,7 @@ class StaffAuditorDirectoryController extends Controller
 
         $resource = new StaffAuditorDirectoryResource([...$this->directory->directory($actorId, $chip, $search, self::LIMIT),
             'chip' => $chip, 'search' => $search, 'partner' => $partner,
-            'office' => $partner === null ? null : $location->handle($actorId, 'office', $partner['row']['party_id']),
+            'office' => $partner === null ? null : $location->review($actorId, 'office', $partner['row']['party_id'], now()->toDateTimeImmutable()),
             'decide' => $request->validated('decide'),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
@@ -101,17 +100,10 @@ class StaffAuditorDirectoryController extends Controller
     public function office(VerifyAuditLocationRequest $request, VerifyAuditLocation $locations): RedirectResponse
     {
         $partyId = (string) $request->route('party');
-        try {
-            $result = $locations->handle((int) $request->user()?->getAuthIdentifier(), 'office', $partyId, (int) $request->validated('expected_revision'),
-                (string) $request->validated('latitude'), (string) $request->validated('longitude'), (int) $request->validated('uncertainty_m'),
-                now('UTC')->format('Y-m-d\TH:i:s\Z'), (string) $request->validated('reference'), (string) $request->validated('reason'),
-                (string) $request->validated('request_id'));
-        } catch (CommandRejection $rejection) {
-            if (! array_key_exists($rejection->reason, self::OFFICE_MESSAGES)) {
-                throw $rejection;
-            }
-            $result = ['status' => 'rejected', 'code' => $rejection->reason];
-        }
+        $result = $locations->handle((int) $request->user()?->getAuthIdentifier(), 'office', $partyId, (int) $request->validated('expected_revision'),
+            (string) $request->validated('latitude'), (string) $request->validated('longitude'), (int) $request->validated('uncertainty_m'),
+            now('UTC')->format('Y-m-d\TH:i:s\Z'), (string) $request->validated('reference'), (string) $request->validated('reason'),
+            (string) $request->validated('request_id'), array_keys(self::OFFICE_MESSAGES));
         if ($result['status'] !== 'completed') {
             throw ValidationException::withMessages(['reason' => [self::OFFICE_MESSAGES[$result['code']] ?? 'We could not record this location. Try again.']]);
         }

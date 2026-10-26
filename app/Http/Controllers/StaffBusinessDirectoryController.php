@@ -9,7 +9,6 @@ use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\PlatformPolicies;
-use App\Domain\Operations\CommandRejection;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
@@ -58,7 +57,7 @@ class StaffBusinessDirectoryController extends Controller
             'chip' => $chip, 'sort' => $sort, 'sector' => $sector, 'search' => $search,
             'business' => $business,
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
-                ? $location->handle($actorId, 'premises', $business['row']['business_id']) : null,
+                ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
@@ -71,17 +70,10 @@ class StaffBusinessDirectoryController extends Controller
     public function premises(VerifyAuditLocationRequest $request, VerifyAuditLocation $locations): RedirectResponse
     {
         $businessId = (string) $request->route('business');
-        try {
-            $result = $locations->handle((int) $request->user()?->getAuthIdentifier(), 'premises', $businessId, (int) $request->validated('expected_revision'),
-                (string) $request->validated('latitude'), (string) $request->validated('longitude'), (int) $request->validated('uncertainty_m'),
-                now('UTC')->format('Y-m-d\TH:i:s\Z'), (string) $request->validated('reference'), (string) $request->validated('reason'),
-                (string) $request->validated('request_id'));
-        } catch (CommandRejection $rejection) {
-            if (! array_key_exists($rejection->reason, self::PREMISES_MESSAGES)) {
-                throw $rejection;
-            }
-            $result = ['status' => 'rejected', 'code' => $rejection->reason];
-        }
+        $result = $locations->handle((int) $request->user()?->getAuthIdentifier(), 'premises', $businessId, (int) $request->validated('expected_revision'),
+            (string) $request->validated('latitude'), (string) $request->validated('longitude'), (int) $request->validated('uncertainty_m'),
+            now('UTC')->format('Y-m-d\TH:i:s\Z'), (string) $request->validated('reference'), (string) $request->validated('reason'),
+            (string) $request->validated('request_id'), array_keys(self::PREMISES_MESSAGES));
         if ($result['status'] !== 'completed') {
             throw ValidationException::withMessages(['reason' => [self::PREMISES_MESSAGES[$result['code']] ?? 'We could not record this location. Try again.']]);
         }

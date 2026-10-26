@@ -20,11 +20,11 @@ use Illuminate\Support\Str;
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Business\Contracts\BusinessDirectoryStore
- * @phpstan-import-type Location from \App\Application\Auditor\Contracts\AuditLocationStore
+ * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: Location|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>
  * }
  */
