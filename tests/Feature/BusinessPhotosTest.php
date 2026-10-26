@@ -12,6 +12,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PhotoBytesFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 beforeEach(function (): void {
@@ -20,9 +21,9 @@ beforeEach(function (): void {
     $this->campaign = PrimaryReservationFixture::campaign();
     $this->investor = PrimaryReservationFixture::investor();
     $this->photos = app(BusinessPhotos::class);
-    $this->jpeg = "\xFF\xD8\xFF\xE0".str_repeat('a', 64);
-    $this->png = "\x89PNG\r\n\x1A\n".str_repeat('b', 64);
-    $this->webp = 'RIFF'.pack('V', 68).'WEBP'.str_repeat('c', 60);
+    $this->jpeg = PhotoBytesFixture::jpeg();
+    $this->png = PhotoBytesFixture::png();
+    $this->webp = PhotoBytesFixture::webp();
 });
 
 it('puts a photo at a position, changes nothing when put again and replaces it with new bytes', function (): void {
@@ -59,14 +60,20 @@ it('refuses an unknown business and a photo outside the allowed position, captio
     'over 5 MB' => ['known', 1, 'Shop', 'image/jpeg', BusinessPhotos::MAX_BYTES + 1, 'BUSINESS_PHOTO_INVALID'],
 ]);
 
-it('refuses bytes that are not the image type they are labelled as', function (string $type, string $bytes): void {
+it('refuses bytes that are not a whole image of the type they are labelled as', function (string $type, string $bytes): void {
     expect(fn () => $this->photos->put($this->campaign->business_id, 1, 'Shop', $type, $bytes))
         ->toThrow(InvalidArgumentException::class, 'BUSINESS_PHOTO_INVALID');
 })->with([
     'text as JPEG' => ['image/jpeg', '<?php echo 1;'],
-    'PNG as JPEG' => ['image/jpeg', "\x89PNG\r\n\x1A\nxxxx"],
-    'JPEG as PNG' => ['image/png', "\xFF\xD8\xFF\xE0xxxx"],
+    'PNG as JPEG' => ['image/jpeg', PhotoBytesFixture::png()],
+    'JPEG as PNG' => ['image/png', PhotoBytesFixture::jpeg()],
     'RIFF audio as WebP' => ['image/webp', 'RIFF'.pack('V', 12).'WAVExxxx'],
+    'JPEG signature on garbage' => ['image/jpeg', "\xFF\xD8\xFF\xE0".str_repeat('a', 64)."\xFF\xD9"],
+    'PNG signature on garbage' => ['image/png', "\x89PNG\r\n\x1A\n".str_repeat('b', 64)],
+    'WebP signature on garbage' => ['image/webp', 'RIFF'.pack('V', 68).'WEBP'.str_repeat('c', 60)],
+    'JPEG cut short' => ['image/jpeg', substr(PhotoBytesFixture::jpeg(), 0, -3)],
+    'PNG cut short' => ['image/png', substr(PhotoBytesFixture::png(), 0, -1)],
+    'WebP cut short' => ['image/webp', substr(PhotoBytesFixture::webp(), 0, -1)],
 ]);
 
 it('shows the published photos on the deal card and the deal, and serves each one', function (): void {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\BusinessPhotos;
+use App\Domain\Business\PhotoBytes;
 use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
@@ -45,7 +46,7 @@ final class EloquentBusinessPhotos implements BusinessPhotos
         }
         if ($position < 1 || $position > self::MAX_PHOTOS || $caption === '' || mb_strlen($caption) > 80
             || ! in_array($mediaType, self::MEDIA_TYPES, true) || $bytes === '' || strlen($bytes) > self::MAX_BYTES
-            || ! self::isOfType($bytes, $mediaType)) {
+            || ! PhotoBytes::whole($bytes, $mediaType)) {
             throw new InvalidArgumentException('BUSINESS_PHOTO_INVALID');
         }
         $sha256 = hash('sha256', $bytes);
@@ -58,15 +59,5 @@ final class EloquentBusinessPhotos implements BusinessPhotos
             'size_bytes' => strlen($bytes), 'sha256' => $sha256, 'content' => base64_encode($bytes)])->save();
 
         return ['id' => $photo->id, 'changed' => true];
-    }
-
-    /** Whether the bytes open with the signature of the named image type, so a label cannot dress up another file. */
-    private static function isOfType(string $bytes, string $mediaType): bool
-    {
-        return match ($mediaType) {
-            'image/jpeg' => str_starts_with($bytes, "\xFF\xD8\xFF"),
-            'image/png' => str_starts_with($bytes, "\x89PNG\r\n\x1A\n"),
-            default => str_starts_with($bytes, 'RIFF') && substr($bytes, 8, 4) === 'WEBP',
-        };
     }
 }
