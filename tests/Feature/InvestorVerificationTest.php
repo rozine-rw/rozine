@@ -274,10 +274,11 @@ test('a rejected case is corrected from an earlier step, keeps its history and i
 test('a person sees each of their own uploads again, and nobody else can', function (): void {
     kycSave($this->person, 'personal', ['date_of_birth' => '1/5/1990']);
     kycUpload($this->person, 'id_front');
+    $first = InvestorVerification::query()->sole()->state['uploads']['front'];
 
     $this->actingAs($this->person)->get(route('investor.verification'))
         ->assertInertia(fn (Assert $page) => $page->where('uploads.front', ['status' => 'uploaded', 'filename' => 'id.png', 'media_type' => 'image/png',
-            'link' => ['url' => '/investor/verification/documents/front', 'method' => 'get']])->where('uploads.back', ['status' => 'missing']));
+            'link' => ['url' => '/investor/verification/documents/front?v='.$first, 'method' => 'get']])->where('uploads.back', ['status' => 'missing']));
     $response = $this->actingAs($this->person)->get('/investor/verification/documents/front')->assertOk()
         ->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff')
         ->assertHeader('Cache-Control', 'no-store, private');
@@ -297,13 +298,25 @@ test('a person sees each of their own uploads again, and nobody else can', funct
     $this->actingAs($this->person)->get('/investor/verification/documents/back')->assertConflict();
 });
 
+test('replacing an upload gives its preview a new address so the old image is not shown', function (): void {
+    kycSave($this->person, 'personal', ['date_of_birth' => '1/5/1990']);
+    kycUpload($this->person, 'id_front');
+    $first = InvestorVerification::query()->sole()->state['uploads']['front'];
+    kycUpload($this->person, 'id_front');
+    $second = InvestorVerification::query()->sole()->state['uploads']['front'];
+
+    expect($second)->not->toBe($first);
+    $this->actingAs($this->person)->get(route('investor.verification'))
+        ->assertInertia(fn (Assert $page) => $page->where('uploads.front.link.url', '/investor/verification/documents/front?v='.$second));
+});
+
 test('the API shows uploads back to their owner with a read token only', function (): void {
     kycSave($this->person, 'personal', ['date_of_birth' => '1/5/1990']);
     kycUpload($this->person, 'id_front');
 
     Sanctum::actingAs($this->person, ['investor:read']);
     $this->getJson('/api/v1/investor/verification')->assertOk()
-        ->assertJsonPath('data.uploads.front.link.url', '/api/v1/investor/verification/documents/front');
+        ->assertJsonPath('data.uploads.front.link.url', '/api/v1/investor/verification/documents/front?v='.InvestorVerification::query()->sole()->state['uploads']['front']);
     $this->get('/api/v1/investor/verification/documents/front')->assertOk()->assertHeader('Content-Type', 'image/png');
     Sanctum::actingAs($this->person, ['investor:command']);
     $this->get('/api/v1/investor/verification/documents/front')->assertForbidden();

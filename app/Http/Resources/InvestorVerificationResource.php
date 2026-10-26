@@ -43,7 +43,7 @@ class InvestorVerificationResource extends JsonResource
 
             return ['status' => $data['status'] === 'approved' ? 'verified' : 'uploaded',
                 ...($document === null ? [] : ['filename' => $document['filename'], 'media_type' => $document['media_type'],
-                    'link' => ['url' => route(($api ? 'api.v1.' : '').'investor.verification.document', ['side' => $side], false), 'method' => 'get']])];
+                    'link' => ['url' => route(($api ? 'api.v1.' : '').'investor.verification.document', ['side' => $side, 'v' => $state['uploads'][$side]], false), 'method' => 'get']])];
         };
 
         return ['investor_type' => 'individual', 'verified' => $data['verified'], 'identity_context_revision' => $data['identity_context_revision'], 'revision' => $data['revision'],
