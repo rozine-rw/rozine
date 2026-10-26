@@ -39,7 +39,9 @@ it('puts a photo at a position, changes nothing when put again and replaces it w
 it('refuses an unknown business and a photo outside the allowed position, caption, type or size', function (string $business, int $position, string $caption, string $type, ?int $size, string $reason): void {
     $businessId = $business === 'known' ? $this->campaign->business_id : '01JZZZZZZZZZZZZZZZZZZZZZZZ';
 
-    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, match ($size) { null => $this->jpeg, 0 => '', default => str_pad($this->jpeg, $size, 'a') }))
+    expect(fn () => $this->photos->put($businessId, $position, $caption, $type, match ($size) {
+        null => $this->jpeg, 0 => '', default => str_pad($this->jpeg, $size, 'a')
+    }))
         ->toThrow(InvalidArgumentException::class, $reason);
 })->with([
     'unknown business' => ['unknown', 1, 'Shop', 'image/jpeg', null, 'BUSINESS_PHOTO_BUSINESS_UNKNOWN'],
