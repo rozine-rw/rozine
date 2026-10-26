@@ -102,7 +102,7 @@ class StaffAuditorDirectoryController extends Controller
         $partyId = (string) $request->route('party');
         $result = $locations->handle((int) $request->user()?->getAuthIdentifier(), 'office', $partyId, (int) $request->validated('expected_revision'),
             (string) $request->validated('latitude'), (string) $request->validated('longitude'), (int) $request->validated('uncertainty_m'),
-            now('UTC')->format('Y-m-d\TH:i:s\Z'), (string) $request->validated('reference'), (string) $request->validated('reason'),
+            (string) $request->validated('verified_at'), (string) $request->validated('reference'), (string) $request->validated('reason'),
             (string) $request->validated('request_id'), array_keys(self::OFFICE_MESSAGES));
         if ($result['status'] !== 'completed') {
             throw ValidationException::withMessages(['reason' => [self::OFFICE_MESSAGES[$result['code']] ?? 'We could not record this location. Try again.']]);

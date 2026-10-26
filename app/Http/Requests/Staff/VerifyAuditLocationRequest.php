@@ -28,6 +28,8 @@ class VerifyAuditLocationRequest extends FormRequest
             'latitude' => ['required', 'string', self::COORDINATE, 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'string', self::COORDINATE, 'numeric', 'between:-180,180'],
             'uncertainty_m' => ['required', 'integer', 'min:0', 'max:30000'],
+            // The time the server offered the form, so a delayed retry of one request replays it.
+            'verified_at' => ['required', 'date_format:Y-m-d\TH:i:s\Z', 'before_or_equal:now', 'after:-1 day'],
             'reference' => ['required', 'string', 'max:255'], 'reason' => ['required', 'string', 'max:2000']];
     }
 
@@ -43,6 +45,8 @@ class VerifyAuditLocationRequest extends FormRequest
         }
 
         return [...$messages, 'reference.required' => 'Say what evidence you checked.', 'reference.max' => 'Keep the evidence reference under 255 characters.',
-            'reason.required' => 'Give the reason for this verification.', 'reason.max' => 'Keep the reason under 2,000 characters.'];
+            'reason.required' => 'Give the reason for this verification.',
+            ...array_fill_keys(['verified_at.required', 'verified_at.date_format', 'verified_at.before_or_equal', 'verified_at.after'],
+                'This form is out of date. Close it, open the record again and re-enter the location.'), 'reason.max' => 'Keep the reason under 2,000 characters.'];
     }
 }

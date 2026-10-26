@@ -109,7 +109,7 @@ class StaffAuditorDirectoryResource extends JsonResource
      * the viewer may record a new verification.
      *
      * @param  ReviewedLocation  $reviewed
-     * @param  array{url: string, method: string}|null  $verify
+     * @param  array{url: string, method: string}|null  $verify  where to record a verification; it carries the time it is offered at
      * @return array<string, mixed>
      */
     public static function location(array $reviewed, ?array $verify): array
@@ -120,7 +120,7 @@ class StaffAuditorDirectoryResource extends JsonResource
 
         return ['state' => $reviewed['standing'], 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
             'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $location['revision'],
-            'verify' => $verify];
+            'verify' => $verify === null ? null : [...$verify, 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]];
     }
 
     /**

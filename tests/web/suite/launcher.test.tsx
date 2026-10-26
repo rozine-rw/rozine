@@ -619,6 +619,43 @@ describe('Adding Investor access to a verified Business member', () => {
         );
     });
 
+    it('asks again when the Investor terms change while the panel is open', async () => {
+        const { rerender } = render(
+            <Launcher identity={businessMember} investor_access={offer} />,
+        );
+        await userEvent.click(
+            screen.getByRole('button', { name: /Start investing →/u }),
+        );
+        await userEvent.click(screen.getByRole('checkbox'));
+        expect(screen.getByRole('checkbox')).toBeChecked();
+
+        rerender(
+            <Launcher
+                identity={businessMember}
+                investor_access={{
+                    ...offer,
+                    terms: {
+                        version: 'investor-access-2026-11-01',
+                        text: 'I accept the revised Rozine Investor Terms.',
+                        sha256: 'b'.repeat(64),
+                    },
+                }}
+            />,
+        );
+
+        const panel = screen.getByRole('region', {
+            name: 'Add Investor access',
+        });
+
+        expect(panel).toHaveTextContent(
+            'I accept the revised Rozine Investor Terms.',
+        );
+        expect(within(panel).getByRole('checkbox')).not.toBeChecked();
+        expect(
+            within(panel).getByRole('button', { name: 'Add Investor access' }),
+        ).toBeDisabled();
+    });
+
     it.each([
         ['INVESTOR_TERMS_CHANGED', 'The Investor terms have changed.'],
         ['INVESTOR_ACCESS_UNAVAILABLE', "Investor access can't be added"],

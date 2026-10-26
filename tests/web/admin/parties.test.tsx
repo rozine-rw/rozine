@@ -1019,6 +1019,7 @@ describe('Party 360', () => {
                 verify: {
                     url: '/admin/auditors/aud_claude/office',
                     method: 'post',
+                    verified_at: '2026-10-26T05:00:00Z',
                 },
             },
         };
@@ -1070,6 +1071,7 @@ describe('Party 360', () => {
                     reason: 'Confirmed by phone.',
                     request_id: '2c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
                     expected_revision: 0,
+                    verified_at: '2026-10-26T05:00:00Z',
                 },
             },
         ]);
@@ -1106,6 +1108,7 @@ describe('Party 360', () => {
                     verify: {
                         url: '/admin/auditors/aud_claude/office',
                         method: 'post',
+                        verified_at: '2026-10-26T05:00:00Z',
                     },
                 },
             };
@@ -1152,6 +1155,7 @@ describe('Party 360', () => {
                 verify: {
                     url: '/admin/businesses/biz_1/premises',
                     method: 'post',
+                    verified_at: '2026-10-26T05:00:00Z',
                 },
             },
         };
@@ -1200,6 +1204,7 @@ describe('Party 360', () => {
                     reason: 'Visited.',
                     request_id: '3c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
                     expected_revision: 2,
+                    verified_at: '2026-10-26T05:00:00Z',
                 },
             },
         ]);

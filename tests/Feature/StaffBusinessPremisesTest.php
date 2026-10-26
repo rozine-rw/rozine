@@ -25,17 +25,18 @@ beforeEach(function (): void {
 function premisesVerification(int $revision = 0, array $overrides = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'expected_revision' => $revision, 'latitude' => '-2.6000', 'longitude' => '29.7400',
-        'uncertainty_m' => 30, 'reference' => 'Site visit', 'reason' => 'Premises confirmed on a site visit.', ...$overrides];
+        'uncertainty_m' => 30, 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'reference' => 'Site visit', 'reason' => 'Premises confirmed on a site visit.', ...$overrides];
 }
 
 it('shows a Business with no verified premises and records the point the 30 km dispatch measures to', function (): void {
+    $this->freezeSecond();
     $id = $this->business;
     $url = '/admin/businesses/'.$id.'/premises';
     $page = route('staff.businesses.index', ['business' => $id]);
 
     $this->actingAs($this->officer)->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.premises', ['state' => 'missing', 'latitude' => null, 'longitude' => null,
-            'uncertainty_m' => null, 'verified_at' => null, 'reference' => null, 'revision' => 0, 'verify' => ['url' => $url, 'method' => 'post']]));
+            'uncertainty_m' => null, 'verified_at' => null, 'reference' => null, 'revision' => 0, 'verify' => ['url' => $url, 'method' => 'post', 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]]));
 
     $this->from($page)->post($url, premisesVerification(overrides: ['longitude' => '181']))
         ->assertSessionHasErrors(['longitude' => 'Enter the longitude in decimal degrees, for example 30.0619.']);

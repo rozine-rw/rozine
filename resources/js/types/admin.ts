@@ -839,8 +839,11 @@ export type DispatchLocation = {
     /** The evidence the verifier checked. */
     reference: string | null;
     revision: number;
-    /** Where the viewer records a newly verified location, or null when they may not. */
-    verify: RouteAction | null;
+    /**
+     * Where the viewer records a newly verified location, with the time the server offered the
+     * form (the verification's time), or null when they may not.
+     */
+    verify: (RouteAction & { verified_at: string }) | null;
 };
 
 export type PartyDetail = {

@@ -30,7 +30,8 @@ type Kind = 'office' | 'premises';
 
 /**
  * The verification form: the coordinates, how far they may be off, the evidence checked and the
- * reason, under the viewer's name. Each opening is one request, so a double submit replays it.
+ * reason, under the viewer's name. Each opening is one request stamped with the time the server
+ * offered it, so a double or delayed submit replays it.
  */
 function VerifyLocationForm({
     kind,
@@ -48,7 +49,11 @@ function VerifyLocationForm({
     const { t } = useTranslation();
     const [requestId] = useState(() => crypto.randomUUID());
     const form = useForm<
-        Fields & { request_id: string; expected_revision: number }
+        Fields & {
+            request_id: string;
+            expected_revision: number;
+            verified_at: string;
+        }
     >({
         latitude: '',
         longitude: '',
@@ -57,6 +62,7 @@ function VerifyLocationForm({
         reason: '',
         request_id: requestId,
         expected_revision: location.revision,
+        verified_at: location.verify.verified_at,
     });
     const set = (key: keyof Fields) => (value: string) =>
         form.setData((data) => ({ ...data, [key]: value }));
@@ -125,12 +131,15 @@ function VerifyLocationForm({
                 value={form.data.reason}
                 onChange={(event) => set('reason')(event.target.value)}
                 placeholder={t(`admin.parties.${kind}.placeholder.reason`)}
-                aria-invalid={form.errors.reason !== undefined || undefined}
+                aria-invalid={
+                    (form.errors.reason ?? form.errors.verified_at) !==
+                        undefined || undefined
+                }
                 aria-describedby={`${kind}-reason-error`}
                 className="mt-1 min-h-[70px] w-full resize-y rounded-[11px] border border-rz-hairline bg-[#f7f9fd] px-3 py-2.5 text-[13px] leading-[1.5] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border focus:shadow-[0_0_0_3.5px_var(--rz-focus-ring)] dark:bg-rz-field"
             />
             <FieldError id={`${kind}-reason-error`}>
-                {form.errors.reason}
+                {form.errors.reason ?? form.errors.verified_at}
             </FieldError>
             <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-rz-muted">
                 <span className="size-1.5 shrink-0 rounded-full bg-[#1d9e75]" />

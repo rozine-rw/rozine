@@ -25,17 +25,18 @@ beforeEach(function (): void {
 function officeVerification(int $revision = 0, array $overrides = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'expected_revision' => $revision, 'latitude' => '-1.9441', 'longitude' => '30.0619',
-        'uncertainty_m' => 50, 'reference' => 'ICPAR register entry', 'reason' => 'Office address confirmed by phone.', ...$overrides];
+        'uncertainty_m' => 50, 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'reference' => 'ICPAR register entry', 'reason' => 'Office address confirmed by phone.', ...$overrides];
 }
 
 it('shows a partner with no verified office and records one the 30 km dispatch can measure from', function (): void {
+    $this->freezeSecond();
     $partner = AuditorFixture::make();
     $id = $partner['party']->id;
     $url = '/admin/auditors/'.$id.'/office';
 
     $this->actingAs($this->officer)->get(route('staff.auditors.index', ['auditor' => $id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.office', ['state' => 'missing', 'latitude' => null, 'longitude' => null,
-            'uncertainty_m' => null, 'verified_at' => null, 'reference' => null, 'revision' => 0, 'verify' => ['url' => $url, 'method' => 'post']]));
+            'uncertainty_m' => null, 'verified_at' => null, 'reference' => null, 'revision' => 0, 'verify' => ['url' => $url, 'method' => 'post', 'verified_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]]));
     $this->actingAs($partner['user'])->get('/auditor/jobs')->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->component('auditor/jobs')->where('office', 'missing'));
 
@@ -64,6 +65,25 @@ it('shows a partner with no verified office and records one the 30 km dispatch c
     $this->travel(366)->days();
     $this->get(route('staff.auditors.index', ['auditor' => $id]))->assertInertia(fn (Assert $page): Assert => $page->where('party.office.state', 'expired'));
     $this->actingAs($partner['user'])->get('/auditor/jobs')->assertInertia(fn (Assert $page): Assert => $page->where('office', 'expired'));
+});
+
+it('replays a delayed retry of the same verification and refuses a form left open for over a day', function (): void {
+    $partner = AuditorFixture::make();
+    $id = $partner['party']->id;
+    $url = '/admin/auditors/'.$id.'/office';
+    $page = route('staff.auditors.index', ['auditor' => $id]);
+    $command = officeVerification();
+
+    $this->actingAs($this->officer)->post($url, $command)->assertRedirect($page);
+    $this->travel(10)->minutes();
+    $this->post($url, $command)->assertRedirect($page)->assertSessionHasNoErrors();
+    $this->assertDatabaseCount('audit_location_versions', 1);
+
+    $this->from($page)->post($url, officeVerification(1, ['verified_at' => now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z')]))
+        ->assertSessionHasErrors(['verified_at' => 'This form is out of date. Close it, open the record again and re-enter the location.']);
+    $this->post($url, officeVerification(1, ['verified_at' => now('UTC')->addHour()->format('Y-m-d\TH:i:s\Z')]))
+        ->assertSessionHasErrors(['verified_at']);
+    $this->assertDatabaseCount('audit_location_versions', 1);
 });
 
 it('leaves the office read-only over the API and to staff who do not verify partners', function (): void {

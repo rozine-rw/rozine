@@ -340,6 +340,7 @@ export default function Launcher({
                                     {investorOffer !== null &&
                                         addingInvestor && (
                                             <AddInvestorAccess
+                                                key={investorOffer.terms.sha256}
                                                 offer={investorOffer}
                                                 expectedRevision={
                                                     identity.context_revision
