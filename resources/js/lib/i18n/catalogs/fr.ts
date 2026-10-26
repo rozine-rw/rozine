@@ -2781,6 +2781,37 @@ const fr: Catalog = {
     'admin.parties.office.placeholder.reason':
         "ex. Adresse du bureau confirmée au registre de l'ICPAR et par téléphone.",
     'admin.parties.office.cta': 'Enregistrer comme vérifié',
+    'admin.parties.premises.title': 'Locaux de l’entreprise',
+    'admin.parties.premises.status': 'Lieu de dispatch',
+    'admin.parties.premises.state.verified': 'Vérifié',
+    'admin.parties.premises.state.expired': 'Vérification expirée',
+    'admin.parties.premises.state.missing': 'Non vérifié',
+    'admin.parties.premises.note.missing':
+        'Aucun emplacement des locaux n’est enregistré, aucun Partenaire d’audit ne peut donc être dépêché ici. Les missions ne vont qu’aux partenaires dont le bureau vérifié est à moins de 30 km de ces locaux.',
+    'admin.parties.premises.note.expired':
+        'Ces locaux ont été vérifiés il y a plus d’un an : aucun Partenaire d’audit n’est dépêché ici avant une nouvelle vérification.',
+    'admin.parties.premises.coordinates': 'Coordonnées',
+    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.premises.verified_on': 'Vérifié le',
+    'admin.parties.premises.evidence': 'Preuve vérifiée',
+    'admin.parties.premises.record': 'Enregistrer les locaux vérifiés',
+    'admin.parties.premises.reverify': 'Vérifier à nouveau les locaux',
+    'admin.parties.premises.form': 'Vérifier les locaux de l’entreprise',
+    'admin.parties.premises.form_body':
+        'Saisissez les coordonnées des locaux vérifiées par rapport aux preuves. Le dispatch ajoute la précision à la distance : une marge large peut mettre des partenaires hors de portée.',
+    'admin.parties.premises.field.latitude': 'Latitude',
+    'admin.parties.premises.field.longitude': 'Longitude',
+    'admin.parties.premises.field.uncertainty_m': 'Précision (mètres)',
+    'admin.parties.premises.field.reference': 'Preuve vérifiée',
+    'admin.parties.premises.field.reason': 'Motif',
+    'admin.parties.premises.placeholder.latitude': '-1.9441',
+    'admin.parties.premises.placeholder.longitude': '30.0619',
+    'admin.parties.premises.placeholder.uncertainty_m': '50',
+    'admin.parties.premises.placeholder.reference':
+        'ex. visite sur place, adresse enregistrée au RDB',
+    'admin.parties.premises.placeholder.reason':
+        'ex. Locaux confirmés lors d’une visite et avec l’adresse RDB.',
+    'admin.parties.premises.cta': 'Enregistrer comme vérifié',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',

@@ -1132,6 +1132,79 @@ describe('Party 360', () => {
         },
     );
 
+    it('says no Audit Partner is dispatched to a Business without verified premises, and records them', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '3c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+        );
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            premises: {
+                state: 'expired',
+                latitude: '-2.6000000',
+                longitude: '29.7400000',
+                uncertainty_m: 30,
+                verified_at: '2025-09-24T08:00:00Z',
+                reference: 'Site visit',
+                revision: 2,
+                verify: {
+                    url: '/admin/businesses/biz_1/premises',
+                    method: 'post',
+                },
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const premises = screen.getByRole('region', {
+            name: 'Business premises',
+        });
+
+        expect(
+            within(premises).getByText('Verification lapsed'),
+        ).toBeInTheDocument();
+        expect(premises).toHaveTextContent(
+            'no Audit Partner is dispatched here until they are verified again',
+        );
+        await user.click(
+            within(premises).getByRole('button', {
+                name: 'Verify premises again',
+            }),
+        );
+        const form = within(premises).getByRole('form', {
+            name: 'Verify the business premises',
+        });
+
+        await user.type(within(form).getByLabelText('Latitude'), '-2.6');
+        await user.type(within(form).getByLabelText('Longitude'), '29.74');
+        await user.type(within(form).getByLabelText('Accuracy (metres)'), '30');
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'Site visit',
+        );
+        await user.type(within(form).getByLabelText('Reason'), 'Visited.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Record as verified' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/premises',
+                data: {
+                    latitude: '-2.6',
+                    longitude: '29.74',
+                    uncertainty_m: '30',
+                    reference: 'Site visit',
+                    reason: 'Visited.',
+                    request_id: '3c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e5f',
+                    expected_revision: 2,
+                },
+            },
+        ]);
+    });
+
     it('shows the office read-only to a viewer who may not verify it', async () => {
         const fixture = props(licenceFixture);
 

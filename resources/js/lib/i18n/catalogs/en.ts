@@ -2636,6 +2636,37 @@ const en = {
     'admin.parties.office.placeholder.reason':
         'e.g. Office address confirmed on the ICPAR register and by phone.',
     'admin.parties.office.cta': 'Record as verified',
+    'admin.parties.premises.title': 'Business premises',
+    'admin.parties.premises.status': 'Dispatch location',
+    'admin.parties.premises.state.verified': 'Verified',
+    'admin.parties.premises.state.expired': 'Verification lapsed',
+    'admin.parties.premises.state.missing': 'Not verified',
+    'admin.parties.premises.note.missing':
+        'No premises location is on record, so no Audit Partner can be dispatched here. Jobs only go to partners whose verified office is within 30 km of these premises.',
+    'admin.parties.premises.note.expired':
+        'These premises were verified more than a year ago, so no Audit Partner is dispatched here until they are verified again.',
+    'admin.parties.premises.coordinates': 'Coordinates',
+    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.premises.verified_on': 'Verified on',
+    'admin.parties.premises.evidence': 'Evidence checked',
+    'admin.parties.premises.record': 'Record verified premises',
+    'admin.parties.premises.reverify': 'Verify premises again',
+    'admin.parties.premises.form': 'Verify the business premises',
+    'admin.parties.premises.form_body':
+        'Enter the premises coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put partners out of range.',
+    'admin.parties.premises.field.latitude': 'Latitude',
+    'admin.parties.premises.field.longitude': 'Longitude',
+    'admin.parties.premises.field.uncertainty_m': 'Accuracy (metres)',
+    'admin.parties.premises.field.reference': 'Evidence checked',
+    'admin.parties.premises.field.reason': 'Reason',
+    'admin.parties.premises.placeholder.latitude': '-1.9441',
+    'admin.parties.premises.placeholder.longitude': '30.0619',
+    'admin.parties.premises.placeholder.uncertainty_m': '50',
+    'admin.parties.premises.placeholder.reference':
+        'e.g. site visit, RDB registered address',
+    'admin.parties.premises.placeholder.reason':
+        'e.g. Premises confirmed on a site visit and against the RDB address.',
+    'admin.parties.premises.cta': 'Record as verified',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',

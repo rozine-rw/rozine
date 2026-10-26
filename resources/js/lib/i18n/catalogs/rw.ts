@@ -2767,6 +2767,37 @@ const rw: Catalog = {
     'admin.parties.office.placeholder.reason':
         "urugero: Aderesi y'ibiro yemejwe ku rutonde rwa ICPAR no kuri telefoni.",
     'admin.parties.office.cta': 'Andika ko byemejwe',
+    'admin.parties.premises.title': 'Aho ubucuruzi bukorera',
+    'admin.parties.premises.status': 'Aho koherezwa',
+    'admin.parties.premises.state.verified': 'Byemejwe',
+    'admin.parties.premises.state.expired': 'Kwemeza byarangiye',
+    'admin.parties.premises.state.missing': 'Ntibyemejwe',
+    'admin.parties.premises.note.missing':
+        'Nta hantu ubucuruzi bukorera handitswe, bityo nta Mugenzuzi ushobora koherezwa hano. Akazi gahabwa abagenzuzi gusa bafite ibiro byemejwe biri munsi ya km 30 uvuye aha.',
+    'admin.parties.premises.note.expired':
+        'Aha hantu hemejwe hashize umwaka urenga, bityo nta Mugenzuzi woherezwa hano kugeza hongeye kwemezwa.',
+    'admin.parties.premises.coordinates': 'Aho biherereye',
+    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
+    'admin.parties.premises.verified_on': 'Byemejwe ku wa',
+    'admin.parties.premises.evidence': 'Ibimenyetso byagenzuwe',
+    'admin.parties.premises.record': 'Andika aho bakorera hemejwe',
+    'admin.parties.premises.reverify': 'Ongera wemeze aho bakorera',
+    'admin.parties.premises.form': 'Emeza aho ubucuruzi bukorera',
+    'admin.parties.premises.form_body':
+        'Andika aho hantu wagenzuye ukurikije ibimenyetso. Kohereza byongera ubusobanuro ku ntera, bityo intera nini ishobora gutuma abagenzuzi barenga intera.',
+    'admin.parties.premises.field.latitude': 'Latitude',
+    'admin.parties.premises.field.longitude': 'Longitude',
+    'admin.parties.premises.field.uncertainty_m': 'Ubusobanuro (metero)',
+    'admin.parties.premises.field.reference': 'Ibimenyetso byagenzuwe',
+    'admin.parties.premises.field.reason': 'Impamvu',
+    'admin.parties.premises.placeholder.latitude': '-1.9441',
+    'admin.parties.premises.placeholder.longitude': '30.0619',
+    'admin.parties.premises.placeholder.uncertainty_m': '50',
+    'admin.parties.premises.placeholder.reference':
+        'urugero: gusura aho bakorera, aderesi yanditswe muri RDB',
+    'admin.parties.premises.placeholder.reason':
+        'urugero: Aho bakorera hemejwe mu gusura no kuri aderesi ya RDB.',
+    'admin.parties.premises.cta': 'Andika ko byemejwe',
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',

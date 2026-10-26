@@ -12,7 +12,7 @@ use App\Application\Identity\GetStaffAccess;
 use App\Domain\Operations\CommandRejection;
 use App\Http\Requests\Staff\DecideAuditorLicenceRequest;
 use App\Http\Requests\Staff\ListAuditorDirectoryRequest;
-use App\Http\Requests\Staff\VerifyAuditorOfficeRequest;
+use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\OperationResource;
 use App\Http\Resources\StaffAuditorDirectoryResource;
 use Illuminate\Http\RedirectResponse;
@@ -98,7 +98,7 @@ class StaffAuditorDirectoryController extends Controller
      * Record the partner's registered office as verified now. The coordinates and evidence are
      * encrypted with their history; a refusal returns to the form with what to change.
      */
-    public function office(VerifyAuditorOfficeRequest $request, VerifyAuditLocation $locations): RedirectResponse
+    public function office(VerifyAuditLocationRequest $request, VerifyAuditLocation $locations): RedirectResponse
     {
         $partyId = (string) $request->route('party');
         try {

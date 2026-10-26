@@ -7,10 +7,11 @@ namespace App\Http\Requests\Staff;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A partner's registered office as staff verified it: the coordinates, how far they may be off,
- * the evidence checked and the reason the audit trail keeps. Dispatch measures the 30 km from it.
+ * A dispatch location as staff verified it, a partner's registered office or a Business's premises:
+ * the coordinates, how far they may be off, the evidence checked and the reason the audit trail
+ * keeps. Dispatch only offers a job when both are verified and within 30 km of each other.
  */
-class VerifyAuditorOfficeRequest extends FormRequest
+class VerifyAuditLocationRequest extends FormRequest
 {
     /** Decimal degrees with at most seven places, as the location record keeps them. */
     private const COORDINATE = 'regex:/^-?(?:0|[1-9][0-9]{0,2})(?:\.[0-9]{1,7})?$/';

@@ -20,10 +20,11 @@ use Illuminate\Support\Str;
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Business\Contracts\BusinessDirectoryStore
+ * @phpstan-import-type Location from \App\Application\Auditor\Contracts\AuditLocationStore
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: Location|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>
  * }
  */
@@ -78,7 +79,9 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
                 'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => $row['kyc'],
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
-            'party' => $page['business'] === null ? null : self::business($page['business'], $link($position))];
+            'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
+                'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
+                    ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null)]];
     }
 
     /**

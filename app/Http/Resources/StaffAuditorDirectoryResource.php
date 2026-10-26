@@ -83,7 +83,7 @@ class StaffAuditorDirectoryResource extends JsonResource
             'desk' => self::queue(array_filter($page['queue'], fn (array $entry): bool => ! $entry['renewal']), $link, $position, $verify),
             'requests' => self::queue(array_filter($page['queue'], fn (array $entry): bool => $entry['renewal']), $link, $position, $verify),
             'party' => $page['partner'] === null ? null : [...self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide']),
-                'office' => ($page['office'] ?? null) === null ? null : self::office($page['office'], $prefix === ''
+                'office' => ($page['office'] ?? null) === null ? null : self::location($page['office'], $prefix === ''
                     ? ['url' => route('staff.auditors.office.verify', ['party' => $page['partner']['row']['party_id']], false), 'method' => 'post'] : null)]];
     }
 
@@ -106,19 +106,20 @@ class StaffAuditorDirectoryResource extends JsonResource
     }
 
     /**
-     * The office as last verified, and where the viewer may record a new verification.
+     * A dispatch location as last verified (a partner's office or a Business's premises), and where
+     * the viewer may record a new verification.
      *
-     * @param  Location  $office
+     * @param  Location  $location
      * @param  array{url: string, method: string}|null  $verify
      * @return array<string, mixed>
      */
-    private static function office(array $office, ?array $verify): array
+    public static function location(array $location, ?array $verify): array
     {
-        $state = $office['state'];
+        $state = $location['state'];
         $point = $state['point'];
 
         return ['state' => VerifiedAuditLocation::standing($state, now()->toDateTimeImmutable()), 'latitude' => $point['latitude'] ?? null, 'longitude' => $point['longitude'] ?? null, 'uncertainty_m' => $state['uncertainty_m'],
-            'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $office['revision'],
+            'verified_at' => $state['verified_at'], 'reference' => $state['evidence_reference'], 'revision' => $location['revision'],
             'verify' => $verify];
     }
 

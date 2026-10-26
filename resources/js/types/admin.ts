@@ -825,8 +825,11 @@ export type PartyListRow = {
         | { kind: 'holding'; value: Money; notes: number };
 };
 
-/** A partner's registered office as staff last verified it; lapsed after 365 days. */
-export type PartnerOffice = {
+/**
+ * A dispatch location as staff last verified it, a partner's registered office or a Business's
+ * premises; lapsed after 365 days.
+ */
+export type DispatchLocation = {
     state: 'verified' | 'expired' | 'missing';
     latitude: string | null;
     longitude: string | null;
@@ -836,7 +839,7 @@ export type PartnerOffice = {
     /** The evidence the verifier checked. */
     reference: string | null;
     revision: number;
-    /** Where the viewer records a newly verified office, or null when they may not. */
+    /** Where the viewer records a newly verified location, or null when they may not. */
     verify: RouteAction | null;
 };
 
@@ -882,7 +885,9 @@ export type PartyDetail = {
     /** An Investor's cash committed to raises whose notes are not issued yet; absent for other parties. */
     committed?: Money | null;
     /** An Audit Partner's registered office, which dispatch measures the 30 km from; absent for other parties. */
-    office?: PartnerOffice | null;
+    office?: DispatchLocation | null;
+    /** A Business's premises, which dispatch measures the 30 km to; sent only to viewers who verify Businesses. */
+    premises?: DispatchLocation | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
