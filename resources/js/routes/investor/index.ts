@@ -173,7 +173,7 @@ deals.form = dealsForm
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 export const verification = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -188,7 +188,7 @@ verification.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 verification.url = (options?: RouteQueryOptions) => {
@@ -197,7 +197,7 @@ verification.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 verification.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -207,7 +207,7 @@ verification.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 verification.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -217,7 +217,7 @@ verification.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 const verificationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -227,7 +227,7 @@ const verificationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 verificationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -237,7 +237,7 @@ verificationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::verification
-* @see app/Http/Controllers/InvestorVerificationController.php:40
+* @see app/Http/Controllers/InvestorVerificationController.php:43
 * @route '/investor/verification'
 */
 verificationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
