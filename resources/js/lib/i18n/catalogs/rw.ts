@@ -177,6 +177,22 @@ const rw: Catalog = {
     'suite.app.open': 'Fungura porogaramu →',
     'suite.app.browse': 'Reba amahirwe →',
     'suite.app.request_access': 'Saba uburenganzira →',
+    'suite.app.add_access': 'Tangira gushora →',
+    'suite.app.investor.add':
+        "Ongeraho uburenganzira bw'Umushoramari ku mwirondoro wawe wemejwe. Nta kongera kugenzura umwirondoro.",
+    'suite.add_investor.title': "Ongeraho uburenganzira bw'Umushoramari",
+    'suite.add_investor.body':
+        "Umwirondoro wawe wamaze kwemezwa kuri konti yawe y'Ubucuruzi, ntuzongera kuwusabwa. Soma kandi wemere amabwiriza y'Umushoramari kugira ngo utangire gushora.",
+    'suite.add_investor.accept':
+        "Nasomye kandi nemera aya mabwiriza y'Umushoramari.",
+    'suite.add_investor.confirm': "Ongeraho uburenganzira bw'Umushoramari",
+    'suite.add_investor.cancel': 'Hagarika',
+    'suite.add_investor.network_error':
+        "Ntitwashoboye kongeraho uburenganzira bw'Umushoramari. Reba interineti yawe wongere ugerageze.",
+    'suite.add_investor.terms_changed':
+        "Amabwiriza y'Umushoramari yarahindutse. Vugurura uburenganzira bwawe wongere uyasome.",
+    'suite.add_investor.unavailable':
+        "Uburenganzira bw'Umushoramari ntibushobora kongerwa kuri iyi konti hano. Vugurura uburenganzira bwawe, cyangwa uvugane na Rozine.",
     'suite.app.investor.preview':
         'Reba amahirwe afunguye ubu. Uzashobora gushora umwirondoro wawe umaze kwemezwa.',
     'suite.app.investor.title': 'Umushoramari',

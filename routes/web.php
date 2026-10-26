@@ -267,6 +267,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
     Route::post('staff-people', [IdentityManagementController::class, 'staffPerson'])->name('staff-people.record');
     Route::post('memberships', [IdentityManagementController::class, 'membership'])->name('memberships.update');
     Route::post('active-role', [IdentityManagementController::class, 'selectRole'])->name('active-role.store');
+    Route::post('investor-access', [IdentityManagementController::class, 'addInvestor'])->name('investor-access.store');
     Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');

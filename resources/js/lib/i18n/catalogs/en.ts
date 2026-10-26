@@ -172,6 +172,21 @@ const en = {
     'suite.app.open': 'Open app →',
     'suite.app.browse': 'Browse deals →',
     'suite.app.request_access': 'Request access →',
+    'suite.app.add_access': 'Start investing →',
+    'suite.app.investor.add':
+        'Add Investor access to your verified identity. No second identity check.',
+    'suite.add_investor.title': 'Add Investor access',
+    'suite.add_investor.body':
+        'Your identity is already verified for your Business account, so you will not be asked to verify it again. Read and accept the Investor terms to start investing.',
+    'suite.add_investor.accept': 'I have read and accept these Investor terms.',
+    'suite.add_investor.confirm': 'Add Investor access',
+    'suite.add_investor.cancel': 'Cancel',
+    'suite.add_investor.network_error':
+        'We could not add Investor access. Check your connection and try again.',
+    'suite.add_investor.terms_changed':
+        'The Investor terms have changed. Refresh your access and read them again.',
+    'suite.add_investor.unavailable':
+        "Investor access can't be added to this account here. Refresh your access, or contact Rozine.",
     'suite.app.investor.preview':
         'Browse open deals now. Investing opens once your identity is verified.',
     'suite.app.investor.title': 'Investor',

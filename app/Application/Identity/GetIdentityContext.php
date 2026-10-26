@@ -35,6 +35,9 @@ final class GetIdentityContext
         if ($activeRole !== null) {
             $actions[] = 'identity.view_role';
         }
+        if ($access['code'] === 'IDENTITY_READY' && $this->roles->mayAddInvestor($identity['memberships'])) {
+            $actions[] = 'identity.add_investor';
+        }
 
         return [
             'contract_version' => 'identity-v2',

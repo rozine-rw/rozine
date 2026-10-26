@@ -61,4 +61,19 @@ final class RoleAccess
             'available_roles' => $availableRoles,
         ];
     }
+
+    /**
+     * A verified Business member may add Investor access to the same Party without a second identity
+     * check (issue #380). Any earlier Investor membership, in whatever status, stays a staff decision,
+     * and an Auditor keeps no other role.
+     *
+     * @param  list<array{role: string, status: string}>  $memberships
+     */
+    public function mayAddInvestor(array $memberships): bool
+    {
+        $roles = array_column($memberships, 'status', 'role');
+
+        return ($roles['business'] ?? null) === 'active' && ! isset($roles['investor'])
+            && ! in_array($roles['auditor'] ?? 'revoked', ['pending', 'active', 'suspended'], true);
+    }
 }

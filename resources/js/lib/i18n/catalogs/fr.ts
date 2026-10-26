@@ -180,6 +180,22 @@ const fr: Catalog = {
     'suite.app.open': "Ouvrir l'application →",
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
+    'suite.app.add_access': 'Commencer à investir →',
+    'suite.app.investor.add':
+        "Ajoutez l'accès Investisseur à votre identité vérifiée. Aucune nouvelle vérification d'identité.",
+    'suite.add_investor.title': "Ajouter l'accès Investisseur",
+    'suite.add_investor.body':
+        'Votre identité est déjà vérifiée pour votre compte Entreprise : elle ne vous sera pas redemandée. Lisez et acceptez les conditions Investisseur pour commencer à investir.',
+    'suite.add_investor.accept':
+        "J'ai lu et j'accepte ces conditions Investisseur.",
+    'suite.add_investor.confirm': "Ajouter l'accès Investisseur",
+    'suite.add_investor.cancel': 'Annuler',
+    'suite.add_investor.network_error':
+        "Nous n'avons pas pu ajouter l'accès Investisseur. Vérifiez votre connexion et réessayez.",
+    'suite.add_investor.terms_changed':
+        'Les conditions Investisseur ont changé. Actualisez votre accès et relisez-les.',
+    'suite.add_investor.unavailable':
+        "L'accès Investisseur ne peut pas être ajouté ici à ce compte. Actualisez votre accès ou contactez Rozine.",
     'suite.app.investor.preview':
         "Parcourez dès maintenant les offres ouvertes. L'investissement s'ouvre une fois votre identité vérifiée.",
     'suite.app.investor.title': 'Investisseur',
