@@ -1018,6 +1018,37 @@ describe('Verification submission', () => {
         expect(window.localStorage.length).toBe(1);
     });
 
+    it('starts the form afresh when another account signs in on the open page', async () => {
+        const user = userEvent.setup();
+        inertia.shared = { auth: { user: { id: 7 } } };
+        const { rerender } = render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+
+        await user.click(screen.getByRole('radio', { name: 'Passport' }));
+        inertia.shared = { auth: { user: { id: 8 } } };
+        rerender(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+
+        expect(
+            screen.getByRole('radio', { name: 'National ID' }),
+        ).toBeChecked();
+
+        // The first account's choice is still waiting for it.
+        inertia.shared = { auth: { user: { id: 7 } } };
+        rerender(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>(documentFixture)}
+            />,
+        );
+        expect(screen.getByRole('radio', { name: 'Passport' })).toBeChecked();
+    });
+
     it('falls back to the saved document type when the device cannot keep the draft', async () => {
         const user = userEvent.setup();
 

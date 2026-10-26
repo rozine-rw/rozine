@@ -1,4 +1,5 @@
 import {
+    PhotoFill,
     PhotoStrip,
     RatingGlassBadge,
 } from '@/components/investor/deals/deal-bits';
@@ -6,19 +7,26 @@ import { raiseOpen, useTimeLeft } from '@/components/investor/deals/time-left';
 import { ACCENT_FILL } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwf, formatRwfShort } from '@/lib/rozine/format';
+import { cn } from '@/lib/utils';
 import type { C3DealCard } from '@/types/investor';
 
 /**
  * The wide-screen deal card (design L205–241), the Deals deck's own markup: a 196px photo banner,
  * raised against target, funding, time left, investors, a three-line pitch and what is left. A
  * closed raise shows no countdown: its state reads under "Left to fill".
+ *
+ * A card fanned behind the front one (`behind`) keeps its shape and first photo but draws none of
+ * its badge, photo controls, name or figures: only a sliver of it shows, as in the design, and its
+ * own overlays would otherwise peek out around the front card and pile up while the deck moves.
  */
 export function DeskCard({
     deal,
     serverTime,
+    behind = false,
 }: {
     deal: C3DealCard;
     serverTime: string;
+    behind?: boolean;
 }) {
     const { t } = useTranslation();
     const clock = useTimeLeft(deal.clock.expires_at, serverTime);
@@ -32,18 +40,32 @@ export function DeskCard({
                 data-testid="desk-card-photo"
                 className="relative min-h-[120px] flex-1 basis-[196px] overflow-hidden"
             >
-                <PhotoStrip
-                    photos={deal.photos}
-                    accent={deal.accent}
-                    name={deal.name}
-                    variant="desk"
+                {behind ? (
+                    <PhotoFill photo={deal.photos[0]} accent={deal.accent} />
+                ) : (
+                    <PhotoStrip
+                        photos={deal.photos}
+                        accent={deal.accent}
+                        name={deal.name}
+                        variant="desk"
+                    >
+                        <span className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(8,14,28,.22)_0%,rgba(8,14,28,0)_40%,rgba(8,14,28,.9)_100%)]" />
+                    </PhotoStrip>
+                )}
+                <div
+                    className={cn(
+                        'absolute top-[13px] right-3.5 z-[2]',
+                        behind && 'invisible',
+                    )}
                 >
-                    <span className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(8,14,28,.22)_0%,rgba(8,14,28,0)_40%,rgba(8,14,28,.9)_100%)]" />
-                </PhotoStrip>
-                <div className="absolute top-[13px] right-3.5 z-[2]">
                     <RatingGlassBadge rating={deal.rating} variant="desk" />
                 </div>
-                <div className="pointer-events-none absolute inset-x-4 bottom-3.5 z-[2] flex items-center gap-[11px]">
+                <div
+                    className={cn(
+                        'pointer-events-none absolute inset-x-4 bottom-3.5 z-[2] flex items-center gap-[11px]',
+                        behind && 'invisible',
+                    )}
+                >
                     <span
                         className="flex size-[46px] shrink-0 items-center justify-center rounded-xl bg-white text-[19px] font-extrabold shadow-[0_5px_14px_-6px_rgba(0,0,0,.4)]"
                         style={{ color: ACCENT_FILL[deal.accent] }}
@@ -79,7 +101,10 @@ export function DeskCard({
             </div>
             <div
                 data-testid="desk-card-figures"
-                className="flex shrink-0 flex-col px-[18px] pt-3.5 pb-4"
+                className={cn(
+                    'flex shrink-0 flex-col px-[18px] pt-3.5 pb-4',
+                    behind && 'invisible',
+                )}
             >
                 <div className="flex items-start justify-between">
                     <div>

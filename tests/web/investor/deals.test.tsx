@@ -963,6 +963,22 @@ describe('Deal edge states', () => {
             'max-h-[560px]',
         );
 
+        /* A card fanned behind shows only its photo: no badge, photo arrows, name or figures peek out. */
+        const behind = screen.getByRole('article', {
+            name: props.deals[1].name,
+            hidden: true,
+        });
+
+        expect(
+            within(behind).queryByRole('button', { hidden: true }),
+        ).not.toBeInTheDocument();
+        expect(within(behind).getByTestId('desk-card-figures')).toHaveClass(
+            'invisible',
+        );
+        expect(within(card).getByTestId('desk-card-figures')).not.toHaveClass(
+            'invisible',
+        );
+
         const industries = screen.getByRole('navigation', {
             name: 'Filter by industry',
         });

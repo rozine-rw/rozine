@@ -249,7 +249,11 @@ export function DeskDeck({ deals, index, serverTime, onMove }: DeckProps) {
                             }}
                         >
                             {visible && (
-                                <DeskCard deal={deal} serverTime={serverTime} />
+                                <DeskCard
+                                    deal={deal}
+                                    serverTime={serverTime}
+                                    behind={!front}
+                                />
                             )}
                         </div>
                     );
