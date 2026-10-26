@@ -137,6 +137,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $complaints = require database_path('migrations/2026_10_15_053241_create_complaints_tables.php');
     $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
     $sandboxNotices = require database_path('migrations/2026_10_25_120000_create_sandbox_notice_acknowledgements_table.php');
+    $businessPhotos = require database_path('migrations/2026_10_26_120000_create_business_photos_table.php');
+    $businessPhotoUrls = require database_path('migrations/2026_10_26_164740_add_url_to_business_photos_table.php');
     // The platform fee migration's Audit Partner credits reference disbursements and audit reports, so it comes off first and goes back last.
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
@@ -165,6 +167,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     // Repeat applications replace this migration's one-pending index, and the application table is rebuilt below, so it comes off and goes back with them.
     $submittedProtection = require database_path('migrations/2026_09_25_042503_protect_submitted_business_applications.php');
     $submittedProtection->down();
+    $businessPhotoUrls->down();
+    expect(Schema::hasColumn('business_photos', 'url'))->toBeFalse();
+    $businessPhotos->down();
+    expect(Schema::hasTable('business_photos'))->toBeFalse();
     $sandboxNotices->down();
     expect(Schema::hasTable('sandbox_notice_acknowledgements'))->toBeFalse();
     $cartLines->down();
@@ -432,6 +438,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $repeatApplications->up();
     $sandboxNotices->up();
     expect(Schema::hasTable('sandbox_notice_acknowledgements'))->toBeTrue();
+    $businessPhotos->up();
+    $businessPhotoUrls->up();
+    expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);
     expect(Schema::hasTable('business_contact_versions'))->toBeTrue()->and(Schema::hasTable('complaints'))->toBeTrue()

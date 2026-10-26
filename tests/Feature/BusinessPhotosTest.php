@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\BusinessPhotos;
+use App\Domain\Operations\CommandRejection;
 use App\Models\BusinessPhoto;
 use App\Models\Party;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PhotoBytesFixture;
@@ -37,8 +40,8 @@ it('puts a photo at a position, changes nothing when put again and replaces it w
         ->and($replaced)->toBe(['id' => $first['id'], 'changed' => true])
         ->and(BusinessPhoto::query()->count())->toBe(2)
         ->and($this->photos->published($this->campaign->business_id))->toBe([
-            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', $this->png)],
-            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', $this->webp)],
+            ['id' => $first['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', $this->png), 'url' => null],
+            ['id' => BusinessPhoto::query()->where('position', 2)->value('id'), 'caption' => 'Egg room', 'sha256' => hash('sha256', $this->webp), 'url' => null],
         ]);
 });
 
@@ -140,3 +143,67 @@ it('keeps the photo rules in the database too', function (array $change): void {
     'media type' => [['media_type' => 'image/gif']],
     'size' => [['size_bytes' => 0]],
 ]);
+
+describe('on the public media disk', function (): void {
+    beforeEach(function (): void {
+        $this->mediaRoot = storage_path('framework/testing/media-'.uniqid());
+        config(['filesystems.disks.media-test' => ['driver' => 'local', 'root' => $this->mediaRoot, 'url' => 'https://media.test', 'throw' => true]]);
+    });
+
+    afterEach(function (): void {
+        File::deleteDirectory($this->mediaRoot);
+    });
+
+    it('puts a photo on the media disk under an unguessable name and shows its public URL on the deal', function (): void {
+        config(['filesystems.media_disk' => 'media-test']);
+        $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+        $row = BusinessPhoto::query()->findOrFail($photo['id']);
+        $path = Str::after((string) $row->url, 'https://media.test/');
+
+        expect($row->content)->toBeNull()
+            ->and($path)->toMatch('#^'.$this->campaign->business_id.'/[0-9a-z]{26}\.jpg$#')
+            ->and(File::get($this->mediaRoot.'/'.$path))->toBe($this->jpeg)
+            ->and($this->photos->published($this->campaign->business_id))
+            ->toBe([['id' => $photo['id'], 'caption' => 'Layer house', 'sha256' => hash('sha256', $this->jpeg), 'url' => $row->url]]);
+
+        $deal = $this->actingAs($this->investor['user'])->get(route('investor.deals.show', ['campaign' => $this->campaign->id]))
+            ->assertOk()->viewData('page')['props']['deal'];
+        expect($deal['photos'])->toBe([['url' => $row->url, 'caption' => 'Layer house']]);
+        $this->get(route('investor.deals.photo', ['campaign' => $this->campaign->id, 'photo' => $photo['id']]))->assertNotFound();
+    });
+
+    it('moves the photos kept in rows onto the media disk with the files command', function (): void {
+        $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+        expect($this->photos->relocate())->toBe(0);
+        config(['filesystems.media_disk' => 'media-test']);
+
+        expect(Artisan::call('files:move', ['--dry-run' => true]))->toBe(0)
+            ->and(Artisan::output())->toContain('business_photos: 1')
+            ->and(BusinessPhoto::query()->findOrFail($photo['id'])->url)->toBeNull();
+
+        expect(Artisan::call('files:move'))->toBe(0)
+            ->and(Artisan::output())->toContain('business_photos: 1');
+        $row = BusinessPhoto::query()->findOrFail($photo['id']);
+        expect($row->content)->toBeNull()
+            ->and(File::get($this->mediaRoot.'/'.Str::after((string) $row->url, 'https://media.test/')))->toBe($this->jpeg)
+            ->and($this->photos->relocate())->toBe(0);
+    });
+
+    it('refuses to move a photo whose bytes no longer match their digest', function (): void {
+        $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+        DB::table('business_photos')->where('id', $photo['id'])->update(['content' => base64_encode('other')]);
+        config(['filesystems.media_disk' => 'media-test']);
+
+        expect(fn () => $this->photos->relocate())->toThrow(CommandRejection::class, 'BUSINESS_PHOTO_INTEGRITY_FAILED');
+    });
+
+    it('keeps exactly one of the bytes and the URL in the database', function (array $change): void {
+        $photo = $this->photos->put($this->campaign->business_id, 1, 'Layer house', 'image/jpeg', $this->jpeg);
+
+        expect(fn () => DB::table('business_photos')->where('id', $photo['id'])->update($change))->toThrow(QueryException::class);
+    })->with([
+        'neither' => [['content' => null]],
+        'both' => [['url' => 'https://media.test/x.jpg']],
+        'not a web address' => [['content' => null, 'url' => 'ftp://media.test/x.jpg']],
+    ]);
+});

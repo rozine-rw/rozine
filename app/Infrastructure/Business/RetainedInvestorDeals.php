@@ -143,14 +143,15 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
     }
 
     /**
-     * The Business's published photos as the card and the Photos section show them. The URL carries
-     * the bytes' digest, so a replaced photo is never served from a stale browser cache.
+     * The Business's published photos as the card and the Photos section show them: the public media
+     * URL when the photo has one, otherwise the deal photo route carrying the bytes' digest, so a
+     * replaced photo is never served from a stale browser cache.
      *
      * @return list<array{url: string, caption: string}>
      */
     private function photos(string $campaignId, string $businessId): array
     {
-        return array_map(fn (array $photo): array => ['url' => route('investor.deals.photo',
+        return array_map(fn (array $photo): array => ['url' => $photo['url'] ?? route('investor.deals.photo',
             ['campaign' => $campaignId, 'photo' => $photo['id'], 'v' => substr($photo['sha256'], 0, 12)], false), 'caption' => $photo['caption']],
             $this->photos->published($businessId));
     }
