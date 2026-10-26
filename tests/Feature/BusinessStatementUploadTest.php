@@ -87,8 +87,8 @@ it('shows a refused upload as a form error on the page without keeping anything'
     $request = (string) Str::uuid();
     StatementFixture::ingest($fixture, 1, $request, '300');
     $this->from($path)->post("/business/{$business}/statements",
-        statementUploadForm(UploadedFile::fake()->createWithContent('bank.csv', StatementFixture::csv('400')), 2, $request))
-        ->assertRedirect($path)->assertSessionHasErrors(['file' => 'That upload was already used for a different file. Try again.']);
+        statementUploadForm(UploadedFile::fake()->createWithContent('bank.csv', StatementFixture::csv('400')), 2, $request), ['Accept' => 'application/json'])
+        ->assertConflict()->assertJsonPath('code', 'IDEMPOTENCY_CONFLICT');
     $this->from($path)->post("/business/{$business}/statements", ['identity_context_revision' => 1, 'expected_revision' => 2, 'request_id' => (string) Str::uuid()])
         ->assertSessionHasErrors('file');
 

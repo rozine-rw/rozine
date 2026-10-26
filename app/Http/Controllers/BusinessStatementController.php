@@ -28,7 +28,6 @@ class BusinessStatementController extends Controller
     /** Refusals that are not about the file, in the words the page shows. */
     private const MESSAGES = [
         'VERSION_CONFLICT' => 'Another statement arrived in the meantime. Check the list and upload again if it is missing.',
-        'IDEMPOTENCY_CONFLICT' => 'That upload was already used for a different file. Try again.',
     ];
 
     public function __construct(private AuthorizeActiveRole $identity) {}
