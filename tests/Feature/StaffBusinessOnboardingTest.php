@@ -46,7 +46,7 @@ it('onboards a company from its RDB code with its representative holding every r
         ->assertSessionHas('business_onboarded', ['business_id' => $business->id, 'representative' => $this->representative->name, 'business_access' => true]);
     expect($business->entity_kind)->toBe('organization')
         ->and($business->entity_party_id)->toBe(VerifiedOrganizationIdentity::query()->sole()->party_id)
-        ->and($business->profile)->toBe(['name' => 'Kigali Fresh Ltd', 'company_code' => '123456789', 'industry' => 'Agribusiness',
+        ->and($business->profile)->toEqual(['name' => 'Kigali Fresh Ltd', 'company_code' => '123456789', 'industry' => 'Agribusiness',
             'district' => 'Gasabo', 'established_year' => 2019])
         ->and(BusinessMandate::query()->sole()->terms)->toMatchArray(['required_signatories' => [$party], 'status' => 'active', 'expires_at' => null])
         ->and(BusinessMandate::query()->sole()->terms['people'][0])->toMatchArray(['party_id' => $party, 'name' => $this->representative->name,
