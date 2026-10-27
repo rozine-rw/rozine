@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "f0f28d6e55725dcceb3693e60f0d37eac3066733d51c3ba3359d6d7da8963df4",
-    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6",
+    "sourceManifestSha256": "aebf71238d3fe52dccd307eba9bac0ab04532ba8f2e3cc069326dc3ddca6e478",
+    "coverageSetSha256": "b04d18c53afe2a30cac19d52a4913c72ed1c1d45b1e9e46d2dc93d7269e056a3",
     "thresholds": {
         "critical": {
             "global": {
@@ -66,6 +66,7 @@
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
+        "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
@@ -149,6 +150,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/statement-upload.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
