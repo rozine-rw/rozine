@@ -1,10 +1,7 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [
-        ".ts",
-        ".tsx"
-    ],
+    "extensions": [".ts", ".tsx"],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -56,6 +53,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessPayoutAccountController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessStatementController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessWalletController.ts",
         "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
@@ -63,6 +61,7 @@
         "resources/js/actions/App/Http/Controllers/EnterAppController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorComplaintController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorDealPhotoController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorDealsController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorHoldingController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorMarketController.ts",
@@ -176,6 +175,7 @@
         "resources/js/routes/api/v1/business/notices/index.ts",
         "resources/js/routes/api/v1/business/repayments/index.ts",
         "resources/js/routes/api/v1/business/repayments/operations/index.ts",
+        "resources/js/routes/api/v1/business/statements/index.ts",
         "resources/js/routes/api/v1/business/wallet/index.ts",
         "resources/js/routes/api/v1/business/wallet/operations/index.ts",
         "resources/js/routes/api/v1/changes/index.ts",
@@ -261,12 +261,14 @@
         "resources/js/routes/business/profile/index.ts",
         "resources/js/routes/business/repayments/index.ts",
         "resources/js/routes/business/repayments/operations/index.ts",
+        "resources/js/routes/business/statements/index.ts",
         "resources/js/routes/business/wallet/index.ts",
         "resources/js/routes/business/wallet/operations/index.ts",
         "resources/js/routes/changes/index.ts",
         "resources/js/routes/identity/active-role/index.ts",
         "resources/js/routes/identity/bookmarks/index.ts",
         "resources/js/routes/identity/index.ts",
+        "resources/js/routes/identity/investor-access/index.ts",
         "resources/js/routes/identity/memberships/index.ts",
         "resources/js/routes/identity/people/index.ts",
         "resources/js/routes/identity/roles/index.ts",
@@ -309,7 +311,9 @@
         "resources/js/routes/staff/audit/operations/index.ts",
         "resources/js/routes/staff/auditors/index.ts",
         "resources/js/routes/staff/auditors/licence/index.ts",
+        "resources/js/routes/staff/auditors/office/index.ts",
         "resources/js/routes/staff/businesses/index.ts",
+        "resources/js/routes/staff/businesses/premises/index.ts",
         "resources/js/routes/staff/changes/index.ts",
         "resources/js/routes/staff/complaints/index.ts",
         "resources/js/routes/staff/coverage/index.ts",
@@ -381,6 +385,7 @@
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
+        "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
@@ -464,6 +469,7 @@
         "resources/js/components/business/apply/operation-outcome.ts",
         "resources/js/components/business/apply/outcome-banner.tsx",
         "resources/js/components/business/apply/pending-review.tsx",
+        "resources/js/components/business/apply/statement-upload.tsx",
         "resources/js/components/business/apply/step-business.tsx",
         "resources/js/components/business/apply/step-heading.tsx",
         "resources/js/components/business/apply/step-raise.tsx",
@@ -772,10 +778,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 741,
-        "generated": 314,
+        "totalTrackedSources": 750,
+        "generated": 321,
         "declarationOnly": 20,
-        "authoredExecutable": 407
+        "authoredExecutable": 409
     },
-    "coverageSetSha256": "0b9bb732ae1c3a81b72e57d700165d00eabb294b22eaadd1dd20365705bc29c6"
+    "coverageSetSha256": "b04d18c53afe2a30cac19d52a4913c72ed1c1d45b1e9e46d2dc93d7269e056a3"
 }
