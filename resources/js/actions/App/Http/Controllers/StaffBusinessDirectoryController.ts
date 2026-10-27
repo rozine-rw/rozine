@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 const indexdb3a888129fba9a701bb6313c25269b6 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ indexdb3a888129fba9a701bb6313c25269b6.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ indexdb3a888129fba9a701bb6313c25269b6.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ indexdb3a888129fba9a701bb6313c25269b6.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ indexdb3a888129fba9a701bb6313c25269b6.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 const indexdb3a888129fba9a701bb6313c25269b6Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexdb3a888129fba9a701bb6313c25269b6Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexdb3a888129fba9a701bb6313c25269b6Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ indexdb3a888129fba9a701bb6313c25269b6Form.head = (options?: RouteQueryOptions): 
 indexdb3a888129fba9a701bb6313c25269b6.form = indexdb3a888129fba9a701bb6313c25269b6Form
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 const index8c8e212d400b1e5f7bb096b3a45096d9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 const index8c8e212d400b1e5f7bb096b3a45096d9Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index8c8e212d400b1e5f7bb096b3a45096d9Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:42
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:70
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
 * @route '/admin/businesses/{business}/premises'
 */
 export const premises = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ premises.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:70
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
 * @route '/admin/businesses/{business}/premises'
 */
 premises.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ premises.url = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:70
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
 * @route '/admin/businesses/{business}/premises'
 */
 premises.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -224,7 +224,7 @@ premises.post = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:70
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
 * @route '/admin/businesses/{business}/premises'
 */
 const premisesForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -234,7 +234,7 @@ const premisesForm = (args: { business: string | number } | [business: string | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:70
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
 * @route '/admin/businesses/{business}/premises'
 */
 premisesForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -244,6 +244,62 @@ premisesForm.post = (args: { business: string | number } | [business: string | n
 
 premises.form = premisesForm
 
-const StaffBusinessDirectoryController = { index, premises }
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @route '/admin/businesses/onboard'
+*/
+export const onboard = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: onboard.url(options),
+    method: 'post',
+})
+
+onboard.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/onboard',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @route '/admin/businesses/onboard'
+*/
+onboard.url = (options?: RouteQueryOptions) => {
+    return onboard.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @route '/admin/businesses/onboard'
+*/
+onboard.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: onboard.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @route '/admin/businesses/onboard'
+*/
+const onboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: onboard.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @route '/admin/businesses/onboard'
+*/
+onboardForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: onboard.url(options),
+    method: 'post',
+})
+
+onboard.form = onboardForm
+
+const StaffBusinessDirectoryController = { index, premises, onboard }
 
 export default StaffBusinessDirectoryController

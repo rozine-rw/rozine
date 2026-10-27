@@ -3,6 +3,10 @@ import { AdminFrame } from '@/components/admin/admin-frame';
 import { ActionLog } from '@/components/admin/parties/action-log';
 import { DirectoryTable } from '@/components/admin/parties/directory-table';
 import { InviteOperator } from '@/components/admin/parties/invite-operator';
+import {
+    OnboardBusiness,
+    OnboardedNotice,
+} from '@/components/admin/parties/onboard-business';
 import { PartyDrawer } from '@/components/admin/parties/party-drawer';
 import { PendingStaffApprovals } from '@/components/admin/parties/pending-staff-approvals';
 import { PermissionMatrix } from '@/components/admin/parties/permission-matrix';
@@ -60,6 +64,9 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                     items={props.policy}
                     link={props.nav.policies}
                 />
+            )}
+            {props.kind === 'business' && props.onboarded && (
+                <OnboardedNotice onboarded={props.onboarded} />
             )}
             {props.stats.length > 0 && (
                 <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
@@ -126,6 +133,9 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                 )}
                 {props.kind === 'staff' && props.grant && (
                     <InviteOperator action={props.grant} />
+                )}
+                {props.kind === 'business' && props.onboard && (
+                    <OnboardBusiness action={props.onboard} />
                 )}
             </div>
             {props.kind === 'staff' && props.access && (

@@ -326,6 +326,8 @@ Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
 Route::post('admin/businesses/{business}/premises', [StaffBusinessDirectoryController::class, 'premises'])->whereUlid('business')
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.premises.verify');
+Route::post('admin/businesses/onboard', [StaffBusinessDirectoryController::class, 'onboard'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.onboard');
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/auditors')->name('staff.auditors.')->group(function (): void {
     Route::get('/', [StaffAuditorDirectoryController::class, 'index'])->name('index');

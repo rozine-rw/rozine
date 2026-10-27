@@ -387,6 +387,7 @@
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
+        "resources/js/components/admin/parties/onboard-business.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
@@ -778,10 +779,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 750,
+        "totalTrackedSources": 751,
         "generated": 321,
         "declarationOnly": 20,
-        "authoredExecutable": 409
+        "authoredExecutable": 410
     },
-    "coverageSetSha256": "b04d18c53afe2a30cac19d52a4913c72ed1c1d45b1e9e46d2dc93d7269e056a3"
+    "coverageSetSha256": "e1f4a9c659f97e1561530579417959c8d6b86d92e8a38823baecff62165027bc"
 }
