@@ -679,7 +679,7 @@ export const commitment = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 const cancel8607c40168c7cea24228dbfb8a158129 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -694,7 +694,7 @@ cancel8607c40168c7cea24228dbfb8a158129.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -721,7 +721,7 @@ cancel8607c40168c7cea24228dbfb8a158129.url = (args: { commitment: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -731,7 +731,7 @@ cancel8607c40168c7cea24228dbfb8a158129.post = (args: { commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 const cancel8607c40168c7cea24228dbfb8a158129Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -741,7 +741,7 @@ const cancel8607c40168c7cea24228dbfb8a158129Form = (args: { commitment: string |
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/api/v1/investor/commitments/{commitment}/cancel'
 */
 cancel8607c40168c7cea24228dbfb8a158129Form.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -752,7 +752,7 @@ cancel8607c40168c7cea24228dbfb8a158129Form.post = (args: { commitment: string | 
 cancel8607c40168c7cea24228dbfb8a158129.form = cancel8607c40168c7cea24228dbfb8a158129Form
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancel12de6d9297648c5933065d1c735ca295 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -767,7 +767,7 @@ cancel12de6d9297648c5933065d1c735ca295.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -794,7 +794,7 @@ cancel12de6d9297648c5933065d1c735ca295.url = (args: { commitment: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -804,7 +804,7 @@ cancel12de6d9297648c5933065d1c735ca295.post = (args: { commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancel12de6d9297648c5933065d1c735ca295Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -814,7 +814,7 @@ const cancel12de6d9297648c5933065d1c735ca295Form = (args: { commitment: string |
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel12de6d9297648c5933065d1c735ca295Form.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

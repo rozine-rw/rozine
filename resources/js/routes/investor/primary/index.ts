@@ -224,7 +224,7 @@ release.form = releaseForm
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 export const cancel = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -239,7 +239,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -266,7 +266,7 @@ cancel.url = (args: { commitment: string | number } | [commitment: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancel.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -276,7 +276,7 @@ cancel.post = (args: { commitment: string | number } | [commitment: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 const cancelForm = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -286,7 +286,7 @@ const cancelForm = (args: { commitment: string | number } | [commitment: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::cancel
-* @see app/Http/Controllers/InvestorPrimaryController.php:55
+* @see app/Http/Controllers/InvestorPrimaryController.php:56
 * @route '/investor/commitments/{commitment}/cancel'
 */
 cancelForm.post = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
