@@ -3,6 +3,7 @@
 
 import datetime
 import contextvars
+import copy
 import io
 import json
 import os
@@ -10,6 +11,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import zipfile
 from collections.abc import Mapping
@@ -39,6 +41,20 @@ FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
 _follower_read_deadline = contextvars.ContextVar("follower_read_deadline", default=None)
 _recovery_read_deadline = contextvars.ContextVar("recovery_read_deadline", default=None)
 _follower_publication_deadlines = {}
+_lookup_counts = {}
+_lookup_counts_lock = threading.Lock()
+
+
+def count_lookup(name, amount=1):
+    with _lookup_counts_lock:
+        _lookup_counts[name] = _lookup_counts.get(name, 0) + amount
+
+
+def report_lookup_counts():
+    with _lookup_counts_lock:
+        counts = dict(_lookup_counts)
+    if counts:
+        print("CI lookup counts: " + json.dumps(counts, sort_keys=True), file=sys.stderr)
 
 
 class MissingEvidence(ValueError):
@@ -55,6 +71,14 @@ class PublicationPending(CoordinationRefusal):
 
 class PreflightPublicationPending(PublicationPending):
     """The independent identity job can finish while selection owns the lock."""
+
+
+class CoordinationArtifactIndex(dict):
+    """Complete identity descriptors and per-run sizes from one inventory."""
+
+    def __init__(self):
+        super().__init__()
+        self.run_sizes = {}
 
 
 def diagnostic(reason, run=None):
@@ -121,6 +145,10 @@ def command(*args, timeout=45, binary=False):
             raise CoordinationRefusal(deadline_reason)
         timeout = min(timeout, remaining)
     options = {"env": {**os.environ, "GH_DEBUG": "api"}} if args[:2] == ("gh", "api") else {}
+    if args[:2] == ("gh", "api"):
+        count_lookup("api_commands")
+        if binary:
+            count_lookup("archive_commands")
     try:
         result = subprocess.check_output(args, text=not binary, stderr=subprocess.PIPE, timeout=timeout, **options)
     except subprocess.CalledProcessError as error:
@@ -139,11 +167,15 @@ def command(*args, timeout=45, binary=False):
 
 
 def api(endpoint, *, timeout=45):
-    return json.loads(command("gh", "api", endpoint, timeout=timeout))
+    response = json.loads(command("gh", "api", endpoint, timeout=timeout))
+    count_lookup("json_response_pages")
+    return response
 
 
 def pages(endpoint, *, timeout=45):
-    return json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
+    responses = json.loads(command("gh", "api", "--paginate", "--slurp", endpoint, timeout=timeout))
+    count_lookup("json_response_pages", len(responses))
+    return responses
 
 
 def requested_scope(env):
@@ -310,11 +342,11 @@ def bounded_read_deadline():
                (_follower_read_deadline.get(), _recovery_read_deadline.get()) if value is not None]])
 
 
-def completed_recovery(env, tree, runs):
+def completed_recovery(env, tree, runs, *, before_refresh=None):
     # One transaction, including final live guards, shares the same read cap.
     token = _recovery_read_deadline.set(bounded_read_deadline())
     try:
-        return reusable_run(env, "poc", recovery_only=True)
+        return reusable_run(env, "poc", recovery_only=True, before_recovery_refresh=before_refresh)
     finally:
         _recovery_read_deadline.reset(token)
 
@@ -402,14 +434,17 @@ def artifact_inventory(repository, run):
     return artifacts
 
 
-def read_evidence(repository, run, prefix="validation-tree"):
+def read_evidence(repository, run, prefix="validation-tree", *, artifact=None):
     name = f"{prefix}-{run['id']}-{run['run_attempt']}"
-    artifacts = artifact_inventory(repository, run)
+    artifacts = artifact_inventory(repository, run) if artifact is None else [artifact]
     matching = [item for item in artifacts if item["name"] == name]
     if not matching:
         raise MissingEvidence("evidence artifact is absent from complete inventory")
     if len(matching) != 1 or matching[0]["expired"]:
         raise ValueError("missing, duplicate or expired evidence artifact")
+    if artifact is not None and (type(artifact.get("workflow_run", {}).get("id")) is not int
+                                 or artifact["workflow_run"]["id"] != run["id"]):
+        raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
     artifact_id = matching[0]["id"]
     if type(artifact_id) is not int or artifact_id <= 0:
         raise ValueError("invalid evidence artifact ID")
@@ -437,8 +472,8 @@ def read_evidence(repository, run, prefix="validation-tree"):
     return proof, matching[0]
 
 
-def download_evidence(repository, run, prefix="validation-tree"):
-    return read_evidence(repository, run, prefix)[0]
+def download_evidence(repository, run, prefix="validation-tree", *, artifact=None):
+    return read_evidence(repository, run, prefix, artifact=artifact)[0]
 
 
 def run_jobs(repository, run):
@@ -472,8 +507,11 @@ def successful_steps(jobs, name, steps):
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
 
-def coordination_identity(repository, run, *, reader=None):
-    proof = (reader or download_evidence)(repository, run, "ci-coordination-identity")
+def coordination_identity(repository, run, *, reader=None, artifact=None):
+    if reader is not None and artifact is not None:
+        raise ValueError("identity reader and indexed descriptor cannot be combined")
+    proof = ((reader or download_evidence)(repository, run, "ci-coordination-identity") if artifact is None else
+             download_evidence(repository, run, "ci-coordination-identity", artifact=artifact))
     expected = {"schema": 1, "protocol": 1, "kind": "poc-coordination-identity", "scope": "poc",
                 "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"]),
                 "event": run["event"], "head_sha": run["head_sha"]}
@@ -706,6 +744,15 @@ def canonical_selection(env):
     retry_started = datetime.datetime.fromisoformat(current.get("run_started_at", current["created_at"]).replace("Z", "+00:00"))
     inventory = coordination_artifact_index(repository)
     failed_peers = []
+    relevant_names = set()
+    refreshed_sources = set()
+
+    def refresh_inventory_before_source(source):
+        # The extra inventory read precedes the source's final live guards and
+        # shares their existing deadline; immutable proof bytes are not reread.
+        revalidate_historical_inventory(repository, inventory, relevant_names)
+        refreshed_sources.add((str(source["id"]), str(source["run_attempt"])))
+
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
@@ -713,11 +760,16 @@ def canonical_selection(env):
         if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
             continue
         name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
+        relevant_names.add(name)
         if name not in inventory:
             continue
-        if inventory[name] != run["id"]:
+        if inventory.run_sizes.get(run["id"], 0) > 1000:
+            raise ValueError("artifact inventory exceeds the verified lookup bound")
+        if (type(inventory[name].get("workflow_run", {}).get("id")) is not int
+                or inventory[name]["workflow_run"]["id"] != run["id"]):
             raise CoordinationRefusal("coordination_artifact_inventory_run_binding_mismatch")
         failed_peers.append(run)
+    count_lookup("historical_peers", len(failed_peers))
     matching_failed = []
     # Native head equality is necessary for a recovery's historical pins.
     # Rule out impossible certificates without spending another API request.
@@ -730,7 +782,8 @@ def canonical_selection(env):
         with ThreadPoolExecutor(max_workers=4) as readers:
             for start in range(0, len(failed_peers), 4):
                 batch = failed_peers[start:start + 4]
-                identities = readers.map(lambda run: coordination_identity(repository, run), batch)
+                identities = readers.map(lambda run: coordination_identity(repository, run, artifact=inventory[
+                    f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"]), batch)
                 for run, failed_identity in zip(batch, identities):
                     if failed_identity["tree_sha"] == tree:
                         if intent or run["head_sha"] not in possible_recovery_heads:
@@ -754,7 +807,7 @@ def canonical_selection(env):
     if len(owners) > 1:
         raise CoordinationRefusal("multiple_pending_validation_owners")
     if matching_failed:
-        certified = completed_recovery(env, tree, runs)
+        certified = completed_recovery(env, tree, runs, before_refresh=refresh_inventory_before_source)
         covered = {pin["id"]: pin for pin in certified[1]["covered"]} if certified else {}
         for run in matching_failed:
             if run["id"] not in covered or terminal_failure_pin(run) != covered[run["id"]]:
@@ -775,11 +828,13 @@ def canonical_selection(env):
         elif certified:
             source, attempt = str(certified[0]["id"]), str(certified[0]["run_attempt"])
         else:
-            source, attempt = reusable_run(env, "poc", with_attempt=True)
+            source, attempt = reusable_run(env, "poc", with_attempt=True, before_recovery_refresh=refresh_inventory_before_source)
         own = {"owner_run": str(current["id"]), "owner_attempt": str(current["run_attempt"])}
         result = dict(own, mode="reuse" if source else "execute", source_run=source or own["owner_run"], source_attempt=attempt or own["owner_attempt"])
         diagnostic("reuse_original_proof" if source else "execute_canonical_validation", current)
     result.update({key: identity[key] for key in ("schema", "protocol", "scope", "repository", "run_id", "run_attempt", "tested_sha", "tree_sha")}, kind="poc-coordination-decision")
+    if (result["source_run"], result["source_attempt"]) not in refreshed_sources:
+        revalidate_historical_inventory(repository, inventory, relevant_names)
     if recovery is not None:
         if result["mode"] != "execute":
             raise CoordinationRefusal("fresh_recovery_must_execute_every_poc_job")
@@ -1004,6 +1059,7 @@ def coordination_artifact_index(repository):
     # One bounded paginated request replaces a serial lookup for every old
     # unsuccessful run. Absence is usable only from a complete stable inventory.
     endpoint = f"repos/{repository}/actions/artifacts?per_page=100"
+    count_lookup("repository_inventory_reads")
     deadline = bounded_read_deadline()
     parent_deadline = _follower_read_deadline.get()
 
@@ -1056,14 +1112,27 @@ def coordination_artifact_index(repository):
             time.sleep(min(1, remaining()))
             continue
         remaining()  # Do not accept a read that finished outside its budget.
-        index = {}
+        index = CoordinationArtifactIndex()
         for artifact in artifacts:
+            run_id = artifact["workflow_run"]["id"]
+            index.run_sizes[run_id] = index.run_sizes.get(run_id, 0) + 1
             if artifact["name"].startswith("ci-coordination-identity-"):
                 name = artifact["name"]
                 if name in index:
                     raise CoordinationRefusal("coordination_artifact_inventory_duplicate_identity")
-                index[name] = artifact["workflow_run"]["id"]
+                index[name] = copy.deepcopy(artifact)
         return index
+
+
+def revalidate_historical_inventory(repository, original, names):
+    # Absence also matters: a failed peer can publish its identity after the
+    # initial read. Compare complete descriptors, never only IDs or counts.
+    if names:
+        latest = coordination_artifact_index(repository)
+        runs = {int(name.rsplit("-", 2)[1]) for name in names}
+        if (any(original.get(name) != latest.get(name) for name in names)
+                or any(original.run_sizes.get(run, 0) != latest.run_sizes.get(run, 0) for run in runs)):
+            raise CoordinationRefusal("coordination_inventory_changed_before_decision")
 
 
 def source_proof_hints(repository, candidates, deadline):
@@ -1121,7 +1190,7 @@ def source_proof_hints(repository, candidates, deadline):
         remaining()  # Joining speculative reads cannot outlive a real parent deadline.
 
 
-def reusable_run(env, scope, with_attempt=False, *, recovery_only=False):
+def reusable_run(env, scope, with_attempt=False, *, recovery_only=False, before_recovery_refresh=None):
     repository = env["GITHUB_REPOSITORY"]
     candidate = env["GITHUB_SHA"]
     if not re.fullmatch(SHA, candidate) or command("git", "rev-parse", "HEAD") != candidate:
@@ -1167,41 +1236,48 @@ def reusable_run(env, scope, with_attempt=False, *, recovery_only=False):
                     raise CoordinationRefusal("recovery_evidence_lookup_timeout") from None
                 diagnostic("source_proof_not_usable", source)
                 continue
-            if recovery:
-                # Source/artifact verification can take time. Re-enumerate the
-                # complete history before granting this exceptional reuse.
-                runs = [run for run in workflow_history(repository)
-                        if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
-                followers = pending_follower_ids(env, runs, tree)
-            # Do not silently fall back to an older success on a newer genuine
-            # failure, cancellation, skipped run or unresolved matching attempt.
-            for run in runs:
+            token = _recovery_read_deadline.set(min(deadline, bounded_read_deadline())) if recovery else None
+            try:
+                if recovery and before_recovery_refresh is not None:
+                    before_recovery_refresh(source)
                 if recovery:
-                    covered = {pin["id"]: pin for pin in recovery["covered"]}
-                    if run["id"] in covered:
-                        if terminal_failure_pin(same_attempt(repository, run)) != covered[run["id"]]:
-                            raise CoordinationRefusal("recovery_historical_attempt_changed")
-                        continue
-                if run["id"] in followers:
-                    run = same_attempt(repository, run)
-                    if run["status"] != "completed" and run["id"] in pending_follower_ids(env, [run], tree):
-                        diagnostic("verified_pending_follower", run)
-                        continue
-                reference = (dict(source, created_at=recovery["started_at"], run_started_at=recovery["started_at"], updated_at=recovery["started_at"])
-                             if recovery else source)
-                if newer_run_blocks(repository, run, reference, tree):
-                    diagnostic("newer_matching_run_blocks_reuse", run)
-                    if env.get("COORDINATION_ACTIVE") == "true":
-                        raise CoordinationRefusal("newer_matching_run_blocks_reuse")
-                    return ("", "") if with_attempt else ""
-            if recovery:
-                refresh_recovery_source(repository, verification, tree)
-                latest = same_attempt(repository, source)
-                if latest["status"] != "completed" or latest["conclusion"] != "success":
-                    raise CoordinationRefusal("recovery_source_no_longer_successful")
-            if recovery_only:
-                return source, recovery
-            return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
+                    # Source/artifact verification can take time. Re-enumerate the
+                    # complete history before granting this exceptional reuse.
+                    runs = [run for run in workflow_history(repository)
+                            if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
+                    followers = pending_follower_ids(env, runs, tree)
+                # Do not silently fall back to an older success on a newer genuine
+                # failure, cancellation, skipped run or unresolved matching attempt.
+                for run in runs:
+                    if recovery:
+                        covered = {pin["id"]: pin for pin in recovery["covered"]}
+                        if run["id"] in covered:
+                            if terminal_failure_pin(same_attempt(repository, run)) != covered[run["id"]]:
+                                raise CoordinationRefusal("recovery_historical_attempt_changed")
+                            continue
+                    if run["id"] in followers:
+                        run = same_attempt(repository, run)
+                        if run["status"] != "completed" and run["id"] in pending_follower_ids(env, [run], tree):
+                            diagnostic("verified_pending_follower", run)
+                            continue
+                    reference = (dict(source, created_at=recovery["started_at"], run_started_at=recovery["started_at"], updated_at=recovery["started_at"])
+                                 if recovery else source)
+                    if newer_run_blocks(repository, run, reference, tree):
+                        diagnostic("newer_matching_run_blocks_reuse", run)
+                        if env.get("COORDINATION_ACTIVE") == "true":
+                            raise CoordinationRefusal("newer_matching_run_blocks_reuse")
+                        return ("", "") if with_attempt else ""
+                if recovery:
+                    refresh_recovery_source(repository, verification, tree)
+                    latest = same_attempt(repository, source)
+                    if latest["status"] != "completed" or latest["conclusion"] != "success":
+                        raise CoordinationRefusal("recovery_source_no_longer_successful")
+                if recovery_only:
+                    return source, recovery
+                return (str(source["id"]), str(source["run_attempt"])) if with_attempt else str(source["id"])
+            finally:
+                if token is not None:
+                    _recovery_read_deadline.reset(token)
     finally:
         hints.close()
     if _recovery_read_deadline.get() is not None and time.monotonic() >= _recovery_read_deadline.get():
@@ -1393,7 +1469,7 @@ def record_reuse(env):
     path.write_text(json.dumps(receipt, indent=2) + "\n")
 
 
-def main():
+def select_scope():
     env = os.environ
     if sys.argv[1:] == ["record-coordination-identity"]:
         record_coordination_identity(env)
@@ -1438,6 +1514,13 @@ def main():
     with open(env["GITHUB_OUTPUT"], "a") as output:
         output.write(f"full={str(scope == 'full' and not source).lower()}\npoc={str(scope == 'poc' and not source).lower()}\nscope={scope}\nreused={str(bool(source)).lower()}\nsource_run={source}\nsource_attempt={source_attempt}\n")
     print(f"Scope: {scope}; " + (f"reuse identical complete tree from run {source}" if source else "execute checks"))
+
+
+def main():
+    try:
+        return select_scope()
+    finally:
+        report_lookup_counts()
 
 
 if __name__ == "__main__":
