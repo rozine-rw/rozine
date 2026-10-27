@@ -599,6 +599,7 @@ describe('Party directories', () => {
                     onboard: {
                         url: '/admin/businesses/onboard',
                         method: 'post',
+                        effective_at: '2026-10-27T09:00:00Z',
                     },
                 }}
             />,
@@ -641,6 +642,7 @@ describe('Party directories', () => {
                     established_year: null,
                     representative_email: 'aline@example.test',
                     attested: true,
+                    effective_at: '2026-10-27T09:00:00Z',
                 }),
             },
         ]);
@@ -657,6 +659,7 @@ describe('Party directories', () => {
                     onboard: {
                         url: '/admin/businesses/onboard',
                         method: 'post',
+                        effective_at: '2026-10-27T09:00:00Z',
                     },
                 }}
             />,
@@ -704,7 +707,10 @@ describe('Party directories', () => {
     });
 
     it('shows onboarding refusals beside their fields', () => {
-        inertia.errors = { rdb_code: 'The RDB company code is 9 digits.' };
+        inertia.errors = {
+            rdb_code: 'The RDB company code is 9 digits.',
+            effective_at: 'This form is out of date.',
+        };
         render(
             <AdminParties
                 {...{
@@ -712,6 +718,7 @@ describe('Party directories', () => {
                     onboard: {
                         url: '/admin/businesses/onboard',
                         method: 'post',
+                        effective_at: '2026-10-27T09:00:00Z',
                     },
                 }}
             />,
@@ -726,6 +733,9 @@ describe('Party directories', () => {
         );
         expect(
             screen.getByText('The RDB company code is 9 digits.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('This form is out of date.'),
         ).toBeInTheDocument();
     });
 

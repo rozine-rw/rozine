@@ -969,7 +969,7 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     /** Staff only: how many of the capabilities a role can hold the viewer holds. */
     access?: { granted: number; total: number };
     /** Businesses only, for a viewer who verifies Businesses: onboards one for its owner. */
-    onboard?: RouteAction | null;
+    onboard?: (RouteAction & { effective_at: string }) | null;
     /** Businesses only: the business just onboarded, and whether its representative can open the Business app yet. */
     onboarded?: BusinessOnboarded | null;
 };

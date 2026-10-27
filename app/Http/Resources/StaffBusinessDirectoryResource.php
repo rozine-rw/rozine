@@ -79,7 +79,7 @@ class StaffBusinessDirectoryResource extends JsonResource
                     ['value' => 'investors', 'label' => 'Sort: Investors'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'onboard' => $prefix === '' && in_array('businesses.verify', $page['permissions'], true)
-                ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post'] : null,
+                ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post', 'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')] : null,
             'onboarded' => $page['onboarded'] ?? null,
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],

@@ -22,7 +22,7 @@ type TextField =
     | 'representative_email'
     | 'evidence_reference';
 
-const blank = () => ({
+const blank = (effectiveAt: string) => ({
     request_id: crypto.randomUUID(),
     mandate_request_id: crypto.randomUUID(),
     kind: 'organization' as (typeof KINDS)[number],
@@ -35,6 +35,7 @@ const blank = () => ({
     evidence_reference: '',
     reason: '',
     attested: false,
+    effective_at: effectiveAt,
 });
 
 /**
@@ -43,10 +44,14 @@ const blank = () => ({
  * person on Rozine. The representative gets every role and permission on the first mandate; more people
  * are added later through a new mandate version.
  */
-export function OnboardBusiness({ action }: { action: RouteAction }) {
+export function OnboardBusiness({
+    action,
+}: {
+    action: RouteAction & { effective_at: string };
+}) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
-    const form = useForm(blank());
+    const form = useForm(blank(action.effective_at));
     const company = form.data.kind === 'organization';
     const required: TextField[] = [
         ...(company ? (['rdb_code'] as const) : []),
@@ -65,6 +70,7 @@ export function OnboardBusiness({ action }: { action: RouteAction }) {
         form.reset();
         form.setData('request_id', crypto.randomUUID());
         form.setData('mandate_request_id', crypto.randomUUID());
+        form.setData('effective_at', action.effective_at);
         setOpen(false);
     };
 
@@ -205,13 +211,16 @@ export function OnboardBusiness({ action }: { action: RouteAction }) {
                     onChange={(event) =>
                         form.setData('reason', event.target.value)
                     }
-                    aria-invalid={form.errors.reason !== undefined || undefined}
+                    aria-invalid={
+                        (form.errors.reason ?? form.errors.effective_at) !==
+                            undefined || undefined
+                    }
                     aria-describedby="onboard-reason-error"
                     className={cn('mt-1 min-h-[72px] resize-y', FIELD)}
                 />
             </label>
             <FieldError id="onboard-reason-error">
-                {form.errors.reason}
+                {form.errors.reason ?? form.errors.effective_at}
             </FieldError>
             <label className="mt-3 flex items-start gap-2 text-[12.5px] text-rz-body">
                 <input
