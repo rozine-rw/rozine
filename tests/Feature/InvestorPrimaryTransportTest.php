@@ -84,7 +84,7 @@ it('releases a hold through the web and finds the same answer by its request', f
         ->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
 });
 
-it('cancels a confirmed commitment through API v1 with the command ability only', function (): void {
+it('refuses to cancel a confirmed commitment because it is final, after checking the command ability', function (): void {
     $held = heldReservation($this->investor['user'], $this->campaign);
     $confirmed = $this->checkout->confirm($this->investor['user']->id, 1, $this->campaign->id, $held['id'], $held['revision'],
         $held['version']->payload['terms']['disclosure_version'], $held['version']->payload['disclosure_sha256'], (string) Str::uuid(),
@@ -97,10 +97,10 @@ it('cancels a confirmed commitment through API v1 with the command ability only'
     $this->postJson(route('api.v1.investor.primary.cancel', ['commitment' => $commitment]), $body)->assertForbidden();
     Sanctum::actingAs($this->investor['user'], ['investor:read', 'investor:command']);
     $this->postJson(route('api.v1.investor.primary.cancel', ['commitment' => $commitment]), $body)
-        ->assertOk()->assertJsonPath('code', 'COMMITMENT_REFUNDED')->assertJsonPath('data.receipt.fee', '0');
+        ->assertConflict()->assertJsonPath('code', 'COMMITMENT_FINAL');
     $this->getJson(route('api.v1.investor.primary.operations.show', ['campaign' => $this->campaign->id, 'request_id' => $body['request_id'],
         'identity_context_revision' => 1, 'command' => 'primary.cancel', 'reservation' => $held['id']]))
-        ->assertOk()->assertJsonPath('code', 'COMMITMENT_REFUNDED');
+        ->assertNotFound()->assertJsonPath('code', 'OPERATION_NOT_FOUND');
 });
 
 it('looks up a confirm by its reservation', function (): void {
@@ -115,7 +115,7 @@ it('looks up a confirm by its reservation', function (): void {
         ->assertOk()->assertJsonPath('code', 'RESERVATION_CONFIRMED');
 });
 
-it('answers another Investor\'s or an unknown reservation and commitment as not found', function (): void {
+it('answers another Investor\'s or an unknown reservation as not found, and any commitment as final', function (): void {
     $held = heldReservation($this->investor['user'], $this->campaign);
     $other = PrimaryReservationFixture::investor();
     $release = fn (string $id) => ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'reservation_id' => $id,
@@ -128,7 +128,7 @@ it('answers another Investor\'s or an unknown reservation and commitment as not 
         ->assertNotFound()->assertJsonPath('code', 'RESERVATION_NOT_FOUND');
     $this->postJson(route('investor.primary.cancel', ['commitment' => $unknown]), ['request_id' => (string) Str::uuid(),
         'identity_context_revision' => 1, 'commitment_id' => $unknown, 'expected_commitment_revision' => 1])
-        ->assertNotFound()->assertJsonPath('code', 'NOT_FOUND');
+        ->assertConflict()->assertJsonPath('code', 'COMMITMENT_FINAL');
 });
 
 it('validates each command and never lets the body select another record', function (string $route, array $parameters, array $body, string $field): void {
