@@ -670,6 +670,7 @@ describe('Party directories', () => {
         expect(
             within(form).queryByLabelText('RDB company code'),
         ).not.toBeInTheDocument();
+
         for (const [label, value] of [
             ['Business name', 'Aline Tailoring'],
             ['Sector', 'Retail'],
@@ -683,6 +684,7 @@ describe('Party directories', () => {
                 target: { value },
             });
         }
+
         fireEvent.click(within(form).getByRole('checkbox'));
         fireEvent.click(
             within(form).getByRole('button', { name: 'Onboard business' }),
