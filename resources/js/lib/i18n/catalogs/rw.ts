@@ -2667,9 +2667,8 @@ const rw: Catalog = {
     'admin.businesses.onboard.placeholder.rdb_code': 'Imibare 9',
     'admin.businesses.onboard.placeholder.name':
         'Nk’uko kiri ku cyemezo cya RDB',
-    'admin.businesses.onboard.placeholder.industry':
-        'urugero: Ubucuruzi buciriritse',
-    'admin.businesses.onboard.placeholder.district': 'urugero: Gasabo',
+    'admin.businesses.onboard.placeholder.industry': 'Hitamo urwego',
+    'admin.businesses.onboard.placeholder.district': 'Hitamo akarere',
     'admin.businesses.onboard.placeholder.established_year': 'urugero: 2019',
     'admin.businesses.onboard.placeholder.representative_email':
         'izina@urugero.com',
@@ -2677,6 +2676,12 @@ const rw: Catalog = {
         'urugero: Icyemezo cya RDB n’indangamuntu byagenzuwe',
     'admin.businesses.onboard.attest':
         'Uhagarariye wanditswe hano ni we wenyine ufite ububasha kuri ubu bucuruzi uyu munsi.',
+    'admin.businesses.onboard.hint.rdb_code':
+        'Andika kode ya RDB y’ikigo igizwe n’imibare 9.',
+    'admin.businesses.onboard.hint.established_year':
+        'Andika umwaka uri hagati ya 1900 na {year}.',
+    'admin.businesses.onboard.hint.attest':
+        'Kanda aka kazu wemeze mbere yo kwandika ubucuruzi.',
     'admin.businesses.onboard.submit': 'Andika ubucuruzi',
     'admin.businesses.onboarded.title': 'Ubucuruzi bwanditswe',
     'admin.businesses.onboarded.ready':

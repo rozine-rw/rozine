@@ -76,7 +76,8 @@ class StaffBusinessDirectoryController extends Controller
             'business' => $business,
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
-            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded')]);
+            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
+            'onboarding_sectors' => OnboardBusiness::sectors()]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }
@@ -113,6 +114,7 @@ class StaffBusinessDirectoryController extends Controller
             'industry' => (string) $request->validated('industry'), 'district' => (string) $request->validated('district'),
             'established_year' => $year === null ? null : (int) $year, 'representative_email' => (string) $request->validated('representative_email'),
             'evidence_reference' => (string) $request->validated('evidence_reference'), 'reason' => (string) $request->validated('reason'),
+            'effective_at' => (string) $request->validated('effective_at'),
             'request_id' => (string) $request->validated('request_id'), 'mandate_request_id' => (string) $request->validated('mandate_request_id')]);
         abort_if($result['code'] === 'STAFF_PERMISSION_REQUIRED', 403);
         if ($result['status'] !== 'completed') {

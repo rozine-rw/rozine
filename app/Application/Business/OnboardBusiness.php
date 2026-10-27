@@ -10,17 +10,19 @@ use App\Application\Identity\ResolveVerifiedOrganization;
 use App\Domain\Business\MandateAuthority;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Pulse\PulseSector;
 
 /**
  * Operator-assisted onboarding (#375, `businesses.verify`): a company is resolved from its RDB code
  * (`ResolveVerifiedOrganization`), then its profile and first mandate are recorded
  * (`ConfigureBusinessAuthority`) with its official representative holding every role and permission. A
  * sole trader is the representative. The representative must already be a verified person, and is looked
- * up only after the actor's permission is confirmed, so the form cannot be used to probe for accounts.
+ * up only after the actor's permission is confirmed, so the form cannot be used to probe for accounts. The
+ * mandate takes effect at the time the server offered the form, so a delayed retry replays the first result.
  *
  * @phpstan-type Onboarding array{
  *     kind: 'organization'|'person', rdb_code: string|null, name: string, industry: string, district: string, established_year: int|null,
- *     representative_email: string, evidence_reference: string, reason: string, request_id: string, mandate_request_id: string
+ *     representative_email: string, evidence_reference: string, reason: string, effective_at: string, request_id: string, mandate_request_id: string
  * }
  * @phpstan-type Outcome array{status: 'completed', code: string, business_id: string, representative: string, business_access: bool}|array{status: 'rejected', code: string}
  */
@@ -28,6 +30,17 @@ final class OnboardBusiness
 {
     /** The official representative holds every role a sole trader or a company's representative may. */
     private const REPRESENTATIVE_ROLES = ['owner', 'controller', 'signatory', 'representative'];
+
+    /**
+     * The sectors a business is recorded under: the same list Pulse asks for, so one sector is never
+     * spelled three ways in the directory.
+     *
+     * @return list<string>
+     */
+    public static function sectors(): array
+    {
+        return array_map(fn (PulseSector $sector): string => $sector->value, PulseSector::cases());
+    }
 
     public function __construct(
         private GetStaffAccess $access,
@@ -64,7 +77,7 @@ final class OnboardBusiness
             $result = $this->authority->handle($actorId, $input['kind'], $entity, ['name' => $input['name'], 'company_code' => $input['rdb_code'],
                 'industry' => $input['industry'], 'district' => $input['district'], 'established_year' => $input['established_year']],
                 ['people' => [['party_id' => $partyId, 'name' => $name, 'roles' => self::REPRESENTATIVE_ROLES, 'permissions' => MandateAuthority::PERMISSIONS]],
-                    'required_signatories' => [$partyId], 'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'expires_at' => null,
+                    'required_signatories' => [$partyId], 'effective_at' => $input['effective_at'], 'expires_at' => null,
                     'status' => 'active', 'attested_complete' => true],
                 0, $input['evidence_reference'], $input['reason'], $input['mandate_request_id']);
         } catch (CommandRejection|IdentityViolation $refusal) {

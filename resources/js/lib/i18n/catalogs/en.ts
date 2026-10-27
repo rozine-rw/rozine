@@ -2534,8 +2534,8 @@ const en = {
     'admin.businesses.onboard.field.evidence_reference': 'Evidence checked',
     'admin.businesses.onboard.placeholder.rdb_code': '9 digits',
     'admin.businesses.onboard.placeholder.name': 'As on the RDB certificate',
-    'admin.businesses.onboard.placeholder.industry': 'e.g. Retail',
-    'admin.businesses.onboard.placeholder.district': 'e.g. Gasabo',
+    'admin.businesses.onboard.placeholder.industry': 'Choose a sector',
+    'admin.businesses.onboard.placeholder.district': 'Choose a district',
     'admin.businesses.onboard.placeholder.established_year': 'e.g. 2019',
     'admin.businesses.onboard.placeholder.representative_email':
         'name@example.com',
@@ -2543,6 +2543,12 @@ const en = {
         'e.g. RDB certificate and ID checked',
     'admin.businesses.onboard.attest':
         'The representative named here is everyone with authority over this business today.',
+    'admin.businesses.onboard.hint.rdb_code':
+        'Enter the 9-digit RDB company code.',
+    'admin.businesses.onboard.hint.established_year':
+        'Enter a year from 1900 to {year}.',
+    'admin.businesses.onboard.hint.attest':
+        'Tick this box to confirm before you onboard the business.',
     'admin.businesses.onboard.submit': 'Onboard business',
     'admin.businesses.onboarded.title': 'Business onboarded',
     'admin.businesses.onboarded.ready':

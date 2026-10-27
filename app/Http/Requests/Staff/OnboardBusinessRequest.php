@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Staff;
 
+use App\Application\Business\OnboardBusiness;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\In;
 
 /**
  * Onboarding a business for its owner: a company (by its RDB code) or a sole trader, its profile, the
@@ -18,14 +21,19 @@ class OnboardBusinessRequest extends FormRequest
         return $this->user() !== null;
     }
 
-    /** @return array<string, list<string>> */
+    /** @return array<string, list<string|In>> */
     public function rules(): array
     {
+        /** @var array<string, list<string>> $districts */
+        $districts = config('rwanda.districts');
+
         return ['request_id' => ['required', 'uuid'], 'mandate_request_id' => ['required', 'uuid', 'different:request_id'],
             'kind' => ['required', 'in:organization,person'], 'rdb_code' => ['nullable', 'required_if:kind,organization', 'prohibited_if:kind,person', 'regex:/^[0-9]{9}$/D'],
-            'name' => ['required', 'string', 'max:180'], 'industry' => ['required', 'string', 'max:180'], 'district' => ['required', 'string', 'max:180'],
-            'established_year' => ['nullable', 'integer', 'min:1800', 'max:'.now()->year], 'representative_email' => ['required', 'email', 'max:255'],
-            'evidence_reference' => ['required', 'string', 'max:255'], 'reason' => ['required', 'string', 'max:2000'], 'attested' => ['accepted']];
+            'name' => ['required', 'string', 'max:180'], 'industry' => ['required', 'string', Rule::in(OnboardBusiness::sectors())], 'district' => ['required', 'string', Rule::in(array_merge(...array_values($districts)))],
+            'established_year' => ['nullable', 'integer', 'min:1900', 'max:'.now()->year], 'representative_email' => ['required', 'email', 'max:255'],
+            'evidence_reference' => ['required', 'string', 'max:255'], 'reason' => ['required', 'string', 'max:2000'], 'attested' => ['accepted'],
+            // The time the server offered the form, so a delayed retry of one request replays it.
+            'effective_at' => ['required', 'date_format:Y-m-d\TH:i:s\Z', 'before_or_equal:now', 'after:-1 day']];
     }
 
     /** @return array<string, string> */
@@ -35,13 +43,15 @@ class OnboardBusinessRequest extends FormRequest
             'rdb_code.required_if' => 'Enter the RDB company code.', 'rdb_code.regex' => 'The RDB company code is 9 digits.',
             'rdb_code.prohibited_if' => 'A sole trader has no RDB company code.',
             'name.required' => "Enter the business's name.", 'name.max' => 'Keep the name under 180 characters.',
-            'industry.required' => 'Enter the sector.', 'industry.max' => 'Keep the sector under 180 characters.',
-            'district.required' => 'Enter the district.', 'district.max' => 'Keep the district under 180 characters.',
-            'established_year.integer' => 'Enter the year as four digits.', 'established_year.min' => 'Enter a year from 1800.',
+            'industry.required' => 'Choose the sector.', 'industry.in' => 'Choose a sector from the list.',
+            'district.required' => 'Choose the district.', 'district.in' => 'Choose a district of Rwanda from the list.',
+            'established_year.integer' => 'Enter the year as four digits.', 'established_year.min' => 'Enter a year from 1900.',
             'established_year.max' => 'The year cannot be in the future.',
             'representative_email.required' => "Enter the representative's email.", 'representative_email.email' => 'Enter a valid email address.',
             'evidence_reference.required' => 'Say which documents you checked.', 'evidence_reference.max' => 'Keep the evidence under 255 characters.',
             'reason.required' => 'Give the reason for this change.', 'reason.max' => 'Keep the reason under 2,000 characters.',
-            'attested.accepted' => 'Confirm that the people named are everyone with authority over this business.'];
+            'attested.accepted' => 'Confirm that the people named are everyone with authority over this business.',
+            ...array_fill_keys(['effective_at.required', 'effective_at.date_format', 'effective_at.before_or_equal', 'effective_at.after'],
+                'This form is out of date. Close it, open it again and re-enter the business.')];
     }
 }

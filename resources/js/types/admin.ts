@@ -948,6 +948,17 @@ export type DirectoryFilter = {
     options: { value: string; label: string }[];
 };
 
+/**
+ * "+ Onboard a business" (#375): when the server offered the form, the sectors a business is recorded
+ * under, Rwanda's districts by province, and the latest year a business can have been established.
+ */
+export type OnboardBusinessAction = RouteAction & {
+    effective_at: string;
+    sectors: string[];
+    districts: Record<string, string[]>;
+    latest_year: number;
+};
+
 export type AdminPartiesProps = AdminFrameShellProps & {
     kind: PartyKind;
     policy: PolicyItem[];
@@ -969,7 +980,7 @@ export type AdminPartiesProps = AdminFrameShellProps & {
     /** Staff only: how many of the capabilities a role can hold the viewer holds. */
     access?: { granted: number; total: number };
     /** Businesses only, for a viewer who verifies Businesses: onboards one for its owner. */
-    onboard?: RouteAction | null;
+    onboard?: OnboardBusinessAction | null;
     /** Businesses only: the business just onboarded, and whether its representative can open the Business app yet. */
     onboarded?: BusinessOnboarded | null;
 };
