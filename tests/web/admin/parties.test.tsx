@@ -590,17 +590,22 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    const ONBOARD = {
+        url: '/admin/businesses/onboard',
+        method: 'post' as const,
+        effective_at: '2026-10-27T09:00:00Z',
+        sectors: ['Agriculture', 'Retail & trade', 'Services'],
+        districts: { 'Kigali City': ['Gasabo'], Southern: ['Huye'] },
+        latest_year: 2026,
+    };
+
     it('lets a verifier onboard a company with its representative and evidence', () => {
         inertia.succeed = true;
         render(
             <AdminParties
                 {...{
                     ...props(businessesFixture),
-                    onboard: {
-                        url: '/admin/businesses/onboard',
-                        method: 'post',
-                        effective_at: '2026-10-27T09:00:00Z',
-                    },
+                    onboard: ONBOARD,
                 }}
             />,
         );
@@ -618,18 +623,38 @@ describe('Party directories', () => {
             });
 
         expect(submit).toBeDisabled();
+        field('RDB company code', '1234');
+        expect(
+            within(form).getByText('Enter the 9-digit RDB company code.'),
+        ).toBeInTheDocument();
         field('RDB company code', '12a3456789');
+        expect(
+            within(form).queryByText('Enter the 9-digit RDB company code.'),
+        ).not.toBeInTheDocument();
         expect(within(form).getByLabelText('RDB company code')).toHaveValue(
             '123456789',
         );
         field('Business name', 'Kigali Fresh Ltd');
-        field('Sector', 'Agribusiness');
+        expect(
+            within(form).getByRole('group', { name: 'Southern' }),
+        ).toBeInTheDocument();
+        field('Sector', 'Retail & trade');
         field('District', 'Gasabo');
         field("Representative's account email", 'aline@example.test');
         field('Evidence checked', 'RDB certificate and ID checked');
         field('Reason for the record', 'Onboarding for the pilot.');
         expect(submit).toBeDisabled();
+        expect(
+            within(form).getByText(
+                'Tick this box to confirm before you onboard the business.',
+            ),
+        ).toBeInTheDocument();
         fireEvent.click(within(form).getByRole('checkbox'));
+        expect(
+            within(form).queryByText(
+                'Tick this box to confirm before you onboard the business.',
+            ),
+        ).not.toBeInTheDocument();
         fireEvent.click(submit);
 
         expect(inertia.posts).toEqual([
@@ -639,6 +664,8 @@ describe('Party directories', () => {
                     kind: 'organization',
                     rdb_code: '123456789',
                     name: 'Kigali Fresh Ltd',
+                    industry: 'Retail & trade',
+                    district: 'Gasabo',
                     established_year: null,
                     representative_email: 'aline@example.test',
                     attested: true,
@@ -656,11 +683,7 @@ describe('Party directories', () => {
             <AdminParties
                 {...{
                     ...props(businessesFixture),
-                    onboard: {
-                        url: '/admin/businesses/onboard',
-                        method: 'post',
-                        effective_at: '2026-10-27T09:00:00Z',
-                    },
+                    onboard: ONBOARD,
                 }}
             />,
         );
@@ -676,9 +699,9 @@ describe('Party directories', () => {
 
         for (const [label, value] of [
             ['Business name', 'Aline Tailoring'],
-            ['Sector', 'Retail'],
+            ['Sector', 'Services'],
             ['District', 'Huye'],
-            ['Year established (optional)', '20x19'],
+            ['Year established (optional)', '1899'],
             ["Representative's account email", 'aline@example.test'],
             ['Evidence checked', 'National ID checked'],
             ['Reason for the record', 'Sole trader joins the pilot.'],
@@ -689,9 +712,18 @@ describe('Party directories', () => {
         }
 
         fireEvent.click(within(form).getByRole('checkbox'));
-        fireEvent.click(
-            within(form).getByRole('button', { name: 'Onboard business' }),
+        const submit = within(form).getByRole('button', {
+            name: 'Onboard business',
+        });
+        expect(
+            within(form).getByText('Enter a year from 1900 to 2026.'),
+        ).toBeInTheDocument();
+        expect(submit).toBeDisabled();
+        fireEvent.change(
+            within(form).getByLabelText('Year established (optional)'),
+            { target: { value: '20x19' } },
         );
+        fireEvent.click(submit);
 
         expect(inertia.posts[0]?.data).toEqual(
             expect.objectContaining({
@@ -715,11 +747,7 @@ describe('Party directories', () => {
             <AdminParties
                 {...{
                     ...props(businessesFixture),
-                    onboard: {
-                        url: '/admin/businesses/onboard',
-                        method: 'post',
-                        effective_at: '2026-10-27T09:00:00Z',
-                    },
+                    onboard: ONBOARD,
                 }}
             />,
         );

@@ -10,6 +10,7 @@ use App\Application\Identity\ResolveVerifiedOrganization;
 use App\Domain\Business\MandateAuthority;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Pulse\PulseSector;
 
 /**
  * Operator-assisted onboarding (#375, `businesses.verify`): a company is resolved from its RDB code
@@ -29,6 +30,17 @@ final class OnboardBusiness
 {
     /** The official representative holds every role a sole trader or a company's representative may. */
     private const REPRESENTATIVE_ROLES = ['owner', 'controller', 'signatory', 'representative'];
+
+    /**
+     * The sectors a business is recorded under: the same list Pulse asks for, so one sector is never
+     * spelled three ways in the directory.
+     *
+     * @return list<string>
+     */
+    public static function sectors(): array
+    {
+        return array_map(fn (PulseSector $sector): string => $sector->value, PulseSector::cases());
+    }
 
     public function __construct(
         private GetStaffAccess $access,

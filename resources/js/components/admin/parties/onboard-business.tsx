@@ -5,8 +5,7 @@ import { EXPLAIN } from '@/components/admin/ui';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { RouteAction } from '@/types';
-import type { BusinessOnboarded } from '@/types/admin';
+import type { BusinessOnboarded, OnboardBusinessAction } from '@/types/admin';
 
 const KINDS = ['organization', 'person'] as const;
 
@@ -16,11 +15,14 @@ const FIELD =
 type TextField =
     | 'rdb_code'
     | 'name'
-    | 'industry'
-    | 'district'
     | 'established_year'
     | 'representative_email'
     | 'evidence_reference';
+
+type ChoiceField = 'industry' | 'district';
+
+/** The earliest year the server accepts for when a business was established. */
+const EARLIEST_YEAR = 1900;
 
 const blank = (effectiveAt: string) => ({
     request_id: crypto.randomUUID(),
@@ -44,16 +46,12 @@ const blank = (effectiveAt: string) => ({
  * person on Rozine. The representative gets every role and permission on the first mandate; more people
  * are added later through a new mandate version.
  */
-export function OnboardBusiness({
-    action,
-}: {
-    action: RouteAction & { effective_at: string };
-}) {
+export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const form = useForm(blank(action.effective_at));
     const company = form.data.kind === 'organization';
-    const required: TextField[] = [
+    const required: (TextField | ChoiceField)[] = [
         ...(company ? (['rdb_code'] as const) : []),
         'name',
         'industry',
@@ -61,8 +59,28 @@ export function OnboardBusiness({
         'representative_email',
         'evidence_reference',
     ];
+    const year = form.data.established_year;
+    // Said under the field before the server is asked, so Submit is never disabled without a reason.
+    const hints: Partial<Record<TextField, string>> = {
+        rdb_code:
+            company &&
+            form.data.rdb_code !== '' &&
+            form.data.rdb_code.length !== 9
+                ? t('admin.businesses.onboard.hint.rdb_code')
+                : undefined,
+        established_year:
+            year !== '' &&
+            (year.length !== 4 ||
+                Number(year) < EARLIEST_YEAR ||
+                Number(year) > action.latest_year)
+                ? t('admin.businesses.onboard.hint.established_year', {
+                      year: action.latest_year,
+                  })
+                : undefined,
+    };
     const complete =
         required.every((key) => form.data[key].trim() !== '') &&
+        Object.values(hints).every((hint) => hint === undefined) &&
         form.data.reason.trim() !== '' &&
         form.data.attested;
 
@@ -115,10 +133,52 @@ export function OnboardBusiness({
                     placeholder={t(
                         `admin.businesses.onboard.placeholder.${key}`,
                     )}
-                    aria-invalid={form.errors[key] !== undefined || undefined}
+                    aria-invalid={
+                        (form.errors[key] ?? hints[key]) !== undefined ||
+                        undefined
+                    }
                     aria-describedby={`onboard-${key}-error`}
                     className={cn('mt-1', FIELD)}
                 />
+            </label>
+            <FieldError id={`onboard-${key}-error`}>
+                {form.errors[key] ?? hints[key]}
+            </FieldError>
+        </div>
+    );
+
+    const choice = (key: ChoiceField, options: Record<string, string[]>) => (
+        <div>
+            <label className="block">
+                <span className="text-[11.5px] font-semibold text-rz-muted">
+                    {t(`admin.businesses.onboard.field.${key}`)}
+                </span>
+                <select
+                    value={form.data[key]}
+                    onChange={(event) => form.setData(key, event.target.value)}
+                    aria-invalid={form.errors[key] !== undefined || undefined}
+                    aria-describedby={`onboard-${key}-error`}
+                    className={cn('mt-1', FIELD)}
+                >
+                    <option value="" disabled>
+                        {t(`admin.businesses.onboard.placeholder.${key}`)}
+                    </option>
+                    {Object.entries(options).map(([group, values]) => {
+                        const items = values.map((value) => (
+                            <option key={value} value={value}>
+                                {value}
+                            </option>
+                        ));
+
+                        return group === '' ? (
+                            items
+                        ) : (
+                            <optgroup key={group} label={group}>
+                                {items}
+                            </optgroup>
+                        );
+                    })}
+                </select>
             </label>
             <FieldError id={`onboard-${key}-error`}>
                 {form.errors[key]}
@@ -189,8 +249,8 @@ export function OnboardBusiness({
                         pattern: '[0-9]{9}',
                     })}
                 {input('name', { maxLength: 180 })}
-                {input('industry', { maxLength: 180 })}
-                {input('district', { maxLength: 180 })}
+                {choice('industry', { '': action.sectors })}
+                {choice('district', action.districts)}
                 {input('established_year', {
                     inputMode: 'numeric',
                     maxLength: 4,
@@ -229,7 +289,7 @@ export function OnboardBusiness({
                     onChange={(event) =>
                         form.setData('attested', event.target.checked)
                     }
-                    aria-describedby="onboard-attested-error"
+                    aria-describedby="onboard-attested-error onboard-attested-hint"
                     className="mt-0.5"
                 />
                 {t('admin.businesses.onboard.attest')}
@@ -237,6 +297,14 @@ export function OnboardBusiness({
             <FieldError id="onboard-attested-error">
                 {form.errors.attested}
             </FieldError>
+            {!form.data.attested && form.errors.attested === undefined && (
+                <p
+                    id="onboard-attested-hint"
+                    className="mt-1 text-[11.5px] text-rz-muted"
+                >
+                    {t('admin.businesses.onboard.hint.attest')}
+                </p>
+            )}
             <div className="mt-3.5 flex justify-end gap-2">
                 <button
                     type="button"

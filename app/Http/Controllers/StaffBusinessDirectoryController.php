@@ -76,7 +76,8 @@ class StaffBusinessDirectoryController extends Controller
             'business' => $business,
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
-            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded')]);
+            'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
+            'onboarding_sectors' => OnboardBusiness::sectors()]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }

@@ -27,7 +27,7 @@ beforeEach(function (): void {
 function onboarding(array $overrides = []): array
 {
     return ['request_id' => (string) Str::uuid(), 'mandate_request_id' => (string) Str::uuid(), 'kind' => 'organization', 'rdb_code' => '123456789',
-        'name' => 'Kigali Fresh Ltd', 'industry' => 'Agribusiness', 'district' => 'Gasabo', 'established_year' => 2019,
+        'name' => 'Kigali Fresh Ltd', 'industry' => 'Agriculture', 'district' => 'Gasabo', 'established_year' => 2019,
         'representative_email' => 'aline@example.test', 'evidence_reference' => 'RDB certificate and ID checked',
         'reason' => 'Onboarding for the pilot.', 'attested' => true, 'effective_at' => now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z'), ...$overrides];
 }
@@ -39,7 +39,9 @@ it('onboards a company from its RDB code with its representative holding every r
 
     $this->actingAs($this->officer)->get(route('staff.businesses.index'))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('onboard', ['url' => '/admin/businesses/onboard', 'method' => 'post',
-            'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')])->where('onboarded', null));
+            'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
+            'sectors' => ['Agriculture', 'Retail & trade', 'Logistics', 'Manufacturing', 'Services', 'Energy', 'Other'],
+            'districts' => config('rwanda.districts'), 'latest_year' => now()->year])->where('onboarded', null));
     $response = $this->post('/admin/businesses/onboard', $input);
 
     $business = BusinessProfile::query()->sole();
@@ -48,7 +50,7 @@ it('onboards a company from its RDB code with its representative holding every r
         ->assertSessionHas('business_onboarded', ['business_id' => $business->id, 'representative' => $this->representative->name, 'business_access' => true]);
     expect($business->entity_kind)->toBe('organization')
         ->and($business->entity_party_id)->toBe(VerifiedOrganizationIdentity::query()->sole()->party_id)
-        ->and($business->profile)->toEqual(['name' => 'Kigali Fresh Ltd', 'company_code' => '123456789', 'industry' => 'Agribusiness',
+        ->and($business->profile)->toEqual(['name' => 'Kigali Fresh Ltd', 'company_code' => '123456789', 'industry' => 'Agriculture',
             'district' => 'Gasabo', 'established_year' => 2019])
         ->and(BusinessMandate::query()->sole()->terms)->toMatchArray(['required_signatories' => [$party], 'status' => 'active',
             'effective_at' => $input['effective_at'], 'expires_at' => null])
@@ -102,6 +104,9 @@ it('refuses a representative who is not a verified person, and fields the server
         ->assertSessionHasErrors(['rdb_code' => 'Enter the RDB company code.']);
     $this->post('/admin/businesses/onboard', onboarding(['effective_at' => now('UTC')->subDays(2)->format('Y-m-d\TH:i:s\Z')]))
         ->assertSessionHasErrors(['effective_at' => 'This form is out of date. Close it, open it again and re-enter the business.']);
+    $this->post('/admin/businesses/onboard', onboarding(['industry' => 'Retail / Electronics', 'district' => 'Nairobi', 'established_year' => 1899]))
+        ->assertSessionHasErrors(['industry' => 'Choose a sector from the list.', 'district' => 'Choose a district of Rwanda from the list.',
+            'established_year' => 'Enter a year from 1900.']);
     $this->post('/admin/businesses/onboard', onboarding(['established_year' => now()->year + 1, 'attested' => false]))
         ->assertSessionHasErrors(['established_year' => 'The year cannot be in the future.',
             'attested' => 'Confirm that the people named are everyone with authority over this business.']);

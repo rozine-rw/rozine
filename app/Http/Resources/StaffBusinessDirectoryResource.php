@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
  *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
- *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null
+ *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null, onboarding_sectors?: list<string>
  * }
  */
 class StaffBusinessDirectoryResource extends JsonResource
@@ -79,7 +79,8 @@ class StaffBusinessDirectoryResource extends JsonResource
                     ['value' => 'investors', 'label' => 'Sort: Investors'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'onboard' => $prefix === '' && in_array('businesses.verify', $page['permissions'], true)
-                ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post', 'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')] : null,
+                ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post', 'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
+                    'sectors' => $page['onboarding_sectors'] ?? [], 'districts' => config('rwanda.districts'), 'latest_year' => now()->year] : null,
             'onboarded' => $page['onboarded'] ?? null,
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
