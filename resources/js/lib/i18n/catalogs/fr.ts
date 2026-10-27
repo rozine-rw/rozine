@@ -2659,6 +2659,40 @@ const fr: Catalog = {
     'admin.staff.invite.role': 'Rôle',
     'admin.staff.invite.cancel': 'Annuler',
     'admin.staff.invite.submit': 'Donner l’accès',
+    'admin.businesses.onboard.open': '+ Intégrer une entreprise',
+    'admin.businesses.onboard.title': 'Intégrer une entreprise',
+    'admin.businesses.onboard.body':
+        'Enregistrez une société à partir de son code RDB, ou un entrepreneur individuel, avec son représentant officiel. Le représentant doit déjà avoir un compte Rozine avec une identité vérifiée. Il reçoit tous les rôles et toutes les autorisations du premier mandat. La modification est enregistrée avec votre nom et votre motif.',
+    'admin.businesses.onboard.field.kind': 'Type d’entreprise',
+    'admin.businesses.onboard.kind.organization': 'Société',
+    'admin.businesses.onboard.kind.person': 'Entrepreneur individuel',
+    'admin.businesses.onboard.field.rdb_code': 'Code d’entreprise RDB',
+    'admin.businesses.onboard.field.name': 'Nom de l’entreprise',
+    'admin.businesses.onboard.field.industry': 'Secteur',
+    'admin.businesses.onboard.field.district': 'District',
+    'admin.businesses.onboard.field.established_year':
+        'Année de création (facultatif)',
+    'admin.businesses.onboard.field.representative_email':
+        'E-mail du compte du représentant',
+    'admin.businesses.onboard.field.evidence_reference':
+        'Justificatifs vérifiés',
+    'admin.businesses.onboard.placeholder.rdb_code': '9 chiffres',
+    'admin.businesses.onboard.placeholder.name': 'Comme sur le certificat RDB',
+    'admin.businesses.onboard.placeholder.industry': 'ex. Commerce de détail',
+    'admin.businesses.onboard.placeholder.district': 'ex. Gasabo',
+    'admin.businesses.onboard.placeholder.established_year': 'ex. 2019',
+    'admin.businesses.onboard.placeholder.representative_email':
+        'nom@exemple.com',
+    'admin.businesses.onboard.placeholder.evidence_reference':
+        'ex. Certificat RDB et pièce d’identité vérifiés',
+    'admin.businesses.onboard.attest':
+        'Le représentant indiqué ici est la seule personne ayant autorité sur cette entreprise aujourd’hui.',
+    'admin.businesses.onboard.submit': 'Intégrer l’entreprise',
+    'admin.businesses.onboarded.title': 'Entreprise intégrée',
+    'admin.businesses.onboarded.ready':
+        '{name} peut l’ouvrir dès maintenant dans l’application Entreprise.',
+    'admin.businesses.onboarded.access_needed':
+        '{name} doit obtenir l’accès Entreprise auprès d’un opérateur d’identité avant de pouvoir l’ouvrir dans l’application Entreprise.',
     'admin.staff.signed_in_as': 'Connecté en tant que',
     'admin.staff.access_full': 'Accès complet',
     'admin.staff.access_count': '{granted} capacités sur {total}',

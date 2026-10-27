@@ -2516,6 +2516,39 @@ const en = {
     'admin.staff.invite.role': 'Role',
     'admin.staff.invite.cancel': 'Cancel',
     'admin.staff.invite.submit': 'Give access',
+    'admin.businesses.onboard.open': '+ Onboard a business',
+    'admin.businesses.onboard.title': 'Onboard a business',
+    'admin.businesses.onboard.body':
+        'Record a company from its RDB code, or a sole trader, with its official representative. The representative must already have a Rozine account with a verified identity. They get every role and permission on the first mandate. The change is logged with your name and reason.',
+    'admin.businesses.onboard.field.kind': 'Type of business',
+    'admin.businesses.onboard.kind.organization': 'Company',
+    'admin.businesses.onboard.kind.person': 'Sole trader',
+    'admin.businesses.onboard.field.rdb_code': 'RDB company code',
+    'admin.businesses.onboard.field.name': 'Business name',
+    'admin.businesses.onboard.field.industry': 'Sector',
+    'admin.businesses.onboard.field.district': 'District',
+    'admin.businesses.onboard.field.established_year':
+        'Year established (optional)',
+    'admin.businesses.onboard.field.representative_email':
+        "Representative's account email",
+    'admin.businesses.onboard.field.evidence_reference': 'Evidence checked',
+    'admin.businesses.onboard.placeholder.rdb_code': '9 digits',
+    'admin.businesses.onboard.placeholder.name': 'As on the RDB certificate',
+    'admin.businesses.onboard.placeholder.industry': 'e.g. Retail',
+    'admin.businesses.onboard.placeholder.district': 'e.g. Gasabo',
+    'admin.businesses.onboard.placeholder.established_year': 'e.g. 2019',
+    'admin.businesses.onboard.placeholder.representative_email':
+        'name@example.com',
+    'admin.businesses.onboard.placeholder.evidence_reference':
+        'e.g. RDB certificate and ID checked',
+    'admin.businesses.onboard.attest':
+        'The representative named here is everyone with authority over this business today.',
+    'admin.businesses.onboard.submit': 'Onboard business',
+    'admin.businesses.onboarded.title': 'Business onboarded',
+    'admin.businesses.onboarded.ready':
+        '{name} can open it in the Business app now.',
+    'admin.businesses.onboarded.access_needed':
+        '{name} needs Business access from an identity operator before they can open it in the Business app.',
     'admin.staff.signed_in_as': 'Signed in as',
     'admin.staff.access_full': 'Full access',
     'admin.staff.access_count': '{granted} of {total} capabilities',

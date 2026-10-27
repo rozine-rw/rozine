@@ -590,6 +590,182 @@ describe('Party directories', () => {
         ).toBeInTheDocument();
     });
 
+    it('lets a verifier onboard a company with its representative and evidence', () => {
+        inertia.succeed = true;
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: {
+                        url: '/admin/businesses/onboard',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        );
+        const form = screen.getByRole('form', { name: 'Onboard a business' });
+        const submit = within(form).getByRole('button', {
+            name: 'Onboard business',
+        });
+        const field = (label: string, value: string) =>
+            fireEvent.change(within(form).getByLabelText(label), {
+                target: { value },
+            });
+
+        expect(submit).toBeDisabled();
+        field('RDB company code', '12a3456789');
+        expect(within(form).getByLabelText('RDB company code')).toHaveValue(
+            '123456789',
+        );
+        field('Business name', 'Kigali Fresh Ltd');
+        field('Sector', 'Agribusiness');
+        field('District', 'Gasabo');
+        field("Representative's account email", 'aline@example.test');
+        field('Evidence checked', 'RDB certificate and ID checked');
+        field('Reason for the record', 'Onboarding for the pilot.');
+        expect(submit).toBeDisabled();
+        fireEvent.click(within(form).getByRole('checkbox'));
+        fireEvent.click(submit);
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/onboard',
+                data: expect.objectContaining({
+                    kind: 'organization',
+                    rdb_code: '123456789',
+                    name: 'Kigali Fresh Ltd',
+                    established_year: null,
+                    representative_email: 'aline@example.test',
+                    attested: true,
+                }),
+            },
+        ]);
+        expect(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        ).toBeInTheDocument();
+    });
+
+    it('onboards a sole trader without an RDB code and can be cancelled', () => {
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: {
+                        url: '/admin/businesses/onboard',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        );
+        const form = screen.getByRole('form', { name: 'Onboard a business' });
+        fireEvent.click(within(form).getByLabelText('Sole trader'));
+        expect(
+            within(form).queryByLabelText('RDB company code'),
+        ).not.toBeInTheDocument();
+        for (const [label, value] of [
+            ['Business name', 'Aline Tailoring'],
+            ['Sector', 'Retail'],
+            ['District', 'Huye'],
+            ['Year established (optional)', '20x19'],
+            ["Representative's account email", 'aline@example.test'],
+            ['Evidence checked', 'National ID checked'],
+            ['Reason for the record', 'Sole trader joins the pilot.'],
+        ]) {
+            fireEvent.change(within(form).getByLabelText(label), {
+                target: { value },
+            });
+        }
+        fireEvent.click(within(form).getByRole('checkbox'));
+        fireEvent.click(
+            within(form).getByRole('button', { name: 'Onboard business' }),
+        );
+
+        expect(inertia.posts[0]?.data).toEqual(
+            expect.objectContaining({
+                kind: 'person',
+                rdb_code: null,
+                established_year: '2019',
+            }),
+        );
+        fireEvent.click(within(form).getByRole('button', { name: 'Cancel' }));
+        expect(
+            screen.queryByRole('form', { name: 'Onboard a business' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows onboarding refusals beside their fields', () => {
+        inertia.errors = { rdb_code: 'The RDB company code is 9 digits.' };
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: {
+                        url: '/admin/businesses/onboard',
+                        method: 'post',
+                    },
+                }}
+            />,
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        );
+
+        expect(screen.getByLabelText('RDB company code')).toHaveAttribute(
+            'aria-invalid',
+            'true',
+        );
+        expect(
+            screen.getByText('The RDB company code is 9 digits.'),
+        ).toBeInTheDocument();
+    });
+
+    it('says whether the new business representative can open the Business app yet', () => {
+        const fixture = props(businessesFixture);
+        const { unmount } = render(
+            <AdminParties
+                {...{
+                    ...fixture,
+                    onboarded: {
+                        business_id: '01jbusiness',
+                        representative: 'Aline Uwase',
+                        business_access: false,
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Aline Uwase needs Business access from an identity operator',
+        );
+        expect(
+            screen.queryByRole('button', { name: '+ Onboard a business' }),
+        ).not.toBeInTheDocument();
+        unmount();
+        render(
+            <AdminParties
+                {...{
+                    ...fixture,
+                    onboarded: {
+                        business_id: '01jbusiness',
+                        representative: 'Aline Uwase',
+                        business_access: true,
+                    },
+                }}
+            />,
+        );
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Aline Uwase can open it in the Business app now.',
+        );
+    });
+
     it('says which role the viewer signed in as and how much it may do', () => {
         const fixture = props(staffFixture);
         const { unmount } = render(

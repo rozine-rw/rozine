@@ -73,6 +73,13 @@ final class EloquentIdentityRepository implements IdentityRepository
             ->exists();
     }
 
+    public function accountForEmail(string $email): ?int
+    {
+        $id = User::query()->whereRaw('lower(email) = ?', [mb_strtolower(trim($email))])->value('id');
+
+        return $id === null ? null : (int) $id;
+    }
+
     public function partyKinds(array $partyIds): array
     {
         /** @var array<string, 'person'|'organization'> */
