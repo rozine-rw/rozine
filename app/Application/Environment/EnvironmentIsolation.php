@@ -14,6 +14,9 @@ class EnvironmentIsolation
     /** The only SMTP settings staging's Resend relay may carry. */
     private const array STAGING_MAILER_KEYS = ['transport', 'scheme', 'url', 'host', 'port', 'username', 'password', 'timeout', 'local_domain', 'verify_peer'];
 
+    /** The Cloudflare R2 disks staging may keep, each with the switch that selects it. */
+    private const array STAGING_FILE_DISKS = ['r2' => 'filesystems.files_disk', 'r2-media' => 'filesystems.media_disk'];
+
     public function __construct(
         private readonly Application $app,
         private readonly Repository $config,
@@ -44,6 +47,22 @@ class EnvironmentIsolation
     public function sendsStagingMail(): bool
     {
         return $this->profile() === 'uat' && $this->config->get('mail.default') === 'smtp';
+    }
+
+    /**
+     * The R2 disks staging keeps for uploaded files: on uat only, each one its files or media
+     * switch names. Every other profile, and staging without a switch, keeps files local.
+     *
+     * @return list<string>
+     */
+    public function stagingFileDisks(): array
+    {
+        if ($this->profile() !== 'uat') {
+            return [];
+        }
+
+        return array_keys(array_filter(self::STAGING_FILE_DISKS,
+            fn (string $switch, string $disk): bool => $this->config->get($switch) === $disk, ARRAY_FILTER_USE_BOTH));
     }
 
     /**
@@ -122,6 +141,7 @@ class EnvironmentIsolation
 
         $this->assertDatabaseBoundary();
         $this->assertStagingMailBoundary();
+        $this->assertStagingFileBoundary();
         $this->assertNoProviderCredentials();
         $this->assertStorageBoundary();
 
@@ -158,6 +178,7 @@ class EnvironmentIsolation
         $database = $this->config->array('database.connections.'.$connection);
         $namespace = 'rozine_'.$this->profile();
         $root = $this->storageRoot();
+        $fileDisks = array_intersect_key($this->config->array('filesystems.disks'), array_flip($this->stagingFileDisks()));
 
         $this->config->set([
             'database.connections' => [$connection => $database],
@@ -201,6 +222,7 @@ class EnvironmentIsolation
                     'visibility' => 'public',
                     'throw' => true,
                 ],
+                ...$fileDisks,
             ],
             'filesystems.links' => [$this->app->publicPath('storage') => $root.'/public'],
             'mail.default' => $this->sendsStagingMail() ? 'smtp' : 'array',
@@ -385,9 +407,37 @@ class EnvironmentIsolation
         }
     }
 
+    /**
+     * A files or media switch may only name its own R2 disk, and only on staging, where that disk
+     * must point at a Cloudflare R2 account endpoint with its key, secret and bucket set.
+     */
+    private function assertStagingFileBoundary(): void
+    {
+        $kept = $this->stagingFileDisks();
+
+        foreach (self::STAGING_FILE_DISKS as $disk => $switch) {
+            $selected = $this->config->get($switch);
+            if ($selected !== null && ! in_array($disk, $kept, true)) {
+                throw new LogicException('ISOLATION_FILE_DISK_DENIED');
+            }
+        }
+
+        foreach ($kept as $disk) {
+            $settings = $this->config->array('filesystems.disks.'.$disk);
+            $endpoint = $settings['endpoint'] ?? null;
+            if (($settings['driver'] ?? null) !== 's3' || ! is_string($endpoint)
+                || preg_match('#^https://[0-9a-f]{32}\.r2\.cloudflarestorage\.com$#', $endpoint) !== 1
+                || array_filter(['key', 'secret', 'bucket'], fn (string $setting): bool => ! is_string($settings[$setting] ?? null) || $settings[$setting] === '') !== []) {
+                throw new LogicException('ISOLATION_FILE_DISK_DENIED');
+            }
+        }
+    }
+
     private function assertNoProviderCredentials(): void
     {
         $stagingMailCredentials = $this->sendsStagingMail() ? ['mailers.smtp.username', 'mailers.smtp.password'] : [];
+        $stagingFileCredentials = array_merge(...array_map(fn (string $disk): array => array_map(
+            fn (string $setting): string => "disks.{$disk}.{$setting}", ['key', 'secret', 'bucket', 'endpoint', 'url']), $this->stagingFileDisks()));
 
         $values = Arr::dot([
             'services' => $this->config->array('services'),
@@ -401,7 +451,7 @@ class EnvironmentIsolation
         foreach ($values as $key => $value) {
             if (preg_match('/(?:key|secret|token|password|username|bucket|url|endpoint)$/', $key) === 1
                 && $value !== null && $value !== '' && $value !== false
-                && ! in_array($key, ['disks.public.url', 'logs.slack.username', ...$stagingMailCredentials], true)) {
+                && ! in_array($key, ['disks.public.url', 'logs.slack.username', ...$stagingMailCredentials, ...$stagingFileCredentials], true)) {
                 throw new LogicException('ISOLATION_PROVIDER_CREDENTIALS_DENIED');
             }
         }
