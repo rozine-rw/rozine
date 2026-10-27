@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
  * Business's 360. Fields the platform does not record yet are not invented: no capacity read exists,
  * so capacity is null; no arrears or freeze read exists, so health reads not tracked, frozen is null
  * and the only chip is All. The policy strip shows who may apply (`PlatformPolicies::businesses()`).
+ * A viewer who verifies Businesses may onboard one; the notice after it says whether its representative
+ * can open the Business app yet.
  * A Business with no rated
  * note reads as pending its audit, and the average is of published scores only.
  *
@@ -25,7 +27,8 @@ use Illuminate\Support\Str;
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
  *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null,
- *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>
+ *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
+ *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null
  * }
  */
 class StaffBusinessDirectoryResource extends JsonResource
@@ -75,6 +78,9 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'options' => [['value' => 'raised', 'label' => 'Sort: Capital raised'], ['value' => 'active_notes', 'label' => 'Sort: Active notes'],
                     ['value' => 'investors', 'label' => 'Sort: Investors'], ['value' => 'name', 'label' => 'Sort: Name (A–Z)']]]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
+            'onboard' => $prefix === '' && in_array('businesses.verify', $page['permissions'], true)
+                ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post'] : null,
+            'onboarded' => $page['onboarded'] ?? null,
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
                 'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => $row['kyc'],

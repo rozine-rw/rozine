@@ -2647,6 +2647,42 @@ const rw: Catalog = {
     'admin.staff.invite.role': 'Uruhare',
     'admin.staff.invite.cancel': 'Hagarika',
     'admin.staff.invite.submit': 'Tanga uburenganzira',
+    'admin.businesses.onboard.open': '+ Andika ubucuruzi',
+    'admin.businesses.onboard.title': 'Andika ubucuruzi',
+    'admin.businesses.onboard.body':
+        'Andika sosiyete ukoresheje kode yayo ya RDB, cyangwa umucuruzi ku giti cye, hamwe n’uhagarariye ubucuruzi ku mugaragaro. Uhagarariye agomba kuba asanzwe afite konti ya Rozine yemejwe umwirondoro. Ahabwa inshingano n’uburenganzira byose kuri manda ya mbere. Iri hinduka ryandikwa n’izina ryawe n’impamvu.',
+    'admin.businesses.onboard.field.kind': 'Ubwoko bw’ubucuruzi',
+    'admin.businesses.onboard.kind.organization': 'Sosiyete',
+    'admin.businesses.onboard.kind.person': 'Umucuruzi ku giti cye',
+    'admin.businesses.onboard.field.rdb_code': 'Kode ya sosiyete ya RDB',
+    'admin.businesses.onboard.field.name': 'Izina ry’ubucuruzi',
+    'admin.businesses.onboard.field.industry': 'Urwego',
+    'admin.businesses.onboard.field.district': 'Akarere',
+    'admin.businesses.onboard.field.established_year':
+        'Umwaka bwatangiriyeho (si ngombwa)',
+    'admin.businesses.onboard.field.representative_email':
+        'Imeli ya konti y’uhagarariye',
+    'admin.businesses.onboard.field.evidence_reference':
+        'Ibimenyetso byagenzuwe',
+    'admin.businesses.onboard.placeholder.rdb_code': 'Imibare 9',
+    'admin.businesses.onboard.placeholder.name':
+        'Nk’uko kiri ku cyemezo cya RDB',
+    'admin.businesses.onboard.placeholder.industry':
+        'urugero: Ubucuruzi buciriritse',
+    'admin.businesses.onboard.placeholder.district': 'urugero: Gasabo',
+    'admin.businesses.onboard.placeholder.established_year': 'urugero: 2019',
+    'admin.businesses.onboard.placeholder.representative_email':
+        'izina@urugero.com',
+    'admin.businesses.onboard.placeholder.evidence_reference':
+        'urugero: Icyemezo cya RDB n’indangamuntu byagenzuwe',
+    'admin.businesses.onboard.attest':
+        'Uhagarariye wanditswe hano ni we wenyine ufite ububasha kuri ubu bucuruzi uyu munsi.',
+    'admin.businesses.onboard.submit': 'Andika ubucuruzi',
+    'admin.businesses.onboarded.title': 'Ubucuruzi bwanditswe',
+    'admin.businesses.onboarded.ready':
+        '{name} ashobora kubufungura muri porogaramu y’Ubucuruzi ubu.',
+    'admin.businesses.onboarded.access_needed':
+        '{name} akeneye uburenganzira bw’Ubucuruzi buhabwa n’ushinzwe imyirondoro mbere yo kubufungura muri porogaramu y’Ubucuruzi.',
     'admin.staff.signed_in_as': 'Winjiye nka',
     'admin.staff.access_full': 'Uburenganzira bwose',
     'admin.staff.access_count': 'Ubushobozi {granted} kuri {total}',

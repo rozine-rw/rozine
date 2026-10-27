@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "aebf71238d3fe52dccd307eba9bac0ab04532ba8f2e3cc069326dc3ddca6e478",
-    "coverageSetSha256": "b04d18c53afe2a30cac19d52a4913c72ed1c1d45b1e9e46d2dc93d7269e056a3",
+    "sourceManifestSha256": "bed6630ad9dca9dd426b2443c6db42fdc1fe39f5f44043691610128b75f71cbd",
+    "coverageSetSha256": "e1f4a9c659f97e1561530579417959c8d6b86d92e8a38823baecff62165027bc",
     "thresholds": {
         "critical": {
             "global": {
@@ -68,6 +68,7 @@
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
+        "resources/js/components/admin/parties/onboard-business.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",

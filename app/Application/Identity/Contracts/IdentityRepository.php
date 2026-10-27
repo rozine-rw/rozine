@@ -17,6 +17,9 @@ interface IdentityRepository
     /** @return AccessSnapshot */
     public function forUser(int $userId): array;
 
+    /** The account that signs in with this email, matched without regard to case, for a staffer who already holds the permission to look. */
+    public function accountForEmail(string $email): ?int;
+
     /** Current Party facts only; does not authorize an actor or grant access to a record. */
     public function auditorPartyIsActive(string $partyId): bool;
 
