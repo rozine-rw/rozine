@@ -249,6 +249,9 @@ it('preserves affordability and exposure refusals through the quote projection',
     $result = BusinessQuoteFixture::evaluate($fixture, $case === 'affordability' ? 3 : 2, $case === 'affordability' ? '3000000' : null);
     expect($result['data']['quote']['status'])->toBe('refused')
         ->and($result['data']['quote']['code'])->toBe($case === 'affordability' ? 'DSCR_BELOW_CUTOFF' : 'CAPACITY_BELOW_MINIMUM')
+        ->and($result['data']['quote']['message'])->toBe($case === 'affordability'
+            ? 'Your verified cash flow does not cover the repayments on this amount. Try a smaller amount or a longer term.'
+            : 'The available borrowing capacity is below the minimum offer.')
         ->and($result['data']['quote'])->not->toHaveKey('principal');
 })->with(['affordability', 'exposure'])->with('kigali month boundaries');
 

@@ -1010,7 +1010,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             return ['status' => 'refused', 'code' => $result['code'], 'message' => match ($result['code']) {
                 'RESTRICTION_ACTIVE' => 'A current restriction prevents this offer.',
                 'POLICY_INPUT_REQUIRED' => 'Required credit history is unavailable.',
-                'DSCR_BELOW_CUTOFF' => 'The requested amount does not meet the affordability threshold.',
+                'DSCR_BELOW_CUTOFF' => 'Your verified cash flow does not cover the repayments on this amount. Try a smaller amount or a longer term.',
                 'CAPACITY_BELOW_MINIMUM', 'EXPOSURE_LIMIT' => 'The available borrowing capacity is below the minimum offer.',
                 default => 'Current verified evidence is required before an offer can be calculated.',
             }];
