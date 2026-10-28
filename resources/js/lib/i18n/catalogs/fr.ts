@@ -2678,8 +2678,8 @@ const fr: Catalog = {
         'Justificatifs vérifiés',
     'admin.businesses.onboard.placeholder.rdb_code': '9 chiffres',
     'admin.businesses.onboard.placeholder.name': 'Comme sur le certificat RDB',
-    'admin.businesses.onboard.placeholder.industry': 'ex. Commerce de détail',
-    'admin.businesses.onboard.placeholder.district': 'ex. Gasabo',
+    'admin.businesses.onboard.placeholder.industry': 'Choisissez un secteur',
+    'admin.businesses.onboard.placeholder.district': 'Choisissez un district',
     'admin.businesses.onboard.placeholder.established_year': 'ex. 2019',
     'admin.businesses.onboard.placeholder.representative_email':
         'nom@exemple.com',
@@ -2687,6 +2687,12 @@ const fr: Catalog = {
         'ex. Certificat RDB et pièce d’identité vérifiés',
     'admin.businesses.onboard.attest':
         'Le représentant indiqué ici est la seule personne ayant autorité sur cette entreprise aujourd’hui.',
+    'admin.businesses.onboard.hint.rdb_code':
+        'Saisissez le code d’entreprise RDB à 9 chiffres.',
+    'admin.businesses.onboard.hint.established_year':
+        'Saisissez une année entre 1900 et {year}.',
+    'admin.businesses.onboard.hint.attest':
+        'Cochez cette case pour confirmer avant d’intégrer l’entreprise.',
     'admin.businesses.onboard.submit': 'Intégrer l’entreprise',
     'admin.businesses.onboarded.title': 'Entreprise intégrée',
     'admin.businesses.onboarded.ready':

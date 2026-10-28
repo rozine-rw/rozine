@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:89
 * @route '/admin/businesses/{business}/premises'
 */
 export const premises = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ premises.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:89
 * @route '/admin/businesses/{business}/premises'
 */
 premises.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ premises.url = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:89
 * @route '/admin/businesses/{business}/premises'
 */
 premises.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -224,7 +224,7 @@ premises.post = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:89
 * @route '/admin/businesses/{business}/premises'
 */
 const premisesForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -234,7 +234,7 @@ const premisesForm = (args: { business: string | number } | [business: string | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:88
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:89
 * @route '/admin/businesses/{business}/premises'
 */
 premisesForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -246,7 +246,7 @@ premises.form = premisesForm
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
 * @route '/admin/businesses/onboard'
 */
 export const onboard = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +261,7 @@ onboard.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
 * @route '/admin/businesses/onboard'
 */
 onboard.url = (options?: RouteQueryOptions) => {
@@ -270,7 +270,7 @@ onboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
 * @route '/admin/businesses/onboard'
 */
 onboard.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -280,7 +280,7 @@ onboard.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
 * @route '/admin/businesses/onboard'
 */
 const onboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -290,7 +290,7 @@ const onboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:107
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
 * @route '/admin/businesses/onboard'
 */
 onboardForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
