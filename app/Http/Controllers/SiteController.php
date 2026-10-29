@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\RegisterSiteBusiness;
 use App\Application\Pulse\RegisterSiteInvestor;
 use App\Http\Requests\Site\StoreSiteBusinessRequest;
@@ -19,11 +20,13 @@ class SiteController extends Controller
 {
     /**
      * Show the marketing site. Every figure it displays is computed on the
-     * client, so the page needs no server props.
+     * client. App entry is available locally and in isolated environments.
      */
-    public function index(): Response
+    public function index(EnvironmentIsolation $isolation): Response
     {
-        return Inertia::render('home');
+        return Inertia::render('home', [
+            'showAppEntry' => app()->environment('local') || $isolation->isIsolated(),
+        ]);
     }
 
     /**
