@@ -24,9 +24,9 @@ declare module 'react' {
     }
 }
 
-/** Shared Inertia props the page reads: the app entry shows only on an isolated environment. */
+/** Server-owned app entry visibility and the shared authentication state. */
 type SiteProps = {
-    nonLiveEnvironment?: string | null;
+    showAppEntry?: boolean;
     auth?: { user: unknown };
 };
 
@@ -1301,9 +1301,8 @@ export default class Home extends Component<SiteProps, SiteState> {
                                         Help
                                     </a>
                                     <AppEntry
-                                        environment={
-                                            this.props.nonLiveEnvironment ??
-                                            null
+                                        enabled={
+                                            this.props.showAppEntry ?? false
                                         }
                                         signedIn={Boolean(
                                             this.props.auth?.user,
