@@ -2,8 +2,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { dashboard, login, register } from '@/routes';
 
 type AppEntryProps = {
-    /** The isolated environment's profile (`uat`, `demo`), or null on the live site. */
-    environment: string | null;
+    enabled: boolean;
     signedIn: boolean;
 };
 
@@ -16,14 +15,13 @@ const PILL = {
 } as const;
 
 /**
- * The way from the pre-launch site into the apps, on staging and demo only. A signed-in visitor
- * goes straight to the launcher; anyone else can sign in or create an account. The live site
- * passes no environment and keeps its pre-launch header unchanged.
+ * The way from the pre-launch site into the apps, locally and on staging and demo. A signed-in
+ * visitor goes straight to the launcher; anyone else can sign in or create an account.
  */
-export function AppEntry({ environment, signedIn }: AppEntryProps) {
+export function AppEntry({ enabled, signedIn }: AppEntryProps) {
     const { t } = useTranslation();
 
-    if (environment === null) {
+    if (!enabled) {
         return null;
     }
 

@@ -11,14 +11,14 @@ vi.mock('@inertiajs/react', () => ({
 describe('Site app entry', () => {
     it('stays hidden on the live site', () => {
         const { container } = render(
-            <AppEntry environment={null} signedIn={false} />,
+            <AppEntry enabled={false} signedIn={false} />,
         );
 
         expect(container).toBeEmptyDOMElement();
     });
 
-    it('offers sign-in and account creation to a signed-out visitor on staging', () => {
-        render(<AppEntry environment="uat" signedIn={false} />);
+    it('offers sign-in and account creation when app entry is enabled', () => {
+        render(<AppEntry enabled signedIn={false} />);
 
         const group = screen.getByRole('group', { name: 'Rozine apps' });
 
@@ -34,7 +34,7 @@ describe('Site app entry', () => {
     });
 
     it('takes a signed-in visitor straight to the launcher', () => {
-        render(<AppEntry environment="demo" signedIn />);
+        render(<AppEntry enabled signedIn />);
 
         expect(
             screen.getByRole('link', { name: 'Open the app' }),
@@ -45,9 +45,7 @@ describe('Site app entry', () => {
     });
 
     it('is placed in the site header from the shared page props', () => {
-        const { unmount } = render(
-            <Home nonLiveEnvironment="uat" auth={{ user: null }} />,
-        );
+        const { unmount } = render(<Home showAppEntry auth={{ user: null }} />);
 
         expect(
             within(screen.getByRole('banner')).getByRole('link', {
@@ -56,7 +54,7 @@ describe('Site app entry', () => {
         ).toHaveAttribute('href', '/login');
         unmount();
 
-        render(<Home nonLiveEnvironment="uat" auth={{ user: { id: 1 } }} />);
+        render(<Home showAppEntry auth={{ user: { id: 1 } }} />);
         expect(
             within(screen.getByRole('banner')).getByRole('link', {
                 name: 'Open the app',
@@ -65,7 +63,7 @@ describe('Site app entry', () => {
     });
 
     it('leaves the live header without an app entry', () => {
-        render(<Home nonLiveEnvironment={null} auth={{ user: null }} />);
+        render(<Home showAppEntry={false} auth={{ user: null }} />);
 
         expect(
             screen.queryByRole('group', { name: 'Rozine apps' }),
