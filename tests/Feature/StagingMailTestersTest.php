@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Application\Environment\ManageStagingMailTesters;
-use App\Domain\Identity\StaffPermission;
 use App\Models\CommandOperation;
 use App\Models\Party;
 use App\Models\StagingMailTester;
@@ -44,10 +43,10 @@ function testerChange(array $fields = []): array
 }
 
 test('only superadmin holds the staging mail tester permission', function () {
-    expect(StaffPermission::forRoles(['superadmin']))->toContain('staging.mail.testers.manage');
+    expect(StaffFixture::permissions(['superadmin']))->toContain('staging.mail.testers.manage');
 
     foreach (['analyst', 'approver', 'treasury', 'compliance'] as $role) {
-        expect(StaffPermission::forRoles([$role]))->not->toContain('staging.mail.testers.manage');
+        expect(StaffFixture::permissions([$role]))->not->toContain('staging.mail.testers.manage');
     }
 });
 

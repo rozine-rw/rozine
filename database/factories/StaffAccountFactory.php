@@ -11,6 +11,14 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /** @extends Factory<StaffAccount> */
 class StaffAccountFactory extends Factory
 {
+    /** @param list<string> $roles */
+    public function withRoles(array $roles): static
+    {
+        return $this->afterCreating(function (StaffAccount $staff) use ($roles): void {
+            $staff->syncRoles($roles);
+        });
+    }
+
     /** @return array<string, mixed> */
     public function definition(): array
     {

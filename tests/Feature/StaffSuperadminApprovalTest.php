@@ -59,7 +59,7 @@ test('superadmin requests preserve all recipient state and require a distinct cu
     $approve = fn () => app(ApproveStaffAccess::class)->handle($approver->id, $proposal['proposal_id'], 'Independent approval.', $approvalKey);
     $result = $approve();
     expect($approve())->toBe($result)->and($result['code'])->toBe('STAFF_ACCESS_ENABLED')
-        ->and(StaffAccount::query()->findOrFail($recipient->id))->enabled->toBeTrue()->roles->toBe(['superadmin'])
+        ->and(StaffAccount::query()->findOrFail($recipient->id)->enabled)->toBeTrue()->and(StaffAccount::query()->findOrFail($recipient->id)->roleNames())->toBe(['superadmin'])
         ->and($recipient->refresh()->party_id)->toBeNull()
         ->and(app(GetStaffAccess::class)->handle($recipient->id)['allowed_actions'])->toContain('staff.manage');
     expect(fn () => app(ApproveStaffAccess::class)->handle($approver->id, $proposal['proposal_id'], 'Changed details.', $approvalKey))
@@ -99,7 +99,7 @@ test('the recipient cannot approve and direct stores enforce the same policy', f
     $store = app(IdentityAccessStore::class);
     $proposal = $store->grantStaff($requester->id, $recipient->email, 'superadmin', 'Request.', (string) Str::uuid());
     expect(StaffAccount::query()->find($recipient->id))->toBeNull();
-    StaffAccount::factory()->create(['user_id' => $recipient->id, 'roles' => ['superadmin']]);
+    StaffAccount::factory()->withRoles(['superadmin'])->create(['user_id' => $recipient->id]);
     expect(fn () => $store->approveStaff($recipient->id, $proposal['proposal_id'], 'Self approve.', (string) Str::uuid()))
         ->toThrow(IdentityViolation::class, 'STAFF_SELF_APPROVAL_FORBIDDEN');
     expect(fn () => $store->grantStaff($requester->id, $requester->email, 'superadmin', 'Self grant.', (string) Str::uuid()))
@@ -141,7 +141,7 @@ test('reactivating a superadmin preserves roles and remains disabled until indep
         ->and(StaffAccount::query()->findOrFail($recipient->id)->getAttributes())->toBe($before);
     $older = $set->handle($requester->id, $recipient->id, true, 'Another request.', (string) Str::uuid());
     app(ApproveStaffAccess::class)->handle($approver->id, $proposal['proposal_id'], 'Independent return.', (string) Str::uuid());
-    expect(StaffAccount::query()->findOrFail($recipient->id))->enabled->toBeTrue()->roles->toBe(['superadmin']);
+    expect(StaffAccount::query()->findOrFail($recipient->id)->enabled)->toBeTrue()->and(StaffAccount::query()->findOrFail($recipient->id)->roleNames())->toBe(['superadmin']);
     $set->handle($requester->id, $recipient->id, false, 'Suspend again.', (string) Str::uuid());
     expect(fn () => app(ApproveStaffAccess::class)->handle($approver->id, $older['proposal_id'], 'Old request.', (string) Str::uuid()))
         ->toThrow(StaffAccessRefused::class, 'STAFF_APPROVAL_STALE');
@@ -156,7 +156,7 @@ test('console cannot introduce or activate superadmin through single or mixed ro
     app(ConfigureStaffAccess::class)->handle($recipient->id, true, 'Ordinary staff.', (string) Str::uuid(), ['analyst']);
     expect(fn () => app(ConfigureStaffAccess::class)->handle($recipient->id, $enabled, 'Console escalation.', (string) Str::uuid(), $roles))
         ->toThrow(IdentityViolation::class, 'STAFF_SUPERADMIN_APPROVAL_REQUIRED');
-    expect(StaffAccount::query()->findOrFail($recipient->id)->roles)->toBe(['analyst']);
+    expect(StaffAccount::query()->findOrFail($recipient->id)->roleNames())->toBe(['analyst']);
 })->with([true, false])->with([false, true]);
 
 test('console preserves current admins and revocation while refusing superadmin restoration', function (): void {
@@ -170,7 +170,7 @@ test('console preserves current admins and revocation while refusing superadmin 
     expect(Artisan::call('identity:staff', ['user' => $recipient->id, '--role' => ['superadmin'], '--reason' => 'Shortcut.']))->toBe(1);
     expect(StaffAccount::query()->findOrFail($recipient->id)->enabled)->toBeFalse();
     $configure->handle($recipient->id, true, 'Return without privileged role.', (string) Str::uuid(), ['analyst']);
-    expect(StaffAccount::query()->findOrFail($recipient->id))->enabled->toBeTrue()->roles->toBe(['analyst']);
+    expect(StaffAccount::query()->findOrFail($recipient->id)->enabled)->toBeTrue()->and(StaffAccount::query()->findOrFail($recipient->id)->roleNames())->toBe(['analyst']);
 });
 
 test('audit failure rolls back the approved grant and leaves the immutable request pending', function (): void {

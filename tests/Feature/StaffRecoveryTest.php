@@ -49,7 +49,7 @@ test('fresh setup authenticates two independent operators and atomically establi
     expect($result['code'])->toBe('STAFF_RECOVERY_COMPLETED');
     foreach ([$a, $b] as $recipient) {
         expect(app(GetStaffAccess::class)->handle($recipient->id)['allowed_actions'])->toContain('staff.manage')
-            ->and(StaffAccount::query()->findOrFail($recipient->id)->roles)->toBe(['analyst', 'superadmin']);
+            ->and(StaffAccount::query()->findOrFail($recipient->id)->roleNames())->toBe(['analyst', 'superadmin']);
     }
     expect(IdentityAuditEvent::query()->where('after->recovery_proposal_id', $proposal['proposal_id'])->count())->toBe(3)
         ->and(IdentityAuditEvent::query()->where('action', 'staff.recovery.complete')->sole()->after['approver']['user_id'])->toBe($second->id)
@@ -111,7 +111,7 @@ test('changed identity credentials configuration and recipient state invalidate 
         default => throw new LogicException('Unknown stale-state fixture.'),
     };
     expect(fn () => recoveryApprove($second, $proposal))->toThrow(IdentityViolation::class);
-    expect(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->count())->toBe(0);
+    expect(StaffAccount::query()->role('superadmin', 'staff')->count())->toBe(0);
 })->with(['password', 'mfa', 'email', 'recipient', 'config', 'person']);
 
 test('approval requires the reviewed digest and an unexpired proposal', function (string $failure): void {
@@ -145,13 +145,13 @@ test('UUID replay is idempotent while changed payloads and another completion ar
 
 test('one-manager recovery retains that manager and existing ordinary roles', function (): void {
     [$first, $second, $a, $b] = Recovery::people();
-    StaffAccount::query()->whereKey($a->id)->update(['roles' => json_encode(['analyst', 'superadmin'])]);
+    StaffAccount::query()->findOrFail($a->id)->syncRoles(['analyst', 'superadmin']);
     $proposal = recoveryRequest($first, $a, $b, 'recovery');
     recoveryApprove($second, $proposal);
     foreach ([$a, $b] as $user) {
         expect(app(GetStaffAccess::class)->handle($user->id)['allowed_actions'])->toContain('staff.manage');
     }
-    expect(StaffAccount::query()->findOrFail($a->id)->roles)->toBe(['analyst', 'superadmin']);
+    expect(StaffAccount::query()->findOrFail($a->id)->roleNames())->toBe(['analyst', 'superadmin']);
 });
 
 test('history cannot reset after suspension and two effective managers close recovery', function (string $state): void {
@@ -179,7 +179,7 @@ test('a second-grant failure rolls back both grants and permits an authenticated
     $proposal = recoveryRequest($first, $a, $b);
     $event = 'eloquent.saving: '.StaffAccount::class;
     Event::listen($event, function (StaffAccount $staff) use ($b): void {
-        if ($staff->user_id === $b->id && in_array('superadmin', $staff->roles, true)) {
+        if ($staff->user_id === $b->id) {
             throw new RuntimeException('Synthetic second-grant failure');
         }
     });
@@ -189,7 +189,7 @@ test('a second-grant failure rolls back both grants and permits an authenticated
     } finally {
         Event::forget($event);
     }
-    expect(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->count())->toBe(0)
+    expect(StaffAccount::query()->role('superadmin', 'staff')->count())->toBe(0)
         ->and(IdentityAuditEvent::query()->where('after->recovery_proposal_id', $proposal['proposal_id'])->count())->toBe(0);
     $this->travel(1)->minutes();
     expect(recoveryApprove($second, $proposal, $id)['code'])->toBe('STAFF_RECOVERY_COMPLETED');
@@ -204,7 +204,7 @@ test('a valid digest relayed with misleading recipient details or kind is refuse
         $proposal['recipients'] = [$first->id, $second->id];
     }
     expect(fn () => recoveryApprove($second, $proposal))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_PAYLOAD_MISMATCH');
-    expect(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->count())->toBe(0);
+    expect(StaffAccount::query()->role('superadmin', 'staff')->count())->toBe(0);
 })->with(['kind', 'recipients']);
 
 test('verified-person aliases and an operator recipient cannot form a recipient pair', function (string $alias): void {
@@ -229,16 +229,16 @@ test('recipient eligibility is rechecked at both request and approval', function
         default => throw new LogicException('Unknown eligibility fixture.'),
     };
     expect(fn () => $proposal === null ? recoveryRequest($first, $a, $b) : recoveryApprove($second, $proposal))->toThrow(IdentityViolation::class);
-    expect(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->count())->toBe(0);
+    expect(StaffAccount::query()->role('superadmin', 'staff')->count())->toBe(0);
 })->with(['request', 'approve'])->with(['email', 'mfa', 'person']);
 
 test('a manager authority change between request and approval makes recovery stale', function (): void {
     [$first, $second, $a, $b] = Recovery::people();
-    StaffAccount::query()->whereKey($a->id)->update(['roles' => json_encode(['superadmin'])]);
+    StaffAccount::query()->findOrFail($a->id)->syncRoles(['superadmin']);
     $proposal = recoveryRequest($first, $a, $b, 'recovery');
     $a->forceFill(['two_factor_confirmed_at' => null])->save();
     expect(fn () => recoveryApprove($second, $proposal))->toThrow(IdentityViolation::class);
-    expect(StaffAccount::query()->findOrFail($b->id)->roles)->toBe(['analyst']);
+    expect(StaffAccount::query()->findOrFail($b->id)->roleNames())->toBe(['analyst']);
 });
 
 test('one-manager recovery must include the existing manager and cannot silently add a third', function (): void {

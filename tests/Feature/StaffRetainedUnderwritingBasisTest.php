@@ -285,7 +285,12 @@ it('refuses decrypted evidence that is not an array or cannot be canonically aut
 it('refuses the selected response when staff access is revoked during original quote retrieval', function (bool $disabled): void {
     $fixture = retainedStaffBasisFixture();
     BusinessApplicationQuote::retrieved(function () use ($fixture, $disabled): void {
-        StaffAccount::query()->whereKey($fixture['audit']['staff']->id)->firstOrFail()->forceFill($disabled ? ['enabled' => false] : ['roles' => ['analyst']])->save();
+        $account = StaffAccount::query()->whereKey($fixture['audit']['staff']->id)->firstOrFail();
+        if ($disabled) {
+            $account->forceFill(['enabled' => false])->save();
+        } else {
+            $account->syncRoles(['analyst']);
+        }
     });
     Sanctum::actingAs($fixture['audit']['staff'], ['staff:applications:read']);
     $this->getJson(route('api.v1.staff.applications.index', ['application' => $fixture['application']->id]))->assertForbidden()

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Identity\Contracts\StaffDirectoryStore;
-use App\Domain\Identity\StaffPermission;
 use App\Domain\Operations\CommandRejection;
 
 /**
@@ -41,7 +40,7 @@ final class BrowseStaffDirectory
     {
         $this->staff->check($actorId, 'admin.open');
 
-        return StaffPermission::matrix();
+        return $this->store->permissions();
     }
 
     /** @return Member */

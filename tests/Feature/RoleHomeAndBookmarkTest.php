@@ -195,12 +195,21 @@ it('shows the access page, never raw JSON, when a browser opens another app\'s p
 
 it('rolls back and reapplies the checkpoint schema without disturbing identity accounts', function (): void {
     $user = User::factory()->create();
+    $permissions = require database_path('migrations/2026_10_29_053410_migrate_staff_roles_to_permissions.php');
+    $permissionSchema = require database_path('migrations/2026_10_29_053409_create_staff_permission_tables.php');
+    $roles = require database_path('migrations/2026_09_24_042532_add_roles_to_staff_accounts.php');
+    $permissions->down();
+    $permissionSchema->down();
+    $roles->down();
     $migration = require database_path('migrations/2026_09_24_020204_create_staff_access_and_role_bookmarks.php');
     $migration->down();
     expect(Schema::hasTable('staff_accounts'))->toBeFalse()
         ->and(Schema::hasTable('role_bookmarks'))->toBeFalse()
         ->and(User::query()->find($user->id))->not->toBeNull();
     $migration->up();
+    $roles->up();
+    $permissionSchema->up();
+    $permissions->up();
     expect(Schema::hasTable('staff_accounts'))->toBeTrue()
         ->and(Schema::hasTable('role_bookmarks'))->toBeTrue();
 });
