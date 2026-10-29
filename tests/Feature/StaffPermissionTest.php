@@ -54,7 +54,7 @@ it('audits normalized role changes and binds replay identity to the chosen roles
     $key = (string) Str::uuid();
     $configure->handle($user->id, true, 'Joint operational responsibilities.', $key, ['approver', 'analyst', 'analyst']);
     $configure->handle($user->id, true, 'Joint operational responsibilities.', $key, ['analyst', 'approver']);
-    expect(StaffAccount::query()->findOrFail($user->id)->roles)->toBe(['analyst', 'approver']);
+    expect(StaffAccount::query()->findOrFail($user->id)->roleNames())->toBe(['analyst', 'approver']);
     $this->assertDatabaseCount('identity_audit_events', 1);
     expect(IdentityAuditEvent::query()->firstOrFail()->after['roles'])->toBe(['analyst', 'approver']);
     expect(fn () => $configure->handle($user->id, true, 'Joint operational responsibilities.', $key, ['superadmin']))
@@ -66,7 +66,7 @@ it('audits normalized role changes and binds replay identity to the chosen roles
 it('accepts explicit roles only through the trusted staff bootstrap', function (): void {
     $user = User::factory()->withTwoFactor()->create();
     expect(Artisan::call('identity:staff', ['user' => $user->id, '--role' => ['compliance'], '--reason' => 'Approved compliance assignment.']))->toBe(0)
-        ->and(StaffAccount::query()->findOrFail($user->id)->roles)->toBe(['compliance']);
+        ->and(StaffAccount::query()->findOrFail($user->id)->roleNames())->toBe(['compliance']);
     $this->actingAs($user)->getJson(route('api.v1.staff-access.show'))
         ->assertOk()->assertJsonPath('data.allowed_actions.0', 'admin.open');
 });

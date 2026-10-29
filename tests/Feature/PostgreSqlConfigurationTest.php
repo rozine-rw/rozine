@@ -33,6 +33,9 @@ test('the test owner cannot connect to the application or demo database', functi
 });
 
 test('the identity migration can be rolled back and reapplied on PostgreSQL', function (): void {
+    $permissionSchema = require database_path('migrations/2026_10_29_053409_create_staff_permission_tables.php');
+    $permissionData = require database_path('migrations/2026_10_29_053410_migrate_staff_roles_to_permissions.php');
+
     $migration = require database_path('migrations/2026_09_23_101346_create_identity_parties_and_role_memberships.php');
     $accessMigration = require database_path('migrations/2026_09_23_143859_add_controlled_identity_access.php');
     $navigationMigration = require database_path('migrations/2026_09_24_020204_create_staff_access_and_role_bookmarks.php');
@@ -70,6 +73,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         FROM pg_constraint constraint_record JOIN pg_class source ON source.oid = constraint_record.conrelid
         WHERE constraint_record.contype = 'f' AND source.relnamespace = current_schema()::regnamespace ORDER BY source.relname, constraint_record.conname";
     $originalForeignKeys = DB::select($foreignKeyQuery);
+    $permissionData->down();
+    $permissionSchema->down();
     $sourceFactsMigration->down();
     $sourcePinMigration->down();
     $engagementMigration->down();
@@ -440,6 +445,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasTable('sandbox_notice_acknowledgements'))->toBeTrue();
     $businessPhotos->up();
     $businessPhotoUrls->up();
+    $permissionSchema->up();
+    $permissionData->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);
@@ -458,7 +465,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasColumn('users', 'party_id'))->toBeTrue()
         ->and(Schema::hasIndex('users', ['party_id']))->toBeTrue()
         ->and($user->refresh()->party_id)->toBeNull()
-        ->and(Schema::hasColumn('staff_accounts', 'roles'))->toBeTrue()
+        ->and(Schema::hasColumn('staff_accounts', 'roles'))->toBeFalse()
+        ->and(Schema::hasTable('model_has_roles'))->toBeTrue()
         ->and(Schema::hasTable('verified_organization_identities'))->toBeTrue()
         ->and(Schema::hasTable('command_operations'))->toBeTrue()
         ->and(Schema::hasTable('disbursement_closings'))->toBeTrue()
