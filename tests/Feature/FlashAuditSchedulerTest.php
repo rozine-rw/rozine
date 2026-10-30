@@ -12,9 +12,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Lottery;
+use Tests\Support\AuditAssignmentFixture as Fixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
-use Tests\Support\AuditAssignmentFixture as Fixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
