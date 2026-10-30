@@ -29,6 +29,7 @@ use Closure;
  * @phpstan-type SourceBinding array{evidence_revision: int, manifest_sha256: string, originals: list<array{document_id: string, sha256: string}>, extractions: list<array{document_id: string, extraction_id: string, revision: int, parser_version: string}>}
  * @phpstan-type ReviewedSave array{expected_business_revision: int, expected_mandate_version: int, expected_transcription_id: string|null, expected_transcription_sha256: string|null, source_binding: SourceBinding, reviewed_against_originals: bool}
  * @phpstan-type Assistance array{status: 'unavailable', reason_codes: list<string>, candidate: null}
+ * @phpstan-type Readiness array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence_revision: int, manifest_sha256: string, transcription: array{id: string, revision: int, sha256: string, current: true}|null, ready_to_request: null, reasons: list<array{code: string, field: string|null}>, coverage: array{declared_month_count: int, first_month: string|null, last_month: string|null}, assignment: array{id: string, revision: int, kind: string, status: string}|null, source_verified: bool, underwriting: array{status: 'not_evaluated', eligible: null}, readiness_sha256: string, allowed_actions: list<string>}
  * @phpstan-type TranscriptionDraft array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence: SourceBinding, assistance: Assistance, current_transcription: Transcription|null, allowed_actions: list<string>}
  */
 interface StatementStore
@@ -56,6 +57,12 @@ interface StatementStore
 
     /** @return TranscriptionDraft */
     public function transcriptionDraft(int $userId, int $contextRevision, string $businessId): array;
+
+    /** @return Readiness */
+    public function readiness(int $userId, int $contextRevision, string $businessId): array;
+
+    /** @return Readiness */
+    public function staffReadiness(int $actorId, string $businessId): array;
 
     /** @return Transcription|null */
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array;
