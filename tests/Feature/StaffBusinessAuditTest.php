@@ -67,8 +67,11 @@ it('redispatches an audit that waits on Audit Operations once a partner is eligi
             'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_ELIGIBLE_PARTNER'],
             'request_flash' => null, 'redispatch' => ['url' => $url, 'method' => 'post']]));
 
-    $this->post($url, ['expected_revision' => 1, ...flashAuditRequest('No partner yet; try again.')])->assertRedirect($page);
+    $body = ['expected_revision' => 1, ...flashAuditRequest('No partner yet; try again.')];
+    $this->post($url, $body)->assertRedirect($page);
     expect($assignment->refresh()->status)->toBe('operations')->and($assignment->revision)->toBe(2);
+    $this->from($page)->post($url, [...$body, 'reason' => 'A different reason.'])
+        ->assertSessionHasErrors(['reason' => 'That request was already used for different details. Try again.']);
     $this->from($page)->post($url, ['expected_revision' => 1, ...flashAuditRequest('Stale.')])
         ->assertSessionHasErrors(['reason' => 'This audit changed since you opened it. Review it again.']);
 
