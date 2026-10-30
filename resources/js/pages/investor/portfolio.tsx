@@ -38,7 +38,8 @@ const FIRST = { phone: 3, desk: 4 } as const;
 /**
  * Portfolio (MVP-INVESTOR-SCR-04, design L1062–1303): what the investor holds, its value and gain,
  * scheduled payouts, and concentration by business, industry and rating. Commitments still awaiting
- * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d). All four
+ * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d); while they
+ * are the only thing on the Active tab, a short note replaces the "Nothing held yet" state. All four
  * of the design's tabs are offered; Secondary (resale) and Saved (the watchlist) have no read yet
  * and show the design's empty states. Saved leaves out the design's "tap the heart" hint, since no
  * deal can be saved yet. The Rozine Plus charge card waits on approved Plus terms. An `investor-servicing-v1` page (C4 v1 §4c) shows realised and projected
@@ -53,6 +54,7 @@ export default function InvestorPortfolio(
     const first = wide ? FIRST.desk : FIRST.phone;
     const shown = all ? props.holdings : props.holdings.slice(0, first);
     const more = props.holdings.length - first;
+    const awaiting = props.tab === 'active' && props.commitments.length > 0;
     const total =
         props.contract_version === 'investor-servicing-v1' ? (
             <EarningsCard earnings={props.earnings} bases={props.bases} />
@@ -121,7 +123,12 @@ export default function InvestorPortfolio(
                         </button>
                     </div>
                 )}
-                {props.holdings.length === 0 && (
+                {props.holdings.length === 0 && awaiting && (
+                    <p className="px-1 pt-1 text-center text-[12.5px] leading-normal text-rz-secondary">
+                        {t('investor.portfolio.empty.active.awaiting')}
+                    </p>
+                )}
+                {props.holdings.length === 0 && !awaiting && (
                     <div className="px-5 py-[46px] text-center">
                         <span className="text-[31px]">
                             <Icon name="inbox-empty" />

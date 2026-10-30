@@ -4534,6 +4534,8 @@ const rw: Catalog = {
     'investor.portfolio.empty.active.title': 'Nta cyo ufite ubu',
     'investor.portfolio.empty.active.body':
         "Impapuro uguze zigaragara hano hamwe n'ubwishyu na raporo zazo.",
+    'investor.portfolio.empty.active.awaiting':
+        'Impapuro zawe zizajya mu byo ufite hano zimaze gutangwa, nyuma yo kohereza amafaranga.',
     'investor.portfolio.empty.matured.title': 'Nta kintu kiri hano',
     'investor.portfolio.empty.matured.body':
         'Ibyo ufite muri iki cyiciro bizagaragara hano.',
