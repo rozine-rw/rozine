@@ -209,11 +209,19 @@ describe('Pulse navigation chrome', () => {
                     pledged={500_000}
                     averageLoan={null}
                 />
-                <PulseHero onInvest={onInvest} onBorrow={onBorrow} />
+                <PulseHero
+                    minimumLoan={3_000_000}
+                    maximumLoan={100_000_000}
+                    minimumRevenue={30_000_000}
+                    onInvest={onInvest}
+                    onBorrow={onBorrow}
+                />
             </>,
         );
 
         expect(screen.getByText('—')).toBeInTheDocument();
+        expect(screen.getByText('RWF 3M–100M')).toBeInTheDocument();
+        expect(screen.getByText('RWF 30M and up')).toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: /I want to invest/i }),
         );

@@ -8,10 +8,10 @@ import { InvestorPanel } from '@/components/pulse/investor-panel';
 import type { BusinessNote, PulsePolicy, Sizing } from '@/lib/pulse';
 
 const policy: PulsePolicy = {
-    terms: [3, 6, 9, 12],
+    terms: [3, 4, 5, 6],
     sectors: ['Agriculture', 'Other'],
     registration_years: [2026, 2025, 2020],
-    minimum_revenue: 15_000_000,
+    minimum_revenue: 30_000_000,
     minimum_loan: 5_000_000,
     maximum_loan: 50_000_000,
     pledge: {
@@ -146,7 +146,7 @@ describe('BusinessPanel', () => {
         });
         expect(props.onSize).toHaveBeenCalledOnce();
         expect(
-            screen.getByText('RWF 15M+ revenue in the last 12 months'),
+            screen.getByText('RWF 30M+ revenue in the last 12 months'),
         ).toBeInTheDocument();
     });
 
