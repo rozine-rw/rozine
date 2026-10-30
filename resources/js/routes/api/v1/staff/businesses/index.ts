@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../wayfinder'
+import statementAudit from './statement-audit'
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
 * @see app/Http/Controllers/StaffBusinessDirectoryController.php:60
@@ -81,6 +82,7 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 const businesses = {
+    statementAudit: Object.assign(statementAudit, statementAudit),
     index: Object.assign(index, index),
 }
 

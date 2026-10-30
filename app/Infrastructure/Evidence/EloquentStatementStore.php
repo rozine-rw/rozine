@@ -135,7 +135,7 @@ final class EloquentStatementStore implements StatementStore
     }
 
     /** @return array<string, mixed> */
-    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest'): array
+    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest', ?string $businessId = null): array
     {
         if (! in_array($command, ['ingest', 'reconcile'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
@@ -143,8 +143,8 @@ final class EloquentStatementStore implements StatementStore
         $partyId = $this->identities->forUser($userId)['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
 
         return $this->journal->find('party:'.$partyId, 'statement.'.$command, $requestId,
-            function (string $type, string $id) use ($userId, $contextRevision, $partyId): void {
-                if ($type !== 'business') {
+            function (string $type, string $id) use ($userId, $contextRevision, $partyId, $businessId): void {
+                if ($type !== 'business' || ($businessId !== null && $id !== $businessId)) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
                 $this->authority->handle($userId, $contextRevision, $id, 'application.save', null,

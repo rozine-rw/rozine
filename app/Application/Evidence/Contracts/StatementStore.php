@@ -44,7 +44,7 @@ interface StatementStore
     public function read(int $userId, int $contextRevision, string $businessId, string $documentId): array;
 
     /** @return array<string, mixed> */
-    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest'): array;
+    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest', ?string $businessId = null): array;
 
     /**
      * @param  list<Rail>  $rails
