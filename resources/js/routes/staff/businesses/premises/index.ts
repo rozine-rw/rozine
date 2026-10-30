@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::verify
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 export const verify = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ verify.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::verify
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 verify.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ verify.url = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::verify
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 verify.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ verify.post = (args: { business: string | number } | [business: string | number 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::verify
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 const verifyForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const verifyForm = (args: { business: string | number } | [business: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::verify
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 verifyForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
