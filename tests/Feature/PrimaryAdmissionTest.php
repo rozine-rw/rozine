@@ -192,3 +192,25 @@ it('refuses a confirm with no commitment while the connection assessment is inco
     expect(PrimaryCommitment::query()->count())->toBe(0)
         ->and(LedgerEntry::query()->count())->toBe($entries);
 });
+
+it('reserves the same campaign again after releasing the earlier hold', function (): void {
+    ($this->acknowledge)()->assertOk();
+    $reservation = ($this->reserve)('2')->assertOk()->json('data.receipt.reservation_id');
+    $version = PrimaryReservationVersion::query()->where('primary_reservation_id', $reservation)->orderByDesc('revision')->firstOrFail();
+    $this->postJson(route('investor.primary.release', ['reservation' => $reservation]), ['request_id' => (string) Str::uuid(),
+        'identity_context_revision' => 1, 'reservation_id' => $reservation, 'expected_reservation_revision' => $version->revision])
+        ->assertOk()->assertJsonPath('code', 'RESERVATION_RELEASED');
+
+    ($this->reserve)('2')->assertOk()->assertJsonPath('code', 'RESERVATION_HELD');
+});
+
+it('reserves the same campaign again after the earlier hold expires', function (bool $swept): void {
+    ($this->acknowledge)()->assertOk();
+    $reservation = ($this->reserve)('2')->assertOk()->json('data.receipt.reservation_id');
+    $this->travelTo(PrimaryReservationRecord::query()->whereKey($reservation)->sole()->expires_at->addSecond());
+    if ($swept) {
+        $this->artisan('primary:expire-reservations')->assertSuccessful();
+    }
+
+    ($this->reserve)('2')->assertOk()->assertJsonPath('code', 'RESERVATION_HELD');
+})->with(['swept' => true, 'not yet swept' => false]);
