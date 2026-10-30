@@ -3473,8 +3473,8 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                 with self.delayed_recovery_reads(delay) as (clock, calls):
                     result = policy.completed_recovery(env, self.tree, list(self.runs.values()))
                 self.assertEqual(result[0]["id"], 200)
-                self.assertEqual(len(calls), 32)
-                self.assertEqual(clock[0], 32 * delay)
+                self.assertEqual(len(calls), 31)
+                self.assertEqual(clock[0], 31 * delay)
                 for index in (0, 1, 2):
                     endpoint = f"repos/{self.repository}/actions/artifacts/{2000 + index}/zip"
                     self.assertEqual(calls.count(("archive", endpoint)), 1)
@@ -3501,6 +3501,136 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
             self.assertEqual((result["mode"], result["source_run"]), ("reuse", "200"))
             self.assertEqual(lookup.call_count, 1)
             self.assertTrue(lookup.call_args.kwargs["recovery_only"])
+
+    def measured_snapshot_selection(self, peers, *, legacy=False, delay=0):
+        """Count simulated API commands; synthetic delay is not hosted timing."""
+        counts = {"json": 0, "jobs": 0, "archives": 0, "history_pages": 0}
+        clock, entered, exited = [0], [], []
+        lock = threading.Lock()
+        original_lookup, original_probe = policy.reusable_run, policy.completed_recovery
+
+        def tick(kind, endpoint):
+            with lock:
+                counts[kind] += 1
+                if "/workflows/tests.yml/runs?" in endpoint:
+                    counts["history_pages"] += 1
+                limit = policy._recovery_read_deadline.get()
+                if limit is not None and clock[0] + delay >= limit:
+                    clock[0] = limit
+                    raise policy.CoordinationRefusal("recovery_evidence_lookup_timeout")
+                clock[0] += delay
+
+        def api(endpoint, **kwargs):
+            tick("json", endpoint)
+            return copy.deepcopy(self.api(endpoint, **kwargs))
+
+        def pages(endpoint, **kwargs):
+            tick("jobs", endpoint)
+            return copy.deepcopy(self.pages(endpoint, **kwargs))
+
+        def command(*args, **kwargs):
+            if args[:2] == ("gh", "api"):
+                tick("archives", args[2])
+            return self.command(*args, **kwargs)
+
+        def lookup(*args, **kwargs):
+            if legacy:
+                kwargs.pop("recovery_runs", None)
+            return original_lookup(*args, **kwargs)
+
+        def probe(*args, **kwargs):
+            entered.append(clock[0])
+            try:
+                return original_probe(*args, **kwargs)
+            finally:
+                exited.append(clock[0])
+
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            for number in range(400, 400 + peers):
+                CanonicalCoordinationTests.failed_peer(self, number)
+            with patch.object(policy, "api", side_effect=api), patch.object(policy, "pages", side_effect=pages), patch.object(policy, "command", side_effect=command), patch.object(policy, "reusable_run", side_effect=lookup), patch.object(policy, "completed_recovery", side_effect=probe), patch.object(policy.time, "monotonic", side_effect=lambda: clock[0]), contextlib.redirect_stderr(io.StringIO()):
+                try:
+                    result = ("decision", policy.canonical_selection(env))
+                except (ValueError, KeyError, subprocess.SubprocessError) as error:
+                    result = ("refusal", type(error).__name__, str(error))
+            self.assertIsNone(policy._recovery_read_deadline.get())
+        self.assertEqual((len(entered), len(exited)), (1, 1))
+        counts["total"] = counts["json"] + counts["jobs"] + counts["archives"]
+        return result, counts, exited[0] - entered[0]
+
+    def test_snapshot_discovery_matches_legacy_selection_with_measured_savings(self):
+        for peers in (0, 189):
+            self.setUp()
+            old, before, _ = self.measured_snapshot_selection(peers, legacy=True)
+            self.setUp()
+            new, after, _ = self.measured_snapshot_selection(peers)
+            self.assertEqual(old, new)
+            self.assertEqual((new[0], new[1]["mode"], new[1]["source_run"]), ("decision", "reuse", "200"))
+            pages = (6 + peers + 99) // 100
+            saved = pages + int(pages > 1)
+            self.assertEqual(before["history_pages"] - after["history_pages"], saved)
+            self.assertEqual(before["total"] - after["total"], saved)
+            self.assertEqual((before["archives"], before["jobs"]), (after["archives"], after["jobs"]))
+            print("Recovery snapshot fixture: " + json.dumps({"historical_peers": peers + 3, "old": before, "new": after}, sort_keys=True))
+
+    def test_delayed_192_peer_multipage_discovery_keeps_final_guards_within_cap(self):
+        # Conservative serialized synthetic command latency; no live API timing.
+        old, before, old_seconds = self.measured_snapshot_selection(189, legacy=True, delay=1)
+        self.setUp()
+        new, after, new_seconds = self.measured_snapshot_selection(189, delay=1)
+        self.assertEqual(old[0], "refusal")
+        self.assertEqual(old_seconds, 45)
+        self.assertEqual((new[0], new[1]["source_run"]), ("decision", "200"))
+        self.assertLess(new_seconds, 45)
+        self.assertEqual(after["history_pages"], 6)  # Initial and final complete two-page reads, both reanchored.
+        print("Delayed recovery snapshot fixture: " + json.dumps({"old_probe_seconds": old_seconds, "new_probe_seconds": new_seconds, "old": before, "new": after}, sort_keys=True))
+
+    def test_snapshot_cannot_change_normal_or_full_lookup_semantics(self):
+        for scope, recovery_only in (("full", False), ("full", True), ("poc", False)):
+            with self.subTest(scope=scope, recovery_only=recovery_only), patch.object(policy, "command") as command, self.assertRaisesRegex(ValueError, "snapshot is restricted"):
+                policy.reusable_run({}, scope, recovery_only=recovery_only, recovery_runs=[])
+            command.assert_not_called()
+
+    def test_discovery_snapshot_does_not_mask_live_attempt_drift_or_mutate_caller(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            snapshot = copy.deepcopy(list(self.runs.values()))
+            original = copy.deepcopy(snapshot)
+            self.runs[200]["run_attempt"] = 2
+            self.assertIsNone(policy.completed_recovery(env, self.tree, snapshot))
+            self.assertEqual(snapshot, original)
+
+    def test_snapshot_never_substitutes_for_complete_final_history_or_retries_errors(self):
+        errors = [subprocess.CalledProcessError(1, "gh api", stderr="HTTP 403 rate limit"),
+                  subprocess.CalledProcessError(1, "gh api", stderr="HTTP 503"),
+                  subprocess.TimeoutExpired("gh api", 45)]
+        for error in errors:
+            self.setUp()
+            with self.subTest(error=type(error).__name__), self.server():
+                self.finish_recovery()
+                env = self.consumer()
+                with patch.object(policy, "workflow_history", side_effect=error) as history, self.assertRaises(type(error)) as caught:
+                    policy.completed_recovery(env, self.tree, copy.deepcopy(list(self.runs.values())))
+                self.assertIs(caught.exception, error)
+                self.assertEqual(history.call_count, 1)
+
+    def test_snapshot_recovery_refuses_incomplete_final_pagination(self):
+        with self.server():
+            self.finish_recovery()
+            env = self.consumer()
+            for number in range(400, 589):
+                CanonicalCoordinationTests.failed_peer(self, number)
+            original = self.api
+            def incomplete(endpoint, **kwargs):
+                result = copy.deepcopy(original(endpoint, **kwargs))
+                if "/workflows/tests.yml/runs?" in endpoint and "&page=2" in endpoint:
+                    result["workflow_runs"].pop()
+                return result
+            with patch.object(policy, "api", side_effect=incomplete), patch.object(policy.time, "sleep"), self.assertRaisesRegex(policy.CoordinationRefusal, "workflow_history_incomplete_or_changed"):
+                policy.completed_recovery(env, self.tree, copy.deepcopy(list(self.runs.values())))
 
     def test_covered_failed_identities_keep_original_binding_and_step_refusals(self):
         for change in ("repository", "run attempt", "identity job", "identity step", "native tree"):
@@ -3622,7 +3752,7 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                     nonlocal history_reads, changed
                     if "/workflows/tests.yml/runs?" in endpoint:
                         history_reads += 1
-                        if history_reads == 2:
+                        if history_reads == 1:
                             changed = True
                             if change == "source attempt": self.runs[200]["run_attempt"] = 2
                             if change == "source failure": self.runs[200]["conclusion"] = "failure"
@@ -3647,7 +3777,7 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
                     return result
                 with patch.object(policy, "api", side_effect=api), self.assertRaises((ValueError, KeyError)):
                     policy.completed_recovery(env, self.tree, list(self.runs.values()))
-                self.assertEqual(history_reads, 2)
+                self.assertEqual(history_reads, 1)
 
     def test_final_multipage_inventory_compares_relevant_metadata_off_page_one(self):
         with self.server():
