@@ -387,6 +387,27 @@ describe('Compliance review drawer', () => {
         expect(within(drawer).queryByRole('alert')).not.toBeInTheDocument();
     });
 
+    it('names a passport case front upload as its photo page', () => {
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    review: review({
+                        id_type: 'passport',
+                        id_number: 'PC1234567',
+                    }),
+                })}
+            />,
+        );
+        const drawer = screen.getByRole('dialog', {
+            name: 'Identity submission',
+        });
+
+        expect(
+            within(drawer).getAllByText('Passport photo page').length,
+        ).toBeGreaterThan(0);
+        expect(within(drawer).queryByText('ID front')).not.toBeInTheDocument();
+    });
+
     it('approves with a reason, the reviewed revision and one request id', async () => {
         inertia.succeed = true;
         const { user } = renderWithUser(
