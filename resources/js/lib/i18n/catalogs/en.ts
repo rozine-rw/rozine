@@ -2711,6 +2711,8 @@ const en = {
     'admin.parties.premises.cta': 'Record as verified',
     'admin.parties.audit.title': 'Audit',
     'admin.parties.audit.none': 'No audit is open on this business.',
+    'admin.parties.audit.closed_last':
+        'Audit Operations closed this business’s last audit, so a new Flash audit can’t be requested here.',
     'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
     'admin.parties.audit.kind.routine': 'Monthly audit',
     'admin.parties.audit.status.operations': 'With Audit Operations',

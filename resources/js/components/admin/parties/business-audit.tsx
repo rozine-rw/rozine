@@ -142,6 +142,7 @@ function IndependenceForm({
         reason: '',
         request_id: requestId,
         expected_revision: partner.revision,
+        checked_at: partner.checked_at,
     });
 
     const submit = (event: FormEvent) => {
@@ -377,7 +378,11 @@ export function BusinessAuditSection({
                                 EXPLAIN,
                             )}
                         >
-                            {t('admin.parties.audit.none')}
+                            {t(
+                                audit.closed
+                                    ? 'admin.parties.audit.closed_last'
+                                    : 'admin.parties.audit.none',
+                            )}
                         </p>
                         {start('flash', audit.request_flash, null)}
                     </>

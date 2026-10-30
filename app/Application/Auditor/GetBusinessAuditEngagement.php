@@ -41,6 +41,12 @@ final class GetBusinessAuditEngagement
             'allowed_actions' => $case['allowed_actions']];
     }
 
+    /** Whether Audit Operations closed the Business's last audit, so a Flash audit can't be requested for it. */
+    public function closed(string $businessId): bool
+    {
+        return $this->store->lastClosed($businessId);
+    }
+
     /** @return list<NearbyPartner> */
     public function partners(int $actorId, string $businessId): array
     {

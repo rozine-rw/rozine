@@ -35,10 +35,11 @@ it('requests a Flash audit from a Business with none open and then shows it offe
     $url = '/admin/businesses/'.$id.'/flash-audit';
     $partner = $fixture['partners'][0];
     $partners = [['party_id' => $partner['party']->id, 'name' => $partner['user']->name, 'reviewed' => true, 'revision' => 1,
-        'review' => ['url' => '/admin/businesses/'.$id.'/auditors/'.$partner['party']->id.'/independence', 'method' => 'post']]];
+        'review' => ['url' => '/admin/businesses/'.$id.'/auditors/'.$partner['party']->id.'/independence', 'method' => 'post'],
+        'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]];
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => null,
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => null, 'closed' => false,
             'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
 
     $this->from($page)->post($url, flashAuditRequest(''))->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
@@ -53,7 +54,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
         ->and($version->command)->toBe('audit.assignment.request')->and($version->actor_user_id)->toBe($fixture['staff']->id);
 
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-        'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null],
+        'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null], 'closed' => false,
         'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
 
     $this->from($page)->post($url, $body)->assertRedirect($page);
@@ -72,7 +73,7 @@ it('says no partner office is within 30 km, then asks for an independence review
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'],
+            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'], 'closed' => false,
             'request_flash' => null, 'redispatch' => null,
             'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
             'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => []]));
@@ -91,10 +92,10 @@ it('says no partner office is within 30 km, then asks for an independence review
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED')
         ->where('party.audit.redispatch', null)->where('party.audit.remedy', null)
         ->where('party.audit.partners', [['party_id' => $partner['party']->id, 'name' => $partner['user']->name, 'reviewed' => false, 'revision' => 0,
-            'review' => ['url' => $review, 'method' => 'post']]]));
+            'review' => ['url' => $review, 'method' => 'post'], 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')]]));
 
     $facts = ['financial_interest' => false, 'current_role_tie' => false, 'family_or_business_conflict' => false, 'unresolved_conflict' => false];
-    $independence = ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, ...$facts, 'role_tie_ended_on' => null,
+    $independence = ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), ...$facts, 'role_tie_ended_on' => null,
         'reference' => 'Partner declaration and RDB shareholder record.', 'reason' => 'No ties to the business.'];
     $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'reference' => ''])
         ->assertSessionHasErrors(['reason' => 'Say what you checked and why, in plain text.']);
@@ -106,8 +107,15 @@ it('says no partner office is within 30 km, then asks for an independence review
     $this->assertDatabaseCount('auditor_independence_reviews', 1);
 
     $this->post($review, $independence)->assertRedirect($page);
+    // A delayed exact retry of the same form replays the review; changed details under its request are refused.
+    $this->travel(5)->seconds();
+    $this->from($page)->post($review, $independence)->assertRedirect($page)->assertSessionHasNoErrors();
     $this->from($page)->post($review, [...$independence, 'reason' => 'A different reason.'])
         ->assertSessionHasErrors(['reason' => 'That request was already used for different details. Try again.']);
+    $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'checked_at' => 'yesterday'])->assertSessionHasErrors('checked_at');
+    $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'expected_revision' => 1,
+        'checked_at' => now('UTC')->subMinute()->format('Y-m-d\TH:i:s\Z')])
+        ->assertSessionHasErrors(['reason' => 'A newer review of this partner was recorded since you opened it. Reload and review again.']);
     $recorded = AuditorIndependenceReview::query()->where('business_id', $id)->where('party_id', $partner['party']->id)->sole();
     expect($recorded->revision)->toBe(1)->and($recorded->state['evidence_reference'])->toBe('Partner declaration and RDB shareholder record.')
         ->and(AuditorIndependenceVersion::query()->where('review_id', $recorded->id)->sole()->actor_user_id)->toBe($fixture['staff']->id);
@@ -135,7 +143,7 @@ it('says a partner within 30 km who was already offered the audit cannot take it
             ->where('party.audit.partners.0.reviewed', true));
 });
 
-it('offers only Close once a Flash audit has passed its deadline, and no new request after the closure', function (): void {
+it('offers only Close once a Flash audit has passed its deadline, and says a new one cannot be requested after the closure', function (): void {
     $fixture = Fixture::make(0);
     $assignment = Fixture::request($fixture);
     $id = $fixture['business'];
@@ -154,7 +162,7 @@ it('offers only Close once a Flash audit has passed its deadline, and no new req
     expect($assignment->refresh()->status)->toBe('closed')
         ->and(AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->where('revision', 2)->value('actor_user_id'))->toBe($fixture['staff']->id);
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
-        ->where('party.audit.request_flash.url', '/admin/businesses/'.$id.'/flash-audit'));
+        ->where('party.audit.closed', true)->where('party.audit.request_flash', null));
     $this->from($page)->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())
         ->assertSessionHasErrors(['reason' => "Audit Operations closed this business's last audit, so a new one can't be requested here."]);
 });
@@ -171,8 +179,8 @@ it('leaves the audit out for staff who do not manage audits and gives the API no
     $this->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())->assertForbidden();
     $this->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest()])->assertForbidden();
     $this->post('/admin/businesses/'.$id.'/auditors/'.AuditorFixture::make()['party']->id.'/independence', ['request_id' => (string) Str::uuid(), 'expected_revision' => 0,
-        'financial_interest' => false, 'current_role_tie' => false, 'family_or_business_conflict' => false, 'unresolved_conflict' => false,
-        'reference' => 'Ref.', 'reason' => 'Checked.'])->assertForbidden();
+        'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'), 'financial_interest' => false, 'current_role_tie' => false,
+        'family_or_business_conflict' => false, 'unresolved_conflict' => false, 'reference' => 'Ref.', 'reason' => 'Checked.'])->assertForbidden();
     expect($assignment->refresh()->revision)->toBe(1);
 
     Sanctum::actingAs($fixture['staff'], ['staff:businesses:read']);
@@ -211,7 +219,7 @@ it('offers a new Flash audit once the accepted audit\'s report is published, and
 
     AuditSealingFixture::cosign($fixture);
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
-        ->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit'));
+        ->where('party.audit.closed', false)->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit'));
     $this->from($page)->post('/admin/businesses/'.$audit['business'].'/flash-audit', flashAuditRequest())->assertRedirect($page);
 
     expect($fixture['assignment']->refresh()->status)->toBe('completed')

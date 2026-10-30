@@ -2844,6 +2844,8 @@ const rw: Catalog = {
     'admin.parties.premises.cta': 'Andika ko byemejwe',
     'admin.parties.audit.title': 'Igenzura',
     'admin.parties.audit.none': 'Nta genzura rifunguye kuri ubu bucuruzi.',
+    'admin.parties.audit.closed_last':
+        'Ibikorwa by’igenzura byafunze igenzura riheruka ry’ubu bucuruzi, bityo nta genzura ritunguranye rishya rishobora gusabwa hano.',
     'admin.parties.audit.kind.flash': 'Igenzura ritunguranye · amasaha 24',
     'admin.parties.audit.kind.routine': 'Igenzura rya buri kwezi',
     'admin.parties.audit.status.operations': 'Riri mu Bikorwa by’igenzura',
