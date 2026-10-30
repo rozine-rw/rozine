@@ -172,7 +172,9 @@ it('names a redispatch and a closure in the Activity trail', function (): void {
     $this->actingAs($fixture['staff'])->post($url.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest('No partner yet.')]);
     $this->post($url.'/close', ['expected_revision' => 2, ...flashAuditRequest('No partner in time.')]);
 
-    $actions = collect($this->get(route('staff.events.index'))->assertOk()->viewData('page')['props']['events'])->pluck('action');
+    /** @var list<array{action: array{code: string, label: string, tone: string}}> $events */
+    $events = $this->get(route('staff.events.index'))->assertOk()->viewData('page')['props']['events'];
+    $actions = array_column($events, 'action');
     expect($actions)->toContain(['code' => 'audit.assignment.close', 'label' => 'Closed an audit', 'tone' => 'red'])
         ->toContain(['code' => 'audit.assignment.redispatch', 'label' => 'Redispatched an audit', 'tone' => 'amber']);
 });
