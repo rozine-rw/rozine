@@ -871,7 +871,7 @@ export type BusinessAudit = {
     redispatch: RouteAction | null;
     close: RouteAction | null;
     /** Where to fix a missing partner within 30 km. */
-    remedy: string | null;
+    remedy: RouteLink | null;
 };
 
 export type PartyDetail = {

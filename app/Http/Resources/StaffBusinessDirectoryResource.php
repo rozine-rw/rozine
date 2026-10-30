@@ -110,7 +110,7 @@ class StaffBusinessDirectoryResource extends JsonResource
             'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason],
             'request_flash' => $console && $engagement === null ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
             'redispatch' => $action('redispatch', 'staff.businesses.audit.redispatch'), 'close' => $action('close', 'staff.businesses.audit.close'),
-            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? route('staff.auditors.index', [], false) : null];
+            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? ['url' => route('staff.auditors.index', [], false), 'method' => 'get'] : null];
     }
 
     /**

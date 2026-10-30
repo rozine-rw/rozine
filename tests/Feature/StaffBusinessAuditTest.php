@@ -68,7 +68,7 @@ it('says no partner office is within 30 km and redispatches the audit once a par
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
             'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'],
             'request_flash' => null, 'redispatch' => ['url' => $url, 'method' => 'post'],
-            'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'], 'remedy' => '/admin/auditors']));
+            'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'], 'remedy' => ['url' => '/admin/auditors', 'method' => 'get']]));
 
     $body = ['expected_revision' => 1, ...flashAuditRequest('No partner yet; try again.')];
     $this->post($url, $body)->assertRedirect($page);

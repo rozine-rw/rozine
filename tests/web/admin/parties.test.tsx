@@ -1683,7 +1683,7 @@ describe('Party 360', () => {
                         url: '/admin/businesses/biz_1/audits/aud_1/close',
                         method: 'post',
                     },
-                    remedy: '/admin/auditors',
+                    remedy: { url: '/admin/auditors', method: 'get' },
                 })}
             />,
         );

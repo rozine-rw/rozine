@@ -7,11 +7,11 @@ use App\Application\Auditor\RequestFlashAudits;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\PartyNotice;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Lottery;
-use Carbon\CarbonImmutable;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
 use Tests\Support\AuditAssignmentFixture as Fixture;
@@ -89,5 +89,6 @@ it('draws only from businesses owed a monthly audit, so a note issued this month
     expect(app(RequestFlashAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0);
     $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHour());
     expect(app(RequestFlashAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(1)
-        ->and(AuditAssignment::query()->sole()->business_id)->toBe($campaign->businessId);
+        ->and(AuditAssignment::query()->orderByDesc('id')->first()?->state['kind'])->toBe('flash')
+        ->and(AuditAssignment::query()->orderByDesc('id')->first()?->business_id)->toBe($campaign->businessId);
 });
