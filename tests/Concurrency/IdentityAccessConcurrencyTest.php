@@ -811,12 +811,13 @@ it('records an identical reconciliation retry once across two logins for one Par
     app(SelectActiveRole::class)->handle($second->id, 'business', 0, (string) Str::uuid());
     $fixture['authority']['users'][] = $second;
     $request = (string) Str::uuid();
+    $review = StatementFixture::reviewed($fixture['authority']['users'][0]->id, $fixture['business']->id);
     expect(runIdentityContenders([
-        function () use ($fixture, $input, $request): void {
-            StatementFixture::transcribe($fixture, $input, requestId: $request);
+        function () use ($fixture, $input, $request, $review): void {
+            StatementFixture::transcribe($fixture, $input, requestId: $request, review: $review);
         },
-        function () use ($fixture, $input, $request): void {
-            StatementFixture::transcribe($fixture, $input, requestId: $request, actor: 1);
+        function () use ($fixture, $input, $request, $review): void {
+            StatementFixture::transcribe($fixture, $input, requestId: $request, actor: 1, review: $review);
         },
     ]))->toBe([0, 0])
         ->and(StatementTranscription::query()->count())->toBe(1)
