@@ -1702,7 +1702,9 @@ describe('Party 360', () => {
             name: 'Close this audit',
         });
 
-        expect(form).toHaveTextContent('Closing ends this audit without a report.');
+        expect(form).toHaveTextContent(
+            'Closing ends this audit without a report.',
+        );
         expect(
             within(audit).queryByRole('button', { name: 'Redispatch' }),
         ).not.toBeInTheDocument();
