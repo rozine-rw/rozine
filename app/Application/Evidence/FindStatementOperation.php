@@ -11,8 +11,8 @@ final class FindStatementOperation
     public function __construct(private StatementStore $store) {}
 
     /** @return array<string, mixed> */
-    public function handle(int $userId, int $contextRevision, string $requestId, string $command = 'ingest'): array
+    public function handle(int $userId, int $contextRevision, string $requestId, string $command = 'ingest', ?string $businessId = null): array
     {
-        return $this->store->findOperation($userId, $contextRevision, $requestId, $command);
+        return $this->store->findOperation($userId, $contextRevision, $requestId, $command, $businessId);
     }
 }

@@ -23,6 +23,9 @@ printf '%s\n' "$*" >> "${DEPLOY_TEST_CALLS}"
 if [[ "${1:-}" == "artisan" && "${2:-}" == "optimize:clear" ]]; then
   ls -1 storage/isolated/uat > "${DEPLOY_TEST_CALLS}.at-clear" 2>/dev/null || true
 fi
+if [[ "${1:-}" == "run" && "${2:-}" == "build" ]]; then
+  if [[ -e public/hot ]]; then echo present; else echo absent; fi > "${DEPLOY_TEST_CALLS}.hot-at-build"
+fi
 if [[ "${1:-}" == "artisan" && "${2:-}" == "isolation:check" ]]; then
   if [[ "${DEPLOY_TEST_FAIL:-}" == "first" ]]; then
     exit 42
@@ -141,6 +144,7 @@ test('a deployment removes a Vite hot marker before building assets', function (
     $process = runIsolatedDeployment($this->deploymentDirectory, $profile);
 
     expect($process->isSuccessful())->toBeTrue()
+        ->and(File::get($this->deploymentDirectory.'/calls.hot-at-build'))->toBe("absent\n")
         ->and(File::exists($this->deploymentDirectory.'/app root/public/hot'))->toBeFalse();
 })->with(['uat', 'production']);
 

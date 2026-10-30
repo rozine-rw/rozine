@@ -554,6 +554,24 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         });
     }
 
+    public function requestFlash(string $businessId): ?string
+    {
+        return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId): ?string {
+            $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
+            $candidates = $this->finish($existing, null, $candidates, $context);
+            if ($existing !== null && $existing->status !== 'completed') {
+                return null;
+            }
+            $record = new AuditAssignment;
+            $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
+            // Unannounced (BR-48): unlike the monthly audit, the Business is not told it is coming.
+            $state = $this->offer($this->states->start('flash', now()->toDateTimeImmutable()), $context, $candidates);
+            $this->persist($record, $state, null, 'audit.assignment.schedule', 'Flash audit drawn at random.', $candidates, $context);
+
+            return $record->id;
+        });
+    }
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array
     {

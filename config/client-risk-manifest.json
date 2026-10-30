@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "bed6630ad9dca9dd426b2443c6db42fdc1fe39f5f44043691610128b75f71cbd",
-    "coverageSetSha256": "e1f4a9c659f97e1561530579417959c8d6b86d92e8a38823baecff62165027bc",
+    "sourceManifestSha256": "d46a21c15decb37f594f08d6d1cadfb9c8bb2f6807e4103bd6753e916150d509",
+    "coverageSetSha256": "99d3405be692affdaefffdebf1cefa4d48ea82f430f3c4909dcbc44bc00bf072",
     "thresholds": {
         "critical": {
             "global": {
@@ -65,6 +65,7 @@
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/action-log.tsx",
+        "resources/js/components/admin/parties/business-audit.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",

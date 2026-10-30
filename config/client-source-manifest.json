@@ -54,6 +54,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessStatementController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessStatementTranscriptionController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessWalletController.ts",
         "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
@@ -101,6 +102,7 @@
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffStatementAuditReadinessController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSystemHealthController.ts",
         "resources/js/actions/App/Http/Controllers/index.ts",
         "resources/js/actions/App/Http/index.ts",
@@ -176,6 +178,8 @@
         "resources/js/routes/api/v1/business/repayments/index.ts",
         "resources/js/routes/api/v1/business/repayments/operations/index.ts",
         "resources/js/routes/api/v1/business/statements/index.ts",
+        "resources/js/routes/api/v1/business/statements/operations/index.ts",
+        "resources/js/routes/api/v1/business/statements/transcription/index.ts",
         "resources/js/routes/api/v1/business/wallet/index.ts",
         "resources/js/routes/api/v1/business/wallet/operations/index.ts",
         "resources/js/routes/api/v1/changes/index.ts",
@@ -209,6 +213,7 @@
         "resources/js/routes/api/v1/staff/auditors/index.ts",
         "resources/js/routes/api/v1/staff/auditors/licence/index.ts",
         "resources/js/routes/api/v1/staff/businesses/index.ts",
+        "resources/js/routes/api/v1/staff/businesses/statement-audit/index.ts",
         "resources/js/routes/api/v1/staff/complaints/index.ts",
         "resources/js/routes/api/v1/staff/coverage/index.ts",
         "resources/js/routes/api/v1/staff/disbursements/index.ts",
@@ -312,6 +317,7 @@
         "resources/js/routes/staff/auditors/index.ts",
         "resources/js/routes/staff/auditors/licence/index.ts",
         "resources/js/routes/staff/auditors/office/index.ts",
+        "resources/js/routes/staff/businesses/audit/index.ts",
         "resources/js/routes/staff/businesses/index.ts",
         "resources/js/routes/staff/businesses/premises/index.ts",
         "resources/js/routes/staff/changes/index.ts",
@@ -384,6 +390,7 @@
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/action-log.tsx",
+        "resources/js/components/admin/parties/business-audit.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
@@ -779,10 +786,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 751,
-        "generated": 321,
+        "totalTrackedSources": 758,
+        "generated": 327,
         "declarationOnly": 20,
-        "authoredExecutable": 410
+        "authoredExecutable": 411
     },
-    "coverageSetSha256": "e1f4a9c659f97e1561530579417959c8d6b86d92e8a38823baecff62165027bc"
+    "coverageSetSha256": "99d3405be692affdaefffdebf1cefa4d48ea82f430f3c4909dcbc44bc00bf072"
 }

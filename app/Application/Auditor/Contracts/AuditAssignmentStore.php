@@ -111,6 +111,12 @@ interface AuditAssignmentStore
      */
     public function requestMonthly(string $businessId): ?string;
 
+    /**
+     * Trusted scheduler only: dispatches an unannounced Flash audit to the Business and returns the new
+     * assignment, or null when an engagement is still open or was closed.
+     */
+    public function requestFlash(string $businessId): ?string;
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array;
 

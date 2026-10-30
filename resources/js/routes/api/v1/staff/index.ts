@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 import disbursements from './disbursements'
+import businesses from './businesses'
 import audit from './audit'
 import applications from './applications'
 import investors from './investors'
-import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
 import events from './events'
@@ -100,10 +100,10 @@ dashboard.form = dashboardForm
 
 const staffNamespace = {
     disbursements: Object.assign(disbursements, disbursements),
+    businesses: Object.assign(businesses, businesses),
     audit: Object.assign(audit, audit),
     applications: Object.assign(applications, applications),
     investors: Object.assign(investors, investors),
-    businesses: Object.assign(businesses, businesses),
     auditors: Object.assign(auditors, auditors),
     dashboard: Object.assign(dashboard, dashboard),
     staff: Object.assign(staff, staff),
