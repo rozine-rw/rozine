@@ -21,6 +21,7 @@ use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessStatementController;
+use App\Http\Controllers\BusinessStatementTranscriptionController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\InvestorDealsController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\StaffMessagingController;
 use App\Http\Controllers\StaffPaymentsController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
+use App\Http\Controllers\StaffStatementAuditReadinessController;
 use App\Http\Controllers\StaffSystemHealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -100,6 +102,11 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('{business}/statements', [BusinessStatementController::class, 'index'])->whereUlid('business')->name('index');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('upload');
     Route::get('{business}/statements/{document}', [BusinessStatementController::class, 'show'])->whereUlid(['business', 'document'])->name('show');
+    Route::get('{business}/statements/transcription-draft', [BusinessStatementTranscriptionController::class, 'draft'])->whereUlid('business')->name('transcription.draft');
+    Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'show'])->whereUlid('business')->name('transcription.show');
+    Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('transcription.save');
+    Route::get('{business}/statements/audit-readiness', [BusinessStatementTranscriptionController::class, 'readiness'])->whereUlid('business')->name('readiness');
+    Route::get('{business}/statement-operations/{request_id}', [BusinessStatementTranscriptionController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('operations.show');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/business')->name('api.v1.business.applications.')->group(function (): void {
@@ -132,6 +139,10 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     foreach (['hold' => 'hold', 'release-hold' => 'release_hold', 'requery' => 'requery'] as $path => $command) {
         Route::post('{disbursement}/'.$path, [StaffDisbursementController::class, 'command'])->whereUlid('disbursement')->defaults('command', $command)->name($path);
     }
+});
+
+Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/businesses')->name('api.v1.staff.businesses.')->group(function (): void {
+    Route::get('{business}/initial-statement-audit', [StaffStatementAuditReadinessController::class, 'show'])->whereUlid('business')->name('statement-audit.readiness');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/audit-assignments')->name('api.v1.staff.audit.')->group(function (): void {
