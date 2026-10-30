@@ -161,9 +161,14 @@ describe('Wallet (C3)', () => {
             'This records your deposit request. Nothing is credited until the payment is confirmed.',
         );
         expect(within(panel).getByLabelText('AMOUNT')).toHaveValue('100,000');
+        expect(within(panel).getByTestId('deposit-amount-field')).toHaveClass(
+            'rz-prefixed-field',
+        );
         expect(
-            within(panel).getByLabelText('AMOUNT').parentElement,
-        ).toHaveClass('rz-prefixed-field');
+            within(
+                within(panel).getByTestId('deposit-amount-field'),
+            ).getByLabelText('AMOUNT'),
+        ).toBeInTheDocument();
 
         fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
             target: { value: '250,000' },

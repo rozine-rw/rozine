@@ -413,7 +413,10 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
             >
                 {t('investor.wallet.amount')}
             </label>
-            <div className="rz-prefixed-field mt-1.5 flex items-center gap-2 rounded-xl border border-rz-accent-fill bg-[#f8fafc] px-[13px] py-[11px] dark:bg-rz-surface-sunken">
+            <div
+                data-testid="deposit-amount-field"
+                className="rz-prefixed-field mt-1.5 flex items-center gap-2 rounded-xl border border-rz-accent-fill bg-[#f8fafc] px-[13px] py-[11px] dark:bg-rz-surface-sunken"
+            >
                 <span className="text-[13px] font-semibold text-rz-secondary">
                     {t('investor.money.rwf')}
                 </span>
@@ -756,7 +759,10 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             >
                 {t('investor.wallet.amount')}
             </label>
-            <div className="rz-prefixed-field mt-1.5 flex items-center gap-2 rounded-xl border border-[#0c1830] bg-[#f8fafc] px-[13px] py-[11px] dark:border-rz-border dark:bg-rz-surface-sunken">
+            <div
+                data-testid="withdraw-amount-field"
+                className="rz-prefixed-field mt-1.5 flex items-center gap-2 rounded-xl border border-[#0c1830] bg-[#f8fafc] px-[13px] py-[11px] dark:border-rz-border dark:bg-rz-surface-sunken"
+            >
                 <span className="text-[13px] font-semibold text-rz-secondary">
                     {t('investor.money.rwf')}
                 </span>
