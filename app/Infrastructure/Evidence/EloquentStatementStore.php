@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Evidence;
 
+use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\WithBusinessAuthority;
@@ -18,14 +19,13 @@ use App\Domain\Evidence\StatementSource;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
-use App\Models\AuditAssignment;
-use App\Models\BusinessProfile;
 use App\Models\StatementEvidence;
 use App\Models\StatementExtraction;
 use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
 use Closure;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -61,6 +61,7 @@ final class EloquentStatementStore implements StatementStore
         private CanonicalJson $json,
         private StatementAuditReview $reviews,
         private AuthorizeStaffPermission $staff,
+        private AuditAssignmentStore $engagements,
     ) {}
 
     /** @return array<string, mixed> */
@@ -268,9 +269,10 @@ final class EloquentStatementStore implements StatementStore
     public function staffReadiness(int $actorId, string $businessId): array
     {
         $this->staff->check($actorId, 'audit.assignments.manage');
-        $business = BusinessProfile::query()->find($businessId) ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+        $business = DB::table('business_profiles')->where('id', $businessId)->first(['revision', 'mandate_version'])
+            ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
 
-        return $this->projectReadiness($businessId, $business->revision, $business->mandate_version);
+        return $this->projectReadiness($businessId, (int) $business->revision, (int) $business->mandate_version);
     }
 
     /**
@@ -287,9 +289,7 @@ final class EloquentStatementStore implements StatementStore
             ? ['id' => $current['id'], 'revision' => $current['revision'], 'sha256' => $current['sha256'], 'current' => true] : null;
         $months = $transcription === null ? [] : $current['payload']['months'];
         sort($months);
-        $open = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->first();
-        $assignment = $open === null || $open->status === 'completed' ? null
-            : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'status' => $open->status];
+        $assignment = $this->engagements->openEngagement($businessId);
         $digest = ['version' => self::CONTRACT_VERSION, 'business_id' => $businessId, 'business_revision' => $businessRevision,
             'mandate_version' => $mandateVersion, 'evidence_revision' => $binding['evidence_revision'], 'manifest_sha256' => $binding['manifest_sha256'],
             'transcription' => $transcription === null ? null : ['id' => $transcription['id'], 'sha256' => $transcription['sha256']]];
