@@ -869,6 +869,8 @@ export type BusinessAudit = {
             | 'AUDIT_DISPATCH_EXHAUSTED'
             | null;
     } | null;
+    /** Audit Operations closed the Business's last audit, so no new one can be requested here. */
+    closed: boolean;
     request_flash: RouteAction | null;
     redispatch: RouteAction | null;
     close: RouteAction | null;
@@ -881,6 +883,8 @@ export type BusinessAudit = {
         reviewed: boolean;
         revision: number;
         review: RouteAction | null;
+        /** The server time the review is checked as of, fixed when the form is issued. */
+        checked_at: string;
     }[];
 };
 

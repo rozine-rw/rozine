@@ -607,6 +607,11 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'status' => $open->status];
     }
 
+    public function lastClosed(string $businessId): bool
+    {
+        return AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->value('status') === 'closed';
+    }
+
     public function workPublished(string $assignmentId): bool
     {
         return $this->published(AuditAssignment::query()->findOrFail($assignmentId));

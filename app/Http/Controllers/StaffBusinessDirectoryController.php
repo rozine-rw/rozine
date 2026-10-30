@@ -63,6 +63,7 @@ class StaffBusinessDirectoryController extends Controller
         'VERSION_CONFLICT' => "This partner's independence review changed since you opened it. Review it again.",
         'AUDITOR_INDEPENDENCE_EVIDENCE_REQUIRED' => 'Say what you checked and why, in plain text.',
         'AUDITOR_INDEPENDENCE_FACTS_INVALID' => "The date the role ended can't be in the future.",
+        'AUDITOR_INDEPENDENCE_TIME_INVALID' => 'A newer review of this partner was recorded since you opened it. Reload and review again.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
@@ -103,7 +104,8 @@ class StaffBusinessDirectoryController extends Controller
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
             'audit' => $business !== null && in_array('audit.assignments.manage', $staff['allowed_actions'], true)
-                ? ['engagement' => $audits->handle($actorId, $business['row']['business_id']), 'partners' => $audits->partners($actorId, $business['row']['business_id'])] : null,
+                ? ['engagement' => $audits->handle($actorId, $business['row']['business_id']), 'closed' => $audits->closed($business['row']['business_id']),
+                    'partners' => $audits->partners($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
             'onboarding_sectors' => OnboardBusiness::sectors()]);
 
@@ -160,15 +162,16 @@ class StaffBusinessDirectoryController extends Controller
     }
 
     /**
-     * Record an independence review of an Audit Partner within 30 km against the Business, now, so
-     * dispatch may offer the partner the Business's audits when it finds no conflict.
+     * Record an independence review of an Audit Partner within 30 km against the Business, so dispatch
+     * may offer the partner the Business's audits when it finds no conflict. It is checked as of the
+     * server time the drawer issued with the form, so a delayed exact retry replays the same review.
      */
     public function auditorIndependence(RecordAuditorIndependenceRequest $request, ManageBusinessAudit $audits): RedirectResponse
     {
         $businessId = (string) $request->route('business');
         $ended = $request->validated('role_tie_ended_on');
         $this->audit($audits->recordIndependence((int) $request->user()?->getAuthIdentifier(), $businessId, (string) $request->route('party'),
-            (int) $request->validated('expected_revision'), ['financial_interest' => $request->boolean('financial_interest'),
+            (int) $request->validated('expected_revision'), (string) $request->validated('checked_at'), ['financial_interest' => $request->boolean('financial_interest'),
                 'current_role_tie' => $request->boolean('current_role_tie'), 'role_tie_ended_at' => $ended === null ? null : $ended.'T00:00:00Z',
                 'family_or_business_conflict' => $request->boolean('family_or_business_conflict'), 'unresolved_conflict' => $request->boolean('unresolved_conflict')],
             (string) $request->validated('reference', ''), (string) $request->validated('reason', ''), (string) $request->validated('request_id')), self::INDEPENDENCE_MESSAGES);

@@ -1469,6 +1469,7 @@ describe('Party 360', () => {
             <AdminParties
                 {...withAudit({
                     engagement: null,
+                    closed: false,
                     request_flash: {
                         url: '/admin/businesses/biz_1/flash-audit',
                         method: 'post',
@@ -1542,6 +1543,7 @@ describe('Party 360', () => {
                         attempt: 1,
                         operations_reason: 'AUDIT_PARTNER_AVAILABLE',
                     },
+                    closed: false,
                     request_flash: null,
                     redispatch: {
                         url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
@@ -1611,6 +1613,7 @@ describe('Party 360', () => {
                         attempt: 3,
                         operations_reason: 'AUDIT_DISPATCH_EXHAUSTED',
                     },
+                    closed: false,
                     request_flash: null,
                     redispatch: null,
                     close: {
@@ -1648,6 +1651,7 @@ describe('Party 360', () => {
                         attempt: null,
                         operations_reason: null,
                     },
+                    closed: false,
                     request_flash: null,
                     redispatch: null,
                     close: null,
@@ -1681,6 +1685,7 @@ describe('Party 360', () => {
                         attempt: 0,
                         operations_reason: 'AUDIT_NO_PARTNER_IN_RANGE',
                     },
+                    closed: false,
                     request_flash: null,
                     redispatch: null,
                     close: {
@@ -1742,6 +1747,7 @@ describe('Party 360', () => {
             <AdminParties
                 {...withAudit({
                     engagement: null,
+                    closed: false,
                     request_flash: {
                         url: '/admin/businesses/biz_1/flash-audit',
                         method: 'post',
@@ -1784,6 +1790,7 @@ describe('Party 360', () => {
                         attempt: 1,
                         operations_reason: 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED',
                     },
+                    closed: false,
                     request_flash: null,
                     redispatch: null,
                     close: {
@@ -1798,6 +1805,7 @@ describe('Party 360', () => {
                             reviewed: true,
                             revision: 1,
                             review: null,
+                            checked_at: '2026-10-30T12:00:00Z',
                         },
                         {
                             party_id: 'party_b',
@@ -1808,6 +1816,7 @@ describe('Party 360', () => {
                                 url: '/admin/businesses/biz_1/auditors/party_b/independence',
                                 method: 'post',
                             },
+                            checked_at: '2026-10-30T12:00:00Z',
                         },
                     ],
                 })}
@@ -1893,6 +1902,7 @@ describe('Party 360', () => {
                     reason: 'No ties to the business.',
                     request_id: '7a6b5c4d-8e9f-4a0b-9c1d-2e3f4a5b6c7d',
                     expected_revision: 0,
+                    checked_at: '2026-10-30T12:00:00Z',
                 },
             },
         ]);
@@ -1911,6 +1921,7 @@ describe('Party 360', () => {
             <AdminParties
                 {...withAudit({
                     engagement: null,
+                    closed: false,
                     request_flash: null,
                     redispatch: null,
                     close: null,
@@ -1925,6 +1936,7 @@ describe('Party 360', () => {
                                 url: '/admin/businesses/biz_1/auditors/party_b/independence',
                                 method: 'post',
                             },
+                            checked_at: '2026-10-30T12:00:00Z',
                         },
                     ],
                 })}
@@ -1968,6 +1980,30 @@ describe('Party 360', () => {
         expect(form).toHaveTextContent(
             "The date the role ended can't be in the future.",
         );
+    });
+
+    it('says a new Flash audit cannot be requested after Audit Operations closed the last one', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    closed: true,
+                    request_flash: null,
+                    redispatch: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'Audit Operations closed this business’s last audit, so a new Flash audit can’t be requested here.',
+        );
+        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('shows the office read-only to a viewer who may not verify it', async () => {
