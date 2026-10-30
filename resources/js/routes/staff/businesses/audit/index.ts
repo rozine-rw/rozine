@@ -146,9 +146,83 @@ redispatchForm.post = (args: { business: string | number, assignment: string | n
 
 redispatch.form = redispatchForm
 
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::close
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+export const close = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: close.url(args, options),
+    method: 'post',
+})
+
+close.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/{business}/audits/{assignment}/close',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::close
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+close.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            assignment: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        assignment: args.assignment,
+    }
+
+    return close.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{assignment}', parsedArgs.assignment.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::close
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+close.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: close.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::close
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+const closeForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: close.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::close
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+closeForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: close.url(args, options),
+    method: 'post',
+})
+
+close.form = closeForm
+
 const audit = {
     flash: Object.assign(flash, flash),
     redispatch: Object.assign(redispatch, redispatch),
+    close: Object.assign(close, close),
 }
 
 export default audit
