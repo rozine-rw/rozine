@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use App\Application\Evidence\FindStatementOperation;
 use App\Application\Evidence\GetStatementTranscription;
+use App\Application\Evidence\GetStatementTranscriptionDraft;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
 use App\Models\CommandOperation;
 use App\Models\StatementEvidence;
+use App\Models\StatementExtraction;
+use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -63,7 +66,8 @@ it('appends linked corrections and retains old exact retry results without resto
     $source = StatementFixture::ingest($fixture);
     $input = StatementFixture::transcription($source['data']['document_id']);
     $request = (string) Str::uuid();
-    $first = StatementFixture::transcribe($fixture, $input, 1, $request);
+    $review = StatementFixture::reviewed($fixture['authority']['users'][0]->id, $fixture['business']->id);
+    $first = StatementFixture::transcribe($fixture, $input, 1, $request, review: $review);
     $firstId = $first['data']['transcription']['id'];
     $changed = $input;
     $changed['statements'] = array_map(fn (array $statement): array => [...$statement, 'transactions' => array_map(
@@ -76,9 +80,9 @@ it('appends linked corrections and retains old exact retry results without resto
         ->and($get->handle($actor->id, 1, $fixture['business']->id)['payload']['observations'][0]['operating_inflow'])->toBe('0')
         ->and($get->handle($actor->id, 1, $fixture['business']->id, $firstId)['current'])->toBeFalse()
         ->and($get->handle($actor->id, 1, $fixture['business']->id, $firstId)['payload']['observations'][0]['operating_inflow'])->toBe('1000')
-        ->and(StatementFixture::transcribe($fixture, $input, 1, $request))->toBe($first)
+        ->and(StatementFixture::transcribe($fixture, $input, 1, $request, review: $review))->toBe($first)
         ->and(app(FindStatementOperation::class)->handle($actor->id, 1, $request, 'reconcile'))->toBe($first)
-        ->and(fn () => StatementFixture::transcribe($fixture, $changed, 1, $request))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
+        ->and(fn () => StatementFixture::transcribe($fixture, $changed, 1, $request, review: $review))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
     $this->assertDatabaseCount('statement_transcriptions', 2);
     expect(StatementFixture::transcribe($fixture, $changed, 2)['code'])->toBe('VERSION_CONFLICT');
     StatementFixture::ingest($fixture, 3, amount: '300');
@@ -105,6 +109,91 @@ it('journals reconciliation denials without advancing source revisions or accept
     $this->assertDatabaseCount('statement_transcriptions', 0);
 })->with(['foreign source', 'difference']);
 
+it('gives the representative a draft that binds the originals they review against', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $actor = $fixture['authority']['users'][0];
+    $draft = app(GetStatementTranscriptionDraft::class);
+    $empty = $draft->handle($actor->id, 1, $fixture['business']->id);
+    expect($empty['evidence'])->toBe(['evidence_revision' => 0, 'manifest_sha256' => hash('sha256', app(CanonicalJson::class)->encode(
+        ['version' => 'statement-manifest-1', 'evidence_revision' => 0, 'documents' => []])), 'originals' => [], 'extractions' => []])
+        ->and($empty['allowed_actions'])->toBe([])->and($empty['current_transcription'])->toBeNull();
+    $first = StatementFixture::ingest($fixture)['data']['document_id'];
+    $second = StatementFixture::ingest($fixture, 1, amount: '200')['data']['document_id'];
+    $read = $draft->handle($actor->id, 1, $fixture['business']->id);
+    $ids = [$first, $second];
+    sort($ids);
+    $originals = StatementOriginal::query()->whereKey($ids)->get()->keyBy('id');
+    $extractions = StatementExtraction::query()->whereIn('statement_original_id', $ids)->get()->keyBy('statement_original_id');
+    expect($read['contract_version'])->toBe('initial-statement-audit-1')
+        ->and($read['business_id'])->toBe($fixture['business']->id)
+        ->and($read['business_revision'])->toBe($fixture['business']->refresh()->revision)
+        ->and($read['mandate_version'])->toBe($fixture['business']->mandate_version)
+        ->and($read['evidence']['evidence_revision'])->toBe(2)
+        ->and($read['evidence']['originals'])->toBe(array_map(fn (string $id): array => ['document_id' => $id, 'sha256' => $originals[$id]->sha256], $ids))
+        ->and($read['evidence']['extractions'])->toBe(array_map(fn (string $id): array => ['document_id' => $id, 'extraction_id' => $extractions[$id]->id,
+            'revision' => 1, 'parser_version' => 'pending-1'], $ids))
+        ->and($read['evidence']['manifest_sha256'])->toBe(hash('sha256', app(CanonicalJson::class)->encode(['version' => 'statement-manifest-1', 'evidence_revision' => 2,
+            'documents' => array_map(fn (string $id): array => ['id' => $id, 'sha256' => $originals[$id]->sha256, 'media_type' => $originals[$id]->media_type,
+                'size_bytes' => $originals[$id]->size_bytes], $ids)])))
+        ->and(json_encode($read, JSON_THROW_ON_ERROR))->not->toContain('.csv')
+        ->and($read['assistance'])->toBe(['status' => 'unavailable', 'reason_codes' => ['STRUCTURED_CONVERSION_UNAVAILABLE'], 'candidate' => null])
+        ->and($read['allowed_actions'])->toBe(['statement.reconcile']);
+    $saved = StatementFixture::transcribe($fixture, StatementFixture::transcription($first), 2);
+    expect($draft->handle($actor->id, 1, $fixture['business']->id)['current_transcription']['id'])->toBe($saved['data']['transcription']['id']);
+});
+
+it('refuses a save that was not reviewed against the current Business, mandate, originals and transcription', function (string $fault): void {
+    $fixture = BusinessApplicationFixture::make();
+    $source = StatementFixture::ingest($fixture);
+    $input = StatementFixture::transcription($source['data']['document_id']);
+    $actor = $fixture['authority']['users'][0];
+    $review = StatementFixture::reviewed($actor->id, $fixture['business']->id);
+    $revision = 1;
+    if ($fault === 'transcription') {
+        StatementFixture::transcribe($fixture, $input);
+        $review = [...StatementFixture::reviewed($actor->id, $fixture['business']->id), 'expected_transcription_id' => null, 'expected_transcription_sha256' => null];
+        $revision = 2;
+    }
+    $review = match ($fault) {
+        'acknowledgement' => [...$review, 'reviewed_against_originals' => false],
+        'business' => [...$review, 'expected_business_revision' => $review['expected_business_revision'] + 1],
+        'mandate' => [...$review, 'expected_mandate_version' => $review['expected_mandate_version'] + 1],
+        'original' => [...$review, 'source_binding' => [...$review['source_binding'], 'originals' => [['document_id' => $source['data']['document_id'], 'sha256' => str_repeat('0', 64)]]]],
+        'manifest' => [...$review, 'source_binding' => [...$review['source_binding'], 'manifest_sha256' => str_repeat('0', 64)]],
+        'evidence' => [...$review, 'source_binding' => [...$review['source_binding'], 'evidence_revision' => 0]],
+        default => $review,
+    };
+    if ($fault === 'extraction') {
+        (new StatementExtraction)->forceFill(['statement_original_id' => $source['data']['document_id'], 'revision' => 2,
+            'parser_version' => 'csv-1', 'status' => 'failed', 'reason_codes' => ['UNREADABLE'], 'text' => null, 'record_count' => null])->save();
+    }
+    $request = (string) Str::uuid();
+    $receipt = StatementFixture::transcribe($fixture, $input, $revision, $request, review: $review);
+    expect($receipt['code'])->toBe(match ($fault) {
+        'acknowledgement' => 'STATEMENT_REVIEW_REQUIRED',
+        'business' => 'BUSINESS_STALE',
+        'mandate' => 'MANDATE_STALE',
+        'transcription' => 'STATEMENT_TRANSCRIPTION_STALE',
+        default => 'STATEMENT_SOURCE_CHANGED',
+    })->and($receipt['http_status'])->toBe($fault === 'acknowledgement' ? 422 : 409)
+        ->and(StatementFixture::transcribe($fixture, $input, $revision, $request, review: $review))->toBe($receipt)
+        ->and(StatementEvidence::query()->where('business_id', $fixture['business']->id)->firstOrFail()->revision)->toBe($revision);
+    $this->assertDatabaseCount('statement_transcriptions', $revision - 1);
+})->with(['acknowledgement', 'business', 'mandate', 'original', 'manifest', 'evidence', 'extraction', 'transcription']);
+
+it('replays a reviewed save exactly after its Business and mandate move on', function (): void {
+    $fixture = BusinessApplicationFixture::make();
+    $source = StatementFixture::ingest($fixture);
+    $input = StatementFixture::transcription($source['data']['document_id']);
+    $review = StatementFixture::reviewed($fixture['authority']['users'][0]->id, $fixture['business']->id);
+    $request = (string) Str::uuid();
+    $receipt = StatementFixture::transcribe($fixture, $input, 1, $request, review: $review);
+    BusinessAuthorityFixture::configure($fixture['authority'], 1);
+    expect($fixture['business']->refresh()->mandate_version)->not->toBe($review['expected_mandate_version'])
+        ->and(StatementFixture::transcribe($fixture, $input, 1, $request, review: $review))->toBe($receipt)
+        ->and(StatementFixture::transcribe($fixture, $input, 2, review: $review)['code'])->toBe('BUSINESS_STALE');
+});
+
 it('rolls back the transcription and journal together if persistence fails unexpectedly', function (): void {
     $fixture = BusinessApplicationFixture::make();
     $source = StatementFixture::ingest($fixture);
@@ -126,7 +215,8 @@ it('requires current Business authority for recording, history reads and operati
     $source = StatementFixture::ingest($fixture);
     $input = StatementFixture::transcription($source['data']['document_id']);
     $request = (string) Str::uuid();
-    $receipt = StatementFixture::transcribe($fixture, $input, 1, $request);
+    $review = StatementFixture::reviewed($fixture['authority']['users'][0]->id, $fixture['business']->id);
+    $receipt = StatementFixture::transcribe($fixture, $input, 1, $request, review: $review);
     $id = $receipt['data']['transcription']['id'];
     $other = BusinessApplicationFixture::make();
     $get = app(GetStatementTranscription::class);
@@ -140,10 +230,11 @@ it('requires current Business authority for recording, history reads and operati
         ? [...$person, 'permissions' => ['business.view']] : $person, $authority['terms']['people']);
     BusinessAuthorityFixture::configure($authority, 1);
     expect(fn () => $get->handle($authority['users'][1]->id, 1, $fixture['business']->id, $id))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN')
-        ->and(fn () => StatementFixture::transcribe($fixture, $input, 2, actor: 1))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN');
+        ->and(fn () => StatementFixture::transcribe($fixture, $input, 2, actor: 1, review: $review))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN')
+        ->and(fn () => app(GetStatementTranscriptionDraft::class)->handle($authority['users'][1]->id, 1, $fixture['business']->id))->toThrow(CommandRejection::class, 'ACTION_FORBIDDEN');
     $authority['terms']['status'] = 'revoked';
     BusinessAuthorityFixture::configure($authority, 2);
-    expect(fn () => StatementFixture::transcribe($fixture, $input, 1, $request))->toThrow(CommandRejection::class, 'MANDATE_REQUIRED')
+    expect(fn () => StatementFixture::transcribe($fixture, $input, 1, $request, review: $review))->toThrow(CommandRejection::class, 'MANDATE_REQUIRED')
         ->and(fn () => $get->handle($authority['users'][0]->id, 1, $fixture['business']->id, $id))->toThrow(CommandRejection::class, 'MANDATE_REQUIRED')
         ->and(fn () => app(FindStatementOperation::class)->handle($authority['users'][0]->id, 1, $request, 'reconcile'))->toThrow(CommandRejection::class, 'MANDATE_REQUIRED');
 });

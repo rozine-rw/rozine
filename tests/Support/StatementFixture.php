@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Evidence\GetStatementTranscriptionDraft;
 use App\Application\Evidence\IngestStatement;
 use App\Application\Evidence\RecordStatementTranscription;
 use App\Domain\Evidence\StatementAuditReview;
@@ -16,6 +17,7 @@ use Illuminate\Support\Str;
  * @phpstan-import-type Transaction from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type DrawRef from \App\Domain\Evidence\StatementReconciliation
  * @phpstan-import-type Review from StatementAuditReview
+ * @phpstan-import-type ReviewedSave from \App\Application\Evidence\Contracts\StatementStore
  *
  * @phpstan-type TranscriptionInput array{rails: list<Rail>, months: list<string>, statements: list<Statement>}
  */
@@ -51,12 +53,29 @@ final class StatementFixture
     /**
      * @param  ApplicationFixture  $fixture
      * @param  TranscriptionInput  $input
+     * @param  ReviewedSave|null  $review
      * @return array<string, mixed>
      */
-    public static function transcribe(array $fixture, array $input, int $revision = 1, ?string $requestId = null, int $actor = 0): array
+    public static function transcribe(array $fixture, array $input, int $revision = 1, ?string $requestId = null, int $actor = 0, ?array $review = null): array
     {
         return app(RecordStatementTranscription::class)->handle($fixture['authority']['users'][$actor]->id, 1, $fixture['business']->id,
-            $revision, $input['rails'], $input['months'], $input['statements'], $requestId ?? (string) Str::uuid());
+            $revision, $input['rails'], $input['months'], $input['statements'], $review ?? self::reviewed($fixture['authority']['users'][$actor]->id, $fixture['business']->id),
+            $requestId ?? (string) Str::uuid());
+    }
+
+    /**
+     * The preconditions a representative's reviewed save carries, read from the current transcription draft.
+     *
+     * @return ReviewedSave
+     */
+    public static function reviewed(int $userId, string $businessId): array
+    {
+        $draft = app(GetStatementTranscriptionDraft::class)->handle($userId, 1, $businessId);
+
+        return ['expected_business_revision' => $draft['business_revision'], 'expected_mandate_version' => $draft['mandate_version'],
+            'expected_transcription_id' => $draft['current_transcription']['id'] ?? null,
+            'expected_transcription_sha256' => $draft['current_transcription']['sha256'] ?? null,
+            'source_binding' => $draft['evidence'], 'reviewed_against_originals' => true];
     }
 
     /**

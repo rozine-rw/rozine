@@ -1253,7 +1253,7 @@ it('cannot leave a source verification current after a racing source or authorit
             } elseif ($change === 'transcription') {
                 $input = StatementFixture::transcription($sources['document_id']);
                 app(RecordStatementTranscription::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business'], 2,
-                    $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+                    $input['rails'], $input['months'], $input['statements'], StatementFixture::reviewed($fixture['authority']['users'][0]->id, $fixture['business']), (string) Str::uuid());
             } elseif ($change === 'review') {
                 app(RecordAuditorIndependence::class)->handle($fixture['staff']->id, $fixture['business'], $partner['party']->id, 1,
                     [...AuditorIndependenceFixture::facts(), 'financial_interest' => true], now('UTC')->format('Y-m-d\TH:i:s\Z'),
@@ -2149,7 +2149,7 @@ it('keeps Auditor ledger uploads independent of concurrent Business statement ch
         $result = $command === 'ingest'
             ? app(IngestStatement::class)->handle($businessUser->id, 1, $businessId, $version, 'new.csv', "amount\n40000000\n", (string) Str::uuid())
             : app(RecordStatementTranscription::class)->handle($businessUser->id, 1, $businessId, $version,
-                $payload['rails'], $payload['months'], $payload['statements'], (string) Str::uuid());
+                $payload['rails'], $payload['months'], $payload['statements'], StatementFixture::reviewed($businessUser->id, $businessId), (string) Str::uuid());
         expect($result['code'])->toBe($command === 'ingest' ? 'INGESTED_NOT_AUDIT_APPROVED' : 'STATEMENT_RECONCILED_UNVERIFIED');
     };
     expect(runIdentityContenders([$ledger, $business]))->toBe([0, 0])
