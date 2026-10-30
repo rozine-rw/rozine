@@ -41,7 +41,7 @@ function ClockGlyph() {
 /**
  * The floating "Held for checkout" countdown on every Investor page (the shared `checkout_holds`
  * prop). Collapsed, it is a small pill with the soonest hold's MM:SS against the server clock; on
- * hover or keyboard focus it opens to the deal, its notes and amount, and "Continue to checkout".
+ * hover or keyboard focus it opens (and stays open while focus is inside it) to the deal, its notes and amount, and "Continue to checkout".
  * The pill itself always opens that deal's checkout, so a tap on a phone goes straight there. A
  * hold whose clock has run out is dropped; the server still decides expiry.
  */
@@ -100,7 +100,11 @@ function HoldCountdown({
             aria-label={t('investor.wallet.c3.holds')}
             data-testid="floating-hold"
             onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
+            onMouseLeave={(event) => {
+                if (!event.currentTarget.contains(document.activeElement)) {
+                    setOpen(false);
+                }
+            }}
             onFocus={() => setOpen(true)}
             onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {

@@ -122,6 +122,32 @@ describe('Floating checkout hold', () => {
         expect(card).not.toHaveTextContent('Continue to checkout');
     });
 
+    it('stays open on mouse-leave while focus is still inside it', () => {
+        inertia.shared = {
+            checkout_holds: {
+                server_time: NOW,
+                holds: [
+                    hold('r1', 'GreenLeaf Agro', '2026-10-30T12:04:32Z'),
+                    hold('r2', 'Kigali Bakes', '2026-10-30T12:05:00Z'),
+                ],
+            },
+        };
+        render(<InvestorCart {...page()} />);
+        const card = screen.getByTestId('floating-hold');
+
+        fireEvent.mouseEnter(card);
+        const more = screen.getByRole('link', {
+            name: '+1 more hold in your wallet',
+        });
+        act(() => {
+            more.focus();
+        });
+        fireEvent.mouseLeave(card);
+        expect(more).toBeInTheDocument();
+        expect(more).toHaveFocus();
+        expect(card).toHaveTextContent('Continue to checkout');
+    });
+
     it('drops a hold once its clock runs out', () => {
         inertia.shared = {
             checkout_holds: {

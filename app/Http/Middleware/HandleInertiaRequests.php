@@ -52,8 +52,9 @@ class HandleInertiaRequests extends Middleware
             // The Investor app's Cart tab badge; every other page has no cart.
             'cart_count' => fn (): ?int => $request->routeIs('investor.*') && $request->user() !== null
                 ? app(GetInvestorCart::class)->count((int) $request->user()->getAuthIdentifier()) : null,
-            // The floating "Held for checkout" countdown on every Investor page but the checkout itself.
-            'checkout_holds' => fn (): ?array => $this->checkoutHolds($request),
+            // The floating "Held for checkout" countdown on every Investor page but the checkout itself,
+            // sent on partial reloads too so a change beacon drops a hold released or confirmed elsewhere.
+            'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
                 : null),

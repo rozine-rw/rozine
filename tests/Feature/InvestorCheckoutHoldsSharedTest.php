@@ -9,6 +9,7 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\InvestorWalletFixture;
@@ -70,4 +71,16 @@ it('shares no other Party\'s holds, and none for a user with no Party', function
     $other = PrimaryReservationFixture::investor();
     expect(sharedCheckoutHolds($this->actingAs($other['user'])->get(route('investor.wallet')))['holds'])->toBe([])
         ->and(app(PrimaryPurchaseIndex::class)->activeHoldsOfUser(User::factory()->create()->id))->toBe([]);
+});
+
+it('sends the holds on a partial reload, so a hold released elsewhere drops without a full visit', function (): void {
+    $held = ($this->reserve)('1');
+    $partial = fn (): TestResponse => $this->get(route('investor.wallet'), ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'investor/wallet',
+        'X-Inertia-Partial-Data' => 'wallet', 'X-Inertia-Version' => Inertia::getVersion()])->assertOk();
+
+    $this->actingAs($this->investor['user']);
+    expect($partial()->json('props.checkout_holds.holds.*.reservation_id'))->toBe([$held]);
+
+    $this->checkout->release($this->investor['user']->id, 1, $this->campaign->id, $held, 1, (string) Str::uuid());
+    expect($partial()->json('props.checkout_holds.holds'))->toBe([]);
 });
