@@ -784,8 +784,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 751,
-        "generated": 321,
+        "totalTrackedSources": 756,
+        "generated": 326,
         "declarationOnly": 20,
         "authoredExecutable": 410
     },
