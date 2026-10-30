@@ -29,11 +29,11 @@ function heldNoteSource(?RetainedNoteSchedule $schedule, string $campaignId): vo
     });
 }
 
-/** @param  list<RetainedHoldingSchedule>  $holdings */
+/** @param  array<int, RetainedHoldingSchedule>  $holdings */
 function heldNoteSchedule(RetainedNoteSchedule $issued, array $holdings, ?string $campaignId = null): RetainedNoteSchedule
 {
     return new RetainedNoteSchedule($campaignId ?? $issued->campaignId, $issued->businessId, $issued->fundingId, $issued->closing, $issued->issuedAt,
-        $issued->principal, $issued->contractualReturn, $issued->gross, $holdings, $issued->instalments);
+        $issued->principal, $issued->contractualReturn, $issued->gross, array_values($holdings), $issued->instalments);
 }
 
 function heldNoteHolding(RetainedHoldingSchedule $holding, ?string $holdingId = null, ?string $commitmentId = null, ?string $principal = null): RetainedHoldingSchedule
