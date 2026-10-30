@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\ConfigureStaffAccess;
-use App\Domain\Identity\StaffPermission;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Tests\Support\StaffFixture;
 
 /*
  * The explicit G-OPS-01 disbursement mapping (#96 answer 3), as amended by BRS v2.0 SVC-R01 and
@@ -19,11 +19,11 @@ const DISBURSEMENT_PERMISSIONS = ['disbursements.view', 'disbursements.hold', 'd
 const RETIRED_DISBURSEMENT_PERMISSIONS = ['disbursements.authorize', 'disbursements.approve'];
 
 it('maps each staff role to exactly its disbursement permissions', function (string $role, array $expected): void {
-    $granted = array_values(array_intersect(StaffPermission::forRoles([$role]), DISBURSEMENT_PERMISSIONS));
+    $granted = array_values(array_intersect(StaffFixture::permissions([$role]), DISBURSEMENT_PERMISSIONS));
     sort($granted);
     sort($expected);
     expect($granted)->toBe($expected)
-        ->and(StaffPermission::forRoles([$role]))->not->toContain(...RETIRED_DISBURSEMENT_PERMISSIONS);
+        ->and(StaffFixture::permissions([$role]))->not->toContain(...RETIRED_DISBURSEMENT_PERMISSIONS);
 })->with([
     'treasury holds and requeries' => ['treasury', ['disbursements.view', 'disbursements.hold', 'disbursements.requery']],
     'approver holds' => ['approver', ['disbursements.view', 'disbursements.hold']],
@@ -33,18 +33,18 @@ it('maps each staff role to exactly its disbursement permissions', function (str
 ]);
 
 it('keeps every unrelated permission each role already had', function (): void {
-    expect(StaffPermission::forRoles(['superadmin']))->toContain('admin.open', 'businesses.view', 'businesses.verify', 'applications.review',
+    expect(StaffFixture::permissions(['superadmin']))->toContain('admin.open', 'businesses.view', 'businesses.verify', 'applications.review',
         'audit.partners.verify', 'audit.assignments.manage', 'audit.reports.view', 'consent.documents.record')
-        ->and(StaffPermission::forRoles(['approver']))->toContain('businesses.verify', 'applications.review', 'audit.assignments.manage')
-        ->and(StaffPermission::forRoles(['treasury']))->toContain('businesses.view', 'audit.reports.view')
-        ->and(StaffPermission::forRoles(['compliance']))->toContain('consent.documents.record');
+        ->and(StaffFixture::permissions(['approver']))->toContain('businesses.verify', 'applications.review', 'audit.assignments.manage')
+        ->and(StaffFixture::permissions(['treasury']))->toContain('businesses.view', 'audit.reports.view')
+        ->and(StaffFixture::permissions(['compliance']))->toContain('consent.documents.record');
 });
 
 it('unions roles for one user without ever granting a retired maker or checker permission', function (): void {
-    expect(array_values(array_intersect(StaffPermission::forRoles(['treasury', 'approver']), DISBURSEMENT_PERMISSIONS)))
+    expect(array_values(array_intersect(StaffFixture::permissions(['treasury', 'approver']), DISBURSEMENT_PERMISSIONS)))
         ->toEqualCanonicalizing(DISBURSEMENT_PERMISSIONS)
-        ->and(StaffPermission::forRoles(['analyst', 'approver', 'compliance', 'superadmin', 'treasury']))->not->toContain(...RETIRED_DISBURSEMENT_PERMISSIONS)
-        ->and(StaffPermission::forRoles(['superadmin', 'compliance']))->toContain('disbursements.hold')->not->toContain('disbursements.requery');
+        ->and(StaffFixture::permissions(['analyst', 'approver', 'compliance', 'superadmin', 'treasury']))->not->toContain(...RETIRED_DISBURSEMENT_PERMISSIONS)
+        ->and(StaffFixture::permissions(['superadmin', 'compliance']))->toContain('disbursements.hold')->not->toContain('disbursements.requery');
 });
 
 it('reads permissions without a lock and reports a lapsed authority under one', function (): void {

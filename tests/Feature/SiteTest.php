@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Pulse\PulseUnderwriting;
 use App\Enums\PulseSignupType;
 use App\Models\PulseSignup;
+use Inertia\Inertia;
 use Inertia\Testing\AssertableInertia;
 
 /**
@@ -51,6 +52,27 @@ test('the site is served at the root of the domain without authentication', func
     $response->assertInertia(fn (AssertableInertia $page) => $page->component('home'));
 });
 
+test('the site enables app entry locally and in isolated environments without changing the environment label', function (string $environment, bool $enabled, ?string $label) {
+    app()->detectEnvironment(fn (): string => $environment);
+
+    $this->get(route('home'))->assertOk();
+
+    $this->get(route('home'), [
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => Inertia::getVersion(),
+    ])->assertOk()
+        ->assertJsonPath('component', 'home')
+        ->assertJsonPath('props.showAppEntry', $enabled)
+        ->assertJsonPath('props.nonLiveEnvironment', $label);
+})->with([
+    ['local', true, null],
+    ['demo', true, 'demo'],
+    ['uat', true, 'uat'],
+    ['staging', true, 'uat'],
+    ['production', false, null],
+    ['testing', false, null],
+]);
+
 test('an investor reaching us through the site is recorded against their country', function () {
     $this->post(route('site.investor.store'), siteInvestor())->assertRedirect();
 
@@ -92,6 +114,14 @@ test('the site accepts the largest pledge the platform now writes', function () 
     ]))->assertRedirect();
 
     expect(PulseSignup::query()->sole()->pledge_amount)->toBe(PulseUnderwriting::PLEDGE_MAXIMUM);
+});
+
+test('a general signup pledge is not held to one raise concentration share', function () {
+    $this->post(route('site.investor.store'), siteInvestor([
+        'pledge_amount' => 60_000_000,
+    ]))->assertRedirect();
+
+    expect(PulseSignup::query()->sole()->pledge_amount)->toBe(60_000_000);
 });
 
 test('a pledge beyond the largest the platform writes is turned away', function () {

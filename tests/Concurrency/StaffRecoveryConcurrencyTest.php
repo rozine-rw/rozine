@@ -16,7 +16,7 @@ use Tests\Support\StaffRecoveryFixture as Recovery;
 
 test('recovery retains all actor target and historical manager locks until atomic completion', function (string $who): void {
     [$first, $second, $a, $b] = Recovery::people();
-    StaffAccount::query()->whereKey($a->id)->update(['roles' => json_encode(['superadmin'])]);
+    StaffAccount::query()->findOrFail($a->id)->syncRoles(['superadmin']);
     $proposal = app(RequestStaffRecovery::class)->handle($first->id, 'password', Recovery::code($first),
         'recovery', [$a->id, $b->id], 'Synthetic recovery.', (string) Str::uuid());
     $target = match ($who) {

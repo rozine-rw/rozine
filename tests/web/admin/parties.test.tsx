@@ -1351,6 +1351,32 @@ describe('Party 360', () => {
         },
     );
 
+    it('shows verified premises coordinates without a stated uncertainty as ±0 m', async () => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            premises: {
+                state: 'verified',
+                latitude: '-2.6000000',
+                longitude: '29.7400000',
+                uncertainty_m: null,
+                verified_at: null,
+                reference: 'Site visit',
+                revision: 1,
+                verify: null,
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const premises = screen.getByRole('region', {
+            name: 'Business premises',
+        });
+
+        expect(premises).toHaveTextContent('-2.6000000, 29.7400000 (±0 m)');
+    });
+
     it('says no Audit Partner is dispatched to a Business without verified premises, and records them', async () => {
         inertia.succeed = true;
         vi.spyOn(crypto, 'randomUUID').mockReturnValue(

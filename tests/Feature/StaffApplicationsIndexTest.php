@@ -196,7 +196,12 @@ it('does not return a queue after staff permission is revoked during the read', 
     $fixture = BusinessQuoteFixture::ready();
     BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
     BusinessApplication::retrieved(function () use ($fixture, $disabled): void {
-        StaffAccount::query()->findOrFail($fixture['audit']['staff']->id)->forceFill($disabled ? ['enabled' => false] : ['roles' => ['analyst']])->save();
+        $account = StaffAccount::query()->findOrFail($fixture['audit']['staff']->id);
+        if ($disabled) {
+            $account->forceFill(['enabled' => false])->save();
+        } else {
+            $account->syncRoles(['analyst']);
+        }
     });
     $this->actingAs($fixture['audit']['staff'])->getJson(route('api.v1.staff.applications.index'))->assertForbidden();
 })->with([true, false]);

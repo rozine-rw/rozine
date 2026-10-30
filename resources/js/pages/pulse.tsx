@@ -173,7 +173,7 @@ export default function Pulse({
         annual_costs: 0,
         sector: '',
         registered_year: 0,
-        term_months: 12,
+        term_months: 6,
         listed: false,
     });
     const investorPreviewRequest = useHttp<
@@ -454,6 +454,9 @@ export default function Pulse({
                 />
 
                 <PulseHero
+                    minimumLoan={policy.minimum_loan}
+                    maximumLoan={policy.maximum_loan}
+                    minimumRevenue={policy.minimum_revenue}
                     onInvest={() => scrollTo(investorPanel.current)}
                     onBorrow={() => scrollTo(businessPanel.current)}
                 />

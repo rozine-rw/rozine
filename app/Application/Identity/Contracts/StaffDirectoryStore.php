@@ -31,6 +31,9 @@ interface StaffDirectoryStore
      */
     public function directory(string $chip, string $search): array;
 
+    /** @return list<array{key: string, roles: list<string>, withheld?: string}> */
+    public function permissions(): array;
+
     /**
      * One staff account and every identity audit event recorded against it, newest first. The
      * actor is the acting user's name, or null for the server console.

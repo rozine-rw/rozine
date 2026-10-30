@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\StaffDirectoryStore;
+use App\Domain\Identity\StaffPermission;
+use App\Models\StaffAccount;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 /**
  * @phpstan-import-type Directory from StaffDirectoryStore
@@ -26,9 +29,13 @@ final class EloquentStaffDirectoryStore implements StaffDirectoryStore
                 $query->where(fn (Builder $match) => $match->whereLike('users.name', $term)->orWhereLike('users.email', $term));
             });
         $totals = $staff()->selectRaw("count(*) AS everyone, count(*) FILTER (WHERE staff_accounts.enabled) AS active,
-            count(*) FILTER (WHERE staff_accounts.roles @> '[\"approver\"]'::jsonb) AS approvers")->first();
+            count(*) FILTER (WHERE EXISTS (SELECT 1 FROM model_has_roles mr JOIN roles r ON r.id = mr.role_id WHERE mr.model_id = staff_accounts.user_id AND r.name = 'approver' AND r.guard_name = 'staff')) AS approvers")->first();
         $rows = $staff()->when($chip !== 'all', fn (Builder $query) => $query->where('staff_accounts.enabled', $chip === 'active'))
-            ->orderBy('users.name')->orderBy('users.id')->get(['users.id', 'users.name', 'users.email', 'staff_accounts.roles', 'staff_accounts.enabled']);
+            ->orderBy('users.name')->orderBy('users.id')->get(['users.id', 'users.name', 'users.email', 'staff_accounts.enabled']);
+        $assignments = StaffAccount::query()->whereKey($rows->pluck('id'))->with('roles')->get()->keyBy('user_id');
+        foreach ($rows as $row) {
+            $row->roles = $assignments[$row->id]->roles->pluck('name')->sort()->values()->all();
+        }
         $everyone = (int) ($totals->everyone ?? 0);
         $active = (int) ($totals->active ?? 0);
 
@@ -36,14 +43,29 @@ final class EloquentStaffDirectoryStore implements StaffDirectoryStore
             'counts' => ['all' => $everyone, 'active' => $active, 'frozen' => $everyone - $active, 'approvers' => (int) ($totals->approvers ?? 0)]];
     }
 
+    public function permissions(): array
+    {
+        $roles = Role::query()->where('guard_name', 'staff')->with('permissions')->get()->keyBy('name');
+        $matrix = ['admin.open' => StaffPermission::roles()];
+        foreach (StaffPermission::roles() as $name) {
+            foreach ($roles[$name]->permissions->sortBy('id') as $permission) {
+                $matrix[$permission->name][] = $name;
+            }
+        }
+
+        return [...array_map(fn (string $key, array $grants): array => ['key' => $key, 'roles' => array_values(array_unique($grants))],
+            array_keys($matrix), array_values($matrix)), ...StaffPermission::withheld()];
+    }
+
     /** @return Member|null */
     public function member(int $userId): ?array
     {
         $row = DB::table('staff_accounts')->join('users', 'users.id', '=', 'staff_accounts.user_id')->where('users.id', $userId)
-            ->first(['users.id', 'users.name', 'users.email', 'staff_accounts.roles', 'staff_accounts.enabled']);
+            ->first(['users.id', 'users.name', 'users.email', 'staff_accounts.enabled']);
         if ($row === null) {
             return null;
         }
+        $row->roles = StaffAccount::query()->findOrFail($userId)->roleNames();
         $history = DB::table('identity_audit_events AS event')->leftJoin('users AS actor', 'actor.id', '=', 'event.actor_user_id')
             ->where('event.target_type', 'user')->where('event.target_id', (string) $userId)
             ->orderByDesc('event.created_at')->orderByDesc('event.id')
@@ -97,7 +119,7 @@ final class EloquentStaffDirectoryStore implements StaffDirectoryStore
         $row = (array) $record;
 
         return ['user_id' => (int) $row['id'], 'name' => (string) $row['name'], 'email' => (string) $row['email'],
-            'roles' => array_values(array_filter(self::json($row['roles']), is_string(...))), 'enabled' => (bool) $row['enabled']];
+            'roles' => $row['roles'], 'enabled' => (bool) $row['enabled']];
     }
 
     /** @return array<array-key, mixed> */

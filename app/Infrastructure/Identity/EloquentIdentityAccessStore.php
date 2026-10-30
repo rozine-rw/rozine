@@ -128,13 +128,14 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if (! $enabled && $staff === null) {
                 throw new IdentityViolation('STAFF_ACCOUNT_NOT_FOUND', 404);
             }
-            if (in_array('superadmin', $roles, true) && ($staff === null || ! in_array('superadmin', $staff->roles, true)
+            if (in_array('superadmin', $roles, true) && ($staff === null || ! in_array('superadmin', $staff->roleNames(), true)
                 || ($enabled && ! $staff->enabled))) {
                 throw new IdentityViolation('STAFF_SUPERADMIN_APPROVAL_REQUIRED', 409);
             }
-            $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
+            $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff?->roleNames() ?? []];
             $staff ??= new StaffAccount;
-            $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled, 'roles' => $roles])->save();
+            $staff->forceFill(['user_id' => $userId, 'enabled' => $enabled])->save();
+            $staff->syncRoles($roles);
 
             if ($enabled) {
                 $user->forceFill([
@@ -181,14 +182,14 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if ($enabled && (! $this->emailVerified($user) || ! $this->mfaConfirmed($user))) {
                 throw new IdentityViolation('STAFF_VERIFIED_EMAIL_AND_MFA_REQUIRED');
             }
-            if ($enabled && in_array('superadmin', $staff->roles, true)) {
+            if ($enabled && in_array('superadmin', $staff->roleNames(), true)) {
                 return $this->requestSuperadmin($actorId, $user, $staff, 'reactivate', $reason, $requestId, $hash);
             }
-            $before = ['enabled' => $staff->enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles];
+            $before = ['enabled' => $staff->enabled, 'party_id' => $user->party_id, 'roles' => $staff->roleNames()];
             $staff->forceFill(['enabled' => $enabled])->save();
             $result = ['code' => $enabled ? 'STAFF_ACCESS_ENABLED' : 'STAFF_ACCESS_DISABLED', 'user_id' => $userId];
             $this->record('user:'.$actorId, $actorId, 'user', (string) $userId, 'staff.configure', $reason, $requestId, $hash,
-                $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $staff->roles], $result);
+                $before, ['enabled' => $enabled, 'party_id' => $user->party_id, 'roles' => $staff->roleNames()], $result);
 
             return $result;
         }, 3);
@@ -259,11 +260,11 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $this->requireStaffRecipient($user);
             $operation = $proposal->after['operation'] ?? null;
             if (($operation === 'grant' && $staff !== null) || ($operation === 'reactivate' && ($staff === null || $staff->enabled
-                || ! in_array('superadmin', $staff->roles, true))) || ! in_array($operation, ['grant', 'reactivate'], true)) {
+                || ! in_array('superadmin', $staff->roleNames(), true))) || ! in_array($operation, ['grant', 'reactivate'], true)) {
                 throw new IdentityViolation('STAFF_APPROVAL_STALE', 409);
             }
 
-            return $this->enableStaff($actorId, $user, $staff, $operation === 'grant' ? ['superadmin'] : $staff->roles,
+            return $this->enableStaff($actorId, $user, $staff, $operation === 'grant' ? ['superadmin'] : $staff->roleNames(),
                 $reason, $requestId, $hash, ['proposal_id' => $proposalId, 'requested_by' => $requesterId, 'request_reason' => $proposal->reason,
                     'approval_policy_version' => self::STAFF_APPROVAL_POLICY]);
         }, 3);
@@ -365,7 +366,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 $user = User::query()->findOrFail($recipientId);
                 $staff = StaffAccount::query()->findOrFail($recipientId);
                 $childId = (string) Str::uuid();
-                $roles = StaffPermission::normalizeRoles([...$staff->roles, 'superadmin']);
+                $roles = StaffPermission::normalizeRoles([...$staff->roleNames(), 'superadmin']);
                 $grants[] = $this->enableStaff($operatorId, $user, $staff, $roles, $reason, $childId,
                     $this->requestHash(['staff.recovery.grant', $proposalId, $recipientId, $reason], $reason, $childId),
                     ['recovery_proposal_id' => $proposalId, 'requested_by' => $requesterId,
@@ -415,7 +416,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     /** @return list<int> */
     private function recoveryHolders(): array
     {
-        return array_values(StaffAccount::query()->whereJsonContains('roles', 'superadmin')->orderBy('user_id')->get()
+        return array_values(StaffAccount::query()->role('superadmin', 'staff')->orderBy('user_id')->get()
             ->map(fn (StaffAccount $staff): int => $staff->user_id)->all());
     }
 
@@ -532,7 +533,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
     private function staffBaseline(User $user, ?StaffAccount $staff): array
     {
         return ['staff_exists' => $staff !== null, 'enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id,
-            'roles' => $staff->roles ?? [], 'context_revision' => $user->context_revision,
+            'roles' => $staff?->roleNames() ?? [], 'context_revision' => $user->context_revision,
             'access_event_id' => IdentityAuditEvent::query()->where('action', 'staff.configure')->where('target_type', 'user')
                 ->where('target_id', (string) $user->id)->orderByDesc('created_at')->orderByDesc('id')->value('id')];
     }
@@ -544,7 +545,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         $before = $this->staffBaseline($user, $staff);
         $result = ['code' => 'STAFF_SUPERADMIN_APPROVAL_REQUIRED', 'user_id' => $user->id, 'proposal_id' => $proposalId];
         $this->record('user:'.$actorId, $actorId, 'user', (string) $user->id, 'staff.superadmin.request', $reason, $requestId, $hash,
-            $before, [...$before, 'operation' => $operation, 'requested_roles' => $operation === 'grant' ? ['superadmin'] : $staff->roles,
+            $before, [...$before, 'operation' => $operation, 'requested_roles' => $operation === 'grant' ? ['superadmin'] : $staff->roleNames(),
                 'approval_policy_version' => self::STAFF_APPROVAL_POLICY], $result, $proposalId);
 
         return $result;
@@ -557,10 +558,11 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      */
     private function enableStaff(int $actorId, User $user, ?StaffAccount $staff, array $roles, string $reason, string $requestId, string $hash, array $approval = []): array
     {
-        $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff->roles ?? []];
+        $before = ['enabled' => $staff->enabled ?? false, 'party_id' => $user->party_id, 'roles' => $staff?->roleNames() ?? []];
         $new = $staff === null;
         $staff ??= new StaffAccount;
-        $staff->forceFill(['user_id' => $user->id, 'enabled' => true, 'roles' => $roles])->save();
+        $staff->forceFill(['user_id' => $user->id, 'enabled' => true])->save();
+        $staff->syncRoles($roles);
         if ($new) {
             $user->forceFill(['party_id' => null, 'active_membership_id' => null, 'active_membership_revision' => null,
                 'context_revision' => $user->context_revision + 1])->save();
@@ -878,7 +880,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             }
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
-                'allowed_actions' => $allowed ? StaffPermission::forRoles($staff->roles) : [], 'roles' => $allowed ? $staff->roles : []];
+                'allowed_actions' => $allowed ? $staff->allowedActions() : [], 'roles' => $allowed ? $staff->roleNames() : []];
         }, 3);
     }
 

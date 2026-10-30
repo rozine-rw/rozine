@@ -46,7 +46,7 @@ test('rows carry real roles and account states, and the chips and search count t
     $frozen = rosterStaff(['approver'], ['name' => 'Jean-Paul M.']);
     app(ConfigureStaffAccess::class)->handle($frozen->id, false, 'Left the operations team.', (string) Str::uuid(), ['approver']);
     $treasury = rosterStaff(['treasury'], ['name' => 'Tresor Mugabo']);
-    StaffAccount::factory()->create(['enabled' => true, 'roles' => []]);
+    StaffAccount::factory()->create(['enabled' => true]);
 
     $this->actingAs($viewer)->get(route('staff.staff.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'compliance')->where('viewer.initials', 'AD')
@@ -99,7 +99,7 @@ test("an operator's 360 shows their roles, access history and the freeze that di
     $this->actingAs($viewer)->get(route('staff.staff.index', ['operator' => $viewer->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.health', 'active')->where('party.freeze', null)
             ->where('party.stats.0.value.value', 'Super-admin')->has('party.restrictions', 1)->where('party.actions', []));
-    $bare = StaffAccount::factory()->create(['enabled' => false, 'roles' => []]);
+    $bare = StaffAccount::factory()->create(['enabled' => false]);
     $this->actingAs($viewer)->get(route('staff.staff.index', ['operator' => $bare->user_id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.health', 'frozen')->where('party.freeze', null)
             ->where('party.stats.0.value.value', '—')->where('party.history', []));
@@ -156,7 +156,7 @@ test('a superadmin suspends and reactivates another operator with a reason, and 
         ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
     $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => $request, 'reason' => 'On leave until November.'])
         ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
-    expect(StaffAccount::query()->find($eric->id))->enabled->toBeFalse()->roles->toBe(['approver', 'treasury']);
+    expect(StaffAccount::query()->findOrFail($eric->id)->enabled)->toBeFalse()->and(StaffAccount::query()->findOrFail($eric->id)->roleNames())->toBe(['approver', 'treasury']);
     $this->actingAs($eric)->get(route('staff.staff.index'))->assertForbidden();
     $this->actingAs($superadmin)->post(route('staff.staff.suspend', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Again.'])
         ->assertSessionHasErrors(['reason' => "This operator's access already changed. Review it again."]);
@@ -173,7 +173,7 @@ test('a superadmin suspends and reactivates another operator with a reason, and 
 
     $this->actingAs($superadmin)->post(route('staff.staff.reactivate', $eric->id), ['request_id' => (string) Str::uuid(), 'reason' => 'Back from leave.'])
         ->assertRedirect(route('staff.staff.index', ['operator' => $eric->id]));
-    expect(StaffAccount::query()->find($eric->id))->enabled->toBeTrue()->roles->toBe(['approver', 'treasury']);
+    expect(StaffAccount::query()->findOrFail($eric->id)->enabled)->toBeTrue()->and(StaffAccount::query()->findOrFail($eric->id)->roleNames())->toBe(['approver', 'treasury']);
     $this->actingAs($eric)->get(route('staff.staff.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('action_log.0.action', 'staff_enabled')->where('action_log.0.role', null));
 });
@@ -218,7 +218,7 @@ test('a superadmin adds an operator by email with one role and a reason, and the
     $this->actingAs($superadmin)->post(route('staff.staff.grant'), $payload)->assertRedirect(route('staff.staff.index', ['operator' => $candidate->id]));
     $this->actingAs($superadmin)->post(route('staff.staff.grant'), [...$payload, 'role' => 'analyst'])
         ->assertSessionHasErrors(['email' => 'That request was already used for different details. Try again.']);
-    expect(StaffAccount::query()->find($candidate->id))->enabled->toBeTrue()->roles->toBe(['treasury'])
+    expect(StaffAccount::query()->findOrFail($candidate->id)->enabled)->toBeTrue()->and(StaffAccount::query()->findOrFail($candidate->id)->roleNames())->toBe(['treasury'])
         ->and($candidate->refresh()->party_id)->toBeNull();
     $this->actingAs($candidate)->get(route('staff.staff.index'))->assertOk();
 
