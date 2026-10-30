@@ -5708,6 +5708,13 @@ const rw: Catalog = {
         other: '{name} · impapuro {count}',
     },
     'investor.wallet.c3.hold_expires': 'Birekurwa mu {time} keretse wemeje',
+    'investor.hold_float.label':
+        'Afashwe mu kwishyura, hasigaye {time}. Fungura kwishyura',
+    'investor.hold_float.continue': 'Komeza wishyure',
+    'investor.hold_float.more': {
+        one: '+{count} indi yafashwe mu gikapu cyawe',
+        other: '+{count} izindi zafashwe mu gikapu cyawe',
+    },
     'investor.wallet.c3.deposits': 'Ibyabikijwe',
     'investor.wallet.c3.deposit_from': 'Kubitsa · {method}',
     'investor.wallet.c3.intent.pending': 'Ntibiremezwa',
