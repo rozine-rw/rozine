@@ -210,7 +210,7 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
             <p className={cn('mt-[5px] text-[12.5px] leading-[1.55]', EXPLAIN)}>
                 {t('admin.businesses.onboard.body')}
             </p>
-            <fieldset className="mt-3">
+            <fieldset className="mt-3" aria-describedby="onboard-kind-error">
                 <legend className="text-[11.5px] font-semibold text-rz-muted">
                     {t('admin.businesses.onboard.field.kind')}
                 </legend>
