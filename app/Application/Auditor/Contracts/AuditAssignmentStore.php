@@ -130,6 +130,9 @@ interface AuditAssignmentStore
      */
     public function openEngagement(string $businessId): ?array;
 
+    /** Whether Audit Operations closed the Business's last audit, so no new one can be requested for it. */
+    public function lastClosed(string $businessId): bool;
+
     /**
      * Whether the accepted engagement's work is done (its newest report sealed and published, no
      * amendment open). It is marked completed only when the next request reconciles it.

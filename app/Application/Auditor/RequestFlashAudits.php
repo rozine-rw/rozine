@@ -15,8 +15,9 @@ use Throwable;
 /**
  * Draws unannounced Flash audits (BR-48). Each hourly run has a one in ODDS chance of sending one,
  * about one every two days, to a Business picked at random, so neither the day nor the Business can be
- * predicted. The Businesses drawn from are those owed a monthly audit: a note that lived through a whole
- * month and still has instalments due, so a note issued this month joins the draw next month. A drawn
+ * predicted. The Businesses drawn from are those owed a monthly audit: a note issued before the current
+ * calendar month that still has instalments due, so a note issued this month joins the draw on the first
+ * of next month, however late in this month it was issued. A drawn
  * Business with an audit still open, or whose last audit was closed, gets none from that draw.
  */
 final class RequestFlashAudits

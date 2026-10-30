@@ -2858,6 +2858,8 @@ const fr: Catalog = {
     'admin.parties.audit.title': 'Audit',
     'admin.parties.audit.none':
         'Aucun audit n’est en cours pour cette entreprise.',
+    'admin.parties.audit.closed_last':
+        'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, donc un nouvel audit éclair ne peut pas être demandé ici.',
     'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
     'admin.parties.audit.kind.routine': 'Audit mensuel',
     'admin.parties.audit.status.operations': 'Aux Opérations d’audit',

@@ -42,11 +42,10 @@ final class ManageBusinessAudit
      * @param  array<string, mixed>  $facts
      * @return array<string, mixed>
      */
-    public function recordIndependence(int $actorId, string $businessId, string $partyId, int $expectedRevision, array $facts, string $reference, string $reason, string $requestId): array
+    public function recordIndependence(int $actorId, string $businessId, string $partyId, int $expectedRevision, string $checkedAt, array $facts, string $reference, string $reason, string $requestId): array
     {
         try {
-            return $this->independence->handle($actorId, $businessId, $partyId, $expectedRevision, $facts,
-                now('UTC')->format('Y-m-d\TH:i:s\Z'), $reference, $reason, $requestId);
+            return $this->independence->handle($actorId, $businessId, $partyId, $expectedRevision, $facts, $checkedAt, $reference, $reason, $requestId);
         } catch (CommandRejection $rejection) {
             return ['status' => 'rejected', 'code' => $rejection->reason];
         }
