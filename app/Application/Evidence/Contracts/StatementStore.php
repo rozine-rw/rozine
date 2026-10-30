@@ -26,6 +26,10 @@ use Closure;
  * @phpstan-type AuditFile array{assignment: AcceptedAssignment, evidence: Manifest, transcription: Transcription|null}
  * @phpstan-type VerificationPayload array{business_id: string, assignment: AcceptedAssignment, source_revision: int, transcription: array{id: string, sha256: string}, source_hashes: array<string, string>, source_provenance: array<string, SourceProvenance>, policy_version: string, procedure_version: string, classification_version: string, review: Review, verified_at: string, report_approval: 'not_cosigned', observations: list<VerifiedObservation>}
  * @phpstan-type Verification array{id: string, revision: int, amends_id: string|null, sha256: string, current: bool, payload: VerificationPayload}
+ * @phpstan-type SourceBinding array{evidence_revision: int, manifest_sha256: string, originals: list<array{document_id: string, sha256: string}>, extractions: list<array{document_id: string, extraction_id: string, revision: int, parser_version: string}>}
+ * @phpstan-type ReviewedSave array{expected_business_revision: int, expected_mandate_version: int, expected_transcription_id: string|null, expected_transcription_sha256: string|null, source_binding: SourceBinding, reviewed_against_originals: bool}
+ * @phpstan-type Assistance array{status: 'unavailable', reason_codes: list<string>, candidate: null}
+ * @phpstan-type TranscriptionDraft array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence: SourceBinding, assistance: Assistance, current_transcription: Transcription|null, allowed_actions: list<string>}
  */
 interface StatementStore
 {
@@ -45,9 +49,13 @@ interface StatementStore
      * @param  list<Rail>  $rails
      * @param  list<string>  $months
      * @param  list<Statement>  $statements
+     * @param  ReviewedSave  $review
      * @return array<string, mixed>
      */
-    public function recordTranscription(int $userId, int $contextRevision, string $businessId, int $expectedRevision, array $rails, array $months, array $statements, string $requestId): array;
+    public function recordTranscription(int $userId, int $contextRevision, string $businessId, int $expectedRevision, array $rails, array $months, array $statements, array $review, string $requestId): array;
+
+    /** @return TranscriptionDraft */
+    public function transcriptionDraft(int $userId, int $contextRevision, string $businessId): array;
 
     /** @return Transcription|null */
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array;
