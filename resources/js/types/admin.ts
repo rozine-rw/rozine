@@ -859,13 +859,19 @@ export type BusinessAudit = {
         revision: number;
         /** Dispatch attempts used, while the audit waits on Audit Operations. */
         attempt: number | null;
+        /** Why no partner can take it now, while it waits on Audit Operations. */
         operations_reason:
+            | 'AUDIT_PREMISES_UNVERIFIED'
+            | 'AUDIT_NO_PARTNER_IN_RANGE'
             | 'AUDIT_NO_ELIGIBLE_PARTNER'
             | 'AUDIT_DISPATCH_EXHAUSTED'
             | null;
     } | null;
     request_flash: RouteAction | null;
     redispatch: RouteAction | null;
+    close: RouteAction | null;
+    /** Where to fix a missing partner within 30 km. */
+    remedy: string | null;
 };
 
 export type PartyDetail = {

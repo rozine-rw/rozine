@@ -28,8 +28,8 @@ use Inertia\Response;
  * capital, and one Business's 360 with its notes and history. A viewer who verifies Businesses also
  * sees, and may record, the premises location audit dispatch measures the 30 km to (BR-51), and may
  * onboard a business for its owner (#375). A viewer who manages audit assignments sees the audit open
- * on the Business, may request a Flash audit when none is (BR-48), and may redispatch one that waits on
- * Audit Operations (#446).
+ * on the Business, may request a Flash audit when none is (BR-48), and may redispatch or close one that
+ * waits on Audit Operations (#446).
  */
 class StaffBusinessDirectoryController extends Controller
 {
@@ -138,8 +138,22 @@ class StaffBusinessDirectoryController extends Controller
      */
     public function redispatchAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits): RedirectResponse
     {
-        $this->audit($audits->redispatch((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
-            (int) $request->validated('expected_revision'), (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
+        return $this->resolveAudit($request, $audits, 'redispatch');
+    }
+
+    /**
+     * Close the Business's audit that waits on Audit Operations. Closing ends the Business's audits
+     * from here: a later Flash request is refused (AUDIT_ENGAGEMENT_CLOSED).
+     */
+    public function closeAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits): RedirectResponse
+    {
+        return $this->resolveAudit($request, $audits, 'close');
+    }
+
+    private function resolveAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits, string $decision): RedirectResponse
+    {
+        $this->audit($audits->resolve((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
+            (int) $request->validated('expected_revision'), $decision, (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
 
         return redirect()->route('staff.businesses.index', ['business' => (string) $request->route('business')]);
     }

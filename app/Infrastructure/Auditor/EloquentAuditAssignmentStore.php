@@ -606,6 +606,30 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'status' => $open->status];
     }
 
+    public function workPublished(string $assignmentId): bool
+    {
+        return $this->published(AuditAssignment::query()->findOrFail($assignmentId));
+    }
+
+    public function dispatchBlocker(int $actorId, string $businessId): string
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+        $now = now()->toDateTimeImmutable();
+        $site = AuditLocation::query()->where('business_id', $businessId)->first()->state ?? $this->locations->empty();
+        $point = $site['point'];
+        if ($point === null || VerifiedAuditLocation::standing($site, $now) !== 'verified') {
+            return 'AUDIT_PREMISES_UNVERIFIED';
+        }
+        $inRange = AuditLocation::query()->whereNotNull('office_party_id')->get()->contains(function (AuditLocation $office) use ($site, $point, $now): bool {
+            $state = $office->state;
+            $bound = $state['point'] !== null && VerifiedAuditLocation::standing($state, $now) === 'verified' ? $this->distance->upperBound($state['point'], $point) : null;
+
+            return $bound !== null && $bound + (int) $state['uncertainty_m'] + (int) $site['uncertainty_m'] <= 30000;
+        });
+
+        return $inRange ? 'AUDIT_NO_ELIGIBLE_PARTNER' : 'AUDIT_NO_PARTNER_IN_RANGE';
+    }
+
     /** @return OperationsCase */
     public function operationsCase(int $actorId, string $assignmentId): array
     {

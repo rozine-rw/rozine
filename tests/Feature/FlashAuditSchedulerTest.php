@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Lottery;
+use Carbon\CarbonImmutable;
+use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\PrimaryIssuanceFixture;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 
 beforeEach(function (): void {
@@ -76,4 +79,15 @@ it('logs a drawn business that cannot be audited and sends nothing', function ()
 
     expect(app(RequestFlashAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0)
         ->and(AuditAssignment::query()->exists())->toBeFalse();
+});
+
+it('draws only from businesses owed a monthly audit, so a note issued this month joins the draw next month', function (): void {
+    ['campaign' => $campaign] = PrimaryIssuanceFixture::close(now('UTC')->toIso8601String());
+    PrimaryHoldingFixture::flushDeferredChecks();
+    Lottery::alwaysWin();
+
+    expect(app(RequestFlashAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0);
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHour());
+    expect(app(RequestFlashAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(1)
+        ->and(AuditAssignment::query()->sole()->business_id)->toBe($campaign->businessId);
 });

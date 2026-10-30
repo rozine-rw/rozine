@@ -7,8 +7,8 @@ namespace App\Application\Auditor;
 use App\Domain\Operations\CommandRejection;
 
 /**
- * The audit commands the staff Business drawer sends (#446): a Flash audit request (BR-48) and a
- * redispatch of an audit that waits on Audit Operations. A refusal before the command is recorded (a
+ * The audit commands the staff Business drawer sends (#446): a Flash audit request (BR-48), and a
+ * redispatch or close of an audit that waits on Audit Operations. A refusal before the command is recorded (a
  * closed last audit, a reused request id) comes back as a rejected result, as a recorded refusal does,
  * so the drawer can show it under the reason.
  */
@@ -27,10 +27,10 @@ final class ManageBusinessAudit
     }
 
     /** @return array<string, mixed> */
-    public function redispatch(int $actorId, string $assignmentId, int $expectedRevision, string $reason, string $requestId): array
+    public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array
     {
         try {
-            return $this->resolutions->handle($actorId, $assignmentId, $expectedRevision, 'redispatch', $reason, $requestId);
+            return $this->resolutions->handle($actorId, $assignmentId, $expectedRevision, $decision, $reason, $requestId);
         } catch (CommandRejection $rejection) {
             return ['status' => 'rejected', 'code' => $rejection->reason];
         }

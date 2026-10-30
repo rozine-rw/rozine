@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Chip, EXPLAIN } from '@/components/admin/ui';
@@ -14,7 +14,7 @@ const STATUS_TONE = {
     accepted: 'green',
 } as const;
 
-type Command = 'flash' | 'redispatch';
+type Command = 'flash' | 'redispatch' | 'close';
 
 /**
  * Why the command is needed, under the viewer's name. Each opening is one request, so a double or
@@ -107,8 +107,8 @@ function AuditReasonForm({
 
 /**
  * A Business's open audit for staff who manage audit assignments (#446): its kind and where it
- * stands, a Flash audit request when none is open (BR-48), and a redispatch while it waits on
- * Audit Operations for a partner.
+ * stands, a Flash audit request when none is open (BR-48), and, while it waits on Audit Operations,
+ * why no partner can take it with where to fix that, and the redispatch or close the server allows.
  */
 export function BusinessAuditSection({
     audit,
@@ -138,7 +138,12 @@ export function BusinessAuditSection({
             <button
                 type="button"
                 onClick={() => setOpen({ command, action, revision })}
-                className="mt-3 h-[38px] w-full rounded-[10px] bg-[#157357] text-[12.5px] font-bold text-white"
+                className={cn(
+                    'mt-3 h-[38px] w-full rounded-[10px] text-[12.5px] font-bold',
+                    command === 'close'
+                        ? 'border border-[#fdeaea] bg-rz-surface text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]'
+                        : 'bg-[#157357] text-white',
+                )}
             >
                 {t(`admin.parties.audit.${command}.open`)}
             </button>
@@ -187,11 +192,20 @@ export function BusinessAuditSection({
                                 )}
                             </p>
                         )}
+                        {audit.remedy !== null && (
+                            <Link
+                                href={audit.remedy}
+                                className="mt-1.5 inline-block text-[12.5px] font-semibold text-[#157357] underline"
+                            >
+                                {t('admin.parties.audit.remedy')}
+                            </Link>
+                        )}
                         {start(
                             'redispatch',
                             audit.redispatch,
                             engagement.revision,
                         )}
+                        {start('close', audit.close, engagement.revision)}
                     </>
                 )}
                 {open !== null && (

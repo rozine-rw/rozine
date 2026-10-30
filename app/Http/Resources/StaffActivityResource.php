@@ -55,6 +55,7 @@ class StaffActivityResource extends JsonResource
         'accreditation.submit' => ['Submitted a licence', 'blue'], 'accreditation.renew' => ['Renewed a licence', 'blue'],
         'accreditation.withdraw' => ['Withdrew a licence submission', 'amber'], 'accreditation.review' => ['Reviewed a licence', 'purple'],
         'audit.assignment.request' => ['Requested an audit', 'blue'], 'audit.assignment.advance' => ['Moved an audit to its next partner', 'amber'],
+        'audit.assignment.redispatch' => ['Redispatched an audit', 'amber'], 'audit.assignment.close' => ['Closed an audit', 'red'],
         'audit.engagement.accept' => ['Accepted an audit engagement', 'green'], 'audit.engagement.record' => ['Recorded an audit engagement', 'blue'],
         'audit.independence.review' => ['Reviewed auditor independence', 'purple'], 'conflict.declare' => ['Declared a conflict of interest', 'amber'],
         'audit.start' => ['Started an audit', 'blue'], 'audit.save_step' => ['Saved an audit step', 'grey'], 'audit.seal' => ['Sealed an audit report', 'green'],

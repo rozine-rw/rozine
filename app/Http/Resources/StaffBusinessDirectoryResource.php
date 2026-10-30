@@ -101,13 +101,16 @@ class StaffBusinessDirectoryResource extends JsonResource
      */
     private static function audit(?array $engagement, string $businessId, bool $console): array
     {
-        $redispatch = $console && $engagement !== null && in_array('audit.assignment.redispatch', $engagement['allowed_actions'], true);
+        $allowed = $engagement === null ? [] : $engagement['allowed_actions'];
+        $action = fn (string $decision, string $route): ?array => $console && $engagement !== null && in_array('audit.assignment.'.$decision, $allowed, true)
+            ? ['url' => route($route, ['business' => $businessId, 'assignment' => $engagement['id']], false), 'method' => 'post'] : null;
+        $reason = $engagement['operations_reason'] ?? null;
 
         return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
-            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $engagement['operations_reason']],
+            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason],
             'request_flash' => $console && $engagement === null ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
-            'redispatch' => $redispatch ? ['url' => route('staff.businesses.audit.redispatch', ['business' => $businessId, 'assignment' => $engagement['id']], false),
-                'method' => 'post'] : null];
+            'redispatch' => $action('redispatch', 'staff.businesses.audit.redispatch'), 'close' => $action('close', 'staff.businesses.audit.close'),
+            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? route('staff.auditors.index', [], false) : null];
     }
 
     /**

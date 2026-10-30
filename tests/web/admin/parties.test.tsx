@@ -1474,6 +1474,8 @@ describe('Party 360', () => {
                         method: 'post',
                     },
                     redispatch: null,
+                    close: null,
+                    remedy: null,
                 })}
             />,
         );
@@ -1544,6 +1546,8 @@ describe('Party 360', () => {
                         url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
                         method: 'post',
                     },
+                    close: null,
+                    remedy: null,
                 })}
             />,
         );
@@ -1604,6 +1608,11 @@ describe('Party 360', () => {
                     },
                     request_flash: null,
                     redispatch: null,
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
                 })}
             />,
         );
@@ -1615,7 +1624,11 @@ describe('Party 360', () => {
         expect(audit).toHaveTextContent(
             'this audit can no longer be redispatched',
         );
-        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
+        expect(
+            within(audit)
+                .getAllByRole('button')
+                .map((button) => button.textContent),
+        ).toEqual(['Close']);
         unmount();
 
         const view = renderWithUser(
@@ -1631,6 +1644,8 @@ describe('Party 360', () => {
                     },
                     request_flash: null,
                     redispatch: null,
+                    close: null,
+                    remedy: null,
                 })}
             />,
         );
@@ -1641,6 +1656,77 @@ describe('Party 360', () => {
             within(audit).getByText('Accepted by a partner'),
         ).toBeInTheDocument();
         expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('says no partner office is within 30 km, links to the partners, and closes the audit', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 3,
+                        attempt: 0,
+                        operations_reason: 'AUDIT_NO_PARTNER_IN_RANGE',
+                    },
+                    request_flash: null,
+                    redispatch: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
+                        method: 'post',
+                    },
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: '/admin/auditors',
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'No Audit Partner has a verified office within 30 km of these premises.',
+        );
+        expect(
+            within(audit).getByRole('link', { name: 'Open Audit Partners' }),
+        ).toHaveAttribute('href', '/admin/auditors');
+        await user.click(within(audit).getByRole('button', { name: 'Close' }));
+        const form = within(audit).getByRole('form', {
+            name: 'Close this audit',
+        });
+
+        expect(form).toHaveTextContent('Closing ends this audit without a report.');
+        expect(
+            within(audit).queryByRole('button', { name: 'Redispatch' }),
+        ).not.toBeInTheDocument();
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'The business stopped trading.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Close audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_1/close',
+                data: {
+                    reason: 'The business stopped trading.',
+                    request_id: '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+                    expected_revision: 3,
+                },
+            },
+        ]);
+        expect(
+            within(audit).queryByRole('form', { name: 'Close this audit' }),
+        ).not.toBeInTheDocument();
     });
 
     it('holds the Flash audit request while it is being sent', async () => {
@@ -1654,6 +1740,8 @@ describe('Party 360', () => {
                         method: 'post',
                     },
                     redispatch: null,
+                    close: null,
+                    remedy: null,
                 })}
             />,
         );

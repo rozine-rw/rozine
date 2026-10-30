@@ -2717,9 +2717,14 @@ const en = {
     'admin.parties.audit.status.offered': 'Offered to a partner',
     'admin.parties.audit.status.accepted': 'Accepted by a partner',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'No eligible Audit Partner has taken this audit yet. Dispatch attempts used: {attempts} of 3. Redispatch it once a partner within 30 km is available.',
+        'Audit Partners have verified offices within 30 km, but none can take this audit now (availability, capacity or independence). Dispatch attempts used: {attempts} of 3. Redispatch it once one can.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Every dispatch attempt is used, or the deadline has passed, so this audit can no longer be redispatched.',
+    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
+        'This business’s premises are not verified, so dispatch cannot measure the 30 km. Staff who verify businesses record them in the Premises section. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
+        'No Audit Partner has a verified office within 30 km of these premises. Approve a partner nearby or verify their office location. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.remedy': 'Open Audit Partners',
     'admin.parties.audit.field.reason': 'Reason',
     'admin.parties.audit.flash.open': 'Request Flash audit',
     'admin.parties.audit.flash.form': 'Request a Flash audit',
@@ -2735,6 +2740,13 @@ const en = {
     'admin.parties.audit.redispatch.placeholder':
         'e.g. A new Audit Partner near this business was approved.',
     'admin.parties.audit.redispatch.cta': 'Redispatch',
+    'admin.parties.audit.close.open': 'Close',
+    'admin.parties.audit.close.form': 'Close this audit',
+    'admin.parties.audit.close.form_body':
+        'Closing ends this audit without a report. A new Flash audit can’t be requested for this business from here afterwards.',
+    'admin.parties.audit.close.placeholder':
+        'e.g. The business stopped trading before a partner could visit.',
+    'admin.parties.audit.close.cta': 'Close audit',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',

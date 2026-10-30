@@ -330,6 +330,8 @@ Route::post('admin/businesses/{business}/flash-audit', [StaffBusinessDirectoryCo
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.flash');
 Route::post('admin/businesses/{business}/audits/{assignment}/redispatch', [StaffBusinessDirectoryController::class, 'redispatchAudit'])->whereUlid('business')
     ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.redispatch');
+Route::post('admin/businesses/{business}/audits/{assignment}/close', [StaffBusinessDirectoryController::class, 'closeAudit'])->whereUlid('business')
+    ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.close');
 Route::post('admin/businesses/onboard', [StaffBusinessDirectoryController::class, 'onboard'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.onboard');
 

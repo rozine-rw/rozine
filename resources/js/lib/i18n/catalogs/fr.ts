@@ -2864,9 +2864,14 @@ const fr: Catalog = {
     'admin.parties.audit.status.offered': 'Proposé à un partenaire',
     'admin.parties.audit.status.accepted': 'Accepté par un partenaire',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'Aucun Partenaire d’audit éligible n’a encore pris cet audit. Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès qu’un partenaire à moins de 30 km est disponible.',
+        'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun ne peut prendre cet audit maintenant (disponibilité, capacité ou indépendance). Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès que l’un d’eux le peut.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Toutes les tentatives d’affectation sont utilisées ou le délai est dépassé : cet audit ne peut plus être réaffecté.',
+    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
+        'Les locaux de cette entreprise ne sont pas vérifiés : l’affectation ne peut pas mesurer les 30 km. Le personnel qui vérifie les entreprises les enregistre dans la section Locaux. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
+        'Aucun Partenaire d’audit n’a de bureau vérifié à moins de 30 km de ces locaux. Approuvez un partenaire proche ou vérifiez l’adresse de son bureau. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.remedy': 'Ouvrir les Partenaires d’audit',
     'admin.parties.audit.field.reason': 'Motif',
     'admin.parties.audit.flash.open': 'Demander un audit éclair',
     'admin.parties.audit.flash.form': 'Demander un audit éclair',
@@ -2882,6 +2887,13 @@ const fr: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'p. ex. Un nouveau Partenaire d’audit proche de cette entreprise a été approuvé.',
     'admin.parties.audit.redispatch.cta': 'Réaffecter',
+    'admin.parties.audit.close.open': 'Clôturer',
+    'admin.parties.audit.close.form': 'Clôturer cet audit',
+    'admin.parties.audit.close.form_body':
+        'La clôture met fin à cet audit sans rapport. Aucun nouvel audit Flash ne pourra ensuite être demandé ici pour cette entreprise.',
+    'admin.parties.audit.close.placeholder':
+        'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
+    'admin.parties.audit.close.cta': 'Clôturer l’audit',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',

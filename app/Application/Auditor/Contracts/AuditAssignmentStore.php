@@ -130,6 +130,21 @@ interface AuditAssignmentStore
      */
     public function openEngagement(string $businessId): ?array;
 
+    /**
+     * Whether the accepted engagement's work is done (its newest report sealed and published, no
+     * amendment open). It is marked completed only when the next request reconciles it.
+     */
+    public function workPublished(string $assignmentId): bool;
+
+    /**
+     * Why audit dispatch finds no partner for the Business now, for staff who manage assignments: its
+     * premises are not verified, no partner office is verified within 30 km of them, or partners in
+     * range cannot take it (availability, capacity or independence).
+     *
+     * @return 'AUDIT_PREMISES_UNVERIFIED'|'AUDIT_NO_PARTNER_IN_RANGE'|'AUDIT_NO_ELIGIBLE_PARTNER'
+     */
+    public function dispatchBlocker(int $actorId, string $businessId): string;
+
     /** @return array<string, mixed> */
     public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array;
 
