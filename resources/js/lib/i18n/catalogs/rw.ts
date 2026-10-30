@@ -2850,9 +2850,14 @@ const rw: Catalog = {
     'admin.parties.audit.status.offered': 'Ryahawe umugenzuzi',
     'admin.parties.audit.status.accepted': 'Ryemewe n’umugenzuzi',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'Nta mugenzuzi wemerewe urafata iri genzura. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe hari umugenzuzi uri muri kilometero 30.',
+        'Hari abagenzuzi bafite ibiro byemejwe muri kilometero 30, ariko nta n’umwe ushobora gufata iri genzura ubu (kuboneka, ubushobozi cyangwa ubwigenge). Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe umwe abishoboye.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Inshuro zose zo kurioherereza zarakoreshejwe cyangwa igihe cyararenze, ntirishobora koherezwa ukundi.',
+    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
+        'Aho ubu bucuruzi bukorera ntiharemezwa, bityo kohereza ntibishobora gupima kilometero 30. Abakozi bemeza ubucuruzi bahandika mu gice cy’Aho bukorera. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
+        'Nta mugenzuzi ufite ibiro byemejwe muri kilometero 30 z’aho ubu bucuruzi bukorera. Emeza umugenzuzi uri hafi cyangwa wemeze aho ibiro bye biri. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.remedy': 'Fungura Abagenzuzi',
     'admin.parties.audit.field.reason': 'Impamvu',
     'admin.parties.audit.flash.open': 'Saba igenzura ritunguranye',
     'admin.parties.audit.flash.form': 'Saba igenzura ritunguranye',
@@ -2868,6 +2873,40 @@ const rw: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
+    'admin.parties.audit.close.open': 'Funga',
+    'admin.parties.audit.close.form': 'Funga iri genzura',
+    'admin.parties.audit.close.form_body':
+        'Gufunga birangiza iri genzura nta raporo. Nyuma yaho nta genzura rya Flash rishya rishobora gusabirwa ubu bucuruzi hano.',
+    'admin.parties.audit.close.placeholder':
+        'urugero: Ubucuruzi bwahagaritse imirimo mbere y’uko umugenzuzi ahagera.',
+    'admin.parties.audit.close.cta': 'Funga igenzura',
+    'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
+        'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
+        'Hari abagenzuzi bafite ibiro byemejwe biri muri km 30, ariko nta n’umwe wasuzumwe ko yigenga kuri ubu bucuruzi muri manda yabwo iriho, bityo ntirishobora kubahabwa. Andika isuzuma ry’ubwigenge ry’umugenzuzi uri hasi. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.partners.title': 'Abagenzuzi bari muri km 30',
+    'admin.parties.audit.partners.reviewed': 'Ubwigenge bwasuzumwe',
+    'admin.parties.audit.partners.unreviewed': 'Ntirasuzumwa',
+    'admin.parties.audit.independence.open':
+        'Andika isuzuma ry’ubwigenge rya {name}',
+    'admin.parties.audit.independence.form': 'Isuzuma ry’ubwigenge rya {name}',
+    'admin.parties.audit.independence.form_body':
+        'Andika ibyo wagenzuye ku mubano w’uyu mugenzuzi n’ubucuruzi. Ahabwa igenzura ry’ubu bucuruzi gusa niba nta na kimwe muri ibi kimureba kandi umwanya yigeze kugira hano warangiye mu mezi arenga 24.',
+    'admin.parties.audit.independence.fact.financial_interest':
+        'Afite inyungu z’amafaranga mu bucuruzi',
+    'admin.parties.audit.independence.fact.current_role_tie':
+        'Afite umwanya mu bucuruzi ubu',
+    'admin.parties.audit.independence.fact.family_or_business_conflict':
+        'Afitanye isano y’umuryango cyangwa y’ubucuruzi na ba nyirabwo',
+    'admin.parties.audit.independence.fact.unresolved_conflict':
+        'Afite irindi kinyuranyo kitarakemuka',
+    'admin.parties.audit.independence.field.ended':
+        'Niba yarigeze agira umwanya hano, itariki warangiriyeho (si ngombwa)',
+    'admin.parties.audit.independence.field.reference':
+        'Ibimenyetso byagenzuwe',
+    'admin.parties.audit.independence.placeholder.reference':
+        'urugero: Imenyekanisha ry’umugenzuzi ryo ku wa 30 Ukwakira n’urutonde rw’abanyamigabane muri RDB.',
+    'admin.parties.audit.independence.cta': 'Andika isuzuma',
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',
