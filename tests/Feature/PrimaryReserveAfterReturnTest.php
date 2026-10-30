@@ -7,6 +7,7 @@ use App\Domain\Primary\RiskStatements;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -84,4 +85,28 @@ it('lets another Investor reserve the deal after one hold is released', function
     $second = ($this->reserve)($other['user'])->assertOk()->assertJsonPath('code', 'RESERVATION_HELD')->json('data.receipt.reservation_id');
 
     ($this->assertFreshHold)($other['user'], $first, $second);
+});
+
+it('rolls the precision back only while no hold has been retired', function (): void {
+    $migration = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $definition = fn (): string => (string) DB::scalar("SELECT pg_get_functiondef('check_primary_held_release(char)'::regprocedure)");
+    $installed = $definition();
+    $migration->down();
+    expect($definition())->toContain('OR h.created_at < r.created_at OR e.created_at < v.created_at')->not->toContain('date_trunc');
+    $migration->up();
+    expect($definition())->toBe($installed);
+
+    ($this->ready)($this->investor['user']);
+    $first = ($this->reserve)($this->investor['user'])->assertOk()->json('data.receipt.reservation_id');
+    ($this->release)($this->investor['user'], $first);
+    ($this->reserve)($this->investor['user'])->assertOk();
+    $refusal = null;
+    try {
+        DB::transaction(fn () => $migration->down());
+    } catch (QueryException $exception) {
+        $refusal = $exception;
+    }
+
+    expect($refusal?->getCode())->toBe('23514')->and($refusal?->getMessage())->toContain('Retained held claim releases require a forward migration')
+        ->and($definition())->toBe($installed);
 });
