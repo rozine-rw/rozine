@@ -255,8 +255,7 @@ final class EloquentStatementStore implements StatementStore
      */
     private function sourceBinding(?StatementEvidence $evidence): array
     {
-        $originals = $evidence === null ? collect() : StatementOriginal::query()->where('statement_evidence_id', $evidence->id)
-            ->orderBy('id')->get(['id', 'sha256', 'media_type', 'size_bytes']);
+        $originals = StatementOriginal::query()->where('statement_evidence_id', $evidence?->id)->orderBy('id')->get(['id', 'sha256', 'media_type', 'size_bytes']);
         $extractions = StatementExtraction::query()->whereIn('statement_original_id', $originals->modelKeys())
             ->orderByDesc('revision')->get(['id', 'statement_original_id', 'revision', 'parser_version'])
             ->unique('statement_original_id')->keyBy('statement_original_id');
