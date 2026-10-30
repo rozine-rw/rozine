@@ -898,18 +898,44 @@ describe('Verification submission', () => {
         );
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts).toHaveLength(0);
+        // A browser that skips constraint validation still reaches the form's own refusal.
+        fireEvent.submit(dob);
+        expect(inertia.posts).toHaveLength(0);
 
         fireEvent.change(dob, { target: { value: '1899-12-31' } });
         expect(screen.getByRole('alert')).toHaveTextContent(
             'Enter a real date of birth.',
         );
 
+        fireEvent.change(dob, { target: { value: '' } });
+        expect(dob).toHaveValue('');
+
         fireEvent.change(dob, { target: { value: '1990-06-15' } });
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        inertia.succeed = true;
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             date_of_birth: '15 / 06 / 1990',
         });
+    });
+
+    it('shows the saved ID number and its document type once the document step is saved', () => {
+        const props = live(documentFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The document fixture is an individual case.');
+        }
+
+        render(
+            <InvestorVerification
+                {...props}
+                id_type="passport"
+                id_number="PC1234567"
+            />,
+        );
+
+        expect(screen.getByLabelText('ID NUMBER')).toHaveValue('PC1234567');
+        expect(screen.getByRole('radio', { name: /Passport/u })).toBeChecked();
     });
 
     it('checks the ID number for the chosen document once the field is left', async () => {
@@ -1170,6 +1196,34 @@ describe('Verification submission', () => {
         }
 
         expect(screen.queryByText(missing)).not.toBeInTheDocument();
+    });
+
+    it('shows the captured selfie back inside the round frame', () => {
+        const props = live(livenessFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The liveness fixture is an individual case.');
+        }
+
+        render(
+            <InvestorVerification
+                {...props}
+                uploads={{
+                    ...props.uploads,
+                    selfie: {
+                        status: 'uploaded',
+                        filename: 'selfie.jpg',
+                        media_type: 'image/jpeg',
+                        link: {
+                            url: '/investor/verification/documents/selfie',
+                            method: 'get',
+                        },
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('presentation')).toHaveClass('rounded-full');
     });
 
     it('stops showing the missing-selfie error once the selfie is uploaded', () => {

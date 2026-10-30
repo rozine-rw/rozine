@@ -140,7 +140,7 @@ export const router = {
 
 export const usePoll = () => inertia.poll;
 
-export const usePage = () => ({ url: inertia.url, props: {} });
+export const usePage = () => ({ url: inertia.url, props: { errors: {} } });
 
 export function useHttp() {
     const body = useRef<() => unknown>(() => ({}));
