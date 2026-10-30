@@ -2894,6 +2894,33 @@ const fr: Catalog = {
     'admin.parties.audit.close.placeholder':
         'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
     'admin.parties.audit.close.cta': 'Clôturer l’audit',
+    'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
+        'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
+        'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun n’a été reconnu indépendant de cette entreprise pour son mandat actuel, donc l’affectation ne peut pas le leur proposer. Enregistrez un examen d’indépendance pour un partenaire ci-dessous. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.partners.title':
+        'Partenaires d’audit à moins de 30 km',
+    'admin.parties.audit.partners.reviewed': 'Indépendance examinée',
+    'admin.parties.audit.partners.unreviewed': 'Non examiné',
+    'admin.parties.audit.independence.open':
+        'Enregistrer l’examen d’indépendance de {name}',
+    'admin.parties.audit.independence.form': 'Examen d’indépendance de {name}',
+    'admin.parties.audit.independence.form_body':
+        'Indiquez ce que vous avez vérifié sur les liens de ce partenaire avec l’entreprise. L’affectation ne lui propose les audits de cette entreprise que si aucun de ces points ne s’applique et que tout rôle passé ici a pris fin il y a plus de 24 mois.',
+    'admin.parties.audit.independence.fact.financial_interest':
+        'A un intérêt financier dans l’entreprise',
+    'admin.parties.audit.independence.fact.current_role_tie':
+        'Occupe actuellement un rôle dans l’entreprise',
+    'admin.parties.audit.independence.fact.family_or_business_conflict':
+        'A un lien familial ou d’affaires avec ses propriétaires',
+    'admin.parties.audit.independence.fact.unresolved_conflict':
+        'A un autre conflit non résolu',
+    'admin.parties.audit.independence.field.ended':
+        'S’il a occupé un rôle ici, la date de fin (facultatif)',
+    'admin.parties.audit.independence.field.reference': 'Preuves vérifiées',
+    'admin.parties.audit.independence.placeholder.reference':
+        'ex. Déclaration du partenaire du 30 oct. et registre des actionnaires RDB.',
+    'admin.parties.audit.independence.cta': 'Enregistrer l’examen',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',

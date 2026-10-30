@@ -26,10 +26,11 @@ use Illuminate\Support\Str;
  * @phpstan-import-type Detail from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
  * @phpstan-import-type Engagement from \App\Application\Auditor\GetBusinessAuditEngagement
+ * @phpstan-import-type NearbyPartner from \App\Application\Auditor\GetBusinessAuditEngagement
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null, audit?: array{engagement: Engagement|null}|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null, audit?: array{engagement: Engagement|null, partners: list<NearbyPartner>}|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
  *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null, onboarding_sectors?: list<string>
  * }
@@ -92,14 +93,15 @@ class StaffBusinessDirectoryResource extends JsonResource
             'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
                 'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
                     ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null),
-                'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['business']['row']['business_id'], $prefix === '')]];
+                'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['audit']['partners'], $page['business']['row']['business_id'], $prefix === '')]];
     }
 
     /**
      * @param  Engagement|null  $engagement
+     * @param  list<NearbyPartner>  $partners
      * @return array<string, mixed>
      */
-    private static function audit(?array $engagement, string $businessId, bool $console): array
+    private static function audit(?array $engagement, array $partners, string $businessId, bool $console): array
     {
         $allowed = $engagement === null ? [] : $engagement['allowed_actions'];
         $action = fn (string $decision, string $route): ?array => $console && $engagement !== null && in_array('audit.assignment.'.$decision, $allowed, true)
@@ -109,8 +111,13 @@ class StaffBusinessDirectoryResource extends JsonResource
         return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
             'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason],
             'request_flash' => $console && $engagement === null ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
-            'redispatch' => $action('redispatch', 'staff.businesses.audit.redispatch'), 'close' => $action('close', 'staff.businesses.audit.close'),
-            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? ['url' => route('staff.auditors.index', [], false), 'method' => 'get'] : null];
+            // Redispatch is offered only when a partner can take the audit now; otherwise it would change nothing.
+            'redispatch' => $reason === 'AUDIT_PARTNER_AVAILABLE' ? $action('redispatch', 'staff.businesses.audit.redispatch') : null,
+            'close' => $action('close', 'staff.businesses.audit.close'),
+            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? ['url' => route('staff.auditors.index', [], false), 'method' => 'get'] : null,
+            'partners' => array_map(fn (array $partner): array => ['party_id' => $partner['party_id'], 'name' => $partner['name'], 'reviewed' => $partner['reviewed'],
+                'revision' => $partner['revision'], 'review' => $console ? ['url' => route('staff.businesses.audit.independence',
+                    ['business' => $businessId, 'party' => $partner['party_id']], false), 'method' => 'post'] : null], $partners)];
     }
 
     /**

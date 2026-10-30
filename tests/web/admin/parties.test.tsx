@@ -1476,6 +1476,7 @@ describe('Party 360', () => {
                     redispatch: null,
                     close: null,
                     remedy: null,
+                    partners: [],
                 })}
             />,
         );
@@ -1539,7 +1540,7 @@ describe('Party 360', () => {
                         status: 'operations',
                         revision: 2,
                         attempt: 1,
-                        operations_reason: 'AUDIT_NO_ELIGIBLE_PARTNER',
+                        operations_reason: 'AUDIT_PARTNER_AVAILABLE',
                     },
                     request_flash: null,
                     redispatch: {
@@ -1548,6 +1549,7 @@ describe('Party 360', () => {
                     },
                     close: null,
                     remedy: null,
+                    partners: [],
                 })}
             />,
         );
@@ -1559,6 +1561,9 @@ describe('Party 360', () => {
         expect(
             within(audit).getByText('With Audit Operations'),
         ).toBeInTheDocument();
+        expect(audit).toHaveTextContent(
+            'An Audit Partner within 30 km can take this audit now.',
+        );
         expect(audit).toHaveTextContent('Dispatch attempts used: 1 of 3.');
         expect(
             within(audit).queryByRole('button', {
@@ -1613,6 +1618,7 @@ describe('Party 360', () => {
                         method: 'post',
                     },
                     remedy: null,
+                    partners: [],
                 })}
             />,
         );
@@ -1646,6 +1652,7 @@ describe('Party 360', () => {
                     redispatch: null,
                     close: null,
                     remedy: null,
+                    partners: [],
                 })}
             />,
         );
@@ -1675,15 +1682,13 @@ describe('Party 360', () => {
                         operations_reason: 'AUDIT_NO_PARTNER_IN_RANGE',
                     },
                     request_flash: null,
-                    redispatch: {
-                        url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
-                        method: 'post',
-                    },
+                    redispatch: null,
                     close: {
                         url: '/admin/businesses/biz_1/audits/aud_1/close',
                         method: 'post',
                     },
                     remedy: { url: '/admin/auditors', method: 'get' },
+                    partners: [],
                 })}
             />,
         );
@@ -1744,6 +1749,7 @@ describe('Party 360', () => {
                     redispatch: null,
                     close: null,
                     remedy: null,
+                    partners: [],
                 })}
             />,
         );
@@ -1760,6 +1766,208 @@ describe('Party 360', () => {
 
         expect(send).toBeDisabled();
         expect(send).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('asks for an independence review of a nearby partner and records one', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '7a6b5c4d-8e9f-4a0b-9c1d-2e3f4a5b6c7d',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 1,
+                        attempt: 1,
+                        operations_reason: 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED',
+                    },
+                    request_flash: null,
+                    redispatch: null,
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
+                    partners: [
+                        {
+                            party_id: 'party_a',
+                            name: 'Amina Uwase',
+                            reviewed: true,
+                            revision: 1,
+                            review: null,
+                        },
+                        {
+                            party_id: 'party_b',
+                            name: 'Bosco Habimana',
+                            reviewed: false,
+                            revision: 0,
+                            review: {
+                                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                                method: 'post',
+                            },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'none has been reviewed as independent of this business',
+        );
+        expect(
+            within(audit).queryByRole('button', { name: 'Redispatch' }),
+        ).not.toBeInTheDocument();
+        expect(audit).toHaveTextContent('Audit Partners within 30 km');
+        expect(
+            within(audit).getByText('Independence reviewed'),
+        ).toBeInTheDocument();
+        expect(within(audit).getByText('Not reviewed')).toBeInTheDocument();
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Record independence review for Amina Uwase',
+            }),
+        ).not.toBeInTheDocument();
+        const open = () =>
+            user.click(
+                within(audit).getByRole('button', {
+                    name: 'Record independence review for Bosco Habimana',
+                }),
+            );
+
+        await open();
+        let form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+
+        expect(
+            within(form).getByRole('button', { name: 'Record review' }),
+        ).toBeDisabled();
+        await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+        expect(
+            within(audit).queryByRole('form', {
+                name: 'Independence review of Bosco Habimana',
+            }),
+        ).not.toBeInTheDocument();
+        await open();
+        form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+        await user.click(
+            within(form).getByLabelText(
+                'Has another conflict not yet resolved',
+            ),
+        );
+        await user.click(
+            within(form).getByLabelText(
+                'Has another conflict not yet resolved',
+            ),
+        );
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'Partner declaration and RDB record.',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'No ties to the business.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Record review' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                data: {
+                    financial_interest: false,
+                    current_role_tie: false,
+                    family_or_business_conflict: false,
+                    unresolved_conflict: false,
+                    role_tie_ended_on: null,
+                    reference: 'Partner declaration and RDB record.',
+                    reason: 'No ties to the business.',
+                    request_id: '7a6b5c4d-8e9f-4a0b-9c1d-2e3f4a5b6c7d',
+                    expected_revision: 0,
+                },
+            },
+        ]);
+        expect(
+            within(audit).queryByRole('form', {
+                name: 'Independence review of Bosco Habimana',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('sends the date a past role ended with an independence review and shows its refusal', async () => {
+        inertia.errors = {
+            reason: "The date the role ended can't be in the future.",
+        };
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    request_flash: null,
+                    redispatch: null,
+                    close: null,
+                    remedy: null,
+                    partners: [
+                        {
+                            party_id: 'party_b',
+                            name: 'Bosco Habimana',
+                            reviewed: false,
+                            revision: 2,
+                            review: {
+                                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                                method: 'post',
+                            },
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        await user.click(
+            within(audit).getByRole('button', {
+                name: 'Record independence review for Bosco Habimana',
+            }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+
+        await user.click(
+            within(form).getByLabelText(
+                'Has a financial interest in the business',
+            ),
+        );
+        await user.type(
+            within(form).getByLabelText(
+                'If they held a role here, the date it ended (optional)',
+            ),
+            '2024-05-31',
+        );
+        await user.type(within(form).getByLabelText('Evidence checked'), 'Ref');
+        await user.type(within(form).getByLabelText('Reason'), 'Checked.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Record review' }),
+        );
+
+        expect(inertia.posts[0]?.data).toMatchObject({
+            financial_interest: true,
+            role_tie_ended_on: '2024-05-31',
+            expected_revision: 2,
+        });
+        expect(form).toHaveTextContent(
+            "The date the role ended can't be in the future.",
+        );
     });
 
     it('shows the office read-only to a viewer who may not verify it', async () => {

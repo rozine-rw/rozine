@@ -15,6 +15,7 @@ use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Requests\Staff\OnboardBusinessRequest;
+use App\Http\Requests\Staff\RecordAuditorIndependenceRequest;
 use App\Http\Requests\Staff\RequestFlashAuditRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
@@ -28,8 +29,8 @@ use Inertia\Response;
  * capital, and one Business's 360 with its notes and history. A viewer who verifies Businesses also
  * sees, and may record, the premises location audit dispatch measures the 30 km to (BR-51), and may
  * onboard a business for its owner (#375). A viewer who manages audit assignments sees the audit open
- * on the Business, may request a Flash audit when none is (BR-48), and may redispatch or close one that
- * waits on Audit Operations (#446).
+ * on the Business, may request a Flash audit when none is (BR-48), may redispatch or close one that
+ * waits on Audit Operations, and may record the independence reviews dispatch needs (#446).
  */
 class StaffBusinessDirectoryController extends Controller
 {
@@ -54,6 +55,14 @@ class StaffBusinessDirectoryController extends Controller
         'VERSION_CONFLICT' => 'This audit changed since you opened it. Review it again.',
         'ASSIGNMENT_NOT_IN_OPERATIONS' => 'This audit is no longer with Audit Operations.',
         'AUDIT_DISPATCH_EXHAUSTED' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.',
+        'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
+    ];
+
+    /** Independence review refusals in the words the form shows. */
+    private const INDEPENDENCE_MESSAGES = [
+        'VERSION_CONFLICT' => "This partner's independence review changed since you opened it. Review it again.",
+        'AUDITOR_INDEPENDENCE_EVIDENCE_REQUIRED' => 'Say what you checked and why, in plain text.',
+        'AUDITOR_INDEPENDENCE_FACTS_INVALID' => "The date the role ended can't be in the future.",
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
@@ -94,7 +103,7 @@ class StaffBusinessDirectoryController extends Controller
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
             'audit' => $business !== null && in_array('audit.assignments.manage', $staff['allowed_actions'], true)
-                ? ['engagement' => $audits->handle($actorId, $business['row']['business_id'])] : null,
+                ? ['engagement' => $audits->handle($actorId, $business['row']['business_id']), 'partners' => $audits->partners($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
             'onboarding_sectors' => OnboardBusiness::sectors()]);
 
@@ -150,6 +159,23 @@ class StaffBusinessDirectoryController extends Controller
         return $this->resolveAudit($request, $audits, 'close');
     }
 
+    /**
+     * Record an independence review of an Audit Partner within 30 km against the Business, now, so
+     * dispatch may offer the partner the Business's audits when it finds no conflict.
+     */
+    public function auditorIndependence(RecordAuditorIndependenceRequest $request, ManageBusinessAudit $audits): RedirectResponse
+    {
+        $businessId = (string) $request->route('business');
+        $ended = $request->validated('role_tie_ended_on');
+        $this->audit($audits->recordIndependence((int) $request->user()?->getAuthIdentifier(), $businessId, (string) $request->route('party'),
+            (int) $request->validated('expected_revision'), ['financial_interest' => $request->boolean('financial_interest'),
+                'current_role_tie' => $request->boolean('current_role_tie'), 'role_tie_ended_at' => $ended === null ? null : $ended.'T00:00:00Z',
+                'family_or_business_conflict' => $request->boolean('family_or_business_conflict'), 'unresolved_conflict' => $request->boolean('unresolved_conflict')],
+            (string) $request->validated('reference', ''), (string) $request->validated('reason', ''), (string) $request->validated('request_id')), self::INDEPENDENCE_MESSAGES);
+
+        return redirect()->route('staff.businesses.index', ['business' => $businessId]);
+    }
+
     private function resolveAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits, string $decision): RedirectResponse
     {
         $this->audit($audits->resolve((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
@@ -158,11 +184,14 @@ class StaffBusinessDirectoryController extends Controller
         return redirect()->route('staff.businesses.index', ['business' => (string) $request->route('business')]);
     }
 
-    /** @param  array<string, mixed>  $result */
-    private function audit(array $result): void
+    /**
+     * @param  array<string, mixed>  $result
+     * @param  array<string, string>  $messages
+     */
+    private function audit(array $result, array $messages = self::AUDIT_MESSAGES): void
     {
         if ($result['status'] !== 'completed' || $result['code'] === 'AUDIT_ASSIGNMENT_RESUMED') {
-            throw ValidationException::withMessages(['reason' => [self::AUDIT_MESSAGES[$result['code']] ?? 'We could not do that. Try again.']]);
+            throw ValidationException::withMessages(['reason' => [$messages[$result['code']] ?? 'We could not do that. Try again.']]);
         }
     }
 

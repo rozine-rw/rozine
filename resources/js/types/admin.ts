@@ -861,8 +861,10 @@ export type BusinessAudit = {
         attempt: number | null;
         /** Why no partner can take it now, while it waits on Audit Operations. */
         operations_reason:
+            | 'AUDIT_PARTNER_AVAILABLE'
             | 'AUDIT_PREMISES_UNVERIFIED'
             | 'AUDIT_NO_PARTNER_IN_RANGE'
+            | 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'
             | 'AUDIT_NO_ELIGIBLE_PARTNER'
             | 'AUDIT_DISPATCH_EXHAUSTED'
             | null;
@@ -872,6 +874,14 @@ export type BusinessAudit = {
     close: RouteAction | null;
     /** Where to fix a missing partner within 30 km. */
     remedy: RouteLink | null;
+    /** Audit Partners with a verified office within 30 km, and whether each is reviewed as independent. */
+    partners: {
+        party_id: string;
+        name: string;
+        reviewed: boolean;
+        revision: number;
+        review: RouteAction | null;
+    }[];
 };
 
 export type PartyDetail = {

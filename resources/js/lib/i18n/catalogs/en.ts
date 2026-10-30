@@ -2747,6 +2747,32 @@ const en = {
     'admin.parties.audit.close.placeholder':
         'e.g. The business stopped trading before a partner could visit.',
     'admin.parties.audit.close.cta': 'Close audit',
+    'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
+        'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
+        'Audit Partners have verified offices within 30 km, but none has been reviewed as independent of this business for its current mandate, so dispatch can’t offer it to them. Record an independence review for a partner below. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.partners.title': 'Audit Partners within 30 km',
+    'admin.parties.audit.partners.reviewed': 'Independence reviewed',
+    'admin.parties.audit.partners.unreviewed': 'Not reviewed',
+    'admin.parties.audit.independence.open':
+        'Record independence review for {name}',
+    'admin.parties.audit.independence.form': 'Independence review of {name}',
+    'admin.parties.audit.independence.form_body':
+        'Record what you checked about this partner’s ties to the business. Dispatch offers them this business’s audits only if none of these apply and any past role here ended over 24 months ago.',
+    'admin.parties.audit.independence.fact.financial_interest':
+        'Has a financial interest in the business',
+    'admin.parties.audit.independence.fact.current_role_tie':
+        'Holds a role at the business now',
+    'admin.parties.audit.independence.fact.family_or_business_conflict':
+        'Has a family or business tie to its owners',
+    'admin.parties.audit.independence.fact.unresolved_conflict':
+        'Has another conflict not yet resolved',
+    'admin.parties.audit.independence.field.ended':
+        'If they held a role here, the date it ended (optional)',
+    'admin.parties.audit.independence.field.reference': 'Evidence checked',
+    'admin.parties.audit.independence.placeholder.reference':
+        'e.g. Partner declaration of 30 Oct and RDB shareholder record.',
+    'admin.parties.audit.independence.cta': 'Record review',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',

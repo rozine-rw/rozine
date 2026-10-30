@@ -7,14 +7,16 @@ namespace App\Application\Auditor;
 use App\Domain\Operations\CommandRejection;
 
 /**
- * The audit commands the staff Business drawer sends (#446): a Flash audit request (BR-48), and a
- * redispatch or close of an audit that waits on Audit Operations. A refusal before the command is recorded (a
+ * The audit commands the staff Business drawer sends (#446): a Flash audit request (BR-48), a
+ * redispatch or close of an audit that waits on Audit Operations, and an independence review of a
+ * nearby Audit Partner, which dispatch requires before it offers the partner the Business's audits. A refusal before the command is recorded (a
  * closed last audit, a reused request id) comes back as a rejected result, as a recorded refusal does,
  * so the drawer can show it under the reason.
  */
 final class ManageBusinessAudit
 {
-    public function __construct(private RequestAuditAssignment $requests, private ResolveAuditAssignment $resolutions) {}
+    public function __construct(private RequestAuditAssignment $requests, private ResolveAuditAssignment $resolutions,
+        private RecordAuditorIndependence $independence) {}
 
     /** @return array<string, mixed> */
     public function requestFlash(int $actorId, string $businessId, string $reason, string $requestId): array
@@ -31,6 +33,20 @@ final class ManageBusinessAudit
     {
         try {
             return $this->resolutions->handle($actorId, $assignmentId, $expectedRevision, $decision, $reason, $requestId);
+        } catch (CommandRejection $rejection) {
+            return ['status' => 'rejected', 'code' => $rejection->reason];
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $facts
+     * @return array<string, mixed>
+     */
+    public function recordIndependence(int $actorId, string $businessId, string $partyId, int $expectedRevision, array $facts, string $reference, string $reason, string $requestId): array
+    {
+        try {
+            return $this->independence->handle($actorId, $businessId, $partyId, $expectedRevision, $facts,
+                now('UTC')->format('Y-m-d\TH:i:s\Z'), $reference, $reason, $requestId);
         } catch (CommandRejection $rejection) {
             return ['status' => 'rejected', 'code' => $rejection->reason];
         }

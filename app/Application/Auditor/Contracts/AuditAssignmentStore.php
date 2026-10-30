@@ -137,13 +137,23 @@ interface AuditAssignmentStore
     public function workPublished(string $assignmentId): bool;
 
     /**
-     * Why audit dispatch finds no partner for the Business now, for staff who manage assignments: its
-     * premises are not verified, no partner office is verified within 30 km of them, or partners in
-     * range cannot take it (availability, capacity or independence).
+     * Why audit dispatch would find no partner for the assignment now, for staff who manage
+     * assignments: the Business's premises are not verified, no partner office is verified within
+     * 30 km of them, no partner in range has an independence review for the current mandate, or the
+     * reviewed partners in range cannot take it (availability, capacity, conflict or already tried).
+     * Null when a partner can take it.
      *
-     * @return 'AUDIT_PREMISES_UNVERIFIED'|'AUDIT_NO_PARTNER_IN_RANGE'|'AUDIT_NO_ELIGIBLE_PARTNER'
+     * @return 'AUDIT_PREMISES_UNVERIFIED'|'AUDIT_NO_PARTNER_IN_RANGE'|'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'|'AUDIT_NO_ELIGIBLE_PARTNER'|null
      */
-    public function dispatchBlocker(int $actorId, string $businessId): string;
+    public function dispatchBlocker(int $actorId, string $assignmentId): ?string;
+
+    /**
+     * The Audit Partners with a verified office within 30 km of the Business's verified premises, and
+     * whether each has an independence review for the Business's current mandate.
+     *
+     * @return list<array{party_id: string, name: string, revision: int, reviewed: bool}>
+     */
+    public function nearbyPartners(int $actorId, string $businessId): array;
 
     /** @return array<string, mixed> */
     public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array;
