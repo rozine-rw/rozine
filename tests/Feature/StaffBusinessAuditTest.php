@@ -2,14 +2,19 @@
 
 declare(strict_types=1);
 
-use App\Application\Auditor\ResolveAuditAssignment;
+use App\Application\Auditor\MarkAuditLocationMoved;
+use App\Application\Auditor\SetAuditorAvailability;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
+use App\Models\AuditorIndependenceReview;
+use App\Models\AuditorIndependenceVersion;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture as Fixture;
+use Tests\Support\AuditorFixture;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\StaffFixture;
 
 beforeEach(function (): void {
@@ -28,10 +33,13 @@ it('requests a Flash audit from a Business with none open and then shows it offe
     $id = $fixture['business'];
     $page = route('staff.businesses.index', ['business' => $id]);
     $url = '/admin/businesses/'.$id.'/flash-audit';
+    $partner = $fixture['partners'][0];
+    $partners = [['party_id' => $partner['party']->id, 'name' => $partner['user']->name, 'reviewed' => true, 'revision' => 1,
+        'review' => ['url' => '/admin/businesses/'.$id.'/auditors/'.$partner['party']->id.'/independence', 'method' => 'post']]];
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => null,
-            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null]));
+            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
 
     $this->from($page)->post($url, flashAuditRequest(''))->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
     $this->assertDatabaseCount('audit_assignments', 0);
@@ -46,7 +54,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
 
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
         'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null],
-        'request_flash' => null, 'redispatch' => null]));
+        'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
 
     $this->from($page)->post($url, $body)->assertRedirect($page);
     $this->from($page)->post($url, [...$body, 'reason' => 'A different reason.'])
@@ -55,7 +63,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
     expect(AuditAssignment::query()->count())->toBe(1);
 });
 
-it('redispatches an audit that waits on Audit Operations once a partner is eligible', function (): void {
+it('says no partner office is within 30 km, then asks for an independence review and redispatches once one is recorded', function (): void {
     $fixture = Fixture::make(0);
     $assignment = Fixture::request($fixture);
     $id = $fixture['business'];
@@ -64,8 +72,10 @@ it('redispatches an audit that waits on Audit Operations once a partner is eligi
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_ELIGIBLE_PARTNER'],
-            'request_flash' => null, 'redispatch' => ['url' => $url, 'method' => 'post']]));
+            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'],
+            'request_flash' => null, 'redispatch' => null,
+            'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
+            'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => []]));
 
     $body = ['expected_revision' => 1, ...flashAuditRequest('No partner yet; try again.')];
     $this->post($url, $body)->assertRedirect($page);
@@ -75,15 +85,57 @@ it('redispatches an audit that waits on Audit Operations once a partner is eligi
     $this->from($page)->post($url, ['expected_revision' => 1, ...flashAuditRequest('Stale.')])
         ->assertSessionHasErrors(['reason' => 'This audit changed since you opened it. Review it again.']);
 
+    // A partner approved near the business, but never reviewed as independent of it, is not offered the audit.
     $partner = Fixture::make(1)['partners'][0];
-    Fixture::independence($fixture['staff'], $id, $partner['party']->id);
-    $this->post($url, ['expected_revision' => 2, ...flashAuditRequest('A partner near the business was approved.')])->assertRedirect($page);
+    $review = '/admin/businesses/'.$id.'/auditors/'.$partner['party']->id.'/independence';
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED')
+        ->where('party.audit.redispatch', null)->where('party.audit.remedy', null)
+        ->where('party.audit.partners', [['party_id' => $partner['party']->id, 'name' => $partner['user']->name, 'reviewed' => false, 'revision' => 0,
+            'review' => ['url' => $review, 'method' => 'post']]]));
+
+    $facts = ['financial_interest' => false, 'current_role_tie' => false, 'family_or_business_conflict' => false, 'unresolved_conflict' => false];
+    $independence = ['request_id' => (string) Str::uuid(), 'expected_revision' => 0, ...$facts, 'role_tie_ended_on' => null,
+        'reference' => 'Partner declaration and RDB shareholder record.', 'reason' => 'No ties to the business.'];
+    $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'reference' => ''])
+        ->assertSessionHasErrors(['reason' => 'Say what you checked and why, in plain text.']);
+    $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'role_tie_ended_on' => now('UTC')->addDay()->format('Y-m-d')])
+        ->assertSessionHasErrors(['reason' => "The date the role ended can't be in the future."]);
+    $this->from($page)->post($review, [...$independence, 'request_id' => (string) Str::uuid(), 'expected_revision' => 1])
+        ->assertSessionHasErrors(['reason' => "This partner's independence review changed since you opened it. Review it again."]);
+    $this->from($page)->post($review, [...$independence, 'unresolved_conflict' => 'maybe'])->assertSessionHasErrors('unresolved_conflict');
+    $this->assertDatabaseCount('auditor_independence_reviews', 1);
+
+    $this->post($review, $independence)->assertRedirect($page);
+    $this->from($page)->post($review, [...$independence, 'reason' => 'A different reason.'])
+        ->assertSessionHasErrors(['reason' => 'That request was already used for different details. Try again.']);
+    $recorded = AuditorIndependenceReview::query()->where('business_id', $id)->where('party_id', $partner['party']->id)->sole();
+    expect($recorded->revision)->toBe(1)->and($recorded->state['evidence_reference'])->toBe('Partner declaration and RDB shareholder record.')
+        ->and(AuditorIndependenceVersion::query()->where('review_id', $recorded->id)->sole()->actor_user_id)->toBe($fixture['staff']->id);
+
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_PARTNER_AVAILABLE')
+        ->where('party.audit.redispatch', ['url' => $url, 'method' => 'post'])
+        ->where('party.audit.partners.0.reviewed', true)->where('party.audit.partners.0.revision', 1));
+
+    $this->post($url, ['expected_revision' => 2, ...flashAuditRequest('A partner near the business was reviewed.')])->assertRedirect($page);
     expect($assignment->refresh()->status)->toBe('offered')->and($assignment->party_id)->toBe($partner['party']->id);
     $this->from($page)->post($url, ['expected_revision' => 3, ...flashAuditRequest('Again.')])
         ->assertSessionHasErrors(['reason' => 'This audit is no longer with Audit Operations.']);
 });
 
-it('offers no redispatch once a Flash audit has passed its deadline, and no new request after a closure', function (): void {
+it('says a partner within 30 km who was already offered the audit cannot take it again', function (): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    $partner = $fixture['partners'][0];
+    Fixture::respond($partner['user'], $assignment, 'decline', 'Not available this week.');
+    $page = route('staff.businesses.index', ['business' => $fixture['business']]);
+
+    $this->actingAs($fixture['staff'])->get($page)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'operations')
+            ->where('party.audit.engagement.operations_reason', 'AUDIT_NO_ELIGIBLE_PARTNER')->where('party.audit.redispatch', null)
+            ->where('party.audit.partners.0.reviewed', true));
+});
+
+it('offers only Close once a Flash audit has passed its deadline, and no new request after the closure', function (): void {
     $fixture = Fixture::make(0);
     $assignment = Fixture::request($fixture);
     $id = $fixture['business'];
@@ -92,11 +144,15 @@ it('offers no redispatch once a Flash audit has passed its deadline, and no new 
 
     $this->actingAs($fixture['staff'])->get($page)
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_DISPATCH_EXHAUSTED')
-            ->where('party.audit.redispatch', null)->where('party.audit.request_flash', null));
+            ->where('party.audit.redispatch', null)->where('party.audit.request_flash', null)
+            ->where('party.audit.close.url', '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close'));
     $this->from($page)->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest('Try.')])
         ->assertSessionHasErrors(['reason' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.']);
 
-    app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, 1, 'close', 'No partner in time.', (string) Str::uuid());
+    $this->from($page)->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', ['expected_revision' => 1, ...flashAuditRequest('No partner in time.')])
+        ->assertRedirect($page);
+    expect($assignment->refresh()->status)->toBe('closed')
+        ->and(AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->where('revision', 2)->value('actor_user_id'))->toBe($fixture['staff']->id);
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
         ->where('party.audit.request_flash.url', '/admin/businesses/'.$id.'/flash-audit'));
     $this->from($page)->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())
@@ -114,10 +170,64 @@ it('leaves the audit out for staff who do not manage audits and gives the API no
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', null));
     $this->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())->assertForbidden();
     $this->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest()])->assertForbidden();
+    $this->post('/admin/businesses/'.$id.'/auditors/'.AuditorFixture::make()['party']->id.'/independence', ['request_id' => (string) Str::uuid(), 'expected_revision' => 0,
+        'financial_interest' => false, 'current_role_tie' => false, 'family_or_business_conflict' => false, 'unresolved_conflict' => false,
+        'reference' => 'Ref.', 'reason' => 'Checked.'])->assertForbidden();
     expect($assignment->refresh()->revision)->toBe(1);
 
     Sanctum::actingAs($fixture['staff'], ['staff:businesses:read']);
     $this->getJson('/api/v1/staff/businesses?business='.$id)->assertOk()
         ->assertJsonPath('data.party.audit.engagement.status', 'operations')
-        ->assertJsonPath('data.party.audit.request_flash', null)->assertJsonPath('data.party.audit.redispatch', null);
+        ->assertJsonPath('data.party.audit.request_flash', null)->assertJsonPath('data.party.audit.redispatch', null)
+        ->assertJsonPath('data.party.audit.close', null)->assertJsonPath('data.party.audit.remedy', null)
+        ->assertJsonPath('data.party.audit.partners', []);
+});
+
+it('says why no partner can take an audit: premises not verified, or partners in range who cannot take it', function (): void {
+    $fixture = Fixture::make(1);
+    $partner = $fixture['partners'][0];
+    app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, false, (string) Str::uuid());
+    $assignment = Fixture::request($fixture);
+    $page = route('staff.businesses.index', ['business' => $fixture['business']]);
+
+    $this->actingAs($fixture['staff'])->get($page)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.id', $assignment->id)
+            ->where('party.audit.engagement.operations_reason', 'AUDIT_NO_ELIGIBLE_PARTNER')->where('party.audit.remedy', null));
+
+    app(MarkAuditLocationMoved::class)->handle($fixture['staff']->id, 'premises', $fixture['business'], 1,
+        now('UTC')->format('Y-m-d\TH:i:s\Z'), 'The business moved.', (string) Str::uuid());
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_PREMISES_UNVERIFIED')
+        ->where('party.audit.remedy', null));
+});
+
+it('offers a new Flash audit once the accepted audit\'s report is published, and completes it on that request', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    $audit = $fixture['audit'];
+    $page = route('staff.businesses.index', ['business' => $audit['business']]);
+    AuditSealingFixture::seal($fixture);
+
+    $this->actingAs($audit['staff'])->get($page)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')->where('party.audit.request_flash', null));
+
+    AuditSealingFixture::cosign($fixture);
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
+        ->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit'));
+    $this->from($page)->post('/admin/businesses/'.$audit['business'].'/flash-audit', flashAuditRequest())->assertRedirect($page);
+
+    expect($fixture['assignment']->refresh()->status)->toBe('completed')
+        ->and(AuditAssignment::query()->where('business_id', $audit['business'])->count())->toBe(2);
+});
+
+it('names a redispatch and a closure in the Activity trail', function (): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $url = '/admin/businesses/'.$fixture['business'].'/audits/'.$assignment->id;
+    $this->actingAs($fixture['staff'])->post($url.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest('No partner yet.')]);
+    $this->post($url.'/close', ['expected_revision' => 2, ...flashAuditRequest('No partner in time.')]);
+
+    /** @var list<array{action: array{code: string, label: string, tone: string}}> $events */
+    $events = $this->get(route('staff.events.index'))->assertOk()->viewData('page')['props']['events'];
+    $actions = array_column($events, 'action');
+    expect($actions)->toContain(['code' => 'audit.assignment.close', 'label' => 'Closed an audit', 'tone' => 'red'])
+        ->toContain(['code' => 'audit.assignment.redispatch', 'label' => 'Redispatched an audit', 'tone' => 'amber']);
 });

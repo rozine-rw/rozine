@@ -40,6 +40,7 @@ use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use Carbon\CarbonImmutable;
 use Closure;
+use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Support\Facades\DB;
@@ -604,6 +605,79 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
         return $open === null || in_array($open->status, ['completed', 'closed'], true) ? null
             : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'status' => $open->status];
+    }
+
+    public function workPublished(string $assignmentId): bool
+    {
+        return $this->published(AuditAssignment::query()->findOrFail($assignmentId));
+    }
+
+    public function dispatchBlocker(int $actorId, string $assignmentId): ?string
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
+        return $this->scope($actorId, null, $this->businessId($assignmentId), false, function (array $context, array $candidates) use ($assignmentId): ?string {
+            $now = now()->toDateTimeImmutable();
+            $nearby = $this->nearby($context['business']['id'], $now);
+            if ($nearby === null) {
+                return 'AUDIT_PREMISES_UNVERIFIED';
+            }
+            if ($nearby === []) {
+                return 'AUDIT_NO_PARTNER_IN_RANGE';
+            }
+            // Dispatch only considers partners with a current independence review for this mandate.
+            $reviewed = array_filter($candidates, fn (array $candidate): bool => in_array($candidate['id'], $nearby, true));
+            if ($reviewed === []) {
+                return 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED';
+            }
+            $tried = AuditAssignment::query()->findOrFail($assignmentId)->state['tried'];
+            $available = array_values(array_filter($reviewed, fn (array $candidate): bool => ! in_array($candidate['id'], $tried, true)));
+
+            return $context['current'] && $this->dispatch->select($available, $now) !== null ? null : 'AUDIT_NO_ELIGIBLE_PARTNER';
+        });
+    }
+
+    public function nearbyPartners(int $actorId, string $businessId): array
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
+        return $this->scope($actorId, null, $businessId, false, function (array $context) use ($businessId): array {
+            $nearby = $this->nearby($businessId, now()->toDateTimeImmutable()) ?? [];
+            $names = DB::table('users')->whereIn('party_id', $nearby)->orderBy('id')->get(['party_id', 'name'])->unique('party_id')->pluck('name', 'party_id');
+            $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $nearby)->get()->keyBy('party_id');
+            $partners = array_map(function (string $partyId) use ($names, $reviews, $context): array {
+                $review = $reviews->get($partyId);
+
+                return ['party_id' => $partyId, 'name' => (string) ($names[$partyId] ?? ''), 'revision' => $review->revision ?? 0,
+                    'reviewed' => $review !== null && $review->state['mandate_version'] === $context['business']['mandate_version']];
+            }, $nearby);
+            usort($partners, fn (array $left, array $right): int => strcmp($left['name'], $right['name']) ?: strcmp($left['party_id'], $right['party_id']));
+
+            return $partners;
+        });
+    }
+
+    /**
+     * The partners whose verified office is within 30 km of the Business's verified premises, measured
+     * as dispatch measures it, or null while the premises are not verified.
+     *
+     * @return list<string>|null
+     */
+    private function nearby(string $businessId, DateTimeImmutable $now): ?array
+    {
+        $site = AuditLocation::query()->where('business_id', $businessId)->first()->state ?? $this->locations->empty();
+        $point = $site['point'];
+        if ($point === null || VerifiedAuditLocation::standing($site, $now) !== 'verified') {
+            return null;
+        }
+
+        return array_values(AuditLocation::query()->whereNotNull('office_party_id')->orderBy('office_party_id')->get()
+            ->filter(function (AuditLocation $office) use ($site, $point, $now): bool {
+                $state = $office->state;
+                $bound = $state['point'] !== null && VerifiedAuditLocation::standing($state, $now) === 'verified' ? $this->distance->upperBound($state['point'], $point) : null;
+
+                return $bound !== null && $bound + (int) $state['uncertainty_m'] + (int) $site['uncertainty_m'] <= 30000;
+            })->map(fn (AuditLocation $office): string => (string) $office->office_party_id)->all());
     }
 
     /** @return OperationsCase */

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 const indexdb3a888129fba9a701bb6313c25269b6 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ indexdb3a888129fba9a701bb6313c25269b6.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ indexdb3a888129fba9a701bb6313c25269b6.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ indexdb3a888129fba9a701bb6313c25269b6.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ indexdb3a888129fba9a701bb6313c25269b6.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 const indexdb3a888129fba9a701bb6313c25269b6Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexdb3a888129fba9a701bb6313c25269b6Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexdb3a888129fba9a701bb6313c25269b6Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/api/v1/staff/businesses'
 */
 indexdb3a888129fba9a701bb6313c25269b6Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ indexdb3a888129fba9a701bb6313c25269b6Form.head = (options?: RouteQueryOptions): 
 indexdb3a888129fba9a701bb6313c25269b6.form = indexdb3a888129fba9a701bb6313c25269b6Form
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 const index8c8e212d400b1e5f7bb096b3a45096d9 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 const index8c8e212d400b1e5f7bb096b3a45096d9Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index8c8e212d400b1e5f7bb096b3a45096d9Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index8c8e212d400b1e5f7bb096b3a45096d9Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::index
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:77
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:86
 * @route '/admin/businesses'
 */
 index8c8e212d400b1e5f7bb096b3a45096d9Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 export const premises = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ premises.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 premises.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -214,7 +214,7 @@ premises.url = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 premises.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -224,7 +224,7 @@ premises.post = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 const premisesForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -234,7 +234,7 @@ const premisesForm = (args: { business: string | number } | [business: string | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::premises
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:108
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:117
 * @route '/admin/businesses/{business}/premises'
 */
 premisesForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -246,7 +246,7 @@ premises.form = premisesForm
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flashAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:126
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:135
 * @route '/admin/businesses/{business}/flash-audit'
 */
 export const flashAudit = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +261,7 @@ flashAudit.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flashAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:126
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:135
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flashAudit.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -288,7 +288,7 @@ flashAudit.url = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flashAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:126
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:135
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flashAudit.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -298,7 +298,7 @@ flashAudit.post = (args: { business: string | number } | [business: string | num
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flashAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:126
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:135
 * @route '/admin/businesses/{business}/flash-audit'
 */
 const flashAuditForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -308,7 +308,7 @@ const flashAuditForm = (args: { business: string | number } | [business: string 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flashAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:126
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:135
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flashAuditForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -320,7 +320,7 @@ flashAudit.form = flashAuditForm
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatchAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:139
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 export const redispatchAudit = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -335,7 +335,7 @@ redispatchAudit.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatchAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:139
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatchAudit.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
@@ -361,7 +361,7 @@ redispatchAudit.url = (args: { business: string | number, assignment: string | n
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatchAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:139
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatchAudit.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -371,7 +371,7 @@ redispatchAudit.post = (args: { business: string | number, assignment: string | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatchAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:139
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 const redispatchAuditForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -381,7 +381,7 @@ const redispatchAuditForm = (args: { business: string | number, assignment: stri
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatchAudit
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:139
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:148
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatchAuditForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -392,8 +392,154 @@ redispatchAuditForm.post = (args: { business: string | number, assignment: strin
 redispatchAudit.form = redispatchAuditForm
 
 /**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::closeAudit
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:157
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+export const closeAudit = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: closeAudit.url(args, options),
+    method: 'post',
+})
+
+closeAudit.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/{business}/audits/{assignment}/close',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::closeAudit
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:157
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+closeAudit.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            assignment: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        assignment: args.assignment,
+    }
+
+    return closeAudit.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{assignment}', parsedArgs.assignment.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::closeAudit
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:157
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+closeAudit.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: closeAudit.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::closeAudit
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:157
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+const closeAuditForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: closeAudit.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::closeAudit
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:157
+* @route '/admin/businesses/{business}/audits/{assignment}/close'
+*/
+closeAuditForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: closeAudit.url(args, options),
+    method: 'post',
+})
+
+closeAudit.form = closeAuditForm
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::auditorIndependence
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:166
+* @route '/admin/businesses/{business}/auditors/{party}/independence'
+*/
+export const auditorIndependence = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: auditorIndependence.url(args, options),
+    method: 'post',
+})
+
+auditorIndependence.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/{business}/auditors/{party}/independence',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::auditorIndependence
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:166
+* @route '/admin/businesses/{business}/auditors/{party}/independence'
+*/
+auditorIndependence.url = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            party: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        party: args.party,
+    }
+
+    return auditorIndependence.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{party}', parsedArgs.party.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::auditorIndependence
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:166
+* @route '/admin/businesses/{business}/auditors/{party}/independence'
+*/
+auditorIndependence.post = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: auditorIndependence.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::auditorIndependence
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:166
+* @route '/admin/businesses/{business}/auditors/{party}/independence'
+*/
+const auditorIndependenceForm = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: auditorIndependence.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::auditorIndependence
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:166
+* @route '/admin/businesses/{business}/auditors/{party}/independence'
+*/
+auditorIndependenceForm.post = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: auditorIndependence.url(args, options),
+    method: 'post',
+})
+
+auditorIndependence.form = auditorIndependenceForm
+
+/**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:160
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:203
 * @route '/admin/businesses/onboard'
 */
 export const onboard = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -408,7 +554,7 @@ onboard.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:160
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:203
 * @route '/admin/businesses/onboard'
 */
 onboard.url = (options?: RouteQueryOptions) => {
@@ -417,7 +563,7 @@ onboard.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:160
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:203
 * @route '/admin/businesses/onboard'
 */
 onboard.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -427,7 +573,7 @@ onboard.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:160
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:203
 * @route '/admin/businesses/onboard'
 */
 const onboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -437,7 +583,7 @@ const onboardForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::onboard
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:160
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:203
 * @route '/admin/businesses/onboard'
 */
 onboardForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -447,6 +593,6 @@ onboardForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 onboard.form = onboardForm
 
-const StaffBusinessDirectoryController = { index, premises, flashAudit, redispatchAudit, onboard }
+const StaffBusinessDirectoryController = { index, premises, flashAudit, redispatchAudit, closeAudit, auditorIndependence, onboard }
 
 export default StaffBusinessDirectoryController
