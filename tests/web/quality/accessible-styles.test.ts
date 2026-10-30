@@ -50,6 +50,20 @@ describe('Visible keyboard focus (WCAG 2.2 SC 2.4.7)', () => {
             /\[role='dialog'\]\[tabindex='-1'\]:focus-visible,\s*\[role='alertdialog'\]\[tabindex='-1'\]:focus-visible \{\s*outline: none;\s*\}/u,
         );
     });
+
+    it('rings a prefixed amount box as a whole, never the bare input inside it', () => {
+        const shared = css('rozine.css');
+
+        expect(shared).toMatch(
+            /\.rz-prefixed-field:has\(input:focus-visible\) \{\s*outline: 2px solid var\(--rz-accent-fill, var\(--rz-admin-fill\)\);\s*outline-offset: 2px;\s*\}/u,
+        );
+        expect(shared).toMatch(
+            /\.rz-prefixed-field input:focus-visible \{\s*outline: none;\s*\}/u,
+        );
+        expect(shared.indexOf('.rz-prefixed-field')).toBeGreaterThan(
+            shared.indexOf(':focus-visible {'),
+        );
+    });
 });
 
 const tokens = (stylesheet: string, selector: string) => {
