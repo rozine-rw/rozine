@@ -134,6 +134,16 @@ test('deployment checks the target before mutations and again after caching conf
     ]);
 })->with(['uat', 'production']);
 
+test('a deployment removes a Vite hot marker before building assets', function (string $profile) {
+    File::ensureDirectoryExists($this->deploymentDirectory.'/app root/public');
+    File::put($this->deploymentDirectory.'/app root/public/hot', 'https://rozine.test:5173');
+
+    $process = runIsolatedDeployment($this->deploymentDirectory, $profile);
+
+    expect($process->isSuccessful())->toBeTrue()
+        ->and(File::exists($this->deploymentDirectory.'/app root/public/hot'))->toBeFalse();
+})->with(['uat', 'production']);
+
 test('a uat deployment leaves compiled views to the runtime identity, after clearing the stale ones', function () {
     $process = runIsolatedDeployment($this->deploymentDirectory, 'uat');
     $calls = explode("\n", trim(File::get($this->deploymentDirectory.'/calls')));
