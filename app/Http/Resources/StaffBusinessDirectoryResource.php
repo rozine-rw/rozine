@@ -17,16 +17,19 @@ use Illuminate\Support\Str;
  * A viewer who verifies Businesses may onboard one; the notice after it says whether its representative
  * can open the Business app yet.
  * A Business with no rated
- * note reads as pending its audit, and the average is of published scores only.
+ * note reads as pending its audit, and the average is of published scores only. A viewer who manages
+ * audit assignments sees the audit open on the Business and, in the console, may request a Flash audit
+ * when none is open or redispatch one that waits on Audit Operations.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
+ * @phpstan-import-type Engagement from \App\Application\Auditor\GetBusinessAuditEngagement
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null, audit?: array{engagement: Engagement|null}|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
  *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null, onboarding_sectors?: list<string>
  * }
@@ -88,7 +91,23 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
             'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
                 'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
-                    ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null)]];
+                    ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null),
+                'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['business']['row']['business_id'], $prefix === '')]];
+    }
+
+    /**
+     * @param  Engagement|null  $engagement
+     * @return array<string, mixed>
+     */
+    private static function audit(?array $engagement, string $businessId, bool $console): array
+    {
+        $redispatch = $console && $engagement !== null && in_array('audit.assignment.redispatch', $engagement['allowed_actions'], true);
+
+        return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
+            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $engagement['operations_reason']],
+            'request_flash' => $console && $engagement === null ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
+            'redispatch' => $redispatch ? ['url' => route('staff.businesses.audit.redispatch', ['business' => $businessId, 'assignment' => $engagement['id']], false),
+                'method' => 'post'] : null];
     }
 
     /**

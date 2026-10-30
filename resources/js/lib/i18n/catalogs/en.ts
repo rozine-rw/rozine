@@ -2709,6 +2709,32 @@ const en = {
     'admin.parties.premises.placeholder.reason':
         'e.g. Premises confirmed on a site visit and against the RDB address.',
     'admin.parties.premises.cta': 'Record as verified',
+    'admin.parties.audit.title': 'Audit',
+    'admin.parties.audit.none': 'No audit is open on this business.',
+    'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
+    'admin.parties.audit.kind.routine': 'Monthly audit',
+    'admin.parties.audit.status.operations': 'With Audit Operations',
+    'admin.parties.audit.status.offered': 'Offered to a partner',
+    'admin.parties.audit.status.accepted': 'Accepted by a partner',
+    'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
+        'No eligible Audit Partner has taken this audit yet. Dispatch attempts used: {attempts} of 3. Redispatch it once a partner within 30 km is available.',
+    'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
+        'Every dispatch attempt is used, or the deadline has passed, so this audit can no longer be redispatched.',
+    'admin.parties.audit.field.reason': 'Reason',
+    'admin.parties.audit.flash.open': 'Request Flash audit',
+    'admin.parties.audit.flash.form': 'Request a Flash audit',
+    'admin.parties.audit.flash.form_body':
+        'The audit is offered to the next eligible Audit Partner within 30 km and must be completed within 24 hours. The business is not told in advance.',
+    'admin.parties.audit.flash.placeholder':
+        'e.g. Unusual movement on the revenue account this week.',
+    'admin.parties.audit.flash.cta': 'Request Flash audit',
+    'admin.parties.audit.redispatch.open': 'Redispatch',
+    'admin.parties.audit.redispatch.form': 'Redispatch this audit',
+    'admin.parties.audit.redispatch.form_body':
+        'The audit is offered to the next eligible Audit Partner it has not been offered to. Its original deadline does not move.',
+    'admin.parties.audit.redispatch.placeholder':
+        'e.g. A new Audit Partner near this business was approved.',
+    'admin.parties.audit.redispatch.cta': 'Redispatch',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',

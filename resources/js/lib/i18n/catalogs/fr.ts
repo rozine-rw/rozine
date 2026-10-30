@@ -2855,6 +2855,33 @@ const fr: Catalog = {
     'admin.parties.premises.placeholder.reason':
         'ex. Locaux confirmés lors d’une visite et avec l’adresse RDB.',
     'admin.parties.premises.cta': 'Enregistrer comme vérifié',
+    'admin.parties.audit.title': 'Audit',
+    'admin.parties.audit.none':
+        'Aucun audit n’est en cours pour cette entreprise.',
+    'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
+    'admin.parties.audit.kind.routine': 'Audit mensuel',
+    'admin.parties.audit.status.operations': 'Aux Opérations d’audit',
+    'admin.parties.audit.status.offered': 'Proposé à un partenaire',
+    'admin.parties.audit.status.accepted': 'Accepté par un partenaire',
+    'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
+        'Aucun Partenaire d’audit éligible n’a encore pris cet audit. Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès qu’un partenaire à moins de 30 km est disponible.',
+    'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
+        'Toutes les tentatives d’affectation sont utilisées ou le délai est dépassé : cet audit ne peut plus être réaffecté.',
+    'admin.parties.audit.field.reason': 'Motif',
+    'admin.parties.audit.flash.open': 'Demander un audit éclair',
+    'admin.parties.audit.flash.form': 'Demander un audit éclair',
+    'admin.parties.audit.flash.form_body':
+        'L’audit est proposé au prochain Partenaire d’audit éligible à moins de 30 km et doit être terminé sous 24 heures. L’entreprise n’est pas prévenue.',
+    'admin.parties.audit.flash.placeholder':
+        'p. ex. Mouvements inhabituels sur le compte de recettes cette semaine.',
+    'admin.parties.audit.flash.cta': 'Demander un audit éclair',
+    'admin.parties.audit.redispatch.open': 'Réaffecter',
+    'admin.parties.audit.redispatch.form': 'Réaffecter cet audit',
+    'admin.parties.audit.redispatch.form_body':
+        'L’audit est proposé au prochain Partenaire d’audit éligible à qui il n’a pas encore été proposé. Son délai initial ne change pas.',
+    'admin.parties.audit.redispatch.placeholder':
+        'p. ex. Un nouveau Partenaire d’audit proche de cette entreprise a été approuvé.',
+    'admin.parties.audit.redispatch.cta': 'Réaffecter',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',

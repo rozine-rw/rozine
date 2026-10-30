@@ -846,6 +846,28 @@ export type DispatchLocation = {
     verify: (RouteAction & { verified_at: string }) | null;
 };
 
+/**
+ * The audit open on a Business, as staff who manage audit assignments see it (BR-48, #446), with
+ * where they request a Flash audit when none is open and redispatch one that waits on Audit
+ * Operations; each action is null when it is not available.
+ */
+export type BusinessAudit = {
+    engagement: {
+        id: string;
+        kind: 'flash' | 'routine';
+        status: 'operations' | 'offered' | 'accepted';
+        revision: number;
+        /** Dispatch attempts used, while the audit waits on Audit Operations. */
+        attempt: number | null;
+        operations_reason:
+            | 'AUDIT_NO_ELIGIBLE_PARTNER'
+            | 'AUDIT_DISPATCH_EXHAUSTED'
+            | null;
+    } | null;
+    request_flash: RouteAction | null;
+    redispatch: RouteAction | null;
+};
+
 export type PartyDetail = {
     id: string;
     kind: PartyKind;
@@ -891,6 +913,8 @@ export type PartyDetail = {
     office?: DispatchLocation | null;
     /** A Business's premises, which dispatch measures the 30 km to; sent only to viewers who verify Businesses. */
     premises?: DispatchLocation | null;
+    /** A Business's open audit; sent only to viewers who manage audit assignments. */
+    audit?: BusinessAudit | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
