@@ -14,26 +14,31 @@ use Illuminate\Support\Facades\DB;
  */
 return new class extends Migration
 {
-    private const string EXACT = 'OR h.created_at < r.created_at OR e.created_at < v.created_at';
-
-    private const string LEDGER_PRECISION = "OR h.created_at < date_trunc('second', r.created_at) OR e.created_at < date_trunc('second', v.created_at)";
-
     public function up(): void
     {
-        $this->replace(self::EXACT, self::LEDGER_PRECISION);
+        DB::unprepared(<<<'SQL'
+            DO $$ DECLARE definition text := pg_get_functiondef('check_primary_held_release(char)'::regprocedure);
+            BEGIN
+                IF array_length(string_to_array(definition, 'OR h.created_at < r.created_at OR e.created_at < v.created_at'), 1) IS DISTINCT FROM 2 THEN
+                    RAISE EXCEPTION 'Held release check no longer compares cash and reservation times as expected' USING ERRCODE = '23514';
+                END IF;
+                EXECUTE replace(definition, 'OR h.created_at < r.created_at OR e.created_at < v.created_at',
+                    'OR h.created_at < date_trunc(''second'', r.created_at) OR e.created_at < date_trunc(''second'', v.created_at)');
+            END; $$;
+            SQL);
     }
 
     public function down(): void
     {
-        $this->replace(self::LEDGER_PRECISION, self::EXACT);
-    }
-
-    private function replace(string $from, string $to): void
-    {
-        $definition = (string) DB::scalar("SELECT pg_get_functiondef('check_primary_held_release(char)'::regprocedure)");
-        if (substr_count($definition, $from) !== 1) {
-            throw new RuntimeException('HELD_RELEASE_CHECK_UNEXPECTED');
-        }
-        DB::unprepared(str_replace($from, $to, $definition));
+        DB::unprepared(<<<'SQL'
+            DO $$ DECLARE definition text := pg_get_functiondef('check_primary_held_release(char)'::regprocedure);
+            BEGIN
+                IF array_length(string_to_array(definition, 'OR h.created_at < date_trunc(''second'', r.created_at) OR e.created_at < date_trunc(''second'', v.created_at)'), 1) IS DISTINCT FROM 2 THEN
+                    RAISE EXCEPTION 'Held release check no longer compares cash and reservation times as expected' USING ERRCODE = '23514';
+                END IF;
+                EXECUTE replace(definition, 'OR h.created_at < date_trunc(''second'', r.created_at) OR e.created_at < date_trunc(''second'', v.created_at)',
+                    'OR h.created_at < r.created_at OR e.created_at < v.created_at');
+            END; $$;
+            SQL);
     }
 };

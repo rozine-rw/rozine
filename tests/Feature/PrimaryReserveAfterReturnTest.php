@@ -7,6 +7,7 @@ use App\Domain\Primary\RiskStatements;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\InvestorWalletFixture;
@@ -65,7 +66,7 @@ it('reserves the same deal again after the earlier hold expires and is swept', f
     ($this->ready)($this->investor['user']);
     $first = ($this->reserve)($this->investor['user'])->assertOk()->json('data.receipt.reservation_id');
     $this->travelTo(PrimaryReservationRecord::query()->whereKey($first)->sole()->expires_at->addMilliseconds(420));
-    $this->artisan('primary:expire-reservations')->assertSuccessful();
+    expect(Artisan::call('primary:expire-reservations'))->toBe(0);
     $this->travel(333)->milliseconds();
 
     $second = ($this->reserve)($this->investor['user'])->assertOk()->assertJsonPath('code', 'RESERVATION_HELD')->json('data.receipt.reservation_id');
