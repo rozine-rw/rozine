@@ -117,6 +117,13 @@ interface AuditAssignmentStore
     /** @return OperationsCase */
     public function operationsCase(int $actorId, string $assignmentId): array;
 
+    /**
+     * The newest engagement on a Business that is still open, as raw metadata for readiness projections.
+     *
+     * @return array{id: string, revision: int, kind: string, status: string}|null
+     */
+    public function openEngagement(string $businessId): ?array;
+
     /** @return array<string, mixed> */
     public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array;
 
