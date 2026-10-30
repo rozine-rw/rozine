@@ -1452,6 +1452,226 @@ describe('Party 360', () => {
         ]);
     });
 
+    const withAudit = (audit: PartyDetail['audit']) => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = { ...party(frozenFixture), audit };
+
+        return fixture;
+    };
+
+    it('requests a Flash audit for a Business with no audit open', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '4d3e2f1a-5b6c-4d7e-8f90-1a2b3c4d5e6f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    request_flash: {
+                        url: '/admin/businesses/biz_1/flash-audit',
+                        method: 'post',
+                    },
+                    redispatch: null,
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('No audit is open on this business.');
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        let form = within(audit).getByRole('form', {
+            name: 'Request a Flash audit',
+        });
+
+        expect(form).toHaveTextContent('The business is not told in advance.');
+        expect(
+            within(form).getByRole('button', { name: 'Request Flash audit' }),
+        ).toBeDisabled();
+        await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+        expect(within(audit).queryByRole('form')).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        form = within(audit).getByRole('form', {
+            name: 'Request a Flash audit',
+        });
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'Unusual movement this week.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Request Flash audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/flash-audit',
+                data: {
+                    reason: 'Unusual movement this week.',
+                    request_id: '4d3e2f1a-5b6c-4d7e-8f90-1a2b3c4d5e6f',
+                },
+            },
+        ]);
+        expect(within(audit).queryByRole('form')).not.toBeInTheDocument();
+    });
+
+    it('redispatches an audit that waits on Audit Operations and keeps the form open on a refusal', async () => {
+        inertia.errors = {
+            reason: 'This audit changed since you opened it. Review it again.',
+        };
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '5e4f3a2b-6c7d-4e8f-9a01-2b3c4d5e6f70',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 2,
+                        attempt: 1,
+                        operations_reason: 'AUDIT_NO_ELIGIBLE_PARTNER',
+                    },
+                    request_flash: null,
+                    redispatch: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
+                        method: 'post',
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Flash audit · 24-hour deadline');
+        expect(
+            within(audit).getByText('With Audit Operations'),
+        ).toBeInTheDocument();
+        expect(audit).toHaveTextContent('Dispatch attempts used: 1 of 3.');
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Request Flash audit',
+            }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Redispatch' }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Redispatch this audit',
+        });
+        const reason = within(form).getByLabelText('Reason');
+
+        expect(reason).toHaveAttribute('aria-invalid', 'true');
+        await user.type(reason, 'A partner near the business was approved.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Redispatch' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
+                data: {
+                    reason: 'A partner near the business was approved.',
+                    request_id: '5e4f3a2b-6c7d-4e8f-9a01-2b3c4d5e6f70',
+                    expected_revision: 2,
+                },
+            },
+        ]);
+        expect(form).toHaveTextContent(
+            'This audit changed since you opened it. Review it again.',
+        );
+    });
+
+    it('says when an audit can no longer be redispatched and shows an accepted audit without actions', async () => {
+        const { user, unmount } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'routine',
+                        status: 'operations',
+                        revision: 4,
+                        attempt: 3,
+                        operations_reason: 'AUDIT_DISPATCH_EXHAUSTED',
+                    },
+                    request_flash: null,
+                    redispatch: null,
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        let audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Monthly audit');
+        expect(audit).toHaveTextContent(
+            'this audit can no longer be redispatched',
+        );
+        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
+        unmount();
+
+        const accepted = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_2',
+                        kind: 'flash',
+                        status: 'accepted',
+                        revision: 2,
+                        attempt: null,
+                        operations_reason: null,
+                    },
+                    request_flash: null,
+                    redispatch: null,
+                })}
+            />,
+        );
+
+        await accepted.user.click(screen.getByRole('tab', { name: 'Controls' }));
+        audit = screen.getByRole('region', { name: 'Audit' });
+        expect(
+            within(audit).getByText('Accepted by a partner'),
+        ).toBeInTheDocument();
+        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('holds the Flash audit request while it is being sent', async () => {
+        inertia.processing = true;
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    request_flash: {
+                        url: '/admin/businesses/biz_1/flash-audit',
+                        method: 'post',
+                    },
+                    redispatch: null,
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        const send = within(
+            within(audit).getByRole('form', { name: 'Request a Flash audit' }),
+        ).getByRole('button', { name: 'Request Flash audit' });
+
+        expect(send).toBeDisabled();
+        expect(send).toHaveAttribute('aria-busy', 'true');
+    });
+
     it('shows the office read-only to a viewer who may not verify it', async () => {
         const fixture = props(licenceFixture);
 

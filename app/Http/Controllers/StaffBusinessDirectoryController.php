@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Auditor\GetAuditLocation;
+use App\Application\Auditor\GetBusinessAuditEngagement;
+use App\Application\Auditor\RequestAuditAssignment;
+use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\PlatformPolicies;
+use App\Domain\Operations\CommandRejection;
+use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Requests\Staff\OnboardBusinessRequest;
+use App\Http\Requests\Staff\RequestFlashAuditRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -23,7 +30,9 @@ use Inertia\Response;
  * The designed Business directory (`businesses.view`): every Business with its notes, Investors and
  * capital, and one Business's 360 with its notes and history. A viewer who verifies Businesses also
  * sees, and may record, the premises location audit dispatch measures the 30 km to (BR-51), and may
- * onboard a business for its owner (#375).
+ * onboard a business for its owner (#375). A viewer who manages audit assignments sees the audit open
+ * on the Business, may request a Flash audit when none is (BR-48), and may redispatch one that waits on
+ * Audit Operations (#446).
  */
 class StaffBusinessDirectoryController extends Controller
 {
@@ -37,6 +46,17 @@ class StaffBusinessDirectoryController extends Controller
         'AUDIT_LOCATION_REVIEW_REQUIRED' => 'This location cannot be recorded as verified. Check the accuracy and try again.',
         'AUDIT_LOCATION_EVIDENCE_REQUIRED' => 'Say what evidence you checked and why, in plain text.',
         'MANDATE_REQUIRED' => "This business has no current mandate, so its premises can't be verified yet.",
+        'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
+    ];
+
+    /** Flash audit and redispatch refusals in the words the form shows. */
+    private const AUDIT_MESSAGES = [
+        'ASSIGNMENT_REASON_REQUIRED' => 'Say why, in plain text.',
+        'AUDIT_ASSIGNMENT_RESUMED' => 'This business already has an audit in progress.',
+        'AUDIT_ENGAGEMENT_CLOSED' => "Audit Operations closed this business's last audit, so a new one can't be requested here.",
+        'VERSION_CONFLICT' => 'This audit changed since you opened it. Review it again.',
+        'ASSIGNMENT_NOT_IN_OPERATIONS' => 'This audit is no longer with Audit Operations.',
+        'AUDIT_DISPATCH_EXHAUSTED' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
@@ -57,7 +77,7 @@ class StaffBusinessDirectoryController extends Controller
 
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
-    public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location): Response|StaffBusinessDirectoryResource
+    public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -76,6 +96,8 @@ class StaffBusinessDirectoryController extends Controller
             'business' => $business,
             'premises' => $business !== null && in_array('businesses.verify', $staff['allowed_actions'], true)
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
+            'audit' => $business !== null && in_array('audit.assignments.manage', $staff['allowed_actions'], true)
+                ? ['engagement' => $audits->handle($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
             'onboarding_sectors' => OnboardBusiness::sectors()]);
 
@@ -98,6 +120,44 @@ class StaffBusinessDirectoryController extends Controller
         }
 
         return redirect()->route('staff.businesses.index', ['business' => $businessId]);
+    }
+
+    /**
+     * Request a Flash audit of the Business now (BR-48). It is dispatched like any other, with its 24-hour
+     * deadline; a refusal returns to the form with what to change.
+     */
+    public function flashAudit(RequestFlashAuditRequest $request, RequestAuditAssignment $audits): RedirectResponse
+    {
+        $businessId = (string) $request->route('business');
+        $this->audit(fn (): array => $audits->handle((int) $request->user()?->getAuthIdentifier(), $businessId, 'flash',
+            (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
+
+        return redirect()->route('staff.businesses.index', ['business' => $businessId]);
+    }
+
+    /**
+     * Offer the Business's audit that waits on Audit Operations to the next eligible partner. With no
+     * eligible partner yet it stays with Operations, its attempts unchanged.
+     */
+    public function redispatchAudit(ResolveAuditAssignmentRequest $request, ResolveAuditAssignment $audits): RedirectResponse
+    {
+        $this->audit(fn (): array => $audits->handle((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
+            (int) $request->validated('expected_revision'), 'redispatch', (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
+
+        return redirect()->route('staff.businesses.index', ['business' => (string) $request->route('business')]);
+    }
+
+    /** @param  Closure(): array<string, mixed>  $command */
+    private function audit(Closure $command): void
+    {
+        try {
+            $result = $command();
+        } catch (CommandRejection $exception) {
+            $result = ['status' => 'rejected', 'code' => $exception->reason];
+        }
+        if ($result['status'] !== 'completed' || $result['code'] === 'AUDIT_ASSIGNMENT_RESUMED') {
+            throw ValidationException::withMessages(['reason' => [self::AUDIT_MESSAGES[$result['code']] ?? 'We could not do that. Try again.']]);
+        }
     }
 
     /**
