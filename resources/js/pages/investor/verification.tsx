@@ -621,7 +621,7 @@ function VerificationForm({
                                 </label>
                                 <input
                                     id="id_number"
-                                    value={String(data.id_number ?? '')}
+                                    value={String(data.id_number)}
                                     onChange={(event) =>
                                         set('id_number', event.target.value)
                                     }
