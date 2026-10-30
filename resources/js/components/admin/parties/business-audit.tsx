@@ -164,7 +164,9 @@ export function BusinessAuditSection({
                     <>
                         <div className="flex items-center justify-between gap-3">
                             <span className="text-[13px] text-rz-slate">
-                                {t(`admin.parties.audit.kind.${engagement.kind}`)}
+                                {t(
+                                    `admin.parties.audit.kind.${engagement.kind}`,
+                                )}
                             </span>
                             <Chip tone={STATUS_TONE[engagement.status]}>
                                 {t(

@@ -2849,18 +2849,24 @@ const rw: Catalog = {
     'admin.parties.audit.status.operations': 'Riri mu Bikorwa by’igenzura',
     'admin.parties.audit.status.offered': 'Ryahawe umugenzuzi',
     'admin.parties.audit.status.accepted': 'Ryemewe n’umugenzuzi',
-    'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER': 'Nta mugenzuzi wemerewe urafata iri genzura. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe hari umugenzuzi uri muri kilometero 30.',
-    'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED': 'Inshuro zose zo kurioherereza zarakoreshejwe cyangwa igihe cyararenze, ntirishobora koherezwa ukundi.',
+    'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
+        'Nta mugenzuzi wemerewe urafata iri genzura. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe hari umugenzuzi uri muri kilometero 30.',
+    'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
+        'Inshuro zose zo kurioherereza zarakoreshejwe cyangwa igihe cyararenze, ntirishobora koherezwa ukundi.',
     'admin.parties.audit.field.reason': 'Impamvu',
     'admin.parties.audit.flash.open': 'Saba igenzura ritunguranye',
     'admin.parties.audit.flash.form': 'Saba igenzura ritunguranye',
-    'admin.parties.audit.flash.form_body': 'Igenzura rihabwa umugenzuzi ukurikira wemerewe uri muri kilometero 30, rigomba kurangira mu masaha 24. Ubucuruzi ntibubimenyeshwa mbere.',
-    'admin.parties.audit.flash.placeholder': 'urugero: Imikoreshereze idasanzwe kuri konti y’amafaranga yinjiye muri iki cyumweru.',
+    'admin.parties.audit.flash.form_body':
+        'Igenzura rihabwa umugenzuzi ukurikira wemerewe uri muri kilometero 30, rigomba kurangira mu masaha 24. Ubucuruzi ntibubimenyeshwa mbere.',
+    'admin.parties.audit.flash.placeholder':
+        'urugero: Imikoreshereze idasanzwe kuri konti y’amafaranga yinjiye muri iki cyumweru.',
     'admin.parties.audit.flash.cta': 'Saba igenzura ritunguranye',
     'admin.parties.audit.redispatch.open': 'Ohereza ukundi',
     'admin.parties.audit.redispatch.form': 'Ohereza iri genzura ukundi',
-    'admin.parties.audit.redispatch.form_body': 'Igenzura rihabwa umugenzuzi ukurikira wemerewe ritarahabwa. Igihe ntarengwa cyaryo ntigihinduka.',
-    'admin.parties.audit.redispatch.placeholder': 'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
+    'admin.parties.audit.redispatch.form_body':
+        'Igenzura rihabwa umugenzuzi ukurikira wemerewe ritarahabwa. Igihe ntarengwa cyaryo ntigihinduka.',
+    'admin.parties.audit.redispatch.placeholder':
+        'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',

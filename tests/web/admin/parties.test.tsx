@@ -1618,7 +1618,7 @@ describe('Party 360', () => {
         expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
         unmount();
 
-        const accepted = renderWithUser(
+        const view = renderWithUser(
             <AdminParties
                 {...withAudit({
                     engagement: {
@@ -1635,7 +1635,7 @@ describe('Party 360', () => {
             />,
         );
 
-        await accepted.user.click(screen.getByRole('tab', { name: 'Controls' }));
+        await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
         audit = screen.getByRole('region', { name: 'Audit' });
         expect(
             within(audit).getByText('Accepted by a partner'),
