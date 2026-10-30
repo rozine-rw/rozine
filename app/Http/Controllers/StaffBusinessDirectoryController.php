@@ -6,21 +6,18 @@ namespace App\Http\Controllers;
 
 use App\Application\Auditor\GetAuditLocation;
 use App\Application\Auditor\GetBusinessAuditEngagement;
-use App\Application\Auditor\RequestAuditAssignment;
-use App\Application\Auditor\ResolveAuditAssignment;
+use App\Application\Auditor\ManageBusinessAudit;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\PlatformPolicies;
-use App\Domain\Operations\CommandRejection;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Requests\Staff\OnboardBusinessRequest;
 use App\Http\Requests\Staff\RequestFlashAuditRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
-use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -126,10 +123,10 @@ class StaffBusinessDirectoryController extends Controller
      * Request a Flash audit of the Business now (BR-48). It is dispatched like any other, with its 24-hour
      * deadline; a refusal returns to the form with what to change.
      */
-    public function flashAudit(RequestFlashAuditRequest $request, RequestAuditAssignment $audits): RedirectResponse
+    public function flashAudit(RequestFlashAuditRequest $request, ManageBusinessAudit $audits): RedirectResponse
     {
         $businessId = (string) $request->route('business');
-        $this->audit(fn (): array => $audits->handle((int) $request->user()?->getAuthIdentifier(), $businessId, 'flash',
+        $this->audit($audits->requestFlash((int) $request->user()?->getAuthIdentifier(), $businessId,
             (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
 
         return redirect()->route('staff.businesses.index', ['business' => $businessId]);
@@ -139,22 +136,17 @@ class StaffBusinessDirectoryController extends Controller
      * Offer the Business's audit that waits on Audit Operations to the next eligible partner. With no
      * eligible partner yet it stays with Operations, its attempts unchanged.
      */
-    public function redispatchAudit(ResolveAuditAssignmentRequest $request, ResolveAuditAssignment $audits): RedirectResponse
+    public function redispatchAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits): RedirectResponse
     {
-        $this->audit(fn (): array => $audits->handle((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
-            (int) $request->validated('expected_revision'), 'redispatch', (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
+        $this->audit($audits->redispatch((int) $request->user()?->getAuthIdentifier(), (string) $request->route('assignment'),
+            (int) $request->validated('expected_revision'), (string) $request->validated('reason', ''), (string) $request->validated('request_id')));
 
         return redirect()->route('staff.businesses.index', ['business' => (string) $request->route('business')]);
     }
 
-    /** @param  Closure(): array<string, mixed>  $command */
-    private function audit(Closure $command): void
+    /** @param  array<string, mixed>  $result */
+    private function audit(array $result): void
     {
-        try {
-            $result = $command();
-        } catch (CommandRejection $exception) {
-            $result = ['status' => 'rejected', 'code' => $exception->reason];
-        }
         if ($result['status'] !== 'completed' || $result['code'] === 'AUDIT_ASSIGNMENT_RESUMED') {
             throw ValidationException::withMessages(['reason' => [self::AUDIT_MESSAGES[$result['code']] ?? 'We could not do that. Try again.']]);
         }
