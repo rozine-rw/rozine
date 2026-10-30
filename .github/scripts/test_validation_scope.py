@@ -2373,6 +2373,29 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
             self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
         self.assertEqual(sleep.call_count, 1)
 
+    def test_completed_identity_with_unsettled_step_records_selects_without_waiting(self):
+        for status in ["pending", "in_progress"]:
+            self.jobs[200][0]["steps"][0].update(status=status, conclusion=None)
+            with self.subTest(status=status), self.server(), patch.object(policy.time, "sleep") as sleep:
+                self.assertEqual(policy.canonical_selection(self.env())["mode"], "reuse")
+            sleep.assert_not_called()
+
+    def test_completed_identity_still_refuses_missing_or_explicitly_unsuccessful_steps(self):
+        for scenario in ["missing", "skipped", "unsettled but terminal"]:
+            self.jobs[200][0] = self.job(policy.IDENTITY_JOB, steps=policy.IDENTITY_STEPS)
+            if scenario == "missing": self.jobs[200][0]["steps"].pop()
+            if scenario == "skipped": self.jobs[200][0]["steps"][-1]["conclusion"] = "skipped"
+            if scenario == "unsettled but terminal": self.jobs[200][0]["steps"][-1].update(status="completed", conclusion=None)
+            with self.subTest(scenario=scenario), self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+                policy.canonical_selection(self.env())
+            self.assertNotIn("ci-coordination-decision", self.artifacts[200])
+
+    def test_unsettled_decision_steps_are_not_treated_as_successful(self):
+        jobs = [self.job("Select CI scope", steps=policy.DECISION_STEPS)]
+        jobs[0]["steps"][-1].update(status="in_progress", conclusion=None)
+        with self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
+            policy.successful_steps(jobs, "Select CI scope", policy.DECISION_STEPS)
+
     def test_persistent_current_identity_contradiction_is_bounded_and_refuses(self):
         self.jobs[200][0].update(status="in_progress", conclusion="success")
         with self.server(), patch.object(policy.time, "sleep") as sleep, self.assertRaisesRegex(policy.CoordinationRefusal, "identity_job_status_inconsistent") as error:
