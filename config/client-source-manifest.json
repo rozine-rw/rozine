@@ -317,6 +317,7 @@
         "resources/js/routes/staff/auditors/index.ts",
         "resources/js/routes/staff/auditors/licence/index.ts",
         "resources/js/routes/staff/auditors/office/index.ts",
+        "resources/js/routes/staff/businesses/audit/index.ts",
         "resources/js/routes/staff/businesses/index.ts",
         "resources/js/routes/staff/businesses/premises/index.ts",
         "resources/js/routes/staff/changes/index.ts",
@@ -389,6 +390,7 @@
         "resources/js/components/admin/kyc-review.tsx",
         "resources/js/components/admin/ledger/entry-drawer.tsx",
         "resources/js/components/admin/parties/action-log.tsx",
+        "resources/js/components/admin/parties/business-audit.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
         "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
@@ -784,10 +786,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 756,
-        "generated": 326,
+        "totalTrackedSources": 758,
+        "generated": 327,
         "declarationOnly": 20,
-        "authoredExecutable": 410
+        "authoredExecutable": 411
     },
-    "coverageSetSha256": "e1f4a9c659f97e1561530579417959c8d6b86d92e8a38823baecff62165027bc"
+    "coverageSetSha256": "99d3405be692affdaefffdebf1cefa4d48ea82f430f3c4909dcbc44bc00bf072"
 }
