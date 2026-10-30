@@ -27,7 +27,7 @@ function businessSignup(array $overrides = []): array
         'annual_costs' => 90_000_000,
         'sector' => 'Logistics',
         'registered_year' => 2018,
-        'term_months' => 12,
+        'term_months' => 6,
     ], $overrides);
 }
 
@@ -40,15 +40,15 @@ test('the pulse route shows the pulse waitlist without authentication', function
     $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('pulse')
         ->has('districts.Kigali City')
-        ->where('policy.terms', [3, 4, 5, 6, 9, 12])
+        ->where('policy.terms', [3, 4, 5, 6])
         ->where('policy.sectors.0', 'Agriculture')
         ->where('policy.registration_years.0', 2026)
         ->where('policy.registration_years.30', 1996)
-        ->where('policy.minimum_revenue', 15_000_000)
+        ->where('policy.minimum_revenue', 30_000_000)
         ->where('policy.minimum_loan', 3_000_000)
         ->where('policy.maximum_loan', 100_000_000)
         ->where('policy.pledge.minimum', 5_000)
-        ->where('policy.pledge.maximum', 200_000_000)
+        ->where('policy.pledge.maximum', 50_000_000)
         ->where('policy.pledge.step', 5_000)
         ->where('policy.pledge.default', 500_000)
         ->where('investor_preview.pledge_amount', 500_000)
@@ -172,7 +172,7 @@ test('an investor preview holds any input inside the published pledge policy', f
 })->with([
     'empty amount' => [0, 5_000],
     'half step' => [7_500, 10_000],
-    'above maximum' => [200_000_001, 200_000_000],
+    'above maximum' => [50_000_001, 50_000_000],
 ]);
 
 test('a business preview returns one authoritative sizing without persisting it', function () {
@@ -183,7 +183,7 @@ test('a business preview returns one authoritative sizing without persisting it'
         'annual_costs' => 90_000_000,
         'sector' => 'Logistics',
         'registered_year' => 2018,
-        'term_months' => 12,
+        'term_months' => 6,
         'score' => 92,
         'qualified_amount' => 900_000_000,
     ]);
@@ -192,15 +192,15 @@ test('a business preview returns one authoritative sizing without persisting it'
         ->assertJsonMissingPath('data')
         ->assertJsonPath('rating.band', 'Stable')
         ->assertJsonPath('rating.score', 3.9)
-        ->assertJsonPath('flat_rate', 14.41)
-        ->assertJsonPath('sized_amount', 20_900_000)
-        ->assertJsonPath('qualified_amount', 20_900_000)
-        ->assertJsonPath('monthly_repayment', 1_992_684.38)
+        ->assertJsonPath('flat_rate', 12.75)
+        ->assertJsonPath('sized_amount', 10_600_000)
+        ->assertJsonPath('qualified_amount', 10_600_000)
+        ->assertJsonPath('monthly_repayment', 1_991_843.06)
         ->assertJsonPath('monthly_surplus', 2_500_000)
-        ->assertJsonPath('cover_ratio', 1.25)
+        ->assertJsonPath('cover_ratio', 1.26)
         ->assertJsonPath('below_minimum', false)
         ->assertJsonPath('at_maximum', false)
-        ->assertJsonPath('required_surplus', 357_539.06)
+        ->assertJsonPath('required_surplus', 704_661.46)
         ->assertJsonPath('status', 'pre_qualified');
 
     expect(array_keys($response->json()))->toBe([
@@ -522,8 +522,8 @@ test('a business claims a pass on the figures it reported', function () {
         ->assertJsonPath('traction.businesses', 1)
         ->assertJsonPath('business_preview.rating.band', 'Stable')
         ->assertJsonPath('business_preview.rating.score', 3.9)
-        ->assertJsonPath('business_preview.flat_rate', 14.41)
-        ->assertJsonPath('business_preview.qualified_amount', 20_900_000)
+        ->assertJsonPath('business_preview.flat_rate', 12.75)
+        ->assertJsonPath('business_preview.qualified_amount', 10_600_000)
         ->assertJsonPath('business_preview.status', 'pre_qualified');
 
     $signup = PulseSignup::query()->sole();
@@ -534,9 +534,9 @@ test('a business claims a pass on the figures it reported', function () {
         ->and($signup->sector)->toBe(PulseSector::Logistics)
         ->and($signup->registered_year)->toBe(2018)
         ->and($signup->score)->toBe(77.5)
-        ->and($signup->term_months)->toBe(12)
-        ->and($signup->qualified_amount)->toBe(20_900_000)
-        ->and($signup->flat_rate)->toBe(14.41)
+        ->and($signup->term_months)->toBe(6)
+        ->and($signup->qualified_amount)->toBe(10_600_000)
+        ->and($signup->flat_rate)->toBe(12.75)
         ->and($signup->rating_band)->toBe('Stable')
         ->and($signup->rating_score)->toBe(3.9);
 });
@@ -552,7 +552,7 @@ test('a business is sized on the server, whatever the browser claims', function 
     $signup = PulseSignup::query()->sole();
 
     expect($signup->qualified_amount)->toBe(
-        PulseUnderwriting::qualifiedAmount(120_000_000, 90_000_000, $signup->score, 12)
+        PulseUnderwriting::qualifiedAmount(120_000_000, 90_000_000, $signup->score, 6)
     )->and($signup->rating_band)->toBe('Stable');
 });
 
@@ -582,8 +582,8 @@ test('a business too small to size is turned away', function () {
 
 test('a business sizing under the smallest loan still takes a place in the queue', function () {
     $response = $this->postJson(route('pulse.business.store'), businessSignup([
-        'annual_revenue' => 16_000_000,
-        'annual_costs' => 15_400_000,
+        'annual_revenue' => 31_000_000,
+        'annual_costs' => 30_400_000,
         'term_months' => 3,
     ]));
 

@@ -18,14 +18,14 @@ final class PulseUnderwriting
     public const BLENDED_YIELD = 13.0;
 
     /**
-     * Every term the platform accepts. The marketing site offers 3-6 months and
-     * the Pulse app offers 3/6/9/12, so the union is accepted server-side.
+     * Every term the platform accepts: 3, 4, 5 or 6 months (BRS v2.0 §3).
      *
      * @var list<int>
      */
-    public const TERMS = [3, 4, 5, 6, 9, 12];
+    public const TERMS = [3, 4, 5, 6];
 
-    public const MINIMUM_REVENUE = 15_000_000;
+    /** Verified annual revenue a business needs to raise (BRS v2.0 §3). */
+    public const MINIMUM_REVENUE = 30_000_000;
 
     public const EARLIEST_REGISTRATION_YEAR = 1996;
 
@@ -35,7 +35,8 @@ final class PulseUnderwriting
 
     public const PLEDGE_MINIMUM = 5_000;
 
-    public const PLEDGE_MAXIMUM = 200_000_000;
+    /** One investor may take at most half of a raise of at most RWF 100M (INV-R01). */
+    public const PLEDGE_MAXIMUM = 50_000_000;
 
     public const PLEDGE_STEP = 5_000;
 

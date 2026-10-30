@@ -166,7 +166,7 @@ test('pledges are canonicalized to the approved band and step', function (int $g
     'minimum' => [5_000, 5_000],
     'round down' => [7_499, 5_000],
     'half step rounds up' => [7_500, 10_000],
-    'above maximum' => [200_000_001, 200_000_000],
+    'above maximum' => [50_000_001, 50_000_000],
 ]);
 
 test('an investor projection uses the supplied yield', function () {
@@ -177,7 +177,7 @@ test('an investor projection uses the supplied yield', function () {
 test('policy options are produced by the domain', function () {
     $policy = PulseUnderwriting::policy(2026);
 
-    expect($policy['terms'])->toBe([3, 4, 5, 6, 9, 12])
+    expect($policy['terms'])->toBe([3, 4, 5, 6])
         ->and($policy['sectors'])->toBe([
             'Agriculture',
             'Retail & trade',
@@ -192,7 +192,7 @@ test('policy options are produced by the domain', function () {
         ->and($policy['registration_years'][30])->toBe(1996)
         ->and($policy['pledge'])->toBe([
             'minimum' => 5_000,
-            'maximum' => 200_000_000,
+            'maximum' => 50_000_000,
             'step' => 5_000,
             'default' => 500_000,
         ]);

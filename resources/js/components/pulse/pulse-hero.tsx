@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { formatAverage, formatNumber } from '@/lib/pulse';
+import { formatAverage, formatCompact, formatNumber } from '@/lib/pulse';
 
 /**
  * The pair of traction figures that open the page.
@@ -71,12 +71,20 @@ function TractionCard({
  * revenue. Each jumps to the panel that carries it out.
  */
 export function PulseHero({
+    minimumLoan,
+    maximumLoan,
+    minimumRevenue,
     onInvest,
     onBorrow,
 }: {
+    minimumLoan: number;
+    maximumLoan: number;
+    minimumRevenue: number;
     onInvest: () => void;
     onBorrow: () => void;
 }) {
+    const raiseRange = `${formatCompact(minimumLoan)}–${formatCompact(maximumLoan).replace('RWF ', '')}`;
+
     return (
         <div className="pt-8 pb-[22px] md:pt-[74px] md:pb-[34px]">
             <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(10,92,255,0.28)] bg-[rgba(10,92,255,0.08)] px-[13px] py-1.5 text-[9.5px] font-bold tracking-[0.1em] whitespace-nowrap text-[var(--rz-badge-fg)] md:text-[11px] md:tracking-[0.14em]">
@@ -115,14 +123,14 @@ export function PulseHero({
                     onClick={onBorrow}
                     heading={
                         <>
-                            Raise <HeroMark tone="green">RWF 5M–50M</HeroMark>{' '}
+                            Raise <HeroMark tone="green">{raiseRange}</HeroMark>{' '}
                             on your revenue. No collateral.
                         </>
                     }
                 >
                     For businesses with&nbsp;
                     <strong className="font-semibold text-[var(--rz-fg)]">
-                        RWF 15M and up
+                        {formatCompact(minimumRevenue)} and up
                     </strong>{' '}
                     in revenue a year and{' '}
                     <b className="font-semibold text-[var(--rz-fg)]">
