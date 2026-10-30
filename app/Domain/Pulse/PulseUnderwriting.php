@@ -35,8 +35,7 @@ final class PulseUnderwriting
 
     public const PLEDGE_MINIMUM = 5_000;
 
-    /** One investor may take at most half of a raise of at most RWF 100M (INV-R01). */
-    public const PLEDGE_MAXIMUM = 50_000_000;
+    public const PLEDGE_MAXIMUM = 200_000_000;
 
     public const PLEDGE_STEP = 5_000;
 

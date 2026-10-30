@@ -48,7 +48,7 @@ test('the pulse route shows the pulse waitlist without authentication', function
         ->where('policy.minimum_loan', 3_000_000)
         ->where('policy.maximum_loan', 100_000_000)
         ->where('policy.pledge.minimum', 5_000)
-        ->where('policy.pledge.maximum', 50_000_000)
+        ->where('policy.pledge.maximum', 200_000_000)
         ->where('policy.pledge.step', 5_000)
         ->where('policy.pledge.default', 500_000)
         ->where('investor_preview.pledge_amount', 500_000)
@@ -172,7 +172,7 @@ test('an investor preview holds any input inside the published pledge policy', f
 })->with([
     'empty amount' => [0, 5_000],
     'half step' => [7_500, 10_000],
-    'above maximum' => [50_000_001, 50_000_000],
+    'above maximum' => [200_000_001, 200_000_000],
 ]);
 
 test('a business preview returns one authoritative sizing without persisting it', function () {
