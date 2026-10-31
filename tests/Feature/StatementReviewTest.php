@@ -33,8 +33,8 @@ beforeEach(function (): void {
  * The bindings staff review before requesting, read from the readiness they were shown.
  *
  * @param  array<string, mixed>  $fixture
- * @param  array<string, mixed>  $overrides
- * @return array<string, mixed>
+ * @param  array{expected_business_revision?: int, expected_mandate_version?: int, expected_evidence_revision?: int, transcription_id?: string, transcription_sha256?: string, readiness_sha256?: string}  $overrides
+ * @return array{expected_business_revision: int, expected_mandate_version: int, expected_evidence_revision: int, transcription_id: string, transcription_sha256: string, readiness_sha256: string}
  */
 function reviewBinding(array $fixture, array $overrides = []): array
 {
@@ -47,7 +47,7 @@ function reviewBinding(array $fixture, array $overrides = []): array
 
 /**
  * @param  array<string, mixed>  $fixture
- * @param  array<string, mixed>  $binding
+ * @param  array{expected_business_revision: int, expected_mandate_version: int, expected_evidence_revision: int, transcription_id: string, transcription_sha256: string, readiness_sha256: string}|null  $binding
  * @return array<string, mixed>
  */
 function requestReview(array $fixture, ?array $binding = null, ?string $requestId = null): array
@@ -59,7 +59,12 @@ function requestReview(array $fixture, ?array $binding = null, ?string $requestI
 /** @param array<string, mixed> $fixture */
 function review(array $fixture, ?string $requestId = null): AuditAssignment
 {
-    return AuditAssignment::query()->findOrFail(requestReview($fixture, requestId: $requestId)['data']['assignment_id']);
+    return reviewAssignment(requestReview($fixture, requestId: $requestId)['data']['assignment_id']);
+}
+
+function reviewAssignment(mixed $id): AuditAssignment
+{
+    return AuditAssignment::query()->whereKey($id)->firstOrFail();
 }
 
 /**
@@ -87,7 +92,7 @@ it('takes a new Business through statement review, acceptance and verification w
     $partner = $fixture['partners'][0];
     $request = (string) Str::uuid();
     $receipt = requestReview($fixture, requestId: $request);
-    $assignment = AuditAssignment::query()->findOrFail($receipt['data']['assignment_id']);
+    $assignment = reviewAssignment($receipt['data']['assignment_id']);
 
     expect($receipt['code'])->toBe('AUDIT_ASSIGNMENT_REQUESTED')
         ->and(requestReview($fixture, requestId: $request))->toBe($receipt)
@@ -222,7 +227,7 @@ it('never counts completed statement reviews toward three consecutive reports', 
     $monthly = AuditAssignment::query()->findOrFail(app(AuditAssignmentStore::class)->requestMonthly($fixture['business']));
     $candidate = AuditAssignmentVersion::query()->where('assignment_id', $monthly->id)->sole()->selection_basis['candidates'][0];
     expect($monthly->status)->toBe('offered')->and($monthly->party_id)->toBe($partyId)
-        ->and($monthly->state['purpose'])->toBe('monthly')->and($candidate['consecutive_reports'])->toBe(0);
+        ->and($monthly->state['purpose'] ?? null)->toBe('monthly')->and($candidate['consecutive_reports'])->toBe(0);
 });
 
 it('lets the monthly audit and a statement review take turns under the one-open-engagement rule', function (): void {
@@ -258,7 +263,7 @@ it('dispatches the monthly audit in the same month once the review that held it 
     Fixture::verifyStatements($fixture, $review->refresh(), $sources['transcription_id']);
 
     $monthly = AuditAssignment::query()->findOrFail($store->requestMonthly($fixture['business']));
-    expect($monthly->state['purpose'])->toBe('monthly')->and($monthly->state['kind'])->toBe('routine');
+    expect($monthly->state['purpose'] ?? null)->toBe('monthly')->and($monthly->state['kind'])->toBe('routine');
     $this->travelTo(now('Africa/Kigali')->addDay()->startOfMonth()->addMinute());
     expect($store->requestMonthly($fixture['business']))->toBeNull();
 });

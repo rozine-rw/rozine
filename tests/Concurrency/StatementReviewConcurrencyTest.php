@@ -45,7 +45,7 @@ function statementReviewContenders(array $operations): array
     $statuses = [];
     foreach ($pids as $pid) {
         pcntl_waitpid($pid, $status);
-        $statuses[] = pcntl_wifexited($status) ? pcntl_wexitstatus($status) : 1;
+        $statuses[] = pcntl_wifexited($status) ? (int) pcntl_wexitstatus($status) : 1;
     }
 
     return $statuses;
@@ -72,7 +72,7 @@ it('opens one statement review when two staff requests race', function (): void 
 
     expect(statementReviewContenders([$request, $request]))->toBe([0, 0])
         ->and(AuditAssignment::query()->where('business_id', $fixture['business'])->count())->toBe(1)
-        ->and(AuditAssignment::query()->sole()->state['purpose'])->toBe('statement_review');
+        ->and(AuditAssignment::query()->sole()->state['purpose'] ?? null)->toBe('statement_review');
 });
 
 it('opens exactly one engagement when a review request races the monthly run', function (): void {
@@ -88,7 +88,7 @@ it('never completes a review from a partner whose conflict won the race against 
     $fixture = Fixture::make(1);
     $sources = Fixture::statements($fixture);
     $partner = $fixture['partners'][0];
-    $assignment = AuditAssignment::query()->findOrFail(statementReviewRequest($fixture)()['data']['assignment_id']);
+    $assignment = AuditAssignment::query()->whereKey(statementReviewRequest($fixture)()['data']['assignment_id'])->firstOrFail();
     Fixture::respond($partner['user'], $assignment);
     $assignment->refresh();
 
@@ -107,7 +107,7 @@ it('completes a review only from its accepted partner while staff resolution rac
     $fixture = Fixture::make(1);
     $sources = Fixture::statements($fixture);
     $partner = $fixture['partners'][0];
-    $assignment = AuditAssignment::query()->findOrFail(statementReviewRequest($fixture)()['data']['assignment_id']);
+    $assignment = AuditAssignment::query()->whereKey(statementReviewRequest($fixture)()['data']['assignment_id'])->firstOrFail();
     Fixture::respond($partner['user'], $assignment);
     $assignment->refresh();
 
