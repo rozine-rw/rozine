@@ -18,7 +18,9 @@ it('installs funding behind in-flight command table locks without blocking their
     // The platform fee and automatic disbursement migrations rebind the primary closing authority, so they come off first and go back last.
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
-    $dependants = [$automaticDisbursement, $platformFee, $issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
+    // The ledger-precision held release check rewrites check_primary_held_release, so it comes off before everything else.
+    $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $dependants = [$heldReleasePrecision, $automaticDisbursement, $platformFee, $issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
     $shape = fn (): array => [
         DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
             AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,

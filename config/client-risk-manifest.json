@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "d46a21c15decb37f594f08d6d1cadfb9c8bb2f6807e4103bd6753e916150d509",
-    "coverageSetSha256": "99d3405be692affdaefffdebf1cefa4d48ea82f430f3c4909dcbc44bc00bf072",
+    "sourceManifestSha256": "4602e56635be7596c49f4ec3cb3c6ce8cbba57967470654001a4bda3fee96492",
+    "coverageSetSha256": "ca16b60f6eaff4d754202d071bdf8d861f7a2dd359f1e7188aee0aace9d041b5",
     "thresholds": {
         "critical": {
             "global": {
@@ -239,6 +239,7 @@
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",
+        "resources/js/components/investor/floating-hold.tsx",
         "resources/js/components/investor/investor-shell.tsx",
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
@@ -303,6 +304,7 @@
         "resources/js/components/rozine/skip-link.tsx",
         "resources/js/components/rozine/support-chat.tsx",
         "resources/js/components/rozine/toast.tsx",
+        "resources/js/components/rozine/upload-status.tsx",
         "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",

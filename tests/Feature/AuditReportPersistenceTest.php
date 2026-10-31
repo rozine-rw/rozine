@@ -253,6 +253,9 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     // The fixture's submission leaves the deferred pending-slot key check queued, and a table with queued checks cannot be dropped.
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
+    $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $heldReleasePrecision->down();
     $repeatApplications->down();
     $cartLines->down();
     $automaticDisbursement->down();
@@ -363,6 +366,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $automaticDisbursement->up();
     $cartLines->up();
     $repeatApplications->up();
+    $heldReleasePrecision->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
