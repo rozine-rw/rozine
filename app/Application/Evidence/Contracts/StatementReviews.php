@@ -10,7 +10,7 @@ namespace App\Application\Evidence\Contracts;
  *
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  *
- * @phpstan-type LatestVerification array{assignment_id: string, actor_party_id: int, assignment: AcceptedAssignment, current: bool}
+ * @phpstan-type LatestVerification array{assignment_id: string, actor_party_id: string, assignment: AcceptedAssignment, current: bool}
  */
 interface StatementReviews
 {
