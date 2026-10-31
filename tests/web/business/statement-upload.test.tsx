@@ -8,6 +8,7 @@ import ineligibleStep from '../../../resources/fixtures/ui/business-apply-inelig
 
 type Visit = {
     onStart?: () => void;
+    onProgress?: (progress: { percentage: number } | undefined) => void;
     onError?: (errors: Record<string, string>) => void;
     onFinish?: () => void;
 };
