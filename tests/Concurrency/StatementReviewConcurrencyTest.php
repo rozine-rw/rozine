@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Auditor\ResolveAuditAssignment;
 use App\Application\Evidence\GetStaffStatementAuditReadiness;
 use App\Application\Evidence\RequestStatementReview;
 use App\Domain\Identity\IdentityViolation;
@@ -101,3 +102,21 @@ it('never completes a review from a partner whose conflict won the race against 
     expect($assignment->status === 'completed')->toBe($verified && $assignment->party_id === $partner['party']->id)
         ->and($assignment->status)->toBeIn(['completed', 'operations', 'offered']);
 });
+
+it('completes a review only from its accepted partner while staff resolution races the verification', function (string $decision): void {
+    $fixture = Fixture::make(1);
+    $sources = Fixture::statements($fixture);
+    $partner = $fixture['partners'][0];
+    $assignment = AuditAssignment::query()->findOrFail(statementReviewRequest($fixture)()['data']['assignment_id']);
+    Fixture::respond($partner['user'], $assignment);
+    $assignment->refresh();
+
+    expect(statementReviewContenders([
+        fn (): array => Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']),
+        fn (): array => app(App\Application\Auditor\ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, $assignment->revision,
+            $decision, 'Staff resolution.', (string) Str::uuid()),
+    ]))->each->toBeIn([0, 2]);
+    // An accepted engagement is not in Audit Operations, so staff cannot close or redispatch it under the verification.
+    expect($assignment->refresh()->status)->toBe('completed')->and(StatementVerification::query()->count())->toBe(1)
+        ->and($assignment->party_id)->toBe($partner['party']->id);
+})->with(['close', 'redispatch']);

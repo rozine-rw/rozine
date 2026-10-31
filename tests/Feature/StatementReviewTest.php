@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 use Tests\Support\AuditorFixture;
+use Tests\Support\BusinessAuthorityFixture;
 use Tests\Support\StatementFixture;
 
 beforeEach(function (): void {
@@ -162,27 +163,49 @@ it('keeps a verification receipt from another partner out of reach', function ()
         ->toThrow(CommandRejection::class, 'OPERATION_NOT_FOUND');
 });
 
-it('allows a new review once amended statements make the verification non-current', function (): void {
+it('allows a new review once a changed original, transcription or mandate makes the verification non-current', function (string $change): void {
     $fixture = Fixture::make(1);
     $sources = Fixture::statements($fixture);
+    $owner = $fixture['authority']['users'][0];
     $partner = $fixture['partners'][0];
     $first = review($fixture);
     Fixture::respond($partner['user'], $first);
     Fixture::verifyStatements($fixture, $first->refresh(), $sources['transcription_id']);
 
-    $amended = amendStatements($fixture, 2);
+    [$transcription, $review, $evidence] = match ($change) {
+        'original' => (function () use ($fixture, $sources): array {
+            $amended = amendStatements($fixture, 2);
+
+            return [$amended['transcription_id'], StatementFixture::review([$sources['document_id'] => hash('sha256', StatementFixture::csv()),
+                $amended['document_id'] => hash('sha256', StatementFixture::csv('300'))]), 4];
+        })(),
+        'transcription' => (function () use ($fixture, $sources, $owner): array {
+            $input = StatementFixture::transcription($sources['document_id']);
+            $saved = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 2, $input['rails'], $input['months'], $input['statements'],
+                StatementFixture::reviewed($owner->id, $fixture['business']), (string) Str::uuid());
+
+            return [$saved['data']['transcription']['id'], null, 3];
+        })(),
+        default => (function () use ($fixture, $sources, $partner): array {
+            $authority = $fixture['authority'];
+            $authority['profile']['name'] = 'Updated legal business name';
+            BusinessAuthorityFixture::configure($authority, 1);
+            Fixture::independence($fixture['staff'], $fixture['business'], $partner['party']->id, 1);
+
+            return [$sources['transcription_id'], null, 2];
+        })(),
+    };
     $readiness = app(GetStaffStatementAuditReadiness::class)->handle($fixture['staff']->id, $fixture['business']);
     expect($readiness['source_verified'])->toBeFalse()->and($readiness['ready_to_request'])->toBeTrue();
 
     $second = review($fixture);
     expect($second->id)->not->toBe($first->id)->and($second->party_id)->toBe($partner['party']->id);
     Fixture::respond($partner['user'], $second);
-    $review = StatementFixture::review([$sources['document_id'] => hash('sha256', StatementFixture::csv()), $amended['document_id'] => hash('sha256', StatementFixture::csv('300'))]);
-    $receipt = Fixture::verifyStatements($fixture, $second->refresh(), $amended['transcription_id'], $review, evidenceRevision: 4, verificationRevision: 1);
+    $receipt = Fixture::verifyStatements($fixture, $second->refresh(), $transcription, $review, evidenceRevision: $evidence, verificationRevision: 1);
     expect($receipt['code'])->toBe('STATEMENT_SOURCE_VERIFIED')->and($second->refresh()->status)->toBe('completed')
         ->and(AuditAssignment::query()->where('party_id', $partner['party']->id)->where('status', 'accepted')->count())->toBe(0)
         ->and(DB::table('business_applications')->count())->toBe(0);
-});
+})->with(['original', 'transcription', 'mandate']);
 
 it('never counts completed statement reviews toward three consecutive reports', function (): void {
     $fixture = Fixture::make(1);
