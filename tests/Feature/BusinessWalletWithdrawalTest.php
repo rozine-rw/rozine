@@ -161,9 +161,12 @@ it('pays a verified success out exactly once and tells the Business where it wen
     businessWithdraw($fixture);
     $withdrawal = BusinessWithdrawal::query()->sole();
 
-    expect(businessWithdrawalOutcome($withdrawal->id, 'succeeded', 'synthetic-business-paid'))
+    // The redelivery is the same signed message, so a second boundary between the two cannot change it.
+    $observed = ['observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)];
+
+    expect(businessWithdrawalOutcome($withdrawal->id, 'succeeded', 'synthetic-business-paid', $observed))
         ->toBe(['disposition' => 'applied', 'state' => 'succeeded', 'settled' => true, 'replayed' => false])
-        ->and(businessWithdrawalOutcome($withdrawal->id, 'succeeded', 'synthetic-business-paid'))
+        ->and(businessWithdrawalOutcome($withdrawal->id, 'succeeded', 'synthetic-business-paid', $observed))
         ->toBe(['disposition' => 'applied', 'state' => 'succeeded', 'settled' => false, 'replayed' => true])
         ->and(businessWithdrawalOutcome($withdrawal->id, 'failed'))
         ->toBe(['disposition' => 'after_final', 'state' => 'succeeded', 'settled' => false, 'replayed' => false]);
