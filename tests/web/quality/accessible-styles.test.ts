@@ -128,12 +128,14 @@ describe('Literal text colours (WCAG 2.2 SC 1.4.3)', () => {
     /**
      * Files whose literal colours sit on a dark or tinted fill of their own, or are not text:
      * the starter welcome page no route serves, the notice tiles' icon colour and the review
-     * drawer's kicker on its navy header.
+     * drawer's kicker on its navy header, and the floating checkout hold's urgent countdown on its
+     * navy pill.
      */
     const ALLOWED = new Set([
         'pages/welcome.tsx',
         'components/investor/notices/notices-panel.tsx',
         'components/admin/applications/review-drawer.tsx',
+        'components/investor/floating-hold.tsx',
     ]);
 
     it('draws every light-theme literal text colour at 4.5:1 or more on white', () => {
