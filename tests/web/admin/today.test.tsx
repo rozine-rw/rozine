@@ -391,6 +391,24 @@ describe('Admin Today', () => {
         expect(screen.getByText('3d ago')).toBeInTheDocument();
     });
 
+    it('shows restricted access instead of claiming the applications queue is empty', () => {
+        const fixture = props(todayFixture);
+        render(
+            <AdminToday
+                {...fixture}
+                nav={{ ...fixture.nav, applications: null }}
+                pending_applications={[]}
+            />,
+        );
+
+        expect(
+            screen.getByText('You do not have access to pending applications.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No applications waiting.'),
+        ).not.toBeInTheDocument();
+    });
+
     it('says when there is no activity or no application waiting', () => {
         render(
             <AdminToday

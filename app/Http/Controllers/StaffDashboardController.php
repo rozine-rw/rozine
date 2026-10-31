@@ -8,6 +8,7 @@ use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
 use App\Application\Operations\BrowseOperationsDashboard;
 use App\Application\Operations\BrowseReconciliation;
+use App\Domain\Identity\IdentityViolation;
 use App\Http\Requests\Staff\ShowStaffDashboardRequest;
 use App\Http\Resources\StaffDashboardResource;
 use Inertia\Inertia;
@@ -25,17 +26,45 @@ class StaffDashboardController extends Controller
         ShowStaffDashboardRequest $request, BrowseOperationsDashboard $dashboard, BrowseReconciliation $reconciliation, BrowseLedger $ledger, GetStaffAccess $access,
     ): Response|StaffDashboardResource {
         $actorId = (int) $request->user()?->getAuthIdentifier();
+        $staff = $access->handle($actorId, true);
+        if (! in_array('admin.open', $staff['allowed_actions'], true)) {
+            throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
+        }
         $from = $request->validated('from');
         $to = $request->validated('to');
-        $board = $dashboard->handle($actorId, $from === null ? null : (string) $from, $to === null ? null : (string) $to);
-        $staff = $access->handle($actorId);
+        $from = $from === null ? null : (string) $from;
+        $to = $to === null ? null : (string) $to;
+        $page = null;
+        $resolvePage = function () use ($dashboard, $reconciliation, $ledger, $staff, $actorId, $from, $to, &$page): array {
+            if ($page !== null) {
+                return $page;
+            }
 
-        $breaks = in_array('reconciliation.view', $staff['allowed_actions'], true) ? $reconciliation->handle($actorId)['breaks'] : null;
-        $activity = in_array('ledger.view', $staff['allowed_actions'], true) ? $ledger->latest($actorId, 6) : null;
+            $board = $dashboard->handle($actorId, $from, $to);
+            $breaks = in_array('reconciliation.view', $staff['allowed_actions'], true) ? $reconciliation->handle($actorId)['breaks'] : null;
+            $activity = in_array('ledger.view', $staff['allowed_actions'], true) ? $ledger->latest($actorId, 6) : null;
 
-        $resource = new StaffDashboardResource(['dashboard' => $board, 'breaks' => $breaks, 'activity' => $activity, 'roles' => $staff['roles'],
-            'permissions' => $staff['allowed_actions']]);
+            return $page = ['dashboard' => $board, 'breaks' => $breaks, 'activity' => $activity, 'roles' => $staff['roles'],
+                'permissions' => $staff['allowed_actions']];
+        };
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/today', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return new StaffDashboardResource($resolvePage());
+        }
+
+        $resolved = null;
+        $resolveResource = function () use ($request, $resolvePage, &$resolved): array {
+            return $resolved ??= (new StaffDashboardResource($resolvePage()))->resolve($request);
+        };
+        $props = [];
+        foreach (['contract_version', 'server_time', 'viewer', 'nav', 'badges', 'search', 'kpis', 'attention', 'breaks',
+            'portfolio_health', 'activity', 'funnel', 'pending_applications', 'sector_exposure', 'treasury', 'collections'] as $key) {
+            $props[$key] = fn () => $resolveResource()[$key];
+        }
+        $props['capital_raised'] = function () use ($dashboard, $actorId, $from, $to, &$resolved): array {
+            return $resolved['capital_raised'] ?? StaffDashboardResource::capitalRaised($dashboard->capitalRaised($actorId, $from, $to));
+        };
+
+        return Inertia::render('admin/today', $props);
     }
 }

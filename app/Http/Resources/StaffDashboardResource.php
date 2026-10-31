@@ -95,8 +95,7 @@ class StaffDashboardResource extends JsonResource
             'breaks' => $page['breaks'] === null ? null : array_map(fn (array $break): array => ['id' => $break['id'], 'reference' => $break['reference'],
                 'description' => StaffReconciliationResource::describe($break), 'gap' => $money($break['amount']), 'opened_at' => $break['opened_at'],
                 'age_days' => $break['age_days'], 'owner' => null, 'actions' => (object) []], $page['breaks']),
-            'capital_raised' => [...$board['capital'], 'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'],
-                'amount' => $money($bar['amount']), 'height_pct' => $bar['height_pct']], $board['capital']['bars'])],
+            'capital_raised' => self::capitalRaised($board['capital']),
             'portfolio_health' => ['total' => $health['total'], 'healthy' => ['count' => $health['healthy'], 'pct' => $healthyPct],
                 'watch' => ['count' => $health['watch'], 'pct' => $health['total'] === 0 ? 0 : 100 - $healthyPct], 'distressed' => null],
             'activity' => $page['activity'] === null ? null : array_map(function (array $entry) use ($prefix): array {
@@ -116,5 +115,14 @@ class StaffDashboardResource extends JsonResource
             'treasury' => ['invested' => $money($figures['capital_raised']), 'disbursed' => $money($figures['disbursed']),
                 'platform_net' => null, 'paid_to_investors' => null],
             'collections' => null];
+    }
+
+    /** @param  array{from: string|null, to: string|null, grain: string, bars: list<Bar>}  $capital
+     * @return array<string, mixed>
+     */
+    public static function capitalRaised(array $capital): array
+    {
+        return [...$capital, 'bars' => array_map(fn (array $bar): array => ['label' => $bar['label'],
+            'amount' => ['currency' => 'RWF', 'amount' => $bar['amount']], 'height_pct' => $bar['height_pct']], $capital['bars'])];
     }
 }

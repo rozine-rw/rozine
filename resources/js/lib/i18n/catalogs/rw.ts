@@ -2189,6 +2189,8 @@ const rw: Catalog = {
     'admin.today.lifecycle.failed': 'Byananiranye',
     'admin.today.pending.title': 'Ubusabe butegereje',
     'admin.today.pending.empty': 'Nta busabe butegereje.',
+    'admin.today.pending.restricted':
+        'Ntabwo ufite uburenganzira bwo kureba ubusabe butegereje.',
     'admin.today.pending.review': 'Suzuma',
     'admin.today.pending.review_named': 'Suzuma {name}',
     'admin.today.sectors.title': 'Imari muri buri rwego',

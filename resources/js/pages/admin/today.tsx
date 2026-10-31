@@ -87,7 +87,10 @@ export default function AdminToday(props: AdminTodayProps) {
                 data-testid="panel-row"
                 className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2"
             >
-                <PendingApplicationsPanel items={props.pending_applications} />
+                <PendingApplicationsPanel
+                    items={props.pending_applications}
+                    canReview={props.nav.applications !== null}
+                />
                 <SectorPanel sectors={props.sector_exposure} />
             </div>
             <div
