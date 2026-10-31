@@ -33,6 +33,10 @@
         },
         "evidence": {
             "version": "ev-2026-09-21.3",
+            "requirement": {
+                "months_required": 36,
+                "months_verified": 36
+            },
             "eligibility": {
                 "status": "eligible"
             },

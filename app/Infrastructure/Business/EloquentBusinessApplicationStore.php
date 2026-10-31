@@ -228,8 +228,11 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         $signing = $draft !== null && BusinessApplicationSignature::query()->where('business_application_id', $draft->id)
             ->where('business_application_quote_id', $draft->current_quote_id)->exists();
 
+        $blocked = $draft === null || $signing ? null : $this->page($userId, $contextRevision, $businessId, $draft->id)['evidence']['eligibility'];
+
         return [...$home, 'draft_signatures' => $signing
-            ? $this->outstandingSignatures($this->review($userId, $contextRevision, $businessId, $draft->id)['acceptance']['signers'], $party) : null];
+            ? $this->outstandingSignatures($this->review($userId, $contextRevision, $businessId, $draft->id)['acceptance']['signers'], $party) : null,
+            'draft_blocked' => ($blocked['status'] ?? null) === 'ineligible' ? $blocked['code'] : null];
     }
 
     /**
@@ -678,6 +681,8 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         $scorecard = $quote?->payload['result']['scorecard'] ?? null;
 
         return ['version' => $this->evidenceVersion($verification), ...$facts,
+            'requirement' => ['months_required' => ($credit['facts']['history']['repeat_eligibility'] ?? null) === null ? 36 : 12,
+                'months_verified' => $facts['period']['months'] ?? 0],
             'business' => [...$business['profile'], 'officers' => array_map(fn (array $person): array => ['name' => $person['name'], 'role' => implode(', ', $person['roles'])], $business['mandate']['people'])],
             'verified' => ['registry' => $business['entity_kind'] === 'organization', 'statements' => $current],
             'rating' => ($scorecard['rating'] ?? null) === null ? null : ['score' => $scorecard['rating'], 'band' => strtolower($scorecard['band'])],

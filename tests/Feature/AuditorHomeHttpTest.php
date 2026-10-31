@@ -38,7 +38,7 @@ function auditorHomeProps(User $user, string $url = '/auditor', string $componen
             return $page->component($component);
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
 }
 
 /**
