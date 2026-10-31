@@ -489,7 +489,7 @@ def same_attempt(repository, run):
     return latest
 
 
-def successful_steps(jobs, name, steps):
+def successful_steps(jobs, name, steps, *, artifact_verified=False):
     matches = [job for job in jobs if job["name"] == name]
     if len(matches) == 1 and matches[0].get("conclusion") not in (None, "success"):
         raise CoordinationRefusal("identity_or_decision_job_not_successful")
@@ -503,6 +503,13 @@ def successful_steps(jobs, name, steps):
         raise CoordinationRefusal("identity_or_decision_job_not_successful")
     for step in steps:
         found = [item for item in matches[0].get("steps", []) if item["name"] == step]
+        # GitHub can report a job as completed and successful a minute before
+        # its step records settle. No step may continue on error, so a
+        # successful job whose artifact was already verified implies a step
+        # that is still unsettled succeeded. Explicit outcomes stay binding.
+        if (artifact_verified and len(found) == 1 and found[0].get("conclusion") is None
+                and found[0].get("status") in ("queued", "pending", "waiting", "in_progress")):
+            continue
         if len(found) != 1 or found[0].get("conclusion") != "success":
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
@@ -534,7 +541,7 @@ def coordination_identity(repository, run, *, reader=None, artifact=None):
     for read in range(3):
         jobs = run_jobs(repository, run)
         try:
-            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS)
+            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS, artifact_verified=True)
         except PublicationPending:
             latest = same_attempt(repository, run)
             identity_jobs = [job for job in jobs if job["name"] == IDENTITY_JOB]
