@@ -4658,6 +4658,22 @@ const rw: Catalog = {
     'investor.wallet.result.withdraw': 'Uzakira',
     'investor.wallet.confirm.deposit': 'Emeza gushyiraho',
     'investor.wallet.confirm.withdraw': 'Emeza kubikuza',
+    'investor.wallet.sending.deposit':
+        'Kohereza amafaranga ushyira kuri konti…',
+    'investor.wallet.sending.withdraw': 'Kohereza amafaranga ubikuza…',
+    'investor.wallet.done.deposit.pending':
+        'Wasabye gushyira {amount} kuri konti. Tuzayashyiraho {method} nibimara kwemeza.',
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} avuye kuri {method} ari mu gikapu cyawe.',
+    'investor.wallet.done.deposit.failed':
+        'Gushyira {amount} uvuye kuri {method} ntibyakunze. Nta mafaranga yashyizweho.',
+    'investor.wallet.done.withdraw.pending':
+        'Wasabye kubikuza {amount} ujyana kuri {method}. Azoherezwa {method} nibimara kwemeza.',
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} yoherejwe kuri {method}.',
+    'investor.wallet.done.withdraw.failed':
+        'Kubikuza {amount} ujyana kuri {method} ntibyakunze. Amafaranga yagarutse mu gikapu cyawe.',
+    'investor.wallet.c3.credited': 'Byashyizweho',
     'investor.wallet.processing': 'Birimo koherezwa…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Andika nibura amafaranga make yemewe',

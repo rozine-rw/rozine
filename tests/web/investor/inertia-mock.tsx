@@ -26,6 +26,7 @@ export const inertia = {
     posts: [] as { url: string; data: Payload }[],
     reload: vi.fn(),
     visit: vi.fn(),
+    replace: vi.fn(),
     routerPost: vi.fn(),
     forms: [] as { action?: string; method?: string }[],
     errors: {} as Record<string, string>,
@@ -52,6 +53,7 @@ export function resetInertia(): void {
     inertia.shared = {};
     inertia.reload.mockReset();
     inertia.visit.mockReset();
+    inertia.replace.mockReset();
     inertia.routerPost.mockReset();
 }
 
@@ -191,6 +193,7 @@ export function Form({
 export const router = {
     reload: (...args: unknown[]) => inertia.reload(...args),
     visit: (...args: unknown[]) => inertia.visit(...args),
+    replace: (...args: unknown[]) => inertia.replace(...args),
     post: (...args: unknown[]) => inertia.routerPost(...args),
 };
 
