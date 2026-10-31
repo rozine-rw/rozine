@@ -2195,6 +2195,8 @@ const fr: Catalog = {
     'admin.today.lifecycle.failed': 'Échoué',
     'admin.today.pending.title': 'Demandes en attente',
     'admin.today.pending.empty': 'Aucune demande en attente.',
+    'admin.today.pending.restricted':
+        'Vous n’avez pas accès aux demandes en attente.',
     'admin.today.pending.review': 'Examiner',
     'admin.today.pending.review_named': 'Examiner {name}',
     'admin.today.sectors.title': 'Exposition sectorielle',

@@ -48,6 +48,16 @@ it('denies ungranted staff operations and rechecks permission and MFA after revo
         ->toThrow(IdentityViolation::class, 'STAFF_ACCESS_REQUIRED');
 });
 
+it('returns staff access only when the required permission is held', function (): void {
+    $user = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($user, ['analyst'], 'Read-only assignment.');
+    $access = app(GetStaffAccess::class);
+
+    expect($access->requiring($user->id, 'admin.open')['allowed_actions'])->toContain('admin.open');
+    expect(fn () => $access->requiring($user->id, 'applications.review'))
+        ->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
+});
+
 it('audits normalized role changes and binds replay identity to the chosen roles', function (): void {
     $user = User::factory()->withTwoFactor()->create();
     $configure = app(ConfigureStaffAccess::class);
