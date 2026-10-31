@@ -32,6 +32,8 @@ export const inertia = {
     errors: {} as Record<string, string>,
     processing: false,
     succeed: false,
+    /** Keep `router.post` visits open (no `onFinish`) so a test can watch one in flight. */
+    holdPosts: false,
     /** Every JSON request sent through `useHttp`, with the body it carried. */
     calls: [] as { url: string; method: string; body: unknown }[],
     queue: [] as Responder[],
@@ -47,6 +49,7 @@ export function resetInertia(): void {
     inertia.errors = {};
     inertia.processing = false;
     inertia.succeed = false;
+    inertia.holdPosts = false;
     inertia.calls = [];
     inertia.queue = [];
     inertia.httpErrors = {};
@@ -194,7 +197,16 @@ export const router = {
     reload: (...args: unknown[]) => inertia.reload(...args),
     visit: (...args: unknown[]) => inertia.visit(...args),
     replace: (...args: unknown[]) => inertia.replace(...args),
-    post: (...args: unknown[]) => inertia.routerPost(...args),
+    // A visit ends with `onFinish` whatever its answer, after `onSuccess` or `onError`.
+    post: (...args: unknown[]) => {
+        const result = inertia.routerPost(...args);
+
+        if (!inertia.holdPosts) {
+            (args[2] as { onFinish?: () => void } | undefined)?.onFinish?.();
+        }
+
+        return result;
+    },
 };
 
 export function useForm<T extends Payload>(initial: T) {

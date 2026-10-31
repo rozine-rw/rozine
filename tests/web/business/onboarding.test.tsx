@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
@@ -11,9 +11,18 @@ import verifiedFixture from '../../../resources/fixtures/ui/business-onboarding-
 import documentsFixture from '../../../resources/fixtures/ui/business-onboarding-documents.json';
 import finishFixture from '../../../resources/fixtures/ui/business-onboarding-finish.json';
 
+type UploadVisit = {
+    onProgress?: (progress: { percentage: number } | undefined) => void;
+    onFinish?: () => void;
+};
+
 const inertia = vi.hoisted(() => ({
     posts: [] as { url: string; data: Record<string, unknown> }[],
     uploads: [] as { url: string; data: Record<string, unknown> }[],
+    /** The last upload's visit callbacks, to drive one still in flight. */
+    upload: null as UploadVisit | null,
+    /** Keep uploads open (no `onFinish`) so a test can watch one in flight. */
+    hold: false,
     visits: [] as string[],
     errors: {} as Record<string, string>,
     processing: false,
@@ -34,8 +43,18 @@ vi.mock('@inertiajs/react', async () => {
             </a>
         ),
         router: {
-            post: (url: string, data: Record<string, unknown>) =>
-                inertia.uploads.push({ url, data }),
+            post: (
+                url: string,
+                data: Record<string, unknown>,
+                options?: UploadVisit,
+            ) => {
+                inertia.uploads.push({ url, data });
+                inertia.upload = options ?? null;
+
+                if (!inertia.hold) {
+                    options?.onFinish?.();
+                }
+            },
             visit: (link: { url: string }) => inertia.visits.push(link.url),
         },
         useForm: <T extends Record<string, unknown>>(initial: T) => {
@@ -59,6 +78,8 @@ const props = (fixture: { props: unknown }) =>
 beforeEach(() => {
     inertia.posts = [];
     inertia.uploads = [];
+    inertia.upload = null;
+    inertia.hold = false;
     inertia.visits = [];
     inertia.errors = {};
     inertia.processing = false;
@@ -245,6 +266,28 @@ describe('RDB certificate, logo & photos', () => {
                 data: { slot: 'team', file: logo },
             },
         ]);
+    });
+
+    it('shows an upload in flight on its tile and holds the step until it arrives', async () => {
+        const user = userEvent.setup();
+        const logo = new File(['png'], 'logo.png', { type: 'image/png' });
+
+        inertia.hold = true;
+        render(<BusinessOnboarding {...props(documentsFixture)} />);
+        await user.upload(screen.getByLabelText('Upload your logo'), logo);
+
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        act(() => inertia.upload?.onProgress?.({ percentage: 64 }));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading… 64%');
+        act(() => inertia.upload?.onProgress?.(undefined));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        // Another upload or a visit would cancel this one, so they wait.
+        expect(screen.getByLabelText('Team')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+
+        act(() => inertia.upload?.onFinish?.());
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Team')).toBeEnabled();
     });
 
     it('shows a verified certificate, the logo and uploaded photos, then moves on', async () => {

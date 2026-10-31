@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorAccess from '@/pages/investor/auth/access';
@@ -492,8 +492,10 @@ describe('Verification', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         // A passport has one photo page: no back, and its own number guidance.
@@ -518,8 +520,10 @@ describe('Verification', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         unmountSecond();
@@ -706,8 +710,10 @@ describe('Verification submission', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         await user.click(screen.getByRole('button', { name: 'Continue' }));
@@ -833,6 +839,55 @@ describe('Verification submission', () => {
         expect(
             screen.queryByRole('button', { name: 'Previous step' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('shows each document uploading and holds the step until it arrives', async () => {
+        const user = userEvent.setup();
+        let visit: {
+            onProgress: (progress: { percentage: number } | undefined) => void;
+            onSuccess: () => void;
+            onFinish: () => void;
+        } | null = null;
+
+        inertia.holdPosts = true;
+        inertia.routerPost.mockImplementation(
+            (
+                _url: string,
+                _data: unknown,
+                options: NonNullable<typeof visit>,
+            ) => {
+                visit = options;
+            },
+        );
+        render(<InvestorVerification {...live(documentFixture, {})} />);
+
+        await user.upload(
+            screen.getByLabelText('Upload back'),
+            new File(['id'], 'back.jpg', { type: 'image/jpeg' }),
+        );
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        act(() => visit?.onProgress({ percentage: 42 }));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading… 42%');
+        act(() => visit?.onProgress({ percentage: 100 }));
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Checking the file…',
+        );
+        // Another upload or the step's own visit would cancel this one, so both wait.
+        expect(screen.getByLabelText('Upload front')).toBeDisabled();
+        expect(screen.getByLabelText('Upload back')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Previous step' }),
+        ).toBeDisabled();
+
+        act(() => {
+            visit?.onSuccess();
+            visit?.onFinish();
+        });
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Upload back')).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+        expect(inertia.routerPost).toHaveBeenCalledTimes(1);
     });
 
     it('shows why an upload was refused, and clears it once an upload succeeds', async () => {

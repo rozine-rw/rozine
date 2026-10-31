@@ -880,6 +880,28 @@ describe('Audit procedure — ledger reconciliation', () => {
         });
     });
 
+    it('shows the ledger document uploading until its answer arrives', async () => {
+        const { user } = renderWithUser(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    upload: {
+                        url: '/auditor/reports/fa_huye/ledger',
+                        method: 'post',
+                    },
+                }))}
+            />,
+        );
+
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        await user.upload(
+            screen.getByLabelText('Ledger document file'),
+            new File(['%PDF'], 'stock-book.pdf', { type: 'application/pdf' }),
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+    });
+
     it('offers no upload without the stage route, keeping the documents and their downloads', () => {
         render(
             <AuditorAudit

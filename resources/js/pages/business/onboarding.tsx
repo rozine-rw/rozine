@@ -4,6 +4,7 @@ import { StepBank } from '@/components/business/onboarding/step-bank';
 import { StepConfirm } from '@/components/business/onboarding/step-confirm';
 import { StepDocuments } from '@/components/business/onboarding/step-documents';
 import { StepFinish } from '@/components/business/onboarding/step-finish';
+import type { SendingUpload } from '@/components/business/onboarding/upload-tile';
 import { ErrorBanner, PrimaryButton } from '@/components/rozine/form';
 import { IconGradients } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -35,6 +36,7 @@ export default function BusinessOnboarding({
     const percent = `${Math.round((index / 3) * 100)}%`;
     const form = useForm({ industry });
     const [blocked, setBlocked] = useState<string | null>(null);
+    const [sending, setSending] = useState<SendingUpload | null>(null);
     const current = industries.find(
         (option) => option.value === form.data.industry,
     );
@@ -106,7 +108,12 @@ export default function BusinessOnboarding({
                     />
                 )}
                 {step === 'documents' && (
-                    <StepDocuments documents={documents} actions={actions} />
+                    <StepDocuments
+                        documents={documents}
+                        actions={actions}
+                        sending={sending}
+                        onSending={setSending}
+                    />
                 )}
                 {step === 'bank' && (
                     <StepBank
@@ -137,6 +144,7 @@ export default function BusinessOnboarding({
                     <PrimaryButton
                         type="button"
                         busy={form.processing}
+                        disabled={sending !== null}
                         onClick={next}
                     >
                         {step === 'finish' && form.processing

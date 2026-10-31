@@ -349,6 +349,8 @@ export function useAuditorCommandCenter({
 
     return {
         busy: command.busy,
+        /** The file an in-flight command carries and how much of it has gone, if any. */
+        upload: command.upload,
         notice: command.notice,
         unresolved: command.unresolved,
         /** Nothing is in flight or awaiting its outcome, so a new command may start. */

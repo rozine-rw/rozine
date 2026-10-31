@@ -1778,6 +1778,8 @@ describe('Business audit co-sign — N6 dispute sheet', () => {
         expect(
             sheet.getByRole('button', { name: 'Submitting…' }),
         ).toHaveAttribute('aria-busy', 'true');
+        // The proof files are on their way, so the sheet says so.
+        expect(sheet.getByRole('status')).toHaveTextContent('Uploading…');
     });
 
     it('sends text alone without proof_files, and files alone without supporting_text', async () => {

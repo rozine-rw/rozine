@@ -5203,7 +5203,6 @@ const rw: Catalog = {
         "Ohereza raporo y'umwimerere ya buri konti ya banki na Mobile Money ikigo gikoresha (PDF, cyangwa CSV; buri imwe itarenze MB 10). Rozine irazisoma, hanyuma Audit Partner akazigenzura mbere y'uko imibare yawe n'ubushobozi bwawe bigaragara hano.",
     'business.apply.statements.empty': 'Nta raporo iraboneka.',
     'business.apply.statements.upload': 'Ohereza raporo',
-    'business.apply.statements.uploading': 'Biroherezwa…',
     'business.apply.statements.failed':
         'Ntitwashoboye kubika iyi raporo. Ongera ugerageze.',
     'business.apply.statements.received': 'Yakiriwe {date}',
@@ -6567,6 +6566,9 @@ const rw: Catalog = {
         "Hano herekanwa gusa nimero ya raporo, ikimenyetso cyayo n'igisubizo cy'igenzura rya kashe.",
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         'Umugenzuzi yakosoye iyi raporo, bityo ntishobora gushyirwaho umukono. Raporo ikosowe izakugezwaho ngo uyishyireho umukono imaze gufungwa.',
+    'common.upload.sending': 'Birimo koherezwa…',
+    'common.upload.percent': 'Birimo koherezwa… {percent}%',
+    'common.upload.checking': 'Turimo kugenzura dosiye…',
     'common.file_size.kb': '{size} KB',
     'common.file_size.mb': '{size} MB',
     'common.file_size.kind': '{kind} · {size}',
