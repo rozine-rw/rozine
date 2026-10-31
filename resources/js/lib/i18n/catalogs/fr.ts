@@ -363,6 +363,19 @@ const fr: Catalog = {
     'business.today.repayment.kicker': 'Prochain remboursement',
     'business.today.repayment.sub': '{note} · Échéance le {date}',
     'business.today.repayment.cta': 'Payer maintenant',
+    'business.today.blocked.kicker': 'Demande en attente',
+    'business.today.blocked.untitled': 'Votre demande',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Vos relevés doivent être vérifiés par un Audit Partner avant de continuer.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'Il faut davantage de mois de relevés vérifiés avant de continuer.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine termine une vérification de politique avant que vous puissiez continuer.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'Une restriction sur votre compte bloque cette demande pour le moment.',
+    'business.today.blocked.sub.other':
+        'Un point demande votre attention avant de continuer.',
+    'business.today.blocked.cta': 'Voir ce qui manque',
     'business.today.caught_up.title': 'Vous êtes à jour',
     'business.today.caught_up.body':
         'Aucun remboursement ni action en attente. Nous vous préviendrons dès que quelque chose vous concernera.',
@@ -4672,6 +4685,21 @@ const fr: Catalog = {
     'investor.wallet.result.withdraw': 'Vous recevez',
     'investor.wallet.confirm.deposit': 'Confirmer le dépôt',
     'investor.wallet.confirm.withdraw': 'Confirmer le retrait',
+    'investor.wallet.sending.deposit': 'Envoi du dépôt…',
+    'investor.wallet.sending.withdraw': 'Envoi du retrait…',
+    'investor.wallet.done.deposit.pending':
+        'Dépôt de {amount} demandé. Nous le créditerons dès que {method} le confirmera.',
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} depuis {method} est maintenant dans votre portefeuille.',
+    'investor.wallet.done.deposit.failed':
+        "Le dépôt de {amount} depuis {method} n'a pas abouti. Rien n'a été crédité.",
+    'investor.wallet.done.withdraw.pending':
+        'Retrait de {amount} vers {method} demandé. Il sera versé dès que {method} le confirmera.',
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} a été versé sur {method}.',
+    'investor.wallet.done.withdraw.failed':
+        "Le retrait de {amount} vers {method} n'a pas abouti. L'argent est de retour dans votre portefeuille.",
+    'investor.wallet.c3.credited': 'Crédité',
     'investor.wallet.processing': 'Envoi…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Saisissez au moins le montant minimum',
@@ -5176,12 +5204,21 @@ const fr: Catalog = {
 
     'business.apply.business.unavailable': 'Indisponible',
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.business.requirement':
+        'Historique vérifié : {verified} mois sur {required}',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} relevé téléversé. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
+        other: '{count} relevés téléversés. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
+    },
+    'business.apply.business.no_statements':
+        'Aucun relevé téléversé. Téléversez-les ci-dessous pour lancer la vérification.',
+    'business.apply.business.obligations':
+        "Les prêts et autres obligations existants sont contrôlés lors de la même vérification, à partir de vos relevés et d'une consultation du bureau de crédit. Il n'y a rien d'autre à téléverser.",
     'business.apply.statements.title': 'Relevés bancaires et Mobile Money',
     'business.apply.statements.body':
         "Téléversez le relevé original de chaque compte bancaire et Mobile Money de l'entreprise (PDF, ou export CSV ; 10 Mo maximum chacun). Rozine les lit, puis un Audit Partner les vérifie avant que vos chiffres et votre capacité n'apparaissent ici.",
     'business.apply.statements.empty': 'Aucun relevé reçu pour le moment.',
     'business.apply.statements.upload': 'Téléverser un relevé',
-    'business.apply.statements.uploading': 'Téléversement…',
     'business.apply.statements.failed':
         "Nous n'avons pas pu conserver ce relevé. Réessayez.",
     'business.apply.statements.received': 'Reçu le {date}',
@@ -6565,6 +6602,9 @@ const fr: Catalog = {
         "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "L'auditeur a modifié ce rapport ; il ne peut donc plus être cosigné. Le rapport modifié vous sera soumis pour approbation une fois scellé.",
+    'common.upload.sending': 'Envoi en cours…',
+    'common.upload.percent': 'Envoi en cours… {percent} %',
+    'common.upload.checking': 'Vérification du fichier…',
     'common.file_size.kb': '{size} Ko',
     'common.file_size.mb': '{size} Mo',
     'common.file_size.kind': '{kind} · {size}',

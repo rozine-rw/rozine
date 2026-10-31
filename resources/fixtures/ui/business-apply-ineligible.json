@@ -70,10 +70,14 @@
         },
         "evidence": {
             "version": "ev-2026-09-21.3",
+            "requirement": {
+                "months_required": 36,
+                "months_verified": 28
+            },
             "eligibility": {
                 "status": "ineligible",
                 "code": "VERIFIED_HISTORY_INSUFFICIENT",
-                "message": "A first raise needs 36 complete, consecutive months of verified statements. Rozine has verified 29 so far; the rest will count once they are verified."
+                "message": "A first raise needs 36 complete, consecutive months of verified statements. Rozine has verified 28 so far; the rest will count once they are verified."
             },
             "business": {
                 "name": "GreenLeaf Agro",

@@ -35,6 +35,38 @@ afterEach(() => {
 });
 
 describe('Wallet withdrawals (LED-R04)', () => {
+    it('confirms a paid-out withdrawal at what the account received after the charge', async () => {
+        const props = wallet();
+        const quote = props.funding.withdrawal!.quote!;
+
+        quote.charge = { currency: 'RWF', amount: '1000' };
+        quote.received = { currency: 'RWF', amount: '99000' };
+        render(<InvestorWallet {...props} />);
+
+        const panel = screen.getByRole('form', { name: 'Withdraw' });
+
+        fireEvent.click(within(panel).getByRole('radio', { name: /Airtel/u }));
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'WITHDRAWAL_RECORDED',
+                data: {
+                    receipt: { code: 'WITHDRAWAL_RECORDED' },
+                    current: { state: 'succeeded' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            /^RWF 99,000 was paid out to .*Airtel/u,
+        );
+    });
+
     it('quotes a withdrawal to a verified account and records it, paying nothing out yet', async () => {
         vi.useFakeTimers();
         const { rerender } = render(<InvestorWallet {...wallet()} />);
@@ -111,7 +143,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         fireEvent.submit(panel);
 
         expect(
-            within(panel).getByRole('button', { name: 'Sending…' }),
+            within(panel).getByRole('button', { name: 'Sending withdrawal…' }),
         ).toBeDisabled();
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/investor-wallet-withdraw-pending',
@@ -125,10 +157,13 @@ describe('Wallet withdrawals (LED-R04)', () => {
         await act(async () => {
             await Promise.resolve();
         });
-        expect(inertia.visit).toHaveBeenCalledWith({
-            url: '/preview/investor-wallet-withdraw-pending',
-            method: 'get',
-        });
+        expect(inertia.visit).toHaveBeenCalledWith(
+            {
+                url: '/preview/investor-wallet-withdraw-pending',
+                method: 'get',
+            },
+            { onFinish: expect.any(Function) },
+        );
     });
 
     it('states a quote refusal and keeps the withdrawal closed', () => {

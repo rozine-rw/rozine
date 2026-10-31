@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
 import { ErrorBanner } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteAction } from '@/types';
@@ -27,10 +28,6 @@ const PERSONAL_STEPS = ['personal', 'document', 'liveness'] as const;
 const ENTITY_STEPS = ['entity', 'representative', 'declarations'] as const;
 
 /**
- * A dashed design tile that is a file picker (design L3576, L3590, L3638). The file goes straight to
- * the server, which stores it and re-renders the page with the slot's new state.
- */
-/**
  * A live submission's commands carry a fresh `request_id`, the identity context and the revision
  * they were drawn from; a preview fixture has no submission and sends none.
  */
@@ -45,6 +42,15 @@ function envelope(submission: Partial<KycSubmission>) {
           };
 }
 
+/** The document on its way to the server: its slot and how much of it has gone (null until known). */
+type Sending = { slot: string; percent: number | null };
+
+/**
+ * A dashed design tile that is a file picker (design L3576, L3590, L3638). The file goes straight to
+ * the server, which stores it and re-renders the page with the slot's new state. While it travels the
+ * tile shows a spinner and how much has gone, and every tile waits: each upload moves the
+ * submission's revision, so a second one sent alongside would only come back as a conflict.
+ */
 function Upload({
     slot,
     action,
@@ -53,6 +59,8 @@ function Upload({
     label,
     capture,
     className,
+    sending,
+    onSending,
     onError,
     children,
 }: {
@@ -63,15 +71,21 @@ function Upload({
     label: string;
     capture?: 'user';
     className: string;
+    sending: Sending | null;
+    onSending: (sending: Sending | null) => void;
     /** The upload is its own visit, so its validation errors never reach the step form. */
     onError: (message: string | null) => void;
     children: ReactNode;
 }) {
+    const mine = sending?.slot === slot;
+
     return (
         <label
+            aria-busy={mine || undefined}
             className={cn(
-                'cursor-pointer border-[1.5px] border-dashed',
-                state.status === 'missing'
+                'relative border-[1.5px] border-dashed',
+                sending === null ? 'cursor-pointer' : 'cursor-wait',
+                state.status === 'missing' && !mine
                     ? 'border-rz-border bg-[#f3f6fc] dark:bg-rz-surface-muted'
                     : 'border-[#17795a] bg-rz-page dark:border-[#3fcda0]',
                 className,
@@ -82,27 +96,39 @@ function Upload({
                 accept="image/*,application/pdf"
                 capture={capture}
                 aria-label={label}
-                disabled={submission.status === 'submitted'}
+                disabled={submission.status === 'submitted' || sending !== null}
                 className="sr-only"
                 onChange={(event) => {
                     const file = event.target.files?.[0];
 
+                    // Picking the same file again after a refusal must still send it.
+                    event.target.value = '';
+
                     if (file) {
+                        onError(null);
+                        onSending({ slot, percent: null });
                         router.post(
                             action.url,
                             { slot, file, ...envelope(submission) },
                             {
                                 forceFormData: true,
                                 preserveScroll: true,
+                                onProgress: (progress) =>
+                                    onSending({
+                                        slot,
+                                        percent: progress?.percentage ?? null,
+                                    }),
                                 onError: (errors: Record<string, string>) =>
                                     onError(Object.values(errors).join(' ')),
                                 onSuccess: () => onError(null),
+                                onFinish: () => onSending(null),
                             },
                         );
                     }
                 }}
             />
             {children}
+            {mine && <UploadStatus percent={sending.percent} overlay />}
         </label>
     );
 }
@@ -367,6 +393,7 @@ function VerificationForm({
     // server's step returns once that earlier step is saved.
     const [viewing, setViewing] = useState<Step | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [sending, setSending] = useState<Sending | null>(null);
     const [idNumberTouched, setIdNumberTouched] = useState(false);
     const [latestBirth] = useState(() => adultBy(new Date()));
     const steps: readonly Step[] =
@@ -448,7 +475,11 @@ function VerificationForm({
     const submit = (event: FormEvent) => {
         event.preventDefault();
 
-        if (step === 'personal' && birthProblem !== null) {
+        // A document still on its way would be cancelled by the step's own visit.
+        if (
+            sending !== null ||
+            (step === 'personal' && birthProblem !== null)
+        ) {
             return;
         }
 
@@ -670,6 +701,8 @@ function VerificationForm({
                                         >
                                             <Upload
                                                 onError={setUploadError}
+                                                sending={sending}
+                                                onSending={setSending}
                                                 slot={`id_${side}`}
                                                 action={props.actions.upload}
                                                 submission={submission}
@@ -719,6 +752,8 @@ function VerificationForm({
                     step === 'liveness' && (
                         <Upload
                             onError={setUploadError}
+                            sending={sending}
+                            onSending={setSending}
                             slot="selfie"
                             action={props.actions.upload}
                             submission={submission}
@@ -791,6 +826,8 @@ function VerificationForm({
                         )}
                         <Upload
                             onError={setUploadError}
+                            sending={sending}
+                            onSending={setSending}
                             slot="certificate"
                             action={props.actions.upload}
                             submission={submission}
@@ -847,6 +884,8 @@ function VerificationForm({
                             )}
                             <Upload
                                 onError={setUploadError}
+                                sending={sending}
+                                onSending={setSending}
                                 slot="resolution"
                                 action={props.actions.upload}
                                 submission={submission}
@@ -878,6 +917,8 @@ function VerificationForm({
                             </Upload>
                             <Upload
                                 onError={setUploadError}
+                                sending={sending}
+                                onSending={setSending}
                                 slot="selfie"
                                 action={props.actions.upload}
                                 submission={submission}
@@ -1006,7 +1047,7 @@ function VerificationForm({
                 {!locked && (
                     <button
                         type="submit"
-                        disabled={form.processing}
+                        disabled={form.processing || sending !== null}
                         aria-busy={form.processing || undefined}
                         className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70"
                     >
@@ -1021,7 +1062,8 @@ function VerificationForm({
                     <button
                         type="button"
                         onClick={() => setViewing(steps[index - 1])}
-                        className="mt-3 h-[46px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink"
+                        disabled={sending !== null}
+                        className="mt-3 h-[46px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink disabled:opacity-70"
                     >
                         {t('investor.kyc.previous')}
                     </button>

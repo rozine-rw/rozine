@@ -99,6 +99,11 @@ type Options<C extends OperationCommand, R> = {
     onInvalid?: (command: C) => void;
 };
 
+/** A file, or a list holding one, that makes a command's body an upload. */
+const isFileValue = (value: unknown): boolean =>
+    value instanceof File ||
+    (Array.isArray(value) && value.some((item) => item instanceof File));
+
 /**
  * Sends a page's JSON commands through Inertia's `useHttp` and returns the shared operation
  * Resource. One command is in flight at a time, and a command whose outcome is unknown (no answer,
@@ -128,6 +133,7 @@ export function useOperationCommand<
     const held = useRef<C | null>(initial?.held ?? null);
     const inFlight = useRef(false);
     const [busy, setBusy] = useState(false);
+    const [carriesFile, setCarriesFile] = useState(false);
     const [notice, setNotice] = useState<CommandNotice | null>(
         initial?.notice ?? null,
     );
@@ -161,6 +167,7 @@ export function useOperationCommand<
                       return response;
                   });
 
+        setCarriesFile(Object.values(body).some(isFileValue));
         http.transform(() => body);
 
         try {
@@ -410,6 +417,14 @@ export function useOperationCommand<
 
     return {
         busy,
+        /**
+         * While a command carrying a file is in flight, how much of it has gone (null until the
+         * browser says); null when no file is on its way.
+         */
+        upload:
+            busy && carriesFile
+                ? { percent: http.progress?.percentage ?? null }
+                : null,
         notice,
         /** A command is held until its outcome is known; no other command may start meanwhile. */
         unresolved: notice !== null && notice.kind !== 'refused',

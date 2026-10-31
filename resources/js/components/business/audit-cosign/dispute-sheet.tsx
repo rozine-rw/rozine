@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { FieldError } from '@/components/rozine/form';
 import { formatFileSize } from '@/components/rozine/proof-file-list';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -62,6 +63,7 @@ const fileError = (
  */
 export function DisputeSheet({
     busy,
+    upload,
     locked,
     errors,
     notice,
@@ -69,6 +71,8 @@ export function DisputeSheet({
     onClose,
 }: {
     busy: boolean;
+    /** The proof files on their way and how much has gone, while the dispute is sending. */
+    upload: { percent: number | null } | null;
     locked: boolean;
     errors: Partial<Record<string, string>>;
     /** What happened to the last command, shown inside the sheet while it is open. */
@@ -296,6 +300,12 @@ export function DisputeSheet({
                             {serverFileError}
                         </FieldError>
                     </div>
+                    {upload !== null && (
+                        <UploadStatus
+                            percent={upload.percent}
+                            className="mt-3"
+                        />
+                    )}
                     <div className="mt-4 flex flex-col gap-2.5">
                         <button
                             type="submit"

@@ -350,6 +350,19 @@ const en = {
     'business.today.repayment.kicker': 'Upcoming repayment',
     'business.today.repayment.sub': '{note} · Due {date}',
     'business.today.repayment.cta': 'Pay now',
+    'business.today.blocked.kicker': 'Application on hold',
+    'business.today.blocked.untitled': 'Your application',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Your statements must be verified by an Audit Partner before you can continue.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'More verified months of statements are needed before you can continue.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine is completing a policy check before you can continue.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'A restriction on your account stops this application for now.',
+    'business.today.blocked.sub.other':
+        'Something needs attention before you can continue.',
+    'business.today.blocked.cta': "See what's needed",
     'business.today.caught_up.title': "You're all caught up",
     'business.today.caught_up.body':
         "No repayments or actions due. We'll let you know the moment something needs you.",
@@ -4487,6 +4500,21 @@ const en = {
     'investor.wallet.result.withdraw': 'You receive',
     'investor.wallet.confirm.deposit': 'Confirm deposit',
     'investor.wallet.confirm.withdraw': 'Confirm withdrawal',
+    'investor.wallet.sending.deposit': 'Sending deposit…',
+    'investor.wallet.sending.withdraw': 'Sending withdrawal…',
+    'investor.wallet.done.deposit.pending':
+        "Deposit of {amount} requested. We'll credit it once {method} confirms.",
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} from {method} is now in your wallet.',
+    'investor.wallet.done.deposit.failed':
+        "The {amount} deposit from {method} didn't go through. Nothing was credited.",
+    'investor.wallet.done.withdraw.pending':
+        "Withdrawal of {amount} to {method} requested. It's paid out once {method} confirms.",
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} was paid out to {method}.',
+    'investor.wallet.done.withdraw.failed':
+        "The {amount} withdrawal to {method} didn't go through. The money is back in your wallet.",
+    'investor.wallet.c3.credited': 'Credited',
     'investor.wallet.processing': 'Sending…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Enter an amount of at least the minimum',
@@ -4965,12 +4993,21 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.business.requirement':
+        'Verified history: {verified} of {required} months',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} statement uploaded. Months not yet verified count once an Audit Partner verifies them.',
+        other: '{count} statements uploaded. Months not yet verified count once an Audit Partner verifies them.',
+    },
+    'business.apply.business.no_statements':
+        'No statements uploaded yet. Upload them below to start verification.',
+    'business.apply.business.obligations':
+        'Existing loans and other obligations are checked in the same verification, from your statements and a credit bureau check. There is nothing separate to upload.',
     'business.apply.statements.title': 'Bank & Mobile Money statements',
     'business.apply.statements.body':
         'Upload the original statement of every bank and Mobile Money account the business uses (PDF, or a CSV export; up to 10 MB each). Rozine reads them, then an Audit Partner verifies them before your figures and capacity appear here.',
     'business.apply.statements.empty': 'No statements received yet.',
     'business.apply.statements.upload': 'Upload a statement',
-    'business.apply.statements.uploading': 'Uploading…',
     'business.apply.statements.failed':
         'We could not keep this statement. Try again.',
     'business.apply.statements.received': 'Received {date}',
@@ -6301,6 +6338,9 @@ const en = {
         'Only the report ID, its digest and the result of the seal check are shown here.',
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
+    'common.upload.sending': 'Uploading…',
+    'common.upload.percent': 'Uploading… {percent}%',
+    'common.upload.checking': 'Checking the file…',
     'common.file_size.kb': '{size} KB',
     'common.file_size.mb': '{size} MB',
     'common.file_size.kind': '{kind} · {size}',

@@ -124,6 +124,14 @@ export type BusinessTodo =
           link: RouteLink;
       }
     | {
+          /** An open draft its evidence does not yet qualify, with the server's reason code. */
+          kind: 'application_blocked';
+          /** Null until the draft has a title. */
+          title: string | null;
+          code: string;
+          link: RouteLink;
+      }
+    | {
           kind: 'application_declined';
           title: string;
           reason: string | null;
@@ -384,6 +392,11 @@ export type MandateOfficer = {
 export type ApplicationEvidence = {
     /** The evidence version an evaluation expects (`evidence_version`). */
     version: string;
+    /**
+     * How many verified statement months the applicable window needs (36 for a first raise, 12 for
+     * a repeat) and how many are verified. Absent from applications submitted before it was sent.
+     */
+    requirement?: { months_required: number; months_verified: number };
     eligibility: ApplicationEligibility;
     business: BusinessIdentity & {
         established_year: number | null;

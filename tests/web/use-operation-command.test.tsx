@@ -256,3 +256,67 @@ describe('Operation lookup time limit', () => {
         expect(posts()).toHaveLength(2);
     });
 });
+
+describe('Upload progress', () => {
+    it('reports how much of a file a command carries has gone, and nothing for a plain command', async () => {
+        answers.push(
+            (config) => {
+                config.onUploadProgress?.({
+                    progress: 0.5,
+                    loaded: 50,
+                    total: 100,
+                    percentage: 50,
+                });
+
+                return new Promise((resolve) =>
+                    setTimeout(
+                        () =>
+                            resolve({
+                                status: 200,
+                                data: JSON.stringify(completed),
+                                headers: {},
+                            }),
+                        1_000,
+                    ),
+                );
+            },
+            late(1_000, completed),
+        );
+        const { result } = mount();
+
+        expect(result.current.upload).toBeNull();
+        act(() => {
+            result.current.send({
+                ...command,
+                payload: {
+                    ...command.payload,
+                    document: new File(['%PDF'], 'ledger.pdf', {
+                        type: 'application/pdf',
+                    }),
+                },
+            });
+        });
+        await elapse(0);
+
+        expect(result.current.upload).toEqual({ percent: 50 });
+
+        await elapse(1_000);
+
+        expect(result.current.busy).toBe(false);
+        expect(result.current.upload).toBeNull();
+
+        act(() => {
+            result.current.send({
+                ...command,
+                payload: {
+                    ...command.payload,
+                    request_id: 'a1b2c3d4-0000-4000-8000-000000000001',
+                },
+            });
+        });
+        await elapse(0);
+
+        expect(result.current.busy).toBe(true);
+        expect(result.current.upload).toBeNull();
+    });
+});
