@@ -167,7 +167,7 @@ function HoldCountdown({
                         aria-live="off"
                         className={cn(
                             'flex items-center gap-2 py-2 pr-3.5 pl-3 text-[12.5px] font-semibold tabular-nums',
-                            urgent && 'text-[#ffb4ab]',
+                            urgent && 'bg-[#b42318]',
                         )}
                     >
                         <ClockGlyph />
