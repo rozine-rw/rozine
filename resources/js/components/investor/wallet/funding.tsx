@@ -480,15 +480,30 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     const refusal = quote?.refusal ?? null;
     /* An amount outside the policy prices nothing, so nothing reads as credited. */
     const priced = quote !== null && refusal === null && amount !== '';
+    /* Only a quote for exactly the amount in the box can be sent, so a quick edit waits for its own. */
+    const current =
+        quote !== null &&
+        quote.amount.currency === 'RWF' &&
+        quote.amount.amount === amount;
     const ready =
-        priced && method !== '' && !pricing && !sending && !command.unresolved;
+        priced &&
+        current &&
+        method !== '' &&
+        !pricing &&
+        !sending &&
+        !command.unresolved;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+
+        if (!ready || quote === null) {
+            return;
+        }
+
         setDone(null);
         sent.current = {
             amount: { currency: 'RWF', amount },
-            net: quote?.credited ?? { currency: 'RWF', amount },
+            net: quote.credited,
             method:
                 funding.methods.find((option) => option.id === method)?.label ??
                 '',

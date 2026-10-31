@@ -373,6 +373,53 @@ describe('Wallet (C3)', () => {
         );
     });
 
+    it('sends nothing for an amount edited after its quote until the new quote arrives', async () => {
+        vi.useFakeTimers();
+        const props = wallet(depositFixture);
+
+        props.funding.quote!.credited = { currency: 'RWF', amount: '99000' };
+        const { rerender } = render(<InvestorWallet {...props} />);
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
+            target: { value: '50,000' },
+        });
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeDisabled();
+        fireEvent.submit(panel);
+        expect(inertia.calls).toHaveLength(0);
+
+        const requoted = wallet(depositFixture);
+
+        requoted.funding.quote!.amount = { currency: 'RWF', amount: '50000' };
+        requoted.funding.quote!.credited = { currency: 'RWF', amount: '49500' };
+        rerender(<InvestorWallet {...requoted} />);
+        vi.useRealTimers();
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state: 'succeeded' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(inertia.calls[0].body).toMatchObject({
+            amount: { currency: 'RWF', amount: '50000' },
+        });
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'RWF 49,500 from MTN MoMo is now in your wallet.',
+        );
+    });
+
     it('marks a deposit in the history as credited (#461)', () => {
         render(<InvestorWallet {...wallet(depositFixture)} />);
 

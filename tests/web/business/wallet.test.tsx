@@ -110,7 +110,9 @@ describe('Business wallet (business-servicing-v1)', () => {
 
     it('prices a deposit and records it as business.wallet.deposit for this Business', async () => {
         vi.useFakeTimers();
-        render(<BusinessWallet {...wallet(quoteFixture)} />);
+        const { rerender } = render(
+            <BusinessWallet {...wallet(quoteFixture)} />,
+        );
 
         const panel = screen.getByRole('form', { name: 'Add money' });
 
@@ -124,6 +126,18 @@ describe('Business wallet (business-servicing-v1)', () => {
             data: { kind: 'deposit', amount: '2000000' },
         });
         vi.useRealTimers();
+        /* The stale 1,000,000 quote cannot be sent; the 2,000,000 one can. */
+        fireEvent.submit(panel);
+        expect(inertia.calls).toHaveLength(0);
+
+        const requoted = wallet(quoteFixture);
+
+        requoted.funding.quote!.amount = { currency: 'RWF', amount: '2000000' };
+        requoted.funding.quote!.credited = {
+            currency: 'RWF',
+            amount: '2000000',
+        };
+        rerender(<BusinessWallet {...requoted} />);
 
         inertia.queue.push(
             answers(
