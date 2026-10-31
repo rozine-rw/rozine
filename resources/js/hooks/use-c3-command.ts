@@ -59,7 +59,9 @@ type Options<Name extends string> = {
     /** The props a refresh reloads; undefined reloads them all. */
     only?: string[];
     /** Runs once the server confirms the command, before its next page or refresh. */
-    onCompleted?: () => void;
+    onCompleted?: (resource: C3Resource) => void;
+    /** Runs once that next page or refresh has loaded. */
+    onSettled?: () => void;
 };
 
 /**
@@ -78,8 +80,15 @@ export function useC3Command<Name extends string>({
     preview,
     only,
     onCompleted,
+    onSettled,
 }: Options<Name>) {
     const scope = only === undefined ? {} : { only };
+    /* Between the server's answer and its next page or refresh, the page still reads as sending. */
+    const [settling, setSettling] = useState(false);
+    const settle = () => {
+        setSettling(false);
+        onSettled?.();
+    };
     const [last, setLast] = useState<Name | null>(
         preview !== undefined && preview.kind !== 'refused'
             ? preview.command.name
@@ -93,15 +102,23 @@ export function useC3Command<Name extends string>({
         initial: seedFromPreview(preview),
         refresh: () => reloadPreservingState(scope),
         onCompleted: (_sent, resource) => {
-            onCompleted?.();
+            onCompleted?.(resource);
+            setSettling(true);
 
             if (resource.data === null || resource.data.next === null) {
-                void reloadPreservingState(scope);
+                void reloadPreservingState(scope).then(settle);
 
                 return;
             }
 
-            router.visit(resource.data.next);
+            if (onSettled === undefined) {
+                setSettling(false);
+                router.visit(resource.data.next);
+
+                return;
+            }
+
+            router.visit(resource.data.next, { onFinish: settle });
         },
         onRefused: (_sent, code, status) => {
             if (refusalRefreshes(code, status, FINAL)) {
@@ -131,6 +148,8 @@ export function useC3Command<Name extends string>({
     return {
         ...command,
         send,
+        /** Whether a completed command's next page or refresh is still loading. */
+        settling,
         /** Whether "Try again" may resend the held command under the page's current actions. */
         retryAllowed: last !== null && allowed.includes(last),
     };
