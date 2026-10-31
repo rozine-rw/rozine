@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
 import { ErrorBanner } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteAction } from '@/types';
@@ -76,7 +77,6 @@ function Upload({
     onError: (message: string | null) => void;
     children: ReactNode;
 }) {
-    const { t } = useTranslation();
     const mine = sending?.slot === slot;
 
     return (
@@ -128,24 +128,7 @@ function Upload({
                 }}
             />
             {children}
-            {mine && (
-                <span
-                    role="status"
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[inherit] bg-rz-page/90 text-[12px] font-semibold text-rz-slate"
-                >
-                    <span
-                        aria-hidden
-                        className="size-[22px] animate-spin rounded-full border-2 border-rz-accent-fill border-t-transparent"
-                    />
-                    {sending.percent === null
-                        ? t('investor.kyc.uploading')
-                        : sending.percent >= 100
-                          ? t('investor.kyc.upload_checking')
-                          : t('investor.kyc.uploading_percent', {
-                                percent: sending.percent,
-                            })}
-                </span>
-            )}
+            {mine && <UploadStatus percent={sending.percent} overlay />}
         </label>
     );
 }

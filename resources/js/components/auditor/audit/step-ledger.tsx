@@ -16,6 +16,7 @@ import { useAuditorCommands } from '@/components/auditor/commands';
 import { Tick } from '@/components/auditor/ui';
 import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -389,6 +390,12 @@ export function StepLedger({
                         </span>
                     </button>
                 </>
+            )}
+            {center.upload !== null && (
+                <UploadStatus
+                    percent={center.upload.percent}
+                    className="mt-2"
+                />
             )}
             <FieldError id="auditor-ledger-document-error">
                 {problem === null

@@ -440,6 +440,7 @@ export default function BusinessAuditCosign(
                 {disputing && disputeAction !== null && (
                     <DisputeSheet
                         busy={command.busy}
+                        upload={command.upload}
                         locked={locked}
                         errors={command.errors}
                         notice={

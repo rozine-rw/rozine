@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Icon } from '@/components/rozine/icon';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import type { BusinessStatements } from '@/types/business';
@@ -24,6 +25,7 @@ export function StatementUpload({
 }: StatementUploadProps) {
     const { t, locale } = useTranslation();
     const [uploading, setUploading] = useState(false);
+    const [percent, setPercent] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const upload = (file: File) => {
@@ -40,7 +42,12 @@ export function StatementUpload({
                 forceFormData: true,
                 preserveScroll: true,
                 preserveState: true,
-                onStart: () => setUploading(true),
+                onStart: () => {
+                    setPercent(null);
+                    setUploading(true);
+                },
+                onProgress: (progress) =>
+                    setPercent(progress?.percentage ?? null),
                 onError: (errors) =>
                     setError(
                         errors.file ?? t('business.apply.statements.failed'),
@@ -131,11 +138,10 @@ export function StatementUpload({
                             }
                         }}
                     />
-                    {uploading
-                        ? t('business.apply.statements.uploading')
-                        : t('business.apply.statements.upload')}
+                    {t('business.apply.statements.upload')}
                 </label>
             )}
+            {uploading && <UploadStatus percent={percent} className="mt-2.5" />}
         </section>
     );
 }

@@ -111,10 +111,17 @@ describe('Statement upload on Apply step 1', () => {
         });
 
         act(() => options.onStart?.());
-        expect(screen.getByText('Uploading…')).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
         expect(screen.getByLabelText('Upload a statement')).toBeDisabled();
+        act(() => options.onProgress?.({ percentage: 37 }));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading… 37%');
+        act(() => options.onProgress?.({ percentage: 100 }));
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Checking the file…',
+        );
         act(() => options.onFinish?.());
-        expect(screen.getByText('Upload a statement')).toBeInTheDocument();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Upload a statement')).toBeEnabled();
     });
 
     it('shows the server’s refusal of the file, or a general one, and clears it on the next try', async () => {

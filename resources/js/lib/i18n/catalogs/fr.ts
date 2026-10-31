@@ -4459,9 +4459,6 @@ const fr: Catalog = {
     'investor.kyc.selfie_done': 'Selfie enregistré',
     'investor.kyc.upload_passport': 'Envoyer la page photo du passeport',
     'investor.kyc.uploaded_passport': 'Page photo du passeport envoyée',
-    'investor.kyc.uploading': 'Envoi en cours…',
-    'investor.kyc.uploading_percent': 'Envoi en cours… {percent} %',
-    'investor.kyc.upload_checking': 'Vérification du fichier…',
     'investor.kyc.replace': 'Touchez pour remplacer',
     'investor.kyc.view_upload': 'Voir {slot}',
     'investor.kyc.selfie_slot': 'votre selfie',
@@ -5184,7 +5181,6 @@ const fr: Catalog = {
         "Téléversez le relevé original de chaque compte bancaire et Mobile Money de l'entreprise (PDF, ou export CSV ; 10 Mo maximum chacun). Rozine les lit, puis un Audit Partner les vérifie avant que vos chiffres et votre capacité n'apparaissent ici.",
     'business.apply.statements.empty': 'Aucun relevé reçu pour le moment.',
     'business.apply.statements.upload': 'Téléverser un relevé',
-    'business.apply.statements.uploading': 'Téléversement…',
     'business.apply.statements.failed':
         "Nous n'avons pas pu conserver ce relevé. Réessayez.",
     'business.apply.statements.received': 'Reçu le {date}',
@@ -6568,6 +6564,9 @@ const fr: Catalog = {
         "Seuls l'identifiant du rapport, son empreinte et le résultat de la vérification du sceau sont affichés ici.",
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "L'auditeur a modifié ce rapport ; il ne peut donc plus être cosigné. Le rapport modifié vous sera soumis pour approbation une fois scellé.",
+    'common.upload.sending': 'Envoi en cours…',
+    'common.upload.percent': 'Envoi en cours… {percent} %',
+    'common.upload.checking': 'Vérification du fichier…',
     'common.file_size.kb': '{size} Ko',
     'common.file_size.mb': '{size} Mo',
     'common.file_size.kind': '{kind} · {size}',

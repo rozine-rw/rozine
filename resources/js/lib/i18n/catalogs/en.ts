@@ -4277,9 +4277,6 @@ const en = {
     'investor.kyc.selfie_done': 'Selfie captured',
     'investor.kyc.upload_passport': 'Upload passport photo page',
     'investor.kyc.uploaded_passport': 'Passport photo page uploaded',
-    'investor.kyc.uploading': 'Uploading…',
-    'investor.kyc.uploading_percent': 'Uploading… {percent}%',
-    'investor.kyc.upload_checking': 'Checking the file…',
     'investor.kyc.replace': 'Tap to replace',
     'investor.kyc.view_upload': 'View {slot}',
     'investor.kyc.selfie_slot': 'your selfie',
@@ -4973,7 +4970,6 @@ const en = {
         'Upload the original statement of every bank and Mobile Money account the business uses (PDF, or a CSV export; up to 10 MB each). Rozine reads them, then an Audit Partner verifies them before your figures and capacity appear here.',
     'business.apply.statements.empty': 'No statements received yet.',
     'business.apply.statements.upload': 'Upload a statement',
-    'business.apply.statements.uploading': 'Uploading…',
     'business.apply.statements.failed':
         'We could not keep this statement. Try again.',
     'business.apply.statements.received': 'Received {date}',
@@ -6304,6 +6300,9 @@ const en = {
         'Only the report ID, its digest and the result of the seal check are shown here.',
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
+    'common.upload.sending': 'Uploading…',
+    'common.upload.percent': 'Uploading… {percent}%',
+    'common.upload.checking': 'Checking the file…',
     'common.file_size.kb': '{size} KB',
     'common.file_size.mb': '{size} MB',
     'common.file_size.kind': '{kind} · {size}',
