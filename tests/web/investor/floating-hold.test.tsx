@@ -157,6 +157,7 @@ describe('Floating checkout hold', () => {
         };
         render(<InvestorCart {...page()} />);
         expect(screen.getByTestId('floating-hold')).toBeInTheDocument();
+        expect(screen.getByRole('timer')).toHaveClass('bg-[#b42318]');
 
         act(() => {
             vi.advanceTimersByTime(3000);
