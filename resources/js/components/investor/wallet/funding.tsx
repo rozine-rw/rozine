@@ -278,16 +278,20 @@ function depositBounds(
 type FundingDone = {
     kind: 'deposit' | 'withdraw';
     amount: Money;
+    /** What the quote said lands: credited to the wallet, or received at the account, after fees. */
+    net: Money;
     method: string;
     state: ProviderOutcomeState;
 };
+
+/** What was sent, as the server quoted it. */
+type SentFunding = { amount: Money; net: Money; method: string };
 
 /** The recorded command's outcome, read from the server's answer, never assumed. */
 function fundingDone(
     kind: FundingDone['kind'],
     resource: C3Resource,
-    amount: Money,
-    method: string,
+    { amount, net, method }: SentFunding,
 ): FundingDone {
     const current = resource.data?.current as { state?: unknown } | null;
     const state = current?.state;
@@ -295,6 +299,7 @@ function fundingDone(
     return {
         kind,
         amount,
+        net,
         method,
         state:
             state === 'succeeded' || state === 'failed' || state === 'unknown'
@@ -341,7 +346,13 @@ function FundingDoneNotice({ done }: { done: FundingDone }) {
             <span>
                 {t(
                     `investor.wallet.done.${done.kind}.${done.state === 'unknown' ? 'pending' : done.state}`,
-                    { amount: formatRwf(done.amount), method: done.method },
+                    {
+                        /* Once it succeeds, the amount is what landed after fees, not what was asked. */
+                        amount: formatRwf(
+                            done.state === 'succeeded' ? done.net : done.amount,
+                        ),
+                        method: done.method,
+                    },
                 )}
             </span>
         </p>
@@ -374,7 +385,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
     const [done, setDone] = useState<FundingDone | null>(null);
-    const sent = useRef<{ amount: Money; method: string } | null>(null);
+    const sent = useRef<SentFunding | null>(null);
     const timer = useRef<number | undefined>(undefined);
     const command = useC3Command<Name>({
         actions: { [name]: actions.deposit } as Partial<
@@ -390,14 +401,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
             setAmountState('');
 
             if (sent.current !== null) {
-                setDone(
-                    fundingDone(
-                        'deposit',
-                        resource,
-                        sent.current.amount,
-                        sent.current.method,
-                    ),
-                );
+                setDone(fundingDone('deposit', resource, sent.current));
             }
         },
         onSettled: dropQuotedAmount,
@@ -484,6 +488,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         setDone(null);
         sent.current = {
             amount: { currency: 'RWF', amount },
+            net: quote?.credited ?? { currency: 'RWF', amount },
             method:
                 funding.methods.find((option) => option.id === method)?.label ??
                 '',
@@ -679,7 +684,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
     const [done, setDone] = useState<FundingDone | null>(null);
-    const sent = useRef<{ amount: Money; method: string } | null>(null);
+    const sent = useRef<SentFunding | null>(null);
     const timer = useRef<number | undefined>(undefined);
     const quoteGeneration = useRef(0);
     const cancelQuote = useRef<(() => void) | null>(null);
@@ -703,14 +708,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             setAcceptedQuote(null);
 
             if (sent.current !== null) {
-                setDone(
-                    fundingDone(
-                        'withdraw',
-                        resource,
-                        sent.current.amount,
-                        sent.current.method,
-                    ),
-                );
+                setDone(fundingDone('withdraw', resource, sent.current));
             }
         },
         onSettled: dropQuotedAmount,
@@ -867,6 +865,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
         setDone(null);
         sent.current = {
             amount: quote.amount,
+            net: quote.received,
             method:
                 funding.methods.find((option) => option.id === method)?.label ??
                 '',

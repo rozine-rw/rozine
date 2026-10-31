@@ -341,6 +341,38 @@ describe('Wallet (C3)', () => {
         ).toBeInTheDocument();
     });
 
+    it('confirms a succeeded deposit at what was credited after the fee, not the amount asked', async () => {
+        finishReloads();
+        const props = wallet(depositFixture);
+        const quote = props.funding.quote!;
+
+        quote.fee = { currency: 'RWF', amount: '1000' };
+        quote.credited = { currency: 'RWF', amount: '99000' };
+        render(<InvestorWallet {...props} />);
+
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state: 'succeeded' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'RWF 99,000 from MTN MoMo is now in your wallet.',
+        );
+    });
+
     it('marks a deposit in the history as credited (#461)', () => {
         render(<InvestorWallet {...wallet(depositFixture)} />);
 

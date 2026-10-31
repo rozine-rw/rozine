@@ -128,15 +128,24 @@ describe('Literal text colours (WCAG 2.2 SC 1.4.3)', () => {
     /**
      * Files whose literal colours sit on a dark or tinted fill of their own, or are not text:
      * the starter welcome page no route serves, the notice tiles' icon colour and the review
-     * drawer's kicker on its navy header, and the floating checkout hold's urgent countdown on its
-     * navy pill.
+     * drawer's kicker on its navy header.
      */
     const ALLOWED = new Set([
         'pages/welcome.tsx',
         'components/investor/notices/notices-panel.tsx',
         'components/admin/applications/review-drawer.tsx',
-        'components/investor/floating-hold.tsx',
     ]);
+    /**
+     * Single colours allowed in one file, each drawn only on that file's own dark fill: the floating
+     * checkout hold's urgent countdown (#ffb4ab) sits on its #0b1c3a pill (about 10:1).
+     */
+    const ALLOWED_COLOURS = new Set([
+        'components/investor/floating-hold.tsx #ffb4ab',
+    ]);
+
+    it('keeps each allowed colour readable on the fill it sits on', () => {
+        expect(contrast('#ffb4ab', '#0b1c3a')).toBeGreaterThanOrEqual(4.5);
+    });
 
     it('draws every light-theme literal text colour at 4.5:1 or more on white', () => {
         const root = path.resolve(__dirname, '../../../resources/js');
@@ -162,7 +171,13 @@ describe('Literal text colours (WCAG 2.2 SC 1.4.3)', () => {
                         ),
                     ])
                     .filter(([, , colour]) => contrast(colour, '#ffffff') < 4.5)
-                    .map(([, , colour]) => `${file} ${colour}`),
+                    .map(([, , colour]) => `${file} ${colour}`)
+                    .filter(
+                        (failure) =>
+                            !ALLOWED_COLOURS.has(
+                                failure.split(path.sep).join('/'),
+                            ),
+                    ),
             );
 
         expect(failures).toEqual([]);
