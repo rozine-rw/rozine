@@ -164,7 +164,7 @@ function IneligibleNotice({
                             {statements.documents.length === 0
                                 ? t('business.apply.business.no_statements')
                                 : t(
-                                      'business.apply.business.awaiting_verification',
+                                      'business.apply.business.uploaded_statements',
                                       { count: statements.documents.length },
                                   )}
                         </li>

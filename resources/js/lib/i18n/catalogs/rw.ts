@@ -5190,9 +5190,9 @@ const rw: Catalog = {
     'business.apply.business.ineligible': 'Ntiremerewe gusaba igishoro',
     'business.apply.business.requirement':
         'Amateka yagenzuwe: amezi {verified} kuri {required}',
-    'business.apply.business.awaiting_verification': {
-        one: 'Raporo {count} yoherejwe, itegereje kugenzurwa na Audit Partner.',
-        other: 'Raporo {count} zoherejwe, zitegereje kugenzurwa na Audit Partner.',
+    'business.apply.business.uploaded_statements': {
+        one: 'Raporo {count} yoherejwe. Amezi ataragenzurwa abarwa iyo Audit Partner amaze kuyagenzura.',
+        other: 'Raporo {count} zoherejwe. Amezi ataragenzurwa abarwa iyo Audit Partner amaze kuyagenzura.',
     },
     'business.apply.business.no_statements':
         'Nta raporo iroherezwa. Zohereze hepfo kugira ngo igenzura ritangire.',

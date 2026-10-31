@@ -535,7 +535,7 @@ describe('Apply — step 1, business & finances', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                '3 statements uploaded, waiting for an Audit Partner to verify them.',
+                '3 statements uploaded. Months not yet verified count once an Audit Partner verifies them.',
             ),
         ).toBeInTheDocument();
         expect(
@@ -543,6 +543,33 @@ describe('Apply — step 1, business & finances', () => {
                 /^Existing loans and other obligations are checked/u,
             ),
         ).toBeInTheDocument();
+    });
+
+    it('never says uploaded statements are waiting when the history is stale but fully verified', () => {
+        const page = props(ineligibleStep);
+
+        page.evidence = {
+            ...page.evidence,
+            requirement: { months_required: 36, months_verified: 36 },
+            eligibility: {
+                status: 'ineligible',
+                code: 'UNDERWRITING_EVIDENCE_REQUIRED',
+                message: 'Fresh verified statements are needed.',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText('Verified history: 36 of 36 months'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^3 statements uploaded\. Months not yet verified/u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/waiting for an Audit Partner/u),
+        ).not.toBeInTheDocument();
     });
 
     it('asks for statements when none are uploaded, and keeps the evidence help off other refusals', () => {

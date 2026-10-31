@@ -5206,9 +5206,9 @@ const fr: Catalog = {
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
     'business.apply.business.requirement':
         'Historique vérifié : {verified} mois sur {required}',
-    'business.apply.business.awaiting_verification': {
-        one: '{count} relevé téléversé, en attente de vérification par un Audit Partner.',
-        other: '{count} relevés téléversés, en attente de vérification par un Audit Partner.',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} relevé téléversé. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
+        other: '{count} relevés téléversés. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
     },
     'business.apply.business.no_statements':
         'Aucun relevé téléversé. Téléversez-les ci-dessous pour lancer la vérification.',

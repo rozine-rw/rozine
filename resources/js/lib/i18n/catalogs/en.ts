@@ -4995,9 +4995,9 @@ const en = {
     'business.apply.business.ineligible': 'Not eligible to raise yet',
     'business.apply.business.requirement':
         'Verified history: {verified} of {required} months',
-    'business.apply.business.awaiting_verification': {
-        one: '{count} statement uploaded, waiting for an Audit Partner to verify it.',
-        other: '{count} statements uploaded, waiting for an Audit Partner to verify them.',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} statement uploaded. Months not yet verified count once an Audit Partner verifies them.',
+        other: '{count} statements uploaded. Months not yet verified count once an Audit Partner verifies them.',
     },
     'business.apply.business.no_statements':
         'No statements uploaded yet. Upload them below to start verification.',
