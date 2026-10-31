@@ -346,7 +346,7 @@ def completed_recovery(env, tree, runs, *, before_refresh=None):
     # One transaction, including final live guards, shares the same read cap.
     token = _recovery_read_deadline.set(bounded_read_deadline())
     try:
-        return reusable_run(env, "poc", recovery_only=True, before_recovery_refresh=before_refresh)
+        return reusable_run(env, "poc", recovery_only=True, recovery_runs=runs, before_recovery_refresh=before_refresh)
     finally:
         _recovery_read_deadline.reset(token)
 
@@ -489,7 +489,7 @@ def same_attempt(repository, run):
     return latest
 
 
-def successful_steps(jobs, name, steps):
+def successful_steps(jobs, name, steps, *, artifact_verified=False):
     matches = [job for job in jobs if job["name"] == name]
     if len(matches) == 1 and matches[0].get("conclusion") not in (None, "success"):
         raise CoordinationRefusal("identity_or_decision_job_not_successful")
@@ -503,6 +503,13 @@ def successful_steps(jobs, name, steps):
         raise CoordinationRefusal("identity_or_decision_job_not_successful")
     for step in steps:
         found = [item for item in matches[0].get("steps", []) if item["name"] == step]
+        # GitHub can report a job as completed and successful a minute before
+        # its step records settle. No step may continue on error, so a
+        # successful job whose artifact was already verified implies a step
+        # that is still unsettled succeeded. Explicit outcomes stay binding.
+        if (artifact_verified and len(found) == 1 and found[0].get("conclusion") is None
+                and found[0].get("status") in ("queued", "pending", "waiting", "in_progress")):
+            continue
         if len(found) != 1 or found[0].get("conclusion") != "success":
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
@@ -534,7 +541,7 @@ def coordination_identity(repository, run, *, reader=None, artifact=None):
     for read in range(3):
         jobs = run_jobs(repository, run)
         try:
-            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS)
+            successful_steps(jobs, IDENTITY_JOB, IDENTITY_STEPS, artifact_verified=True)
         except PublicationPending:
             latest = same_attempt(repository, run)
             identity_jobs = [job for job in jobs if job["name"] == IDENTITY_JOB]
@@ -1190,14 +1197,18 @@ def source_proof_hints(repository, candidates, deadline):
         remaining()  # Joining speculative reads cannot outlive a real parent deadline.
 
 
-def reusable_run(env, scope, with_attempt=False, *, recovery_only=False, before_recovery_refresh=None):
+def reusable_run(env, scope, with_attempt=False, *, recovery_only=False, recovery_runs=None, before_recovery_refresh=None):
+    if recovery_runs is not None and (scope != "poc" or not recovery_only):
+        raise ValueError("history snapshot is restricted to recovery discovery")
     repository = env["GITHUB_REPOSITORY"]
     candidate = env["GITHUB_SHA"]
     if not re.fullmatch(SHA, candidate) or command("git", "rev-parse", "HEAD") != candidate:
         raise ValueError("checkout does not match candidate")
     tree = command("git", "rev-parse", "HEAD^{tree}")
     workflow_id = api(f"repos/{repository}/actions/workflows/tests.yml")["id"]
-    runs = workflow_history(repository)
+    # Discovery can share canonical_context's complete snapshot. Exceptional
+    # acceptance still refreshes complete history after source verification.
+    runs = workflow_history(repository) if recovery_runs is None else copy.deepcopy(recovery_runs)
     runs = [run for run in runs if trusted_run(run, repository, workflow_id) and str(run["id"]) != env.get("GITHUB_RUN_ID")]
     followers = pending_follower_ids(env, runs, tree) if scope == "poc" and not recovery_only else set()
     candidates = sorted(runs, key=attempt_order, reverse=True)

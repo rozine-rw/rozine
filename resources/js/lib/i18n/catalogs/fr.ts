@@ -4547,6 +4547,8 @@ const fr: Catalog = {
     'investor.portfolio.empty.active.title': "Aucun avoir pour l'instant",
     'investor.portfolio.empty.active.body':
         'Les titres achetés apparaissent ici avec leurs versements et rapports.',
+    'investor.portfolio.empty.active.awaiting':
+        'Vos titres apparaîtront ici dans vos avoirs une fois émis, après le décaissement.',
     'investor.portfolio.empty.matured.title': "Rien pour l'instant",
     'investor.portfolio.empty.matured.body':
         'Les avoirs de cette catégorie apparaîtront ici.',
@@ -5734,6 +5736,13 @@ const fr: Catalog = {
         other: '{name} · {count} titres',
     },
     'investor.wallet.c3.hold_expires': 'Libéré dans {time} sauf confirmation',
+    'investor.hold_float.label':
+        'Réservé pour un paiement, {time} restant. Ouvrir le paiement',
+    'investor.hold_float.continue': 'Continuer vers le paiement',
+    'investor.hold_float.more': {
+        one: '+{count} autre réservation dans votre portefeuille',
+        other: '+{count} autres réservations dans votre portefeuille',
+    },
     'investor.wallet.c3.deposits': 'Dépôts',
     'investor.wallet.c3.deposit_from': 'Dépôt · {method}',
     'investor.wallet.c3.intent.pending': 'Pas encore confirmé',

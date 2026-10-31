@@ -1069,6 +1069,23 @@ export type CheckoutHold = {
     link: RouteLink;
 };
 
+/**
+ * The shared `checkout_holds` prop: the signed-in Investor's live checkout holds, soonest to lapse
+ * first, and the server time their countdown runs against. Null off the Investor app and on the
+ * checkout page itself.
+ */
+export type SharedCheckoutHolds = {
+    server_time: string;
+    holds: {
+        reservation_id: string;
+        deal_name: string;
+        amount: Money;
+        units: Units;
+        expires_at: string;
+        link: RouteLink;
+    }[];
+};
+
 /** Holds and internal transfers are kept apart from external cash movements (H5). */
 export type WalletEntry =
     | {

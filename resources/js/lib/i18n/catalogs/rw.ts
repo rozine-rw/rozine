@@ -4534,6 +4534,8 @@ const rw: Catalog = {
     'investor.portfolio.empty.active.title': 'Nta cyo ufite ubu',
     'investor.portfolio.empty.active.body':
         "Impapuro uguze zigaragara hano hamwe n'ubwishyu na raporo zazo.",
+    'investor.portfolio.empty.active.awaiting':
+        'Impapuro zawe zizajya mu byo ufite hano zimaze gutangwa, nyuma yo kohereza amafaranga.',
     'investor.portfolio.empty.matured.title': 'Nta kintu kiri hano',
     'investor.portfolio.empty.matured.body':
         'Ibyo ufite muri iki cyiciro bizagaragara hano.',
@@ -5708,6 +5710,13 @@ const rw: Catalog = {
         other: '{name} · impapuro {count}',
     },
     'investor.wallet.c3.hold_expires': 'Birekurwa mu {time} keretse wemeje',
+    'investor.hold_float.label':
+        'Afashwe mu kwishyura, hasigaye {time}. Fungura kwishyura',
+    'investor.hold_float.continue': 'Komeza wishyure',
+    'investor.hold_float.more': {
+        one: '+{count} indi yafashwe mu gikapu cyawe',
+        other: '+{count} izindi zafashwe mu gikapu cyawe',
+    },
     'investor.wallet.c3.deposits': 'Ibyabikijwe',
     'investor.wallet.c3.deposit_from': 'Kubitsa · {method}',
     'investor.wallet.c3.intent.pending': 'Ntibiremezwa',

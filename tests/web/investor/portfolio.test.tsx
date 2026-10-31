@@ -517,7 +517,16 @@ describe('Commitments and issue (C3)', () => {
         expect(
             screen.getByRole('region', { name: 'Awaiting issue' }),
         ).toBeInTheDocument();
-        expect(screen.getByText('Nothing held yet')).toBeInTheDocument();
+        // A commitment awaiting issue is not "nothing": a short note stands in for the empty state.
+        expect(screen.queryByText('Nothing held yet')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Browse opportunities' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your notes move into your holdings here once they are issued, after disbursement.',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('keeps the awaiting section to the active tab and renders the live-minimal shape', () => {

@@ -4364,6 +4364,8 @@ const en = {
     'investor.portfolio.empty.active.title': 'Nothing held yet',
     'investor.portfolio.empty.active.body':
         'Notes you buy appear here with their payouts and reports.',
+    'investor.portfolio.empty.active.awaiting':
+        'Your notes move into your holdings here once they are issued, after disbursement.',
     'investor.portfolio.empty.matured.title': 'Nothing here yet',
     'investor.portfolio.empty.matured.body':
         'Holdings in this category will appear here.',
@@ -5446,6 +5448,13 @@ const en = {
         other: '{name} · {count} notes',
     },
     'investor.wallet.c3.hold_expires': 'Released in {time} unless you confirm',
+    'investor.hold_float.label':
+        'Held for checkout, {time} left. Open checkout',
+    'investor.hold_float.continue': 'Continue to checkout',
+    'investor.hold_float.more': {
+        one: '+{count} more hold in your wallet',
+        other: '+{count} more holds in your wallet',
+    },
     'investor.wallet.c3.deposits': 'Deposits',
     'investor.wallet.c3.deposit_from': 'Deposit · {method}',
     'investor.wallet.c3.intent.pending': 'Not yet confirmed',
