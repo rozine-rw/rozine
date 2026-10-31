@@ -17,6 +17,7 @@ use App\Application\Business\WithAuditApplicationBinding;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditProcedure;
 use App\Domain\Auditor\AuditReportDecision;
 use App\Domain\Auditor\MonthlyReportReview;
@@ -177,6 +178,10 @@ final class EloquentAuditReportStore implements AuditReportStore
                     function () use ($assignment, $userId, $contextRevision, $assignmentId, $expectedRevision, $applicationId, $applicationRevision): OperationResult {
                         if ($assignment['revision'] !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $assignment['revision']);
+                        }
+                        // A statement review produces a verification, not a report.
+                        if ($this->assignments->purpose($assignmentId) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW) {
+                            throw new CommandRejection('AUDIT_REPORT_NOT_APPLICABLE', revision: $assignment['revision']);
                         }
 
                         return $this->applications->handle($userId, $contextRevision, $assignmentId, $applicationId,
