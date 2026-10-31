@@ -113,12 +113,32 @@ function Figure({
     );
 }
 
+/** The eligibility codes a business clears by having more statement months verified. */
+const EVIDENCE_CODES = new Set([
+    'UNDERWRITING_EVIDENCE_REQUIRED',
+    'VERIFIED_HISTORY_INSUFFICIENT',
+]);
+
 /**
  * Why this business cannot raise yet (crosswalk MVP-BUSINESS-SCR-02-ST-02), in the server's own
- * words: the rule and its numbers are the server's, never restated here.
+ * words. When more verified statements would clear it, the notice also says how far the verified
+ * history has come against what this raise needs, whether uploaded statements are still waiting
+ * for an Audit Partner, and that obligations are checked in that same verification.
  */
-function IneligibleNotice({ message }: { message: string }) {
+function IneligibleNotice({
+    eligibility,
+    requirement,
+    statements,
+}: {
+    eligibility: Extract<
+        ApplicationEvidence['eligibility'],
+        { status: 'ineligible' }
+    >;
+    requirement: ApplicationEvidence['requirement'];
+    statements?: BusinessStatements;
+}) {
     const { t } = useTranslation();
+    const needsEvidence = EVIDENCE_CODES.has(eligibility.code);
 
     return (
         <div className="mt-[13px] rounded-2xl border border-[#fdeaea] bg-[rgba(229,72,77,.08)] p-4 dark:border-[rgba(255,107,111,.25)]">
@@ -127,8 +147,33 @@ function IneligibleNotice({ message }: { message: string }) {
                 {t('business.apply.business.ineligible')}
             </p>
             <p className="mt-1.5 text-[12.5px] leading-[1.55] text-rz-ink">
-                {message}
+                {eligibility.message}
             </p>
+            {needsEvidence && (
+                <ul className="mt-2.5 space-y-1.5 text-[12.5px] leading-[1.55] text-rz-ink">
+                    {requirement !== undefined && (
+                        <li className="font-semibold tabular-nums">
+                            {t('business.apply.business.requirement', {
+                                verified: requirement.months_verified,
+                                required: requirement.months_required,
+                            })}
+                        </li>
+                    )}
+                    {statements !== undefined && (
+                        <li>
+                            {statements.documents.length === 0
+                                ? t('business.apply.business.no_statements')
+                                : t(
+                                      'business.apply.business.awaiting_verification',
+                                      { count: statements.documents.length },
+                                  )}
+                        </li>
+                    )}
+                    <li className="text-rz-body">
+                        {t('business.apply.business.obligations')}
+                    </li>
+                </ul>
+            )}
         </div>
     );
 }
@@ -182,7 +227,11 @@ export function StepBusiness({
                 </div>
 
                 {eligibility.status === 'ineligible' && (
-                    <IneligibleNotice message={eligibility.message} />
+                    <IneligibleNotice
+                        eligibility={eligibility}
+                        requirement={evidence.requirement}
+                        statements={statements}
+                    />
                 )}
 
                 {statements !== undefined && (

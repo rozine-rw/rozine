@@ -350,6 +350,19 @@ const en = {
     'business.today.repayment.kicker': 'Upcoming repayment',
     'business.today.repayment.sub': '{note} · Due {date}',
     'business.today.repayment.cta': 'Pay now',
+    'business.today.blocked.kicker': 'Application on hold',
+    'business.today.blocked.untitled': 'Your application',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Your statements must be verified by an Audit Partner before you can continue.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'More verified months of statements are needed before you can continue.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine is completing a policy check before you can continue.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'A restriction on your account stops this application for now.',
+    'business.today.blocked.sub.other':
+        'Something needs attention before you can continue.',
+    'business.today.blocked.cta': "See what's needed",
     'business.today.caught_up.title': "You're all caught up",
     'business.today.caught_up.body':
         "No repayments or actions due. We'll let you know the moment something needs you.",
@@ -4965,6 +4978,16 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.business.requirement':
+        'Verified history: {verified} of {required} months',
+    'business.apply.business.awaiting_verification': {
+        one: '{count} statement uploaded, waiting for an Audit Partner to verify it.',
+        other: '{count} statements uploaded, waiting for an Audit Partner to verify them.',
+    },
+    'business.apply.business.no_statements':
+        'No statements uploaded yet. Upload them below to start verification.',
+    'business.apply.business.obligations':
+        'Existing loans and other obligations are checked in the same verification, from your statements and a credit bureau check. There is nothing separate to upload.',
     'business.apply.statements.title': 'Bank & Mobile Money statements',
     'business.apply.statements.body':
         'Upload the original statement of every bank and Mobile Money account the business uses (PDF, or a CSV export; up to 10 MB each). Rozine reads them, then an Audit Partner verifies them before your figures and capacity appear here.',

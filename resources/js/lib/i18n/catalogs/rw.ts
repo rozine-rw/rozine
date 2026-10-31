@@ -359,6 +359,19 @@ const rw: Catalog = {
     'business.today.repayment.kicker': 'Kwishyura gutaha',
     'business.today.repayment.sub': '{note} · Bigomba kwishyurwa ku wa {date}',
     'business.today.repayment.cta': 'Ishyura ubu',
+    'business.today.blocked.kicker': 'Ubusabe bwahagaze',
+    'business.today.blocked.untitled': 'Ubusabe bwawe',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Raporo zawe zigomba kugenzurwa na Audit Partner mbere yo gukomeza.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'Hakenewe amezi menshi ya raporo zagenzuwe mbere yo gukomeza.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine irimo kurangiza igenzura rya politiki mbere yo gukomeza.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'Hari ikumira kuri konti yawe rihagaritse ubu busabe ubu.',
+    'business.today.blocked.sub.other':
+        'Hari ikintu gikeneye kwitabwaho mbere yo gukomeza.',
+    'business.today.blocked.cta': 'Reba ibikenewe',
     'business.today.caught_up.title': 'Byose biri ku gihe',
     'business.today.caught_up.body':
         'Nta kwishyura cyangwa igikorwa gitegerejwe. Tuzakumenyesha ikintu nigikenera kwitabwaho.',
@@ -5159,6 +5172,16 @@ const rw: Catalog = {
 
     'business.apply.business.unavailable': 'Ntibiboneka',
     'business.apply.business.ineligible': 'Ntiremerewe gusaba igishoro',
+    'business.apply.business.requirement':
+        'Amateka yagenzuwe: amezi {verified} kuri {required}',
+    'business.apply.business.awaiting_verification': {
+        one: 'Raporo {count} yoherejwe, itegereje kugenzurwa na Audit Partner.',
+        other: 'Raporo {count} zoherejwe, zitegereje kugenzurwa na Audit Partner.',
+    },
+    'business.apply.business.no_statements':
+        'Nta raporo iroherezwa. Zohereze hepfo kugira ngo igenzura ritangire.',
+    'business.apply.business.obligations':
+        "Inguzanyo n'indi myenda isanzweho bigenzurwa muri iryo genzura rimwe, hifashishijwe raporo zawe n'ikigo gishinzwe amakuru y'inguzanyo. Nta kindi ugomba kohereza.",
     'business.apply.statements.title': 'Raporo za banki na Mobile Money',
     'business.apply.statements.body':
         "Ohereza raporo y'umwimerere ya buri konti ya banki na Mobile Money ikigo gikoresha (PDF, cyangwa CSV; buri imwe itarenze MB 10). Rozine irazisoma, hanyuma Audit Partner akazigenzura mbere y'uko imibare yawe n'ubushobozi bwawe bigaragara hano.",
