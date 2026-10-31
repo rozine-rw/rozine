@@ -113,7 +113,7 @@ it('completes a review only from its accepted partner while staff resolution rac
 
     expect(statementReviewContenders([
         fn (): array => Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id']),
-        fn (): array => app(App\Application\Auditor\ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, $assignment->revision,
+        fn (): array => app(ResolveAuditAssignment::class)->handle($fixture['staff']->id, $assignment->id, $assignment->revision,
             $decision, 'Staff resolution.', (string) Str::uuid()),
     ]))->each->toBeIn([0, 2]);
     // An accepted engagement is not in Audit Operations, so staff cannot close or redispatch it under the verification.
