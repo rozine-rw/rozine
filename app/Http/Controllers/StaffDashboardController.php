@@ -8,7 +8,6 @@ use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
 use App\Application\Operations\BrowseOperationsDashboard;
 use App\Application\Operations\BrowseReconciliation;
-use App\Domain\Identity\IdentityViolation;
 use App\Http\Requests\Staff\ShowStaffDashboardRequest;
 use App\Http\Resources\StaffDashboardResource;
 use Inertia\Inertia;
@@ -26,10 +25,7 @@ class StaffDashboardController extends Controller
         ShowStaffDashboardRequest $request, BrowseOperationsDashboard $dashboard, BrowseReconciliation $reconciliation, BrowseLedger $ledger, GetStaffAccess $access,
     ): Response|StaffDashboardResource {
         $actorId = (int) $request->user()?->getAuthIdentifier();
-        $staff = $access->handle($actorId, true);
-        if (! in_array('admin.open', $staff['allowed_actions'], true)) {
-            throw new IdentityViolation('STAFF_PERMISSION_REQUIRED');
-        }
+        $staff = $access->requiring($actorId, 'admin.open');
         $from = $request->validated('from');
         $to = $request->validated('to');
         $from = $from === null ? null : (string) $from;
