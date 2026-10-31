@@ -26,6 +26,10 @@
         },
         "evidence": {
             "version": "unavailable",
+            "requirement": {
+                "months_required": 36,
+                "months_verified": 0
+            },
             "eligibility": {
                 "status": "ineligible",
                 "code": "UNDERWRITING_EVIDENCE_REQUIRED",

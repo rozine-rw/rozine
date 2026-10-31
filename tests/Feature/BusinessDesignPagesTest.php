@@ -37,7 +37,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route($route, $parameters))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component($component))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
     };
     $this->business = function (string $kind = 'organization', int $people = 2, string $code = 'COMPANY-001'): array {
         $authority = AuthorityFixture::make($kind, $people, $code, 1);

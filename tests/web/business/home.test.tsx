@@ -404,6 +404,45 @@ describe('Business Home', () => {
         ).toHaveAttribute('href', '/p');
     });
 
+    it('names a blocked draft and why it cannot go on, instead of saying all is caught up', () => {
+        const today: BusinessTodo[] = [
+            {
+                kind: 'application_blocked',
+                title: null,
+                code: 'UNDERWRITING_EVIDENCE_REQUIRED',
+                link: link('/business/b1/applications/a1'),
+            },
+            {
+                kind: 'application_blocked',
+                title: 'Cold Room',
+                code: 'SOMETHING_NEW',
+                link: link('/business/b1/applications/a2'),
+            },
+        ];
+
+        render(<BusinessHome {...fixture} today={today} />);
+
+        expect(screen.getAllByText('Application on hold')).toHaveLength(2);
+        expect(screen.getByText('Your application')).toBeInTheDocument();
+        expect(screen.getByText('Cold Room')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Your statements must be verified by an Audit Partner before you can continue.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Something needs attention before you can continue.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByRole('link', { name: /See what's needed/ })[0],
+        ).toHaveAttribute('href', '/business/b1/applications/a1');
+        expect(
+            screen.queryByText("You're all caught up"),
+        ).not.toBeInTheDocument();
+    });
+
     it('says when nothing needs doing', () => {
         render(<BusinessHome {...fixture} today={[]} />);
 

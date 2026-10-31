@@ -363,6 +363,19 @@ const fr: Catalog = {
     'business.today.repayment.kicker': 'Prochain remboursement',
     'business.today.repayment.sub': '{note} · Échéance le {date}',
     'business.today.repayment.cta': 'Payer maintenant',
+    'business.today.blocked.kicker': 'Demande en attente',
+    'business.today.blocked.untitled': 'Votre demande',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Vos relevés doivent être vérifiés par un Audit Partner avant de continuer.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'Il faut davantage de mois de relevés vérifiés avant de continuer.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine termine une vérification de politique avant que vous puissiez continuer.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'Une restriction sur votre compte bloque cette demande pour le moment.',
+    'business.today.blocked.sub.other':
+        'Un point demande votre attention avant de continuer.',
+    'business.today.blocked.cta': 'Voir ce qui manque',
     'business.today.caught_up.title': 'Vous êtes à jour',
     'business.today.caught_up.body':
         'Aucun remboursement ni action en attente. Nous vous préviendrons dès que quelque chose vous concernera.',
@@ -5191,6 +5204,16 @@ const fr: Catalog = {
 
     'business.apply.business.unavailable': 'Indisponible',
     'business.apply.business.ineligible': 'Pas encore éligible à une levée',
+    'business.apply.business.requirement':
+        'Historique vérifié : {verified} mois sur {required}',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} relevé téléversé. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
+        other: '{count} relevés téléversés. Les mois pas encore vérifiés comptent dès qu’un Audit Partner les vérifie.',
+    },
+    'business.apply.business.no_statements':
+        'Aucun relevé téléversé. Téléversez-les ci-dessous pour lancer la vérification.',
+    'business.apply.business.obligations':
+        "Les prêts et autres obligations existants sont contrôlés lors de la même vérification, à partir de vos relevés et d'une consultation du bureau de crédit. Il n'y a rien d'autre à téléverser.",
     'business.apply.statements.title': 'Relevés bancaires et Mobile Money',
     'business.apply.statements.body':
         "Téléversez le relevé original de chaque compte bancaire et Mobile Money de l'entreprise (PDF, ou export CSV ; 10 Mo maximum chacun). Rozine les lit, puis un Audit Partner les vérifie avant que vos chiffres et votre capacité n'apparaissent ici.",
