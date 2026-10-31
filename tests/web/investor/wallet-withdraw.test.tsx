@@ -111,7 +111,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         fireEvent.submit(panel);
 
         expect(
-            within(panel).getByRole('button', { name: 'Sending…' }),
+            within(panel).getByRole('button', { name: 'Sending withdrawal…' }),
         ).toBeDisabled();
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/investor-wallet-withdraw-pending',
@@ -125,10 +125,13 @@ describe('Wallet withdrawals (LED-R04)', () => {
         await act(async () => {
             await Promise.resolve();
         });
-        expect(inertia.visit).toHaveBeenCalledWith({
-            url: '/preview/investor-wallet-withdraw-pending',
-            method: 'get',
-        });
+        expect(inertia.visit).toHaveBeenCalledWith(
+            {
+                url: '/preview/investor-wallet-withdraw-pending',
+                method: 'get',
+            },
+            { onFinish: expect.any(Function) },
+        );
     });
 
     it('states a quote refusal and keeps the withdrawal closed', () => {
