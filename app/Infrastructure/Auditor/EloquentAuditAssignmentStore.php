@@ -25,6 +25,8 @@ use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
+use App\Domain\Evidence\StatementAuditReview;
+use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
@@ -38,6 +40,9 @@ use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
+use App\Models\BusinessProfile;
+use App\Models\StatementEvidence;
+use App\Models\StatementVerification;
 use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeImmutable;
@@ -108,6 +113,56 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
                     return new OperationResult('AUDIT_ASSIGNMENT_REQUESTED', ['assignment_id' => $record->id], $record->revision);
                 });
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $binding
+     * @param  Closure(array{id: string, revision: int, mandate_version: int}): void  $applicable
+     * @return array<string, mixed>
+     */
+    public function requestStatementReview(int $actorId, string $businessId, string $reason, string $requestId, array $binding, Closure $applicable): array
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
+        return $this->scope($actorId, null, $businessId, true, function (array $context, array $candidates) use ($actorId, $businessId, $reason, $requestId, $binding, $applicable): array {
+            return $this->journal->execute('staff:'.$actorId, $actorId, 'audit.statement_review.request', $requestId, 'business', $businessId,
+                [...$binding, 'reason' => $reason], function (): void {},
+                function () use ($actorId, $businessId, $reason, $context, $candidates, $applicable): OperationResult {
+                    $this->states->reason($reason);
+                    $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
+                    if ($existing?->status === 'closed') {
+                        throw new CommandRejection('AUDIT_ENGAGEMENT_CLOSED', revision: $existing->revision, data: ['assignment_id' => $existing->id]);
+                    }
+                    $candidates = $this->finish($existing, $actorId, $candidates, $context);
+                    $review = $existing !== null && AuditEngagementState::purpose($existing->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW;
+                    if ($existing !== null && $existing->status !== 'completed' && ! $review) {
+                        throw new CommandRejection('AUDIT_ENGAGEMENT_OPEN', revision: $existing->revision, data: ['assignment_id' => $existing->id,
+                            'kind' => $existing->state['kind'], 'purpose' => AuditEngagementState::purpose($existing->state), 'status' => $existing->status]);
+                    }
+                    $applicable(['id' => $businessId, 'revision' => $context['business']['revision'], 'mandate_version' => $context['business']['mandate_version']]);
+                    if ($existing !== null && $existing->status !== 'completed') {
+                        return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
+                    }
+                    $record = new AuditAssignment;
+                    $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
+                    $state = $this->offer($this->states->start('routine', now()->toDateTimeImmutable(), AuditEngagementState::PURPOSE_STATEMENT_REVIEW), $context, $candidates);
+                    $this->persist($record, $state, $actorId, 'audit.statement_review.request', $reason, $candidates, $context);
+
+                    return new OperationResult('AUDIT_ASSIGNMENT_REQUESTED', ['assignment_id' => $record->id], $record->revision);
+                });
+        });
+    }
+
+    /** @return array<string, mixed> */
+    public function findStatementReviewOperation(int $actorId, string $businessId, string $requestId): array
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+
+        return $this->journal->find('staff:'.$actorId, 'audit.statement_review.request', $requestId, function (string $type, string $id) use ($businessId): void {
+            if ($type !== 'business' || $id !== $businessId) {
+                throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+            }
         });
     }
 
@@ -280,7 +335,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             'kind' => $state['kind'], 'status' => $state['status'], 'offered_at' => $state['offered_at'],
             'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions,
             // A monthly visit audits the Kigali month before the one it was first dispatched in.
-            'period' => $state['kind'] === 'routine'
+            'period' => $state['kind'] === 'routine' && AuditEngagementState::purpose($state) === AuditEngagementState::PURPOSE_MONTHLY
                 ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null];
     }
 
@@ -537,7 +592,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $candidates = $this->finish($existing, null, $candidates, $context);
             $month = now('Africa/Kigali')->startOfMonth();
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
-                ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine');
+                ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine'
+                    && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY);
             if (($existing !== null && $existing->status !== 'completed') || $dispatched) {
                 return null;
             }
@@ -598,13 +654,39 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             });
     }
 
-    /** @return array{id: string, revision: int, kind: string, status: string}|null */
+    /** @return array{id: string, revision: int, kind: string, purpose: string, status: string}|null */
     public function openEngagement(string $businessId): ?array
     {
         $open = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->first();
 
         return $open === null || in_array($open->status, ['completed', 'closed'], true) ? null
-            : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'status' => $open->status];
+            : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'purpose' => AuditEngagementState::purpose($open->state), 'status' => $open->status];
+    }
+
+    public function purpose(string $assignmentId): string
+    {
+        return AuditEngagementState::purpose(AuditAssignment::query()->findOrFail($assignmentId)->state);
+    }
+
+    public function requireAccepted(string $assignmentId): void
+    {
+        if (AuditAssignment::query()->whereKey($assignmentId)->value('status') !== 'accepted') {
+            throw new CommandRejection('ASSIGNMENT_NOT_ACCEPTED', 403);
+        }
+    }
+
+    /** @param AcceptedAssignment $assignment */
+    public function completeStatementReview(array $assignment, string $verificationId, int $userId): bool
+    {
+        $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignment['id']);
+        if (AuditEngagementState::purpose($record->state) !== AuditEngagementState::PURPOSE_STATEMENT_REVIEW || ! $this->done($record)) {
+            return false;
+        }
+        // Runs inside statement.verify under the Business, Party and assignment locks it already holds; it dispatches nothing.
+        $this->version($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $userId, 'audit.assignment.complete', $verificationId,
+            ['business_revision' => $assignment['business_revision'], 'mandate_version' => $assignment['mandate_version'], 'candidates' => []]);
+
+        return true;
     }
 
     public function lastClosed(string $businessId): bool
@@ -821,8 +903,11 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     private function workload(string $businessId, array $partyIds): array
     {
         $activeCounts = AuditAssignment::query()->whereIn('party_id', $partyIds)->where('status', 'accepted')->get(['party_id'])->countBy('party_id')->all();
+        // Rotation counts report engagements only: a statement review is not a report.
         $reports = array_values(AuditAssignment::query()->where('business_id', $businessId)->where('status', 'completed')
-            ->orderByDesc('completed_at')->orderByDesc('id')->limit(3)->get()->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
+            ->orderByDesc('completed_at')->orderByDesc('id')->get()
+            ->filter(fn (AuditAssignment $report): bool => AuditEngagementState::purpose($report->state) === AuditEngagementState::PURPOSE_MONTHLY)
+            ->take(3)->map(fn (AuditAssignment $report): string => $report->party_id ?? '')->all());
 
         return [$activeCounts, $reports];
     }
@@ -917,16 +1002,26 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         $offered = $state['status'] === 'offered' && $state['party_id'] !== null && $state['accept_by'] !== null
             && ($record->status !== 'offered' || $record->party_id !== $state['party_id'] || $record->state['offered_at'] !== $state['offered_at']);
-        $record->forceFill(['revision' => $record->revision + 1, 'state' => $state, 'status' => $state['status'], 'party_id' => $state['party_id'], 'accept_by' => $state['accept_by'],
-            'completed_at' => $state['completed_at'] ?? null])->save();
-        (new AuditAssignmentVersion)->forceFill(['assignment_id' => $record->id, 'revision' => $record->revision, 'party_id' => $state['party_id'], 'status' => $state['status'],
-            'snapshot' => $this->snapshot($record), 'selection_basis' => ['business_revision' => $context['business']['revision'], 'mandate_version' => $context['business']['mandate_version'], 'candidates' => $candidates], 'actor_user_id' => $actorId, 'command' => $command,
-            'reason' => $reason, 'policy_version' => 'engineering-2026-09-23.4'])->save();
+        $this->version($record, $state, $actorId, $command, $reason,
+            ['business_revision' => $context['business']['revision'], 'mandate_version' => $context['business']['mandate_version'], 'candidates' => $candidates]);
         if ($offered) {
             $this->notices->record((string) $state['party_id'], PartyNoticeKind::AuditorJobOffered, ['type' => $state['kind'],
                 'business' => (string) $context['business']['profile']['name'], 'location' => (string) $context['business']['profile']['district'],
                 'accept_by' => (string) $state['accept_by'], 'assignment_id' => $record->id], 'audit-job-offered:'.$record->id.':'.$record->revision);
         }
+    }
+
+    /**
+     * @param  State  $state
+     * @param  array{business_revision: int, mandate_version: int, candidates: list<Candidate>}  $basis
+     */
+    private function version(AuditAssignment $record, array $state, ?int $actorId, string $command, ?string $reason, array $basis): void
+    {
+        $record->forceFill(['revision' => $record->revision + 1, 'state' => $state, 'status' => $state['status'], 'party_id' => $state['party_id'], 'accept_by' => $state['accept_by'],
+            'completed_at' => $state['completed_at'] ?? null])->save();
+        (new AuditAssignmentVersion)->forceFill(['assignment_id' => $record->id, 'revision' => $record->revision, 'party_id' => $state['party_id'], 'status' => $state['status'],
+            'snapshot' => $this->snapshot($record), 'selection_basis' => $basis, 'actor_user_id' => $actorId, 'command' => $command,
+            'reason' => $reason, 'policy_version' => 'engineering-2026-09-23.4'])->save();
     }
 
     /**
@@ -936,7 +1031,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      */
     private function finish(?AuditAssignment $record, ?int $actorId, array $candidates, array $context): array
     {
-        if ($record === null || ! $this->published($record)) {
+        if ($record === null || ! $this->done($record)) {
             return $candidates;
         }
         $this->persist($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
@@ -948,7 +1043,38 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /**
-     * The accepted engagement's work is done: its newest report is sealed and published, and no
+     * The accepted engagement's work is done. A statement review is done by its own partner's current
+     * verification; any other engagement by its published report.
+     */
+    private function done(AuditAssignment $record): bool
+    {
+        return AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW ? $this->reviewed($record) : $this->published($record);
+    }
+
+    /**
+     * The newest statement verification was appended under this accepted assignment by its partner at
+     * its accepted revision, and is still current. It needs no report and no application.
+     */
+    private function reviewed(AuditAssignment $record): bool
+    {
+        if ($record->status !== 'accepted') {
+            return false;
+        }
+        $evidence = StatementEvidence::query()->where('business_id', $record->business_id)->first();
+        $latest = StatementVerification::query()->where('statement_evidence_id', $evidence?->id)->orderByDesc('revision')->first();
+        if ($evidence === null || $latest === null || $latest->assignment_id !== $record->id || $latest->actor_party_id !== $record->party_id) {
+            return false;
+        }
+        $assignment = $latest->payload['assignment'];
+
+        return $assignment['revision'] === $record->revision && $latest->source_revision === $evidence->revision
+            && $assignment['business_revision'] === (int) BusinessProfile::query()->whereKey($record->business_id)->value('revision')
+            && $latest->policy_version === StatementAuditReview::POLICY_VERSION && $latest->procedure_version === StatementAuditReview::PROCEDURE
+            && $latest->payload['classification_version'] === StatementReconciliation::VERSION && $this->retainsVerification($assignment);
+    }
+
+    /**
+     * The accepted engagement's report is done: its newest report is sealed and published, and no
      * amendment draft is open. Until then a new request resumes it.
      */
     private function published(AuditAssignment $record): bool

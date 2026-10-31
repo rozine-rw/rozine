@@ -29,7 +29,8 @@ use Closure;
  * @phpstan-type SourceBinding array{evidence_revision: int, manifest_sha256: string, originals: list<array{document_id: string, sha256: string}>, extractions: list<array{document_id: string, extraction_id: string, revision: int, parser_version: string}>}
  * @phpstan-type ReviewedSave array{expected_business_revision: int, expected_mandate_version: int, expected_transcription_id: string|null, expected_transcription_sha256: string|null, source_binding: SourceBinding, reviewed_against_originals: bool}
  * @phpstan-type Assistance array{status: 'unavailable', reason_codes: list<string>, candidate: null}
- * @phpstan-type Readiness array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence_revision: int, manifest_sha256: string, transcription: array{id: string, revision: int, sha256: string, current: true}|null, ready_to_request: null, reasons: list<array{code: string, field: string|null}>, coverage: array{declared_month_count: int, first_month: string|null, last_month: string|null}, assignment: array{id: string, revision: int, kind: string, status: string}|null, source_verified: bool, underwriting: array{status: 'not_evaluated', eligible: null}, readiness_sha256: string, allowed_actions: list<string>}
+ * @phpstan-type ReviewRequest array{expected_business_revision: int, expected_mandate_version: int, expected_evidence_revision: int, transcription_id: string, transcription_sha256: string, readiness_sha256: string}
+ * @phpstan-type Readiness array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence_revision: int, manifest_sha256: string, transcription: array{id: string, revision: int, sha256: string, current: true}|null, ready_to_request: bool, reasons: list<array{code: string, field: string|null}>, coverage: array{declared_month_count: int, first_month: string|null, last_month: string|null}, assignment: array{id: string, revision: int, kind: string, purpose: string, status: string}|null, source_verified: bool, underwriting: array{status: 'not_evaluated', eligible: null}, readiness_sha256: string, allowed_actions: list<string>}
  * @phpstan-type TranscriptionDraft array{contract_version: string, business_id: string, business_revision: int, mandate_version: int, evidence: SourceBinding, assistance: Assistance, current_transcription: Transcription|null, allowed_actions: list<string>}
  */
 interface StatementStore
@@ -63,6 +64,19 @@ interface StatementStore
 
     /** @return Readiness */
     public function staffReadiness(int $actorId, string $businessId): array;
+
+    /**
+     * Staff with audit.assignments.manage request a factual statement review against the readiness they
+     * reviewed (#396, R1.3). Business, mandate, evidence, transcription and readiness bindings are
+     * compared inside the new effect; a retry returns the original receipt.
+     *
+     * @param  ReviewRequest  $binding
+     * @return array<string, mixed>
+     */
+    public function requestReview(int $actorId, string $businessId, array $binding, string $reason, string $requestId): array;
+
+    /** @return array<string, mixed> */
+    public function findReviewOperation(int $actorId, string $businessId, string $requestId): array;
 
     /** @return Transcription|null */
     public function transcription(int $userId, int $contextRevision, string $businessId, ?string $transcriptionId): ?array;

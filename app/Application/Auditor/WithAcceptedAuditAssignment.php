@@ -36,6 +36,12 @@ final class WithAcceptedAuditAssignment
         return $this->store->withAssigned($userId, $contextRevision, $assignmentId, $operation);
     }
 
+    /** Why the engagement exists: 'monthly' for report engagements, 'statement_review' for a factual review. */
+    public function purpose(string $assignmentId): string
+    {
+        return $this->store->purpose($assignmentId);
+    }
+
     /** @param AcceptedAssignment $assignment */
     public function retainsVerification(array $assignment): bool
     {
