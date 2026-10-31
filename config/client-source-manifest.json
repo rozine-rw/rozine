@@ -564,6 +564,7 @@
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",
+        "resources/js/components/investor/floating-hold.tsx",
         "resources/js/components/investor/investor-shell.tsx",
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
@@ -628,6 +629,7 @@
         "resources/js/components/rozine/skip-link.tsx",
         "resources/js/components/rozine/support-chat.tsx",
         "resources/js/components/rozine/toast.tsx",
+        "resources/js/components/rozine/upload-status.tsx",
         "resources/js/components/site/app-entry.tsx",
         "resources/js/components/text-link.tsx",
         "resources/js/components/two-factor-recovery-codes.tsx",
@@ -786,10 +788,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 758,
+        "totalTrackedSources": 760,
         "generated": 327,
         "declarationOnly": 20,
-        "authoredExecutable": 411
+        "authoredExecutable": 413
     },
-    "coverageSetSha256": "99d3405be692affdaefffdebf1cefa4d48ea82f430f3c4909dcbc44bc00bf072"
+    "coverageSetSha256": "ca16b60f6eaff4d754202d071bdf8d861f7a2dd359f1e7188aee0aace9d041b5"
 }

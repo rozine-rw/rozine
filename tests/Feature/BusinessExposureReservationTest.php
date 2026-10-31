@@ -155,6 +155,9 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     // The Investor cart references campaigns, so it comes off first and goes back last.
     $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
+    // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
+    $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $heldReleasePrecision->down();
     $cartLines->down();
     $automaticDisbursement->down();
     $platformFee->down();
@@ -222,6 +225,7 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $platformFee->up();
     $automaticDisbursement->up();
     $cartLines->up();
+    $heldReleasePrecision->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
