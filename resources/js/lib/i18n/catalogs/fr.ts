@@ -4547,6 +4547,8 @@ const fr: Catalog = {
     'investor.portfolio.empty.active.title': "Aucun avoir pour l'instant",
     'investor.portfolio.empty.active.body':
         'Les titres achetés apparaissent ici avec leurs versements et rapports.',
+    'investor.portfolio.empty.active.awaiting':
+        'Vos titres apparaîtront ici dans vos avoirs une fois émis, après le décaissement.',
     'investor.portfolio.empty.matured.title': "Rien pour l'instant",
     'investor.portfolio.empty.matured.body':
         'Les avoirs de cette catégorie apparaîtront ici.',

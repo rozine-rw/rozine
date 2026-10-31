@@ -4364,6 +4364,8 @@ const en = {
     'investor.portfolio.empty.active.title': 'Nothing held yet',
     'investor.portfolio.empty.active.body':
         'Notes you buy appear here with their payouts and reports.',
+    'investor.portfolio.empty.active.awaiting':
+        'Your notes move into your holdings here once they are issued, after disbursement.',
     'investor.portfolio.empty.matured.title': 'Nothing here yet',
     'investor.portfolio.empty.matured.body':
         'Holdings in this category will appear here.',
