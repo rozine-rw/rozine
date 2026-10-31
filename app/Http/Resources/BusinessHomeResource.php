@@ -50,7 +50,7 @@ class BusinessHomeResource extends JsonResource
             'title' => (string) $entry['draft_title'], 'pending' => $signing['pending'],
             'link' => self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])]];
         $blocked = $entry['draft_blocked'] ?? null;
-        $waiting = $blocked === null || $draft === null ? [] : [['kind' => 'application_blocked', 'title' => $entry['draft_title'], 'code' => $blocked,
+        $waiting = $blocked === null || $draft === null ? [] : [['kind' => 'application_blocked', 'title' => ($entry['draft_title'] ?? '') === '' ? null : $entry['draft_title'], 'code' => $blocked,
             'link' => self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])]];
         $audit = $data['audit_window'] ?? null;
         $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
