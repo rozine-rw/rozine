@@ -30,7 +30,7 @@ it('lets staff request a statement review from the readiness they saw and recove
     $body = statementReviewBody($readiness);
 
     $receipt = $this->postJson("/api/v1/staff/businesses/{$business}/initial-statement-audit/review", $body)->assertOk()
-        ->assertJsonPath('status', 'succeeded')->assertJsonPath('code', 'AUDIT_ASSIGNMENT_REQUESTED')
+        ->assertJsonPath('status', 'completed')->assertJsonPath('code', 'AUDIT_ASSIGNMENT_REQUESTED')
         ->assertJsonPath('data.next', ['url' => "/api/v1/staff/businesses/{$business}/initial-statement-audit", 'method' => 'get'])
         ->assertJsonPath('allowed_actions', [])->json();
     $assignment = AuditAssignment::query()->whereKey($receipt['data']['assignment_id'])->firstOrFail();
