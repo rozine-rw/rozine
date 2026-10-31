@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Business\Contracts\BusinessAuditWindows;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\AuditAssignment;
 use Carbon\CarbonImmutable;
@@ -29,7 +30,8 @@ final class EloquentBusinessAuditWindows implements BusinessAuditWindows
         $sealed = DB::table('audit_reports')->where('business_id', $businessId)->where('status', 'sealed');
         $assignment = AuditAssignment::query()->where('business_id', $businessId)->whereIn('status', ['offered', 'accepted', 'operations'])
             ->whereNotIn('id', (clone $sealed)->select('assignment_id'))->first();
-        if ($assignment === null || $assignment->state['kind'] !== 'routine') {
+        // A statement review is not a reporting window; the Business follows it on its readiness.
+        if ($assignment === null || $assignment->state['kind'] !== 'routine' || AuditEngagementState::purpose($assignment->state) !== AuditEngagementState::PURPOSE_MONTHLY) {
             return null;
         }
         $period = CarbonImmutable::parse($assignment->state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');

@@ -56,7 +56,7 @@ it('lets a representative review, save and follow a transcription over the API',
     $this->getJson("/api/v1/business/{$business}/statements/transcription?transcription={$id}")->assertOk()->assertJsonPath('data.current', true);
     $this->getJson("/api/v1/business/{$business}/statements/transcription?transcription=not-an-id")->assertNotFound();
     $this->getJson("/api/v1/business/{$business}/statements/audit-readiness")->assertOk()
-        ->assertJsonPath('data.transcription.id', $id)->assertJsonPath('data.ready_to_request', null)->assertJsonPath('data.allowed_actions', []);
+        ->assertJsonPath('data.transcription.id', $id)->assertJsonPath('data.ready_to_request', true)->assertJsonPath('data.allowed_actions', []);
 
     $stale = $this->postJson($draft['save']['url'], reviewedTranscriptionBody($draft, $input))->assertStatus(409)->json();
     expect($stale['code'])->toBe('VERSION_CONFLICT');
@@ -95,7 +95,8 @@ it('shows staff who dispatch audits the raw readiness only with their audit abil
     Fixture::statements($fixture);
     Sanctum::actingAs($fixture['staff'], ['staff:audit:read']);
     $readiness = $this->getJson("/api/v1/staff/businesses/{$business}/initial-statement-audit")->assertOk()->json('data');
-    expect($readiness['transcription']['current'])->toBeTrue()->and($readiness['ready_to_request'])->toBeNull()
+    expect($readiness['transcription']['current'])->toBeTrue()->and($readiness['ready_to_request'])->toBeTrue()
+        ->and($readiness['allowed_actions'])->toBe(['audit.statement_review.request'])
         ->and(json_encode($readiness, JSON_THROW_ON_ERROR))->not->toContain('opening_balance');
     Sanctum::actingAs($fixture['staff'], ['business:read']);
     $this->getJson("/api/v1/staff/businesses/{$business}/initial-statement-audit")->assertForbidden();
