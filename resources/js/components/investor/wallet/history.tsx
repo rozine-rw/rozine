@@ -476,6 +476,22 @@ export function WalletHistory({
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
                                     {formatDate(entry.occurred_at, locale)}
+                                    {/* The ledger records a deposit only once it is credited (#461). */}
+                                    {entry.kind === 'deposit' && (
+                                        <>
+                                            {' · '}
+                                            <span
+                                                className={cn(
+                                                    'font-semibold',
+                                                    INTENT_TONE.succeeded,
+                                                )}
+                                            >
+                                                {t(
+                                                    'investor.wallet.c3.credited',
+                                                )}
+                                            </span>
+                                        </>
+                                    )}
                                     {entry.movement === 'internal' &&
                                         ` · ${t('investor.wallet.c3.transfer', {
                                             from: t(

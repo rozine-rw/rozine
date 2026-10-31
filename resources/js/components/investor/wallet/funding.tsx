@@ -5,7 +5,9 @@ import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { LogoMark } from '@/components/rozine/logo';
+import { Spinner } from '@/components/ui/spinner';
 import { useC3Command } from '@/hooks/use-c3-command';
+import type { C3Resource } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCompactBare } from '@/lib/investor/format';
 import { formatDate, formatRwf } from '@/lib/rozine/format';
@@ -18,7 +20,10 @@ import type {
 } from '@/types/investor';
 import type { Money } from '@/types/money';
 import type { RouteAction, RouteLink } from '@/types/routing';
-import type { C3PreviewOutcome } from '@/types/settlement';
+import type {
+    C3PreviewOutcome,
+    ProviderOutcomeState,
+} from '@/types/settlement';
 
 /** Mobile-money and bank marks, drawn rather than loaded (the design's logo files are missing). */
 const METHOD_TILE: Record<PayoutAccountKind, string> = {
@@ -269,6 +274,80 @@ function depositBounds(
     return t('settlement.refusal.VALIDATION_FAILED');
 }
 
+/** What the panel says once a deposit or withdrawal is recorded (#461). */
+type FundingDone = {
+    kind: 'deposit' | 'withdraw';
+    amount: Money;
+    method: string;
+    state: ProviderOutcomeState;
+};
+
+/** The recorded command's outcome, read from the server's answer, never assumed. */
+function fundingDone(
+    kind: FundingDone['kind'],
+    resource: C3Resource,
+    amount: Money,
+    method: string,
+): FundingDone {
+    const current = resource.data?.current as { state?: unknown } | null;
+    const state = current?.state;
+
+    return {
+        kind,
+        amount,
+        method,
+        state:
+            state === 'succeeded' || state === 'failed' || state === 'unknown'
+                ? state
+                : 'pending',
+    };
+}
+
+/** Drops the quoted amount from the address once the form has been cleared for the next one. */
+function dropQuotedAmount(): void {
+    const url = new URL(window.location.href);
+
+    if (!url.searchParams.has('amount')) {
+        return;
+    }
+
+    url.searchParams.delete('amount');
+    router.replace({
+        url: `${url.pathname}${url.search}${url.hash}`,
+        preserveState: true,
+        preserveScroll: true,
+    });
+}
+
+/** The confirmation under a funding form once its command is recorded. */
+function FundingDoneNotice({ done }: { done: FundingDone }) {
+    const { t } = useTranslation();
+    const failed = done.state === 'failed';
+
+    return (
+        <p
+            role="status"
+            className={cn(
+                'mt-2 flex items-start gap-2.5 rounded-[10px] border px-3 py-2.5 text-xs leading-[1.5] font-semibold',
+                failed
+                    ? 'border-[#fdeaea] bg-[rgba(229,72,77,.08)] text-rz-danger-text dark:border-[rgba(255,107,111,.25)]'
+                    : 'border-[#cdeee0] bg-[rgba(21,115,87,.08)] text-[#157357] dark:border-[rgba(63,205,160,.25)] dark:text-[#3fcda0]',
+            )}
+        >
+            <Icon
+                name={failed ? 'warning' : 'check-badge'}
+                tone={failed ? 'red' : 'green'}
+            />
+            <span>
+                {t(
+                    `investor.wallet.done.${done.kind}.${done.state === 'unknown' ? 'pending' : done.state}`,
+                    { amount: formatRwf(done.amount), method: done.method },
+                )}
+            </span>
+        </p>
+    );
+}
+
 /**
  * The deposit panel (design L2880–2923).
  * The fee and what is credited come from the server's quote under a versioned deposit policy; a
@@ -294,6 +373,8 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     const [amount, setAmountState] = useState(quote?.amount.amount ?? '');
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
+    const [done, setDone] = useState<FundingDone | null>(null);
+    const sent = useRef<{ amount: Money; method: string } | null>(null);
     const timer = useRef<number | undefined>(undefined);
     const command = useC3Command<Name>({
         actions: { [name]: actions.deposit } as Partial<
@@ -304,9 +385,24 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         allowed,
         preview,
         only: ['wallet', 'funding', 'deposits', 'history', 'allowed_actions'],
-        /* A recorded intent clears the amount, so the next deposit starts afresh. */
-        onCompleted: () => setAmountState(''),
+        /* A recorded intent clears the amount and says what was recorded (#461). */
+        onCompleted: (resource) => {
+            setAmountState('');
+
+            if (sent.current !== null) {
+                setDone(
+                    fundingDone(
+                        'deposit',
+                        resource,
+                        sent.current.amount,
+                        sent.current.method,
+                    ),
+                );
+            }
+        },
+        onSettled: dropQuotedAmount,
     });
+    const sending = command.busy || command.settling;
 
     useEffect(() => () => window.clearTimeout(timer.current), []);
 
@@ -365,6 +461,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         const digits = raw.replace(/[^0-9]/gu, '');
 
         setAmountState(digits);
+        setDone(null);
         window.clearTimeout(timer.current);
         timer.current = window.setTimeout(() => {
             router.reload({
@@ -380,14 +477,17 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     /* An amount outside the policy prices nothing, so nothing reads as credited. */
     const priced = quote !== null && refusal === null && amount !== '';
     const ready =
-        priced &&
-        method !== '' &&
-        !pricing &&
-        !command.busy &&
-        !command.unresolved;
+        priced && method !== '' && !pricing && !sending && !command.unresolved;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        setDone(null);
+        sent.current = {
+            amount: { currency: 'RWF', amount },
+            method:
+                funding.methods.find((option) => option.id === method)?.label ??
+                '',
+        };
         command.send(name, {
             ...payload,
             identity_context_revision: identityRevision,
@@ -505,14 +605,22 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     {command.errors.amount}
                 </p>
             )}
+            {done !== null && <FundingDoneNotice done={done} />}
             <button
                 type="submit"
                 disabled={!ready}
-                aria-busy={command.busy || undefined}
-                className="mt-[13px] h-[50px] w-full shrink-0 rounded-xl bg-rz-accent-fill text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                aria-busy={sending || undefined}
+                className="mt-[13px] flex h-[50px] w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-rz-accent-fill text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-                {command.busy
-                    ? t('investor.wallet.processing')
+                {sending && (
+                    <Spinner
+                        role="presentation"
+                        aria-hidden
+                        aria-label={undefined}
+                    />
+                )}
+                {sending
+                    ? t('investor.wallet.sending.deposit')
                     : t('investor.wallet.confirm.deposit')}
             </button>
             <p className="mt-2 text-center text-[10.5px] leading-[1.4] text-rz-secondary">
@@ -570,6 +678,8 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     const quote = acceptedQuote === terms?.quote ? acceptedQuote : null;
     const [method, setMethod] = useState(funding.methods[0]?.id ?? '');
     const [pricing, setPricing] = useState(false);
+    const [done, setDone] = useState<FundingDone | null>(null);
+    const sent = useRef<{ amount: Money; method: string } | null>(null);
     const timer = useRef<number | undefined>(undefined);
     const quoteGeneration = useRef(0);
     const cancelQuote = useRef<(() => void) | null>(null);
@@ -586,7 +696,26 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             'history',
             'allowed_actions',
         ],
+        /* A recorded withdrawal clears the amount and says what was recorded (#461). */
+        onCompleted: (resource) => {
+            quoteGeneration.current += 1;
+            setAmountState('');
+            setAcceptedQuote(null);
+
+            if (sent.current !== null) {
+                setDone(
+                    fundingDone(
+                        'withdraw',
+                        resource,
+                        sent.current.amount,
+                        sent.current.method,
+                    ),
+                );
+            }
+        },
+        onSettled: dropQuotedAmount,
     });
+    const sending = command.busy || command.settling;
 
     useEffect(
         () => () => {
@@ -648,6 +777,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
 
         setAmountState(digits);
         setAcceptedQuote(null);
+        setDone(null);
         setPricing(digits !== '');
         window.clearTimeout(timer.current);
         cancelQuote.current?.();
@@ -724,7 +854,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
         amount !== '' &&
         method !== '' &&
         !pricing &&
-        !command.busy &&
+        !sending &&
         !command.unresolved;
 
     const submit = (event: FormEvent) => {
@@ -734,6 +864,13 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
             return;
         }
 
+        setDone(null);
+        sent.current = {
+            amount: quote.amount,
+            method:
+                funding.methods.find((option) => option.id === method)?.label ??
+                '',
+        };
         command.send(name, {
             ...payload,
             identity_context_revision: identityRevision,
@@ -855,14 +992,22 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     {command.errors.amount}
                 </p>
             )}
+            {done !== null && <FundingDoneNotice done={done} />}
             <button
                 type="submit"
                 disabled={!ready}
-                aria-busy={command.busy || undefined}
-                className="mt-[13px] h-[50px] w-full shrink-0 rounded-xl bg-[#0c1830] text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-rz-surface-muted"
+                aria-busy={sending || undefined}
+                className="mt-[13px] flex h-[50px] w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-[#0c1830] text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-rz-surface-muted"
             >
-                {command.busy
-                    ? t('investor.wallet.processing')
+                {sending && (
+                    <Spinner
+                        role="presentation"
+                        aria-hidden
+                        aria-label={undefined}
+                    />
+                )}
+                {sending
+                    ? t('investor.wallet.sending.withdraw')
                     : t('investor.wallet.confirm.withdraw')}
             </button>
             <p className="mt-2 text-center text-[10.5px] leading-[1.4] text-rz-secondary">

@@ -4685,6 +4685,21 @@ const fr: Catalog = {
     'investor.wallet.result.withdraw': 'Vous recevez',
     'investor.wallet.confirm.deposit': 'Confirmer le dépôt',
     'investor.wallet.confirm.withdraw': 'Confirmer le retrait',
+    'investor.wallet.sending.deposit': 'Envoi du dépôt…',
+    'investor.wallet.sending.withdraw': 'Envoi du retrait…',
+    'investor.wallet.done.deposit.pending':
+        'Dépôt de {amount} demandé. Nous le créditerons dès que {method} le confirmera.',
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} depuis {method} est maintenant dans votre portefeuille.',
+    'investor.wallet.done.deposit.failed':
+        "Le dépôt de {amount} depuis {method} n'a pas abouti. Rien n'a été crédité.",
+    'investor.wallet.done.withdraw.pending':
+        'Retrait de {amount} vers {method} demandé. Il sera versé dès que {method} le confirmera.',
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} a été versé sur {method}.',
+    'investor.wallet.done.withdraw.failed':
+        "Le retrait de {amount} vers {method} n'a pas abouti. L'argent est de retour dans votre portefeuille.",
+    'investor.wallet.c3.credited': 'Crédité',
     'investor.wallet.processing': 'Envoi…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Saisissez au moins le montant minimum',

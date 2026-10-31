@@ -4500,6 +4500,21 @@ const en = {
     'investor.wallet.result.withdraw': 'You receive',
     'investor.wallet.confirm.deposit': 'Confirm deposit',
     'investor.wallet.confirm.withdraw': 'Confirm withdrawal',
+    'investor.wallet.sending.deposit': 'Sending deposit…',
+    'investor.wallet.sending.withdraw': 'Sending withdrawal…',
+    'investor.wallet.done.deposit.pending':
+        "Deposit of {amount} requested. We'll credit it once {method} confirms.",
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} from {method} is now in your wallet.',
+    'investor.wallet.done.deposit.failed':
+        "The {amount} deposit from {method} didn't go through. Nothing was credited.",
+    'investor.wallet.done.withdraw.pending':
+        "Withdrawal of {amount} to {method} requested. It's paid out once {method} confirms.",
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} was paid out to {method}.',
+    'investor.wallet.done.withdraw.failed':
+        "The {amount} withdrawal to {method} didn't go through. The money is back in your wallet.",
+    'investor.wallet.c3.credited': 'Credited',
     'investor.wallet.processing': 'Sending…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Enter an amount of at least the minimum',
