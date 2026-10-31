@@ -55,6 +55,14 @@ describe('Wallet withdrawals (LED-R04)', () => {
         expect(within(panel).getByText('PAYMENT METHOD')).toBeInTheDocument();
         fireEvent.click(within(panel).getByRole('button', { name: '50K' }));
         expect(within(panel).getByLabelText('AMOUNT')).toHaveValue('50,000');
+        expect(within(panel).getByTestId('withdraw-amount-field')).toHaveClass(
+            'rz-prefixed-field',
+        );
+        expect(
+            within(
+                within(panel).getByTestId('withdraw-amount-field'),
+            ).getByLabelText('AMOUNT'),
+        ).toBeInTheDocument();
 
         fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
             target: { value: '40,000' },
