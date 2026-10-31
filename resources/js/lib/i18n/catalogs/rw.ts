@@ -4447,6 +4447,9 @@ const rw: Catalog = {
     'investor.kyc.upload_passport': "Ohereza urupapuro rw'ifoto rwa pasiporo",
     'investor.kyc.uploaded_passport':
         "Urupapuro rw'ifoto rwa pasiporo rwoherejwe",
+    'investor.kyc.uploading': 'Birimo koherezwa…',
+    'investor.kyc.uploading_percent': 'Birimo koherezwa… {percent}%',
+    'investor.kyc.upload_checking': 'Turimo kugenzura dosiye…',
     'investor.kyc.replace': 'Kanda usimbuze',
     'investor.kyc.view_upload': 'Reba {slot}',
     'investor.kyc.selfie_slot': 'ifoto yawe',
