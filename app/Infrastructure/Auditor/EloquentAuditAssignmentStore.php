@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditAssignmentStore;
+use App\Application\Evidence\Contracts\StatementReviews;
 use App\Application\Auditor\Contracts\AuditEngagementStore;
 use App\Application\Auditor\Contracts\AuditReportLifecycle;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
@@ -25,8 +26,6 @@ use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
-use App\Domain\Evidence\StatementAuditReview;
-use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
@@ -40,9 +39,6 @@ use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
-use App\Models\BusinessProfile;
-use App\Models\StatementEvidence;
-use App\Models\StatementVerification;
 use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeImmutable;
@@ -85,6 +81,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private PartyNotices $notices,
         private BusinessNoticeAudience $audience,
         private AuditReportWindow $window,
+        private StatementReviews $reviews,
     ) {}
 
     /** @return array<string, mixed> */
@@ -679,7 +676,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     public function completeStatementReview(array $assignment, string $verificationId, int $userId): bool
     {
         $record = AuditAssignment::query()->lockForUpdate()->findOrFail($assignment['id']);
-        if (AuditEngagementState::purpose($record->state) !== AuditEngagementState::PURPOSE_STATEMENT_REVIEW || ! $this->done($record)) {
+        if (AuditEngagementState::purpose($record->state) !== AuditEngagementState::PURPOSE_STATEMENT_REVIEW || ! $this->done($record, $assignment['business_revision'])) {
             return false;
         }
         // Runs inside statement.verify under the Business, Party and assignment locks it already holds; it dispatches nothing.
@@ -1031,7 +1028,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      */
     private function finish(?AuditAssignment $record, ?int $actorId, array $candidates, array $context): array
     {
-        if ($record === null || ! $this->done($record)) {
+        if ($record === null || ! $this->done($record, $context['business']['revision'])) {
             return $candidates;
         }
         $this->persist($record, $this->states->complete($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.complete', null, $candidates, $context);
@@ -1046,31 +1043,25 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      * The accepted engagement's work is done. A statement review is done by its own partner's current
      * verification; any other engagement by its published report.
      */
-    private function done(AuditAssignment $record): bool
+    private function done(AuditAssignment $record, int $businessRevision): bool
     {
-        return AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW ? $this->reviewed($record) : $this->published($record);
+        return AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW ? $this->reviewed($record, $businessRevision) : $this->published($record);
     }
 
     /**
      * The newest statement verification was appended under this accepted assignment by its partner at
-     * its accepted revision, and is still current. It needs no report and no application.
+     * its accepted revision and the current Business revision, and is still current. It needs no report
+     * and no application.
      */
-    private function reviewed(AuditAssignment $record): bool
+    private function reviewed(AuditAssignment $record, int $businessRevision): bool
     {
-        if ($record->status !== 'accepted') {
+        $latest = $record->status === 'accepted' ? $this->reviews->latestVerification($record->business_id) : null;
+        if ($latest === null || $latest['assignment_id'] !== $record->id || $latest['actor_party_id'] !== $record->party_id) {
             return false;
         }
-        $evidence = StatementEvidence::query()->where('business_id', $record->business_id)->first();
-        $latest = StatementVerification::query()->where('statement_evidence_id', $evidence?->id)->orderByDesc('revision')->first();
-        if ($evidence === null || $latest === null || $latest->assignment_id !== $record->id || $latest->actor_party_id !== $record->party_id) {
-            return false;
-        }
-        $assignment = $latest->payload['assignment'];
 
-        return $assignment['revision'] === $record->revision && $latest->source_revision === $evidence->revision
-            && $assignment['business_revision'] === (int) BusinessProfile::query()->whereKey($record->business_id)->value('revision')
-            && $latest->policy_version === StatementAuditReview::POLICY_VERSION && $latest->procedure_version === StatementAuditReview::PROCEDURE
-            && $latest->payload['classification_version'] === StatementReconciliation::VERSION && $this->retainsVerification($assignment);
+        return $latest['current'] && $latest['assignment']['revision'] === $record->revision
+            && $latest['assignment']['business_revision'] === $businessRevision && $this->retainsVerification($latest['assignment']);
     }
 
     /**
