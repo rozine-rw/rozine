@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\SetAuditorAvailability;
+use App\Application\Operations\Contracts\OverdueAudits;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditorIndependenceReview;
@@ -195,6 +196,19 @@ it('shows an accepted Flash audit as overdue once its 24-hour deadline passes wi
     $this->travel(24)->hours();
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
         ->where('party.audit.engagement.due_at', $due)->where('party.audit.engagement.overdue', true)->where('party.audit.close', null));
+});
+
+it('does not call a Flash audit overdue once its report is sealed, even before it is published (#478 review)', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    $audit = $fixture['audit'];
+    $page = route('staff.businesses.index', ['business' => $audit['business']]);
+    AuditSealingFixture::seal($fixture);
+    $this->travel(25)->hours();
+
+    $this->actingAs($audit['staff'])->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
+        ->whereNot('party.audit.engagement.due_at', null)->where('party.audit.engagement.overdue', false));
+    expect(app(OverdueAudits::class)->flashOverdue(now()))->toBe([])
+        ->and(app(OverdueAudits::class)->isFlashOverdue($fixture['assignment']->id, now()))->toBeFalse();
 });
 
 it('leaves the audit out for staff who do not manage audits and gives the API no audit actions', function (): void {

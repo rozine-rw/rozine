@@ -114,8 +114,8 @@ class StaffBusinessDirectoryResource extends JsonResource
 
         return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
             'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason,
-            // A Flash audit not finished by its 24-hour deadline is overdue (FR-303), whatever its status.
-            'due_at' => $engagement['complete_by'], 'overdue' => $engagement['complete_by'] !== null && $engagement['complete_by'] <= now('UTC')->format('Y-m-d\TH:i:s\Z')],
+            // A Flash audit with no sealed report by its 24-hour deadline is overdue (FR-303), whatever its status.
+            'due_at' => $engagement['complete_by'], 'overdue' => $engagement['overdue']],
             // A Business whose last audit Audit Operations closed can't be sent a new one from here.
             'closed' => $engagement === null && $closed,
             'request_flash' => $console && $engagement === null && ! $closed ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
