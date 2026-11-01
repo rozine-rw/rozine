@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flash
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:137
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
 * @route '/admin/businesses/{business}/flash-audit'
 */
 export const flash = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ flash.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flash
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:137
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flash.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ flash.url = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flash
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:137
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flash.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ flash.post = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flash
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:137
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
 * @route '/admin/businesses/{business}/flash-audit'
 */
 const flashForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const flashForm = (args: { business: string | number } | [business: string | num
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::flash
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:137
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
 * @route '/admin/businesses/{business}/flash-audit'
 */
 flashForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -75,7 +75,7 @@ flash.form = flashForm
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatch
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:150
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:172
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 export const redispatch = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -90,7 +90,7 @@ redispatch.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatch
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:150
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:172
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatch.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
@@ -116,7 +116,7 @@ redispatch.url = (args: { business: string | number, assignment: string | number
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatch
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:150
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:172
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatch.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -126,7 +126,7 @@ redispatch.post = (args: { business: string | number, assignment: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatch
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:150
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:172
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 const redispatchForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -136,7 +136,7 @@ const redispatchForm = (args: { business: string | number, assignment: string | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::redispatch
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:150
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:172
 * @route '/admin/businesses/{business}/audits/{assignment}/redispatch'
 */
 redispatchForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -148,7 +148,7 @@ redispatch.form = redispatchForm
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::close
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:181
 * @route '/admin/businesses/{business}/audits/{assignment}/close'
 */
 export const close = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -163,7 +163,7 @@ close.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::close
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:181
 * @route '/admin/businesses/{business}/audits/{assignment}/close'
 */
 close.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
@@ -189,7 +189,7 @@ close.url = (args: { business: string | number, assignment: string | number } | 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::close
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:181
 * @route '/admin/businesses/{business}/audits/{assignment}/close'
 */
 close.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -199,7 +199,7 @@ close.post = (args: { business: string | number, assignment: string | number } |
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::close
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:181
 * @route '/admin/businesses/{business}/audits/{assignment}/close'
 */
 const closeForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -209,7 +209,7 @@ const closeForm = (args: { business: string | number, assignment: string | numbe
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::close
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:159
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:181
 * @route '/admin/businesses/{business}/audits/{assignment}/close'
 */
 closeForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -220,8 +220,82 @@ closeForm.post = (args: { business: string | number, assignment: string | number
 close.form = closeForm
 
 /**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
+* @route '/admin/businesses/{business}/statement-review'
+*/
+export const statementReview = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: statementReview.url(args, options),
+    method: 'post',
+})
+
+statementReview.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/{business}/statement-review',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
+* @route '/admin/businesses/{business}/statement-review'
+*/
+statementReview.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return statementReview.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
+* @route '/admin/businesses/{business}/statement-review'
+*/
+statementReview.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: statementReview.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
+* @route '/admin/businesses/{business}/statement-review'
+*/
+const statementReviewForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: statementReview.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
+* @route '/admin/businesses/{business}/statement-review'
+*/
+statementReviewForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: statementReview.url(args, options),
+    method: 'post',
+})
+
+statementReview.form = statementReviewForm
+
+/**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::independence
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:169
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:191
 * @route '/admin/businesses/{business}/auditors/{party}/independence'
 */
 export const independence = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -236,7 +310,7 @@ independence.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::independence
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:169
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:191
 * @route '/admin/businesses/{business}/auditors/{party}/independence'
 */
 independence.url = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions) => {
@@ -262,7 +336,7 @@ independence.url = (args: { business: string | number, party: string | number } 
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::independence
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:169
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:191
 * @route '/admin/businesses/{business}/auditors/{party}/independence'
 */
 independence.post = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -272,7 +346,7 @@ independence.post = (args: { business: string | number, party: string | number }
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::independence
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:169
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:191
 * @route '/admin/businesses/{business}/auditors/{party}/independence'
 */
 const independenceForm = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -282,7 +356,7 @@ const independenceForm = (args: { business: string | number, party: string | num
 
 /**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::independence
-* @see app/Http/Controllers/StaffBusinessDirectoryController.php:169
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:191
 * @route '/admin/businesses/{business}/auditors/{party}/independence'
 */
 independenceForm.post = (args: { business: string | number, party: string | number } | [business: string | number, party: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -296,6 +370,7 @@ const audit = {
     flash: Object.assign(flash, flash),
     redispatch: Object.assign(redispatch, redispatch),
     close: Object.assign(close, close),
+    statementReview: Object.assign(statementReview, statementReview),
     independence: Object.assign(independence, independence),
 }
 
