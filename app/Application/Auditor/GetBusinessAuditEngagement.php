@@ -15,7 +15,7 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
  * no longer be redispatched (attempts used up or the Flash deadline passed) it says so. Alongside it,
  * the partners within 30 km and whether each has been reviewed as independent of the Business.
  *
- * @phpstan-type Engagement array{id: string, revision: int, kind: string, status: string, attempt: int|null, operations_reason: string|null, allowed_actions: list<string>}
+ * @phpstan-type Engagement array{id: string, revision: int, kind: string, status: string, complete_by: string|null, attempt: int|null, operations_reason: string|null, allowed_actions: list<string>}
  * @phpstan-type NearbyPartner array{party_id: string, name: string, revision: int, reviewed: bool}
  */
 final class GetBusinessAuditEngagement

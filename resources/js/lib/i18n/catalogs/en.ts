@@ -2727,12 +2727,15 @@ const en = {
     'admin.parties.audit.title': 'Audit',
     'admin.parties.audit.none': 'No audit is open on this business.',
     'admin.parties.audit.closed_last':
-        'Audit Operations closed this business’s last audit, so a new Flash audit can’t be requested here.',
+        'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
     'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
     'admin.parties.audit.kind.routine': 'Monthly audit',
     'admin.parties.audit.status.operations': 'With Audit Operations',
     'admin.parties.audit.status.offered': 'Offered to a partner',
     'admin.parties.audit.status.accepted': 'Accepted by a partner',
+    'admin.parties.audit.status.overdue': 'Overdue',
+    'admin.parties.audit.overdue':
+        'The 24-hour deadline passed on {date} without a sealed report. A Flash audit must be completed within 24 hours, so this one is in breach. It is listed in Open exceptions for Audit Operations to follow up.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
         'Audit Partners have verified offices within 30 km, but none can take this audit now (availability, capacity or independence). Dispatch attempts used: {attempts} of 3. Redispatch it once one can.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
@@ -2760,7 +2763,7 @@ const en = {
     'admin.parties.audit.close.open': 'Close',
     'admin.parties.audit.close.form': 'Close this audit',
     'admin.parties.audit.close.form_body':
-        'Closing ends this audit without a report. A new Flash audit can’t be requested for this business from here afterwards.',
+        'Closing ends this audit without a report and can’t be undone. This business can never be audited again: no Flash audit or statement review can be requested for it afterwards.',
     'admin.parties.audit.close.placeholder':
         'e.g. The business stopped trading before a partner could visit.',
     'admin.parties.audit.close.cta': 'Close audit',
@@ -3000,6 +3003,8 @@ const en = {
     'auditor.nav.jobs_badge': '{count} open offers',
     'auditor.clock.label': 'Time left on this job',
     'auditor.clock.time_left': 'Time left',
+    'auditor.clock.overdue': 'Overdue',
+    'auditor.clock.overdue_label': 'This job’s deadline has passed',
     'auditor.time.minutes_ago': '{count}m ago',
     'auditor.time.hours_ago': '{count}h ago',
     'auditor.time.days_ago': '{count}d ago',

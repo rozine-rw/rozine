@@ -2860,12 +2860,15 @@ const rw: Catalog = {
     'admin.parties.audit.title': 'Igenzura',
     'admin.parties.audit.none': 'Nta genzura rifunguye kuri ubu bucuruzi.',
     'admin.parties.audit.closed_last':
-        'Ibikorwa by’igenzura byafunze igenzura riheruka ry’ubu bucuruzi, bityo nta genzura ritunguranye rishya rishobora gusabwa hano.',
+        'Ibikorwa by’igenzura byafunze igenzura riheruka ry’ubu bucuruzi, bityo ntibuzongera kugenzurwa: nta genzura ritunguranye cyangwa isuzuma ry’imbonerahamwe rishobora gusabwa hano.',
     'admin.parties.audit.kind.flash': 'Igenzura ritunguranye · amasaha 24',
     'admin.parties.audit.kind.routine': 'Igenzura rya buri kwezi',
     'admin.parties.audit.status.operations': 'Riri mu Bikorwa by’igenzura',
     'admin.parties.audit.status.offered': 'Ryahawe umugenzuzi',
     'admin.parties.audit.status.accepted': 'Ryemewe n’umugenzuzi',
+    'admin.parties.audit.status.overdue': 'Ryarengeje igihe',
+    'admin.parties.audit.overdue':
+        'Amasaha 24 yarangiye ku wa {date} nta raporo ifunze. Igenzura ritunguranye rigomba kurangira mu masaha 24, bityo iri ryarenze ku itegeko. Riri mu bidasanzwe bifunguye kugira ngo Ibikorwa by’igenzura birikurikirane.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
         'Hari abagenzuzi bafite ibiro byemejwe muri kilometero 30, ariko nta n’umwe ushobora gufata iri genzura ubu (kuboneka, ubushobozi cyangwa ubwigenge). Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe umwe abishoboye.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
@@ -2893,7 +2896,7 @@ const rw: Catalog = {
     'admin.parties.audit.close.open': 'Funga',
     'admin.parties.audit.close.form': 'Funga iri genzura',
     'admin.parties.audit.close.form_body':
-        'Gufunga birangiza iri genzura nta raporo. Nyuma yaho nta genzura rya Flash rishya rishobora gusabirwa ubu bucuruzi hano.',
+        'Gufunga birangiza iri genzura nta raporo, kandi ntibisubirwaho. Ubu bucuruzi ntibuzongera kugenzurwa: nta genzura ritunguranye cyangwa isuzuma ry’imbonerahamwe rizongera gusabwa.',
     'admin.parties.audit.close.placeholder':
         'urugero: Ubucuruzi bwahagaritse imirimo mbere y’uko umugenzuzi ahagera.',
     'admin.parties.audit.close.cta': 'Funga igenzura',
@@ -3140,6 +3143,8 @@ const rw: Catalog = {
     'auditor.nav.jobs_badge': 'Imirimo {count} ifunguye',
     'auditor.clock.label': 'Igihe gisigaye kuri uyu murimo',
     'auditor.clock.time_left': 'Igihe gisigaye',
+    'auditor.clock.overdue': 'Ryarengeje igihe',
+    'auditor.clock.overdue_label': 'Igihe ntarengwa cy’aka kazi cyarenze',
     'auditor.time.minutes_ago': 'hashize iminota {count}',
     'auditor.time.hours_ago': 'hashize amasaha {count}',
     'auditor.time.days_ago': 'hashize iminsi {count}',

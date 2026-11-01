@@ -868,6 +868,10 @@ export type BusinessAudit = {
             | 'AUDIT_NO_ELIGIBLE_PARTNER'
             | 'AUDIT_DISPATCH_EXHAUSTED'
             | null;
+        /** A Flash audit's 24-hour deadline (ISO); null for a monthly audit. */
+        due_at: string | null;
+        /** The Flash deadline passed with the audit still open (FR-303). */
+        overdue: boolean;
     } | null;
     /** Audit Operations closed the Business's last audit, so no new one can be requested here. */
     closed: boolean;

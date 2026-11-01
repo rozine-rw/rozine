@@ -145,7 +145,7 @@ interface AuditAssignmentStore
     /**
      * The newest engagement on a Business that is still open, as raw metadata for readiness projections.
      *
-     * @return array{id: string, revision: int, kind: string, purpose: string, status: string}|null
+     * @return array{id: string, revision: int, kind: string, purpose: string, status: string, complete_by: string|null}|null
      */
     public function openEngagement(string $businessId): ?array;
 

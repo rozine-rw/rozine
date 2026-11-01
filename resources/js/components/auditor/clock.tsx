@@ -57,7 +57,10 @@ type ClockChipProps = {
     size?: 'card' | 'sheet';
 };
 
-/** "TIME LEFT" and the ticking countdown (design L166, L1028). */
+/**
+ * "TIME LEFT" and the ticking countdown (design L166, L1028); once the deadline passes it reads
+ * "OVERDUE" over 00:00:00, so the partner sees the breach rather than a stopped clock (FR-303).
+ */
 export function ClockChip({
     serverTime,
     dueAt,
@@ -66,11 +69,14 @@ export function ClockChip({
     const { t } = useTranslation();
     const now = useServerNow(serverTime);
     const remaining = Date.parse(dueAt) - now;
+    const overdue = remaining <= 0;
 
     return (
         <div
             role="timer"
-            aria-label={t('auditor.clock.label')}
+            aria-label={t(
+                overdue ? 'auditor.clock.overdue_label' : 'auditor.clock.label',
+            )}
             className={cn(
                 'shrink-0 rounded-[10px] py-[5px] text-right',
                 size === 'card' ? 'px-[9px]' : 'px-2.5',
@@ -78,7 +84,11 @@ export function ClockChip({
             )}
         >
             <p className="text-[10px] font-bold uppercase">
-                {t('auditor.clock.time_left')}
+                {t(
+                    overdue
+                        ? 'auditor.clock.overdue'
+                        : 'auditor.clock.time_left',
+                )}
             </p>
             <p
                 className={cn(
