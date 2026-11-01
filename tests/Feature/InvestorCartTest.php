@@ -313,8 +313,14 @@ it('gives a cart that already had lines its root at revision 1 with the same sna
     ($this->add)('2')->assertOk();
     $sha256 = ($this->cart)()['cart']['sha256'];
     $roots = require database_path('migrations/2026_11_01_040000_create_investor_carts_table.php');
+    $quotes = require database_path('migrations/2026_11_01_050000_create_investor_cart_quotes_table.php');
+    $checkouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    $checkouts->down();
+    $quotes->down();
     $roots->down();
     $roots->up();
+    $quotes->up();
+    $checkouts->up();
 
     $root = InvestorCartRoot::query()->where('party_id', (string) $this->investor['user']->party_id)->sole();
     expect($root->revision)->toBe(1)->and($root->sha256)->toBe($sha256)

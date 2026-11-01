@@ -310,7 +310,8 @@ final class EloquentStatementStore implements StatementStore
             'mandate_version' => $mandateVersion, 'evidence_revision' => $binding['evidence_revision'], 'manifest_sha256' => $binding['manifest_sha256'],
             'transcription' => $transcription, 'ready_to_request' => $ready, 'reasons' => $reasons,
             'coverage' => ['declared_month_count' => count($months), 'first_month' => $months[0] ?? null, 'last_month' => $months === [] ? null : $months[count($months) - 1]],
-            'assignment' => $assignment, 'source_verified' => $verified,
+            'assignment' => $assignment === null ? null : ['id' => $assignment['id'], 'revision' => $assignment['revision'], 'kind' => $assignment['kind'],
+                'purpose' => $assignment['purpose'], 'status' => $assignment['status']], 'source_verified' => $verified,
             'underwriting' => ['status' => 'not_evaluated', 'eligible' => null],
             'readiness_sha256' => $this->readinessDigest($businessId, $businessRevision, $mandateVersion, $binding, $transcription),
             'allowed_actions' => $staff && $ready ? ['audit.statement_review.request'] : []];
