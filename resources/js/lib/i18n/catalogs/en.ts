@@ -724,7 +724,7 @@ const en = {
     'common.ordinal.other': '{n}th',
     'business.reports.title': 'Reports',
     'business.reports.subtitle':
-        'Verified each month by your on-site Audit Partner.',
+        'Every Flash and monthly audit your Audit Partner seals, verified on site.',
     'business.reports.guide.title': 'How monthly audits work',
     'business.reports.guide.opens.title': 'Gather your records',
     'business.reports.guide.opens.body':
@@ -741,9 +741,14 @@ const en = {
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
+    'business.reports.tab.in_audit_cosign': {
+        one: 'In audit · {count} to co-sign',
+        other: 'In audit · {count} to co-sign',
+    },
     'business.reports.tab.archived': 'Archived',
     'business.reports.status.verified': 'Verified',
     'business.reports.status.in_audit': 'In audit',
+    'business.reports.status.awaiting': 'Co-sign now',
     'business.reports.status.archived': 'Archived',
     'business.reports.health.healthy': 'Healthy',
     'business.reports.health.watch': 'Watch',
@@ -752,12 +757,16 @@ const en = {
         'Inflow {inflow} · {health} · audited by {auditor}',
     'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
     'business.reports.row.awaiting': 'Needs your co-signature',
+    'business.reports.row.hours_left': {
+        one: '{date} · {count} hour left',
+        other: '{date} · {count} hours left',
+    },
     'business.reports.row.awaiting_by': 'Co-sign or dispute by {date}',
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
     'business.reports.empty_body':
-        'Each monthly report appears here once your Audit Partner seals it.',
+        'Each Flash or monthly report appears here once your Audit Partner seals it.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} of {of}',
     'business.reports.sheet.live': 'Live to your investors',

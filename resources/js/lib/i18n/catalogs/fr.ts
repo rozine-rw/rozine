@@ -751,7 +751,7 @@ const fr: Catalog = {
     'common.ordinal.other': '{n}',
     'business.reports.title': 'Rapports',
     'business.reports.subtitle':
-        'Vérifiés chaque mois par votre auditeur sur site.',
+        'Chaque audit éclair et mensuel scellé par votre partenaire d’audit, vérifié sur site.',
     'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
     'business.reports.guide.opens.title': 'Rassemblez vos documents',
     'business.reports.guide.opens.body':
@@ -768,9 +768,14 @@ const fr: Catalog = {
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
+    'business.reports.tab.in_audit_cosign': {
+        one: 'En audit · {count} à cosigner',
+        other: 'En audit · {count} à cosigner',
+    },
     'business.reports.tab.archived': 'Archivés',
     'business.reports.status.verified': 'Vérifié',
     'business.reports.status.in_audit': 'En audit',
+    'business.reports.status.awaiting': 'À cosigner',
     'business.reports.status.archived': 'Archivé',
     'business.reports.health.healthy': 'Sain',
     'business.reports.health.watch': 'À surveiller',
@@ -779,12 +784,16 @@ const fr: Catalog = {
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
     'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.hours_left': {
+        one: '{date} · {count} heure restante',
+        other: '{date} · {count} heures restantes',
+    },
     'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
     'business.reports.empty_body':
-        "Chaque rapport mensuel apparaît ici dès que votre partenaire d'audit l'a scellé.",
+        'Chaque rapport éclair ou mensuel apparaît ici dès que votre partenaire d’audit l’a scellé.',
     'business.reports.percent': '{value} %',
     'business.reports.count_of': '{count} sur {of}',
     'business.reports.sheet.live': 'Visible par vos investisseurs',

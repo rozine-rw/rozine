@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
@@ -34,7 +34,7 @@ describe('Business Reports', () => {
         expect(screen.getByTestId('head')).toHaveTextContent('Reports');
         expect(
             screen.getByText(
-                'Verified each month by your on-site Audit Partner.',
+                'Every Flash and monthly audit your Audit Partner seals, verified on site.',
             ),
         ).toBeInTheDocument();
         expect(screen.getByRole('tab', { name: 'Published' })).toHaveAttribute(
@@ -112,12 +112,15 @@ describe('Business Reports', () => {
                 link: { url: '/business/b1/audit-reports/m1', method: 'get' },
             },
         ];
+        const now = vi
+            .spyOn(Date, 'now')
+            .mockReturnValue(Date.parse('2026-10-25T12:15:00+02:00'));
         render(<BusinessReports {...page} />);
+        now.mockRestore();
 
-        expect(screen.getByRole('tab', { name: 'In audit' })).toHaveAttribute(
-            'aria-selected',
-            'true',
-        );
+        expect(
+            screen.getByRole('tab', { name: 'In audit · 2 to co-sign' }),
+        ).toHaveAttribute('aria-selected', 'true');
         const list = within(screen.getByRole('tabpanel', { name: 'In audit' }));
 
         expect(
@@ -128,8 +131,88 @@ describe('Business Reports', () => {
             list.getByRole('link', { name: /^September 2026/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/m1');
         expect(
-            list.getByText(/^Co-sign or dispute by 26 Oct/),
+            list.getByText(
+                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 21 hours left$/u,
+            ),
         ).toBeInTheDocument();
+        /* The pill asks for the co-signature; the report is sealed, not still in audit. */
+        expect(list.getAllByText('Co-sign now')).toHaveLength(2);
+        expect(list.queryByText('In audit')).not.toBeInTheDocument();
+    });
+
+    it('drops the hours once the co-sign window has closed', () => {
+        const page = props(emptyFixture);
+
+        page.reports.in_audit = [
+            {
+                id: 'RPT-2026-09',
+                status: 'in_audit',
+                inflow: null,
+                health: null,
+                auditor: 'CPA Jean-Paul M.',
+                seal_by: null,
+                awaiting_signature: true,
+                period: { kind: 'monthly', starts_on: '2026-09-01' },
+                cosign_by: '2026-10-26T09:15:00+02:00',
+                link: { url: '/business/b1/audit-reports/m1', method: 'get' },
+            },
+        ];
+        const now = vi
+            .spyOn(Date, 'now')
+            .mockReturnValue(Date.parse('2026-10-26T10:00:00+02:00'));
+        render(<BusinessReports {...page} />);
+        now.mockRestore();
+
+        expect(
+            screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('tab', { name: 'In audit · 1 to co-sign' }),
+        ).toBeInTheDocument();
+    });
+
+    it('counts the hours down while the page stays open, then drops them once the window closes (#485 review)', () => {
+        vi.useFakeTimers({ now: Date.parse('2026-10-26T07:30:00+02:00') });
+        const page = props(emptyFixture);
+
+        page.reports.in_audit = [
+            {
+                id: 'RPT-2026-09',
+                status: 'in_audit',
+                inflow: null,
+                health: null,
+                auditor: 'CPA Jean-Paul M.',
+                seal_by: null,
+                awaiting_signature: true,
+                period: { kind: 'monthly', starts_on: '2026-09-01' },
+                cosign_by: '2026-10-26T09:15:00+02:00',
+                link: { url: '/business/b1/audit-reports/m1', method: 'get' },
+            },
+        ];
+        render(<BusinessReports {...page} />);
+        expect(
+            screen.getByText(
+                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 2 hours left$/u,
+            ),
+        ).toBeInTheDocument();
+
+        act(() => {
+            vi.advanceTimersByTime(60 * 60_000);
+        });
+        expect(
+            screen.getByText(
+                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 1 hour left$/u,
+            ),
+        ).toBeInTheDocument();
+
+        act(() => {
+            vi.advanceTimersByTime(60 * 60_000);
+        });
+        expect(
+            screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
+        ).toBeInTheDocument();
+        expect(vi.getTimerCount()).toBe(0);
+        vi.useRealTimers();
     });
 
     it('names only the Audit Partner where no figures or seal date were read, and says when a tab is empty', async () => {
@@ -211,7 +294,7 @@ describe('Business Reports', () => {
         expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Each monthly report appears here once your Audit Partner seals it.',
+                'Each Flash or monthly report appears here once your Audit Partner seals it.',
             ),
         ).toBeInTheDocument();
 
