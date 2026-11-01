@@ -48,7 +48,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
             $root = InvestorCartRoot::query()->where('party_id', $partyId)->first();
             $lines = $this->linesFor($partyId);
 
-            return ['cart_id' => $root?->id, 'revision' => $root->revision ?? 0, 'sha256' => $root->sha256 ?? $this->digest($lines), 'lines' => $lines];
+            return ['cart_id' => $root?->id, 'revision' => $root->revision ?? 0, 'sha256' => $root->sha256 ?? self::snapshotSha256($this->json, $lines), 'lines' => $lines];
         });
     }
 
@@ -102,7 +102,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
             $root = new InvestorCartRoot;
             $root->forceFill(['id' => strtolower((string) Str::ulid()), 'party_id' => $partyId, 'revision' => 0, 'created_at' => $at]);
         }
-        $root->forceFill(['revision' => $root->revision + 1, 'sha256' => $this->digest($this->linesFor($partyId)), 'updated_at' => $at])->save();
+        $root->forceFill(['revision' => $root->revision + 1, 'sha256' => self::snapshotSha256($this->json, $this->linesFor($partyId)), 'updated_at' => $at])->save();
     }
 
     /**
@@ -118,14 +118,15 @@ final readonly class EloquentInvestorCart implements InvestorCart
 
     /**
      * The hash of the canonical snapshot: the lines by campaign id, whatever order they were added in.
+     * The cart root migration hashes the carts that existed before it the same way.
      *
      * @param  list<CartLine>  $lines
      */
-    private function digest(array $lines): string
+    public static function snapshotSha256(CanonicalJson $json, array $lines): string
     {
         usort($lines, fn (array $left, array $right): int => strcmp($left['campaign_id'], $right['campaign_id']));
 
-        return hash('sha256', $this->json->encode(['version' => self::SNAPSHOT_VERSION, 'lines' => $lines]));
+        return hash('sha256', $json->encode(['version' => self::SNAPSHOT_VERSION, 'lines' => $lines]));
     }
 
     private function countFor(string $partyId): int

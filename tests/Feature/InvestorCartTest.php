@@ -300,3 +300,15 @@ it('raises the cart revision once per real change and hashes the canonical line 
     $bought = ($this->cart)()['cart'];
     expect($bought)->toMatchArray(['revision' => 5, 'deals' => 0, 'units' => '0'])->and($bought['sha256'])->toBe($empty['sha256']);
 });
+
+it('gives a cart that already had lines its root at revision 1 with the same snapshot hash (#383)', function (): void {
+    ($this->add)('2')->assertOk();
+    $sha256 = ($this->cart)()['cart']['sha256'];
+    $roots = require database_path('migrations/2026_11_01_040000_create_investor_carts_table.php');
+    $roots->down();
+    $roots->up();
+
+    $root = InvestorCartRoot::query()->where('party_id', (string) $this->investor['user']->party_id)->sole();
+    expect($root->revision)->toBe(1)->and($root->sha256)->toBe($sha256)
+        ->and(($this->cart)()['cart'])->toMatchArray(['id' => $root->id, 'revision' => 1, 'sha256' => $sha256]);
+});
