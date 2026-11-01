@@ -652,6 +652,12 @@ function AccountMonth({
                     onChange={(event) =>
                         onSheet((sheet) => ({
                             ...sheet,
+                            opening: event.target.value,
+                        }))
+                    }
+                    onBlur={(event) =>
+                        onSheet((sheet) => ({
+                            ...sheet,
                             opening: cleanFrancs(event.target.value, true),
                         }))
                     }
@@ -760,6 +766,11 @@ function AccountMonth({
                                         className={FIELD}
                                         value={row.amount}
                                         onChange={(event) =>
+                                            setRow({
+                                                amount: event.target.value,
+                                            })
+                                        }
+                                        onBlur={(event) =>
                                             setRow({
                                                 amount: cleanFrancs(
                                                     event.target.value,
@@ -967,6 +978,12 @@ function AccountMonth({
                     className={FIELD}
                     value={current.closing}
                     onChange={(event) =>
+                        onSheet((sheet) => ({
+                            ...sheet,
+                            closing: event.target.value,
+                        }))
+                    }
+                    onBlur={(event) =>
                         onSheet((sheet) => ({
                             ...sheet,
                             closing: cleanFrancs(event.target.value, true),

@@ -89,9 +89,11 @@ export const cleanIdentifier = (value: string): string =>
 
 /**
  * A franc amount as typed or pasted, as digits (with a leading minus when `signed`). Thousands
- * separators are dropped and a `.00` or `,00` tail is accepted, so `1,250.00`, `1.250` and
- * `1 250` all read 1250, and a separator typed after digits is dropped as before. Anything that is not plainly whole francs, such as `1,250.50` or `12,50`,
- * is kept as typed so the form flags it, rather than silently reading it as 125050 or 1250.
+ * separators, a trailing separator and a `.00` or `,00` tail are dropped, so `1,250.00`, `1.250`,
+ * `1 250` and `1250.` all read 1250. Anything that is not plainly whole francs, such as `1,250.50`
+ * or `12,50`, is returned as typed, so it is flagged rather than read as 125050 or 1250. The form
+ * keeps what was typed and reads every figure through this, tidying a field only on blur, so
+ * typing 1250.50 one key at a time is never read as 125050 either.
  */
 export function cleanFrancs(value: string, signed: boolean): string {
     const text = value.replace(/[^0-9.,\s'’-]/gu, '').trim();
@@ -167,17 +169,22 @@ export const referenceOf = (row: TransactionRow, index: number): string =>
 
 /** A row's signed amount in francs, or null while it is not a whole number. */
 export function signedAmount(row: TransactionRow): bigint | null {
-    if (!/^[0-9]{1,64}$/u.test(row.amount)) {
+    const digits = cleanFrancs(row.amount, false);
+
+    if (!/^[0-9]{1,64}$/u.test(digits)) {
         return null;
     }
 
-    const amount = BigInt(row.amount);
+    const amount = BigInt(digits);
 
     return row.direction === 'out' ? -amount : amount;
 }
 
-const balanceOf = (value: string): bigint | null =>
-    WHOLE.test(value) ? BigInt(value) : null;
+function balanceOf(typed: string): bigint | null {
+    const value = cleanFrancs(typed, true);
+
+    return WHOLE.test(value) ? BigInt(value) : null;
+}
 
 /**
  * The opening balance a month must start from: 0 in the month an account opened after the first
@@ -570,9 +577,11 @@ export function payloadOf(form: TranscriptionForm): {
                     return {
                         rail_id: account.name,
                         month,
-                        opening_balance: openingOf(form, months, account, month)
-                            .value,
-                        closing_balance: sheet.closing,
+                        opening_balance: cleanFrancs(
+                            openingOf(form, months, account, month).value,
+                            true,
+                        ),
+                        closing_balance: cleanFrancs(sheet.closing, true),
                         source_ids: sheet.sources,
                         transactions: sheet.rows.map((row, index) => ({
                             reference: referenceOf(row, index),

@@ -109,16 +109,49 @@ describe('Enter your statement figures', () => {
 
         await user.click(opening);
         await user.paste('1,250.00');
+        await user.tab();
         expect(opening).toHaveValue('1250');
 
         await user.clear(opening);
         await user.paste('1,250.50');
+        await user.tab();
         expect(opening).toHaveValue('1,250.50');
         expect(
             page.getByText(
                 'Enter the opening and closing balances in whole francs.',
             ),
         ).toBeInTheDocument();
+    });
+
+    it('keeps typed figures as typed, so 1250.50 typed key by key is flagged, and tidies them on blur (#396 review)', async () => {
+        const user = userEvent.setup();
+        render(<BusinessStatementTranscription {...props(emptyFixture)} />);
+        const page = within(dialog());
+        const opening = page.getByLabelText('Opening balance (RWF)');
+
+        await user.type(opening, '1,250,000');
+        expect(opening).toHaveValue('1,250,000');
+        await user.tab();
+        expect(opening).toHaveValue('1250000');
+
+        await user.click(
+            page.getByRole('button', { name: 'Add a transaction' }),
+        );
+        const amount = within(
+            page.getByRole('listitem', { name: 'Transaction 1' }),
+        ).getByLabelText('Amount (RWF)');
+        await user.type(amount, '1250.50');
+        expect(amount).toHaveValue('1250.50');
+        expect(
+            page.getByText('Enter each amount in whole francs.'),
+        ).toBeInTheDocument();
+        await user.tab();
+        expect(amount).toHaveValue('1250.50');
+
+        await user.clear(opening);
+        await user.type(opening, '1250.');
+        await user.tab();
+        expect(opening).toHaveValue('1250');
     });
 
     it('takes a month of figures, then saves it with everything the server binds the save to', async () => {

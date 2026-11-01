@@ -99,9 +99,10 @@ describe('The statement figures form', () => {
         expect(cleanFrancs('1,250.50', true)).toBe('1,250.50');
         expect(cleanFrancs('12-3', true)).toBe('12-3');
         expect(cleanFrancs('-', true)).toBe('-');
-        expect(
-            signedAmount(row({ amount: cleanFrancs('1,250.50', false) })),
-        ).toBeNull();
+        expect(signedAmount(row({ amount: '1,250.50' }))).toBeNull();
+        expect(signedAmount(row({ direction: 'out', amount: '1,250' }))).toBe(
+            -1250n,
+        );
     });
 
     it('keeps names, references and balances to what the server accepts', () => {
