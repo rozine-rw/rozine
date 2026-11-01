@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
+import operations from './operations'
 /**
 * @see \App\Http\Controllers\StaffStatementAuditReadinessController::readiness
 * @see app/Http/Controllers/StaffStatementAuditReadinessController.php:17
@@ -98,8 +99,84 @@ readinessForm.head = (args: { business: string | number } | [business: string | 
 
 readiness.form = readinessForm
 
+/**
+* @see \App\Http\Controllers\StaffStatementReviewController::review
+* @see app/Http/Controllers/StaffStatementReviewController.php:22
+* @route '/api/v1/staff/businesses/{business}/initial-statement-audit/review'
+*/
+export const review = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: review.url(args, options),
+    method: 'post',
+})
+
+review.definition = {
+    methods: ["post"],
+    url: '/api/v1/staff/businesses/{business}/initial-statement-audit/review',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffStatementReviewController::review
+* @see app/Http/Controllers/StaffStatementReviewController.php:22
+* @route '/api/v1/staff/businesses/{business}/initial-statement-audit/review'
+*/
+review.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return review.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffStatementReviewController::review
+* @see app/Http/Controllers/StaffStatementReviewController.php:22
+* @route '/api/v1/staff/businesses/{business}/initial-statement-audit/review'
+*/
+review.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: review.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffStatementReviewController::review
+* @see app/Http/Controllers/StaffStatementReviewController.php:22
+* @route '/api/v1/staff/businesses/{business}/initial-statement-audit/review'
+*/
+const reviewForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: review.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffStatementReviewController::review
+* @see app/Http/Controllers/StaffStatementReviewController.php:22
+* @route '/api/v1/staff/businesses/{business}/initial-statement-audit/review'
+*/
+reviewForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: review.url(args, options),
+    method: 'post',
+})
+
+review.form = reviewForm
+
 const statementAudit = {
     readiness: Object.assign(readiness, readiness),
+    review: Object.assign(review, review),
+    operations: Object.assign(operations, operations),
 }
 
 export default statementAudit

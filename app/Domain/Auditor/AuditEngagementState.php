@@ -8,18 +8,37 @@ use App\Domain\Operations\CommandRejection;
 use DateTimeImmutable;
 
 /**
- * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, closed_at?: string, completed_at?: string}
+ * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, purpose?: string, closed_at?: string, completed_at?: string}
  */
 final class AuditEngagementState
 {
     public function __construct(private AuditAssignmentClock $clock) {}
 
-    /** @return State */
-    public function start(string $kind, DateTimeImmutable $now): array
+    public const string PURPOSE_MONTHLY = 'monthly';
+
+    public const string PURPOSE_STATEMENT_REVIEW = 'statement_review';
+
+    /**
+     * Why the engagement exists. It is fixed at creation and copied into every version; rows
+     * written before it existed are report engagements.
+     *
+     * @param  State  $state
+     */
+    public static function purpose(array $state): string
     {
+        return $state['purpose'] ?? self::PURPOSE_MONTHLY;
+    }
+
+    /** @return State */
+    public function start(string $kind, DateTimeImmutable $now, string $purpose = self::PURPOSE_MONTHLY): array
+    {
+        if (! in_array($purpose, [self::PURPOSE_MONTHLY, self::PURPOSE_STATEMENT_REVIEW], true)
+            || ($purpose === self::PURPOSE_STATEMENT_REVIEW && $kind !== 'routine')) {
+            throw new CommandRejection('AUDIT_PURPOSE_INVALID', 422);
+        }
         $clock = $this->clock->offer($kind, $now, $now, 1);
 
-        return ['kind' => $kind, 'status' => 'operations', 'party_id' => null, 'original_dispatch_at' => $this->time($now),
+        return ['kind' => $kind, 'purpose' => $purpose, 'status' => 'operations', 'party_id' => null, 'original_dispatch_at' => $this->time($now),
             'offered_at' => null, 'accepted_at' => null, 'accept_by' => null, 'complete_by' => $clock['complete_by'] === null ? null : $this->time($clock['complete_by']),
             'visit_by' => null, 'attempt' => 0, 'tried' => [], 'operations_reason' => 'AUDIT_NO_ELIGIBLE_PARTNER'];
     }

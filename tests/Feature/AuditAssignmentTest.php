@@ -446,6 +446,9 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $cartLines = require database_path('migrations/2026_10_21_203043_create_investor_cart_lines_table.php');
     // The pending-slot key references application_business_key, which the report migration drops, so repeat applications come off first and go back last.
     $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
+    // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
+    $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $heldReleasePrecision->down();
     $repeatApplications->down();
     $cartLines->down();
     $automaticDisbursement->down();
@@ -540,6 +543,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $automaticDisbursement->up();
     $cartLines->up();
     $repeatApplications->up();
+    $heldReleasePrecision->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
