@@ -20,6 +20,7 @@ export type Responder = (options: HttpOptions) => Promise<unknown>;
  * answered in order by the responders a test queues on `inertia.queue`.
  */
 export const inertia = {
+    deferredState: 'ready' as 'ready' | 'loading' | 'error',
     reload: [] as Record<string, unknown>[],
     visits: [] as string[],
     posts: [] as { url: string; data: Record<string, unknown> }[],
@@ -36,6 +37,7 @@ export const inertia = {
 };
 
 export function resetInertia() {
+    inertia.deferredState = 'ready';
     inertia.reload = [];
     inertia.visits = [];
     inertia.posts = [];
@@ -106,7 +108,30 @@ export function Form({
     return <form aria-label="sign in form">{children(inertia.formState)}</form>;
 }
 
+export function Deferred({
+    children,
+    fallback,
+    rescue,
+}: {
+    children: ReactNode | ((state: { reloading: boolean }) => ReactNode);
+    fallback: ReactNode;
+    rescue: ReactNode;
+}) {
+    if (inertia.deferredState === 'loading') {
+        return fallback;
+    }
+
+    if (inertia.deferredState === 'error') {
+        return rescue;
+    }
+
+    return typeof children === 'function'
+        ? children({ reloading: false })
+        : children;
+}
+
 export const router = {
+    on: () => () => {},
     reload: (options: Record<string, unknown> & { onFinish?: () => void }) => {
         inertia.reload.push(options);
         options.onFinish?.();

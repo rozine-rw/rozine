@@ -91,7 +91,7 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
                 ['key' => 'frozen_accounts', 'count' => 0, 'link' => null]])
-            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->where('activity', null)->where('sector_exposure', [])->where('collections', null)
+            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->missing('activity')->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
@@ -307,4 +307,31 @@ test('a capital chart partial reload reads only the chart while retaining staff 
     $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
     $headers['X-Inertia-Partial-Data'] = 'unknown';
     $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
+});
+
+test('activity is deferred and its permission is rechecked when it loads', function (): void {
+    $viewer = boardStaff(['treasury']);
+    $response = $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk();
+    $response->assertInertia(fn (Assert $page) => $page->missing('activity'));
+    $version = $response->inertiaPage()['version'];
+    $headers = ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'admin/today', 'X-Inertia-Partial-Data' => 'activity', 'X-Inertia-Version' => $version];
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()->assertJsonPath('props.activity', []);
+
+    app(ConfigureStaffAccess::class)->handle($viewer->id, true, 'Ledger access removed.', (string) Str::uuid(), ['analyst']);
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()->assertJsonPath('props.activity', null);
+    app(ConfigureStaffAccess::class)->handle($viewer->id, false, 'Access revoked.', (string) Str::uuid(), ['analyst']);
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
+});
+
+test('activity failures are rescued without blocking dashboard data', function (): void {
+    $viewer = boardStaff(['treasury']);
+    $journal = $this->createMock(LedgerJournal::class);
+    $journal->expects($this->once())->method('latest')->willThrowException(new RuntimeException('Synthetic ledger read failure'));
+    app()->instance(LedgerJournal::class, $journal);
+
+    $initial = $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk();
+    $initial->assertInertia(fn (Assert $page) => $page->has('kpis')->missing('activity'));
+    $headers = ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'admin/today', 'X-Inertia-Partial-Data' => 'activity', 'X-Inertia-Version' => $initial->inertiaPage()['version']];
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()
+        ->assertJsonPath('rescuedProps.0', 'activity')->assertJsonMissingPath('props.activity');
 });

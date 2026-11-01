@@ -98,12 +98,7 @@ class StaffDashboardResource extends JsonResource
             'capital_raised' => self::capitalRaised($board['capital']),
             'portfolio_health' => ['total' => $health['total'], 'healthy' => ['count' => $health['healthy'], 'pct' => $healthyPct],
                 'watch' => ['count' => $health['watch'], 'pct' => $health['total'] === 0 ? 0 : 100 - $healthyPct], 'distressed' => null],
-            'activity' => $page['activity'] === null ? null : array_map(function (array $entry) use ($prefix): array {
-                $row = StaffLedgerResource::row($entry, ['url' => route($prefix.'staff.ledger.index', ['entry' => $entry['id']], false), 'method' => 'get']);
-
-                return ['id' => $row['id'], 'kind' => $row['kind'], 'summary' => $row['from'].' → '.$row['to'], 'amount' => $row['amount'], 'at' => $row['at'],
-                    'link' => $row['link']];
-            }, $page['activity']),
+            'activity' => self::activity($page['activity'], $prefix),
             'funnel' => array_map(fn (string $stage, ?int $value): array => ['stage' => $stage, 'count' => $value,
                 'width_pct' => $value === null || $widest === 0 ? 0 : intdiv($value * 100, $widest)], array_keys($funnel), $funnel),
             'pending_applications' => array_map(fn (array $entry): array => ['id' => (string) $entry['id'], 'business' => (string) $entry['business'],
@@ -115,6 +110,20 @@ class StaffDashboardResource extends JsonResource
             'treasury' => ['invested' => $money($figures['capital_raised']), 'disbursed' => $money($figures['disbursed']),
                 'platform_net' => null, 'paid_to_investors' => null],
             'collections' => null];
+    }
+
+    /**
+     * @param  list<Entry>|null  $entries
+     * @return list<array<string, mixed>>|null
+     */
+    public static function activity(?array $entries, string $prefix = ''): ?array
+    {
+        return $entries === null ? null : array_map(function (array $entry) use ($prefix): array {
+            $row = StaffLedgerResource::row($entry, ['url' => route($prefix.'staff.ledger.index', ['entry' => $entry['id']], false), 'method' => 'get']);
+
+            return ['id' => $row['id'], 'kind' => $row['kind'], 'summary' => $row['from'].' → '.$row['to'], 'amount' => $row['amount'], 'at' => $row['at'],
+                'link' => $row['link']];
+        }, $entries);
     }
 
     /** @param  array{from: string|null, to: string|null, grain: string, bars: list<Bar>}  $capital
