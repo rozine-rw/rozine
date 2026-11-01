@@ -422,19 +422,27 @@ export function LifecyclePanel({
 
 export function PendingApplicationsPanel({
     items,
+    canReview,
 }: {
     items: AdminTodayProps['pending_applications'];
+    canReview: boolean;
 }) {
     const { t } = useTranslation();
+    const visibleItems = canReview ? items : [];
 
     return (
         <Panel label={t('admin.today.pending.title')}>
             <CardTitle>{t('admin.today.pending.title')}</CardTitle>
             <div className="mt-3.5 flex flex-col gap-2.5">
-                {items.length === 0 && (
+                {!canReview && (
+                    <p className={QUIET}>
+                        {t('admin.today.pending.restricted')}
+                    </p>
+                )}
+                {canReview && items.length === 0 && (
                     <p className={QUIET}>{t('admin.today.pending.empty')}</p>
                 )}
-                {items.map((item) => (
+                {visibleItems.map((item) => (
                     <div
                         key={item.id}
                         className="flex items-center gap-3 rounded-[11px] bg-rz-surface-sunken px-[13px] py-[11px]"
