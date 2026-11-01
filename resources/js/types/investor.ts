@@ -1387,7 +1387,14 @@ export type InvestorCartLine = {
 /** The Cart page (web only). `cart` is null until the identity is verified. */
 export type C3InvestorCartProps = InvestorPageContract & {
     links: C3InvestorShellLinks;
-    cart: { lines: InvestorCartLine[] } | null;
+    cart: {
+        id: string | null;
+        revision: number;
+        sha256: string;
+        deals: number;
+        units: string;
+        lines: InvestorCartLine[];
+    } | null;
 };
 
 /** The phone deal page; a wide screen shows the same deal in the Deals panel over `home`. */

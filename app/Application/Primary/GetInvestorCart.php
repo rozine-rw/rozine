@@ -18,9 +18,11 @@ use RuntimeException;
  * invest + interest = get back for any quantity. A line whose deal has filled, closed or no longer
  * lists stays in the cart marked filled, and is left out of any total. A person whose identity is
  * not yet verified has no cart. Nothing here quotes fees or reserves; each line opens the deal's
- * own checkout.
+ * own checkout. The cart's id, revision and snapshot hash (#383) say which cart a later whole-cart
+ * quote priced, and the counts name deals and notes separately.
  *
  * @phpstan-type CartPage array{identity_context_revision: int, verification: 'required'|'pending'|null, eligible: bool,
+ *     cart: array{id: string|null, revision: int, sha256: string, deals: int, units: string}|null,
  *     lines: list<array{campaign_id: string, deal: array<string, mixed>, units: string, max_units: string, binding: string, filled: bool,
  *     unit_return: array{currency: string, amount: string}}>|null}
  */
@@ -41,13 +43,15 @@ final readonly class GetInvestorCart
         $viewer = $this->viewer->handle($userId, $contextRevision);
         $wallet = $viewer['wallet'];
         $page = ['identity_context_revision' => $viewer['identity_context_revision'], 'verification' => $viewer['verification'],
-            'eligible' => $wallet !== null && $wallet['wallet']['status'] === 'active', 'lines' => null];
+            'eligible' => $wallet !== null && $wallet['wallet']['status'] === 'active', 'cart' => null, 'lines' => null];
         if ($wallet === null) {
             return $page;
         }
+        $snapshot = $this->cart->snapshot($userId, $viewer['identity_context_revision']);
 
-        return [...$page, 'lines' => array_map(fn (array $line): array => $this->line($userId, $line['campaign_id'], $line['units'], $page['eligible']),
-            $this->cart->lines($userId, $viewer['identity_context_revision']))];
+        return [...$page, 'cart' => ['id' => $snapshot['cart_id'], 'revision' => $snapshot['revision'], 'sha256' => $snapshot['sha256'],
+            'deals' => count($snapshot['lines']), 'units' => (string) array_sum(array_column($snapshot['lines'], 'units'))],
+            'lines' => array_map(fn (array $line): array => $this->line($userId, $line['campaign_id'], $line['units'], $page['eligible']), $snapshot['lines'])];
     }
 
     /**
