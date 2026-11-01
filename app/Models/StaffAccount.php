@@ -45,7 +45,7 @@ class StaffAccount extends Model
     {
         $this->load('roles');
 
-        return array_values($this->roles->map(fn (Role $role): string => $role->name)->sort()->all());
+        return $this->loadedRoleNames();
     }
 
     /**
@@ -59,6 +59,20 @@ class StaffAccount extends Model
         StaffPermission::normalizeRoles(array_values($this->roles->map(fn (Role $role): string => $role->name)->all()));
 
         return array_values(array_unique(['admin.open', ...$this->getPermissionsViaRoles()->pluck('name')->all()]));
+    }
+
+    /** @return array{allowed_actions: list<string>, roles: list<string>} */
+    public function accessProjection(): array
+    {
+        $allowed = $this->allowedActions();
+
+        return ['allowed_actions' => $allowed, 'roles' => $this->loadedRoleNames()];
+    }
+
+    /** @return list<string> */
+    private function loadedRoleNames(): array
+    {
+        return array_values($this->roles->map(fn (Role $role): string => $role->name)->sort()->all());
     }
 
     /** @return array<string, string> */
