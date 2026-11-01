@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
@@ -169,6 +169,46 @@ describe('Business Reports', () => {
         expect(
             screen.getByRole('tab', { name: 'In audit · 1 to co-sign' }),
         ).toBeInTheDocument();
+    });
+
+    it('counts the hours down while the page stays open, then drops them once the window closes (#485 review)', () => {
+        vi.useFakeTimers({ now: Date.parse('2026-10-26T07:30:00+02:00') });
+        const page = props(emptyFixture);
+
+        page.reports.in_audit = [
+            {
+                id: 'RPT-2026-09',
+                status: 'in_audit',
+                inflow: null,
+                health: null,
+                auditor: 'CPA Jean-Paul M.',
+                seal_by: null,
+                awaiting_signature: true,
+                period: { kind: 'monthly', starts_on: '2026-09-01' },
+                cosign_by: '2026-10-26T09:15:00+02:00',
+                link: { url: '/business/b1/audit-reports/m1', method: 'get' },
+            },
+        ];
+        render(<BusinessReports {...page} />);
+        expect(
+            screen.getByText(
+                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 2 hours left$/u,
+            ),
+        ).toBeInTheDocument();
+
+        act(() => vi.advanceTimersByTime(60 * 60_000));
+        expect(
+            screen.getByText(
+                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 1 hour left$/u,
+            ),
+        ).toBeInTheDocument();
+
+        act(() => vi.advanceTimersByTime(60 * 60_000));
+        expect(
+            screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
+        ).toBeInTheDocument();
+        expect(vi.getTimerCount()).toBe(0);
+        vi.useRealTimers();
     });
 
     it('names only the Audit Partner where no figures or seal date were read, and says when a tab is empty', async () => {

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BusinessShell } from '@/components/business/business-shell';
 import { AuditGuide } from '@/components/business/reports/audit-guide';
 import { periodLabel } from '@/components/business/reports/period-label';
@@ -25,6 +25,7 @@ const TABS: ReportStatus[] = ['verified', 'in_audit', 'archived'];
 const AWAITING_PILL = 'bg-rz-accent-fill text-white';
 
 const HOUR = 3_600_000;
+const MINUTE = 60_000;
 
 const ROW_STYLE: Record<
     ReportStatus,
@@ -71,11 +72,27 @@ export default function BusinessReports({
             : 'verified';
     });
 
-    /* The hours left are read once, as the page opens. */
-    const [now] = useState(() => Date.now());
+    /* The hours left follow the clock each minute while a co-sign window is still open. */
+    const [now, setNow] = useState(() => Date.now());
     const toCosign = reports.in_audit.filter(
         (row) => row.awaiting_signature,
     ).length;
+    const windowOpen = reports.in_audit.some(
+        (row) =>
+            row.awaiting_signature &&
+            row.cosign_by !== null &&
+            Date.parse(row.cosign_by) > now,
+    );
+
+    useEffect(() => {
+        if (!windowOpen) {
+            return;
+        }
+
+        const timer = window.setInterval(() => setNow(Date.now()), MINUTE);
+
+        return () => window.clearInterval(timer);
+    }, [windowOpen]);
 
     /** A row whose seal date or filed figures were not read names only its Audit Partner. */
     const detail = (row: ReportRow): string => {
