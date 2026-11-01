@@ -44,6 +44,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                 return $this->journal->execute('party:'.$partyId, $userId, 'primary.reserve', $requestId, 'campaign', $campaignId,
                     ['identity_context_revision' => $contextRevision, 'units' => $units],
                     function (): void {}, function (string $operationId) use ($campaignId, $partyId, $units, $admit): OperationResult {
+                        self::requireNoCartHold($campaignId, $partyId);
                         $result = $this->reservations->reserve($campaignId, $partyId, $operationId, $units, $admit);
                         $this->changed($campaignId, $result->id, $partyId);
 
@@ -77,6 +78,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision,
                         'disclosure_version' => $disclosureVersion, 'disclosure_sha256' => $disclosureSha256],
                     function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit): OperationResult {
+                        self::requireStandalone($root);
                         $result = $this->reservations->confirm($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit);
                         $this->changed($root->business_campaign_id, $root->id, $partyId, progress: $result->commitmentId !== null);
 
@@ -115,6 +117,7 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
                 $result = $this->journal->execute('party:'.$partyId, $userId, 'primary.release', $requestId, 'primary_reservation', $root->id,
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
                     function (): void {}, function (string $operationId) use ($root, $partyId, $expectedRevision): OperationResult {
+                        self::requireStandalone($root);
                         $released = $this->reservations->release($root->business_campaign_id, $root->id, $partyId, $operationId, $expectedRevision);
                         if (! $released->posting->replayed) {
                             $this->changed($root->business_campaign_id, $root->id, $partyId);
@@ -203,6 +206,31 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
         $this->changes->record(ChangeScope::party($partyId), 'purchase', $reservationId);
         if ($campaign !== null) {
             $this->changes->record(ChangeScope::business($campaign['business_id']), 'campaign', $campaignId);
+        }
+    }
+
+    /**
+     * A reservation held as part of a whole-cart checkout moves only with its siblings (#383 contract
+     * §§8–9), so a single-line confirm or release of it is refused and changes nothing.
+     */
+    private static function requireStandalone(PrimaryReservationRecord $root): void
+    {
+        if (DB::table('investor_cart_checkout_lines')->where('primary_reservation_id', $root->id)->exists()) {
+            throw new CommandRejection('RESERVATION_IN_CART_CHECKOUT', 409, null, [], ['reservation_id' => $root->id]);
+        }
+    }
+
+    /**
+     * While the Party's held cart checkout holds this campaign, a separate single-line hold in it is
+     * refused, so the batch child stays the Party's only hold there.
+     */
+    private static function requireNoCartHold(string $campaignId, string $partyId): void
+    {
+        $live = DB::table('investor_cart_live_checkouts as live')
+            ->join('investor_cart_checkout_lines as line', 'line.investor_cart_checkout_id', 'live.investor_cart_checkout_id')
+            ->where('live.party_id', strtolower($partyId))->where('line.business_campaign_id', $campaignId)->value('live.investor_cart_checkout_id');
+        if ($live !== null) {
+            throw new CommandRejection('CART_CHECKOUT_ACTIVE', 409, null, [], ['checkout_id' => (string) $live]);
         }
     }
 

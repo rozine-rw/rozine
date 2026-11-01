@@ -527,7 +527,9 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $query->selectRaw('1')->from('primary_reservation_versions')
                     ->whereColumn('primary_reservation_id', 'primary_reservations.id')
                     ->whereIn('state', ['confirmed', 'released', 'expired']);
-            })->orderByRaw('failures.last_attempted_at ASC NULLS FIRST')
+            })->whereNotExists(fn (Builder $query) => $query->selectRaw('1')->from('investor_cart_checkout_lines')
+            ->whereColumn('primary_reservation_id', 'primary_reservations.id'))
+            ->orderByRaw('failures.last_attempted_at ASC NULLS FIRST')
             ->orderBy('expires_at')->orderBy('primary_reservations.id')->limit($limit)->get();
         $expired = 0;
         $failure = null;
