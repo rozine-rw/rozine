@@ -2916,6 +2916,13 @@ const rw: Catalog = {
     'admin.parties.audit.close.placeholder':
         'urugero: Ubucuruzi bwahagaritse imirimo mbere y’uko umugenzuzi ahagera.',
     'admin.parties.audit.close.cta': 'Funga igenzura',
+    'admin.parties.audit.withdraw.open': 'Kuraho',
+    'admin.parties.audit.withdraw.form': 'Kuraho iri genzura',
+    'admin.parties.audit.withdraw.form_body':
+        'Gukuraho birangiza iri genzura nta raporo kandi bikarivana ku mufatanyabikorwa waryo, hamwe n’umushinga wa raporo utarashyirwaho kashe. Iri genzura ryonyine ni ryo rirangira: nyuma yaho ikigo gishobora gusabirwa irindi genzura rya Flash cyangwa isuzuma ry’inyandiko za konti.',
+    'admin.parties.audit.withdraw.placeholder':
+        'urugero: Umufatanyabikorwa ntiyashyize kashe kuri raporo mbere y’igihe ntarengwa.',
+    'admin.parties.audit.withdraw.cta': 'Kuraho igenzura',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':

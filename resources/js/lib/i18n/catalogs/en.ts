@@ -2782,6 +2782,13 @@ const en = {
     'admin.parties.audit.close.placeholder':
         'e.g. The business stopped trading before a partner could visit.',
     'admin.parties.audit.close.cta': 'Close audit',
+    'admin.parties.audit.withdraw.open': 'Withdraw',
+    'admin.parties.audit.withdraw.form': 'Withdraw this audit',
+    'admin.parties.audit.withdraw.form_body':
+        'Withdrawing ends this audit without a report and takes it from its partner, along with any unsealed draft. Only this audit ends: a new Flash audit or statement review can be requested for the business afterwards.',
+    'admin.parties.audit.withdraw.placeholder':
+        'e.g. The partner did not seal a report by the deadline.',
+    'admin.parties.audit.withdraw.cta': 'Withdraw audit',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':

@@ -16,6 +16,7 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Operations\Contracts\OverdueAudits;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorIndependence;
@@ -82,6 +83,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private BusinessNoticeAudience $audience,
         private AuditReportWindow $window,
         private StatementReviews $reviews,
+        private OverdueAudits $overdue,
     ) {}
 
     /** @return array<string, mixed> */
@@ -100,7 +102,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         throw new CommandRejection('AUDIT_ENGAGEMENT_CLOSED', revision: $existing->revision, data: ['assignment_id' => $existing->id]);
                     }
                     $candidates = $this->finish($existing, $actorId, $candidates, $context);
-                    if ($existing !== null && $existing->status !== 'completed') {
+                    if ($existing !== null && ! self::finished($existing)) {
                         return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
                     }
                     $record = new AuditAssignment;
@@ -133,12 +135,12 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     }
                     $candidates = $this->finish($existing, $actorId, $candidates, $context);
                     $review = $existing !== null && AuditEngagementState::purpose($existing->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW;
-                    if ($existing !== null && $existing->status !== 'completed' && ! $review) {
+                    if ($existing !== null && ! self::finished($existing) && ! $review) {
                         throw new CommandRejection('AUDIT_ENGAGEMENT_OPEN', revision: $existing->revision, data: ['assignment_id' => $existing->id,
                             'kind' => $existing->state['kind'], 'purpose' => AuditEngagementState::purpose($existing->state), 'status' => $existing->status]);
                     }
                     $applicable(['id' => $businessId, 'revision' => $context['business']['revision'], 'mandate_version' => $context['business']['mandate_version']]);
-                    if ($existing !== null && $existing->status !== 'completed') {
+                    if ($existing !== null && ! self::finished($existing)) {
                         return new OperationResult('AUDIT_ASSIGNMENT_RESUMED', ['assignment_id' => $existing->id], $existing->revision);
                     }
                     $record = new AuditAssignment;
@@ -591,7 +593,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
                 ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine'
                     && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY);
-            if (($existing !== null && $existing->status !== 'completed') || $dispatched) {
+            if (($existing !== null && ! self::finished($existing)) || $dispatched) {
                 return null;
             }
             $record = new AuditAssignment;
@@ -613,7 +615,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId): ?string {
             $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
             $candidates = $this->finish($existing, null, $candidates, $context);
-            if ($existing !== null && $existing->status !== 'completed') {
+            if ($existing !== null && ! self::finished($existing)) {
                 return null;
             }
             $record = new AuditAssignment;
@@ -656,7 +658,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         $open = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->first();
 
-        return $open === null || in_array($open->status, ['completed', 'closed'], true) ? null
+        return $open === null || in_array($open->status, ['completed', 'closed', 'withdrawn'], true) ? null
             : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'purpose' => AuditEngagementState::purpose($open->state), 'status' => $open->status,
                 'complete_by' => $open->state['complete_by']];
     }
@@ -789,7 +791,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         $this->staff->check($actorId, 'audit.assignments.manage');
 
-        if (! in_array($decision, ['redispatch', 'close'], true)) {
+        if (! in_array($decision, ['redispatch', 'close', 'withdraw'], true)) {
             throw new CommandRejection('ASSIGNMENT_RESOLUTION_INVALID', 422);
         }
 
@@ -803,10 +805,13 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     function () use ($record, $context, $candidates, $actorId, $expectedRevision, $command, $decision, $reason): OperationResult {
                         $this->revision($record, $expectedRevision);
                         $this->states->reason($reason);
+                        $now = now()->toDateTimeImmutable();
+                        if ($decision === 'withdraw') {
+                            return $this->withdraw($record, $actorId, $reason, $candidates, $context);
+                        }
                         if ($record->status !== 'operations') {
                             throw new CommandRejection('ASSIGNMENT_NOT_IN_OPERATIONS');
                         }
-                        $now = now()->toDateTimeImmutable();
                         if (! in_array($command, $this->states->operationsActions($record->state, $now), true)) {
                             throw new CommandRejection('AUDIT_DISPATCH_EXHAUSTED');
                         }
@@ -817,7 +822,34 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                             'closed' => 'ASSIGNMENT_CLOSED', 'offered' => 'ASSIGNMENT_REDISPATCHED', default => 'ASSIGNMENT_REDISPATCH_PENDING',
                         }, ['assignment_id' => $record->id], $record->revision);
                     });
-            }, $decision === 'close' ? [] : null);
+            }, $decision === 'redispatch' ? null : []);
+    }
+
+    /**
+     * Withdraw an audit that can't finish (#489): one waiting on Audit Operations, or a Flash audit past
+     * its deadline with no sealed report, which is what Admin Exceptions lists. The partner's open
+     * drafts are withdrawn with it, and the Business can be audited again.
+     *
+     * @param  list<Candidate>  $candidates
+     * @param  AuditContext  $context
+     */
+    private function withdraw(AuditAssignment $record, int $actorId, string $reason, array $candidates, array $context): OperationResult
+    {
+        if ($record->status !== 'operations' && ! $this->overdue->isFlashOverdue($record->id, now())) {
+            throw new CommandRejection('ASSIGNMENT_NOT_WITHDRAWABLE');
+        }
+        if ($record->party_id !== null) {
+            $this->reports->withdrawForOperations($record->id, $record->party_id, $actorId);
+        }
+        $this->persist($record, $this->states->withdraw($record->state, now()->toDateTimeImmutable()), $actorId, 'audit.assignment.withdraw', $reason, $candidates, $context);
+
+        return new OperationResult('ASSIGNMENT_WITHDRAWN', ['assignment_id' => $record->id], $record->revision);
+    }
+
+    /** A completed or withdrawn audit no longer holds the Business: a new one may be requested. */
+    private static function finished(AuditAssignment $record): bool
+    {
+        return in_array($record->status, ['completed', 'withdrawn'], true);
     }
 
     /** @return array<string, mixed> */
@@ -825,7 +857,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     {
         $this->staff->check($actorId, 'audit.assignments.manage');
 
-        if (! in_array($command, ['audit.assignment.redispatch', 'audit.assignment.close'], true)) {
+        if (! in_array($command, ['audit.assignment.redispatch', 'audit.assignment.close', 'audit.assignment.withdraw'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }
 

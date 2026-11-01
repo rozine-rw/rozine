@@ -2931,6 +2931,13 @@ const fr: Catalog = {
     'admin.parties.audit.close.placeholder':
         'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
     'admin.parties.audit.close.cta': 'Clôturer l’audit',
+    'admin.parties.audit.withdraw.open': 'Retirer',
+    'admin.parties.audit.withdraw.form': 'Retirer cet audit',
+    'admin.parties.audit.withdraw.form_body':
+        'Retirer met fin à cet audit sans rapport et le reprend à son partenaire, avec tout brouillon non scellé. Seul cet audit prend fin : un nouvel audit Flash ou une revue des relevés pourra ensuite être demandé pour l’entreprise.',
+    'admin.parties.audit.withdraw.placeholder':
+        'ex. Le partenaire n’a pas scellé de rapport avant l’échéance.',
+    'admin.parties.audit.withdraw.cta': 'Retirer l’audit',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
