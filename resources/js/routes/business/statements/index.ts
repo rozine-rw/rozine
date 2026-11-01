@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import transcription from './transcription'
 /**
 * @see \App\Http\Controllers\BusinessStatementController::upload
 * @see app/Http/Controllers/BusinessStatementController.php:47
@@ -173,6 +174,7 @@ show.form = showForm
 
 const statements = {
     upload: Object.assign(upload, upload),
+    transcription: Object.assign(transcription, transcription),
     show: Object.assign(show, show),
 }
 

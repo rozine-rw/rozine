@@ -5276,6 +5276,116 @@ const rw: Catalog = {
     'business.apply.review.agreement_unavailable': 'Amasezerano ntararaboneka.',
     'business.apply.review.agreement_unavailable_body':
         "Rozine ntiratangaza amategeko n'imenyesha ry'ingaruka byemejwe kuri ubu busabe, bityo nta kintu cyo gusinya kiraboneka. Umushinga wawe n'icyifuzo cyawe biguma bibitswe.",
+    'business.apply.statements.transcribe':
+        "Andika imibare yo ku nyandiko z'konti",
+    'business.transcription.title': "Andika imibare yo ku nyandiko z'konti",
+    'business.transcription.intro':
+        "Andukura buri kwezi uhereye ku nyandiko washyizeho: amafaranga ari kuri konti mu ntangiriro no ku iherezo, n'igikorwa cyose kiri hagati. Umugenzuzi (Audit Partner) agenzura iyi mibare ayigereranya n'inyandiko z'umwimerere. Ukwezi kubarwa ari uko kwemejwe.",
+    'business.transcription.saved': 'Imibare yabitswe · ntiremezwa',
+    'business.transcription.no_statements':
+        'Banza ushyireho nibura inyandiko imwe ya banki cyangwa Mobile Money ku ntambwe ya 1. Hanyuma ugaruke wandike imibare yayo.',
+    'business.transcription.view_only':
+        'Ushobora kureba inyandiko zawe, ariko umuntu ushobora kubika ubusabe ni we wenyine wandika imibare yazo.',
+    'business.transcription.months.title': 'Amezi inyandiko zawe zikubiyemo',
+    'business.transcription.months.first': 'Uhereye',
+    'business.transcription.months.last': 'Kugeza',
+    'business.transcription.months.count': {
+        one: 'Ukwezi {count} (ntarengwa {max})',
+        other: 'Amezi {count} (ntarengwa {max})',
+    },
+    'business.transcription.accounts.title': 'Konti',
+    'business.transcription.accounts.hint':
+        'Ongeraho buri konti ya banki cyangwa Mobile Money inyandiko zikomokaho. Koresha inyuguti, imibare, - na _ mu izina.',
+    'business.transcription.account.unnamed': 'Konti {number}',
+    'business.transcription.account.name': 'Izina rya konti',
+    'business.transcription.account.placeholder':
+        'urugero BK-current cyangwa MoMo-0788',
+    'business.transcription.account.from': 'Yafunguwe muri',
+    'business.transcription.account.until': 'Yafunzwe muri',
+    'business.transcription.account.open': 'Iracyakora',
+    'business.transcription.account.remove': 'Kuraho {account}',
+    'business.transcription.account.add': 'Ongeraho konti',
+    'business.transcription.figures.title': 'Imibare ya buri kwezi',
+    'business.transcription.figures.months': 'Hitamo ukwezi',
+    'business.transcription.figures.heading': '{account} · {month}',
+    'business.transcription.figures.sources': 'Ivuye ku nyandiko',
+    'business.transcription.figures.opening':
+        'Amafaranga yari kuri konti mu ntangiriro (RWF)',
+    'business.transcription.figures.opening_fixed':
+        'Avuye ku kwezi kwabanje, cyangwa 0 mu kwezi konti yafunguweho.',
+    'business.transcription.figures.transactions': 'Ibikorwa',
+    'business.transcription.figures.none': 'Nta gikorwa muri uku kwezi.',
+    'business.transcription.figures.closing':
+        'Amafaranga ari kuri konti ku iherezo ku nyandiko (RWF)',
+    'business.transcription.figures.computed':
+        'Ayo mu ntangiriro wongeyeho ibikorwa: RWF {amount}',
+    'business.transcription.row.label': 'Igikorwa {number}',
+    'business.transcription.row.date': 'Itariki',
+    'business.transcription.row.direction': 'Amafaranga',
+    'business.transcription.row.in': 'Yinjiye',
+    'business.transcription.row.out': 'Yasohotse',
+    'business.transcription.row.amount': 'Amafaranga (RWF)',
+    'business.transcription.row.type': 'Icyo ari cyo',
+    'business.transcription.row.choose': 'Hitamo…',
+    'business.transcription.row.link.transfer':
+        'Iyimurwa rimwe kuri konti yawe indi',
+    'business.transcription.row.link.owner_return':
+        'Amafaranga nyirayo yari yakuyemo yishyurwa',
+    'business.transcription.row.reference': 'Nimero iri ku nyandiko',
+    'business.transcription.row.remove': 'Kuraho {row}',
+    'business.transcription.row.add': 'Ongeraho igikorwa',
+    'business.transcription.type.in.operating_inflow':
+        "Ibyagurishijwe cyangwa andi mafaranga y'ubucuruzi",
+    'business.transcription.type.in.financing':
+        'Inguzanyo cyangwa ishoramari byakiriwe',
+    'business.transcription.type.in.transfer':
+        'Iyimurwa rivuye kuri konti yawe indi',
+    'business.transcription.type.in.owner_return':
+        'Nyirayo yasubijemo amafaranga',
+    'business.transcription.type.out.operating_outflow': "Ikiguzi cy'ubucuruzi",
+    'business.transcription.type.out.debt_service': 'Kwishyura inguzanyo',
+    'business.transcription.type.out.owner_draw': 'Nyirayo yakuyemo amafaranga',
+    'business.transcription.type.out.transfer':
+        'Iyimurwa rijya kuri konti yawe indi',
+    'business.transcription.problem.months':
+        "Hitamo ukwezi kwa mbere n'ukwa nyuma inyandiko zawe zikubiyemo.",
+    'business.transcription.problem.too_many_months':
+        'Hitamo amezi {max} gusa ntarengwa.',
+    'business.transcription.problem.no_accounts': 'Ongeraho nibura konti imwe.',
+    'business.transcription.problem.account_name':
+        'Ha konti izina ukoresheje inyuguti, imibare, - na _.',
+    'business.transcription.problem.account_duplicate':
+        'Konti ebyiri zifite izina rimwe.',
+    'business.transcription.problem.account_dates':
+        'Konti ntishobora gufungwa itarafungurwa.',
+    'business.transcription.problem.sources':
+        'Hitamo inyandiko iyi mibare ikomokaho.',
+    'business.transcription.problem.balance':
+        'Andika amafaranga yo mu ntangiriro no ku iherezo mu mafaranga yuzuye.',
+    'business.transcription.problem.row_amount':
+        'Andika buri mubare mu mafaranga yuzuye.',
+    'business.transcription.problem.row_date':
+        'Itariki ya buri gikorwa igomba kuba muri uku kwezi.',
+    'business.transcription.problem.row_reference':
+        'Buri gikorwa gikeneye nimero yacyo.',
+    'business.transcription.problem.row_type':
+        'Hitamo icyo buri gikorwa ari cyo.',
+    'business.transcription.problem.row_link':
+        "Huza buri yimurwa cyangwa isubizwa n'uruhande rwaryo.",
+    'business.transcription.problem.difference':
+        "Uku kwezi ntiguhura: ayo mu ntangiriro wongeyeho ibikorwa agomba kungana n'ayo ku iherezo.",
+    'business.transcription.problem.closed_balance':
+        'Konti igomba kurangira kuri 0 mu kwezi yafunzweho.',
+    'business.transcription.to_fix': {
+        one: 'Ikintu {count} cyo gukosora mbere yo kubika',
+        other: 'Ibintu {count} byo gukosora mbere yo kubika',
+    },
+    'business.transcription.reviewed':
+        "Nagenzuye buri mubare nywugereranya n'inyandiko zanjye z'umwimerere.",
+    'business.transcription.save': 'Bika imibare',
+    'business.transcription.saving': 'Turabika…',
+    'business.transcription.failed':
+        'Ntitwashoboye kubika iyi mibare. Ongera ugerageze.',
     'business.apply.view_only':
         'Ushobora kureba ubu busabe, ariko ntushobora kubuhindura.',
     'business.apply.submitted.application_id': "Nimero y'ubusabe · {id}",

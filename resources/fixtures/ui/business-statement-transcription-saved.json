@@ -1,0 +1,469 @@
+{
+    "component": "business/statement-transcription",
+    "props": {
+        "draft": {
+            "contract_version": "initial-statement-audit-1",
+            "business_id": "01k6p4b7r2c9d3f8g1h5j0k6m2",
+            "business_revision": 3,
+            "mandate_version": 1,
+            "evidence": {
+                "evidence_revision": 2,
+                "manifest_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+                "originals": [
+                    {
+                        "document_id": "01k6p4c1a2b3c4d5e6f7g8h9j0",
+                        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                    },
+                    {
+                        "document_id": "01k6p4c1a2b3c4d5e6f7g8h9j1",
+                        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                    }
+                ],
+                "extractions": [
+                    {
+                        "document_id": "01k6p4c1a2b3c4d5e6f7g8h9j0",
+                        "extraction_id": "01k6p4d0a2b3c4d5e6f7g8h9j0",
+                        "revision": 1,
+                        "parser_version": "statement-text-1"
+                    },
+                    {
+                        "document_id": "01k6p4c1a2b3c4d5e6f7g8h9j1",
+                        "extraction_id": "01k6p4d1a2b3c4d5e6f7g8h9j0",
+                        "revision": 1,
+                        "parser_version": "statement-text-1"
+                    }
+                ]
+            },
+            "assistance": {
+                "status": "unavailable",
+                "reason_codes": ["STRUCTURED_CONVERSION_UNAVAILABLE"],
+                "candidate": null
+            },
+            "current_transcription": {
+                "id": "01k6p4e1a2b3c4d5e6f7g8h9j0",
+                "revision": 3,
+                "amends_id": null,
+                "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "current": true,
+                "verified": false,
+                "payload": {
+                    "rails": [
+                        {
+                            "id": "BK-current",
+                            "active_from": "2026-07",
+                            "active_until": null
+                        },
+                        {
+                            "id": "MoMo-0788",
+                            "active_from": "2026-08",
+                            "active_until": null
+                        }
+                    ],
+                    "months": ["2026-07", "2026-08"],
+                    "statements": [
+                        {
+                            "rail_id": "BK-current",
+                            "month": "2026-07",
+                            "opening_balance": "1200000",
+                            "closing_balance": "1650000",
+                            "source_ids": ["01k6p4c1a2b3c4d5e6f7g8h9j0"],
+                            "transactions": [
+                                {
+                                    "reference": "INV-118",
+                                    "date": "2026-07-04",
+                                    "amount": "600000",
+                                    "classification": "operating_inflow",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": null,
+                                    "exception_id": null
+                                },
+                                {
+                                    "reference": "RENT-07",
+                                    "date": "2026-07-05",
+                                    "amount": "-100000",
+                                    "classification": "operating_outflow",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": null,
+                                    "exception_id": null
+                                },
+                                {
+                                    "reference": "DRW-1",
+                                    "date": "2026-07-20",
+                                    "amount": "-50000",
+                                    "classification": "owner_draw",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": null,
+                                    "exception_id": null
+                                }
+                            ]
+                        },
+                        {
+                            "rail_id": "BK-current",
+                            "month": "2026-08",
+                            "opening_balance": "1650000",
+                            "closing_balance": "1450000",
+                            "source_ids": ["01k6p4c1a2b3c4d5e6f7g8h9j0"],
+                            "transactions": [
+                                {
+                                    "reference": "TRF-9",
+                                    "date": "2026-08-02",
+                                    "amount": "-200000",
+                                    "classification": "transfer",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": {
+                                        "rail_id": "MoMo-0788",
+                                        "month": "2026-08",
+                                        "reference": "IN-3"
+                                    },
+                                    "exception_id": null
+                                },
+                                {
+                                    "reference": "RET-1",
+                                    "date": "2026-08-10",
+                                    "amount": "50000",
+                                    "classification": "owner_return",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": {
+                                        "rail_id": "BK-current",
+                                        "month": "2026-07",
+                                        "reference": "DRW-1"
+                                    },
+                                    "transfer_of": null,
+                                    "exception_id": null
+                                },
+                                {
+                                    "reference": "LOAN-8",
+                                    "date": "2026-08-15",
+                                    "amount": "-50000",
+                                    "classification": "debt_service",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j0"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": null,
+                                    "exception_id": null
+                                }
+                            ]
+                        },
+                        {
+                            "rail_id": "MoMo-0788",
+                            "month": "2026-08",
+                            "opening_balance": "0",
+                            "closing_balance": "200000",
+                            "source_ids": ["01k6p4c1a2b3c4d5e6f7g8h9j1"],
+                            "transactions": [
+                                {
+                                    "reference": "IN-3",
+                                    "date": "2026-08-02",
+                                    "amount": "200000",
+                                    "classification": "transfer",
+                                    "source_ids": [
+                                        "01k6p4c1a2b3c4d5e6f7g8h9j1"
+                                    ],
+                                    "return_of": null,
+                                    "transfer_of": {
+                                        "rail_id": "BK-current",
+                                        "month": "2026-08",
+                                        "reference": "TRF-9"
+                                    },
+                                    "exception_id": null
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "allowed_actions": ["statement.reconcile"],
+            "save": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/transcription",
+                "method": "post"
+            },
+            "readiness": {
+                "url": "/api/v1/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/audit-readiness",
+                "method": "get"
+            }
+        },
+        "identity_context_revision": 4,
+        "statements": {
+            "revision": 2,
+            "documents": [
+                {
+                    "id": "01k6p4c1a2b3c4d5e6f7g8h9j0",
+                    "filename": "statement-01k6p4c1a2b3c4d5e6f7g8h9j0.pdf",
+                    "media_type": "application/pdf",
+                    "size_bytes": 182344,
+                    "received_at": "2026-09-23T08:10:00+00:00",
+                    "reading": "read",
+                    "link": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/01k6p4c1a2b3c4d5e6f7g8h9j0",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "01k6p4c1a2b3c4d5e6f7g8h9j1",
+                    "filename": "statement-01k6p4c1a2b3c4d5e6f7g8h9j1.csv",
+                    "media_type": "text/csv",
+                    "size_bytes": 4096,
+                    "received_at": "2026-09-24T07:02:00+00:00",
+                    "reading": "reading",
+                    "link": {
+                        "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/01k6p4c1a2b3c4d5e6f7g8h9j1",
+                        "method": "get"
+                    }
+                }
+            ],
+            "upload": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements",
+                "method": "post"
+            },
+            "transcription": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/transcription",
+                "method": "get"
+            }
+        },
+        "home": {
+            "business": {
+                "name": "GreenLeaf Agro",
+                "company_code": "103847291",
+                "industry": "FMCG",
+                "district": "Gasabo"
+            },
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            },
+            "wallet": {
+                "available": {
+                    "currency": "RWF",
+                    "amount": "12383800"
+                }
+            },
+            "unread_notifications": 2,
+            "live_raise": {
+                "title": "Cold-Chain Hub",
+                "funded_pct": 66,
+                "investors": 284,
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "11900000"
+                },
+                "target": {
+                    "currency": "RWF",
+                    "amount": "18000000"
+                },
+                "link": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                }
+            },
+            "today": [
+                {
+                    "kind": "application_approved",
+                    "title": "Warehouse Robotics",
+                    "fee": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "audit_window",
+                    "month": "2026-09-01T00:00:00+02:00",
+                    "window_open": true,
+                    "days_left": 0,
+                    "sealed_by": "2026-10-07T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "kind": "repayment_due",
+                    "amount": {
+                        "currency": "RWF",
+                        "amount": "4833334"
+                    },
+                    "note_title": "Fleet Expansion Note",
+                    "due_on": "2026-10-05T00:00:00+02:00",
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                }
+            ],
+            "capital": {
+                "raised": {
+                    "currency": "RWF",
+                    "amount": "88000000"
+                },
+                "investors": 1657,
+                "repaid": {
+                    "currency": "RWF",
+                    "amount": "82000000"
+                },
+                "on_time_pct": 100,
+                "active_notes": 1
+            },
+            "notes": [
+                {
+                    "id": "RNP-2026-0118",
+                    "title": "Cold-Chain Hub",
+                    "status": "active",
+                    "created_at": "2026-06-02T09:00:00+02:00",
+                    "funded_pct": 66,
+                    "investors": 284,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "11900000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "18000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2024-0042",
+                    "title": "Fleet Expansion",
+                    "status": "repaying",
+                    "created_at": "2026-01-05T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 647,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "RNP-2025-0071",
+                    "title": "Grain Storage",
+                    "status": "completed",
+                    "created_at": "2025-07-14T09:00:00+02:00",
+                    "funded_pct": 100,
+                    "investors": 412,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "20000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    }
+                },
+                {
+                    "id": "DRAFT-0007",
+                    "title": "Equipment Upgrade",
+                    "status": "draft",
+                    "created_at": null,
+                    "funded_pct": 0,
+                    "investors": 0,
+                    "raised": {
+                        "currency": "RWF",
+                        "amount": "0"
+                    },
+                    "target": {
+                        "currency": "RWF",
+                        "amount": "15000000"
+                    },
+                    "link": {
+                        "url": "/preview/business-home",
+                        "method": "get"
+                    },
+                    "resume": {
+                        "url": "/preview/business-apply-business",
+                        "method": "get"
+                    }
+                }
+            ],
+            "headroom": {
+                "currency": "RWF",
+                "amount": "33916731"
+            },
+            "links": {
+                "home": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "reports": {
+                    "url": "/preview/business-reports",
+                    "method": "get"
+                },
+                "market": {
+                    "url": "/preview/business-market",
+                    "method": "get"
+                },
+                "profile": {
+                    "url": "/preview/business-profile",
+                    "method": "get"
+                },
+                "launcher": {
+                    "url": "/preview/launcher-ready",
+                    "method": "get"
+                },
+                "wallet": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "deposit": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "withdraw": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "notifications": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "rating": {
+                    "url": "/preview/business-home",
+                    "method": "get"
+                },
+                "apply": {
+                    "url": "/preview/business-apply-business",
+                    "method": "get"
+                }
+            },
+            "create_application": null
+        },
+        "links": {
+            "close": {
+                "url": "/preview/business-apply-business",
+                "method": "get"
+            }
+        }
+    }
+}

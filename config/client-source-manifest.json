@@ -269,6 +269,7 @@
         "resources/js/routes/business/repayments/index.ts",
         "resources/js/routes/business/repayments/operations/index.ts",
         "resources/js/routes/business/statements/index.ts",
+        "resources/js/routes/business/statements/transcription/index.ts",
         "resources/js/routes/business/wallet/index.ts",
         "resources/js/routes/business/wallet/operations/index.ts",
         "resources/js/routes/changes/index.ts",
@@ -709,6 +710,7 @@
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/rozine/raising.ts",
+        "resources/js/lib/rozine/statement-transcription.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/audit-reports.tsx",
@@ -764,6 +766,7 @@
         "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
+        "resources/js/pages/business/statement-transcription.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",
@@ -790,10 +793,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 762,
-        "generated": 329,
+        "totalTrackedSources": 765,
+        "generated": 330,
         "declarationOnly": 20,
-        "authoredExecutable": 413
+        "authoredExecutable": 415
     },
-    "coverageSetSha256": "ca16b60f6eaff4d754202d071bdf8d861f7a2dd359f1e7188aee0aace9d041b5"
+    "coverageSetSha256": "54d30d4890aef18fa9648f6bda59e252315415fb125385fe38af739d09216fe0"
 }

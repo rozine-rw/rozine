@@ -5294,6 +5294,114 @@ const fr: Catalog = {
         "Le contrat n'est pas encore disponible.",
     'business.apply.review.agreement_unavailable_body':
         "Rozine n'a pas encore publié les conditions et les avertissements sur les risques approuvés pour cette demande : il n'y a donc rien à signer pour l'instant. Votre brouillon et votre offre restent enregistrés.",
+    'business.apply.statements.transcribe':
+        'Saisir les montants de vos relevés',
+    'business.transcription.title': 'Saisir les montants de vos relevés',
+    'business.transcription.intro':
+        "Recopiez chaque mois à partir des relevés téléversés : le solde au début et à la fin, et chaque opération entre les deux. Un Audit Partner vérifie ensuite ces montants par rapport à vos relevés originaux. Un mois ne compte qu'une fois vérifié.",
+    'business.transcription.saved':
+        'Montants enregistrés · pas encore vérifiés',
+    'business.transcription.no_statements':
+        "Téléversez d'abord au moins un relevé bancaire ou Mobile Money à l'étape 1. Revenez ensuite saisir ses montants.",
+    'business.transcription.view_only':
+        'Vous pouvez voir vos relevés, mais seule une personne pouvant enregistrer la demande peut saisir leurs montants.',
+    'business.transcription.months.title': 'Mois couverts par vos relevés',
+    'business.transcription.months.first': 'De',
+    'business.transcription.months.last': 'À',
+    'business.transcription.months.count': {
+        one: '{count} mois ({max} au plus)',
+        other: '{count} mois ({max} au plus)',
+    },
+    'business.transcription.accounts.title': 'Comptes',
+    'business.transcription.accounts.hint':
+        'Ajoutez chaque compte bancaire ou Mobile Money dont proviennent les relevés. Utilisez des lettres, des chiffres, - et _ dans le nom.',
+    'business.transcription.account.unnamed': 'Compte {number}',
+    'business.transcription.account.name': 'Nom du compte',
+    'business.transcription.account.placeholder': 'ex. BK-courant ou MoMo-0788',
+    'business.transcription.account.from': 'Ouvert en',
+    'business.transcription.account.until': 'Fermé en',
+    'business.transcription.account.open': 'Toujours ouvert',
+    'business.transcription.account.remove': 'Retirer {account}',
+    'business.transcription.account.add': 'Ajouter un compte',
+    'business.transcription.figures.title': 'Montants mensuels',
+    'business.transcription.figures.months': 'Choisir un mois',
+    'business.transcription.figures.heading': '{account} · {month}',
+    'business.transcription.figures.sources': 'Relevé source',
+    'business.transcription.figures.opening': "Solde d'ouverture (RWF)",
+    'business.transcription.figures.opening_fixed':
+        "Reporté du mois précédent, ou 0 le mois d'ouverture du compte.",
+    'business.transcription.figures.transactions': 'Opérations',
+    'business.transcription.figures.none': 'Aucune opération ce mois-ci.',
+    'business.transcription.figures.closing':
+        'Solde de clôture sur le relevé (RWF)',
+    'business.transcription.figures.computed':
+        "Solde d'ouverture plus opérations : RWF {amount}",
+    'business.transcription.row.label': 'Opération {number}',
+    'business.transcription.row.date': 'Date',
+    'business.transcription.row.direction': 'Sens',
+    'business.transcription.row.in': 'Entrée',
+    'business.transcription.row.out': 'Sortie',
+    'business.transcription.row.amount': 'Montant (RWF)',
+    'business.transcription.row.type': 'Nature',
+    'business.transcription.row.choose': 'Choisir…',
+    'business.transcription.row.link.transfer':
+        'Le même virement sur votre autre compte',
+    'business.transcription.row.link.owner_return':
+        'Le retrait du propriétaire remboursé',
+    'business.transcription.row.reference': 'Référence sur le relevé',
+    'business.transcription.row.remove': 'Retirer {row}',
+    'business.transcription.row.add': 'Ajouter une opération',
+    'business.transcription.type.in.operating_inflow':
+        "Ventes ou autres revenus d'activité",
+    'business.transcription.type.in.financing': 'Prêt ou investissement reçu',
+    'business.transcription.type.in.transfer':
+        'Virement depuis votre autre compte',
+    'business.transcription.type.in.owner_return':
+        'Remboursement par le propriétaire',
+    'business.transcription.type.out.operating_outflow': "Dépense d'activité",
+    'business.transcription.type.out.debt_service': 'Remboursement de prêt',
+    'business.transcription.type.out.owner_draw': 'Retrait du propriétaire',
+    'business.transcription.type.out.transfer':
+        'Virement vers votre autre compte',
+    'business.transcription.problem.months':
+        'Choisissez le premier et le dernier mois couverts par vos relevés.',
+    'business.transcription.problem.too_many_months':
+        'Choisissez {max} mois au plus.',
+    'business.transcription.problem.no_accounts': 'Ajoutez au moins un compte.',
+    'business.transcription.problem.account_name':
+        'Nommez le compte avec des lettres, des chiffres, - et _.',
+    'business.transcription.problem.account_duplicate':
+        'Deux comptes portent le même nom.',
+    'business.transcription.problem.account_dates':
+        'Un compte ne peut pas fermer avant son ouverture.',
+    'business.transcription.problem.sources':
+        'Cochez le relevé dont proviennent ces montants.',
+    'business.transcription.problem.balance':
+        "Saisissez les soldes d'ouverture et de clôture en francs entiers.",
+    'business.transcription.problem.row_amount':
+        'Saisissez chaque montant en francs entiers.',
+    'business.transcription.problem.row_date':
+        'Chaque opération doit être datée de ce mois.',
+    'business.transcription.problem.row_reference':
+        'Chaque opération doit avoir sa propre référence.',
+    'business.transcription.problem.row_type':
+        'Indiquez la nature de chaque opération.',
+    'business.transcription.problem.row_link':
+        'Reliez chaque virement ou remboursement à sa contrepartie.',
+    'business.transcription.problem.difference':
+        "Ce mois ne tombe pas juste : le solde d'ouverture plus les opérations doit égaler le solde de clôture.",
+    'business.transcription.problem.closed_balance':
+        'Un compte doit finir à 0 le mois de sa fermeture.',
+    'business.transcription.to_fix': {
+        one: "{count} point à corriger avant d'enregistrer",
+        other: "{count} points à corriger avant d'enregistrer",
+    },
+    'business.transcription.reviewed':
+        "J'ai vérifié chaque montant par rapport à mes relevés originaux.",
+    'business.transcription.save': 'Enregistrer les montants',
+    'business.transcription.saving': 'Enregistrement…',
+    'business.transcription.failed':
+        "Nous n'avons pas pu enregistrer ces montants. Réessayez.",
     'business.apply.view_only':
         'Vous pouvez consulter cette demande, mais pas la modifier.',
     'business.apply.submitted.application_id': 'ID de la demande · {id}',

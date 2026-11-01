@@ -5081,6 +5081,113 @@ const en = {
         "The agreement isn't available yet.",
     'business.apply.review.agreement_unavailable_body':
         'Rozine has not published the approved terms and risk disclosures for this application, so there is nothing to sign yet. Your draft and your offer stay saved.',
+    'business.apply.statements.transcribe':
+        'Enter the figures from your statements',
+    'business.transcription.title': 'Enter your statement figures',
+    'business.transcription.intro':
+        'Copy each month from the statements you uploaded: the balance at the start and end, and every transaction in between. An Audit Partner then checks these figures against your original statements. Months count only once they are verified.',
+    'business.transcription.saved': 'Figures saved · not yet verified',
+    'business.transcription.no_statements':
+        'Upload at least one bank or Mobile Money statement on step 1 first. Then come back to enter its figures.',
+    'business.transcription.view_only':
+        'You can see your statements, but only someone who can save the application can enter their figures.',
+    'business.transcription.months.title': 'Months your statements cover',
+    'business.transcription.months.first': 'From',
+    'business.transcription.months.last': 'To',
+    'business.transcription.months.count': {
+        one: '{count} month (at most {max})',
+        other: '{count} months (at most {max})',
+    },
+    'business.transcription.accounts.title': 'Accounts',
+    'business.transcription.accounts.hint':
+        'Add each bank or Mobile Money account the statements are from. Use letters, numbers, - and _ in the name.',
+    'business.transcription.account.unnamed': 'Account {number}',
+    'business.transcription.account.name': 'Account name',
+    'business.transcription.account.placeholder':
+        'e.g. BK-current or MoMo-0788',
+    'business.transcription.account.from': 'Opened in',
+    'business.transcription.account.until': 'Closed in',
+    'business.transcription.account.open': 'Still open',
+    'business.transcription.account.remove': 'Remove {account}',
+    'business.transcription.account.add': 'Add an account',
+    'business.transcription.figures.title': 'Monthly figures',
+    'business.transcription.figures.months': 'Choose a month',
+    'business.transcription.figures.heading': '{account} · {month}',
+    'business.transcription.figures.sources': 'From statement',
+    'business.transcription.figures.opening': 'Opening balance (RWF)',
+    'business.transcription.figures.opening_fixed':
+        'Carried from the month before, or 0 in the month the account opened.',
+    'business.transcription.figures.transactions': 'Transactions',
+    'business.transcription.figures.none': 'No transactions this month.',
+    'business.transcription.figures.closing':
+        'Closing balance on the statement (RWF)',
+    'business.transcription.figures.computed':
+        'Opening balance plus transactions: RWF {amount}',
+    'business.transcription.row.label': 'Transaction {number}',
+    'business.transcription.row.date': 'Date',
+    'business.transcription.row.direction': 'Money',
+    'business.transcription.row.in': 'In',
+    'business.transcription.row.out': 'Out',
+    'business.transcription.row.amount': 'Amount (RWF)',
+    'business.transcription.row.type': 'What it was',
+    'business.transcription.row.choose': 'Choose…',
+    'business.transcription.row.link.transfer':
+        'The same transfer on your other account',
+    'business.transcription.row.link.owner_return':
+        'The owner withdrawal it pays back',
+    'business.transcription.row.reference': 'Reference on the statement',
+    'business.transcription.row.remove': 'Remove {row}',
+    'business.transcription.row.add': 'Add a transaction',
+    'business.transcription.type.in.operating_inflow':
+        'Sales or other business income',
+    'business.transcription.type.in.financing': 'Loan or investment received',
+    'business.transcription.type.in.transfer':
+        'Transfer from your other account',
+    'business.transcription.type.in.owner_return': 'Owner paid money back',
+    'business.transcription.type.out.operating_outflow': 'Business expense',
+    'business.transcription.type.out.debt_service': 'Loan repayment',
+    'business.transcription.type.out.owner_draw': 'Owner withdrawal',
+    'business.transcription.type.out.transfer':
+        'Transfer to your other account',
+    'business.transcription.problem.months':
+        'Choose the first and last month your statements cover.',
+    'business.transcription.problem.too_many_months':
+        'Choose {max} months at most.',
+    'business.transcription.problem.no_accounts': 'Add at least one account.',
+    'business.transcription.problem.account_name':
+        'Give the account a name using letters, numbers, - and _.',
+    'business.transcription.problem.account_duplicate':
+        'Two accounts have the same name.',
+    'business.transcription.problem.account_dates':
+        'An account cannot close before it opens.',
+    'business.transcription.problem.sources':
+        'Tick the statement these figures are from.',
+    'business.transcription.problem.balance':
+        'Enter the opening and closing balances in whole francs.',
+    'business.transcription.problem.row_amount':
+        'Enter each amount in whole francs.',
+    'business.transcription.problem.row_date':
+        'Each transaction date must be in this month.',
+    'business.transcription.problem.row_reference':
+        'Each transaction needs its own reference.',
+    'business.transcription.problem.row_type':
+        'Choose what each transaction was.',
+    'business.transcription.problem.row_link':
+        'Link each transfer or owner pay-back to its other side.',
+    'business.transcription.problem.difference':
+        'This month does not add up: the opening balance plus transactions must equal the closing balance.',
+    'business.transcription.problem.closed_balance':
+        'An account must end at 0 in the month it closed.',
+    'business.transcription.to_fix': {
+        one: '{count} thing to fix before saving',
+        other: '{count} things to fix before saving',
+    },
+    'business.transcription.reviewed':
+        'I checked every figure against my original statements.',
+    'business.transcription.save': 'Save figures',
+    'business.transcription.saving': 'Saving…',
+    'business.transcription.failed':
+        'We could not save these figures. Try again.',
     'business.apply.view_only':
         'You can view this application, but not change it.',
     'business.apply.submitted.application_id': 'Application ID · {id}',
