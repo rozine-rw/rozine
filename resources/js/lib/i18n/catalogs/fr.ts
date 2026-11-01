@@ -2936,6 +2936,38 @@ const fr: Catalog = {
     'admin.parties.audit.independence.placeholder.reference':
         'ex. Déclaration du partenaire du 30 oct. et registre des actionnaires RDB.',
     'admin.parties.audit.independence.cta': 'Enregistrer l’examen',
+    'admin.parties.audit.review.title': 'Examen des relevés',
+    'admin.parties.audit.review.months':
+        '{count} mois transcrits, de {first} à {last}.',
+    'admin.parties.audit.review.no_months':
+        'Aucun mois de relevé n’est encore transcrit.',
+    'admin.parties.audit.review.verified': 'Vérifiés par un Audit Partner',
+    'admin.parties.audit.review.unverified': 'Non vérifiés',
+    'admin.parties.audit.review.ready':
+        'Les relevés téléversés sont prêts à être vérifiés par un Audit Partner. Tant qu’ils ne le sont pas, l’entreprise ne peut pas poursuivre sa demande.',
+    'admin.parties.audit.review.blocked.BUSINESS_VERIFICATION_REQUIRED':
+        'L’enregistrement ou le représentant de l’entreprise n’est pas vérifié actuellement.',
+    'admin.parties.audit.review.blocked.STATEMENT_ORIGINAL_REQUIRED':
+        'L’entreprise n’a encore téléversé aucun relevé.',
+    'admin.parties.audit.review.blocked.STATEMENT_RECONCILIATION_REQUIRED':
+        'Les relevés téléversés n’ont pas encore été transcrits en chiffres mensuels.',
+    'admin.parties.audit.review.blocked.STATEMENT_TRANSCRIPTION_STALE':
+        'De nouveaux relevés ont été téléversés après la dernière transcription, qui doit d’abord être refaite.',
+    'admin.parties.audit.review.blocked.STATEMENT_ALREADY_VERIFIED':
+        'Un Audit Partner a déjà vérifié ces relevés.',
+    'admin.parties.audit.review.blocked.AUDIT_STATEMENT_REVIEW_OPEN':
+        'Un examen des relevés est déjà en cours.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_OPEN':
+        'Un autre audit est ouvert pour cette entreprise. Demandez l’examen quand il sera terminé.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_CLOSED':
+        'Audit Operations a clôturé le dernier audit de cette entreprise : un examen ne peut pas être demandé ici.',
+    'admin.parties.audit.review.open': 'Demander un examen des relevés',
+    'admin.parties.audit.review.form': 'Demander un examen des relevés',
+    'admin.parties.audit.review.form_body':
+        'Un Audit Partner situé à moins de 30 km compare les relevés téléversés à leurs originaux. La demande porte sur les relevés affichés ici ; s’ils changent avant, il vous sera demandé de les revoir.',
+    'admin.parties.audit.review.placeholder':
+        'ex. Premier examen des relevés téléversés avec la demande.',
+    'admin.parties.audit.review.cta': 'Demander l’examen',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',
