@@ -56,7 +56,7 @@ final class AuditorFixture
         self::review($partner['staff'], $partner['party']->id, (int) $revision, 'recheck');
     }
 
-        /** @return Candidate */
+    /** @return Candidate */
     public static function candidate(string $id = 'partner-a'): array
     {
         $location = ['verified_at' => '2026-09-24T08:00:00Z', 'moved_at' => null, 'uncertainty_m' => 50];

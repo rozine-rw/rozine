@@ -47,13 +47,13 @@ it('dispatches each funded business its monthly audit once, in the report window
     dueBusinesses([$business, 'missing-business']);
     Log::shouldReceive('error')->times(3)->with('AUDIT_MONTHLY_REQUEST_FAILED', Mockery::on(fn (array $context): bool => $context['business_id'] === 'missing-business'));
     $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
-    AuditorFixture::recheck($fixture['audit']['partners'][0]);
 
     expect(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0)
         ->and(AuditAssignment::query()->where('business_id', $business)->count())->toBe(1);
 
     Fixture::seal($fixture);
     Fixture::cosign($fixture);
+    AuditorFixture::recheck($fixture['audit']['partners'][0]);
     expect(Artisan::call('audits:request-monthly'))->toBe(0)->and(Artisan::output())->toContain('Requested 1 monthly audits.');
     $flash = $fixture['assignment']->refresh();
     $routine = AuditAssignment::query()->where('business_id', $business)->whereKeyNot($flash->id)->sole();
