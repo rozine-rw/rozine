@@ -274,7 +274,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 export const readiness = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -289,7 +289,7 @@ readiness.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 readiness.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -316,7 +316,7 @@ readiness.url = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 readiness.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -326,7 +326,7 @@ readiness.get = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 readiness.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -336,7 +336,7 @@ readiness.head = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 const readinessForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -346,7 +346,7 @@ const readinessForm = (args: { business: string | number } | [business: string |
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 readinessForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -356,7 +356,7 @@ readinessForm.get = (args: { business: string | number } | [business: string | n
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::readiness
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:67
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:127
 * @route '/api/v1/business/{business}/statements/audit-readiness'
 */
 readinessForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

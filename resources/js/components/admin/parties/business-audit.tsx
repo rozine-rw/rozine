@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { Chip, EXPLAIN } from '@/components/admin/ui';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     BusinessAudit,
@@ -16,7 +17,12 @@ const STATUS_TONE = {
     operations: 'amber',
     offered: 'blue',
     accepted: 'green',
+    overdue: 'red',
 } as const;
+
+/** Where an open audit stands; a Flash audit past its 24-hour deadline reads overdue whatever its status. */
+const statusOf = (engagement: NonNullable<BusinessAudit['engagement']>) =>
+    engagement.overdue ? 'overdue' : engagement.status;
 
 type Command = 'flash' | 'redispatch' | 'close' | 'review';
 
@@ -385,7 +391,7 @@ function StatementReviewSummary({ review }: { review: StatementReview }) {
 
 /**
  * A Business's open audit for staff who manage audit assignments (#446): its kind and where it
- * stands, a Flash audit request when none is open (BR-48), and, while it waits on Audit Operations,
+ * stands, overdue once a Flash audit passes its 24-hour deadline with the breach stated (#478), a Flash audit request when none is open (BR-48), and, while it waits on Audit Operations,
  * whether a partner can take it now or why not with where to fix that, and the redispatch or close
  * the server allows; whether its statements are ready for a factual review, with the request when
  * one can be made (#396); then the partners within 30 km and their independence reviews.
@@ -401,7 +407,7 @@ export function BusinessAuditSection({
     section: string;
     box: string;
 }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const [open, setOpen] = useState<{
         command: Command;
         action: RouteAction;
@@ -458,12 +464,25 @@ export function BusinessAuditSection({
                                     `admin.parties.audit.kind.${engagement.kind}`,
                                 )}
                             </span>
-                            <Chip tone={STATUS_TONE[engagement.status]}>
+                            <Chip tone={STATUS_TONE[statusOf(engagement)]}>
                                 {t(
-                                    `admin.parties.audit.status.${engagement.status}`,
+                                    `admin.parties.audit.status.${statusOf(engagement)}`,
                                 )}
                             </Chip>
                         </div>
+                        {engagement.overdue && engagement.due_at !== null && (
+                            <p
+                                role="alert"
+                                className="mt-2 text-[12.5px] leading-[1.5] font-semibold text-[#b3352a] dark:text-[#ff6b6f]"
+                            >
+                                {t('admin.parties.audit.overdue', {
+                                    date: formatDateTime(
+                                        engagement.due_at,
+                                        locale,
+                                    ),
+                                })}
+                            </p>
+                        )}
                         {engagement.operations_reason !== null && (
                             <p
                                 className={cn(

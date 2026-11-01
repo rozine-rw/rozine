@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "db8e4b0c17fdebd29862da4cdd8e3a93eb3e7a4d8288ef0d53c37b8bf9e3c7a1",
-    "coverageSetSha256": "ca16b60f6eaff4d754202d071bdf8d861f7a2dd359f1e7188aee0aace9d041b5",
+    "sourceManifestSha256": "98c460e8bc83af274020b2ad8ff7cd6e3ee44de67e3c2a73191ac4c7e1f8085f",
+    "coverageSetSha256": "54d30d4890aef18fa9648f6bda59e252315415fb125385fe38af739d09216fe0",
     "thresholds": {
         "critical": {
             "global": {
@@ -382,6 +382,7 @@
         "resources/js/lib/rozine/format.ts",
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/rozine/raising.ts",
+        "resources/js/lib/rozine/statement-transcription.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/audit-reports.tsx",
@@ -437,6 +438,7 @@
         "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
+        "resources/js/pages/business/statement-transcription.tsx",
         "resources/js/pages/business/wallet.tsx",
         "resources/js/pages/dashboard.tsx",
         "resources/js/pages/home.tsx",

@@ -54,7 +54,8 @@ it('lets a new business upload a statement on step 1 and lists it as received bu
     $path = "/business/{$business}/applications/{$fixture['application']->id}";
 
     expect(statementUploadPage($user, $path))->toBe(['revision' => 0, 'documents' => [],
-        'upload' => ['url' => "/business/{$business}/statements", 'method' => 'post']]);
+        'upload' => ['url' => "/business/{$business}/statements", 'method' => 'post'],
+        'transcription' => ['url' => "/business/{$business}/statements/transcription", 'method' => 'get']]);
 
     $this->actingAs($user)->from($path)->post("/business/{$business}/statements",
         statementUploadForm(UploadedFile::fake()->createWithContent('bank-august.pdf', StatementFixture::pdf()), 0))
@@ -140,7 +141,8 @@ it('serves statements over the API with its own receipts and scopes', function (
 
     Sanctum::actingAs($user, ['business:read']);
     $this->getJson("/api/v1/business/{$business}/statements")->assertOk()
-        ->assertExactJson(['data' => ['revision' => 0, 'documents' => [], 'upload' => ['url' => "/api/v1/business/{$business}/statements", 'method' => 'post']]]);
+        ->assertExactJson(['data' => ['revision' => 0, 'documents' => [], 'upload' => ['url' => "/api/v1/business/{$business}/statements", 'method' => 'post'],
+            'transcription' => ['url' => "/api/v1/business/{$business}/statements/transcription-draft", 'method' => 'get']]]);
     $this->post("/api/v1/business/{$business}/statements", statementUploadForm(UploadedFile::fake()->createWithContent('momo.csv', StatementFixture::csv()), 0),
         ['Accept' => 'application/json'])->assertForbidden();
 

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 export const draft = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ draft.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 draft.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ draft.url = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 draft.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ draft.get = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 draft.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ draft.head = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 const draftForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const draftForm = (args: { business: string | number } | [business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 draftForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ draftForm.get = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::draft
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:28
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:85
 * @route '/api/v1/business/{business}/statements/transcription-draft'
 */
 draftForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -100,7 +100,7 @@ draft.form = draftForm
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -152,7 +152,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -162,7 +162,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -182,7 +182,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:35
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:92
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -199,7 +199,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::save
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:44
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:101
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 export const save = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -214,7 +214,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::save
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:44
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:101
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 save.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -241,7 +241,7 @@ save.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::save
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:44
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:101
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 save.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -251,7 +251,7 @@ save.post = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::save
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:44
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:101
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 const saveForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -261,7 +261,7 @@ const saveForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessStatementTranscriptionController::save
-* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:44
+* @see app/Http/Controllers/BusinessStatementTranscriptionController.php:101
 * @route '/api/v1/business/{business}/statements/transcription'
 */
 saveForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
