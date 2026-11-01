@@ -196,14 +196,18 @@ describe('Business Reports', () => {
             ),
         ).toBeInTheDocument();
 
-        act(() => vi.advanceTimersByTime(60 * 60_000));
+        act(() => {
+            vi.advanceTimersByTime(60 * 60_000);
+        });
         expect(
             screen.getByText(
                 /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 1 hour left$/u,
             ),
         ).toBeInTheDocument();
 
-        act(() => vi.advanceTimersByTime(60 * 60_000));
+        act(() => {
+            vi.advanceTimersByTime(60 * 60_000);
+        });
         expect(
             screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
         ).toBeInTheDocument();
