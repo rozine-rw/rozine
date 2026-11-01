@@ -86,7 +86,9 @@ it('prices every line of the cart under one band and keeps the quote, holding no
             'capital_revision' => 0, 'capital_sha256' => $quote['fee_band']['capital_sha256']])
         ->and(array_column($quote['lines'], 'campaign_id'))->toBe($ordered);
 
-    $byCampaign = collect($quote['lines'])->keyBy('campaign_id');
+    /** @var list<array<string, mixed>> $quotedLines */
+    $quotedLines = $quote['lines'];
+    $byCampaign = collect($quotedLines)->keyBy('campaign_id');
     expect($byCampaign[$this->campaign->id])->toMatchArray(['cart_line_id' => $lines[$this->campaign->id]->id, 'units' => '2', 'campaign_revision' => 1,
         'principal' => ['currency' => 'RWF', 'amount' => '10000'], 'basis' => 'indicative', 'contractual_return' => ['currency' => 'RWF', 'amount' => '1110'],
         'earnings_fee' => ['currency' => 'RWF', 'amount' => '167'], 'net_return' => ['currency' => 'RWF', 'amount' => '943'],

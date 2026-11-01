@@ -92,7 +92,9 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
         }
         $body = $price($partyId, $cart, $inputs);
         $createdAt = now('UTC')->toDateTimeImmutable();
-        $deadline = min(array_map(fn (array $input): DateTimeImmutable => $input['expires_at'], $inputs));
+        /** @var non-empty-array<string, DateTimeImmutable> $deadlines A refused empty cart never reaches pricing. */
+        $deadlines = array_map(fn (array $input): DateTimeImmutable => $input['expires_at'], $inputs);
+        $deadline = min($deadlines);
         $expiresAt = ReservationWindow::open($createdAt, $deadline)->expiresAt;
         $id = strtolower((string) Str::ulid());
         $disclosure = hash('sha256', $this->json->encode(['version' => self::DISCLOSURE_VERSION, 'contract_version' => self::CONTRACT_VERSION,
