@@ -886,6 +886,41 @@ export type BusinessAudit = {
         /** The server time the review is checked as of, fixed when the form is issued. */
         checked_at: string;
     }[];
+    /** Whether the Business's uploaded statements are ready for a factual review, and why not (#396). */
+    statement_review: StatementReview;
+};
+
+export type StatementReviewBlocker =
+    | 'BUSINESS_VERIFICATION_REQUIRED'
+    | 'STATEMENT_ORIGINAL_REQUIRED'
+    | 'STATEMENT_RECONCILIATION_REQUIRED'
+    | 'STATEMENT_TRANSCRIPTION_STALE'
+    | 'STATEMENT_ALREADY_VERIFIED'
+    | 'AUDIT_STATEMENT_REVIEW_OPEN'
+    | 'AUDIT_ENGAGEMENT_OPEN'
+    | 'AUDIT_ENGAGEMENT_CLOSED';
+
+export type StatementReview = {
+    verified: boolean;
+    coverage: {
+        declared_month_count: number;
+        first_month: string | null;
+        last_month: string | null;
+    };
+    reasons: StatementReviewBlocker[];
+    /** The request, bound to the readiness shown, while one can be made. */
+    request:
+        | (RouteAction & {
+              binding: {
+                  expected_business_revision: number;
+                  expected_mandate_version: number;
+                  expected_evidence_revision: number;
+                  transcription_id: string;
+                  transcription_sha256: string;
+                  readiness_sha256: string;
+              };
+          })
+        | null;
 };
 
 export type PartyDetail = {

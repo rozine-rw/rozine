@@ -2788,6 +2788,38 @@ const en = {
     'admin.parties.audit.independence.placeholder.reference':
         'e.g. Partner declaration of 30 Oct and RDB shareholder record.',
     'admin.parties.audit.independence.cta': 'Record review',
+    'admin.parties.audit.review.title': 'Statement review',
+    'admin.parties.audit.review.months':
+        '{count} months transcribed, {first} to {last}.',
+    'admin.parties.audit.review.no_months':
+        'No statement months are transcribed yet.',
+    'admin.parties.audit.review.verified': 'Verified by an Audit Partner',
+    'admin.parties.audit.review.unverified': 'Not verified',
+    'admin.parties.audit.review.ready':
+        'The uploaded statements are ready for an Audit Partner to verify. Until they are verified, the business can’t continue its application.',
+    'admin.parties.audit.review.blocked.BUSINESS_VERIFICATION_REQUIRED':
+        'The business’s registration or representative isn’t currently verified.',
+    'admin.parties.audit.review.blocked.STATEMENT_ORIGINAL_REQUIRED':
+        'The business hasn’t uploaded any statements yet.',
+    'admin.parties.audit.review.blocked.STATEMENT_RECONCILIATION_REQUIRED':
+        'The uploaded statements haven’t been transcribed into monthly figures yet.',
+    'admin.parties.audit.review.blocked.STATEMENT_TRANSCRIPTION_STALE':
+        'New statements were uploaded after the last transcription, so it needs redoing first.',
+    'admin.parties.audit.review.blocked.STATEMENT_ALREADY_VERIFIED':
+        'An Audit Partner has already verified these statements.',
+    'admin.parties.audit.review.blocked.AUDIT_STATEMENT_REVIEW_OPEN':
+        'A statement review is already in progress.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_OPEN':
+        'Another audit is open on this business. Request the review once it ends.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_CLOSED':
+        'Audit Operations closed this business’s last audit, so a review can’t be requested here.',
+    'admin.parties.audit.review.open': 'Request statement review',
+    'admin.parties.audit.review.form': 'Request a statement review',
+    'admin.parties.audit.review.form_body':
+        'An Audit Partner within 30 km checks the uploaded statements against their originals. The request is for the statements shown here; if they change first, you’ll be asked to review them again.',
+    'admin.parties.audit.review.placeholder':
+        'e.g. First review of the statements uploaded with the application.',
+    'admin.parties.audit.review.cta': 'Request review',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',

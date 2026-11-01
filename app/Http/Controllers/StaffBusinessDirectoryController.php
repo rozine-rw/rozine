@@ -10,6 +10,8 @@ use App\Application\Auditor\ManageBusinessAudit;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Business\OnboardBusiness;
+use App\Application\Evidence\GetStaffStatementAuditReadiness;
+use App\Application\Evidence\RequestStatementReview;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
@@ -17,6 +19,7 @@ use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
 use App\Http\Requests\Staff\OnboardBusinessRequest;
 use App\Http\Requests\Staff\RecordAuditorIndependenceRequest;
 use App\Http\Requests\Staff\RequestFlashAuditRequest;
+use App\Http\Requests\Staff\RequestStatementReviewRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
 use App\Http\Resources\StaffBusinessDirectoryResource;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +33,9 @@ use Inertia\Response;
  * sees, and may record, the premises location audit dispatch measures the 30 km to (BR-51), and may
  * onboard a business for its owner (#375). A viewer who manages audit assignments sees the audit open
  * on the Business, may request a Flash audit when none is (BR-48), may redispatch or close one that
- * waits on Audit Operations, and may record the independence reviews dispatch needs (#446).
+ * waits on Audit Operations, and may record the independence reviews dispatch needs (#446). The same
+ * viewer sees whether the Business's uploaded statements are ready for a factual review, and may request
+ * one against the readiness shown (#396).
  */
 class StaffBusinessDirectoryController extends Controller
 {
@@ -55,6 +60,21 @@ class StaffBusinessDirectoryController extends Controller
         'VERSION_CONFLICT' => 'This audit changed since you opened it. Review it again.',
         'ASSIGNMENT_NOT_IN_OPERATIONS' => 'This audit is no longer with Audit Operations.',
         'AUDIT_DISPATCH_EXHAUSTED' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.',
+        'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
+    ];
+
+    /** Statement review refusals in the words the form shows. */
+    private const REVIEW_MESSAGES = [
+        'ASSIGNMENT_REASON_REQUIRED' => 'Say why, in plain text.',
+        'BUSINESS_STALE' => 'This business changed since you opened it. Review its statements again.',
+        'MANDATE_STALE' => "This business's mandate changed since you opened it. Review its statements again.",
+        'VERSION_CONFLICT' => 'New statements were uploaded since you opened this business. Review them again.',
+        'STATEMENT_TRANSCRIPTION_STALE' => 'The statement figures changed since you opened this business. Review them again.',
+        'STATEMENT_READINESS_STALE' => 'The statements changed since you opened this business. Review them again.',
+        'STATEMENT_ALREADY_VERIFIED' => "This business's statements are already verified.",
+        'INITIAL_AUDIT_NOT_READY' => "This business's statements aren't ready for a review yet.",
+        'AUDIT_ENGAGEMENT_OPEN' => 'This business already has an audit in progress.',
+        'AUDIT_ENGAGEMENT_CLOSED' => "Audit Operations closed this business's last audit, so a new one can't be requested here.",
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
@@ -84,7 +104,8 @@ class StaffBusinessDirectoryController extends Controller
 
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
-    public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits): Response|StaffBusinessDirectoryResource
+    public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits,
+        GetStaffStatementAuditReadiness $statements): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -105,7 +126,8 @@ class StaffBusinessDirectoryController extends Controller
                 ? $location->review($actorId, 'premises', $business['row']['business_id'], now()->toDateTimeImmutable()) : null,
             'audit' => $business !== null && in_array('audit.assignments.manage', $staff['allowed_actions'], true)
                 ? ['engagement' => $audits->handle($actorId, $business['row']['business_id']), 'closed' => $audits->closed($business['row']['business_id']),
-                    'partners' => $audits->partners($actorId, $business['row']['business_id'])] : null,
+                    'partners' => $audits->partners($actorId, $business['row']['business_id']),
+                    'statements' => $statements->handle($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
             'onboarding_sectors' => OnboardBusiness::sectors()]);
 
@@ -175,6 +197,22 @@ class StaffBusinessDirectoryController extends Controller
                 'current_role_tie' => $request->boolean('current_role_tie'), 'role_tie_ended_at' => $ended === null ? null : $ended.'T00:00:00Z',
                 'family_or_business_conflict' => $request->boolean('family_or_business_conflict'), 'unresolved_conflict' => $request->boolean('unresolved_conflict')],
             (string) $request->validated('reference', ''), (string) $request->validated('reason', ''), (string) $request->validated('request_id')), self::INDEPENDENCE_MESSAGES);
+
+        return redirect()->route('staff.businesses.index', ['business' => $businessId]);
+    }
+
+    /**
+     * Request a factual review of the Business's uploaded statements against the readiness the drawer
+     * showed (#396). It is dispatched to an Audit Partner like any audit; a refusal returns to the form
+     * with what to change.
+     */
+    public function statementReview(RequestStatementReviewRequest $request, RequestStatementReview $reviews): RedirectResponse
+    {
+        $businessId = (string) $request->route('business');
+        $result = $reviews->handle((int) $request->user()?->getAuthIdentifier(), $businessId, $request->binding(),
+            (string) $request->validated('reason', ''), (string) $request->validated('request_id'));
+        abort_if($result['code'] === 'STAFF_PERMISSION_REQUIRED', 403);
+        $this->audit($result, self::REVIEW_MESSAGES);
 
         return redirect()->route('staff.businesses.index', ['business' => $businessId]);
     }
