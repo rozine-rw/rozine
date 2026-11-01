@@ -28,6 +28,15 @@ function flashAuditRequest(string $reason = 'Unusual movement on the revenue acc
     return ['request_id' => (string) Str::uuid(), 'reason' => $reason];
 }
 
+/**
+ * @param  list<string>  $reasons
+ * @return array<string, mixed>
+ */
+function noStatementReview(array $reasons): array
+{
+    return ['verified' => false, 'coverage' => ['declared_month_count' => 0, 'first_month' => null, 'last_month' => null], 'reasons' => $reasons, 'request' => null];
+}
+
 it('requests a Flash audit from a Business with none open and then shows it offered', function (): void {
     $fixture = Fixture::make(1);
     $id = $fixture['business'];
@@ -40,7 +49,8 @@ it('requests a Flash audit from a Business with none open and then shows it offe
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => null, 'closed' => false,
-            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
+            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners,
+            'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED'])]));
 
     $this->from($page)->post($url, flashAuditRequest(''))->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
     $this->assertDatabaseCount('audit_assignments', 0);
@@ -55,7 +65,8 @@ it('requests a Flash audit from a Business with none open and then shows it offe
 
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
         'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null], 'closed' => false,
-        'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners]));
+        'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners,
+        'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED', 'AUDIT_ENGAGEMENT_OPEN'])]));
 
     $this->from($page)->post($url, $body)->assertRedirect($page);
     $this->from($page)->post($url, [...$body, 'reason' => 'A different reason.'])
@@ -76,7 +87,8 @@ it('says no partner office is within 30 km, then asks for an independence review
             'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'], 'closed' => false,
             'request_flash' => null, 'redispatch' => null,
             'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
-            'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => []]));
+            'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => [],
+            'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED', 'AUDIT_ENGAGEMENT_OPEN'])]));
 
     $body = ['expected_revision' => 1, ...flashAuditRequest('No partner yet; try again.')];
     $this->post($url, $body)->assertRedirect($page);
@@ -188,7 +200,7 @@ it('leaves the audit out for staff who do not manage audits and gives the API no
         ->assertJsonPath('data.party.audit.engagement.status', 'operations')
         ->assertJsonPath('data.party.audit.request_flash', null)->assertJsonPath('data.party.audit.redispatch', null)
         ->assertJsonPath('data.party.audit.close', null)->assertJsonPath('data.party.audit.remedy', null)
-        ->assertJsonPath('data.party.audit.partners', []);
+        ->assertJsonPath('data.party.audit.partners', [])->assertJsonPath('data.party.audit.statement_review.request', null);
 });
 
 it('says why no partner can take an audit: premises not verified, or partners in range who cannot take it', function (): void {
@@ -238,4 +250,45 @@ it('names a redispatch and a closure in the Activity trail', function (): void {
     $actions = array_column($events, 'action');
     expect($actions)->toContain(['code' => 'audit.assignment.close', 'label' => 'Closed an audit', 'tone' => 'red'])
         ->toContain(['code' => 'audit.assignment.redispatch', 'label' => 'Redispatched an audit', 'tone' => 'amber']);
+});
+
+it('requests a statement review from the readiness the drawer showed, and then says one is in progress', function (): void {
+    $fixture = Fixture::make(1);
+    $id = $fixture['business'];
+    $transcriptionId = Fixture::statements($fixture)['transcription_id'];
+    $page = route('staff.businesses.index', ['business' => $id]);
+    $url = '/admin/businesses/'.$id.'/statement-review';
+
+    $review = $this->actingAs($fixture['staff'])->get($page)->assertOk()->viewData('page')['props']['party']['audit']['statement_review'];
+    expect($review)->toMatchArray(['verified' => false, 'reasons' => []])
+        ->and($review['coverage']['declared_month_count'])->toBeGreaterThan(0)
+        ->and($review['request'])->toMatchArray(['url' => $url, 'method' => 'post'])
+        ->and($review['request']['binding']['transcription_id'])->toBe($transcriptionId);
+    $body = ['request_id' => (string) Str::uuid(), 'reason' => 'First factual review of the uploaded statements.', ...$review['request']['binding']];
+
+    $this->from($page)->post($url, [...$body, 'request_id' => (string) Str::uuid(), 'readiness_sha256' => str_repeat('0', 64)])
+        ->assertSessionHasErrors(['reason' => 'The statements changed since you opened this business. Review them again.']);
+    $this->from($page)->post($url, [...$body, 'request_id' => (string) Str::uuid(), 'reason' => ''])->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
+    $this->assertDatabaseCount('audit_assignments', 0);
+
+    $this->post($url, $body)->assertRedirect($page);
+    $assignment = AuditAssignment::query()->sole();
+    expect($assignment->business_id)->toBe($id)->and($assignment->state['purpose'] ?? null)->toBe('statement_review');
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.statement_review.reasons', ['AUDIT_STATEMENT_REVIEW_OPEN'])
+        ->where('party.audit.statement_review.request', null));
+    $this->post($url, $body)->assertRedirect($page);
+    expect(AuditAssignment::query()->count())->toBe(1);
+});
+
+it('keeps the statement review request to staff who manage audits', function (): void {
+    $fixture = Fixture::make(1);
+    $id = $fixture['business'];
+    Fixture::statements($fixture);
+    $binding = $this->actingAs($fixture['staff'])->get(route('staff.businesses.index', ['business' => $id]))
+        ->viewData('page')['props']['party']['audit']['statement_review']['request']['binding'];
+    $analyst = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($analyst, ['analyst'], 'Reporting.');
+
+    $this->actingAs($analyst)->post('/admin/businesses/'.$id.'/statement-review', ['request_id' => (string) Str::uuid(), 'reason' => 'Review.', ...$binding])->assertForbidden();
+    $this->assertDatabaseCount('audit_assignments', 0);
 });
