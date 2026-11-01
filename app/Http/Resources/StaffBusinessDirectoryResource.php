@@ -122,6 +122,8 @@ class StaffBusinessDirectoryResource extends JsonResource
             // Redispatch is offered only when a partner can take the audit now; otherwise it would change nothing.
             'redispatch' => $reason === 'AUDIT_PARTNER_AVAILABLE' ? $action('redispatch', 'staff.businesses.audit.redispatch') : null,
             'close' => $action('close', 'staff.businesses.audit.close'),
+            // Withdraw ends only this audit (#489), unlike close, so the Business can be sent a new one.
+            'withdraw' => $action('withdraw', 'staff.businesses.audit.withdraw'),
             'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? ['url' => route('staff.auditors.index', [], false), 'method' => 'get'] : null,
             // The review is checked as of when the drawer issued the form, so an exact retry replays it.
             'partners' => array_map(fn (array $partner): array => ['party_id' => $partner['party_id'], 'name' => $partner['name'], 'reviewed' => $partner['reviewed'],

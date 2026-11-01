@@ -5,11 +5,16 @@ declare(strict_types=1);
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Operations\Contracts\OverdueAudits;
+use App\Domain\Auditor\AuditEngagementState;
+use App\Domain\Operations\CommandRejection;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorIndependenceVersion;
+use App\Models\AuditReport;
+use App\Models\AuditReportVersion;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -50,7 +55,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => null, 'closed' => false,
-            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners,
+            'request_flash' => ['url' => $url, 'method' => 'post'], 'redispatch' => null, 'close' => null, 'withdraw' => null, 'remedy' => null, 'partners' => $partners,
             'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED'])]));
 
     $this->from($page)->post($url, flashAuditRequest(''))->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
@@ -67,7 +72,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
         'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null,
         'due_at' => now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z'), 'overdue' => false], 'closed' => false,
-        'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners,
+        'request_flash' => null, 'redispatch' => null, 'close' => null, 'withdraw' => null, 'remedy' => null, 'partners' => $partners,
         'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED', 'AUDIT_ENGAGEMENT_OPEN'])]));
 
     $this->from($page)->post($url, $body)->assertRedirect($page);
@@ -90,6 +95,7 @@ it('says no partner office is within 30 km, then asks for an independence review
             'due_at' => now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z'), 'overdue' => false], 'closed' => false,
             'request_flash' => null, 'redispatch' => null,
             'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
+            'withdraw' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/withdraw', 'method' => 'post'],
             'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => [],
             'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED', 'AUDIT_ENGAGEMENT_OPEN'])]));
 
@@ -323,4 +329,81 @@ it('keeps the statement review request to staff who manage audits', function ():
 
     $this->actingAs($analyst)->post('/admin/businesses/'.$id.'/statement-review', ['request_id' => (string) Str::uuid(), 'reason' => 'Review.', ...$binding])->assertForbidden();
     $this->assertDatabaseCount('audit_assignments', 0);
+});
+
+it('withdraws an accepted Flash audit past its deadline from its partner, and then lets a new Flash audit be requested (#489)', function (): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond(Fixture::recipient($fixture, $assignment)['user'], $assignment);
+    $id = $fixture['business'];
+    $page = route('staff.businesses.index', ['business' => $id]);
+    $url = '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/withdraw';
+
+    $this->actingAs($fixture['staff'])->get($page)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.overdue', false)->where('party.audit.withdraw', null));
+    $this->from($page)->post($url, ['expected_revision' => $assignment->refresh()->revision, ...flashAuditRequest('Too early.')])
+        ->assertSessionHasErrors(['reason' => 'This audit is no longer overdue or waiting on Audit Operations, so it cannot be withdrawn.']);
+
+    $this->travel(24)->hours();
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
+        ->where('party.audit.engagement.overdue', true)->where('party.audit.close', null)->where('party.audit.withdraw', ['url' => $url, 'method' => 'post']));
+    $this->from($page)->post($url, ['expected_revision' => $assignment->revision, ...flashAuditRequest('')])
+        ->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
+
+    $this->from($page)->post($url, ['expected_revision' => $assignment->revision, ...flashAuditRequest('The partner did not seal a report in time.')])
+        ->assertRedirect($page);
+    $assignment->refresh();
+    expect($assignment->status)->toBe('withdrawn')->and($assignment->party_id)->toBeNull()
+        ->and($assignment->state['withdrawn_at'])->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'))
+        ->and($assignment->state['operations_reason'])->toBe('AUDIT_OPERATIONS_WITHDRAWN');
+    $version = AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->where('revision', $assignment->revision)->sole();
+    expect($version->command)->toBe('audit.assignment.withdraw')->and($version->actor_user_id)->toBe($fixture['staff']->id);
+
+    // Only this audit ended: the Business is free for a new one, unlike after a closure.
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
+        ->where('party.audit.closed', false)->where('party.audit.request_flash.url', '/admin/businesses/'.$id.'/flash-audit'));
+    $this->from($page)->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())->assertRedirect($page);
+    expect(AuditAssignment::query()->where('business_id', $id)->count())->toBe(2);
+
+    /** @var list<array{action: array{code: string, label: string, tone: string}}> $events */
+    $events = $this->get(route('staff.events.index'))->assertOk()->viewData('page')['props']['events'];
+    expect(array_column($events, 'action'))->toContain(['code' => 'audit.assignment.withdraw', 'label' => 'Withdrew an audit', 'tone' => 'amber']);
+});
+
+it('withdraws an audit waiting on Audit Operations without closing the Business to new audits (#489)', function (): void {
+    $fixture = Fixture::make(0);
+    $assignment = Fixture::request($fixture);
+    $id = $fixture['business'];
+    $page = route('staff.businesses.index', ['business' => $id]);
+    $this->travel(24)->hours();
+
+    $this->actingAs($fixture['staff'])->from($page)->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/withdraw',
+        ['expected_revision' => 1, ...flashAuditRequest('No partner could take it in time.')])->assertRedirect($page);
+    expect($assignment->refresh()->status)->toBe('withdrawn');
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)->where('party.audit.closed', false)
+        ->where('party.audit.statement_review.reasons', ['STATEMENT_ORIGINAL_REQUIRED']));
+
+    // A withdrawn audit is final, as a closed one is.
+    expect(fn () => $assignment->forceFill(['revision' => $assignment->revision + 1])->save())
+        ->toThrow(QueryException::class, 'Withdrawn audit assignments are immutable');
+});
+
+it('withdraws the partner\'s open report draft with an overdue Flash audit (#489)', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    $audit = $fixture['audit'];
+    $assignment = $fixture['assignment']->refresh();
+    $this->travel(25)->hours();
+
+    $this->actingAs($audit['staff'])->post('/admin/businesses/'.$audit['business'].'/audits/'.$assignment->id.'/withdraw',
+        ['expected_revision' => $assignment->revision, ...flashAuditRequest('No report by the deadline.')])->assertRedirect();
+    $report = AuditReport::query()->where('assignment_id', $assignment->id)->sole();
+    expect($assignment->refresh()->status)->toBe('withdrawn')->and($report->status)->toBe('withdrawn')
+        ->and($report->draft['withdrawal'])->toBe(['reason_code' => 'AUDIT_OPERATIONS_WITHDRAWN'])
+        ->and(AuditReportVersion::query()->where('audit_report_id', $report->id)->where('revision', $report->revision)->value('command'))->toBe('audit.assignment.withdraw');
+});
+
+it('withdraws only an audit that is still open', function (): void {
+    $states = app(AuditEngagementState::class);
+    $state = $states->complete([...$states->start('flash', now()->toDateTimeImmutable()), 'status' => 'accepted'], now()->toDateTimeImmutable());
+    expect(fn () => $states->withdraw($state, now()->toDateTimeImmutable()))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_WITHDRAWABLE');
 });

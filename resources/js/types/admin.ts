@@ -877,6 +877,8 @@ export type BusinessAudit = {
     closed: boolean;
     request_flash: RouteAction | null;
     redispatch: RouteAction | null;
+    /** Ends this audit only (#489), unlike close: a new one can be requested afterwards. */
+    withdraw: RouteAction | null;
     close: RouteAction | null;
     /** Where to fix a missing partner within 30 km. */
     remedy: RouteLink | null;

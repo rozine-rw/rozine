@@ -335,6 +335,8 @@ Route::post('admin/businesses/{business}/audits/{assignment}/redispatch', [Staff
     ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.redispatch');
 Route::post('admin/businesses/{business}/audits/{assignment}/close', [StaffBusinessDirectoryController::class, 'closeAudit'])->whereUlid('business')
     ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.close');
+Route::post('admin/businesses/{business}/audits/{assignment}/withdraw', [StaffBusinessDirectoryController::class, 'withdrawAudit'])->whereUlid('business')
+    ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.withdraw');
 Route::post('admin/businesses/{business}/statement-review', [StaffBusinessDirectoryController::class, 'statementReview'])->whereUlid('business')
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.statement-review');
 Route::post('admin/businesses/{business}/auditors/{party}/independence', [StaffBusinessDirectoryController::class, 'auditorIndependence'])->whereUlid(['business', 'party'])

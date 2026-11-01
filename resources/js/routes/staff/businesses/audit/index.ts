@@ -220,6 +220,79 @@ closeForm.post = (args: { business: string | number, assignment: string | number
 close.form = closeForm
 
 /**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::withdraw
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:192
+* @route '/admin/businesses/{business}/audits/{assignment}/withdraw'
+*/
+export const withdraw = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw.url(args, options),
+    method: 'post',
+})
+
+withdraw.definition = {
+    methods: ["post"],
+    url: '/admin/businesses/{business}/audits/{assignment}/withdraw',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::withdraw
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:192
+* @route '/admin/businesses/{business}/audits/{assignment}/withdraw'
+*/
+withdraw.url = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+            assignment: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+        assignment: args.assignment,
+    }
+
+    return withdraw.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace('{assignment}', parsedArgs.assignment.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::withdraw
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:192
+* @route '/admin/businesses/{business}/audits/{assignment}/withdraw'
+*/
+withdraw.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::withdraw
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:192
+* @route '/admin/businesses/{business}/audits/{assignment}/withdraw'
+*/
+const withdrawForm = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\StaffBusinessDirectoryController::withdraw
+* @see app/Http/Controllers/StaffBusinessDirectoryController.php:192
+* @route '/admin/businesses/{business}/audits/{assignment}/withdraw'
+*/
+withdrawForm.post = (args: { business: string | number, assignment: string | number } | [business: string | number, assignment: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: withdraw.url(args, options),
+    method: 'post',
+})
+
+withdraw.form = withdrawForm
+
+/**
 * @see \App\Http\Controllers\StaffBusinessDirectoryController::statementReview
 * @see app/Http/Controllers/StaffBusinessDirectoryController.php:209
 * @route '/admin/businesses/{business}/statement-review'
@@ -370,6 +443,7 @@ const audit = {
     flash: Object.assign(flash, flash),
     redispatch: Object.assign(redispatch, redispatch),
     close: Object.assign(close, close),
+    withdraw: Object.assign(withdraw, withdraw),
     statementReview: Object.assign(statementReview, statementReview),
     independence: Object.assign(independence, independence),
 }

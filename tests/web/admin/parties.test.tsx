@@ -1495,6 +1495,7 @@ describe('Party 360', () => {
         closed: false,
         request_flash: null,
         redispatch: null,
+        withdraw: null,
         close: null,
         remedy: null,
         partners: [],
@@ -1659,6 +1660,7 @@ describe('Party 360', () => {
                         method: 'post',
                     },
                     redispatch: null,
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [],
@@ -1735,6 +1737,7 @@ describe('Party 360', () => {
                         url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
                         method: 'post',
                     },
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [],
@@ -1804,6 +1807,7 @@ describe('Party 360', () => {
                     closed: false,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: {
                         url: '/admin/businesses/biz_1/audits/aud_1/close',
                         method: 'post',
@@ -1844,6 +1848,7 @@ describe('Party 360', () => {
                     closed: false,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [],
@@ -1884,6 +1889,7 @@ describe('Party 360', () => {
                     closed: false,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: {
                         url: '/admin/businesses/biz_1/audits/aud_1/close',
                         method: 'post',
@@ -1937,6 +1943,73 @@ describe('Party 360', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('withdraws an overdue Flash audit its partner accepted, without closing the business to audits (#489)', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_2',
+                        kind: 'flash',
+                        status: 'accepted',
+                        revision: 2,
+                        attempt: null,
+                        operations_reason: null,
+                        due_at: '2026-10-31T11:42:00Z',
+                        overdue: true,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: {
+                        url: '/admin/businesses/biz_1/audits/aud_2/withdraw',
+                        method: 'post',
+                    },
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+        expect(
+            within(audit).queryByRole('button', { name: 'Close' }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Withdraw this audit',
+        });
+
+        expect(form).toHaveTextContent(
+            'Only this audit ends: a new Flash audit or statement review can be requested for the business afterwards.',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'No report by the deadline.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Withdraw audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_2/withdraw',
+                data: {
+                    reason: 'No report by the deadline.',
+                    request_id: '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+                    expected_revision: 2,
+                },
+            },
+        ]);
+    });
+
     it('holds the Flash audit request while it is being sent', async () => {
         inertia.processing = true;
         const { user } = renderWithUser(
@@ -1949,6 +2022,7 @@ describe('Party 360', () => {
                         method: 'post',
                     },
                     redispatch: null,
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [],
@@ -1991,6 +2065,7 @@ describe('Party 360', () => {
                     closed: false,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: {
                         url: '/admin/businesses/biz_1/audits/aud_1/close',
                         method: 'post',
@@ -2122,6 +2197,7 @@ describe('Party 360', () => {
                     closed: false,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [
@@ -2188,6 +2264,7 @@ describe('Party 360', () => {
                     closed: true,
                     request_flash: null,
                     redispatch: null,
+                    withdraw: null,
                     close: null,
                     remedy: null,
                     partners: [],
