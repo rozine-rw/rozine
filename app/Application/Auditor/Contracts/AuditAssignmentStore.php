@@ -25,6 +25,25 @@ interface AuditAssignmentStore
     /** @return array<string, mixed> */
     public function request(int $actorId, string $businessId, string $kind, string $reason, string $requestId): array;
 
+    /**
+     * Staff request a factual statement review (#396): a routine engagement whose purpose is to produce a
+     * current statement verification, with no report and no application. Under the Business lock it
+     * resumes an open review, refuses while any other engagement is open, and runs $applicable inside a
+     * new effect so the caller can compare the reviewed bindings and readiness.
+     *
+     * @param  array<string, mixed>  $binding  The reviewed inputs, fingerprinted with the reason.
+     * @param  Closure(array{id: string, revision: int, mandate_version: int}): void  $applicable
+     * @return array<string, mixed>
+     */
+    public function requestStatementReview(int $actorId, string $businessId, string $reason, string $requestId, array $binding, Closure $applicable): array;
+
+    /**
+     * The acting staff member's retained statement review request receipt, bound to the Business it targeted.
+     *
+     * @return array<string, mixed>
+     */
+    public function findStatementReviewOperation(int $actorId, string $businessId, string $requestId): array;
+
     /** @return array<string, mixed> */
     public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId, ?string $reasonCode = null): array;
 
@@ -126,9 +145,27 @@ interface AuditAssignmentStore
     /**
      * The newest engagement on a Business that is still open, as raw metadata for readiness projections.
      *
-     * @return array{id: string, revision: int, kind: string, status: string}|null
+     * @return array{id: string, revision: int, kind: string, purpose: string, status: string}|null
      */
     public function openEngagement(string $businessId): ?array;
+
+    /** Why the engagement exists: 'monthly' for report engagements, 'statement_review' for a factual review. */
+    public function purpose(string $assignmentId): string;
+
+    /**
+     * New verification work needs an accepted engagement; a completed one only replays its receipts.
+     * The caller holds the assignment lock.
+     */
+    public function requireAccepted(string $assignmentId): void;
+
+    /**
+     * Completes a statement review in the same transaction as the verification that finished it,
+     * reusing the locks the verifying command holds. Returns false for any other engagement, or when
+     * the verification is not this partner's current one.
+     *
+     * @param  AcceptedAssignment  $assignment
+     */
+    public function completeStatementReview(array $assignment, string $verificationId, int $userId): bool;
 
     /** Whether Audit Operations closed the Business's last audit, so no new one can be requested for it. */
     public function lastClosed(string $businessId): bool;
