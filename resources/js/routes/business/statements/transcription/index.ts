@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -15,7 +15,7 @@ show.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -42,7 +42,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 }
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -52,7 +52,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 })
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -62,7 +62,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 })
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -72,7 +72,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 })
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
@@ -82,7 +82,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 })
 
 /**
-* @see \App\Http\Controllers\BusinessStatementTranscriptionController::page
+* @see \App\Http\Controllers\BusinessStatementTranscriptionController::show
 * @see app/Http/Controllers/BusinessStatementTranscriptionController.php:72
 * @route '/business/{business}/statements/transcription'
 */
