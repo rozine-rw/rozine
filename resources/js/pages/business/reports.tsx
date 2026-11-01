@@ -21,6 +21,11 @@ import type {
 
 const TABS: ReportStatus[] = ['verified', 'in_audit', 'archived'];
 
+/** A sealed report waiting on the business: its pill asks for the co-signature, not to wait. */
+const AWAITING_PILL = 'bg-rz-accent-fill text-white';
+
+const HOUR = 3_600_000;
+
 const ROW_STYLE: Record<
     ReportStatus,
     { icon: IconName; tile: string; pill: string }
@@ -43,8 +48,9 @@ const ROW_STYLE: Record<
 };
 
 /**
- * Reports (MVP-BUSINESS-SCR-06, design L942–1002): the monthly reports the Audit Partner files,
- * by status. A published month that was not healthy keeps the design's amber tile. A report opens in a sheet over the list, addressed by URL so it survives a reload.
+ * Reports (MVP-BUSINESS-SCR-06, design L942–1002): the Flash and monthly reports the Audit Partner
+ * files, by status. A sealed report waiting on the business asks for its co-signature with the hours
+ * left, and its tab counts it (#481), so the 24-hour window is never read as "wait". A published month that was not healthy keeps the design's amber tile. A report opens in a sheet over the list, addressed by URL so it survives a reload.
  */
 export default function BusinessReports({
     reports,
@@ -65,14 +71,30 @@ export default function BusinessReports({
             : 'verified';
     });
 
+    /* The hours left are read once, as the page opens. */
+    const [now] = useState(() => Date.now());
+    const toCosign = reports.in_audit.filter(
+        (row) => row.awaiting_signature,
+    ).length;
+
     /** A row whose seal date or filed figures were not read names only its Audit Partner. */
     const detail = (row: ReportRow): string => {
         if (row.awaiting_signature) {
-            return row.cosign_by === null
-                ? t('business.reports.row.awaiting')
-                : t('business.reports.row.awaiting_by', {
-                      date: formatDateTime(row.cosign_by, locale),
-                  });
+            if (row.cosign_by === null) {
+                return t('business.reports.row.awaiting');
+            }
+
+            const by = t('business.reports.row.awaiting_by', {
+                date: formatDateTime(row.cosign_by, locale),
+            });
+            const left = Math.ceil((Date.parse(row.cosign_by) - now) / HOUR);
+
+            return left > 0
+                ? t('business.reports.row.hours_left', {
+                      date: by,
+                      count: left,
+                  })
+                : by;
         }
 
         if (row.status === 'in_audit' && row.seal_by !== null) {
@@ -146,7 +168,14 @@ export default function BusinessReports({
                                             : 'border-rz-border bg-rz-surface text-rz-slate',
                                     )}
                                 >
-                                    {t(`business.reports.tab.${key}`)}
+                                    {key === 'in_audit' && toCosign > 0
+                                        ? t(
+                                              'business.reports.tab.in_audit_cosign',
+                                              {
+                                                  count: toCosign,
+                                              },
+                                          )
+                                        : t(`business.reports.tab.${key}`)}
                                 </button>
                             ))}
                         </div>
@@ -192,12 +221,18 @@ export default function BusinessReports({
                                                 <span
                                                     className={cn(
                                                         'inline-flex shrink-0 items-center gap-[5px] rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
-                                                        style.pill,
+                                                        row.awaiting_signature
+                                                            ? AWAITING_PILL
+                                                            : style.pill,
                                                     )}
                                                 >
-                                                    {t(
-                                                        `business.reports.status.${row.status}`,
-                                                    )}
+                                                    {row.awaiting_signature
+                                                        ? t(
+                                                              'business.reports.status.awaiting',
+                                                          )
+                                                        : t(
+                                                              `business.reports.status.${row.status}`,
+                                                          )}
                                                 </span>
                                             </Link>
                                         </li>

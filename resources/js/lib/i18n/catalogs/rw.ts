@@ -745,7 +745,7 @@ const rw: Catalog = {
     'common.ordinal.other': '{n}',
     'business.reports.title': 'Raporo',
     'business.reports.subtitle':
-        "Bigenzurwa buri kwezi n'umugenzuzi wawe uza aho ukorera.",
+        'Buri genzura ritunguranye n’irya buri kwezi umugenzuzi wawe afunga, bigenzurwa aho ukorera.',
     'business.reports.guide.title': 'Uko igenzura rya buri kwezi rikorwa',
     'business.reports.guide.opens.title': 'Kusanya inyandiko zawe',
     'business.reports.guide.opens.body':
@@ -762,9 +762,14 @@ const rw: Catalog = {
     'business.reports.tabs': 'Uko raporo zihagaze',
     'business.reports.tab.verified': 'Zatangajwe',
     'business.reports.tab.in_audit': 'Birimo kugenzurwa',
+    'business.reports.tab.in_audit_cosign': {
+        one: 'Birimo kugenzurwa · {count} yo gusinya',
+        other: 'Birimo kugenzurwa · {count} zo gusinya',
+    },
     'business.reports.tab.archived': 'Zabitswe',
     'business.reports.status.verified': 'Byemejwe',
     'business.reports.status.in_audit': 'Birimo kugenzurwa',
+    'business.reports.status.awaiting': 'Shyiraho umukono',
     'business.reports.status.archived': 'Byabitswe',
     'business.reports.health.healthy': 'Bimeze neza',
     'business.reports.health.watch': 'Bikurikiranwe',
@@ -774,13 +779,17 @@ const rw: Catalog = {
     'business.reports.row.in_audit':
         'Biri kwa {auditor} · bifungwa bitarenze {date}',
     'business.reports.row.awaiting': 'Hakenewe umukono wawe',
+    'business.reports.row.hours_left': {
+        one: '{date} · hasigaye isaha {count}',
+        other: '{date} · hasigaye amasaha {count}',
+    },
     'business.reports.row.awaiting_by':
         'Shyiraho umukono cyangwa ujurire bitarenze {date}',
     'business.reports.row.annual': "Incamake y'umwaka wose",
     'business.reports.annual': "Raporo y'umwaka {year}",
     'business.reports.empty': 'Nta raporo irahari.',
     'business.reports.empty_body':
-        'Raporo ya buri kwezi igaragara hano iyo umugenzuzi wawe amaze kuyifunga.',
+        'Buri raporo y’igenzura ritunguranye cyangwa iya buri kwezi igaragara hano iyo umugenzuzi wawe amaze kuyifunga.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} kuri {of}',
     'business.reports.sheet.live': 'Abashoramari bawe barayibona',
