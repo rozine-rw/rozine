@@ -50,6 +50,7 @@ use App\Http\Controllers\StaffPaymentsController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffStatementAuditReadinessController;
+use App\Http\Controllers\StaffStatementReviewController;
 use App\Http\Controllers\StaffSystemHealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -143,6 +144,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/businesses')->name('api.v1.staff.businesses.')->group(function (): void {
     Route::get('{business}/initial-statement-audit', [StaffStatementAuditReadinessController::class, 'show'])->whereUlid('business')->name('statement-audit.readiness');
+    Route::post('{business}/initial-statement-audit/review', [StaffStatementReviewController::class, 'store'])->whereUlid('business')->name('statement-audit.review');
+    Route::get('{business}/initial-statement-audit/operations/{request_id}', [StaffStatementReviewController::class, 'operation'])->whereUlid('business')->whereUuid('request_id')->name('statement-audit.operations.show');
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('v1/staff/audit-assignments')->name('api.v1.staff.audit.')->group(function (): void {
