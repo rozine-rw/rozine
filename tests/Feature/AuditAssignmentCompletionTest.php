@@ -74,7 +74,7 @@ function requestAfterPublishedCompletion(TestCase $testCase, array $fixture, boo
 {
     $businessId = $fixture['audit']['business'];
     if ($monthly) {
-        $testCase->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
+        $testCase->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth());
         app()->instance(MonthlyAuditBusinesses::class, new readonly class($businessId) implements MonthlyAuditBusinesses
         {
             public function __construct(private string $businessId) {}
