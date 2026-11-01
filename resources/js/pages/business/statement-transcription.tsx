@@ -16,7 +16,7 @@ import type {
 import {
     CLASSIFICATIONS,
     MAX_MONTHS,
-    cleanBalance,
+    cleanFrancs,
     cleanIdentifier,
     computedClosing,
     drawsBefore,
@@ -652,7 +652,7 @@ function AccountMonth({
                     onChange={(event) =>
                         onSheet((sheet) => ({
                             ...sheet,
-                            opening: cleanBalance(event.target.value),
+                            opening: cleanFrancs(event.target.value, true),
                         }))
                     }
                 />
@@ -761,9 +761,9 @@ function AccountMonth({
                                         value={row.amount}
                                         onChange={(event) =>
                                             setRow({
-                                                amount: event.target.value.replace(
-                                                    /[^0-9]/gu,
-                                                    '',
+                                                amount: cleanFrancs(
+                                                    event.target.value,
+                                                    false,
                                                 ),
                                             })
                                         }
@@ -969,7 +969,7 @@ function AccountMonth({
                     onChange={(event) =>
                         onSheet((sheet) => ({
                             ...sheet,
-                            closing: cleanBalance(event.target.value),
+                            closing: cleanFrancs(event.target.value, true),
                         }))
                     }
                 />

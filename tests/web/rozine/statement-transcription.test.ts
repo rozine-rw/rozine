@@ -5,7 +5,7 @@ import type {
     TranscriptionForm,
 } from '@/lib/rozine/statement-transcription';
 import {
-    cleanBalance,
+    cleanFrancs,
     cleanIdentifier,
     computedClosing,
     drawsBefore,
@@ -70,12 +70,46 @@ describe('The statement figures form', () => {
         expect(monthsBetween('2020-01', '2026-01')).toHaveLength(37);
     });
 
+    it('reads pasted thousands separators and a zero cents tail as whole francs (#396 review)', () => {
+        expect(cleanFrancs('1,250.00', true)).toBe('1250');
+        expect(cleanFrancs('1.250,00', true)).toBe('1250');
+        expect(cleanFrancs('1 250', false)).toBe('1250');
+        expect(cleanFrancs('1\u202f250\u00a0000', false)).toBe('1250000');
+        expect(cleanFrancs("1'250", false)).toBe('1250');
+        expect(cleanFrancs('-12,345,678.00', true)).toBe('-12345678');
+        expect(cleanFrancs('1250,00', false)).toBe('1250');
+        expect(cleanFrancs('', true)).toBe('');
+        expect(cleanFrancs('1250.', false)).toBe('1250');
+        expect(cleanFrancs('-1,', true)).toBe('-1');
+    });
+
+    it('keeps an amount with real cents or odd grouping as typed, so it is flagged and never scaled (#396 review)', () => {
+        for (const typed of [
+            '1,250.50',
+            '12,50',
+            '1250.5',
+            '1,25',
+            '1,250,00',
+            '12,5000',
+            '-',
+        ]) {
+            expect(cleanFrancs(typed, false)).toBe(typed);
+        }
+
+        expect(cleanFrancs('1,250.50', true)).toBe('1,250.50');
+        expect(cleanFrancs('12-3', true)).toBe('12-3');
+        expect(cleanFrancs('-', true)).toBe('-');
+        expect(
+            signedAmount(row({ amount: cleanFrancs('1,250.50', false) })),
+        ).toBeNull();
+    });
+
     it('keeps names, references and balances to what the server accepts', () => {
         expect(cleanIdentifier('Bank of Kigali / 12')).toBe(
             'Bank-of-Kigali--12',
         );
-        expect(cleanBalance('-1,250 000')).toBe('-1250000');
-        expect(cleanBalance('12-3')).toBe('123');
+        expect(cleanFrancs('-1,250 000', true)).toBe('-1250000');
+        expect(cleanFrancs('RWF 4500', false)).toBe('4500');
         expect(referenceOf(row(), 2)).toBe('row-3');
         expect(referenceOf(row({ reference: 'INV-1' }), 2)).toBe('INV-1');
         expect(signedAmount(row({ direction: 'out', amount: '40' }))).toBe(

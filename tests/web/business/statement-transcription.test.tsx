@@ -101,6 +101,26 @@ describe('Enter your statement figures', () => {
         ).toBeInTheDocument();
     });
 
+    it('reads a pasted 1,250.00 as 1250 and flags pasted cents instead of scaling them (#396 review)', async () => {
+        const user = userEvent.setup();
+        render(<BusinessStatementTranscription {...props(emptyFixture)} />);
+        const page = within(dialog());
+        const opening = page.getByLabelText('Opening balance (RWF)');
+
+        await user.click(opening);
+        await user.paste('1,250.00');
+        expect(opening).toHaveValue('1250');
+
+        await user.clear(opening);
+        await user.paste('1,250.50');
+        expect(opening).toHaveValue('1,250.50');
+        expect(
+            page.getByText(
+                'Enter the opening and closing balances in whole francs.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('takes a month of figures, then saves it with everything the server binds the save to', async () => {
         const user = userEvent.setup();
         render(<BusinessStatementTranscription {...props(emptyFixture)} />);

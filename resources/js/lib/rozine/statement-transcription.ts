@@ -87,9 +87,36 @@ export const newKey = (prefix: string): string => `${prefix}${++sequence}`;
 export const cleanIdentifier = (value: string): string =>
     value.replace(/\s+/gu, '-').replace(/[^a-zA-Z0-9_-]/gu, '');
 
-/** A balance as typed: digits with an optional leading minus. */
-export const cleanBalance = (value: string): string =>
-    value.replace(/(?!^-)[^0-9]/gu, '');
+/**
+ * A franc amount as typed or pasted, as digits (with a leading minus when `signed`). Thousands
+ * separators are dropped and a `.00` or `,00` tail is accepted, so `1,250.00`, `1.250` and
+ * `1 250` all read 1250, and a separator typed after digits is dropped as before. Anything that is not plainly whole francs, such as `1,250.50` or `12,50`,
+ * is kept as typed so the form flags it, rather than silently reading it as 125050 or 1250.
+ */
+export function cleanFrancs(value: string, signed: boolean): string {
+    const text = value.replace(/[^0-9.,\s'’-]/gu, '').trim();
+    const match = (
+        signed ? /^(-?)([0-9.,\s'’]*)$/u : /^()([0-9.,\s'’]*)$/u
+    ).exec(text);
+
+    if (match === null) {
+        return text;
+    }
+
+    const [, sign, typed] = match;
+    const body = typed.replace(/[.,'’]$/u, '');
+    const cents = /^(.*)([.,])00$/u.exec(body);
+    const whole =
+        cents !== null && !cents[1].includes(cents[2]) ? cents[1] : body;
+
+    if (/^[0-9]*$/u.test(whole)) {
+        return sign + whole;
+    }
+
+    return /^[0-9]{1,3}([.,\s'’][0-9]{3})+$/u.test(whole)
+        ? sign + whole.replace(/[^0-9]/gu, '')
+        : text;
+}
 
 /** Every month from `first` to `last`, or none when the range is not a range. */
 export function monthsBetween(first: string, last: string): string[] {
