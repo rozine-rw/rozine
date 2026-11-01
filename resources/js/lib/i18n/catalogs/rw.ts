@@ -3465,6 +3465,8 @@ const rw: Catalog = {
     'auditor.ledger.rules':
         "Ohereza igitabo cy'umwimerere nka PDF cyangwa CSV (kugeza kuri MB 10). Igitabo cyaskaninwe gishobora kuba PDF; scan idafite inyandiko ishyirwa ku ruhande ngo isuzumwe n'umuntu.",
     'auditor.ledger.doc.scanning': 'Biragenzurwa … {detail}',
+    'auditor.ledger.doc.scanning_hint':
+        'Gusoma igitabo cy’ibaruramari bifata nk’umunota umwe. Iyi paji yivugurura ubwayo.',
     'auditor.ledger.doc.parsed': 'Byemewe · {detail}',
     'auditor.ledger.doc.failed': 'Byanzwe · {detail}',
     'auditor.ledger.reading': 'Inyandiko irasomwa',
@@ -5679,6 +5681,7 @@ const rw: Catalog = {
         'Emera amasezerano y’akazi ariho kugira ngo ukomeze.',
     'auditor.command.review_terms': 'Soma amasezerano',
     'auditor.seal.save_note': 'Bika inyandiko',
+    'auditor.seal.save_note_preview': 'Bika inyandiko urebe mbere',
     'auditor.seal.saving_note': 'Inyandiko irabikwa…',
     'auditor.seal.note_unsaved':
         'Bika inyandiko yawe mbere yo kureba ibizashyirwaho kashe. Igenzura, kode yawe na kashe byose bishingira ku nyandiko yabitswe.',

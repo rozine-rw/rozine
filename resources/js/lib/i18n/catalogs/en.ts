@@ -3321,6 +3321,8 @@ const en = {
     'auditor.ledger.rules':
         'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
     'auditor.ledger.doc.scanning': 'Checking … {detail}',
+    'auditor.ledger.doc.scanning_hint':
+        'Reading a ledger usually takes about a minute. This page updates on its own.',
     'auditor.ledger.doc.parsed': 'Accepted · {detail}',
     'auditor.ledger.doc.failed': 'Rejected · {detail}',
     'auditor.ledger.reading': 'Reading the document',
@@ -5428,6 +5430,7 @@ const en = {
     'auditor.accreditation.view_submitted':
         'Download the submitted certificate',
     'auditor.seal.save_note': 'Save note',
+    'auditor.seal.save_note_preview': 'Save note to preview',
     'auditor.seal.saving_note': 'Saving note…',
     'auditor.seal.note_unsaved':
         'Save your note before you preview. The preview, your code and the seal all cover the saved note.',

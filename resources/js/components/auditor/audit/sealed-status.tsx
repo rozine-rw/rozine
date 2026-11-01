@@ -5,7 +5,7 @@ import { StatusPill, Tick } from '@/components/auditor/ui';
 import type { PillTone } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
-import { formatDate } from '@/lib/rozine/format';
+import { formatDate, formatDue } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { AuditPublishedReason } from '@/types/audit-dispute';
 import type { CosignState, SealedStage } from '@/types/auditor';
@@ -111,7 +111,7 @@ export function SealedStatus({
                     ? t('auditor.sealed.body_undated', { party: cosign.party })
                     : t('auditor.sealed.body', {
                           party: cosign.party,
-                          date: formatDate(cosign.due_on, locale),
+                          date: formatDue(cosign.due_on, locale),
                       });
         }
     };

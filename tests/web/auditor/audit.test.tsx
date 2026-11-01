@@ -693,6 +693,38 @@ describe('Audit procedure — ledger reconciliation', () => {
         expect(inertia.poll.start).toHaveBeenCalled();
     });
 
+    it('keeps one re-check running through re-renders while a document is read, and says it updates itself', () => {
+        render(
+            <AuditorAudit
+                {...withStage<LedgerStage>(ledger, (stage) => ({
+                    ...stage,
+                    documents: [
+                        {
+                            ...stage.documents[0],
+                            state: 'scanning',
+                            fields: [],
+                        },
+                    ],
+                }))}
+            />,
+        );
+        const input = within(sheet()).getByLabelText(
+            'Observed on site · stock value (RWF)',
+        );
+
+        /* Each keystroke re-renders the step; starting the poll again would reset its interval. */
+        fireEvent.change(input, { target: { value: '36,500,000' } });
+        fireEvent.change(input, { target: { value: '36,600,000' } });
+
+        expect(inertia.poll.start).toHaveBeenCalledTimes(1);
+        expect(inertia.poll.stop).not.toHaveBeenCalled();
+        expect(
+            screen.getByText(
+                'Reading a ledger usually takes about a minute. This page updates on its own.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('pauses the re-check while Review & seal is in flight, then follows the server to the next step', async () => {
         let answer: (value: unknown) => void = () => undefined;
 
@@ -1691,6 +1723,29 @@ describe('Audit procedure — after the seal', () => {
         expect(
             within(intro('Kivu Coffee Roasters')).getByText(
                 'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 7 Oct 2026; it publishes to holders after that.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('gives the hour of a co-sign deadline the server states as an instant, as the business sees it', () => {
+        render(
+            <AuditorAudit
+                {...withStage<SealedStage>(sealedMonthly, (stage) => ({
+                    ...stage,
+                    cosign: {
+                        ...stage.cosign,
+                        state: 'pending',
+                        signed_at: null,
+                        due_on: '2026-11-02T08:52:00Z',
+                    },
+                    published_at: null,
+                }))}
+            />,
+        );
+
+        expect(
+            within(intro('Kivu Coffee Roasters')).getByText(
+                'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 2 Nov 2026 · 10:52; it publishes to holders after that.',
             ),
         ).toBeInTheDocument();
     });

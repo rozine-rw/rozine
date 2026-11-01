@@ -111,7 +111,8 @@ const saveNote = async (page: AuditProcedureProps = props(seal)) => {
 
     await view.user.click(noteField());
     await view.user.paste(NOTE);
-    await view.user.click(screen.getByRole('button', { name: 'Save note' }));
+    /* "Save note to preview" where sealing is open, "Save note" where it is not. */
+    await view.user.click(screen.getByRole('button', { name: /^Save note/u }));
 
     return view;
 };
@@ -339,7 +340,7 @@ describe('Seal — the note is saved before the preview', () => {
         await user.paste(NOTE.slice(0, 20));
 
         const saveButton = within(dialog).getByRole('button', {
-            name: 'Save note',
+            name: 'Save note to preview',
         });
 
         /* A required note below its minimum cannot be saved, let alone previewed. */
@@ -457,7 +458,9 @@ describe('Seal — the note is saved before the preview', () => {
         expect(
             screen.queryByRole('button', { name: 'Preview findings' }),
         ).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(
+            screen.getByRole('button', { name: 'Save note to preview' }),
+        ).toBeEnabled();
         expect(screen.getByText(UNSAVED)).toBeInTheDocument();
 
         /* Back to exactly what was saved: the saved digest covers it again. */
@@ -522,7 +525,9 @@ describe('Seal — the note is saved before the preview', () => {
         expect(inertia.reloads).toEqual([undefined]);
         expect(noteField()).toHaveValue(NOTE);
         expect(noteField()).not.toHaveAttribute('readonly');
-        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(
+            screen.getByRole('button', { name: 'Save note to preview' }),
+        ).toBeEnabled();
         expect(
             screen.queryByRole('button', { name: 'Preview findings' }),
         ).not.toBeInTheDocument();
@@ -538,7 +543,9 @@ describe('Seal — the note is saved before the preview', () => {
             ),
         ).toBeInTheDocument();
         expect(inertia.reloads).toHaveLength(0);
-        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(
+            screen.getByRole('button', { name: 'Save note to preview' }),
+        ).toBeEnabled();
     });
 
     it('shows a note error the save returns beside the note', async () => {
@@ -550,7 +557,9 @@ describe('Seal — the note is saved before the preview', () => {
         ).toBeInTheDocument();
         expect(screen.getAllByText('Say what you saw.')).toHaveLength(1);
         expect(noteField()).toHaveAttribute('aria-invalid', 'true');
-        expect(screen.getByRole('button', { name: 'Save note' })).toBeEnabled();
+        expect(
+            screen.getByRole('button', { name: 'Save note to preview' }),
+        ).toBeEnabled();
     });
 
     it('looks up a save whose answer was lost, and offers nothing meanwhile', async () => {
@@ -562,7 +571,7 @@ describe('Seal — the note is saved before the preview', () => {
         ).toBeInTheDocument();
         expect(inertia.calls[1].body).toEqual({ command: 'audit.save_step' });
         expect(
-            screen.getByRole('button', { name: 'Save note' }),
+            screen.getByRole('button', { name: 'Save note to preview' }),
         ).toBeDisabled();
     });
 
@@ -574,7 +583,7 @@ describe('Seal — the note is saved before the preview', () => {
         await user.click(noteField());
         await user.paste(NOTE);
         expect(
-            screen.getByRole('button', { name: 'Save note' }),
+            screen.getByRole('button', { name: 'Save note to preview' }),
         ).toBeDisabled();
     });
 
@@ -586,7 +595,7 @@ describe('Seal — the note is saved before the preview', () => {
         await user.click(noteField());
         await user.paste(NOTE);
         expect(
-            screen.queryByRole('button', { name: 'Save note' }),
+            screen.queryByRole('button', { name: 'Save note to preview' }),
         ).not.toBeInTheDocument();
         expect(screen.queryByText(UNSAVED)).not.toBeInTheDocument();
     });
@@ -1076,7 +1085,7 @@ describe('Seal — a confirmation withdrawn while its code is checked', () => {
         );
         await user.type(noteField(), '!');
         expect(
-            screen.getByRole('button', { name: 'Save note' }),
+            screen.getByRole('button', { name: 'Save note to preview' }),
         ).toBeInTheDocument();
 
         await act(async () => confirmation.settle(PROOF));

@@ -151,3 +151,10 @@ export const formatDateTime = (iso: string, locale: string): string =>
             timeZone: 'Africa/Kigali',
         },
     ).format(new Date(iso))}`;
+
+/**
+ * A deadline as the server gives it: "2 Nov 2026 · 10:52" in Kigali time for an instant, so every
+ * party reads the same hour (#482), or the date alone for a date.
+ */
+export const formatDue = (iso: string, locale: string): string =>
+    iso.includes('T') ? formatDateTime(iso, locale) : formatDate(iso, locale);
