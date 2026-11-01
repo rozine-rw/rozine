@@ -8,6 +8,7 @@ use App\Application\Auditor\RecordAuditorStanding;
 use App\Application\Auditor\SubmitAuditorAccreditation;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Identity\SelectActiveRole;
+use App\Models\AuditorProfile;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
@@ -43,7 +44,19 @@ final class AuditorFixture
             now('UTC')->format('Y-m-d\TH:i:s\Z'), 'synthetic-manual-register-check', 'Synthetic reviewed evidence.', $request ?? (string) Str::uuid());
     }
 
-    /** @return Candidate */
+    /**
+     * Records a fresh register check of an approved partner now, as staff do when the 30-day standing
+     * check lapses (AuditorStanding), so a test that moves the clock a month on keeps the partner eligible.
+     *
+     * @param  array{party: Party, staff: User}  $partner
+     */
+    public static function recheck(array $partner): void
+    {
+        $revision = AuditorProfile::query()->where('party_id', $partner['party']->id)->value('revision');
+        self::review($partner['staff'], $partner['party']->id, (int) $revision, 'recheck');
+    }
+
+        /** @return Candidate */
     public static function candidate(string $id = 'partner-a'): array
     {
         $location = ['verified_at' => '2026-09-24T08:00:00Z', 'moved_at' => null, 'uncertainty_m' => 50];

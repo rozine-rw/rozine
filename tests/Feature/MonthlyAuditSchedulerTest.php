@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Tests\Support\AuditorFixture;
 use Tests\Support\AuditSealingFixture as Fixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\PrimaryIssuanceFixture;
@@ -45,7 +46,8 @@ it('dispatches each funded business its monthly audit once, in the report window
     $business = $fixture['audit']['business'];
     dueBusinesses([$business, 'missing-business']);
     Log::shouldReceive('error')->times(3)->with('AUDIT_MONTHLY_REQUEST_FAILED', Mockery::on(fn (array $context): bool => $context['business_id'] === 'missing-business'));
-    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth());
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
+    AuditorFixture::recheck($fixture['audit']['partners'][0]);
 
     expect(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(0)
         ->and(AuditAssignment::query()->where('business_id', $business)->count())->toBe(1);
@@ -80,7 +82,8 @@ it('dispatches nothing more in a month that already has a routine audit', functi
     Fixture::seal($fixture);
     Fixture::cosign($fixture);
     dueBusinesses([$fixture['audit']['business']]);
-    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth());
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
+    AuditorFixture::recheck($fixture['audit']['partners'][0]);
     expect(app(RequestMonthlyAudits::class)->handle(now()->toDateTimeImmutable()))->toBe(1);
 
     $routine = AuditAssignment::query()->where('business_id', $fixture['audit']['business'])->where('status', '<>', 'completed')->sole();
