@@ -573,8 +573,9 @@ describe('Auditor Home', () => {
         expect(red).toHaveTextContent('02:00:00');
         expect(red).toHaveClass('text-rz-danger-text');
         expect(amber).toHaveClass('bg-rz-accent-soft');
-        expect(late).toHaveTextContent('00:00:00');
-        expect(screen.getByText('Overdue')).toBeInTheDocument();
+        expect(late).toHaveTextContent('Overdue00:00:00');
+        expect(late).toHaveAccessibleName('This job’s deadline has passed');
+        expect(screen.getAllByText('Overdue')).toHaveLength(2);
         expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
         expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
         expect(screen.getByText('Awaiting co-signature')).toBeInTheDocument();

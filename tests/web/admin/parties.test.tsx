@@ -1726,6 +1726,8 @@ describe('Party 360', () => {
                         revision: 2,
                         attempt: 1,
                         operations_reason: 'AUDIT_PARTNER_AVAILABLE',
+                        due_at: null,
+                        overdue: false,
                     },
                     closed: false,
                     request_flash: null,
@@ -1796,6 +1798,8 @@ describe('Party 360', () => {
                         revision: 4,
                         attempt: 3,
                         operations_reason: 'AUDIT_DISPATCH_EXHAUSTED',
+                        due_at: null,
+                        overdue: false,
                     },
                     closed: false,
                     request_flash: null,
@@ -1834,6 +1838,8 @@ describe('Party 360', () => {
                         revision: 2,
                         attempt: null,
                         operations_reason: null,
+                        due_at: '2026-10-31T11:42:00Z',
+                        overdue: true,
                     },
                     closed: false,
                     request_flash: null,
@@ -1847,9 +1853,13 @@ describe('Party 360', () => {
 
         await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
         audit = screen.getByRole('region', { name: 'Audit' });
+        expect(within(audit).getByText('Overdue')).toBeInTheDocument();
         expect(
-            within(audit).getByText('Accepted by a partner'),
-        ).toBeInTheDocument();
+            within(audit).queryByText('Accepted by a partner'),
+        ).not.toBeInTheDocument();
+        expect(within(audit).getByRole('alert')).toHaveTextContent(
+            /^The 24-hour deadline passed on 31 Oct 2026 · 13:42 without a sealed report\. A Flash audit must be completed within 24 hours, so this one is in breach\./u,
+        );
         expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
     });
 
@@ -1868,6 +1878,8 @@ describe('Party 360', () => {
                         revision: 3,
                         attempt: 0,
                         operations_reason: 'AUDIT_NO_PARTNER_IN_RANGE',
+                        due_at: null,
+                        overdue: false,
                     },
                     closed: false,
                     request_flash: null,
@@ -1897,7 +1909,7 @@ describe('Party 360', () => {
         });
 
         expect(form).toHaveTextContent(
-            'Closing ends this audit without a report.',
+            'Closing ends this audit without a report and can’t be undone. This business can never be audited again',
         );
         expect(
             within(audit).queryByRole('button', { name: 'Redispatch' }),
@@ -1973,6 +1985,8 @@ describe('Party 360', () => {
                         revision: 1,
                         attempt: 1,
                         operations_reason: 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED',
+                        due_at: null,
+                        overdue: false,
                     },
                     closed: false,
                     request_flash: null,
@@ -2166,7 +2180,7 @@ describe('Party 360', () => {
         );
     });
 
-    it('says a new Flash audit cannot be requested after Audit Operations closed the last one', async () => {
+    it('says the business can never be audited again after Audit Operations closed its last audit', async () => {
         const { user } = renderWithUser(
             <AdminParties
                 {...withAudit({
@@ -2185,7 +2199,7 @@ describe('Party 360', () => {
         const audit = screen.getByRole('region', { name: 'Audit' });
 
         expect(audit).toHaveTextContent(
-            'Audit Operations closed this business’s last audit, so a new Flash audit can’t be requested here.',
+            'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
         );
         expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
     });

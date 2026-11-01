@@ -27,4 +27,7 @@ interface OverdueAudits
      * @return list<Overdue>
      */
     public function flashOverdue(DateTimeInterface $at): array;
+
+    /** Whether this assignment is one of those Flash Audits at the given instant. */
+    public function isFlashOverdue(string $assignmentId, DateTimeInterface $at): bool;
 }

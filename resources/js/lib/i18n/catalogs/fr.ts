@@ -2877,12 +2877,15 @@ const fr: Catalog = {
     'admin.parties.audit.none':
         'Aucun audit n’est en cours pour cette entreprise.',
     'admin.parties.audit.closed_last':
-        'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, donc un nouvel audit éclair ne peut pas être demandé ici.',
+        'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, qui ne pourra donc plus jamais être auditée : aucun audit éclair ni examen des relevés ne peut être demandé ici.',
     'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
     'admin.parties.audit.kind.routine': 'Audit mensuel',
     'admin.parties.audit.status.operations': 'Aux Opérations d’audit',
     'admin.parties.audit.status.offered': 'Proposé à un partenaire',
     'admin.parties.audit.status.accepted': 'Accepté par un partenaire',
+    'admin.parties.audit.status.overdue': 'En retard',
+    'admin.parties.audit.overdue':
+        'Le délai de 24 heures a expiré le {date} sans rapport scellé. Un audit éclair doit être terminé en 24 heures : celui-ci est donc en infraction. Il figure dans les exceptions ouvertes pour suivi par les Opérations d’audit.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
         'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun ne peut prendre cet audit maintenant (disponibilité, capacité ou indépendance). Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès que l’un d’eux le peut.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
@@ -2910,7 +2913,7 @@ const fr: Catalog = {
     'admin.parties.audit.close.open': 'Clôturer',
     'admin.parties.audit.close.form': 'Clôturer cet audit',
     'admin.parties.audit.close.form_body':
-        'La clôture met fin à cet audit sans rapport. Aucun nouvel audit Flash ne pourra ensuite être demandé ici pour cette entreprise.',
+        'La clôture met fin à cet audit sans rapport et est irréversible. Cette entreprise ne pourra plus jamais être auditée : aucun audit éclair ni examen des relevés ne pourra ensuite être demandé pour elle.',
     'admin.parties.audit.close.placeholder':
         'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
     'admin.parties.audit.close.cta': 'Clôturer l’audit',
@@ -3156,6 +3159,8 @@ const fr: Catalog = {
     'auditor.nav.jobs_badge': '{count} offres ouvertes',
     'auditor.clock.label': 'Temps restant pour cette mission',
     'auditor.clock.time_left': 'Temps restant',
+    'auditor.clock.overdue': 'En retard',
+    'auditor.clock.overdue_label': 'Le délai de cette mission est dépassé',
     'auditor.time.minutes_ago': 'il y a {count} min',
     'auditor.time.hours_ago': 'il y a {count} h',
     'auditor.time.days_ago': 'il y a {count} j',

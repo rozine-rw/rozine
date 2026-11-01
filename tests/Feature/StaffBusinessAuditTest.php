@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\SetAuditorAvailability;
+use App\Application\Operations\Contracts\OverdueAudits;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditorIndependenceReview;
@@ -64,7 +65,8 @@ it('requests a Flash audit from a Business with none open and then shows it offe
         ->and($version->command)->toBe('audit.assignment.request')->and($version->actor_user_id)->toBe($fixture['staff']->id);
 
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-        'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null], 'closed' => false,
+        'kind' => 'flash', 'status' => 'offered', 'revision' => 1, 'attempt' => null, 'operations_reason' => null,
+        'due_at' => now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z'), 'overdue' => false], 'closed' => false,
         'request_flash' => null, 'redispatch' => null, 'close' => null, 'remedy' => null, 'partners' => $partners,
         'statement_review' => noStatementReview(['STATEMENT_ORIGINAL_REQUIRED', 'AUDIT_ENGAGEMENT_OPEN'])]));
 
@@ -84,7 +86,8 @@ it('says no partner office is within 30 km, then asks for an independence review
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE'], 'closed' => false,
+            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE',
+            'due_at' => now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z'), 'overdue' => false], 'closed' => false,
             'request_flash' => null, 'redispatch' => null,
             'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
             'remedy' => ['url' => '/admin/auditors', 'method' => 'get'], 'partners' => [],
@@ -164,7 +167,7 @@ it('offers only Close once a Flash audit has passed its deadline, and says a new
 
     $this->actingAs($fixture['staff'])->get($page)
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_DISPATCH_EXHAUSTED')
-            ->where('party.audit.redispatch', null)->where('party.audit.request_flash', null)
+            ->where('party.audit.engagement.overdue', true)->where('party.audit.redispatch', null)->where('party.audit.request_flash', null)
             ->where('party.audit.close.url', '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close'));
     $this->from($page)->post('/admin/businesses/'.$id.'/audits/'.$assignment->id.'/redispatch', ['expected_revision' => 1, ...flashAuditRequest('Try.')])
         ->assertSessionHasErrors(['reason' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.']);
@@ -177,6 +180,35 @@ it('offers only Close once a Flash audit has passed its deadline, and says a new
         ->where('party.audit.closed', true)->where('party.audit.request_flash', null));
     $this->from($page)->post('/admin/businesses/'.$id.'/flash-audit', flashAuditRequest())
         ->assertSessionHasErrors(['reason' => "Audit Operations closed this business's last audit, so a new one can't be requested here."]);
+});
+
+it('shows an accepted Flash audit as overdue once its 24-hour deadline passes without a report', function (): void {
+    $fixture = Fixture::make(1);
+    $assignment = Fixture::request($fixture);
+    Fixture::respond(Fixture::recipient($fixture, $assignment)['user'], $assignment);
+    $page = route('staff.businesses.index', ['business' => $fixture['business']]);
+    $due = now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z');
+
+    $this->actingAs($fixture['staff'])->get($page)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
+            ->where('party.audit.engagement.due_at', $due)->where('party.audit.engagement.overdue', false));
+
+    $this->travel(24)->hours();
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
+        ->where('party.audit.engagement.due_at', $due)->where('party.audit.engagement.overdue', true)->where('party.audit.close', null));
+});
+
+it('does not call a Flash audit overdue once its report is sealed, even before it is published (#478 review)', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    $audit = $fixture['audit'];
+    $page = route('staff.businesses.index', ['business' => $audit['business']]);
+    AuditSealingFixture::seal($fixture);
+    $this->travel(25)->hours();
+
+    $this->actingAs($audit['staff'])->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')
+        ->whereNot('party.audit.engagement.due_at', null)->where('party.audit.engagement.overdue', false));
+    expect(app(OverdueAudits::class)->flashOverdue(now()))->toBe([])
+        ->and(app(OverdueAudits::class)->isFlashOverdue($fixture['assignment']->id, now()))->toBeFalse();
 });
 
 it('leaves the audit out for staff who do not manage audits and gives the API no audit actions', function (): void {

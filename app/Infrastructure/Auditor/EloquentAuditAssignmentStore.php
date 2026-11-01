@@ -657,7 +657,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         $open = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->first();
 
         return $open === null || in_array($open->status, ['completed', 'closed'], true) ? null
-            : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'purpose' => AuditEngagementState::purpose($open->state), 'status' => $open->status];
+            : ['id' => $open->id, 'revision' => $open->revision, 'kind' => $open->state['kind'], 'purpose' => AuditEngagementState::purpose($open->state), 'status' => $open->status,
+                'complete_by' => $open->state['complete_by']];
     }
 
     public function purpose(string $assignmentId): string
