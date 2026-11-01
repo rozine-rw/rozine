@@ -14,6 +14,41 @@ const props = (fixture: { props: unknown }) =>
 
 beforeEach(resetInertia);
 
+describe('deferred activity', () => {
+    it('removes the ledger link when the deferred response revokes access', () => {
+        const fixture = props(todayFixture);
+        fixture.activity = null;
+        expect(fixture.nav.ledger).not.toBeNull();
+        render(<AdminToday {...fixture} />);
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows an accessible loading state and offers a targeted retry', async () => {
+        inertia.deferredState = 'loading';
+        const { rerender } = render(<AdminToday {...props(todayFixture)} />);
+        expect(
+            screen.getByRole('status', { name: 'Loading activity' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+
+        inertia.deferredState = 'error';
+        rerender(<AdminToday {...props(todayFixture)} />);
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Activity could not be loaded.',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+        expect(inertia.reload.at(-1)).toMatchObject({ only: ['activity'] });
+    });
+});
+
 describe('Admin frame', () => {
     it('draws the grouped design sidebar with live badges', () => {
         render(<AdminToday {...props(todayFixture)} />);
