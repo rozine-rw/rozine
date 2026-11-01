@@ -24,7 +24,7 @@ const STATUS_TONE = {
 const statusOf = (engagement: NonNullable<BusinessAudit['engagement']>) =>
     engagement.overdue ? 'overdue' : engagement.status;
 
-type Command = 'flash' | 'redispatch' | 'close' | 'review';
+type Command = 'flash' | 'redispatch' | 'withdraw' | 'close' | 'review';
 
 /**
  * Why the command is needed, under the viewer's name. Each opening is one request, so a double or
@@ -392,8 +392,8 @@ function StatementReviewSummary({ review }: { review: StatementReview }) {
 /**
  * A Business's open audit for staff who manage audit assignments (#446): its kind and where it
  * stands, overdue once a Flash audit passes its 24-hour deadline with the breach stated (#478), a Flash audit request when none is open (BR-48), and, while it waits on Audit Operations,
- * whether a partner can take it now or why not with where to fix that, and the redispatch or close
- * the server allows; whether its statements are ready for a factual review, with the request when
+ * whether a partner can take it now or why not with where to fix that, and the redispatch, withdraw
+ * (#489: ends this audit only, also once an accepted Flash audit is overdue) or close the server allows; whether its statements are ready for a factual review, with the request when
  * one can be made (#396); then the partners within 30 km and their independence reviews.
  */
 export function BusinessAuditSection({
@@ -427,7 +427,7 @@ export function BusinessAuditSection({
                 onClick={() => setOpen({ command, action, revision })}
                 className={cn(
                     'mt-3 h-[38px] w-full rounded-[10px] text-[12.5px] font-bold',
-                    command === 'close'
+                    command === 'close' || command === 'withdraw'
                         ? 'border border-[#fdeaea] bg-rz-surface text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]'
                         : 'bg-[#157357] text-white',
                 )}
@@ -509,6 +509,7 @@ export function BusinessAuditSection({
                             audit.redispatch,
                             engagement.revision,
                         )}
+                        {start('withdraw', audit.withdraw, engagement.revision)}
                         {start('close', audit.close, engagement.revision)}
                     </>
                 )}

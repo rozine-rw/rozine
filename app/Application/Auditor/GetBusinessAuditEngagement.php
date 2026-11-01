@@ -16,6 +16,8 @@ use App\Application\Operations\Contracts\OverdueAudits;
  * no longer be redispatched (attempts used up or the Flash deadline passed) it says so. Alongside it,
  * the partners within 30 km and whether each has been reviewed as independent of the Business. It is
  * overdue exactly when Admin Exceptions lists it: a Flash audit past its 24-hour clock with no sealed report.
+ * An overdue audit, or one waiting on Audit Operations, may be withdrawn (#489): that ends this audit
+ * only, so unlike close the Business can be audited again.
  *
  * @phpstan-type Engagement array{id: string, revision: int, kind: string, status: string, complete_by: string|null, overdue: bool, attempt: int|null, operations_reason: string|null, allowed_actions: list<string>}
  * @phpstan-type NearbyPartner array{party_id: string, name: string, revision: int, reviewed: bool}
@@ -33,7 +35,7 @@ final class GetBusinessAuditEngagement
         }
         $open = [...$open, 'overdue' => $this->overdue->isFlashOverdue($open['id'], now())];
         if ($open['status'] !== 'operations') {
-            return [...$open, 'attempt' => null, 'operations_reason' => null, 'allowed_actions' => []];
+            return [...$open, 'attempt' => null, 'operations_reason' => null, 'allowed_actions' => $open['overdue'] ? ['audit.assignment.withdraw'] : []];
         }
         $case = $this->store->operationsCase($actorId, $open['id']);
 
@@ -41,7 +43,7 @@ final class GetBusinessAuditEngagement
 
         return [...$open, 'revision' => $case['revision'], 'attempt' => $case['attempt'],
             'operations_reason' => $exhausted ? 'AUDIT_DISPATCH_EXHAUSTED' : $this->store->dispatchBlocker($actorId, $open['id']) ?? 'AUDIT_PARTNER_AVAILABLE',
-            'allowed_actions' => $case['allowed_actions']];
+            'allowed_actions' => [...$case['allowed_actions'], 'audit.assignment.withdraw']];
     }
 
     /** Whether Audit Operations closed the Business's last audit, so a Flash audit can't be requested for it. */
