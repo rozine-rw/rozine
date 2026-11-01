@@ -478,8 +478,8 @@ export type AdminTodayProps = AdminFrameShellProps & {
         watch: { count: number; pct: number };
         distressed: { count: number; pct: number } | null;
     } | null;
-    /** Null while the console has no ledger feed. */
-    activity: ActivityItem[] | null;
+    /** Omitted while loading; null when this viewer cannot see the ledger. */
+    activity?: ActivityItem[] | null;
     /** A stage the platform does not record yet has a null count. */
     funnel: { stage: FunnelStage; count: number | null; width_pct: number }[];
     pending_applications: {
@@ -868,6 +868,10 @@ export type BusinessAudit = {
             | 'AUDIT_NO_ELIGIBLE_PARTNER'
             | 'AUDIT_DISPATCH_EXHAUSTED'
             | null;
+        /** A Flash audit's 24-hour deadline (ISO); null for a monthly audit. */
+        due_at: string | null;
+        /** The Flash deadline passed with the audit still open (FR-303). */
+        overdue: boolean;
     } | null;
     /** Audit Operations closed the Business's last audit, so no new one can be requested here. */
     closed: boolean;

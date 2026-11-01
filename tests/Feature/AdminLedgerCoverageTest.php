@@ -45,6 +45,11 @@ beforeEach(function (): void {
                 return ['entries' => [], 'total' => 0, 'next_before' => null];
             }
 
+            public function latest(int $limit): array
+            {
+                return [];
+            }
+
             public function entry(string $id): ?array
             {
                 return $id === $this->entry['id'] ? $this->entry : null;

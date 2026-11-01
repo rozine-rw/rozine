@@ -751,7 +751,7 @@ const fr: Catalog = {
     'common.ordinal.other': '{n}',
     'business.reports.title': 'Rapports',
     'business.reports.subtitle':
-        'Vérifiés chaque mois par votre auditeur sur site.',
+        'Chaque audit éclair et mensuel scellé par votre partenaire d’audit, vérifié sur site.',
     'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
     'business.reports.guide.opens.title': 'Rassemblez vos documents',
     'business.reports.guide.opens.body':
@@ -768,9 +768,14 @@ const fr: Catalog = {
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
+    'business.reports.tab.in_audit_cosign': {
+        one: 'En audit · {count} à cosigner',
+        other: 'En audit · {count} à cosigner',
+    },
     'business.reports.tab.archived': 'Archivés',
     'business.reports.status.verified': 'Vérifié',
     'business.reports.status.in_audit': 'En audit',
+    'business.reports.status.awaiting': 'À cosigner',
     'business.reports.status.archived': 'Archivé',
     'business.reports.health.healthy': 'Sain',
     'business.reports.health.watch': 'À surveiller',
@@ -779,12 +784,16 @@ const fr: Catalog = {
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
     'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.hours_left': {
+        one: '{date} · {count} heure restante',
+        other: '{date} · {count} heures restantes',
+    },
     'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
     'business.reports.empty_body':
-        "Chaque rapport mensuel apparaît ici dès que votre partenaire d'audit l'a scellé.",
+        'Chaque rapport éclair ou mensuel apparaît ici dès que votre partenaire d’audit l’a scellé.',
     'business.reports.percent': '{value} %',
     'business.reports.count_of': '{count} sur {of}',
     'business.reports.sheet.live': 'Visible par vos investisseurs',
@@ -2182,6 +2191,9 @@ const fr: Catalog = {
     'admin.today.activity.title': 'Activité en direct',
     'admin.today.activity.caption': "Dans tout l'écosystème",
     'admin.today.activity.empty': "Aucun mouvement d'argent pour l'instant.",
+    'admin.today.activity.loading': 'Chargement de l’activité',
+    'admin.today.activity.failed': 'Impossible de charger l’activité.',
+    'admin.today.activity.retry': 'Réessayer',
     'admin.today.untracked': 'Pas encore suivi dans la console.',
     'admin.today.capital.empty': 'Aucun capital levé sur cette période.',
     'admin.today.activity.see_all': "Voir toute l'activité dans le grand livre",
@@ -2874,12 +2886,15 @@ const fr: Catalog = {
     'admin.parties.audit.none':
         'Aucun audit n’est en cours pour cette entreprise.',
     'admin.parties.audit.closed_last':
-        'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, donc un nouvel audit éclair ne peut pas être demandé ici.',
+        'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, qui ne pourra donc plus jamais être auditée : aucun audit éclair ni examen des relevés ne peut être demandé ici.',
     'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
     'admin.parties.audit.kind.routine': 'Audit mensuel',
     'admin.parties.audit.status.operations': 'Aux Opérations d’audit',
     'admin.parties.audit.status.offered': 'Proposé à un partenaire',
     'admin.parties.audit.status.accepted': 'Accepté par un partenaire',
+    'admin.parties.audit.status.overdue': 'En retard',
+    'admin.parties.audit.overdue':
+        'Le délai de 24 heures a expiré le {date} sans rapport scellé. Un audit éclair doit être terminé en 24 heures : celui-ci est donc en infraction. Il figure dans les exceptions ouvertes pour suivi par les Opérations d’audit.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
         'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun ne peut prendre cet audit maintenant (disponibilité, capacité ou indépendance). Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès que l’un d’eux le peut.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
@@ -2907,7 +2922,7 @@ const fr: Catalog = {
     'admin.parties.audit.close.open': 'Clôturer',
     'admin.parties.audit.close.form': 'Clôturer cet audit',
     'admin.parties.audit.close.form_body':
-        'La clôture met fin à cet audit sans rapport. Aucun nouvel audit Flash ne pourra ensuite être demandé ici pour cette entreprise.',
+        'La clôture met fin à cet audit sans rapport et est irréversible. Cette entreprise ne pourra plus jamais être auditée : aucun audit éclair ni examen des relevés ne pourra ensuite être demandé pour elle.',
     'admin.parties.audit.close.placeholder':
         'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
     'admin.parties.audit.close.cta': 'Clôturer l’audit',
@@ -3153,6 +3168,8 @@ const fr: Catalog = {
     'auditor.nav.jobs_badge': '{count} offres ouvertes',
     'auditor.clock.label': 'Temps restant pour cette mission',
     'auditor.clock.time_left': 'Temps restant',
+    'auditor.clock.overdue': 'En retard',
+    'auditor.clock.overdue_label': 'Le délai de cette mission est dépassé',
     'auditor.time.minutes_ago': 'il y a {count} min',
     'auditor.time.hours_ago': 'il y a {count} h',
     'auditor.time.days_ago': 'il y a {count} j',
@@ -3471,6 +3488,8 @@ const fr: Catalog = {
     'auditor.ledger.rules':
         'Téléversez le registre original en PDF ou CSV (10 Mo au plus). Un registre scanné peut être un PDF ; un scan sans texte est signalé pour une vérification manuelle de la source.',
     'auditor.ledger.doc.scanning': 'Vérification … {detail}',
+    'auditor.ledger.doc.scanning_hint':
+        'La lecture d’un grand livre prend en général environ une minute. Cette page se met à jour toute seule.',
     'auditor.ledger.doc.parsed': 'Acceptée · {detail}',
     'auditor.ledger.doc.failed': 'Refusée · {detail}',
     'auditor.ledger.reading': 'Lecture du document',
@@ -5291,6 +5310,114 @@ const fr: Catalog = {
         "Le contrat n'est pas encore disponible.",
     'business.apply.review.agreement_unavailable_body':
         "Rozine n'a pas encore publié les conditions et les avertissements sur les risques approuvés pour cette demande : il n'y a donc rien à signer pour l'instant. Votre brouillon et votre offre restent enregistrés.",
+    'business.apply.statements.transcribe':
+        'Saisir les montants de vos relevés',
+    'business.transcription.title': 'Saisir les montants de vos relevés',
+    'business.transcription.intro':
+        "Recopiez chaque mois à partir des relevés téléversés : le solde au début et à la fin, et chaque opération entre les deux. Un Audit Partner vérifie ensuite ces montants par rapport à vos relevés originaux. Un mois ne compte qu'une fois vérifié.",
+    'business.transcription.saved':
+        'Montants enregistrés · pas encore vérifiés',
+    'business.transcription.no_statements':
+        "Téléversez d'abord au moins un relevé bancaire ou Mobile Money à l'étape 1. Revenez ensuite saisir ses montants.",
+    'business.transcription.view_only':
+        'Vous pouvez voir vos relevés, mais seule une personne pouvant enregistrer la demande peut saisir leurs montants.',
+    'business.transcription.months.title': 'Mois couverts par vos relevés',
+    'business.transcription.months.first': 'De',
+    'business.transcription.months.last': 'À',
+    'business.transcription.months.count': {
+        one: '{count} mois ({max} au plus)',
+        other: '{count} mois ({max} au plus)',
+    },
+    'business.transcription.accounts.title': 'Comptes',
+    'business.transcription.accounts.hint':
+        'Ajoutez chaque compte bancaire ou Mobile Money dont proviennent les relevés. Utilisez des lettres, des chiffres, - et _ dans le nom.',
+    'business.transcription.account.unnamed': 'Compte {number}',
+    'business.transcription.account.name': 'Nom du compte',
+    'business.transcription.account.placeholder': 'ex. BK-courant ou MoMo-0788',
+    'business.transcription.account.from': 'Ouvert en',
+    'business.transcription.account.until': 'Fermé en',
+    'business.transcription.account.open': 'Toujours ouvert',
+    'business.transcription.account.remove': 'Retirer {account}',
+    'business.transcription.account.add': 'Ajouter un compte',
+    'business.transcription.figures.title': 'Montants mensuels',
+    'business.transcription.figures.months': 'Choisir un mois',
+    'business.transcription.figures.heading': '{account} · {month}',
+    'business.transcription.figures.sources': 'Relevé source',
+    'business.transcription.figures.opening': "Solde d'ouverture (RWF)",
+    'business.transcription.figures.opening_fixed':
+        "Reporté du mois précédent, ou 0 le mois d'ouverture du compte.",
+    'business.transcription.figures.transactions': 'Opérations',
+    'business.transcription.figures.none': 'Aucune opération ce mois-ci.',
+    'business.transcription.figures.closing':
+        'Solde de clôture sur le relevé (RWF)',
+    'business.transcription.figures.computed':
+        "Solde d'ouverture plus opérations : RWF {amount}",
+    'business.transcription.row.label': 'Opération {number}',
+    'business.transcription.row.date': 'Date',
+    'business.transcription.row.direction': 'Sens',
+    'business.transcription.row.in': 'Entrée',
+    'business.transcription.row.out': 'Sortie',
+    'business.transcription.row.amount': 'Montant (RWF)',
+    'business.transcription.row.type': 'Nature',
+    'business.transcription.row.choose': 'Choisir…',
+    'business.transcription.row.link.transfer':
+        'Le même virement sur votre autre compte',
+    'business.transcription.row.link.owner_return':
+        'Le retrait du propriétaire remboursé',
+    'business.transcription.row.reference': 'Référence sur le relevé',
+    'business.transcription.row.remove': 'Retirer {row}',
+    'business.transcription.row.add': 'Ajouter une opération',
+    'business.transcription.type.in.operating_inflow':
+        "Ventes ou autres revenus d'activité",
+    'business.transcription.type.in.financing': 'Prêt ou investissement reçu',
+    'business.transcription.type.in.transfer':
+        'Virement depuis votre autre compte',
+    'business.transcription.type.in.owner_return':
+        'Remboursement par le propriétaire',
+    'business.transcription.type.out.operating_outflow': "Dépense d'activité",
+    'business.transcription.type.out.debt_service': 'Remboursement de prêt',
+    'business.transcription.type.out.owner_draw': 'Retrait du propriétaire',
+    'business.transcription.type.out.transfer':
+        'Virement vers votre autre compte',
+    'business.transcription.problem.months':
+        'Choisissez le premier et le dernier mois couverts par vos relevés.',
+    'business.transcription.problem.too_many_months':
+        'Choisissez {max} mois au plus.',
+    'business.transcription.problem.no_accounts': 'Ajoutez au moins un compte.',
+    'business.transcription.problem.account_name':
+        'Nommez le compte avec des lettres, des chiffres, - et _.',
+    'business.transcription.problem.account_duplicate':
+        'Deux comptes portent le même nom.',
+    'business.transcription.problem.account_dates':
+        'Un compte ne peut pas fermer avant son ouverture.',
+    'business.transcription.problem.sources':
+        'Cochez le relevé dont proviennent ces montants.',
+    'business.transcription.problem.balance':
+        "Saisissez les soldes d'ouverture et de clôture en francs entiers.",
+    'business.transcription.problem.row_amount':
+        'Saisissez chaque montant en francs entiers.',
+    'business.transcription.problem.row_date':
+        'Chaque opération doit être datée de ce mois.',
+    'business.transcription.problem.row_reference':
+        'Chaque opération doit avoir sa propre référence.',
+    'business.transcription.problem.row_type':
+        'Indiquez la nature de chaque opération.',
+    'business.transcription.problem.row_link':
+        'Reliez chaque virement ou remboursement à sa contrepartie.',
+    'business.transcription.problem.difference':
+        "Ce mois ne tombe pas juste : le solde d'ouverture plus les opérations doit égaler le solde de clôture.",
+    'business.transcription.problem.closed_balance':
+        'Un compte doit finir à 0 le mois de sa fermeture.',
+    'business.transcription.to_fix': {
+        one: "{count} point à corriger avant d'enregistrer",
+        other: "{count} points à corriger avant d'enregistrer",
+    },
+    'business.transcription.reviewed':
+        "J'ai vérifié chaque montant par rapport à mes relevés originaux.",
+    'business.transcription.save': 'Enregistrer les montants',
+    'business.transcription.saving': 'Enregistrement…',
+    'business.transcription.failed':
+        "Nous n'avons pas pu enregistrer ces montants. Réessayez.",
     'business.apply.view_only':
         'Vous pouvez consulter cette demande, mais pas la modifier.',
     'business.apply.submitted.application_id': 'ID de la demande · {id}',
@@ -5584,6 +5711,7 @@ const fr: Catalog = {
         'Acceptez les conditions de mission actuelles pour continuer.',
     'auditor.command.review_terms': 'Lire les conditions',
     'auditor.seal.save_note': 'Enregistrer la note',
+    'auditor.seal.save_note_preview': 'Enregistrer la note pour prévisualiser',
     'auditor.seal.saving_note': 'Enregistrement de la note…',
     'auditor.seal.note_unsaved':
         "Enregistrez votre note avant l'aperçu. L'aperçu, votre code et le sceau portent tous sur la note enregistrée.",

@@ -35,6 +35,19 @@ describe('Auditor business file', () => {
         ).toBeInTheDocument();
     });
 
+    it('reads Overdue on the flash clock once its 24-hour deadline has passed', () => {
+        const overdue = props();
+        overdue.server_time = '2026-10-04T15:00:00Z';
+        render(<AuditorFile {...overdue} />);
+
+        const clock = within(sheetFor()).getByRole('timer', {
+            name: 'This job’s deadline has passed',
+        });
+
+        expect(clock).toHaveTextContent('Overdue');
+        expect(clock).toHaveTextContent('00:00:00');
+    });
+
     it('previews an offered file read-only, over Jobs, its flash clock already running from dispatch', () => {
         render(<AuditorFile {...props()} />);
 

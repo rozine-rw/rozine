@@ -11,6 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * What a representative reviews before saving a transcription (contract initial-statement-audit-1 §5):
  * the exact originals and extraction revisions to save against, and the transcription being amended.
  * Assistance stays unavailable until a structured conversion exists; nothing here is verified.
+ * The web page saves through its own route; readiness stays the bearer read.
  *
  * @phpstan-import-type TranscriptionDraft from \App\Application\Evidence\Contracts\StatementStore
  */
@@ -24,8 +25,10 @@ class StatementTranscriptionDraftResource extends JsonResource
         $canSave = in_array('statement.reconcile', $draft['allowed_actions'], true)
             && (! $request->routeIs('api.*') || $request->user()?->tokenCan('business:command'));
 
+        $save = $request->routeIs('api.*') ? 'api.v1.business.statements.transcription.save' : 'business.statements.transcription.save';
+
         return [...$draft, 'allowed_actions' => $canSave ? ['statement.reconcile'] : [],
-            'save' => $canSave ? ['url' => route('api.v1.business.statements.transcription.save', ['business' => $draft['business_id']], false), 'method' => 'post'] : null,
+            'save' => $canSave ? ['url' => route($save, ['business' => $draft['business_id']], false), 'method' => 'post'] : null,
             'readiness' => ['url' => route('api.v1.business.statements.readiness', ['business' => $draft['business_id']], false), 'method' => 'get']];
     }
 }

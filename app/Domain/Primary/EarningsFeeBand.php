@@ -31,4 +31,16 @@ final class EarningsFeeBand
 
         return ['tier' => $tier, 'rate_bps' => self::RATES[$tier], 'basis' => 'return_only', 'policy_version' => self::POLICY_VERSION];
     }
+
+    /** The active capital at which the next, cheaper band starts, or null from the top band. */
+    public static function nextBandAt(BigInteger $activeCapital): ?string
+    {
+        return array_find(array_reverse(self::FLOORS), fn (string $floor): bool => $activeCapital->isLessThan($floor));
+    }
+
+    /** A rate in basis points as a percentage with two decimals, such as `12.00`. */
+    public static function percent(int $rateBps): string
+    {
+        return intdiv($rateBps, 100).'.'.str_pad((string) ($rateBps % 100), 2, '0', STR_PAD_LEFT);
+    }
 }

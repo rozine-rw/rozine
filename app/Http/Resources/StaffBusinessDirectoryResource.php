@@ -19,7 +19,8 @@ use Illuminate\Support\Str;
  * A Business with no rated
  * note reads as pending its audit, and the average is of published scores only. A viewer who manages
  * audit assignments sees the audit open on the Business and, in the console, may request a Flash audit
- * when none is open or redispatch one that waits on Audit Operations, and sees whether the Business's
+ * when none is open or redispatch one that waits on Audit Operations, sees a Flash audit past its
+ * 24-hour deadline as overdue, and sees whether the Business's
  * statements are ready for a factual review, with the request bound to that readiness.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
@@ -112,7 +113,9 @@ class StaffBusinessDirectoryResource extends JsonResource
         $reason = $engagement['operations_reason'] ?? null;
 
         return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
-            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason],
+            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason,
+            // A Flash audit with no sealed report by its 24-hour deadline is overdue (FR-303), whatever its status.
+            'due_at' => $engagement['complete_by'], 'overdue' => $engagement['overdue']],
             // A Business whose last audit Audit Operations closed can't be sent a new one from here.
             'closed' => $engagement === null && $closed,
             'request_flash' => $console && $engagement === null && ! $closed ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,

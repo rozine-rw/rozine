@@ -23,6 +23,7 @@ use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessStatementController;
+use App\Http\Controllers\BusinessStatementTranscriptionController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
@@ -224,6 +225,8 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
+    Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'page'])->whereUlid('business')->name('statements.transcription.show');
+    Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('statements.transcription.save');
     Route::get('{business}/statements/{document}', [BusinessStatementController::class, 'show'])->whereUlid(['business', 'document'])->name('statements.show');
 });
 

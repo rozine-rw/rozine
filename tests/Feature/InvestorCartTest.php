@@ -9,13 +9,16 @@ use App\Application\Primary\ManageInvestorCart;
 use App\Domain\Operations\CommandRejection;
 use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorCartLine;
+use App\Models\InvestorCartRoot;
 use App\Models\Party;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -217,6 +220,11 @@ it('refuses a new line once the cart is full', function (): void {
             return [];
         }
 
+        public function snapshot(int $userId, ?int $contextRevision): array
+        {
+            return ['cart_id' => null, 'revision' => 0, 'sha256' => str_repeat('0', 64), 'lines' => []];
+        }
+
         public function put(int $userId, int $contextRevision, string $campaignId, int $units, Closure $admit): array
         {
             $admit(false, InvestorCart::MAX_LINES);
@@ -260,4 +268,50 @@ it('counts the cart lines on every Investor page for the Cart tab, and nowhere e
         ->and(($this->deals)()['cart_count'])->toBe(1);
     ($this->as)()->get(route('home'))->assertInertia(fn (Assert $page): Assert => $page->where('cart_count', null));
     expect(app(InvestorCart::class)->count(User::factory()->create()->id))->toBe(0);
+});
+
+it('raises the cart revision once per real change and hashes the canonical line snapshot (#383)', function (): void {
+    $partyId = (string) $this->investor['user']->party_id;
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
+    $other = PrimaryReservationFixture::campaign();
+    $empty = ($this->cart)()['cart'];
+    expect($empty)->toMatchArray(['id' => null, 'revision' => 0, 'deals' => 0, 'units' => '0'])
+        ->and($empty['sha256'])->toMatch('/^[0-9a-f]{64}$/');
+
+    ($this->add)('2')->assertOk();
+    ($this->add)('2')->assertOk();
+    ($this->add)('3', null, $other->id)->assertOk();
+    $cart = ($this->cart)()['cart'];
+    expect($cart)->toMatchArray(['revision' => 2, 'deals' => 2, 'units' => '5'])
+        ->and($cart['id'])->toBe(InvestorCartRoot::query()->where('party_id', $partyId)->sole()->id)
+        ->and($cart['sha256'])->not->toBe($empty['sha256']);
+
+    $reordered = PrimaryReservationFixture::investor();
+    ($this->add)('3', $reordered['user'], $other->id)->assertOk();
+    ($this->add)('2', $reordered['user'])->assertOk();
+    expect(($this->cart)($reordered['user'])['cart']['sha256'])->toBe($cart['sha256']);
+
+    ($this->units)('4')->assertOk();
+    expect(($this->cart)()['cart'])->toMatchArray(['revision' => 3, 'units' => '7']);
+    ($this->remove)()->assertOk();
+    ($this->remove)()->assertOk();
+    expect(($this->cart)()['cart'])->toMatchArray(['revision' => 4, 'deals' => 1]);
+
+    app(InvestorCart::class)->bought($partyId, $this->campaign->id);
+    expect(InvestorCartRoot::query()->where('party_id', $partyId)->sole()->revision)->toBe(4);
+    app(InvestorCart::class)->bought($partyId, $other->id);
+    $bought = ($this->cart)()['cart'];
+    expect($bought)->toMatchArray(['revision' => 5, 'deals' => 0, 'units' => '0'])->and($bought['sha256'])->toBe($empty['sha256']);
+});
+
+it('gives a cart that already had lines its root at revision 1 with the same snapshot hash (#383)', function (): void {
+    ($this->add)('2')->assertOk();
+    $sha256 = ($this->cart)()['cart']['sha256'];
+    $roots = require database_path('migrations/2026_11_01_040000_create_investor_carts_table.php');
+    $roots->down();
+    $roots->up();
+
+    $root = InvestorCartRoot::query()->where('party_id', (string) $this->investor['user']->party_id)->sole();
+    expect($root->revision)->toBe(1)->and($root->sha256)->toBe($sha256)
+        ->and(($this->cart)()['cart'])->toMatchArray(['id' => $root->id, 'revision' => 1, 'sha256' => $sha256]);
 });
