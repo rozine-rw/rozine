@@ -12,20 +12,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * verified, the cart's lines. Each line carries its deal's card, the chosen units, the most this
  * Party may take there now and one unit's flat return, then its own commands and the deal's live
  * checkout, where the client adds the chosen `units`. A filled line keeps its card and Remove only.
- * Checkout is per line: there is no multi-note checkout command yet (INV-R03).
+ * Checkout is per line: there is no multi-note checkout command yet (INV-R03). The cart's id,
+ * revision, snapshot hash and deal and note counts come with the lines (#383).
  */
 class InvestorCartResource extends JsonResource
 {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{identity_context_revision: int, verification: string|null, eligible: bool, lines: list<array<string, mixed>>|null} $data */
+        /** @var array{identity_context_revision: int, verification: string|null, eligible: bool, cart: array<string, mixed>|null, lines: list<array<string, mixed>>|null} $data */
         $data = $this->resource;
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'],
             'server_time' => now()->toIso8601String(), 'allowed_actions' => [], 'links' => [...InvestorShellPageResource::links(),
                 'wallet' => $data['verification'] === null ? self::link('investor.wallet') : null],
-            'cart' => $data['lines'] === null ? null : ['lines' => array_map(fn (array $line): array => self::line($line, $data['eligible']), $data['lines'])]];
+            'cart' => $data['lines'] === null ? null : [...(array) $data['cart'], 'lines' => array_map(fn (array $line): array => self::line($line, $data['eligible']), $data['lines'])]];
     }
 
     /**
