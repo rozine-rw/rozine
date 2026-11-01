@@ -14,8 +14,10 @@ use App\Models\InvestorCartRoot;
 use App\Models\Party;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -31,6 +33,7 @@ beforeEach(function (): void {
     $this->freezeSecond();
     InvestorWalletFixture::policy(maximum: null);
     $this->campaign = PrimaryReservationFixture::campaign();
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
     $this->second = PrimaryReservationFixture::campaign();
     $this->investor = PrimaryReservationFixture::investor();
     $this->add = fn (string $campaign, string $units, ?User $user = null) => $this->actingAs($user ?? $this->investor['user'])
