@@ -354,7 +354,7 @@ it('withdraws an accepted Flash audit past its deadline from its partner, and th
         ->assertRedirect($page);
     $assignment->refresh();
     expect($assignment->status)->toBe('withdrawn')->and($assignment->party_id)->toBeNull()
-        ->and($assignment->state['withdrawn_at'])->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'))
+        ->and($assignment->state['withdrawn_at'] ?? null)->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'))
         ->and($assignment->state['operations_reason'])->toBe('AUDIT_OPERATIONS_WITHDRAWN');
     $version = AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->where('revision', $assignment->revision)->sole();
     expect($version->command)->toBe('audit.assignment.withdraw')->and($version->actor_user_id)->toBe($fixture['staff']->id);
