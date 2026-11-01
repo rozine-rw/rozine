@@ -243,13 +243,13 @@ describe('Business Reports', () => {
         expect(screen.getByText('No reports here yet.')).toBeInTheDocument();
     });
 
-    it('explains how monthly audits work with the policy the server quotes', async () => {
+    it('explains how Flash and monthly audits work with the policy the server quotes', async () => {
         const user = userEvent.setup();
 
         render(<BusinessReports {...props(listFixture)} />);
 
         const toggle = screen.getByRole('button', {
-            name: 'How monthly audits work',
+            name: 'How audits work',
         });
 
         expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -259,10 +259,18 @@ describe('Business Reports', () => {
         expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
         const guide = within(
-            screen.getByRole('region', { name: 'How monthly audits work' }),
+            screen.getByRole('region', { name: 'How audits work' }),
         );
 
-        expect(guide.getByText('Gather your records')).toBeInTheDocument();
+        expect(
+            guide.getByText('A Flash audit, when Rozine asks'),
+        ).toBeInTheDocument();
+        expect(
+            guide.getByText(/seals a Flash report within 24 hours/u),
+        ).toBeInTheDocument();
+        expect(
+            guide.getByText('Every month, gather your records'),
+        ).toBeInTheDocument();
         expect(
             guide.getByText(
                 'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
@@ -299,11 +307,11 @@ describe('Business Reports', () => {
         ).toBeInTheDocument();
 
         await user.click(
-            screen.getByRole('button', { name: 'How monthly audits work' }),
+            screen.getByRole('button', { name: 'How audits work' }),
         );
 
         const guide = within(
-            screen.getByRole('region', { name: 'How monthly audits work' }),
+            screen.getByRole('region', { name: 'How audits work' }),
         );
 
         expect(

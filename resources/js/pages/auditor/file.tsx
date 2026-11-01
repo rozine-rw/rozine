@@ -15,6 +15,7 @@ import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import type { ReloadScope } from '@/components/auditor/refresh';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
+import { StatusPill } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import type {
@@ -164,7 +165,14 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     distanceKm={job.distance_km}
                     serverTime={props.server_time}
                     dueAt={job.deadline?.due_at ?? job.complete_by}
-                    clock={blocked === null}
+                    clock={blocked === null && !job.sealed}
+                    badge={
+                        blocked === null && job.sealed ? (
+                            <StatusPill tone="blue">
+                                {t('auditor.job.status.awaiting_cosign')}
+                            </StatusPill>
+                        ) : undefined
+                    }
                 />
             }
             footer={

@@ -19,6 +19,7 @@
             "accept_by": null,
             "complete_by": "2026-10-04T13:59:55Z",
             "reassigned_from": null,
+            "sealed": false,
             "kind": "flash",
             "allowed_actions": []
         },

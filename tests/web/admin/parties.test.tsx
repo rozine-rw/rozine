@@ -1644,6 +1644,32 @@ describe('Party 360', () => {
         );
     });
 
+    it('says one month transcribed in the singular', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 1,
+                            first_month: '2026-09',
+                            last_month: '2026-09',
+                        },
+                        reasons: ['BUSINESS_VERIFICATION_REQUIRED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+
+        expect(screen.getByRole('region', { name: 'Audit' })).toHaveTextContent(
+            '1 month transcribed, 2026-09 to 2026-09.',
+        );
+    });
+
     it('requests a Flash audit for a Business with no audit open', async () => {
         inertia.succeed = true;
         vi.spyOn(crypto, 'randomUUID').mockReturnValue(

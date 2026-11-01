@@ -331,6 +331,28 @@ describe('Auditor business file on the live S-C projection', () => {
     const live = () => props(liveMinimalFixture);
     const liveSheet = () => sheetFor('Gikondo Metal Works');
 
+    it('shows a sealed report as awaiting co-signature, with no countdown, as Jobs does', () => {
+        const sealed = live();
+        sealed.job.sealed = true;
+        render(<AuditorFile {...sealed} />);
+
+        const sheet = liveSheet();
+
+        expect(within(sheet).queryByRole('timer')).not.toBeInTheDocument();
+        expect(
+            within(sheet).getByText('Awaiting co-signature'),
+        ).toBeInTheDocument();
+    });
+
+    it('runs the countdown while the report is not yet sealed', () => {
+        render(<AuditorFile {...live()} />);
+
+        expect(within(liveSheet()).getByRole('timer')).toBeInTheDocument();
+        expect(
+            within(liveSheet()).queryByText('Awaiting co-signature'),
+        ).not.toBeInTheDocument();
+    });
+
     it('introduces the draft fallback as the application as it stands, with no pre-screen on record', () => {
         render(<AuditorFile {...live()} />);
 

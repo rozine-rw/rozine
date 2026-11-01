@@ -752,8 +752,13 @@ const fr: Catalog = {
     'business.reports.title': 'Rapports',
     'business.reports.subtitle':
         'Chaque audit éclair et mensuel scellé par votre partenaire d’audit, vérifié sur site.',
-    'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
-    'business.reports.guide.opens.title': 'Rassemblez vos documents',
+    'business.reports.guide.title': 'Comment fonctionnent les audits',
+    'business.reports.guide.flash.title':
+        'Un audit Flash, à la demande de Rozine',
+    'business.reports.guide.flash.body':
+        "Avant une levée de fonds, ou chaque fois que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash dans les 24 heures. Vous le cosignez comme un rapport mensuel.",
+    'business.reports.guide.opens.title':
+        'Chaque mois, rassemblez vos documents',
     'business.reports.guide.opens.body':
         "Entre le 20 et la fin du mois, rassemblez tous vos documents financiers papier et numériques pour l'audit sur place prévu avec votre expert-comptable.",
     'business.reports.guide.visit.title': 'Préparez la visite sur site',
@@ -2954,8 +2959,10 @@ const fr: Catalog = {
         'ex. Déclaration du partenaire du 30 oct. et registre des actionnaires RDB.',
     'admin.parties.audit.independence.cta': 'Enregistrer l’examen',
     'admin.parties.audit.review.title': 'Examen des relevés',
-    'admin.parties.audit.review.months':
-        '{count} mois transcrits, de {first} à {last}.',
+    'admin.parties.audit.review.months': {
+        one: '{count} mois transcrit, de {first} à {last}.',
+        other: '{count} mois transcrits, de {first} à {last}.',
+    },
     'admin.parties.audit.review.no_months':
         'Aucun mois de relevé n’est encore transcrit.',
     'admin.parties.audit.review.verified': 'Vérifiés par un Audit Partner',

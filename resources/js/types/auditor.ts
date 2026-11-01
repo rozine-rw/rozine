@@ -711,6 +711,11 @@ export type FileJob = {
     complete_by: string | null;
     /** Set when the file was reassigned to this partner; never shown, so no partner is named. */
     reassigned_from: string | null;
+    /**
+     * The report is sealed and waits on the Business's co-signature (#490): the file then shows that
+     * state, as Jobs does, and no countdown runs.
+     */
+    sealed: boolean;
     /** This record's own actions; the page's `allowed_actions` repeats them. */
     allowed_actions: AuditorAllowedAction[];
 };

@@ -59,9 +59,13 @@ it('puts a started monthly report on the clock, then awaiting co-signature, then
         'due_on' => app(AuditReportWindow::class)->dueAt($period), 'status' => 'in_progress', 'inflow' => null, 'outflow' => null, 'cover' => null,
         'link' => ['url' => '/auditor/reports/'.$report->id, 'method' => 'get']];
     expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [$card], 'desk_reviews' => []]);
+    $file = '/auditor/jobs/'.$fixture['assignment']->id;
+    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.sealed', false));
 
     AuditSealingFixture::seal($fixture);
     expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [[...$card, 'status' => 'awaiting_cosign']], 'desk_reviews' => []]);
+    // The file says the same as Jobs once sealed, so it runs no countdown (#490).
+    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.sealed', true));
 
     $business = ['business' => $fixture['audit']['business'], 'report' => $report->id];
     actingAs($fixture['audit']['authority']['users'][0])->post(route('business.audit-reports.dispute', $business), [

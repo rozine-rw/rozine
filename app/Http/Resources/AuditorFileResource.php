@@ -43,7 +43,7 @@ class AuditorFileResource extends JsonResource
 
         return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$job['allowed_actions'], ...($canStart ? ['audit.start'] : [])],
             'engagement' => (new AuditorEngagementSummaryResource($file['jobs']['engagement']))->resolve($request),
-            'job' => $job, 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
+            'job' => [...$job, 'sealed' => ($record['work']['report']['status'] ?? null) === 'sealed'], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
                 'start' => $canStart ? ['url' => route($prefix.'reports.start', ['assignment' => $job['id']], false), 'method' => 'post'] : null],
             'application' => $record['application'] === null ? null : ['id' => $record['application']['id'], 'revision' => $record['application']['revision']],
             'decline_options' => AuditorJobsResource::declineOptions(),
