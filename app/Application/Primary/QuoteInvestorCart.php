@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
-use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\HeldNoteCapital;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
@@ -35,7 +34,7 @@ use Brick\Math\RoundingMode;
  *   The band, rate, units and principal are exact.
  * - The KYC-R05 risk statements must be acknowledged, as for any reserve.
  *
- * @phpstan-import-type CampaignInput from PrimaryCampaignSource
+ * @phpstan-import-type CartCampaign from InvestorCartQuotes
  * @phpstan-import-type QuotedCart from InvestorCartQuotes
  * @phpstan-import-type QuoteBody from InvestorCartQuotes
  * @phpstan-import-type Quote from InvestorCartQuotes
@@ -68,7 +67,7 @@ final readonly class QuoteInvestorCart
 
     /**
      * @param  QuotedCart  $cart
-     * @param  array<string, CampaignInput>  $campaigns
+     * @param  array<string, CartCampaign>  $campaigns
      * @return QuoteBody
      */
     private function price(int $userId, string $partyId, array $cart, array $campaigns): array
@@ -139,7 +138,7 @@ final readonly class QuoteInvestorCart
 
     /**
      * @param  array{id: string, campaign_id: string, units: int}  $line
-     * @param  CampaignInput  $campaign
+     * @param  CartCampaign  $campaign
      * @param  array{tier: string, rate_bps: int, basis: string, policy_version: string}  $band
      * @return array<string, mixed>
      */

@@ -10,7 +10,6 @@ use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\ReservationWindow;
-use App\Models\BusinessCampaign;
 use App\Models\InvestorCartLine;
 use App\Models\InvestorCartQuote;
 use App\Models\InvestorCartRoot;
@@ -44,7 +43,7 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
     {
         return DB::transaction(function () use ($userId, $contextRevision, $expectedCartRevision, $price): array {
             $partyId = strtolower((string) User::query()->whereKey($userId)->value('party_id'));
-            $locked = BusinessCampaign::query()->whereIn('id', InvestorCartLine::query()->where('party_id', $partyId)->select('business_campaign_id'))
+            $locked = DB::table('business_campaigns')->whereIn('id', InvestorCartLine::query()->where('party_id', $partyId)->select('business_campaign_id'))
                 ->orderBy('business_id')->orderBy('id')->pluck('id')->map(fn (mixed $id): string => (string) $id)->all();
             foreach ($locked as $campaignId) {
                 $this->campaigns->lockBusiness($campaignId);

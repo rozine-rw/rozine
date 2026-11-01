@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Application\Primary\Contracts;
 
-use App\Application\Business\Contracts\PrimaryCampaignSource;
 use Closure;
 
 /**
@@ -19,8 +18,7 @@ use Closure;
  * locks with no external effects and returns the quote's lines, totals and band; the store gives
  * the quote its id, times and digests and keeps it.
  *
- * @phpstan-import-type CampaignInput from PrimaryCampaignSource
- *
+ * @phpstan-type CartCampaign array{publication_sha256: string, rate_pct: string, term_months: int, policy_version: string}
  * @phpstan-type QuotedCart array{id: string, revision: int, sha256: string, lines: list<array{id: string, campaign_id: string, units: int}>}
  * @phpstan-type QuoteBody array{lines: list<array<string, mixed>>, principal: array{currency: string, amount: string},
  *     earnings_fee: array{currency: string, amount: string}, net_return: array{currency: string, amount: string}, fee_band: array<string, mixed>}
@@ -31,7 +29,7 @@ interface InvestorCartQuotes
     public const string CONTRACT_VERSION = 'cart-checkout-1';
 
     /**
-     * @param  Closure(string, QuotedCart, array<string, CampaignInput>): QuoteBody  $price
+     * @param  Closure(string, QuotedCart, array<string, CartCampaign>): QuoteBody  $price
      * @return Quote
      */
     public function quote(int $userId, int $contextRevision, int $expectedCartRevision, Closure $price): array;
