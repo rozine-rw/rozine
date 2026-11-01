@@ -403,11 +403,7 @@
             "sha": "3456582946fa0d2c9c25646587e4066a9bfbf6e3",
             "run_id": "38933453754",
             "run_attempt": 1,
-            "complete_shards": [
-                1,
-                2,
-                4
-            ],
+            "complete_shards": [1, 2, 4],
             "rule": "maximum of baseline and observed C class seconds; no faster-sample reduction, no interrupted shard3 zero costs",
             "artifacts": [
                 {

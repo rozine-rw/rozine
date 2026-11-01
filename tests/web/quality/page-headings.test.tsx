@@ -6,8 +6,15 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 vi.mock('@inertiajs/react', async () => {
     const investor = await import('../investor/inertia-mock');
     const auditor = await import('../auditor/inertia');
+    const admin = await import('../admin/inertia-mock');
 
-    return { ...investor, ...auditor, Form: investor.Form };
+    return {
+        ...investor,
+        ...auditor,
+        Form: investor.Form,
+        Deferred: admin.Deferred,
+        router: { ...auditor.router, on: () => () => {} },
+    };
 });
 
 vi.setConfig({ testTimeout: 30_000 });
