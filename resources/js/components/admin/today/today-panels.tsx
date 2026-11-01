@@ -285,7 +285,7 @@ export function ActivityPanel({
     ledger,
     serverTime,
 }: {
-    items: AdminTodayProps['activity'];
+    items: Exclude<AdminTodayProps['activity'], undefined>;
     ledger: RouteLink | null;
     serverTime: string;
 }) {

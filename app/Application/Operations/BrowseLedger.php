@@ -75,7 +75,7 @@ final readonly class BrowseLedger
     {
         $this->staff->check($actorId, 'ledger.view');
 
-        return $this->journal->entries(null, $limit)['entries'];
+        return $this->journal->latest($limit);
     }
 
     /**

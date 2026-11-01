@@ -75,6 +75,14 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
         return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore];
     }
 
+    public function latest(int $limit): array
+    {
+        $rows = $this->select(DB::table('ledger_entries'))
+            ->orderByDesc('ledger_entries.id')->limit(max(1, $limit))->get()->all();
+
+        return $this->shape($rows);
+    }
+
     public function entry(string $id): ?array
     {
         return $this->shape($this->select(DB::table('ledger_entries')->where('ledger_entries.id', $id))->get()->all())[0] ?? null;
