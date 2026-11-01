@@ -43,7 +43,7 @@ class AuditorFileResource extends JsonResource
 
         return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$job['allowed_actions'], ...($canStart ? ['audit.start'] : [])],
             'engagement' => (new AuditorEngagementSummaryResource($file['jobs']['engagement']))->resolve($request),
-            'job' => [...$job, 'sealed' => ($record['work']['report']['status'] ?? null) === 'sealed'], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
+            'job' => [...$job, 'report_state' => self::reportState($record['work']['report'] ?? null)], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
                 'start' => $canStart ? ['url' => route($prefix.'reports.start', ['assignment' => $job['id']], false), 'method' => 'post'] : null],
             'application' => $record['application'] === null ? null : ['id' => $record['application']['id'], 'revision' => $record['application']['revision']],
             'decline_options' => AuditorJobsResource::declineOptions(),
@@ -58,6 +58,22 @@ class AuditorFileResource extends JsonResource
                 'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
                 'brief' => self::BRIEF[$record['work']['assignment']['kind']] ?? null,
                 'history' => ['last_audit' => null, 'flags' => []]]];
+    }
+
+    /**
+     * Where a sealed report stands, as Jobs shows it (#490): awaiting the Business's co-signature,
+     * disputed and under desk review, escalated to Rozine, or published. Null while it is not sealed,
+     * when the file's countdown still runs.
+     *
+     * @param  array{status: string, publication_status: string|null}|null  $report
+     */
+    private static function reportState(?array $report): ?string
+    {
+        if ($report === null || $report['status'] !== 'sealed') {
+            return null;
+        }
+
+        return in_array($report['publication_status'], ['disputed', 'escalated', 'published'], true) ? $report['publication_status'] : 'awaiting_cosign';
     }
 
     /**

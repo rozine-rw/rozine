@@ -331,18 +331,24 @@ describe('Auditor business file on the live S-C projection', () => {
     const live = () => props(liveMinimalFixture);
     const liveSheet = () => sheetFor('Gikondo Metal Works');
 
-    it('shows a sealed report as awaiting co-signature, with no countdown, as Jobs does', () => {
-        const sealed = live();
-        sealed.job.sealed = true;
-        render(<AuditorFile {...sealed} />);
+    it.each([
+        ['awaiting_cosign', 'Awaiting co-signature'],
+        ['disputed', 'Under desk review'],
+        ['escalated', 'Escalated'],
+        ['published', 'Published'],
+    ] as const)(
+        'shows a sealed report %s as Jobs words it, with no countdown',
+        (state, label) => {
+            const sealed = live();
+            sealed.job.report_state = state;
+            render(<AuditorFile {...sealed} />);
 
-        const sheet = liveSheet();
+            const sheet = liveSheet();
 
-        expect(within(sheet).queryByRole('timer')).not.toBeInTheDocument();
-        expect(
-            within(sheet).getByText('Awaiting co-signature'),
-        ).toBeInTheDocument();
-    });
+            expect(within(sheet).queryByRole('timer')).not.toBeInTheDocument();
+            expect(within(sheet).getByText(label)).toBeInTheDocument();
+        },
+    );
 
     it('runs the countdown while the report is not yet sealed', () => {
         render(<AuditorFile {...live()} />);

@@ -686,6 +686,13 @@ export type BusinessFile = {
     };
 };
 
+/** Where a sealed report stands on the business file (#490). */
+export type FileReportState =
+    | 'awaiting_cosign'
+    | 'disputed'
+    | 'escalated'
+    | 'published';
+
 export type FileJob = {
     /** The assignment's ID; its commands send `revision` as `expected_revision`. */
     id: string;
@@ -712,10 +719,11 @@ export type FileJob = {
     /** Set when the file was reassigned to this partner; never shown, so no partner is named. */
     reassigned_from: string | null;
     /**
-     * The report is sealed and waits on the Business's co-signature (#490): the file then shows that
-     * state, as Jobs does, and no countdown runs.
+     * Where the sealed report stands, as Jobs shows it (#490): awaiting the Business's co-signature,
+     * disputed, escalated or published. The file then shows that state and runs no countdown; null
+     * while the report is not sealed.
      */
-    sealed: boolean;
+    report_state: FileReportState | null;
     /** This record's own actions; the page's `allowed_actions` repeats them. */
     allowed_actions: AuditorAllowedAction[];
 };
