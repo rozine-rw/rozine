@@ -20,6 +20,7 @@ use Tests\TestCase;
 
 beforeEach(function (): void {
     $this->freezeSecond();
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->startOfMonth()->addDays(14)->setTime(9, 0));
 });
 
 it('completes a published engagement on the next request so the business can be audited again', function (): void {

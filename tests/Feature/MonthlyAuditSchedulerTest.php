@@ -22,6 +22,7 @@ use Tests\Support\PrimaryIssuanceFixture;
 
 beforeEach(function (): void {
     $this->freezeSecond();
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->startOfMonth()->addDays(14)->setTime(9, 0));
     Notification::fake();
 });
 
