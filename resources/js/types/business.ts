@@ -609,6 +609,102 @@ export type BusinessStatements = {
     revision: number;
     documents: BusinessStatement[];
     upload: RouteAction;
+    /** Where the representative enters the figures from these statements. */
+    transcription: RouteLink;
+};
+
+/** One account (bank or Mobile Money) the statements cover; months are `YYYY-MM`. */
+export type StatementRail = {
+    id: string;
+    active_from: string;
+    active_until: string | null;
+};
+
+export type StatementDrawRef = {
+    rail_id: string;
+    month: string;
+    reference: string;
+};
+
+export type StatementClassification =
+    | 'operating_inflow'
+    | 'operating_outflow'
+    | 'financing'
+    | 'transfer'
+    | 'owner_draw'
+    | 'owner_return'
+    | 'debt_service';
+
+export type StatementTransaction = {
+    reference: string;
+    /** `YYYY-MM-DD`, inside the statement's month. */
+    date: string;
+    /** Whole RWF as a string; negative is money out. */
+    amount: string;
+    classification: StatementClassification;
+    source_ids: string[];
+    return_of: StatementDrawRef | null;
+    transfer_of: StatementDrawRef | null;
+    exception_id: string | null;
+};
+
+export type StatementMonth = {
+    rail_id: string;
+    month: string;
+    opening_balance: string;
+    closing_balance: string;
+    source_ids: string[];
+    transactions: StatementTransaction[];
+};
+
+export type StatementSourceBinding = {
+    evidence_revision: number;
+    manifest_sha256: string;
+    originals: { document_id: string; sha256: string }[];
+    extractions: {
+        document_id: string;
+        extraction_id: string;
+        revision: number;
+        parser_version: string;
+    }[];
+};
+
+/** `StatementTranscriptionDraftResource`: what the representative reviews and saves against. */
+export type StatementTranscriptionDraft = {
+    contract_version: string;
+    business_id: string;
+    business_revision: number;
+    mandate_version: number;
+    evidence: StatementSourceBinding;
+    assistance: {
+        status: 'unavailable';
+        reason_codes: string[];
+        candidate: null;
+    };
+    current_transcription: {
+        id: string;
+        revision: number;
+        amends_id: string | null;
+        sha256: string;
+        current: boolean;
+        verified: false;
+        payload: {
+            rails: StatementRail[];
+            months: string[];
+            statements: StatementMonth[];
+        };
+    } | null;
+    allowed_actions: 'statement.reconcile'[];
+    save: RouteAction | null;
+    readiness: RouteLink;
+};
+
+export type BusinessStatementTranscriptionProps = {
+    draft: StatementTranscriptionDraft;
+    identity_context_revision: number;
+    statements: BusinessStatements;
+    home: BusinessHomeProps;
+    links: { close: RouteLink };
 };
 
 export type BusinessApplyProps = {

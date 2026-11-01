@@ -11,6 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * The Business's own bank and Mobile Money statements (BRS APP-B01, plan C-14): what has been
  * received, how far reading each one has got, and where the next one is uploaded. Receiving a
  * statement verifies nothing; an Audit Partner verifies the figures before any capacity exists.
+ * `transcription` is where the representative enters the figures from those statements.
  *
  * @phpstan-import-type Manifest from \App\Application\Evidence\Contracts\StatementStore
  */
@@ -33,6 +34,7 @@ class BusinessStatementsResource extends JsonResource
                 'reading' => self::READING[$document['extraction']['status']] ?? 'needs_review',
                 'link' => ['url' => route($prefix.'show', ['business' => $business, 'document' => $document['id']], false), 'method' => 'get']],
                 $data['manifest']['documents']),
-            'upload' => ['url' => route($prefix.'upload', ['business' => $business], false), 'method' => 'post']];
+            'upload' => ['url' => route($prefix.'upload', ['business' => $business], false), 'method' => 'post'],
+            'transcription' => ['url' => route($prefix.($request->routeIs('api.*') ? 'transcription.draft' : 'transcription.show'), ['business' => $business], false), 'method' => 'get']];
     }
 }

@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Icon } from '@/components/rozine/icon';
 import { UploadStatus } from '@/components/rozine/upload-status';
@@ -16,7 +16,8 @@ type StatementUploadProps = {
 /**
  * The business's bank and Mobile Money statements on step 1 (BRS APP-B01, plan C-14). Each upload
  * goes to the server as the original file and the page is drawn again with it listed; receiving or
- * reading a statement verifies nothing, so the figures above stay as the server states them.
+ * reading a statement verifies nothing, so the figures above stay as the server states them. Once one
+ * is in, the representative goes on to enter its figures for an Audit Partner to verify.
  */
 export function StatementUpload({
     statements,
@@ -142,6 +143,14 @@ export function StatementUpload({
                 </label>
             )}
             {uploading && <UploadStatus percent={percent} className="mt-2.5" />}
+            {canUpload && statements.documents.length > 0 && (
+                <Link
+                    href={statements.transcription}
+                    className="mt-3 ml-2 inline-flex items-center justify-center rounded-xl border border-rz-border px-4 py-2.5 text-[13px] font-bold text-rz-accent-app-text"
+                >
+                    {t('business.apply.statements.transcribe')}
+                </Link>
+            )}
         </section>
     );
 }

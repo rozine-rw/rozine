@@ -46,6 +46,10 @@
             "upload": {
                 "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements",
                 "method": "post"
+            },
+            "transcription": {
+                "url": "/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/transcription",
+                "method": "get"
             }
         },
         "identity_context_revision": 4,

@@ -25,6 +25,19 @@ const inertia = vi.hoisted(() => ({
 
 vi.mock('@inertiajs/react', () => ({
     router: { post: inertia.post },
+    Link: ({
+        href,
+        children,
+        className,
+    }: {
+        href: { url: string };
+        children: React.ReactNode;
+        className?: string;
+    }) => (
+        <a href={href.url} className={className}>
+            {children}
+        </a>
+    ),
 }));
 
 const page = () =>
@@ -68,6 +81,14 @@ describe('Statement upload on Apply step 1', () => {
         expect(
             screen.getByText(/^Received 23 Sept? 2026$/u),
         ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Enter the figures from your statements',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/transcription',
+        );
     });
 
     it('says when nothing has arrived yet', () => {
@@ -82,6 +103,11 @@ describe('Statement upload on Apply step 1', () => {
         expect(
             screen.getByText('No statements received yet.'),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Enter the figures from your statements',
+            }),
+        ).not.toBeInTheDocument();
     });
 
     it('posts the original file with its envelope and shows the progress until the page is drawn again', async () => {
@@ -182,6 +208,9 @@ describe('Statement upload on Apply step 1', () => {
 
         expect(
             screen.queryByLabelText('Upload a statement'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Enter the figures from your statements'),
         ).not.toBeInTheDocument();
         expect(screen.getAllByRole('listitem')).toHaveLength(3);
     });
