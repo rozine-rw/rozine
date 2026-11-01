@@ -2066,6 +2066,8 @@ const en = {
     'admin.today.lifecycle.failed': 'Failed',
     'admin.today.pending.title': 'Pending applications',
     'admin.today.pending.empty': 'No applications waiting.',
+    'admin.today.pending.restricted':
+        'You do not have access to pending applications.',
     'admin.today.pending.review': 'Review',
     'admin.today.pending.review_named': 'Review {name}',
     'admin.today.sectors.title': 'Sector exposure',

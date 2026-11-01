@@ -59,9 +59,6 @@ final class BrowseOperationsDashboard
     public function handle(int $actorId, ?string $from, ?string $to): array
     {
         $this->staff->check($actorId, 'admin.open');
-        $start = $from === null ? null : CarbonImmutable::parse($from, self::ZONE);
-        $end = $to === null ? null : CarbonImmutable::parse($to, self::ZONE);
-        $grain = self::grain($start, $end);
         $investors = $this->investors->directory('all', 'name', '', 0);
         $queue = $this->staff->currentlyHolds($actorId, 'applications.review')
             ? $this->applications->page('pending', '', null, self::PENDING, null) : null;
@@ -71,8 +68,26 @@ final class BrowseOperationsDashboard
         return ['figures' => $this->store->figures(), 'verified_investors' => $investors['counts']['verified'], 'kyc_awaiting' => $investors['awaiting_review'],
             'applications_pending' => $queue === null ? null : (int) $queue['counts']['pending'], 'pending' => $pending,
             'frozen_accounts' => $this->operators->directory('all', '')['counts']['frozen'],
-            ...$this->health(), 'capital' => ['from' => $start?->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain,
-                'bars' => $this->store->capitalRaised($grain, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String())]];
+            ...$this->health(), 'capital' => $this->capitalChart($from, $to)];
+    }
+
+    /** @return array{from: string|null, to: string|null, grain: 'year'|'month'|'day'|'hour', bars: list<Bar>} */
+    public function capitalRaised(int $actorId, ?string $from, ?string $to): array
+    {
+        $this->staff->check($actorId, 'admin.open');
+
+        return $this->capitalChart($from, $to);
+    }
+
+    /** @return array{from: string|null, to: string|null, grain: 'year'|'month'|'day'|'hour', bars: list<Bar>} */
+    private function capitalChart(?string $from, ?string $to): array
+    {
+        $start = $from === null ? null : CarbonImmutable::parse($from, self::ZONE);
+        $end = $to === null ? null : CarbonImmutable::parse($to, self::ZONE);
+        $grain = self::grain($start, $end);
+
+        return ['from' => $start?->toIso8601String(), 'to' => $end?->toIso8601String(), 'grain' => $grain,
+            'bars' => $this->store->capitalRaised($grain, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String())];
     }
 
     /**
