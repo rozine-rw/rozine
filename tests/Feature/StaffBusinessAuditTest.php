@@ -266,9 +266,9 @@ it('requests a statement review from the readiness the drawer showed, and then s
         ->and($review['request']['binding']['transcription_id'])->toBe($transcriptionId);
     $body = ['request_id' => (string) Str::uuid(), 'reason' => 'First factual review of the uploaded statements.', ...$review['request']['binding']];
 
-    $this->from($page)->post($url, [...$body, 'readiness_sha256' => str_repeat('0', 64)])
+    $this->from($page)->post($url, [...$body, 'request_id' => (string) Str::uuid(), 'readiness_sha256' => str_repeat('0', 64)])
         ->assertSessionHasErrors(['reason' => 'The statements changed since you opened this business. Review them again.']);
-    $this->from($page)->post($url, [...$body, 'reason' => ''])->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
+    $this->from($page)->post($url, [...$body, 'request_id' => (string) Str::uuid(), 'reason' => ''])->assertSessionHasErrors(['reason' => 'Say why, in plain text.']);
     $this->assertDatabaseCount('audit_assignments', 0);
 
     $this->post($url, $body)->assertRedirect($page);
