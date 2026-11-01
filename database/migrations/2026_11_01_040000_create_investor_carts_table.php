@@ -32,6 +32,9 @@ return new class extends Migration
         });
         DB::unprepared("ALTER TABLE investor_carts ADD CONSTRAINT investor_cart_revision CHECK (revision >= 1),
             ADD CONSTRAINT investor_cart_sha256 CHECK (sha256 ~ '^[0-9a-f]{64}$')");
+        // The migration runs in one transaction; holding the lines in SHARE mode until it commits keeps
+        // any cart writer out between the backfill and the root table going live.
+        DB::unprepared('LOCK TABLE investor_cart_lines IN SHARE MODE');
         $json = app(CanonicalJson::class);
         $at = now('UTC')->format('Y-m-d H:i:s.u');
         foreach (DB::table('investor_cart_lines')->orderBy('party_id')->orderBy('created_at')->orderBy('id')->get()->groupBy('party_id') as $partyId => $rows) {
