@@ -15,6 +15,7 @@ use App\Models\AuditAssignmentVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Tests\Support\AuditAssignmentFixture;
+use Tests\Support\AuditorFixture;
 use Tests\Support\AuditSealingFixture as Fixture;
 use Tests\TestCase;
 
@@ -74,6 +75,7 @@ function requestAfterPublishedCompletion(TestCase $testCase, array $fixture, boo
     $businessId = $fixture['audit']['business'];
     if ($monthly) {
         $testCase->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
+        AuditorFixture::recheck($fixture['audit']['partners'][0]);
         app()->instance(MonthlyAuditBusinesses::class, new readonly class($businessId) implements MonthlyAuditBusinesses
         {
             public function __construct(private string $businessId) {}

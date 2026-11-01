@@ -1,7 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminParties from '@/pages/admin/parties';
-import type { AdminPartiesProps, PartyDetail } from '@/types/admin';
+import type {
+    AdminPartiesProps,
+    BusinessAudit,
+    PartyDetail,
+    StatementReview,
+} from '@/types/admin';
 import type { LicenceQueues } from '@/types/admin-audit';
 import licenceFixture from '../../../resources/fixtures/ui/admin-auditors-licence.json';
 import auditorsFixture from '../../../resources/fixtures/ui/admin-auditors.json';
@@ -1452,13 +1457,192 @@ describe('Party 360', () => {
         ]);
     });
 
-    const withAudit = (audit: PartyDetail['audit']) => {
+    const noStatements: StatementReview = {
+        verified: false,
+        coverage: {
+            declared_month_count: 0,
+            first_month: null,
+            last_month: null,
+        },
+        reasons: ['STATEMENT_ORIGINAL_REQUIRED'],
+        request: null,
+    };
+    const withAudit = (
+        audit:
+            | (Omit<BusinessAudit, 'statement_review'> & {
+                  statement_review?: StatementReview;
+              })
+            | null,
+    ) => {
         const fixture = props(frozenFixture);
 
-        fixture.party = { ...party(frozenFixture), audit };
+        fixture.party = {
+            ...party(frozenFixture),
+            audit:
+                audit === null
+                    ? null
+                    : {
+                          ...audit,
+                          statement_review:
+                              audit.statement_review ?? noStatements,
+                      },
+        };
 
         return fixture;
     };
+    const noAudit = {
+        engagement: null,
+        closed: false,
+        request_flash: null,
+        redispatch: null,
+        close: null,
+        remedy: null,
+        partners: [],
+    };
+
+    it('says what a Business still lacks before its statements can be reviewed', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 0,
+                            first_month: null,
+                            last_month: null,
+                        },
+                        reasons: [
+                            'STATEMENT_ORIGINAL_REQUIRED',
+                            'AUDIT_ENGAGEMENT_OPEN',
+                        ],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Statement review');
+        expect(audit).toHaveTextContent('Not verified');
+        expect(audit).toHaveTextContent(
+            'No statement months are transcribed yet.',
+        );
+        expect(audit).toHaveTextContent(
+            'The business hasn’t uploaded any statements yet.',
+        );
+        expect(audit).toHaveTextContent(
+            'Another audit is open on this business. Request the review once it ends.',
+        );
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Request statement review',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('requests a statement review bound to the readiness it shows', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d',
+        );
+        const binding = {
+            expected_business_revision: 3,
+            expected_mandate_version: 1,
+            expected_evidence_revision: 2,
+            transcription_id: '01jabcdefghjkmnpqrstvwxyz0',
+            transcription_sha256: 'a'.repeat(64),
+            readiness_sha256: 'b'.repeat(64),
+        };
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 12,
+                            first_month: '2025-10',
+                            last_month: '2026-09',
+                        },
+                        reasons: [],
+                        request: {
+                            url: '/admin/businesses/biz_1/statement-review',
+                            method: 'post',
+                            binding,
+                        },
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            '12 months transcribed, 2025-10 to 2026-09.',
+        );
+        expect(audit).toHaveTextContent(
+            'The uploaded statements are ready for an Audit Partner to verify.',
+        );
+        await user.click(
+            within(audit).getByRole('button', {
+                name: 'Request statement review',
+            }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Request a statement review',
+        });
+
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'First review of the uploaded statements.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Request review' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/statement-review',
+                data: {
+                    ...binding,
+                    reason: 'First review of the uploaded statements.',
+                    request_id: '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d',
+                },
+            },
+        ]);
+    });
+
+    it('shows statements an Audit Partner has verified', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: true,
+                        coverage: {
+                            declared_month_count: 36,
+                            first_month: '2023-10',
+                            last_month: '2026-09',
+                        },
+                        reasons: ['STATEMENT_ALREADY_VERIFIED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Verified by an Audit Partner');
+        expect(audit).toHaveTextContent(
+            'An Audit Partner has already verified these statements.',
+        );
+    });
 
     it('requests a Flash audit for a Business with no audit open', async () => {
         inertia.succeed = true;

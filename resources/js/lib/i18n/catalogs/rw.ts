@@ -2189,6 +2189,8 @@ const rw: Catalog = {
     'admin.today.lifecycle.failed': 'Byananiranye',
     'admin.today.pending.title': 'Ubusabe butegereje',
     'admin.today.pending.empty': 'Nta busabe butegereje.',
+    'admin.today.pending.restricted':
+        'Ntabwo ufite uburenganzira bwo kureba ubusabe butegereje.',
     'admin.today.pending.review': 'Suzuma',
     'admin.today.pending.review_named': 'Suzuma {name}',
     'admin.today.sectors.title': 'Imari muri buri rwego',
@@ -2922,6 +2924,38 @@ const rw: Catalog = {
     'admin.parties.audit.independence.placeholder.reference':
         'urugero: Imenyekanisha ry’umugenzuzi ryo ku wa 30 Ukwakira n’urutonde rw’abanyamigabane muri RDB.',
     'admin.parties.audit.independence.cta': 'Andika isuzuma',
+    'admin.parties.audit.review.title': 'Isuzuma ry’inyandiko za konti',
+    'admin.parties.audit.review.months':
+        'Amezi {count} yanditswe, kuva {first} kugeza {last}.',
+    'admin.parties.audit.review.no_months':
+        'Nta kwezi kw’inyandiko za konti kuranditswa.',
+    'admin.parties.audit.review.verified': 'Byemejwe n’Umugenzuzi',
+    'admin.parties.audit.review.unverified': 'Ntibiremezwa',
+    'admin.parties.audit.review.ready':
+        'Inyandiko za konti zoherejwe ziteguye kugenzurwa n’Umugenzuzi. Mbere y’uko zemezwa, ubucuruzi ntibushobora gukomeza ubusabe bwabwo.',
+    'admin.parties.audit.review.blocked.BUSINESS_VERIFICATION_REQUIRED':
+        'Iyandikwa ry’ubucuruzi cyangwa uwuhagarariye ntibyemejwe ubu.',
+    'admin.parties.audit.review.blocked.STATEMENT_ORIGINAL_REQUIRED':
+        'Ubucuruzi ntiburohereza inyandiko za konti.',
+    'admin.parties.audit.review.blocked.STATEMENT_RECONCILIATION_REQUIRED':
+        'Inyandiko za konti zoherejwe ntiziranditswa mu mibare ya buri kwezi.',
+    'admin.parties.audit.review.blocked.STATEMENT_TRANSCRIPTION_STALE':
+        'Hoherejwe inyandiko nshya nyuma y’iyandikwa riheruka, rigomba kongera gukorwa mbere.',
+    'admin.parties.audit.review.blocked.STATEMENT_ALREADY_VERIFIED':
+        'Umugenzuzi yamaze kwemeza izi nyandiko za konti.',
+    'admin.parties.audit.review.blocked.AUDIT_STATEMENT_REVIEW_OPEN':
+        'Isuzuma ry’inyandiko za konti rirakomeje.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_OPEN':
+        'Hari irindi genzura rifunguye kuri ubu bucuruzi. Saba isuzuma rirangiye.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_CLOSED':
+        'Audit Operations yafunze igenzura riheruka ry’ubu bucuruzi, bityo isuzuma ntirishobora gusabirwa hano.',
+    'admin.parties.audit.review.open': 'Saba isuzuma ry’inyandiko za konti',
+    'admin.parties.audit.review.form': 'Saba isuzuma ry’inyandiko za konti',
+    'admin.parties.audit.review.form_body':
+        'Umugenzuzi uri muri kilometero 30 agereranya inyandiko zoherejwe n’iz’umwimerere. Ubusabe ni ubw’inyandiko zigaragara hano; nizihinduka mbere, uzasabwa kongera kuzisuzuma.',
+    'admin.parties.audit.review.placeholder':
+        'urugero: Isuzuma rya mbere ry’inyandiko zoherejwe hamwe n’ubusabe.',
+    'admin.parties.audit.review.cta': 'Saba isuzuma',
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',

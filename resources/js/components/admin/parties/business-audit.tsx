@@ -5,7 +5,11 @@ import { Chip, EXPLAIN } from '@/components/admin/ui';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
-import type { BusinessAudit, StaffViewer } from '@/types/admin';
+import type {
+    BusinessAudit,
+    StaffViewer,
+    StatementReview,
+} from '@/types/admin';
 import type { RouteAction } from '@/types/routing';
 
 const STATUS_TONE = {
@@ -14,22 +18,25 @@ const STATUS_TONE = {
     accepted: 'green',
 } as const;
 
-type Command = 'flash' | 'redispatch' | 'close';
+type Command = 'flash' | 'redispatch' | 'close' | 'review';
 
 /**
  * Why the command is needed, under the viewer's name. Each opening is one request, so a double or
- * delayed submit replays it; a redispatch also names the audit revision it answers.
+ * delayed submit replays it; a redispatch also names the audit revision it answers, and a statement
+ * review the readiness it answers.
  */
 function AuditReasonForm({
     command,
     action,
     revision,
+    binding,
     viewer,
     onCancel,
 }: {
     command: Command;
     action: RouteAction;
     revision: number | null;
+    binding?: Record<string, string | number>;
     viewer: StaffViewer;
     onCancel: () => void;
 }) {
@@ -40,6 +47,7 @@ function AuditReasonForm({
         request_id: string;
         expected_revision?: number;
     }>({
+        ...binding,
         reason: '',
         request_id: requestId,
         ...(revision === null ? {} : { expected_revision: revision }),
@@ -322,10 +330,65 @@ function NearbyPartners({
 }
 
 /**
+ * Whether the Business's uploaded statements are ready for an Audit Partner to verify (#396): the
+ * months transcribed, whether they are verified, and what still stands in the way of a review.
+ */
+function StatementReviewSummary({ review }: { review: StatementReview }) {
+    const { t } = useTranslation();
+    const { coverage } = review;
+
+    return (
+        <div className="mt-4 border-t border-[#e3e9f3] pt-3 dark:border-rz-border">
+            <div className="flex items-center justify-between gap-3">
+                <h4 className="text-[11.5px] font-bold text-rz-slate">
+                    {t('admin.parties.audit.review.title')}
+                </h4>
+                <Chip tone={review.verified ? 'green' : 'amber'}>
+                    {t(
+                        review.verified
+                            ? 'admin.parties.audit.review.verified'
+                            : 'admin.parties.audit.review.unverified',
+                    )}
+                </Chip>
+            </div>
+            <p className={cn('mt-1.5 text-[12.5px] leading-[1.5]', EXPLAIN)}>
+                {coverage.declared_month_count === 0
+                    ? t('admin.parties.audit.review.no_months')
+                    : t('admin.parties.audit.review.months', {
+                          count: String(coverage.declared_month_count),
+                          first: coverage.first_month ?? '',
+                          last: coverage.last_month ?? '',
+                      })}
+            </p>
+            {review.reasons.length === 0 ? (
+                <p className={cn('mt-1 text-[12.5px] leading-[1.5]', EXPLAIN)}>
+                    {t('admin.parties.audit.review.ready')}
+                </p>
+            ) : (
+                <ul className="mt-1 list-disc pl-4">
+                    {review.reasons.map((reason) => (
+                        <li
+                            key={reason}
+                            className={cn(
+                                'text-[12.5px] leading-[1.5]',
+                                EXPLAIN,
+                            )}
+                        >
+                            {t(`admin.parties.audit.review.blocked.${reason}`)}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
+
+/**
  * A Business's open audit for staff who manage audit assignments (#446): its kind and where it
  * stands, a Flash audit request when none is open (BR-48), and, while it waits on Audit Operations,
  * whether a partner can take it now or why not with where to fix that, and the redispatch or close
- * the server allows; then the partners within 30 km and their independence reviews.
+ * the server allows; whether its statements are ready for a factual review, with the request when
+ * one can be made (#396); then the partners within 30 km and their independence reviews.
  */
 export function BusinessAuditSection({
     audit,
@@ -345,6 +408,7 @@ export function BusinessAuditSection({
         revision: number | null;
     } | null>(null);
     const engagement = audit.engagement;
+    const review = audit.statement_review;
     const start = (
         command: Command,
         action: RouteAction | null,
@@ -429,6 +493,8 @@ export function BusinessAuditSection({
                         {start('close', audit.close, engagement.revision)}
                     </>
                 )}
+                <StatementReviewSummary review={review} />
+                {start('review', review.request, null)}
                 {audit.partners.length > 0 && (
                     <NearbyPartners partners={audit.partners} viewer={viewer} />
                 )}
@@ -437,6 +503,11 @@ export function BusinessAuditSection({
                         command={open.command}
                         action={open.action}
                         revision={open.revision}
+                        binding={
+                            open.command === 'review'
+                                ? review.request?.binding
+                                : undefined
+                        }
                         viewer={viewer}
                         onCancel={() => setOpen(null)}
                     />

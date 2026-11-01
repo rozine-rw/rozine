@@ -432,6 +432,34 @@ describe('Wallet (C3)', () => {
         );
     });
 
+    it('marks a withdrawal in the history as paid out (#461)', () => {
+        const props = wallet(depositFixture);
+
+        props.history.items = [
+            {
+                id: 'entry_withdrawal_1',
+                movement: 'external',
+                kind: 'withdrawal',
+                direction: 'out',
+                amount: { currency: 'RWF', amount: '5000' },
+                counterparty: 'MTN MoMo',
+                occurred_at: '2026-11-01T09:00:00Z',
+                link: {
+                    url: '/investor/wallet?entry=entry_withdrawal_1',
+                    method: 'get',
+                },
+            },
+        ];
+        render(<InvestorWallet {...props} />);
+
+        const history = screen.getByRole('region', {
+            name: 'Transaction history',
+        });
+
+        expect(within(history).getByText('Paid out')).toBeInTheDocument();
+        expect(within(history).queryByText('Credited')).not.toBeInTheDocument();
+    });
+
     it('reloads the facts when the server refuses, and resends nothing after an uncertain answer', async () => {
         finishReloads();
         render(<InvestorWallet {...wallet(depositFixture)} />);

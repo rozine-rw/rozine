@@ -476,8 +476,8 @@ export function WalletHistory({
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
                                     {formatDate(entry.occurred_at, locale)}
-                                    {/* The ledger records a deposit only once it is credited (#461). */}
-                                    {entry.kind === 'deposit' && (
+                                    {/* The ledger records a deposit only once it is credited, and a withdrawal only once it is paid out (#461). */}
+                                    {entry.movement === 'external' && (
                                         <>
                                             {' · '}
                                             <span
@@ -487,7 +487,9 @@ export function WalletHistory({
                                                 )}
                                             >
                                                 {t(
-                                                    'investor.wallet.c3.credited',
+                                                    entry.kind === 'deposit'
+                                                        ? 'investor.wallet.c3.credited'
+                                                        : 'investor.wallet.c3.withdrawal.succeeded',
                                                 )}
                                             </span>
                                         </>

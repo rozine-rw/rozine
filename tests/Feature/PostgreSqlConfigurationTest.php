@@ -168,6 +168,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(array_column($originalDependentShape[2], 'tgenabled'))->toBe(['O', 'O', 'O']);
     // The pending-slot key references application_business_key, which the report migration drops, so repeat applications come off first and go back last.
     $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
+    // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
+    $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $heldReleasePrecision->down();
     $repeatApplications->down();
     // Repeat applications replace this migration's one-pending index, and the application table is rebuilt below, so it comes off and goes back with them.
     $submittedProtection = require database_path('migrations/2026_09_25_042503_protect_submitted_business_applications.php');
@@ -447,6 +450,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $businessPhotoUrls->up();
     $permissionSchema->up();
     $permissionData->up();
+    $heldReleasePrecision->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);
