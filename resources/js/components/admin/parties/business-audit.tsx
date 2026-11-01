@@ -361,7 +361,7 @@ function StatementReviewSummary({ review }: { review: StatementReview }) {
                 {coverage.declared_month_count === 0
                     ? t('admin.parties.audit.review.no_months')
                     : t('admin.parties.audit.review.months', {
-                          count: String(coverage.declared_month_count),
+                          count: coverage.declared_month_count,
                           first: coverage.first_month ?? '',
                           last: coverage.last_month ?? '',
                       })}

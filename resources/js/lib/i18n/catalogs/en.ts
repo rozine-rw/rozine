@@ -725,8 +725,11 @@ const en = {
     'business.reports.title': 'Reports',
     'business.reports.subtitle':
         'Every Flash and monthly audit your Audit Partner seals, verified on site.',
-    'business.reports.guide.title': 'How monthly audits work',
-    'business.reports.guide.opens.title': 'Gather your records',
+    'business.reports.guide.title': 'How audits work',
+    'business.reports.guide.flash.title': 'A Flash audit, when Rozine asks',
+    'business.reports.guide.flash.body':
+        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You co-sign it just like a monthly report.',
+    'business.reports.guide.opens.title': 'Every month, gather your records',
     'business.reports.guide.opens.body':
         'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
     'business.reports.guide.visit.title': 'Be ready for the site visit',
@@ -2813,8 +2816,10 @@ const en = {
         'e.g. Partner declaration of 30 Oct and RDB shareholder record.',
     'admin.parties.audit.independence.cta': 'Record review',
     'admin.parties.audit.review.title': 'Statement review',
-    'admin.parties.audit.review.months':
-        '{count} months transcribed, {first} to {last}.',
+    'admin.parties.audit.review.months': {
+        one: '{count} month transcribed, {first} to {last}.',
+        other: '{count} months transcribed, {first} to {last}.',
+    },
     'admin.parties.audit.review.no_months':
         'No statement months are transcribed yet.',
     'admin.parties.audit.review.verified': 'Verified by an Audit Partner',

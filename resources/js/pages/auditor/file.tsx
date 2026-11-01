@@ -15,6 +15,8 @@ import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
 import type { ReloadScope } from '@/components/auditor/refresh';
 import { OutcomeModal } from '@/components/auditor/sheets/outcome-modal';
+import { StatusPill } from '@/components/auditor/ui';
+import type { PillTone } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import type {
@@ -22,6 +24,7 @@ import type {
     AuditorFileProps,
     BusinessFile,
     ConflictReceipt,
+    FileReportState,
 } from '@/types/auditor';
 
 /**
@@ -33,6 +36,17 @@ const FILE_ONLY: ReloadScope = { except: ['jobs'] };
 /** The sheet's primary action: 50px, 16px radius (design L1225). */
 const SHEET_PRIMARY =
     'flex h-[50px] w-full items-center justify-center rounded-2xl bg-rz-accent-fill text-[15px] font-bold text-white disabled:cursor-wait disabled:opacity-80';
+
+/** A sealed report's state on the file, worded as Jobs words it (#490). */
+const REPORT_STATE = {
+    awaiting_cosign: {
+        tone: 'blue',
+        label: 'auditor.job.status.awaiting_cosign',
+    },
+    disputed: { tone: 'amber', label: 'auditor.desk_review.status.disputed' },
+    escalated: { tone: 'red', label: 'auditor.desk_review.status.escalated' },
+    published: { tone: 'green', label: 'auditor.reports.status.published' },
+} as const satisfies Record<FileReportState, { tone: PillTone; label: string }>;
 
 type FileSheetProps = AuditorFileProps & {
     /** A blocking conflict this page just recorded, which withdraws the file at once. */
@@ -164,7 +178,16 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     distanceKm={job.distance_km}
                     serverTime={props.server_time}
                     dueAt={job.deadline?.due_at ?? job.complete_by}
-                    clock={blocked === null}
+                    clock={blocked === null && job.report_state === null}
+                    badge={
+                        blocked === null && job.report_state !== null ? (
+                            <StatusPill
+                                tone={REPORT_STATE[job.report_state].tone}
+                            >
+                                {t(REPORT_STATE[job.report_state].label)}
+                            </StatusPill>
+                        ) : undefined
+                    }
                 />
             }
             footer={

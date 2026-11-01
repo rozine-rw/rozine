@@ -112,6 +112,8 @@ type JobHeaderProps = {
     steps?: ReactNode;
     /** Whether the clock shows; work stopped by a blocking conflict has none to run. */
     clock?: boolean;
+    /** Shown where the clock would be when it doesn't run, such as a sealed report's state. */
+    badge?: ReactNode;
 };
 
 /** A Flash file's header (design L1021–1035): back, eyebrow, business, clock and step bar. */
@@ -125,6 +127,7 @@ export function JobHeader({
     dueAt,
     steps,
     clock = true,
+    badge,
 }: JobHeaderProps) {
     const { t } = useTranslation();
 
@@ -150,12 +153,14 @@ export function JobHeader({
                               })}
                     </p>
                 </div>
-                {clock && dueAt !== null && (
+                {clock && dueAt !== null ? (
                     <ClockChip
                         serverTime={serverTime}
                         dueAt={dueAt}
                         size="sheet"
                     />
+                ) : (
+                    badge
                 )}
             </div>
             {steps}
