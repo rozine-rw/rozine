@@ -11,7 +11,12 @@ use Closure;
  * current Investor authority with the actor and Party locked. A convenience list only: it holds no
  * units, money or terms, and the checkout still admits every purchase under its own locks.
  *
+ * Every real change to the lines raises the cart's revision once and records the sha256 of its
+ * canonical line snapshot (#383), so a whole-cart quote or checkout can tell the cart it priced from
+ * the cart as it is now. A change that leaves the lines as they were changes neither.
+ *
  * @phpstan-type CartLine array{campaign_id: string, units: int}
+ * @phpstan-type CartSnapshot array{cart_id: string|null, revision: int, sha256: string, lines: list<CartLine>}
  */
 interface InvestorCart
 {
@@ -30,6 +35,14 @@ interface InvestorCart
      * @return list<CartLine>
      */
     public function lines(int $userId, ?int $contextRevision): array;
+
+    /**
+     * The Party's lines, oldest first, with the cart's id, revision and snapshot hash. A Party whose
+     * cart has never changed has no cart id and revision 0, and the hash of an empty snapshot.
+     *
+     * @return CartSnapshot
+     */
+    public function snapshot(int $userId, ?int $contextRevision): array;
 
     /**
      * Puts the campaign in the cart at `$units`, or changes the units of the line already there.
