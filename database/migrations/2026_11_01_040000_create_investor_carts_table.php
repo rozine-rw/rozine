@@ -38,7 +38,7 @@ return new class extends Migration
         $json = app(CanonicalJson::class);
         $at = now('UTC')->format('Y-m-d H:i:s.u');
         foreach (DB::table('investor_cart_lines')->orderBy('party_id')->orderBy('created_at')->orderBy('id')->get()->groupBy('party_id') as $partyId => $rows) {
-            $lines = $rows->map(fn (object $row): array => ['campaign_id' => (string) $row->business_campaign_id, 'units' => (int) $row->units])->values()->all();
+            $lines = array_values($rows->map(fn (object $row): array => ['campaign_id' => (string) $row->business_campaign_id, 'units' => (int) $row->units])->all());
             DB::table('investor_carts')->insert(['id' => strtolower((string) Str::ulid()), 'party_id' => $partyId, 'revision' => 1,
                 'sha256' => EloquentInvestorCart::snapshotSha256($json, $lines), 'created_at' => $at, 'updated_at' => $at]);
         }
