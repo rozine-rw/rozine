@@ -109,6 +109,12 @@ final readonly class EloquentInvestorCart implements InvestorCart
         }
     }
 
+    public function partyLines(string $partyId): array
+    {
+        return array_values(InvestorCartLine::query()->where('party_id', strtolower($partyId))->orderBy('created_at')->orderBy('id')->get()
+            ->map(fn (InvestorCartLine $line): array => ['id' => $line->id, 'campaign_id' => $line->business_campaign_id, 'units' => $line->units])->all());
+    }
+
     /** Raises the cart's revision once for a change to its lines and records the new snapshot hash. */
     private function changed(string $partyId): void
     {

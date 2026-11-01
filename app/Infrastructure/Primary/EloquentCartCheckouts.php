@@ -9,20 +9,19 @@ use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\CartQuoteDisclosure;
 use App\Application\Primary\Contracts\CartCheckouts;
+use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\PrimaryReservations;
-use App\Application\Primary\ReservedCheckout;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Primary\PrimaryDisclosure;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\UnitRights;
-use App\Models\CommandOperation;
 use App\Models\InvestorCartCheckout;
 use App\Models\InvestorCartCheckoutLine;
 use App\Models\InvestorCartCheckoutVersion;
-use App\Models\InvestorCartLine;
 use App\Models\InvestorCartQuote;
 use App\Models\InvestorCartRoot;
 use App\Models\PrimaryReservationRecord;
@@ -68,7 +67,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     private const string CHILD_NAMESPACE = '6f1d3c2a-8b4e-5f60-9a7b-1c2d3e4f5a6b';
 
     public function __construct(private AuthorizeActiveRole $authority, private PrimaryCampaignSource $campaigns, private OperationJournal $journal,
-        private PrimaryReservations $reservations, private ChangeFeed $changes, private CanonicalJson $json) {}
+        private PrimaryReservations $reservations, private InvestorCart $cart, private ChangeFeed $changes, private CanonicalJson $json) {}
 
     public function reserve(int $userId, int $contextRevision, int $expectedCartRevision, string $quoteId, int $expectedQuoteRevision,
         string $quoteDisclosureSha256, string $requestId, Closure $price): array
@@ -148,8 +147,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
                 'atomic' => true, 'financial_effect' => 'none']);
         }
         // The quote matched this cart's snapshot hash, and a quote is only ever made of a cart with lines.
-        $lines = array_values(InvestorCartLine::query()->where('party_id', $partyId)->orderBy('created_at')->orderBy('id')->get()
-            ->map(fn (InvestorCartLine $line): array => ['id' => $line->id, 'campaign_id' => $line->business_campaign_id, 'units' => $line->units])->all());
+        $lines = $this->cart->partyLines($partyId);
         $canonical = $lines;
         usort($canonical, fn (array $left, array $right): int => [$left['campaign_id'], $left['id']] <=> [$right['campaign_id'], $right['id']]);
         $inputs = [];
@@ -174,7 +172,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         }
         $cart = ['id' => $root->id, 'revision' => $root->revision, 'sha256' => $root->sha256, 'lines' => $lines];
         $body = $price($partyId, $cart, $inputs);
-        if (! hash_equals($quote->disclosure_sha256, EloquentInvestorCartQuotes::disclosure($this->json, $cart, $body))) {
+        if (! hash_equals($quote->disclosure_sha256, CartQuoteDisclosure::sha256($this->json, $cart, $body))) {
             throw $this->stale($root, $quote);
         }
         $band = ['tier' => $body['fee_band']['tier'], 'rate_bps' => $body['fee_band']['rate_bps'], 'basis' => $body['fee_band']['basis'],
@@ -184,14 +182,14 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         $held = [];
         $refusals = [];
         foreach ($canonical as $line) {
-            $child = strtolower((string) Str::ulid());
-            try {
-                $held[] = ['line' => $line, 'child' => $child,
-                    'reservation' => $this->reservations->reserve($line['campaign_id'], $partyId, $child, (string) $line['units'], $admit)];
-            } catch (CommandRejection $refusal) {
-                $refusals[] = ['cart_line_id' => $line['id'], 'campaign_id' => $line['campaign_id'], 'code' => $refusal->reason,
-                    'http_status' => $refusal->status, 'field_errors' => $refusal->fieldErrors];
+            $child = $this->reserveLine($userId, $contextRevision, $partyId, $operationId, $line, $admit);
+            if ($child['status'] !== 'completed') {
+                $refusals[] = ['cart_line_id' => $line['id'], 'campaign_id' => $line['campaign_id'], 'code' => $child['code'],
+                    'http_status' => $child['http_status'], 'field_errors' => $child['field_errors']];
+
+                continue;
             }
+            $held[] = ['line' => $line, 'result' => $child];
         }
         if ($refusals !== []) {
             $funds = array_all($refusals, fn (array $refusal): bool => $refusal['code'] === 'INSUFFICIENT_AVAILABLE_FUNDS');
@@ -201,34 +199,58 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
                     'line_refusals' => $refusals, 'cart_refusals' => []]);
         }
 
-        return $this->retain($userId, $contextRevision, $partyId, $operationId, $root, $quote, $body['fee_band'], $held);
+        return $this->retain($partyId, $operationId, $root, $quote, $body['fee_band'], $held);
     }
 
     /**
-     * Keeps the child receipts, the checkout, its first held version, its lines and the live marker,
-     * and returns the parent's `CART_RESERVED` result.
+     * Holds one line as an ordinary primary reservation under its own `primary.reserve` receipt, kept
+     * by the journal exactly as a single-line reserve keeps it, plus the parent it belongs to. Its
+     * request id is derived from the parent and the campaign, so it is unique and never chosen by a
+     * client. A refused child keeps a refused receipt, which the parent's refusal rolls back.
+     *
+     * @param  array{id: string, campaign_id: string, units: int}  $line
+     * @return array<string, mixed>
+     */
+    private function reserveLine(int $userId, int $contextRevision, string $partyId, string $parentId, array $line, Closure $admit): array
+    {
+        return $this->journal->execute('party:'.$partyId, $userId, 'primary.reserve', self::childRequestId($parentId, 'reserve', $line['campaign_id']),
+            'campaign', $line['campaign_id'], ['identity_context_revision' => $contextRevision, 'units' => (string) $line['units'], 'cart_operation_id' => $parentId],
+            function (): void {},
+            function (string $childId) use ($line, $partyId, $parentId, $admit): OperationResult {
+                $reserved = $this->reservations->reserve($line['campaign_id'], $partyId, $childId, (string) $line['units'], $admit);
+
+                return new OperationResult('RESERVATION_HELD', ['reservation_id' => $reserved->id, 'entry_id' => $reserved->hold->entryId,
+                    'origin_operation_id' => $childId, 'amount' => $reserved->hold->amount, 'cart_operation_id' => $parentId], 1);
+            });
+    }
+
+    /**
+     * Keeps the checkout, its first held version, its lines and the live marker, and returns the
+     * parent's `CART_RESERVED` result.
      *
      * @param  array<string, mixed>  $band
-     * @param  list<array{line: array{id: string, campaign_id: string, units: int}, child: string, reservation: ReservedCheckout}>  $held
+     * @param  list<array{line: array{id: string, campaign_id: string, units: int}, result: array<string, mixed>}>  $held
      */
-    private function retain(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartRoot $root,
-        InvestorCartQuote $quote, array $band, array $held): OperationResult
+    private function retain(string $partyId, string $operationId, InvestorCartRoot $root, InvestorCartQuote $quote, array $band, array $held): OperationResult
     {
         $at = now('UTC')->toDateTimeImmutable();
         $checkoutId = strtolower((string) Str::ulid());
         $total = BigInteger::zero();
         $lines = [];
+        $records = [];
         foreach ($held as $position => $child) {
-            $reserved = $child['reservation'];
-            $principal = (string) $reserved->reservation->rights->principal;
-            $total = $total->plus($principal);
-            $this->childReceipt($userId, $contextRevision, $partyId, $operationId, $child['child'], $child['line'], $reserved);
-            $lines[] = ['cart_line_id' => $child['line']['id'], 'campaign_id' => $child['line']['campaign_id'], 'reservation_id' => $reserved->id,
-                'reservation_revision' => 1, 'principal' => self::money($principal), 'disclosure_sha256' => $reserved->reservation->terms->disclosureSha256,
-                'entry_id' => $reserved->hold->entryId, 'position' => $position + 1, 'child_operation_id' => $child['child']];
+            /** @var array{reservation_id: string, entry_id: string} $data */
+            $data = $child['result']['data'];
+            $record = PrimaryReservationRecord::query()->whereKey($data['reservation_id'])->sole();
+            $facts = $this->reservations->reservationFacts($child['line']['campaign_id'], $partyId, $record->id);
+            $total = $total->plus($record->principal);
+            $records[] = $record;
+            $lines[] = ['cart_line_id' => $child['line']['id'], 'campaign_id' => $child['line']['campaign_id'], 'reservation_id' => $record->id,
+                'reservation_revision' => 1, 'principal' => self::money($record->principal), 'disclosure_sha256' => $facts['disclosure_sha256'],
+                'entry_id' => $data['entry_id'], 'position' => $position + 1, 'child_operation_id' => (string) $child['result']['operation_id']];
         }
         /** @var non-empty-list<DateTimeImmutable> $deadlines Every checkout holds at least one line. */
-        $deadlines = array_map(fn (array $child): DateTimeImmutable => $child['reservation']->reservation->window->expiresAt, $held);
+        $deadlines = array_map(fn (PrimaryReservationRecord $record): DateTimeImmutable => $record->expires_at->toDateTimeImmutable(), $records);
         $checkout = new InvestorCartCheckout;
         $checkout->forceFill(['id' => $checkoutId, 'party_id' => $partyId, 'investor_cart_id' => $root->id, 'investor_cart_quote_id' => $quote->id,
             'cart_revision' => $root->revision, 'origin_operation_id' => $operationId, 'principal' => (string) $total, 'created_at' => $at,
@@ -243,39 +265,16 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
                 'child_operation_id' => $line['child_operation_id'], 'position' => $line['position']])->save();
         }
         DB::table('investor_cart_live_checkouts')->insert(['party_id' => $partyId, 'investor_cart_checkout_id' => $checkoutId]);
-        foreach ($held as $child) {
-            $campaign = $this->campaigns->lockRetained($child['line']['campaign_id']);
-            $this->changes->record(ChangeScope::party($partyId), 'purchase', $child['reservation']->id);
-            $this->changes->record(ChangeScope::business($campaign['business_id']), 'campaign', $child['line']['campaign_id']);
+        foreach ($lines as $line) {
+            $campaign = $this->campaigns->lockRetained($line['campaign_id']);
+            $this->changes->record(ChangeScope::party($partyId), 'purchase', $line['reservation_id']);
+            $this->changes->record(ChangeScope::business($campaign['business_id']), 'campaign', $line['campaign_id']);
         }
 
         return new OperationResult('CART_RESERVED', ['checkout_id' => $checkoutId, 'cart_id' => $root->id, 'cart_revision' => $root->revision,
             'quote_id' => $quote->id, 'disclosure_sha256' => $quote->disclosure_sha256, 'state' => 'held', 'fee_band' => $band,
             'expires_at' => self::time(min($deadlines)), 'total_held' => self::money((string) $total),
             'lines' => array_map(fn (array $line): array => array_diff_key($line, ['position' => true, 'child_operation_id' => true]), $lines)], 1);
-    }
-
-    /**
-     * The child's own `primary.reserve` receipt, exactly as a single-line reserve would keep it, plus
-     * the parent operation it belongs to. Its request id is derived from the parent and the
-     * campaign, so it is unique and never chosen by a client.
-     *
-     * @param  array{id: string, campaign_id: string, units: int}  $line
-     */
-    private function childReceipt(int $userId, int $contextRevision, string $partyId, string $parentId, string $childId, array $line,
-        ReservedCheckout $reserved): void
-    {
-        $input = ['identity_context_revision' => $contextRevision, 'units' => (string) $line['units'], 'cart_operation_id' => $parentId];
-        $result = ['operation_id' => $childId, 'status' => 'completed', 'code' => 'RESERVATION_HELD',
-            'data' => ['reservation_id' => $reserved->id, 'entry_id' => $reserved->hold->entryId, 'origin_operation_id' => $childId,
-                'amount' => $reserved->hold->amount, 'cart_operation_id' => $parentId],
-            'revision' => 1, 'policy_version' => 'engineering-2026-09-23.4', 'allowed_actions' => [], 'field_errors' => [], 'http_status' => 200,
-            'server_time' => now()->toIso8601String()];
-        $record = new CommandOperation;
-        $record->forceFill(['id' => $childId, 'actor_key' => 'party:'.$partyId, 'actor_user_id' => $userId, 'command' => 'primary.reserve',
-            'request_id' => self::childRequestId($parentId, 'reserve', $line['campaign_id']), 'target_type' => 'campaign', 'target_id' => $line['campaign_id'],
-            'request_hash' => hash('sha256', $this->json->encode(['target_type' => 'campaign', 'target_id' => $line['campaign_id'], 'input' => $input])),
-            'result' => $result, 'retain_until' => now()->addDays(8)])->save();
     }
 
     /** A child's request id: a UUIDv5 name of the parent operation, the phase and the campaign. */
@@ -330,8 +329,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     private function lockBusinesses(int $userId): void
     {
         $partyId = strtolower((string) User::query()->whereKey($userId)->value('party_id'));
-        $this->lockCampaignBusinesses(InvestorCartLine::query()->where('party_id', $partyId)->pluck('business_campaign_id')
-            ->map(fn (mixed $id): string => (string) $id)->all());
+        $this->lockCampaignBusinesses(array_column($this->cart->partyLines($partyId), 'campaign_id'));
     }
 
     /** @param list<string> $campaignIds */

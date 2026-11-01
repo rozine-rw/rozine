@@ -7,6 +7,7 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Primary\CartQuoteDisclosure;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\ReservationWindow;
@@ -34,9 +35,6 @@ use Illuminate\Support\Str;
  */
 final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
 {
-    /** The version of the canonical object the quote's disclosure hash covers. */
-    private const string DISCLOSURE_VERSION = 'cart-quote-disclosure-1';
-
     public function __construct(private AuthorizeActiveRole $authority, private PrimaryCampaignSource $campaigns, private CanonicalJson $json) {}
 
     public function quote(int $userId, int $contextRevision, int $expectedCartRevision, Closure $price): array
@@ -97,7 +95,7 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
         $deadline = min($deadlines);
         $expiresAt = ReservationWindow::open($createdAt, $deadline)->expiresAt;
         $id = strtolower((string) Str::ulid());
-        $disclosure = self::disclosure($this->json, $cart, $body);
+        $disclosure = CartQuoteDisclosure::sha256($this->json, $cart, $body);
         $quote = ['id' => $id, 'revision' => 1, 'contract_version' => self::CONTRACT_VERSION,
             'cart_id' => $cart['id'], 'cart_revision' => $cart['revision'], 'cart_sha256' => $cart['sha256'], ...$body,
             'disclosure_sha256' => $disclosure, 'created_at' => self::time($createdAt), 'expires_at' => self::time($expiresAt), 'confirmation_required' => true];
@@ -107,22 +105,6 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
             'sha256' => hash('sha256', $this->json->encode($quote)), 'created_at' => $createdAt, 'expires_at' => $expiresAt])->save();
 
         return $quote;
-    }
-
-    /**
-     * The hash of everything the Investor acknowledges in a quote: the cart, every line, the totals
-     * and the band. The held-capital revision and hash are left out, so a revision that changes no
-     * figure is not a change of terms. The cart checkout recomputes it to detect a stale quote.
-     *
-     * @param  array{id: string, revision: int, sha256: string}  $cart
-     * @param  array{lines: list<array<string, mixed>>, principal: mixed, earnings_fee: mixed, net_return: mixed, fee_band: array<string, mixed>}  $body
-     */
-    public static function disclosure(CanonicalJson $json, array $cart, array $body): string
-    {
-        return hash('sha256', $json->encode(['version' => self::DISCLOSURE_VERSION, 'contract_version' => self::CONTRACT_VERSION,
-            'cart' => ['id' => $cart['id'], 'revision' => $cart['revision'], 'sha256' => $cart['sha256']], 'lines' => $body['lines'],
-            'principal' => $body['principal'], 'earnings_fee' => $body['earnings_fee'], 'net_return' => $body['net_return'],
-            'fee_band' => array_diff_key($body['fee_band'], ['capital_revision' => true, 'capital_sha256' => true])]));
     }
 
     private static function time(DateTimeImmutable $at): string

@@ -238,6 +238,11 @@ it('refuses a new line once the cart is full', function (): void {
         }
 
         public function bought(string $partyId, string $campaignId): void {}
+
+        public function partyLines(string $partyId): array
+        {
+            return [];
+        }
     });
 
     expect(fn () => app(ManageInvestorCart::class)->add($this->investor['user']->id, 1, $this->campaign->id, 1))
