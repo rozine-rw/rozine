@@ -3471,6 +3471,8 @@ const fr: Catalog = {
     'auditor.ledger.rules':
         'Téléversez le registre original en PDF ou CSV (10 Mo au plus). Un registre scanné peut être un PDF ; un scan sans texte est signalé pour une vérification manuelle de la source.',
     'auditor.ledger.doc.scanning': 'Vérification … {detail}',
+    'auditor.ledger.doc.scanning_hint':
+        'La lecture d’un grand livre prend en général environ une minute. Cette page se met à jour toute seule.',
     'auditor.ledger.doc.parsed': 'Acceptée · {detail}',
     'auditor.ledger.doc.failed': 'Refusée · {detail}',
     'auditor.ledger.reading': 'Lecture du document',
@@ -5584,6 +5586,7 @@ const fr: Catalog = {
         'Acceptez les conditions de mission actuelles pour continuer.',
     'auditor.command.review_terms': 'Lire les conditions',
     'auditor.seal.save_note': 'Enregistrer la note',
+    'auditor.seal.save_note_preview': 'Enregistrer la note pour prévisualiser',
     'auditor.seal.saving_note': 'Enregistrement de la note…',
     'auditor.seal.note_unsaved':
         "Enregistrez votre note avant l'aperçu. L'aperçu, votre code et le sceau portent tous sur la note enregistrée.",

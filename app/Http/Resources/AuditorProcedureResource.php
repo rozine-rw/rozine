@@ -267,7 +267,9 @@ class AuditorProcedureResource extends JsonResource
             }
         }
         if ($sources['source_facts'] !== null) {
-            $item = $this->sourceEvidence($sources, 'photo');
+            // The field capture carries the time and position recorded at check-in, as the earlier steps showed them.
+            $checkIn = $sources['source_facts']['check_in'] ?? null;
+            $item = $this->sourceEvidence($sources, 'photo', $checkIn['at'] ?? null, $checkIn['position'] ?? null);
             $items[$item['evidence_id']] = $item;
         }
         foreach ($this->ledgerDocuments($sources['ledger_documents'] ?? []) as $document) {

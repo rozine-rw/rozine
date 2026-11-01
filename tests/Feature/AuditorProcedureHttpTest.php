@@ -236,10 +236,12 @@ it('completes the isolated factual procedure and previews only the persisted rep
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
+    $checkIn = ['position' => null, 'captured_at' => null, 'accuracy_m' => null];
     foreach ($steps as $step => $fields) {
         $current = $page();
         expect($current['stage']['step'])->toBe($step)->and($current['can_continue'])->toBeTrue();
         if ($step === 'check_in') {
+            $checkIn = $current['stage']['check_in']['evidence'];
             expect($current['stage']['check_in']['evidence']['source'])->toBe('isolated_synthetic')
                 ->and($current['stage']['check_in']['evidence']['device_attestation'])->toBe('unavailable');
         } elseif ($step === 'photos') {
@@ -257,6 +259,12 @@ it('completes the isolated factual procedure and previews only the persisted rep
     $seal = $page();
     expect($seal['stage']['step'])->toBe('seal')->and($seal['can_continue'])->toBeFalse()->and($seal['stage']['note']['required'])->toBeTrue()
         ->and($seal['stage']['findings'])->not->toBeEmpty()->and($seal['actions']['seal'])->toBeNull();
+    if ($kind === 'flash') {
+        /* The preview names the capture's time and position as check-in showed them, never "Unavailable" (#482). */
+        $capture = array_find($seal['stage']['evidence'], fn (array $item): bool => $item['kind'] === 'photo');
+        expect($checkIn['position'])->not->toBeNull()->and($capture['position'])->toBe($checkIn['position'])
+            ->and($capture['captured_at'])->toBe($checkIn['captured_at'])->and($capture['accuracy_m'])->toBe($checkIn['accuracy_m']);
+    }
     /* Figures read with thousands separators: no run of four digits is shown ungrouped. */
     foreach ($seal['stage']['findings'] as $finding) {
         expect($finding['body'])->not->toMatch('/\d{4}/');

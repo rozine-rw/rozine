@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tick } from '@/components/auditor/ui';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDate, formatMonthYearLong } from '@/lib/rozine/format';
+import { formatDue, formatMonthYearLong } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { AuditorOutcome } from '@/types/auditor';
 
@@ -73,12 +73,12 @@ export function OutcomeModal({
                 outcome.month === null
                     ? t('auditor.outcome.sealed.flash', {
                           business: outcome.business,
-                          date: formatDate(outcome.cosign_due_on, locale),
+                          date: formatDue(outcome.cosign_due_on, locale),
                       })
                     : t('auditor.outcome.sealed.monthly', {
                           business: outcome.business,
                           month: formatMonthYearLong(outcome.month, locale),
-                          date: formatDate(outcome.cosign_due_on, locale),
+                          date: formatDue(outcome.cosign_due_on, locale),
                       });
             break;
         case 'changes_requested':
