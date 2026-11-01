@@ -95,9 +95,9 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     {
         return DB::transaction(function () use ($userId, $contextRevision, $checkoutId): array {
             $partyId = strtolower((string) User::query()->whereKey($userId)->value('party_id'));
-            $campaignIds = InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', strtolower($checkoutId))
+            $campaignIds = array_values(InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', strtolower($checkoutId))
                 ->whereIn('investor_cart_checkout_id', InvestorCartCheckout::query()->select('id')->where('party_id', $partyId))
-                ->pluck('business_campaign_id')->map(fn (mixed $id): string => (string) $id)->all();
+                ->pluck('business_campaign_id')->map(fn (mixed $id): string => (string) $id)->all());
             $this->lockCampaignBusinesses($campaignIds);
 
             return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($checkoutId): array {

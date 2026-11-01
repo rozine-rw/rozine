@@ -242,7 +242,7 @@ it('refuses the cart when a raise closes before its hold, by line or as unavaila
     ($this->failingLock)($this->second->id, 2);
     $refused = ($this->reserve)($quote);
     expect($refused)->toMatchArray(['status' => 'rejected', 'code' => 'CART_LINES_REFUSED', 'http_status' => 409])
-        ->and($refused['data']['line_refusals'])->toEqual([['cart_line_id' => collect($quote['lines'])->firstWhere('campaign_id', $this->second->id)['cart_line_id'],
+        ->and($refused['data']['line_refusals'])->toEqual([['cart_line_id' => array_column($quote['lines'], 'cart_line_id', 'campaign_id')[$this->second->id],
             'campaign_id' => $this->second->id, 'code' => 'CAMPAIGN_NOT_OPEN', 'http_status' => 409, 'field_errors' => []]]);
 
     ($this->failingLock)($this->second->id, 1);
