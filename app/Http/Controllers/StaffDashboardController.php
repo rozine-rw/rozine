@@ -30,15 +30,16 @@ class StaffDashboardController extends Controller
         $to = $request->validated('to');
         $from = $from === null ? null : (string) $from;
         $to = $to === null ? null : (string) $to;
+        $includeActivity = $request->routeIs('api.*');
         $page = null;
-        $resolvePage = function () use ($dashboard, $reconciliation, $ledger, $staff, $actorId, $from, $to, &$page): array {
+        $resolvePage = function () use ($dashboard, $reconciliation, $ledger, $staff, $actorId, $from, $to, $includeActivity, &$page): array {
             if ($page !== null) {
                 return $page;
             }
 
             $board = $dashboard->handle($actorId, $from, $to);
             $breaks = in_array('reconciliation.view', $staff['allowed_actions'], true) ? $reconciliation->handle($actorId)['breaks'] : null;
-            $activity = in_array('ledger.view', $staff['allowed_actions'], true) ? $ledger->latest($actorId, 6) : null;
+            $activity = $includeActivity && in_array('ledger.view', $staff['allowed_actions'], true) ? $ledger->latest($actorId, 6) : null;
 
             return $page = ['dashboard' => $board, 'breaks' => $breaks, 'activity' => $activity, 'roles' => $staff['roles'],
                 'permissions' => $staff['allowed_actions']];
@@ -54,9 +55,13 @@ class StaffDashboardController extends Controller
         };
         $props = [];
         foreach (['contract_version', 'server_time', 'viewer', 'nav', 'badges', 'search', 'kpis', 'attention', 'breaks',
-            'portfolio_health', 'activity', 'funnel', 'pending_applications', 'sector_exposure', 'treasury', 'collections'] as $key) {
+            'portfolio_health', 'funnel', 'pending_applications', 'sector_exposure', 'treasury', 'collections'] as $key) {
             $props[$key] = fn () => $resolveResource()[$key];
         }
+        $props['activity'] = Inertia::defer(function () use ($ledger, $staff, $actorId): ?array {
+            return StaffDashboardResource::activity(in_array('ledger.view', $staff['allowed_actions'], true)
+                ? $ledger->latest($actorId, 6) : null);
+        }, rescue: true);
         $props['capital_raised'] = function () use ($dashboard, $actorId, $from, $to, &$resolved): array {
             return $resolved['capital_raised'] ?? StaffDashboardResource::capitalRaised($dashboard->capitalRaised($actorId, $from, $to));
         };

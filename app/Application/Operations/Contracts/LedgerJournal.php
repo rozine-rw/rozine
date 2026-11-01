@@ -28,6 +28,9 @@ interface LedgerJournal
     /** @return array{entries: list<Entry>, total: int, next_before: string|null} */
     public function entries(?string $search, int $limit, ?string $before = null): array;
 
+    /** @return list<Entry> */
+    public function latest(int $limit): array;
+
     /** @return Entry|null */
     public function entry(string $id): ?array;
 

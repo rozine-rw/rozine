@@ -880,7 +880,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             }
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
-                'allowed_actions' => $allowed ? $staff->allowedActions() : [], 'roles' => $allowed ? $staff->roleNames() : []];
+                ...($allowed ? $staff->accessProjection() : ['allowed_actions' => [], 'roles' => []])];
         }, 3);
     }
 

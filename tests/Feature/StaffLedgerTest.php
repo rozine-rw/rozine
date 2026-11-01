@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\BrowseLedger;
+use App\Application\Operations\Contracts\LedgerJournal;
 use App\Http\Resources\StaffLedgerResource;
 use App\Models\CommandOperation;
 use App\Models\LedgerEntry;
@@ -150,12 +152,13 @@ it('shows the newest postings as the Operations Center activity, for ledger view
     $entry = (string) LedgerEntry::query()->where('kind', 'deposit_credit')->value('id');
 
     $this->actingAs(ledgerStaff(['treasury']))->get(route('staff.dashboard'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('activity', [['id' => $entry, 'kind' => 'deposit',
-            'summary' => 'Deposit clearing (provider) → Aline Uwase · available', 'amount' => ['currency' => 'RWF', 'amount' => '20000'],
-            'at' => now('UTC')->toIso8601String(), 'link' => ['url' => '/admin/ledger?entry='.$entry, 'method' => 'get']]])
-            ->where('nav.ledger.url', '/admin/ledger'));
+        ->assertInertia(fn (Assert $page) => $page->where('nav.ledger.url', '/admin/ledger')
+            ->loadDeferredProps(fn (Assert $deferred) => $deferred->where('activity', [['id' => $entry, 'kind' => 'deposit',
+                'summary' => 'Deposit clearing (provider) → Aline Uwase · available', 'amount' => ['currency' => 'RWF', 'amount' => '20000'],
+                'at' => now('UTC')->toIso8601String(), 'link' => ['url' => '/admin/ledger?entry='.$entry, 'method' => 'get']]])));
     $this->actingAs(ledgerStaff(['analyst']))->get(route('staff.dashboard'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('activity', null)->where('nav.ledger', null));
+        ->assertInertia(fn (Assert $page) => $page->where('nav.ledger', null)
+            ->loadDeferredProps(fn (Assert $deferred) => $deferred->where('activity', null)));
 });
 
 it('is for Treasury, Compliance and superadmin only, and over API v1 with its own ability', function (): void {
@@ -185,4 +188,21 @@ it('grants the ledger view only to Treasury, Compliance and superadmin, per the 
     foreach (['analyst', 'approver'] as $role) {
         $this->actingAs(ledgerStaff([$role]))->get(route('staff.ledger.index'))->assertForbidden();
     }
+});
+
+it('reads the newest activity without counting the whole ledger', function (): void {
+    ($this->deposit)('20000');
+    ($this->deposit)('30000');
+    ($this->deposit)('40000');
+    $staff = ledgerStaff(['treasury']);
+    $expected = app(LedgerJournal::class)->entries(null, 2)['entries'];
+    $queries = [];
+    DB::listen(function ($query) use (&$queries): void {
+        $queries[] = $query->sql;
+    });
+
+    $activity = app(BrowseLedger::class)->latest($staff->id, 2);
+
+    expect($activity)->toBe($expected)
+        ->and(collect($queries)->contains(fn (string $sql): bool => str_contains(strtolower($sql), 'count(*)') && str_contains($sql, 'ledger_entries')))->toBeFalse();
 });

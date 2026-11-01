@@ -478,8 +478,8 @@ export type AdminTodayProps = AdminFrameShellProps & {
         watch: { count: number; pct: number };
         distressed: { count: number; pct: number } | null;
     } | null;
-    /** Null while the console has no ledger feed. */
-    activity: ActivityItem[] | null;
+    /** Omitted while loading; null when this viewer cannot see the ledger. */
+    activity?: ActivityItem[] | null;
     /** A stage the platform does not record yet has a null count. */
     funnel: { stage: FunnelStage; count: number | null; width_pct: number }[];
     pending_applications: {

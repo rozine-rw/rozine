@@ -14,9 +14,11 @@ use App\Models\Party;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -270,6 +272,7 @@ it('counts the cart lines on every Investor page for the Cart tab, and nowhere e
 
 it('raises the cart revision once per real change and hashes the canonical line snapshot (#383)', function (): void {
     $partyId = (string) $this->investor['user']->party_id;
+    Cache::forget('fortify.2fa_codes.'.md5((new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXP')));
     $other = PrimaryReservationFixture::campaign();
     $empty = ($this->cart)()['cart'];
     expect($empty)->toMatchArray(['id' => null, 'revision' => 0, 'deals' => 0, 'units' => '0'])
