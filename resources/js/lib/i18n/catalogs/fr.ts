@@ -2894,6 +2894,7 @@ const fr: Catalog = {
         'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, qui ne pourra donc plus jamais être auditée : aucun audit éclair ni examen des relevés ne peut être demandé ici.',
     'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
     'admin.parties.audit.kind.routine': 'Audit mensuel',
+    'admin.parties.audit.kind.statement_review': 'Revue des états financiers',
     'admin.parties.audit.status.operations': 'Aux Opérations d’audit',
     'admin.parties.audit.status.offered': 'Proposé à un partenaire',
     'admin.parties.audit.status.accepted': 'Accepté par un partenaire',

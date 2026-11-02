@@ -2745,6 +2745,7 @@ const en = {
         'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
     'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
     'admin.parties.audit.kind.routine': 'Monthly audit',
+    'admin.parties.audit.kind.statement_review': 'Statement review',
     'admin.parties.audit.status.operations': 'With Audit Operations',
     'admin.parties.audit.status.offered': 'Offered to a partner',
     'admin.parties.audit.status.accepted': 'Accepted by a partner',

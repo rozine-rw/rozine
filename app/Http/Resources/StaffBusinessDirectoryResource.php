@@ -112,7 +112,9 @@ class StaffBusinessDirectoryResource extends JsonResource
             ? ['url' => route($route, ['business' => $businessId, 'assignment' => $engagement['id']], false), 'method' => 'post'] : null;
         $reason = $engagement['operations_reason'] ?? null;
 
-        return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'], 'kind' => $engagement['kind'], 'status' => $engagement['status'],
+        // A statement review runs as a routine audit, but staff see it named for what it checks (#396).
+        return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'],
+            'kind' => $engagement['purpose'] === 'statement_review' ? 'statement_review' : $engagement['kind'], 'status' => $engagement['status'],
             'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason,
             // A Flash audit with no sealed report by its 24-hour deadline is overdue (FR-303), whatever its status.
             'due_at' => $engagement['complete_by'], 'overdue' => $engagement['overdue']],

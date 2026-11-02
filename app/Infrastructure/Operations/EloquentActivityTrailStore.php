@@ -52,15 +52,20 @@ final class EloquentActivityTrailStore implements ActivityTrailStore
             })
             ->when($from !== null, fn (Builder $query) => $query->where('created_at', '>=', $from))
             ->when($to !== null, fn (Builder $query) => $query->where('created_at', '<', $to));
-        $total = (clone $trail)->count();
-
         if ($cursorMode) {
-            $page = $trail->orderByDesc('created_at')->orderByDesc('id')->orderByDesc('journal')
+            $count = (clone $trail)->selectRaw('count(*) as activity_total');
+            $page = DB::query()->fromSub($trail, 'filtered')->crossJoinSub($count, 'totals')
+                ->select('filtered.*', 'totals.activity_total')
+                ->orderByDesc('created_at')->orderByDesc('id')->orderByDesc('journal')
                 ->cursorPaginate($limit, ['*'], 'cursor', $cursor);
+            $items = $page->items();
+            $total = $items === [] ? (clone $trail)->count() : (int) $items[0]->activity_total;
 
-            return ['entries' => array_values(array_map(self::entry(...), $page->items())),
+            return ['entries' => array_values(array_map(self::entry(...), $items)),
                 'total' => $total, 'next_cursor' => $page->nextCursor()?->encode()];
         }
+
+        $total = (clone $trail)->count();
 
         return ['entries' => array_values(array_map(self::entry(...), $trail->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get()->all())),
             'total' => $total];

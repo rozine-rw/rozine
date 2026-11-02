@@ -2879,6 +2879,7 @@ const rw: Catalog = {
         'Ibikorwa by’igenzura byafunze igenzura riheruka ry’ubu bucuruzi, bityo ntibuzongera kugenzurwa: nta genzura ritunguranye cyangwa isuzuma ry’imbonerahamwe rishobora gusabwa hano.',
     'admin.parties.audit.kind.flash': 'Igenzura ritunguranye · amasaha 24',
     'admin.parties.audit.kind.routine': 'Igenzura rya buri kwezi',
+    'admin.parties.audit.kind.statement_review': "Isuzuma ry'imibare y'imari",
     'admin.parties.audit.status.operations': 'Riri mu Bikorwa by’igenzura',
     'admin.parties.audit.status.offered': 'Ryahawe umugenzuzi',
     'admin.parties.audit.status.accepted': 'Ryemewe n’umugenzuzi',
