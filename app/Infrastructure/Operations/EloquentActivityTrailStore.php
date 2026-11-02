@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 final class EloquentActivityTrailStore implements ActivityTrailStore
 {
     /** @return Trail */
-    public function trail(string $search, ?string $from, ?string $to, int $limit): array
+    public function trail(string $search, ?string $from, ?string $to, int $limit, ?string $cursor = null, bool $cursorMode = false): array
     {
         $identity = DB::table('identity_audit_events')->where('action', '<>', 'bookmark.save')
             ->selectRaw("id, created_at, actor_key, actor_user_id, action AS code, target_type, target_id, reason,
@@ -53,6 +53,14 @@ final class EloquentActivityTrailStore implements ActivityTrailStore
             ->when($from !== null, fn (Builder $query) => $query->where('created_at', '>=', $from))
             ->when($to !== null, fn (Builder $query) => $query->where('created_at', '<', $to));
         $total = (clone $trail)->count();
+
+        if ($cursorMode) {
+            $page = $trail->orderByDesc('created_at')->orderByDesc('id')->orderByDesc('journal')
+                ->cursorPaginate($limit, ['*'], 'cursor', $cursor);
+
+            return ['entries' => array_values(array_map(self::entry(...), $page->items())),
+                'total' => $total, 'next_cursor' => $page->nextCursor()?->encode()];
+        }
 
         return ['entries' => array_values(array_map(self::entry(...), $trail->orderByDesc('created_at')->orderByDesc('id')->limit($limit)->get()->all())),
             'total' => $total];

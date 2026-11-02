@@ -138,6 +138,9 @@ function EventLine({ row }: { row: EventRow }) {
 export default function AdminEvents(props: AdminEventsProps) {
     const { t } = useTranslation();
     const [exporting, setExporting] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [loadFailed, setLoadFailed] = useState(false);
+    const [accessRevoked, setAccessRevoked] = useState(false);
     const { filters } = props;
     // A range typed straight into the address bar comes back refused; say why instead of clearing it.
     const { from: refusedFrom, to: refusedTo } = usePage().props
@@ -150,7 +153,18 @@ export default function AdminEvents(props: AdminEventsProps) {
         filters.to !== null;
 
     const apply = (next: Partial<Filters>) => {
-        router.reload({ data: { ...filters, ...next } });
+        setLoadFailed(false);
+
+        if (props.cursor_pagination) {
+            router.visit(window.location.pathname, {
+                method: 'get',
+                data: { ...filters, ...next },
+                reset: ['events'],
+                preserveState: true,
+            });
+        } else {
+            router.reload({ data: { ...filters, ...next } });
+        }
     };
 
     const search = (event: FormEvent<HTMLFormElement>) => {
@@ -164,6 +178,41 @@ export default function AdminEvents(props: AdminEventsProps) {
 
     const clear = () => apply({ q: '', preset: null, from: null, to: null });
     const exportAction = props.actions.export;
+    const loadMore = () => {
+        if (!props.more || loadingMore) {
+            return;
+        }
+
+        setLoadingMore(true);
+        setLoadFailed(false);
+        router.visit(props.more.url, {
+            method: 'get',
+            only: ['events', 'more', 'total'],
+            preserveState: true,
+            preserveScroll: true,
+            preserveUrl: true,
+            onError: () => setLoadFailed(true),
+            onNetworkError: () => {
+                setLoadFailed(true);
+
+                return false;
+            },
+            onHttpException: (response) => {
+                if (response.status === 401 || response.status === 403) {
+                    setAccessRevoked(true);
+                } else {
+                    setLoadFailed(true);
+                }
+
+                return false;
+            },
+            onFinish: () => setLoadingMore(false),
+        });
+    };
+
+    if (accessRevoked) {
+        return <div role="alert">{t('admin.events.access_revoked')}</div>;
+    }
 
     return (
         <AdminFrame section="events" {...props}>
@@ -232,13 +281,36 @@ export default function AdminEvents(props: AdminEventsProps) {
                     )
                 }
                 footer={
-                    props.more && (
+                    props.more &&
+                    (props.cursor_pagination ? (
+                        <div className="p-4 text-center">
+                            {loadFailed && (
+                                <p role="alert">
+                                    {t('admin.events.load_failed')}
+                                </p>
+                            )}
+                            <button
+                                type="button"
+                                onClick={loadMore}
+                                disabled={loadingMore}
+                                className="rounded-lg border border-rz-hairline bg-rz-surface px-3 py-2 text-sm font-semibold text-rz-ink"
+                            >
+                                {t(
+                                    loadingMore
+                                        ? 'admin.events.loading_more'
+                                        : loadFailed
+                                          ? 'admin.events.retry_more'
+                                          : 'admin.events.load_more',
+                                )}
+                            </button>
+                        </div>
+                    ) : (
                         <ShowMoreLink link={props.more}>
                             {t('admin.events.see_all', {
                                 count: formatCount(props.total),
                             })}
                         </ShowMoreLink>
-                    )
+                    ))
                 }
                 header={
                     <div className="border-b border-[#e3e9f4] bg-[#f8fafd] px-5 pt-4 pb-3.5 dark:border-rz-border dark:bg-rz-surface-sunken">
@@ -428,7 +500,7 @@ export default function AdminEvents(props: AdminEventsProps) {
                     <HeadCell end>{t('admin.events.col.source')}</HeadCell>
                 </div>
                 {props.events.map((row) => (
-                    <EventLine key={row.id} row={row} />
+                    <EventLine key={row.cursor_key ?? row.id} row={row} />
                 ))}
             </TableCard>
         </AdminFrame>
