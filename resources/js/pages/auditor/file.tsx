@@ -217,6 +217,13 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     />
                     {review !== null && (
                         <StatementVerification
+                            /* A changed binding starts the review afresh, so nothing ticked carries over. */
+                            key={[
+                                review.assignment_revision,
+                                review.evidence_revision,
+                                review.verification_revision,
+                                review.transcription?.sha256,
+                            ].join(':')}
                             review={review}
                             business={job.business}
                         />

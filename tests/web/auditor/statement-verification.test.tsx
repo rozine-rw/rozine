@@ -135,6 +135,16 @@ const fillIn = async (user: ReturnType<typeof renderWithUser>['user']) => {
         within(debt).getByLabelText(/^Paid in September 2026/u),
         '50000',
     );
+    await user.type(
+        within(debt).getByLabelText(
+            'Scheduled monthly payment from October 2026 (RWF)',
+        ),
+        '50000',
+    );
+    await user.selectOptions(
+        within(debt).getByLabelText('Last scheduled payment'),
+        'December 2026',
+    );
     await user.click(within(debt).getByLabelText('momo-statement.csv'));
     await user.click(within(debt).getByLabelText('bank-statement.pdf'));
     /* A source ticked by mistake comes off again. */
@@ -239,6 +249,16 @@ describe('Auditor statement verification', () => {
             within(second).getByLabelText(/^Paid in September 2026/u),
             '0',
         );
+        await user.type(
+            within(second).getByLabelText(
+                'Scheduled monthly payment from October 2026 (RWF)',
+            ),
+            '0',
+        );
+        await user.selectOptions(
+            within(second).getByLabelText('Last scheduled payment'),
+            'After April 2027',
+        );
         await user.click(within(second).getByLabelText('bank-statement.pdf'));
         expect(submit).toBeDisabled();
 
@@ -303,9 +323,17 @@ describe('Auditor statement verification', () => {
                             id: 'BK asset loan',
                             principal: '900000',
                             source_ids: ['doc_bank'],
+                            /* The statements' months, then the contractual schedule underwriting reads. */
                             service_by_month: {
                                 '2026-08': '50000',
                                 '2026-09': '50000',
+                                '2026-10': '50000',
+                                '2026-11': '50000',
+                                '2026-12': '50000',
+                                '2027-01': '0',
+                                '2027-02': '0',
+                                '2027-03': '0',
+                                '2027-04': '0',
                             },
                         },
                     ],
@@ -321,7 +349,7 @@ describe('Auditor statement verification', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Huye Motors's statements and monthly figures are now on record as checked. The business can carry on with its application.",
+                "Huye Motors's statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
             ),
         ).toBeInTheDocument();
     });
@@ -354,5 +382,80 @@ describe('Auditor statement verification', () => {
 
         await waitFor(() => expect(inertia.reloads).toHaveLength(1));
         expect(within(form()).queryByRole('alert')).not.toBeInTheDocument();
+    });
+    it('carries a debt still being repaid through every scheduled month', async () => {
+        inertia.queue.push(
+            answers(operation({ code: 'STATEMENT_SOURCE_VERIFIED' })),
+        );
+        const { user } = renderWithUser(<AuditorFile {...props()} />);
+
+        await fillIn(user);
+
+        const debt = within(form()).getByRole('group', { name: 'Debt 1' });
+
+        expect(
+            within(debt).getByRole('option', { name: 'Choose a month' }),
+        ).toBeDisabled();
+        await user.selectOptions(
+            within(debt).getByLabelText('Last scheduled payment'),
+            'After April 2027',
+        );
+        await user.click(
+            within(form()).getByRole('button', { name: 'Verify statements' }),
+        );
+
+        const body = inertia.calls[0].body as {
+            review: {
+                obligations: { service_by_month: Record<string, string> }[];
+            };
+        };
+
+        expect(
+            Object.values(body.review.obligations[0].service_by_month),
+        ).toEqual(Array(9).fill('50000'));
+    });
+
+    it('starts the review afresh when the evidence it was made against changes', async () => {
+        const { user, rerender } = renderWithUser(<AuditorFile {...props()} />);
+
+        await fillIn(user);
+        expect(
+            within(form()).getByRole('button', { name: 'Verify statements' }),
+        ).toBeEnabled();
+
+        const changed = structuredClone(REVIEW);
+        changed.evidence_revision = 3;
+        changed.documents.push({
+            id: 'doc_new',
+            filename: 'new-statement.pdf',
+            sha256: 'd'.repeat(64),
+            received_on: '2026-10-02',
+            open: {
+                url: '/auditor/jobs/fa_huye/statements/doc_new',
+                method: 'get',
+            },
+        });
+        rerender(<AuditorFile {...props(changed)} />);
+
+        const verify = form();
+
+        expect(
+            within(verify).getAllByLabelText(
+                'Where you checked it (page, line or note)',
+            ),
+        ).toHaveLength(3);
+        expect(
+            within(verify).getAllByLabelText(
+                'Where you checked it (page, line or note)',
+            )[0],
+        ).toHaveValue('');
+        expect(
+            within(verify).getByLabelText(
+                'The statements are genuine originals',
+            ),
+        ).not.toBeChecked();
+        expect(
+            within(verify).getByRole('button', { name: 'Verify statements' }),
+        ).toBeDisabled();
     });
 });

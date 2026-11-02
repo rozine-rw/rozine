@@ -7812,7 +7812,7 @@ const fr: Catalog = {
         'Seulement à l’échéance de la note',
     'auditor.outcome.verified.title': 'Relevés vérifiés',
     'auditor.outcome.verified.body':
-        "Les relevés et les chiffres mensuels de {business} sont maintenant enregistrés comme vérifiés. L'entreprise peut poursuivre sa demande.",
+        'Les relevés et les chiffres mensuels de {business} sont maintenant enregistrés comme vérifiés. Ils comptent pour sa demande une fois toutes les autres conditions remplies.',
     'auditor.verify.title': 'Vérifier les relevés',
     'auditor.verify.lead':
         "Ouvrez chaque relevé, comparez-le aux chiffres enregistrés par l'entreprise et indiquez ce que vous avez vérifié. C'est un examen factuel, pas une décision de crédit.",
@@ -7851,6 +7851,11 @@ const fr: Catalog = {
     'auditor.verify.debt_name': 'Prêteur et prêt',
     'auditor.verify.debt_principal': 'Montant restant dû (RWF)',
     'auditor.verify.debt_service_in': 'Payé en {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Paiement mensuel prévu à partir de {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Dernier paiement prévu',
+    'auditor.verify.debt_last_payment_pick': 'Choisissez un mois',
+    'auditor.verify.debt_beyond': 'Après {month}',
     'auditor.verify.debt_sources': 'Relevés montrant cette dette',
     'auditor.verify.add_debt': 'Ajouter une dette',
     'auditor.verify.remove_debt': 'Retirer cette dette',

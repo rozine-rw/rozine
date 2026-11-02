@@ -28,6 +28,32 @@ type Obligation = {
     principal: string;
     sources: string[];
     service: Record<string, string>;
+    /** The contractual payment for each month after the statements, until `lastPayment`. */
+    scheduled: string;
+    /** The last month the payment falls due, or `BEYOND` when it runs past the schedule. */
+    lastPayment: string;
+};
+
+/**
+ * How many months after the last statement month a debt's schedule must cover. Statement evidence
+ * stays usable until 45 days after its last month, so the first repayment month falls at most two
+ * months later, and the longest term (six months) ends at most seven months after the statements.
+ */
+const SCHEDULE_MONTHS = 7;
+
+/** A debt still being repaid after the last month of the schedule. */
+const BEYOND = 'beyond';
+
+/** The `count` calendar months after `month` (YYYY-MM). */
+const monthsAfter = (month: string, count: number): string[] => {
+    const [year, index] = month.split('-').map(Number);
+
+    return Array.from({ length: count }, (_, offset) => {
+        const at = index + offset;
+        const label = String((at % 12) + 1).padStart(2, '0');
+
+        return `${year + Math.floor(at / 12)}-${label}`;
+    });
 };
 
 const FIELD =
@@ -93,6 +119,7 @@ export function StatementVerification({
 
     const route = review.verify;
     const months = transcription.months;
+    const upcoming = monthsAfter(months[months.length - 1], SCHEDULE_MONTHS);
     const amount = (value: string) =>
         new Intl.NumberFormat(locale).format(BigInt(value));
     const filled = (text: string) => oneLine(text) !== '';
@@ -100,7 +127,9 @@ export function StatementVerification({
         filled(obligation.id) &&
         AMOUNT.test(obligation.principal) &&
         obligation.sources.length > 0 &&
-        months.every((month) => AMOUNT.test(obligation.service[month]));
+        months.every((month) => AMOUNT.test(obligation.service[month])) &&
+        AMOUNT.test(obligation.scheduled) &&
+        obligation.lastPayment !== '';
     const complete =
         review.checks.every((check) => checks[check] === true) &&
         review.documents.every((document) => filled(references[document.id])) &&
@@ -153,12 +182,19 @@ export function StatementVerification({
                             id: oneLine(obligation.id),
                             principal: obligation.principal,
                             source_ids: obligation.sources,
-                            service_by_month: Object.fromEntries(
-                                months.map((month) => [
+                            service_by_month: Object.fromEntries([
+                                ...months.map((month) => [
                                     month,
                                     obligation.service[month],
                                 ]),
-                            ),
+                                ...upcoming.map((month) => [
+                                    month,
+                                    obligation.lastPayment === BEYOND ||
+                                    month <= obligation.lastPayment
+                                        ? obligation.scheduled
+                                        : '0',
+                                ]),
+                            ]),
                         })),
                         recurring_owner_draw: ownerDraw,
                         owner_draw_reference: oneLine(ownerDrawReference),
@@ -354,6 +390,56 @@ export function StatementVerification({
                                 />
                             </label>
                         ))}
+                        <label className="block text-[11.5px] text-rz-secondary">
+                            {t('auditor.verify.debt_scheduled', {
+                                month: formatMonthYearLong(
+                                    `${upcoming[0]}-15`,
+                                    locale,
+                                ),
+                            })}
+                            <input
+                                inputMode="numeric"
+                                className={cn(FIELD, 'mt-1')}
+                                value={obligation.scheduled}
+                                onChange={(event) =>
+                                    change(index, {
+                                        scheduled: event.target.value,
+                                    })
+                                }
+                            />
+                        </label>
+                        <label className="block text-[11.5px] text-rz-secondary">
+                            {t('auditor.verify.debt_last_payment')}
+                            <select
+                                className={cn(FIELD, 'mt-1')}
+                                value={obligation.lastPayment}
+                                onChange={(event) =>
+                                    change(index, {
+                                        lastPayment: event.target.value,
+                                    })
+                                }
+                            >
+                                <option value="" disabled>
+                                    {t('auditor.verify.debt_last_payment_pick')}
+                                </option>
+                                {upcoming.map((month) => (
+                                    <option key={month} value={month}>
+                                        {formatMonthYearLong(
+                                            `${month}-15`,
+                                            locale,
+                                        )}
+                                    </option>
+                                ))}
+                                <option value={BEYOND}>
+                                    {t('auditor.verify.debt_beyond', {
+                                        month: formatMonthYearLong(
+                                            `${upcoming[upcoming.length - 1]}-15`,
+                                            locale,
+                                        ),
+                                    })}
+                                </option>
+                            </select>
+                        </label>
                         <p className="text-[11.5px] text-rz-secondary">
                             {t('auditor.verify.debt_sources')}
                         </p>
@@ -411,6 +497,8 @@ export function StatementVerification({
                                 service: Object.fromEntries(
                                     months.map((month) => [month, '']),
                                 ),
+                                scheduled: '',
+                                lastPayment: '',
                             },
                         ])
                     }

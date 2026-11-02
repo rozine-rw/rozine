@@ -7500,7 +7500,7 @@ const en = {
         'Only when the note matures',
     'auditor.outcome.verified.title': 'Statements verified',
     'auditor.outcome.verified.body':
-        "{business}'s statements and monthly figures are now on record as checked. The business can carry on with its application.",
+        "{business}'s statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
     'auditor.verify.title': 'Verify the statements',
     'auditor.verify.lead':
         'Open each statement, compare it with the figures the business saved, and record what you checked. This is a factual review, not a credit decision.',
@@ -7538,6 +7538,11 @@ const en = {
     'auditor.verify.debt_name': 'Lender and loan',
     'auditor.verify.debt_principal': 'Amount still owed (RWF)',
     'auditor.verify.debt_service_in': 'Paid in {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Scheduled monthly payment from {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Last scheduled payment',
+    'auditor.verify.debt_last_payment_pick': 'Choose a month',
+    'auditor.verify.debt_beyond': 'After {month}',
     'auditor.verify.debt_sources': 'Statements showing this debt',
     'auditor.verify.add_debt': 'Add a debt',
     'auditor.verify.remove_debt': 'Remove this debt',

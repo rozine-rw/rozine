@@ -7778,7 +7778,7 @@ const rw: Catalog = {
         'Igihe inyandiko irangiye gusa',
     'auditor.outcome.verified.title': 'Imibare yemejwe',
     'auditor.outcome.verified.body':
-        "Imibare y'ukwezi ya {business} yanditswe nk'iyagenzuwe. Ikigo gishobora gukomeza ubusabe bwacyo.",
+        "Imibare y'ukwezi ya {business} yanditswe nk'iyagenzuwe. Izitabwaho mu busabe bwacyo ibindi byose bisabwa nibimara kuzuzwa.",
     'auditor.verify.title': 'Genzura imibare',
     'auditor.verify.lead':
         "Fungura buri nyandiko, uyigereranye n'imibare ikigo cyabitse, wandike ibyo wagenzuye. Ni isuzuma ry'ukuri, si icyemezo cy'inguzanyo.",
@@ -7815,6 +7815,11 @@ const rw: Catalog = {
     'auditor.verify.debt_name': "Uwatanze inguzanyo n'inguzanyo",
     'auditor.verify.debt_principal': 'Amafaranga asigaye kwishyurwa (RWF)',
     'auditor.verify.debt_service_in': 'Ayishyuwe muri {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Ubwishyu buteganyijwe buri kwezi guhera {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Ubwishyu buteganyijwe bwa nyuma',
+    'auditor.verify.debt_last_payment_pick': 'Hitamo ukwezi',
+    'auditor.verify.debt_beyond': 'Nyuma ya {month}',
     'auditor.verify.debt_sources': 'Inyandiko zigaragaza uyu mwenda',
     'auditor.verify.add_debt': 'Ongeraho umwenda',
     'auditor.verify.remove_debt': 'Kuraho uyu mwenda',
