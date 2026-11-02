@@ -166,6 +166,81 @@ describe('Wallet withdrawals (LED-R04)', () => {
         );
     });
 
+    it('sends the chosen method even when a refresh no longer lists it', () => {
+        vi.useFakeTimers();
+        const { rerender } = render(<InvestorWallet {...wallet()} />);
+        const panel = screen.getByRole('form', { name: 'Withdraw' });
+
+        fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
+            target: { value: '40,000' },
+        });
+        void act(() => vi.advanceTimersByTime(300));
+        const reload = inertia.reload.mock.lastCall?.[0] as {
+            onSuccess: (page: { props: C3InvestorWalletProps }) => void;
+            onFinish: () => void;
+        };
+        const quoted = wallet();
+
+        quoted.funding.withdrawal!.quote!.amount.amount = '40000';
+        quoted.funding.withdrawal!.quote!.received.amount = '40000';
+        quoted.funding.methods = quoted.funding.methods.map((option) => ({
+            ...option,
+            id: `${option.id}-renamed`,
+        }));
+        rerender(<InvestorWallet {...quoted} />);
+        act(() => {
+            reload.onSuccess({ props: quoted });
+            reload.onFinish();
+        });
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'WITHDRAWAL_RECORDED',
+                data: null,
+            }),
+        );
+        fireEvent.submit(panel);
+
+        expect(inertia.calls[0]).toMatchObject({
+            body: { method_id: 'mtn-1' },
+        });
+    });
+
+    it('settles a withdrawal recovered from the preview without claiming what was sent', async () => {
+        const props = wallet();
+
+        props.preview_outcome = {
+            kind: 'unconfirmed',
+            command: {
+                name: 'wallet.withdraw',
+                payload: {
+                    request_id: '7b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d',
+                    identity_context_revision: 5,
+                    amount: { currency: 'RWF', amount: '100000' },
+                    method_id: 'mtn-1',
+                },
+            },
+        } as C3InvestorWalletProps['preview_outcome'];
+        render(<InvestorWallet {...props} />);
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'WITHDRAWAL_RECORDED',
+                data: null,
+            }),
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Check again' }));
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(inertia.calls[0]).toMatchObject({ method: 'get' });
+        expect(
+            screen.queryByRole('status', { name: /recorded/iu }),
+        ).not.toBeInTheDocument();
+    });
+
     it('states a quote refusal and keeps the withdrawal closed', () => {
         const props = wallet();
 

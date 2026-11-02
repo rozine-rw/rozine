@@ -2894,6 +2894,7 @@ const fr: Catalog = {
         'Les Opérations d’audit ont clôturé le dernier audit de cette entreprise, qui ne pourra donc plus jamais être auditée : aucun audit éclair ni examen des relevés ne peut être demandé ici.',
     'admin.parties.audit.kind.flash': 'Audit éclair · délai de 24 heures',
     'admin.parties.audit.kind.routine': 'Audit mensuel',
+    'admin.parties.audit.kind.statement_review': 'Revue des états financiers',
     'admin.parties.audit.status.operations': 'Aux Opérations d’audit',
     'admin.parties.audit.status.offered': 'Proposé à un partenaire',
     'admin.parties.audit.status.accepted': 'Accepté par un partenaire',
@@ -3110,6 +3111,13 @@ const fr: Catalog = {
     'admin.events.clear_filters': 'Effacer les filtres',
     'admin.events.filtered_empty':
         'Rien dans la piste ne correspond à ces filtres.',
+    'admin.events.load_more': 'Charger plus',
+    'admin.events.loading_more': 'Chargement…',
+    'admin.events.load_failed':
+        'Impossible de charger les activités. Réessayez.',
+    'admin.events.retry_more': 'Réessayer',
+    'admin.events.access_revoked':
+        'Votre accès au journal d’activité a changé.',
     'admin.events.empty': 'Aucune action enregistrée.',
     'admin.events.col.when': 'Quand',
     'admin.events.col.who': 'Qui',

@@ -2745,6 +2745,7 @@ const en = {
         'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
     'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
     'admin.parties.audit.kind.routine': 'Monthly audit',
+    'admin.parties.audit.kind.statement_review': 'Statement review',
     'admin.parties.audit.status.operations': 'With Audit Operations',
     'admin.parties.audit.status.offered': 'Offered to a partner',
     'admin.parties.audit.status.accepted': 'Accepted by a partner',
@@ -2958,6 +2959,13 @@ const en = {
     'admin.events.clear_filters': 'Clear filters',
     'admin.events.filtered_empty':
         'Nothing in the trail matches these filters.',
+    'admin.events.load_more': 'Load more',
+    'admin.events.loading_more': 'Loading more…',
+    'admin.events.load_failed':
+        'Unable to load more activity. Please try again.',
+    'admin.events.retry_more': 'Retry',
+    'admin.events.access_revoked':
+        'Your access to the activity trail has changed.',
     'admin.events.empty': 'No actions recorded yet.',
     'admin.events.col.when': 'When',
     'admin.events.col.who': 'Who',

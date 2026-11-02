@@ -373,6 +373,35 @@ describe('Wallet (C3)', () => {
         );
     });
 
+    it('sends the chosen method even when a refresh no longer lists it', async () => {
+        finishReloads();
+        const { rerender } = render(
+            <InvestorWallet {...wallet(depositFixture)} />,
+        );
+        const refreshed = wallet(depositFixture);
+
+        refreshed.funding.methods = refreshed.funding.methods.map((option) => ({
+            ...option,
+            id: `${option.id}-renamed`,
+        }));
+        rerender(<InvestorWallet {...refreshed} />);
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: null,
+            }),
+        );
+        fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(inertia.calls[0]).toMatchObject({
+            body: { method_id: 'mtn-1' },
+        });
+    });
+
     it('sends nothing for an amount edited after its quote until the new quote arrives', async () => {
         vi.useFakeTimers();
         const props = wallet(depositFixture);

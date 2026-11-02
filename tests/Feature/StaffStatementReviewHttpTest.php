@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\AuditAssignment;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 
@@ -44,6 +45,10 @@ it('lets staff request a statement review from the readiness they saw and recove
         ->assertJsonPath('data.reasons', [['code' => 'AUDIT_STATEMENT_REVIEW_OPEN', 'field' => 'assignment']]);
     $this->postJson("/api/v1/staff/businesses/{$business}/initial-statement-audit/review", [...$body, 'reason' => 'Changed.'])->assertConflict();
     expect(AuditAssignment::query()->count())->toBe(1);
+
+    $this->actingAs($fixture['staff'], 'web')->get(route('staff.businesses.index', ['business' => $business]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.id', $assignment->id)
+            ->where('party.audit.engagement.kind', 'statement_review'));
 });
 
 it('refuses a stale readiness binding and leaves the request available', function (): void {

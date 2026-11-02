@@ -255,6 +255,8 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    $cartCheckouts->down();
     $heldReleasePrecision->down();
     $repeatApplications->down();
     $cartLines->down();
@@ -367,6 +369,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $cartLines->up();
     $repeatApplications->up();
     $heldReleasePrecision->up();
+    $cartCheckouts->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)

@@ -653,7 +653,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             });
     }
 
-    /** @return array{id: string, revision: int, kind: string, purpose: string, status: string}|null */
+    /** @return array{id: string, revision: int, kind: string, purpose: string, status: string, complete_by: string|null}|null */
     public function openEngagement(string $businessId): ?array
     {
         $open = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->first();

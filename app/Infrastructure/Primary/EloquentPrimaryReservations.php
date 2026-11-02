@@ -413,6 +413,11 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             foreach ($roots as $root) {
                 $retained[$root->id] = $this->retainedReservation($root, $campaign);
             }
+            // A held cart child settles only with its whole cart (#383 step 4c), never on its own here.
+            $held = array_keys(array_filter($retained, fn (array $pair): bool => $pair[0]->state === 'held'));
+            if ($held !== [] && DB::table('investor_cart_checkout_lines')->whereIn('primary_reservation_id', $held)->exists()) {
+                throw new CommandRejection('CAMPAIGN_SETTLEMENT_REQUIRED');
+            }
             foreach ($roots->map(fn (PrimaryReservationRecord $root): string => $root->party_id)->unique()->sort()->values() as $partyId) {
                 $this->wallets->lockForParty($partyId);
             }
@@ -527,7 +532,9 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 $query->selectRaw('1')->from('primary_reservation_versions')
                     ->whereColumn('primary_reservation_id', 'primary_reservations.id')
                     ->whereIn('state', ['confirmed', 'released', 'expired']);
-            })->orderByRaw('failures.last_attempted_at ASC NULLS FIRST')
+            })->whereNotExists(fn (Builder $query) => $query->selectRaw('1')->from('investor_cart_checkout_lines')
+            ->whereColumn('primary_reservation_id', 'primary_reservations.id'))
+            ->orderByRaw('failures.last_attempted_at ASC NULLS FIRST')
             ->orderBy('expires_at')->orderBy('primary_reservations.id')->limit($limit)->get();
         $expired = 0;
         $failure = null;

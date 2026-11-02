@@ -854,7 +854,8 @@ export type DispatchLocation = {
 export type BusinessAudit = {
     engagement: {
         id: string;
-        kind: 'flash' | 'routine';
+        /** A statement review (#396) runs as a routine audit but is named for what it checks. */
+        kind: 'flash' | 'routine' | 'statement_review';
         status: 'operations' | 'offered' | 'accepted';
         revision: number;
         /** Dispatch attempts used, while the audit waits on Audit Operations. */
@@ -1150,6 +1151,7 @@ export type AdminLedgerProps = AdminShellProps & {
 
 export type EventRow = {
     id: string;
+    cursor_key?: string;
     at: string;
     actor: string;
     action: { code: string; label: string; tone: Tone };
@@ -1165,6 +1167,7 @@ export type EventExport =
     | { state: 'ready'; requested: Attribution; download: RouteLink };
 
 export type AdminEventsProps = AdminFrameShellProps & {
+    cursor_pagination?: boolean;
     events: EventRow[];
     total: number;
     filters: {

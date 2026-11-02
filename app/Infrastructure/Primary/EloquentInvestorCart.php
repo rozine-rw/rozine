@@ -7,10 +7,12 @@ namespace App\Infrastructure\Primary;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\InvestorCart;
+use App\Domain\Operations\CommandRejection;
 use App\Models\InvestorCartLine;
 use App\Models\InvestorCartRoot;
 use App\Models\User;
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -56,6 +58,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
     {
         return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($campaignId, $units, $admit): array {
             $partyId = strtolower((string) $identity['party']['id']);
+            $this->requireNoLiveCheckout($partyId);
             $line = InvestorCartLine::query()->where('party_id', $partyId)->where('business_campaign_id', $campaignId)->first();
             $admit($line !== null, $this->countFor($partyId));
             $at = now('UTC')->toDateTimeImmutable();
@@ -77,6 +80,7 @@ final readonly class EloquentInvestorCart implements InvestorCart
     {
         return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($campaignId): array {
             $partyId = strtolower((string) $identity['party']['id']);
+            $this->requireNoLiveCheckout($partyId);
             $removed = InvestorCartLine::query()->where('party_id', $partyId)->where('business_campaign_id', $campaignId)->delete() > 0;
             if ($removed) {
                 $this->changed($partyId);
@@ -91,6 +95,24 @@ final readonly class EloquentInvestorCart implements InvestorCart
         if (InvestorCartLine::query()->where('party_id', strtolower($partyId))->where('business_campaign_id', $campaignId)->delete() > 0) {
             $this->changed(strtolower($partyId));
         }
+    }
+
+    /**
+     * While a whole-cart checkout is held, the cart it reserved cannot change (#383 P383-02): the
+     * Investor confirms, releases or waits for expiry first.
+     */
+    private function requireNoLiveCheckout(string $partyId): void
+    {
+        $live = DB::table('investor_cart_live_checkouts')->where('party_id', $partyId)->value('investor_cart_checkout_id');
+        if ($live !== null) {
+            throw new CommandRejection('CART_CHECKOUT_ACTIVE', 409, null, [], ['checkout_id' => (string) $live]);
+        }
+    }
+
+    public function partyLines(string $partyId): array
+    {
+        return array_values(InvestorCartLine::query()->where('party_id', strtolower($partyId))->orderBy('created_at')->orderBy('id')->get()
+            ->map(fn (InvestorCartLine $line): array => ['id' => $line->id, 'campaign_id' => $line->business_campaign_id, 'units' => $line->units])->all());
     }
 
     /** Raises the cart's revision once for a change to its lines and records the new snapshot hash. */

@@ -22,7 +22,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * }
  * @phpstan-type Page array{
  *     entries: list<TrailEntry>, total: int, search: string, preset: 'today'|'7d'|'30d'|null, from: string|null, to: string|null,
- *     limit: int, roles: list<string>, permissions: list<string>
+ *     limit: int, roles: list<string>, permissions: list<string>, cursor_mode?: bool, next_cursor?: string|null
  * }
  */
 class StaffActivityResource extends JsonResource
@@ -93,19 +93,21 @@ class StaffActivityResource extends JsonResource
         $page = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $filters = ['q' => $page['search'], 'preset' => $page['preset'], 'from' => $page['from'], 'to' => $page['to']];
-        $more = $page['total'] > count($page['entries']) && $page['limit'] < self::MAX
+        $more = ($page['cursor_mode'] ?? false)
+            ? (isset($page['next_cursor']) ? ['url' => route('staff.events.index', [...array_filter($filters, fn (?string $value): bool => $value !== null && $value !== ''), 'cursor' => $page['next_cursor']], false), 'method' => 'get'] : null)
+            : ($page['total'] > count($page['entries']) && $page['limit'] < self::MAX
             ? ['url' => route($prefix.'staff.events.index', [...array_filter($filters, fn (?string $value): bool => $value !== null && $value !== ''),
-                'limit' => self::MAX], false), 'method' => 'get'] : null;
+                'limit' => self::MAX], false), 'method' => 'get'] : null);
 
         return ['contract_version' => 'staff-activity-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($page['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($page['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $page['search'],
-            'events' => array_map(fn (array $entry): array => ['id' => $entry['id'], 'at' => $entry['at'],
+            'events' => array_map(fn (array $entry): array => ['id' => $entry['id'], ...(($page['cursor_mode'] ?? false) ? ['cursor_key' => $entry['journal'].':'.$entry['id']] : []), 'at' => $entry['at'],
                 'actor' => $entry['actor'] ?? self::SOURCES['console'], 'action' => self::action($entry['code'], $entry['outcome']['status'] ?? null),
                 'target' => self::target($entry),
                 'source' => self::SOURCES[$entry['actor_kind']], 'reason' => $entry['reason'], 'changes' => self::changes($entry)], $page['entries']),
-            'total' => $page['total'], 'filters' => $filters, 'more' => $more, 'export' => ['state' => 'idle'], 'actions' => (object) []];
+            'total' => $page['total'], 'filters' => $filters, 'more' => $more, ...(($page['cursor_mode'] ?? false) ? ['cursor_pagination' => true] : []), 'export' => ['state' => 'idle'], 'actions' => (object) []];
     }
 
     /**
