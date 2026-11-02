@@ -124,8 +124,14 @@ beforeEach(function (): void {
 });
 
 beforeEach(function (): void {
+    // Runs the deferred checks a commit would, then defers again: the next command is a new request.
+    $this->committed = function (): void {
+        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    };
     $this->held = function (string $first = '2', string $second = '3'): array {
         $reserved = ($this->reserve)(($this->cart)($first, $second));
+        ($this->committed)();
         $checkout = InvestorCartCheckout::query()->whereKey($reserved['data']['checkout_id'])->sole();
 
         return ['reserved' => $reserved, 'checkout' => $checkout, 'quote' => InvestorCartQuote::query()->whereKey($checkout->investor_cart_quote_id)->sole()->payload];
@@ -260,7 +266,7 @@ it('requotes every changed line and buys nothing when the band changed, then buy
     $requestId = (string) Str::uuid();
 
     $requoted = ($this->confirm)($checkout->id, $quote, requestId: $requestId);
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    ($this->committed)();
 
     $replacement = $requoted['data']['replacement_quote'];
     expect($requoted)->toMatchArray(['status' => 'completed', 'code' => 'CART_REQUOTED', 'revision' => 2])
