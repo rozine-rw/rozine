@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Operations;
 
-use App\Application\Identity\AuthorizeStaffPermission;
+use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\Contracts\ActivityTrailStore;
 use Carbon\CarbonImmutable;
 
@@ -18,17 +18,17 @@ use Carbon\CarbonImmutable;
  */
 final class BrowseActivityTrail
 {
-    public function __construct(private ActivityTrailStore $store, private AuthorizeStaffPermission $staff) {}
+    public function __construct(private ActivityTrailStore $store, private GetStaffAccess $staff) {}
 
     /**
      * @param  'today'|'7d'|'30d'|null  $preset
      * @param  string|null  $from  a `Y-m-d` Kigali date, ignored under a preset
      * @param  string|null  $to  a `Y-m-d` Kigali date, ignored under a preset
-     * @return Trail
+     * @return array{trail: Trail, staff: array<string, mixed>}
      */
     public function handle(int $actorId, string $search, ?string $preset, ?string $from, ?string $to, int $limit, ?string $cursor = null, bool $cursorMode = false): array
     {
-        $this->staff->check($actorId, 'investors.verify');
+        $staff = $this->staff->requiring($actorId, 'investors.verify');
         $now = CarbonImmutable::now(BrowseOperationsDashboard::ZONE);
         [$start, $end] = match ($preset) {
             'today' => [$now->startOfDay(), null],
@@ -38,6 +38,6 @@ final class BrowseActivityTrail
                 $to === null ? null : CarbonImmutable::parse($to, BrowseOperationsDashboard::ZONE)->addDay()->startOfDay()],
         };
 
-        return $this->store->trail($search, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String(), $limit, $cursor, $cursorMode);
+        return ['trail' => $this->store->trail($search, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String(), $limit, $cursor, $cursorMode), 'staff' => $staff];
     }
 }
