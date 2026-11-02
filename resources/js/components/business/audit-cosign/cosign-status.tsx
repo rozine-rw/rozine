@@ -127,9 +127,11 @@ export function CosignStatus({
                                           locale,
                                       ),
                                   })
-                                : t(
-                                      `business.audit_cosign.status.${signer.state}`,
-                                  )}
+                                : report.published_at !== null
+                                  ? t('business.audit_cosign.status.not_signed')
+                                  : t(
+                                        `business.audit_cosign.status.${signer.state}`,
+                                    )}
                         </span>
                     </li>
                 ))}

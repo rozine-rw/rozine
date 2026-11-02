@@ -50,6 +50,11 @@ const fr: Catalog = {
     'identity.denied.expired_offer.title': 'Cette offre est close',
     'identity.denied.expired_offer.body':
         'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
+    'identity.denied.withdrawn_audit.title':
+        'Cet audit a été retiré par Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Les Opérations d’audit ont retiré cet audit : il ne vous est plus attribué et vous n’avez plus rien à faire. Vos autres missions sont dans Missions.',
+    'identity.denied.withdrawn_audit.action': 'Aller aux missions',
     'errors.not_found.head_title': 'Page introuvable',
     'errors.not_found.title': 'Nous ne trouvons pas cette page',
     'errors.not_found.body':
@@ -2918,6 +2923,7 @@ const fr: Catalog = {
     'admin.parties.audit.flash.placeholder':
         'p. ex. Mouvements inhabituels sur le compte de recettes cette semaine.',
     'admin.parties.audit.flash.cta': 'Demander un audit éclair',
+    'admin.parties.audit.flash.done': 'Audit Flash demandé.',
     'admin.parties.audit.redispatch.open': 'Réaffecter',
     'admin.parties.audit.redispatch.form': 'Réaffecter cet audit',
     'admin.parties.audit.redispatch.form_body':
@@ -2925,7 +2931,12 @@ const fr: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'p. ex. Un nouveau Partenaire d’audit proche de cette entreprise a été approuvé.',
     'admin.parties.audit.redispatch.cta': 'Réaffecter',
-    'admin.parties.audit.close.open': 'Clôturer',
+    'admin.parties.audit.redispatch.done': 'Audit renvoyé à l’attribution.',
+    'admin.parties.audit.close.open': 'Clôturer définitivement',
+    'admin.parties.audit.close.hint':
+        'La clôture est définitive : elle met fin à cet audit et cette entreprise ne pourra plus jamais être auditée. Pour ne mettre fin qu’à cet audit, retirez-le.',
+    'admin.parties.audit.close.done':
+        'Audit clôturé. Cette entreprise ne peut plus être auditée.',
     'admin.parties.audit.close.form': 'Clôturer cet audit',
     'admin.parties.audit.close.form_body':
         'La clôture met fin à cet audit sans rapport et est irréversible. Cette entreprise ne pourra plus jamais être auditée : aucun audit éclair ni examen des relevés ne pourra ensuite être demandé pour elle.',
@@ -2939,6 +2950,8 @@ const fr: Catalog = {
     'admin.parties.audit.withdraw.placeholder':
         'ex. Le partenaire n’a pas scellé de rapport avant l’échéance.',
     'admin.parties.audit.withdraw.cta': 'Retirer l’audit',
+    'admin.parties.audit.withdraw.done':
+        'Audit retiré. Vous pouvez en demander un nouveau.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -3000,6 +3013,7 @@ const fr: Catalog = {
     'admin.parties.audit.review.placeholder':
         'ex. Premier examen des relevés téléversés avec la demande.',
     'admin.parties.audit.review.cta': 'Demander l’examen',
+    'admin.parties.audit.review.done': 'Examen des relevés demandé.',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',
@@ -6712,6 +6726,7 @@ const fr: Catalog = {
     'business.audit_cosign.status.signed_on': 'Signé · {date}',
     'business.audit_cosign.status.signed': 'Signé',
     'business.audit_cosign.status.pending': 'En attente',
+    'business.audit_cosign.status.not_signed': 'Non signé',
     'business.audit_cosign.due': 'À cosigner avant le {date}',
     'business.audit_cosign.overdue':
         'En retard — la cosignature était due avant le {date}',

@@ -38,6 +38,7 @@ function AuditReasonForm({
     binding,
     viewer,
     onCancel,
+    onDone,
 }: {
     command: Command;
     action: RouteAction;
@@ -45,6 +46,8 @@ function AuditReasonForm({
     binding?: Record<string, string | number>;
     viewer: StaffViewer;
     onCancel: () => void;
+    /** The server accepted the command: the form closes and says what happened. */
+    onDone: () => void;
 }) {
     const { t } = useTranslation();
     const [requestId] = useState(() => crypto.randomUUID());
@@ -61,7 +64,7 @@ function AuditReasonForm({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        form.post(action.url, { preserveScroll: true, onSuccess: onCancel });
+        form.post(action.url, { preserveScroll: true, onSuccess: onDone });
     };
 
     return (
@@ -413,8 +416,11 @@ export function BusinessAuditSection({
         action: RouteAction;
         revision: number | null;
     } | null>(null);
+    /** The last command the server accepted here, confirmed until another form opens (#506). */
+    const [done, setDone] = useState<Command | null>(null);
     const engagement = audit.engagement;
     const review = audit.statement_review;
+    const closeAction = audit.close;
     const start = (
         command: Command,
         action: RouteAction | null,
@@ -424,10 +430,13 @@ export function BusinessAuditSection({
         open === null && (
             <button
                 type="button"
-                onClick={() => setOpen({ command, action, revision })}
+                onClick={() => {
+                    setDone(null);
+                    setOpen({ command, action, revision });
+                }}
                 className={cn(
                     'mt-3 h-[38px] w-full rounded-[10px] text-[12.5px] font-bold',
-                    command === 'close' || command === 'withdraw'
+                    command === 'withdraw'
                         ? 'border border-[#fdeaea] bg-rz-surface text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]'
                         : 'bg-[#157357] text-white',
                 )}
@@ -510,7 +519,32 @@ export function BusinessAuditSection({
                             engagement.revision,
                         )}
                         {start('withdraw', audit.withdraw, engagement.revision)}
-                        {start('close', audit.close, engagement.revision)}
+                        {closeAction !== null && open === null && (
+                            <div className="mt-4 border-t border-rz-hairline pt-3">
+                                <p
+                                    className={cn(
+                                        'text-[11.5px] leading-[1.5]',
+                                        EXPLAIN,
+                                    )}
+                                >
+                                    {t('admin.parties.audit.close.hint')}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setDone(null);
+                                        setOpen({
+                                            command: 'close',
+                                            action: closeAction,
+                                            revision: engagement.revision,
+                                        });
+                                    }}
+                                    className="mt-1.5 text-[12px] font-semibold text-[#b3352a] underline dark:text-[#ff6b6f]"
+                                >
+                                    {t('admin.parties.audit.close.open')}
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
                 <StatementReviewSummary review={review} />
@@ -530,7 +564,19 @@ export function BusinessAuditSection({
                         }
                         viewer={viewer}
                         onCancel={() => setOpen(null)}
+                        onDone={() => {
+                            setDone(open.command);
+                            setOpen(null);
+                        }}
                     />
+                )}
+                {done !== null && (
+                    <p
+                        role="status"
+                        className="mt-3 rounded-[11px] bg-[rgba(29,158,117,.10)] px-3 py-2 text-[12.5px] leading-[1.5] font-semibold text-[#157357] dark:text-[#5fd3a8]"
+                    >
+                        {t(`admin.parties.audit.${done}.done`)}
+                    </p>
                 )}
             </div>
         </section>
