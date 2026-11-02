@@ -50,6 +50,15 @@ interface CartCheckouts
     /** The command a whole-cart confirmation journals under. */
     public const string CONFIRM_COMMAND = 'cart.confirm';
 
+    /** The command an Investor's whole-cart release journals under. */
+    public const string RELEASE_COMMAND = 'cart.release';
+
+    /** The command a staff retry of a stuck expiry journals under. */
+    public const string SETTLE_COMMAND = 'cart.settle';
+
+    /** A held checkout this long past its last window is stuck even without a recorded failure. */
+    public const int STUCK_AFTER_SECONDS = 300;
+
     /**
      * @param  Closure(string, QuotedCart, array<string, CartCampaign>): QuoteBody  $price
      * @return array<string, mixed>
@@ -75,10 +84,45 @@ interface CartCheckouts
     public function findReservation(int $userId, int $contextRevision, string $requestId): array;
 
     /**
-     * The retained `cart.confirm` result for this Party, checkout and request id, or
-     * `OPERATION_NOT_FOUND`, also for another checkout's request.
+     * Returns every held line's principal at once, or none (step 4c, contract
+     * `ReleaseCartReservation`): one `cart.release` per (Party, request id) targeting the checkout,
+     * each line released under its own `primary.release` receipt. The cart keeps its lines.
      *
      * @return array<string, mixed>
      */
-    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array;
+    public function release(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $requestId): array;
+
+    /**
+     * The retained `cart.confirm` or `cart.release` result for this Party, checkout and request id,
+     * or `OPERATION_NOT_FOUND`, also for another command or another checkout's request.
+     *
+     * @return array<string, mixed>
+     */
+    public function findOperation(int $userId, int $contextRevision, string $command, string $checkoutId, string $requestId): array;
+
+    /**
+     * Expires every held checkout whose last line window has closed, each as one group: every
+     * child expires and returns its principal together, or none does (contract P383-05). A
+     * checkout that fails is recorded as stuck, and its first failure alerts every staff member who
+     * may resolve it; the sweep goes on with the next one and then reports the first failure.
+     */
+    public function expireDue(int $limit): int;
+
+    /**
+     * Staff retry of one stuck expiry from the console (`cart.releases.resolve`), journaled as
+     * `cart.settle` under the operator. It runs the same group expiry, never one child on its own.
+     *
+     * @return array<string, mixed>
+     */
+    public function settleStuck(int $staffUserId, string $checkoutId, string $requestId): array;
+
+    /**
+     * Held checkouts the sweep has not settled: each one whose settlement failed, and each one still
+     * held more than `STUCK_AFTER_SECONDS` after its last window closed, which also shows a sweep
+     * that stopped running. Oldest first.
+     *
+     * @return list<array{checkout_id: string, party_id: string, investor: string|null, total: string, lines: int, settles_at: string,
+     *     attempts: int, reason_code: string|null, last_attempted_at: string|null}>
+     */
+    public function stuck(): array;
 }

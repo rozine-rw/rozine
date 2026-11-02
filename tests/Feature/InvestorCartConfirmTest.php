@@ -5,14 +5,9 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Primary\Contracts\HeldNoteCapital;
 use App\Application\Primary\Contracts\PrimaryReservations;
-use App\Application\Primary\PrimaryCampaignReturns;
-use App\Application\Primary\PrimaryFundingCandidate;
 use App\Application\Primary\QuoteInvestorCart;
 use App\Application\Primary\ReservationConfirmation;
-use App\Application\Primary\ReservationRefund;
-use App\Application\Primary\ReservationRelease;
 use App\Application\Primary\ReserveInvestorCart;
-use App\Application\Primary\ReservedCheckout;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\RiskStatements;
 use App\Infrastructure\Primary\EloquentCartCheckouts;
@@ -28,6 +23,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
+use Tests\Support\DecoratedPrimaryReservations;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -139,75 +135,7 @@ beforeEach(function (): void {
         return $ordered;
     };
     $this->reservations = fn (?Closure $requotes = null, ?Closure $confirmed = null) => app()->instance(PrimaryReservations::class,
-        new class(app(PrimaryReservations::class), $requotes, $confirmed) implements PrimaryReservations
-        {
-            public function __construct(private PrimaryReservations $live, private ?Closure $requotes, private ?Closure $confirmed) {}
-
-            public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array
-            {
-                return $this->live->reservationFacts($campaignId, $partyId, $reservationId);
-            }
-
-            public function commitmentFacts(string $campaignId, string $partyId, string $commitmentId): array
-            {
-                return $this->live->commitmentFacts($campaignId, $partyId, $commitmentId);
-            }
-
-            public function reserve(string $campaignId, string $partyId, string $originOperationId, string $units, Closure $admit): ReservedCheckout
-            {
-                return $this->live->reserve($campaignId, $partyId, $originOperationId, $units, $admit);
-            }
-
-            public function confirm(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision,
-                string $disclosureVersion, string $disclosureSha256, Closure $admit): ReservationConfirmation
-            {
-                $result = $this->live->confirm($campaignId, $reservationId, $partyId, $operationId, $expectedRevision, $disclosureVersion, $disclosureSha256, $admit);
-
-                return $this->confirmed === null ? $result : ($this->confirmed)($result);
-            }
-
-            public function requotes(string $campaignId, string $reservationId, string $partyId, Closure $admit): bool
-            {
-                $requotes = $this->live->requotes($campaignId, $reservationId, $partyId, $admit);
-
-                return $this->requotes === null ? $requotes : ($this->requotes)($requotes);
-            }
-
-            public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease
-            {
-                return $this->live->release($campaignId, $reservationId, $partyId, $operationId, $expectedRevision);
-            }
-
-            public function lockFundingCandidate(string $campaignId): PrimaryFundingCandidate
-            {
-                return $this->live->lockFundingCandidate($campaignId);
-            }
-
-            public function lockReturnedCampaign(string $campaignId): PrimaryCampaignReturns
-            {
-                return $this->live->lockReturnedCampaign($campaignId);
-            }
-
-            public function settleExpiredCampaign(string $campaignId, string $closureId): array
-            {
-                return $this->live->settleExpiredCampaign($campaignId, $closureId);
-            }
-
-            public function refund(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund
-            {
-                return $this->live->refund($campaignId, $reservationId, $partyId, $expectedRevision);
-            }
-
-            public function expireDue(int $limit): int
-            {
-                return $this->live->expireDue($limit);
-            }
-
-            public function expire(string $campaignId, string $reservationId, ?string $operationId = null): ?ReservationRelease
-            {
-                return $this->live->expire($campaignId, $reservationId, $operationId);
-            }
-        });
+        new DecoratedPrimaryReservations(app(PrimaryReservations::class), requotes: $requotes, confirmed: $confirmed));
 });
 
 it('buys every held line at once, each under its own confirmation receipt, and empties the cart in one revision', function (): void {
@@ -245,8 +173,9 @@ it('buys every held line at once, each under its own confirmation receipt, and e
 
     $service = app(ReserveInvestorCart::class);
     expect(($this->confirm)($checkout->id, $quote, requestId: $requestId))->toBe($result)
-        ->and($service->findConfirmation($this->user->id, 1, $checkout->id, $requestId))->toBe($result)
-        ->and(($this->refusal)(fn () => $service->findConfirmation($this->user->id, 1, strtolower((string) Str::ulid()), $requestId)))->reason->toBe('OPERATION_NOT_FOUND')
+        ->and($service->findOperation($this->user->id, 1, 'cart.confirm', $checkout->id, $requestId))->toBe($result)
+        ->and(($this->refusal)(fn () => $service->findOperation($this->user->id, 1, 'cart.release', $checkout->id, $requestId)))->reason->toBe('OPERATION_NOT_FOUND')
+        ->and(($this->refusal)(fn () => $service->findOperation($this->user->id, 1, 'cart.confirm', strtolower((string) Str::ulid()), $requestId)))->reason->toBe('OPERATION_NOT_FOUND')
         ->and(($this->confirm)($checkout->id, $quote, 2))->toMatchArray(['status' => 'rejected', 'code' => 'CART_RESERVATION_NOT_HELD'])
         ->and($service->reservation($this->user->id, 1, $checkout->id))->toMatchArray(['revision' => 2, 'state' => 'confirmed'])
         ->and(PrimaryCommitment::query()->count())->toBe(2);

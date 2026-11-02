@@ -2766,6 +2766,10 @@ const fr: Catalog = {
     'admin.permission.health.view': "Voir l'état du système",
     'admin.permission_detail.health.view':
         "Voir les files, les tâches et l'état des services.",
+    'admin.permission.cart.releases.resolve':
+        'Relancer les libérations de panier bloquées',
+    'admin.permission_detail.cart.releases.resolve':
+        "Libérer une réservation de panier dont l'expiration a échoué, toutes les lignes ensemble.",
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',
@@ -7221,6 +7225,10 @@ const fr: Catalog = {
     'admin.exceptions.kind.variance': 'Écart',
     'admin.exceptions.kind.audit': 'Audit éclair en retard',
     'admin.exceptions.kind.complaint': 'Réclamation',
+    'admin.exceptions.kind.cart_release': 'Libération de panier',
+    'admin.exceptions.retry': 'Relancer la libération',
+    'admin.exceptions.retry_named': 'Relancer la libération de {reference}',
+    'admin.exceptions.retrying': 'Libération…',
     'admin.exceptions.col.reference': 'Référence',
     'admin.exceptions.col.kind': 'Type',
     'admin.exceptions.col.subject': 'Exception',

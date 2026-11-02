@@ -56,6 +56,7 @@ use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
 use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
+use App\Http\Controllers\StaffCartReleaseController;
 use App\Http\Controllers\StaffExceptionsController;
 use App\Http\Controllers\StaffHomeController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
@@ -364,6 +365,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/messaging/history', StaffMessagingController::class)->name('staff.messaging.index');
     Route::get('admin/ledger', StaffLedgerController::class)->name('staff.ledger.index');
     Route::get('admin/exceptions', StaffExceptionsController::class)->name('staff.exceptions.index');
+    Route::post('admin/exceptions/cart-releases/{checkout}/retry', StaffCartReleaseController::class)->whereUlid('checkout')->name('staff.exceptions.cart-releases.retry');
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
