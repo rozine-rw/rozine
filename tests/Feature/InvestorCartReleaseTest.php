@@ -18,6 +18,7 @@ use App\Models\InvestorCartLine;
 use App\Models\InvestorCartQuote;
 use App\Models\User;
 use App\Notifications\Staff\CartSettlementStuck;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -134,6 +135,7 @@ beforeEach(function (): void {
     };
     $this->release = fn (string $checkoutId, int $revision = 1, ?string $requestId = null) => app(ReserveInvestorCart::class)
         ->release($this->user->id, 1, $checkoutId, $revision, $requestId ?? (string) Str::uuid());
+    /** @param list<string> $roles */
     $this->staff = function (array $roles): User {
         $user = User::factory()->withTwoFactor()->create();
         StaffFixture::provision($user, $roles, 'Cart release duty.');
@@ -205,8 +207,9 @@ it('expires every line of a checkout together once its last window closes, and n
         ->and($sweep->expireDue(10))->toBe(0);
 
     $this->travelTo($checkout->settles_at);
-    $this->artisan('cart:expire-checkouts', ['--limit' => 'x'])->assertExitCode(2);
-    $this->artisan('cart:expire-checkouts')->expectsOutput('Expired 1 cart checkouts.')->assertSuccessful();
+    expect(Artisan::call('cart:expire-checkouts', ['--limit' => 'x']))->toBe(2)
+        ->and(Artisan::call('cart:expire-checkouts'))->toBe(0)
+        ->and(trim(Artisan::output()))->toBe('Expired 1 cart checkouts.');
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 
     expect(($this->versions)())->toBe(['expired', 'expired'])
