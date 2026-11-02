@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Primary\Contracts\HeldNoteCapital;
 use App\Application\Primary\Contracts\PrimaryCheckout;
@@ -12,6 +13,7 @@ use App\Application\Primary\ReserveInvestorCart;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\RiskStatements;
 use App\Infrastructure\Primary\EloquentCartCheckouts;
+use App\Models\BusinessCampaignClosure;
 use App\Models\CommandOperation;
 use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorCartCheckout;
@@ -286,6 +288,19 @@ it('keeps the cart and every child still while the checkout is held', function (
         ->and($confirmed)->toMatchArray(['status' => 'rejected', 'code' => 'RESERVATION_IN_CART_CHECKOUT'])
         ->and($single)->toMatchArray(['status' => 'rejected', 'code' => 'CART_CHECKOUT_ACTIVE', 'data' => ['checkout_id' => $held['data']['checkout_id']]])
         ->and(DB::table('primary_reservation_versions')->where('state', '<>', 'held')->count())->toBe(0);
+});
+
+it('defers campaign expiry while a cart checkout still holds a line in it, expiring no child on its own', function (): void {
+    $held = ($this->reserve)(($this->cart)());
+    $this->travelTo($this->campaign->expires_at->max($this->second->expires_at)->addSecond());
+
+    expect(app(BusinessCampaignStore::class)->expireDue(10))->toBe(0)
+        ->and(BusinessCampaignClosure::query()->count())->toBe(0)
+        ->and(DB::table('primary_reservation_versions')->where('state', '<>', 'held')->count())->toBe(0)
+        ->and(($this->refusal)(fn () => DB::transaction(fn () => app(PrimaryReservations::class)
+            ->settleExpiredCampaign($this->campaign->id, (string) Str::ulid()))))->reason->toBe('CAMPAIGN_SETTLEMENT_REQUIRED')
+        ->and(DB::table('primary_campaign_expiry_settlements')->count())->toBe(0)
+        ->and($held['data']['lines'])->toHaveCount(2);
 });
 
 it('gives a restricted account no cart hold', function (): void {

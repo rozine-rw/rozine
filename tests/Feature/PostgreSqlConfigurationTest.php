@@ -172,6 +172,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
     $cartCheckouts->down();
+    $cartQuotes = require database_path('migrations/2026_11_01_050000_create_investor_cart_quotes_table.php');
+    $cartQuotes->down();
+    $cartRoots = require database_path('migrations/2026_11_01_040000_create_investor_carts_table.php');
+    $cartRoots->down();
     $heldReleasePrecision->down();
     $repeatApplications->down();
     // Repeat applications replace this migration's one-pending index, and the application table is rebuilt below, so it comes off and goes back with them.
@@ -453,6 +457,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $permissionSchema->up();
     $permissionData->up();
     $heldReleasePrecision->up();
+    $cartRoots->up();
+    $cartQuotes->up();
     $cartCheckouts->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
