@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Primary;
+namespace App\Infrastructure\Identity;
 
 use App\Application\Primary\Contracts\CartSettlementAlerts;
 use App\Models\StaffAccount;
