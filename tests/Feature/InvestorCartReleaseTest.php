@@ -348,6 +348,7 @@ it('gives the odd sweep slot to whichever checkout has waited longer', function 
 
 it('serves a fresh backlog behind retries that keep failing, however the one-slot sweeps are spaced', function (): void {
     $now = CarbonImmutable::parse('2026-11-02 10:00', 'UTC');
+    /** @var list<CarbonImmutable> $fresh */
     $fresh = [$now->subMinutes(30), $now->subMinutes(20), $now->subMinutes(10)];
     $retries = [['due' => $now->subMinutes(40), 'attempts' => 1], ['due' => $now->subMinutes(35), 'attempts' => 1], ['due' => $now->subMinutes(25), 'attempts' => 1]];
     $served = ['fresh' => 0, 'retries' => 0];
