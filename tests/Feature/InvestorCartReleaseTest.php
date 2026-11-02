@@ -323,6 +323,19 @@ it('shares every sweep between fresh checkouts and due retries so neither starve
     'less than the limit due' => [10, 3, 2, true, [3, 2]],
 ]);
 
+it('alternates the odd sweep slot on every sweep, however the sweeps are spaced', function (): void {
+    $this->freezeTime();
+    $sweep = app(CartCheckouts::class);
+    Cache::forget(EloquentCartCheckouts::SWEEP_TURN_KEY);
+
+    expect($sweep->expireDue(1))->toBe(0)
+        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(1)
+        ->and($sweep->expireDue(1))->toBe(0)
+        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(2)
+        ->and($sweep->expireDue(1))->toBe(0)
+        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(3);
+});
+
 it('shows a checkout the sweep has not reached as stuck, and keeps sweeping when an alert cannot be sent', function (): void {
     ['checkout' => $checkout] = ($this->held)();
     ($this->staff)(['compliance']);

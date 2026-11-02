@@ -35,6 +35,7 @@ use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -72,6 +73,9 @@ use Throwable;
  */
 final readonly class EloquentCartCheckouts implements CartCheckouts
 {
+    /** Counts sweeps, so the odd batch slot alternates between fresh checkouts and retries. */
+    public const string SWEEP_TURN_KEY = 'cart-checkouts:sweep-turn';
+
     /** Child request ids are UUIDv5 names under this namespace, derived from the parent operation. */
     private const string CHILD_NAMESPACE = '6f1d3c2a-8b4e-5f60-9a7b-1c2d3e4f5a6b';
 
@@ -200,7 +204,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
             ->whereRaw('failures.last_attempted_at <= ?::timestamptz - make_interval(mins => least(?, ? * failures.attempts))',
                 [$now, self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
             ->orderBy('failures.last_attempted_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
-        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), now('UTC')->minute % 2 === 0);
+        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), (int) Cache::increment(self::SWEEP_TURN_KEY) % 2 === 0);
         $candidates = $retries->take($retriesTaken)->concat($fresh->take($freshTaken));
         $expired = 0;
         $failure = null;
@@ -227,7 +231,8 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
 
     /**
      * How many fresh and retry candidates one sweep takes. Each class gets half the limit, the odd
-     * slot alternating between them (`$retryFirst`, from the sweep's minute), and a class with
+     * slot alternating between them (`$retryFirst`, from the sweep turn counter, so successive
+     * sweeps alternate however they are scheduled), and a class with
      * fewer due than its share gives the rest to the other. Neither class can starve the other,
      * even at a limit of 1.
      *
