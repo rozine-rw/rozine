@@ -41,15 +41,6 @@ use Tests\Support\StaffFixture;
  * every staff member who may resolve it, and staff retry the same group expiry from Exceptions.
  */
 
-/** @param list<string> $roles */
-function cartReleaseStaff(array $roles): User
-{
-    $user = User::factory()->withTwoFactor()->create();
-    StaffFixture::provision($user, $roles, 'Cart release duty.');
-
-    return $user;
-}
-
 beforeEach(function (): void {
     $this->withoutVite();
     $this->freezeSecond();
@@ -136,7 +127,6 @@ beforeEach(function (): void {
         });
 });
 
-
 beforeEach(function (): void {
     // Runs the deferred checks a commit would, then defers again: the next command is a new request.
     $this->committed = function (): void {
@@ -152,7 +142,12 @@ beforeEach(function (): void {
     };
     $this->release = fn (string $checkoutId, int $revision = 1, ?string $requestId = null) => app(ReserveInvestorCart::class)
         ->release($this->user->id, 1, $checkoutId, $revision, $requestId ?? (string) Str::uuid());
-    $this->staff = fn (array $roles): User => cartReleaseStaff(array_values(array_map('strval', $roles)));
+    $this->staff = function (array $roles): User {
+        $user = User::factory()->withTwoFactor()->create();
+        StaffFixture::provision($user, array_values(array_map('strval', $roles)), 'Cart release duty.');
+
+        return $user;
+    };
     $this->versions = fn (): array => DB::table('primary_reservation_versions')->where('revision', '>', 1)->orderBy('primary_reservation_id')
         ->pluck('state')->all();
 });
