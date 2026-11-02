@@ -128,8 +128,14 @@ beforeEach(function (): void {
 
 
 beforeEach(function (): void {
+    // Runs the deferred checks a commit would, then defers again: the next command is a new request.
+    $this->committed = function (): void {
+        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    };
     $this->held = function (): array {
         $reserved = ($this->reserve)(($this->cart)());
+        ($this->committed)();
         $checkout = InvestorCartCheckout::query()->whereKey($reserved['data']['checkout_id'])->sole();
 
         return ['reserved' => $reserved, 'checkout' => $checkout, 'quote' => InvestorCartQuote::query()->whereKey($checkout->investor_cart_quote_id)->sole()->payload];
@@ -152,7 +158,7 @@ it('returns every held line at once, each under its own release receipt, and kee
     $requestId = (string) Str::uuid();
 
     $result = ($this->release)($checkout->id, requestId: $requestId);
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    ($this->committed)();
 
     expect($result)->toMatchArray(['status' => 'completed', 'code' => 'CART_RELEASED', 'revision' => 2])
         ->and($result['data'])->toMatchArray(['checkout_id' => $checkout->id, 'state' => 'released', 'total_returned' => ['currency' => 'RWF', 'amount' => '25000']])
@@ -211,7 +217,7 @@ it('expires every line of a checkout together once its last window closes, and n
     expect(Artisan::call('cart:expire-checkouts', ['--limit' => 'x']))->toBe(2)
         ->and(Artisan::call('cart:expire-checkouts'))->toBe(0)
         ->and(trim(Artisan::output()))->toBe('Expired 1 cart checkouts.');
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    ($this->committed)();
 
     expect(($this->versions)())->toBe(['expired', 'expired'])
         ->and(DB::table('primary_reservation_versions')->where('state', 'expired')->whereNotNull('operation_id')->count())->toBe(0)
@@ -272,7 +278,7 @@ it('records a stuck expiry, alerts the staff who may resolve it once, and lets t
     $retry($analyst)->assertForbidden();
     app()->forgetInstance(PrimaryReservations::class);
     $retry($treasury)->assertRedirect(route('staff.exceptions.index', ['kind' => 'cart_release']));
-    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    ($this->committed)();
 
     $settle = CommandOperation::query()->where('command', 'cart.settle')->where('result->status', 'completed')->sole();
     expect($settle->actor_key)->toBe('staff:'.$treasury->id)
