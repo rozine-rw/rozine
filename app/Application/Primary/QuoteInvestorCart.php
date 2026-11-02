@@ -66,11 +66,14 @@ final readonly class QuoteInvestorCart
     }
 
     /**
+     * Prices the cart under the caller's locks. The cart checkout calls it again at reserve to
+     * prove the quote still stands.
+     *
      * @param  QuotedCart  $cart
      * @param  array<string, CartCampaign>  $campaigns
      * @return QuoteBody
      */
-    private function price(int $userId, string $partyId, array $cart, array $campaigns): array
+    public function price(int $userId, string $partyId, array $cart, array $campaigns): array
     {
         if (! $this->acknowledgements->current($partyId)) {
             throw new CommandRejection('RISK_ACKNOWLEDGEMENT_REQUIRED', 409);

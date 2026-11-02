@@ -7,6 +7,7 @@ namespace App\Infrastructure\Primary;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Primary\CartQuoteDisclosure;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\ReservationWindow;
@@ -34,9 +35,6 @@ use Illuminate\Support\Str;
  */
 final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
 {
-    /** The version of the canonical object the quote's disclosure hash covers. */
-    private const string DISCLOSURE_VERSION = 'cart-quote-disclosure-1';
-
     public function __construct(private AuthorizeActiveRole $authority, private PrimaryCampaignSource $campaigns, private CanonicalJson $json) {}
 
     public function quote(int $userId, int $contextRevision, int $expectedCartRevision, Closure $price): array
@@ -97,10 +95,7 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
         $deadline = min($deadlines);
         $expiresAt = ReservationWindow::open($createdAt, $deadline)->expiresAt;
         $id = strtolower((string) Str::ulid());
-        $disclosure = hash('sha256', $this->json->encode(['version' => self::DISCLOSURE_VERSION, 'contract_version' => self::CONTRACT_VERSION,
-            'cart' => ['id' => $cart['id'], 'revision' => $cart['revision'], 'sha256' => $cart['sha256']], 'lines' => $body['lines'],
-            'principal' => $body['principal'], 'earnings_fee' => $body['earnings_fee'], 'net_return' => $body['net_return'],
-            'fee_band' => array_diff_key($body['fee_band'], ['capital_revision' => true, 'capital_sha256' => true])]));
+        $disclosure = CartQuoteDisclosure::sha256($this->json, $cart, $body);
         $quote = ['id' => $id, 'revision' => 1, 'contract_version' => self::CONTRACT_VERSION,
             'cart_id' => $cart['id'], 'cart_revision' => $cart['revision'], 'cart_sha256' => $cart['sha256'], ...$body,
             'disclosure_sha256' => $disclosure, 'created_at' => self::time($createdAt), 'expires_at' => self::time($expiresAt), 'confirmation_required' => true];

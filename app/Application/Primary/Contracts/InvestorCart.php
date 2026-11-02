@@ -67,4 +67,12 @@ interface InvestorCart
      * Investor's authority, so no lock is taken here.
      */
     public function bought(string $partyId, string $campaignId): void;
+
+    /**
+     * The Party's lines with their ids, in the order they were added, for a whole-cart checkout that
+     * already holds the Party's authority (and, when it needs them exact, the cart root).
+     *
+     * @return list<array{id: string, campaign_id: string, units: int}>
+     */
+    public function partyLines(string $partyId): array;
 }

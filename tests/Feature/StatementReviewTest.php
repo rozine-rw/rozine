@@ -264,7 +264,7 @@ it('dispatches the monthly audit in the same month once the review that held it 
 
     $monthly = AuditAssignment::query()->findOrFail($store->requestMonthly($fixture['business']));
     expect($monthly->state['purpose'] ?? null)->toBe('monthly')->and($monthly->state['kind'])->toBe('routine');
-    $this->travelTo(now('Africa/Kigali')->addDay()->startOfMonth()->addMinute());
+    $this->travelTo(now('Africa/Kigali')->startOfMonth()->addMonthNoOverflow()->addMinute());
     expect($store->requestMonthly($fixture['business']))->toBeNull();
 });
 
