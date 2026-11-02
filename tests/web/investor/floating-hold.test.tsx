@@ -7,6 +7,7 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
+import { FloatingHold } from '@/components/investor/floating-hold';
 import InvestorCart from '@/pages/investor/cart';
 import type {
     C3InvestorCartProps,
@@ -120,6 +121,35 @@ describe('Floating checkout hold', () => {
 
         fireEvent.blur(card, { relatedTarget: document.body });
         expect(card).not.toHaveTextContent('Continue to checkout');
+    });
+
+    it('sits lower on a page without the tab bar and stays open while focus moves inside it', () => {
+        inertia.shared = {
+            checkout_holds: {
+                server_time: NOW,
+                holds: [
+                    hold('r1', 'GreenLeaf Agro', '2026-10-30T12:04:32Z'),
+                    hold('r2', 'Kigali Bakes', '2026-10-30T12:05:00Z'),
+                ],
+            },
+        };
+        render(
+            <FloatingHold
+                wallet={{ url: '/investor/wallet', method: 'get' }}
+                raised={false}
+            />,
+        );
+        const card = screen.getByTestId('floating-hold');
+        expect(card.className).toContain('bottom-[calc(16px');
+
+        fireEvent.focus(
+            screen.getByRole('link', { name: /Held for checkout/ }),
+        );
+        const more = screen.getByRole('link', {
+            name: '+1 more hold in your wallet',
+        });
+        fireEvent.blur(card, { relatedTarget: more });
+        expect(card).toHaveTextContent('Continue to checkout');
     });
 
     it('stays open on mouse-leave while focus is still inside it', () => {

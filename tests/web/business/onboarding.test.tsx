@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
@@ -250,7 +250,10 @@ describe('RDB certificate, logo & photos', () => {
         );
         await user.upload(screen.getByLabelText('Upload your logo'), logo);
         await user.upload(screen.getByLabelText('Team'), logo);
-        await user.upload(screen.getByLabelText('Team'), []);
+        // A cancelled picker sends nothing.
+        fireEvent.change(screen.getByLabelText('Team'), {
+            target: { files: [] },
+        });
 
         expect(inertia.uploads).toEqual([
             {
