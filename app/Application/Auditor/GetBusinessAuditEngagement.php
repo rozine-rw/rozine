@@ -19,7 +19,7 @@ use App\Application\Operations\Contracts\OverdueAudits;
  * An overdue audit, or one waiting on Audit Operations, may be withdrawn (#489): that ends this audit
  * only, so unlike close the Business can be audited again.
  *
- * @phpstan-type Engagement array{id: string, revision: int, kind: string, status: string, complete_by: string|null, overdue: bool, attempt: int|null, operations_reason: string|null, allowed_actions: list<string>}
+ * @phpstan-type Engagement array{id: string, revision: int, kind: string, purpose: string, status: string, complete_by: string|null, overdue: bool, attempt: int|null, operations_reason: string|null, allowed_actions: list<string>}
  * @phpstan-type NearbyPartner array{party_id: string, name: string, revision: int, reviewed: bool}
  */
 final class GetBusinessAuditEngagement
