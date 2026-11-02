@@ -1671,6 +1671,32 @@ describe('Party 360', () => {
         );
     });
 
+    it('still counts the months when the range is not given', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 2,
+                            first_month: null,
+                            last_month: null,
+                        },
+                        reasons: ['BUSINESS_VERIFICATION_REQUIRED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+
+        expect(screen.getByRole('region', { name: 'Audit' })).toHaveTextContent(
+            '2 months transcribed',
+        );
+    });
+
     it('requests a Flash audit for a Business with no audit open', async () => {
         inertia.succeed = true;
         vi.spyOn(crypto, 'randomUUID').mockReturnValue(

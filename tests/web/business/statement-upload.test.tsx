@@ -140,6 +140,9 @@ describe('Statement upload on Apply step 1', () => {
         act(() => options.onStart?.());
         expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
         expect(screen.getByLabelText('Upload a statement')).toBeDisabled();
+        // A progress event without a measurable size keeps the bare label.
+        act(() => options.onProgress?.(undefined));
+        expect(screen.getByRole('status')).toHaveTextContent(/^Uploading…$/);
         act(() => options.onProgress?.({ percentage: 37 }));
         expect(screen.getByRole('status')).toHaveTextContent('Uploading… 37%');
         act(() => options.onProgress?.({ percentage: 100 }));

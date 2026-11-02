@@ -20,7 +20,7 @@ export type Responder = (options: HttpOptions) => Promise<unknown>;
  * answered in order by the responders a test queues on `inertia.queue`.
  */
 export const inertia = {
-    deferredState: 'ready' as 'ready' | 'loading' | 'error',
+    deferredState: 'ready' as 'ready' | 'loading' | 'reloading' | 'error',
     reload: [] as Record<string, unknown>[],
     visits: [] as string[],
     visitOptions: [] as Record<string, unknown>[],
@@ -35,7 +35,18 @@ export const inertia = {
     queue: [] as Responder[],
     /** Field errors `useHttp` reports after a 422. */
     httpErrors: {} as Record<string, string>,
+    /** `router.reload` also calls `onSuccess` before `onFinish`. */
+    reloadSucceeds: false,
+    /** The global router events a page listens to, by name. */
+    listeners: {} as Record<string, Set<(event: unknown) => unknown>>,
 };
+
+/** Fires a global router event at every listener, returning what each one answered. */
+export function emit(name: string, event: unknown = {}): unknown[] {
+    return [...(inertia.listeners[name] ?? [])].map((listener) =>
+        listener(event),
+    );
+}
 
 export function resetInertia() {
     inertia.deferredState = 'ready';
@@ -50,6 +61,8 @@ export function resetInertia() {
     inertia.formState = { processing: false, errors: {} };
     inertia.calls = [];
     inertia.queue = [];
+    inertia.reloadSucceeds = false;
+    inertia.listeners = {};
     inertia.httpErrors = {};
 }
 
@@ -128,14 +141,28 @@ export function Deferred({
     }
 
     return typeof children === 'function'
-        ? children({ reloading: false })
+        ? children({ reloading: inertia.deferredState === 'reloading' })
         : children;
 }
 
 export const router = {
-    on: () => () => {},
-    reload: (options: Record<string, unknown> & { onFinish?: () => void }) => {
+    on: (name: string, listener: (event: unknown) => unknown) => {
+        (inertia.listeners[name] ??= new Set()).add(listener);
+
+        return () => inertia.listeners[name]?.delete(listener);
+    },
+    reload: (
+        options: Record<string, unknown> & {
+            onSuccess?: () => void;
+            onFinish?: () => void;
+        },
+    ) => {
         inertia.reload.push(options);
+
+        if (inertia.reloadSucceeds) {
+            options.onSuccess?.();
+        }
+
         options.onFinish?.();
     },
     visit: (url: string, options: Record<string, unknown> = {}) => {
