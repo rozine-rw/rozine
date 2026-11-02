@@ -67,18 +67,21 @@ final readonly class QuoteInvestorCart
 
     /**
      * Prices the cart under the caller's locks. The cart checkout calls it again at reserve to
-     * prove the quote still stands.
+     * prove the quote still stands, and at confirm, `$held`, to see whether its terms still stand:
+     * a held cart's units are already its own, so their raise capacity is not checked again.
      *
      * @param  QuotedCart  $cart
      * @param  array<string, CartCampaign>  $campaigns
      * @return QuoteBody
      */
-    public function price(int $userId, string $partyId, array $cart, array $campaigns): array
+    public function price(int $userId, string $partyId, array $cart, array $campaigns, bool $held = false): array
     {
         if (! $this->acknowledgements->current($partyId)) {
             throw new CommandRejection('RISK_ACKNOWLEDGEMENT_REQUIRED', 409);
         }
-        $this->requireCapacity($userId, $cart);
+        if (! $held) {
+            $this->requireCapacity($userId, $cart);
+        }
         $capital = $this->capital->current($partyId);
         if (! $capital['complete']) {
             throw new CommandRejection('POLICY_INPUT_REQUIRED', 409);

@@ -18,6 +18,17 @@ use Closure;
  * one common band, each with its own `primary.reserve` receipt that names the parent. Any line
  * refused rolls back every hold, and the parent keeps the refusal with every line's code.
  *
+ * `confirm()` buys every held line at once, or none (step 4b). It takes the same locks as
+ * `reserve()` for the checkout's campaigns, then journals one `cart.confirm` per (Party, request id)
+ * targeting the checkout. Under the cart root lock it requires the expected checkout revision, a held
+ * checkout before its deadline and the acknowledgement of its current quote, then prices the held
+ * cart again through `$price`. If the cart's terms and every line's terms still stand, each line is
+ * confirmed under its own `primary.confirm` receipt, the bought lines leave the cart in one revision
+ * and the checkout is `confirmed`. If anything the Investor acknowledged changed, nothing is bought:
+ * a replacement quote is kept, every changed line takes its new terms, the checkout moves to the
+ * next held revision and the result is `CART_REQUOTED`, to be confirmed again explicitly. Any line
+ * refused refuses the whole cart and changes nothing.
+ *
  * `reservation()` reads the Party's own checkout without changing anything. A held checkout past
  * its deadline reads `release_pending` until expiry settles it; a read never settles.
  *
@@ -36,12 +47,22 @@ interface CartCheckouts
     /** The command a whole-cart reserve journals under. */
     public const string RESERVE_COMMAND = 'cart.reserve';
 
+    /** The command a whole-cart confirmation journals under. */
+    public const string CONFIRM_COMMAND = 'cart.confirm';
+
     /**
      * @param  Closure(string, QuotedCart, array<string, CartCampaign>): QuoteBody  $price
      * @return array<string, mixed>
      */
     public function reserve(int $userId, int $contextRevision, int $expectedCartRevision, string $quoteId, int $expectedQuoteRevision,
         string $quoteDisclosureSha256, string $requestId, Closure $price): array;
+
+    /**
+     * @param  Closure(string, QuotedCart, array<string, CartCampaign>): QuoteBody  $price
+     * @return array<string, mixed>
+     */
+    public function confirm(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $quoteId, int $expectedQuoteRevision,
+        string $acknowledgedDisclosureSha256, string $requestId, Closure $price): array;
 
     /** @return CartReservation */
     public function reservation(int $userId, int $contextRevision, string $checkoutId): array;
@@ -52,4 +73,12 @@ interface CartCheckouts
      * @return array<string, mixed>
      */
     public function findReservation(int $userId, int $contextRevision, string $requestId): array;
+
+    /**
+     * The retained `cart.confirm` result for this Party, checkout and request id, or
+     * `OPERATION_NOT_FOUND`, also for another checkout's request.
+     *
+     * @return array<string, mixed>
+     */
+    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array;
 }
