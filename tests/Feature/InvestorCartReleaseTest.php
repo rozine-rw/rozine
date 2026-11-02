@@ -345,6 +345,41 @@ it('alternates the odd sweep slot on every sweep, however the sweeps are spaced'
         ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(3);
 });
 
+it('starts the sweep count in the database cache, keeps it across processes and starts again after a reset', function (): void {
+    $this->freezeTime();
+    Cache::setDefaultDriver('database');
+    $key = EloquentCartCheckouts::SWEEP_TURN_KEY;
+    $stored = fn (): int => DB::table('cache')->where('key', config('cache.prefix').$key)->count();
+
+    expect(Cache::get($key))->toBeNull()
+        ->and(app(CartCheckouts::class)->expireDue(1))->toBe(0)
+        ->and(Cache::get($key))->toBe(1)
+        ->and($stored())->toBe(1);
+
+    Cache::forgetDriver('database');
+    app()->forgetInstance(CartCheckouts::class);
+    expect(app(CartCheckouts::class)->expireDue(1))->toBe(0)
+        ->and(Cache::get($key))->toBe(2)
+        ->and(app(CartCheckouts::class)->expireDue(1))->toBe(0)
+        ->and(Cache::get($key))->toBe(3)
+        ->and($stored())->toBe(1);
+
+    Cache::forget($key);
+    expect(app(CartCheckouts::class)->expireDue(1))->toBe(0)
+        ->and(Cache::get($key))->toBe(1);
+});
+
+it('reports a cache that cannot count sweeps and keeps sweeping on the clock', function (): void {
+    $this->travelTo(now('UTC')->setTime(10, 7));
+    $sweep = app(CartCheckouts::class);
+    Exceptions::fake();
+    Cache::shouldReceive('add')->once()->andReturn(false);
+    Cache::shouldReceive('increment')->once()->with(EloquentCartCheckouts::SWEEP_TURN_KEY)->andReturn(false);
+
+    expect($sweep->expireDue(1))->toBe(0);
+    Exceptions::assertReported(fn (RuntimeException $exception): bool => $exception->getMessage() === 'CART_SWEEP_TURN_UNAVAILABLE');
+});
+
 it('shows a checkout the sweep has not reached as stuck, and keeps sweeping when an alert cannot be sent', function (): void {
     ['checkout' => $checkout] = ($this->held)();
     ($this->staff)(['compliance']);

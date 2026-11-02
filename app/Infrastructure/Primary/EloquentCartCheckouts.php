@@ -76,6 +76,9 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     /** Counts sweeps, so the odd batch slot alternates between fresh checkouts and retries. */
     public const string SWEEP_TURN_KEY = 'cart-checkouts:sweep-turn';
 
+    /** How long the sweep counter lives; when it lapses the next sweep starts it again at one. */
+    private const int SWEEP_TURN_TTL_SECONDS = 31_536_000;
+
     /** Child request ids are UUIDv5 names under this namespace, derived from the parent operation. */
     private const string CHILD_NAMESPACE = '6f1d3c2a-8b4e-5f60-9a7b-1c2d3e4f5a6b';
 
@@ -204,7 +207,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
             ->whereRaw('failures.last_attempted_at <= ?::timestamptz - make_interval(mins => least(?, ? * failures.attempts))',
                 [$now, self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
             ->orderBy('failures.last_attempted_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
-        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), (int) Cache::increment(self::SWEEP_TURN_KEY) % 2 === 0);
+        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), $this->sweepTurn() % 2 === 0);
         $candidates = $retries->take($retriesTaken)->concat($fresh->take($freshTaken));
         $expired = 0;
         $failure = null;
@@ -251,6 +254,24 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
      *
      * @return EloquentBuilder<InvestorCartCheckout>
      */
+    /**
+     * Counts this sweep. Database and Redis stores refuse to increment a missing key, so the counter
+     * is first created at zero with the store's atomic add, which leaves an existing count alone.
+     * When the store still cannot count, the sweep reports it and alternates on the clock minute.
+     */
+    private function sweepTurn(): int
+    {
+        Cache::add(self::SWEEP_TURN_KEY, 0, self::SWEEP_TURN_TTL_SECONDS);
+        $turn = Cache::increment(self::SWEEP_TURN_KEY);
+        if ($turn === false) {
+            report(new RuntimeException('CART_SWEEP_TURN_UNAVAILABLE'));
+
+            return (int) now('UTC')->format('i');
+        }
+
+        return (int) $turn;
+    }
+
     private function due(string $now): EloquentBuilder
     {
         return InvestorCartCheckout::query()->select('investor_cart_checkouts.*')
