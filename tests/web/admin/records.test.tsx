@@ -239,6 +239,63 @@ describe('Event log', () => {
         });
     });
 
+    it('offers retry when a later page fails validation or the server errors', async () => {
+        const props = eventProps(eventsFixture);
+        props.cursor_pagination = true;
+        props.more = { url: '/admin/activity?cursor=next', method: 'get' };
+        const { user } = renderWithUser(<AdminEvents {...props} />);
+        const { act } = await import('@testing-library/react');
+
+        await user.click(screen.getByRole('button', { name: 'Load more' }));
+        const first = inertia.visitOptions[0] as {
+            onError: () => void;
+            onFinish: () => void;
+        };
+        act(() => {
+            first.onError();
+            first.onFinish();
+        });
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Unable to load more activity',
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Retry' }));
+        const second = inertia.visitOptions[1] as {
+            onHttpException: (response: { status: number }) => boolean;
+            onFinish: () => void;
+        };
+        let handled = true;
+        act(() => {
+            handled = second.onHttpException({ status: 500 });
+            second.onFinish();
+        });
+        expect(handled).toBe(false);
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Unable to load more activity',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Approved RNP' }),
+        ).toBeInTheDocument();
+    });
+
+    it('never asks for the next page twice while one is loading', async () => {
+        const props = eventProps(eventsFixture);
+        props.cursor_pagination = true;
+        props.more = { url: '/admin/activity?cursor=next', method: 'get' };
+        const { user } = renderWithUser(<AdminEvents {...props} />);
+
+        await user.click(screen.getByRole('button', { name: 'Load more' }));
+        const button = screen.getByRole('button', { name: 'Loading more…' });
+        expect(button).toBeDisabled();
+        // A disabled button swallows clicks, so call its handler as a stale queued click would.
+        const reactProps = Object.entries(button).find(([key]) =>
+            key.startsWith('__reactProps'),
+        )?.[1] as { onClick: () => void };
+        reactProps.onClick();
+
+        expect(inertia.visits).toEqual(['/admin/activity?cursor=next']);
+    });
+
     it('hides activity when access is revoked on a later page', async () => {
         const props = eventProps(eventsFixture);
         props.cursor_pagination = true;
