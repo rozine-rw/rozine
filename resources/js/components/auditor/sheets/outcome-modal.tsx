@@ -91,6 +91,12 @@ export function OutcomeModal({
             body = t('auditor.outcome.rejected.body');
             tone = 'bad';
             break;
+        case 'statements_verified':
+            title = t('auditor.outcome.verified.title');
+            body = t('auditor.outcome.verified.body', {
+                business: outcome.business,
+            });
+            break;
     }
 
     return (

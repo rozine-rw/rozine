@@ -10,6 +10,7 @@ import { ConflictReceiptCard } from '@/components/auditor/conflict-receipt';
 import { DetailSheet, JobHeader } from '@/components/auditor/detail-sheet';
 import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { FileReview } from '@/components/auditor/file/file-review';
+import { StatementVerification } from '@/components/auditor/file/statement-verification';
 import { useJobCommands } from '@/components/auditor/job-commands';
 import { JobsBody, openOffers } from '@/components/auditor/jobs/jobs-body';
 import { OfferAccept } from '@/components/auditor/jobs/offer-accept';
@@ -77,6 +78,8 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                 : null,
     });
     const blocked = receipt ?? props.blocked;
+    /* A statement review is verified from its own form; it has no report to start. */
+    const review = props.review ?? null;
 
     const accept = () =>
         center.send({
@@ -142,7 +145,7 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                         : t('auditor.file.start')}
                 </button>
             );
-        } else if (application === null) {
+        } else if (application === null && review === null) {
             primary = (
                 <p
                     role="note"
@@ -206,11 +209,26 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
             )}
             <AuditorCommandNotice placement="page" />
             {blocked === null ? (
-                <FileReview
-                    business={job.business}
-                    file={props.file as BusinessFile}
-                    reassignedFrom={job.reassigned_from}
-                />
+                <>
+                    <FileReview
+                        business={job.business}
+                        file={props.file as BusinessFile}
+                        reassignedFrom={job.reassigned_from}
+                    />
+                    {review !== null && (
+                        <StatementVerification
+                            /* A changed binding starts the review afresh, so nothing ticked carries over. */
+                            key={[
+                                review.assignment_revision,
+                                review.evidence_revision,
+                                review.verification_revision,
+                                review.transcription?.sha256,
+                            ].join(':')}
+                            review={review}
+                            business={job.business}
+                        />
+                    )}
+                </>
             ) : (
                 <ConflictReceiptCard receipt={blocked} />
             )}

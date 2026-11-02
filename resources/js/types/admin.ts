@@ -855,7 +855,8 @@ export type DispatchLocation = {
 export type BusinessAudit = {
     engagement: {
         id: string;
-        kind: 'flash' | 'routine';
+        /** A statement review (#396) runs as a routine audit but is named for what it checks. */
+        kind: 'flash' | 'routine' | 'statement_review';
         status: 'operations' | 'offered' | 'accepted';
         revision: number;
         /** Dispatch attempts used, while the audit waits on Audit Operations. */

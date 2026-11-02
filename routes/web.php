@@ -12,6 +12,7 @@ use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditorPortfolioController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
+use App\Http\Controllers\AuditorStatementVerificationController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
@@ -193,6 +194,9 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
         Route::post('jobs/{assignment}/'.$decision, [AuditorJobsController::class, 'respond'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name('jobs.'.$decision);
     }
     Route::get('assignment-operations/{request_id}', [AuditorJobsController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.operations.show');
+    Route::get('jobs/{assignment}/statements/{document}', [AuditorStatementVerificationController::class, 'original'])->where(['assignment' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('jobs.statements.show');
+    Route::post('jobs/{assignment}/statement-verification', [AuditorStatementVerificationController::class, 'store'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('jobs.verification.store');
+    Route::get('statement-operations/{request_id}', [AuditorStatementVerificationController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.verification.operations.show');
     Route::post('accreditation', [AuditorProfileController::class, 'submit'])->name('accreditation.submit');
     Route::post('accreditation/renewal', [AuditorProfileController::class, 'renew'])->name('accreditation.renew');
     Route::post('accreditation/withdrawal', [AuditorProfileController::class, 'withdraw'])->name('accreditation.withdraw');

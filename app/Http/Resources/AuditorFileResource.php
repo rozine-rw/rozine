@@ -13,14 +13,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type Page from AuditorJobsResource
  * @phpstan-import-type Report from \App\Application\Auditor\Contracts\AuditReportStore
  * @phpstan-import-type Document from \App\Application\Evidence\Contracts\StatementStore
+ * @phpstan-import-type StatementReview from \App\Application\Auditor\GetAuditStatementReview
  *
- * @phpstan-type File array{record: AuditApplication, jobs: Page, report?: Report|null, can_start?: bool, documents?: list<Document>|null}
+ * @phpstan-type File array{record: AuditApplication, jobs: Page, report?: Report|null, can_start?: bool, documents?: list<Document>|null, review?: StatementReview|null}
  *
  * The file states why the field visit is needed and what it must clear from the rules that govern
  * it (BRS v2.0 AUD-R03 and AUD-R07 for a Flash Audit, AUD-R04 for a monthly visit), which match
  * the procedure's own steps. The statements on file are listed once the work is the partner's,
  * each with when it arrived and whether its text was extracted; an offer lists none, and the
- * application's own prose is never shown.
+ * application's own prose is never shown. An accepted statement review (#396) also carries what its
+ * verification binds: each statement to open, the Business's figures on file and the checks to make.
  */
 class AuditorFileResource extends JsonResource
 {
@@ -36,12 +38,15 @@ class AuditorFileResource extends JsonResource
         $job = AuditorJobsResource::job($record);
         $prefix = $request->routeIs('api.*') ? 'api.v1.auditor.' : 'auditor.';
         $report = $file['report'] ?? null;
-        $canStart = ($file['can_start'] ?? false) && (! $request->routeIs('api.*') || $request->user()?->tokenCan('auditor:command'));
+        $canCommand = ! $request->routeIs('api.*') || $request->user()?->tokenCan('auditor:command') === true;
+        $canStart = ($file['can_start'] ?? false) && $canCommand;
+        // The statement review is worked on the web for now; the API file leaves it out.
+        $review = $request->routeIs('api.*') ? null : self::review($file['review'] ?? null, $record['work']['assignment']['id']);
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $operation = AuditorJobsResource::link($prefix.'reports.operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
 
-        return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$job['allowed_actions'], ...($canStart ? ['audit.start'] : [])],
+        return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$job['allowed_actions'], ...($canStart ? ['audit.start'] : []), ...(($review['verify'] ?? null) !== null ? ['statement.verify'] : [])],
             'engagement' => (new AuditorEngagementSummaryResource($file['jobs']['engagement']))->resolve($request),
             'job' => [...$job, 'report_state' => self::reportState($record['work']['report'] ?? null)], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
                 'start' => $canStart ? ['url' => route($prefix.'reports.start', ['assignment' => $job['id']], false), 'method' => 'post'] : null],
@@ -57,7 +62,41 @@ class AuditorFileResource extends JsonResource
                 'use_of_funds' => implode(', ', $record['application']['use_of_funds'] ?? [])],
                 'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
                 'brief' => self::BRIEF[$record['work']['assignment']['kind']] ?? null,
-                'history' => ['last_audit' => null, 'flags' => []]]];
+                'history' => ['last_audit' => null, 'flags' => []]], 'review' => $review];
+    }
+
+    /**
+     * The statement review's working file: the revisions its verification binds, each statement with
+     * where to open it, the Business's saved monthly figures and the procedure's checks. It can be
+     * verified only once the Business has saved its figures.
+     *
+     * @param  StatementReview|null  $review
+     * @return array<string, mixed>|null
+     */
+    private static function review(?array $review, string $assignmentId): ?array
+    {
+        if ($review === null) {
+            return null;
+        }
+        $file = $review['file'];
+        $transcription = $file['transcription'];
+        $placeholder = '00000000-0000-0000-0000-000000000000';
+        $operation = AuditorJobsResource::link('auditor.jobs.verification.operations.show', ['request_id' => $placeholder]);
+        $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
+
+        return ['assignment_revision' => $file['assignment']['revision'], 'evidence_revision' => $file['evidence']['revision'],
+            'verification_revision' => $review['verification_revision'], 'procedure_version' => $review['procedure_version'], 'checks' => $review['checks'],
+            'documents' => array_map(fn (array $document): array => ['id' => $document['id'], 'filename' => $document['filename'], 'sha256' => $document['sha256'],
+                'received_on' => CarbonImmutable::parse($document['received_at'])->setTimezone('Africa/Kigali')->format('Y-m-d'),
+                'open' => AuditorJobsResource::link('auditor.jobs.statements.show', ['assignment' => $assignmentId, 'document' => $document['id']])], $file['evidence']['documents']),
+            'transcription' => $transcription === null ? null : ['id' => $transcription['id'], 'sha256' => $transcription['sha256'],
+                'months' => $transcription['payload']['months'],
+                'observations' => array_map(fn (array $observation): array => ['month' => $observation['month'], 'operating_inflow' => $observation['operating_inflow'],
+                    'operating_outflow' => $observation['operating_outflow'], 'owner_draw' => $observation['owner_draw'], 'debt_service' => $observation['debt_service']],
+                    $transcription['payload']['observations'])],
+            'verify' => $transcription !== null
+                ? ['url' => route('auditor.jobs.verification.store', ['assignment' => $assignmentId], false), 'method' => 'post'] : null,
+            'operation' => $operation];
     }
 
     /**

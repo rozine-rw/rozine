@@ -2749,6 +2749,7 @@ const en = {
         'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
     'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
     'admin.parties.audit.kind.routine': 'Monthly audit',
+    'admin.parties.audit.kind.statement_review': 'Statement review',
     'admin.parties.audit.status.operations': 'With Audit Operations',
     'admin.parties.audit.status.offered': 'Offered to a partner',
     'admin.parties.audit.status.accepted': 'Accepted by a partner',
@@ -7506,6 +7507,78 @@ const en = {
         'Once per completed audit',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Only when the note matures',
+    'auditor.outcome.verified.title': 'Statements verified',
+    'auditor.outcome.verified.body':
+        "{business}'s statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
+    'auditor.verify.title': 'Verify the statements',
+    'auditor.verify.lead':
+        'Open each statement, compare it with the figures the business saved, and record what you checked. This is a factual review, not a credit decision.',
+    'auditor.verify.waiting_for_figures':
+        "The business hasn't saved its monthly figures yet. You can verify the statements once it has.",
+    'auditor.verify.statements': 'Statements on file',
+    'auditor.verify.open': 'Open',
+    'auditor.verify.reference': 'Where you checked it (page, line or note)',
+    'auditor.verify.figures': "The business's monthly figures",
+    'auditor.verify.month': 'Month',
+    'auditor.verify.inflow': 'Money in',
+    'auditor.verify.outflow': 'Money out',
+    'auditor.verify.owner_draw': 'Owner draw',
+    'auditor.verify.debt_service': 'Debt payments',
+    'auditor.verify.checks': 'Checks',
+    'auditor.verify.check.complete_rail_inventory':
+        'Every account and wallet the business uses is listed',
+    'auditor.verify.check.originals_authentic':
+        'The statements are genuine originals',
+    'auditor.verify.check.balances_and_transactions':
+        'Balances and transactions match the figures',
+    'auditor.verify.check.duplicates_and_classification':
+        'No duplicates, and money in and out is classed correctly',
+    'auditor.verify.check.debt_schedules':
+        'Debts and their payment schedules are accounted for',
+    'auditor.verify.check.baseline_and_gaps':
+        'The months are complete, with any gaps explained',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        'Owner draws, refunds and unusual items are explained',
+    'auditor.verify.inventory': 'Where the full list of accounts is recorded',
+    'auditor.verify.debts': 'Debts',
+    'auditor.verify.no_debts':
+        'No debts declared. Add any loan or credit you found; leaving none says the business has none.',
+    'auditor.verify.debt': 'Debt {number}',
+    'auditor.verify.debt_name': 'Lender and loan',
+    'auditor.verify.debt_principal': 'Amount still owed (RWF)',
+    'auditor.verify.debt_service_in': 'Paid in {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Scheduled monthly payment from {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Last scheduled payment',
+    'auditor.verify.debt_last_payment_pick': 'Choose a month',
+    'auditor.verify.debt_beyond': 'After {month}',
+    'auditor.verify.debt_sources': 'Statements showing this debt',
+    'auditor.verify.add_debt': 'Add a debt',
+    'auditor.verify.remove_debt': 'Remove this debt',
+    'auditor.verify.owner': 'Owner draw and findings',
+    'auditor.verify.owner_draw_amount': 'Usual monthly owner draw (RWF)',
+    'auditor.verify.owner_draw_reference': 'Where you saw it',
+    'auditor.verify.findings': 'Your findings',
+    'auditor.verify.incomplete':
+        'Tick every check and fill in each field to verify. Amounts are whole RWF.',
+    'auditor.verify.submit': 'Verify statements',
+    'auditor.verify.sending': 'Verifying…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Every check must be ticked before the statements can be verified.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        "A statement on file changed or wasn't reviewed. Reload the file and check each statement again.",
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Each note must be plain text of up to 2,000 characters.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        'Each debt needs a unique name, its statements and a payment for every month.',
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Amounts must be whole RWF, without separators.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        "The figures include the current month, which can't be verified until it ends. Ask the business to save completed months only.",
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "The business's figures no longer reconcile with its statements. The business needs to save them again.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        'The business saved new figures since you opened the file. Reload it and review them.',
 } as const;
 
 export default en;
