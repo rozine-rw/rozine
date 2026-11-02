@@ -44,6 +44,7 @@
         "resources/js/actions/App/Http/Controllers/AuditorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
+        "resources/js/actions/App/Http/Controllers/AuditorStatementVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessComplaintController.ts",
@@ -244,6 +245,9 @@
         "resources/js/routes/auditor/index.ts",
         "resources/js/routes/auditor/jobs/index.ts",
         "resources/js/routes/auditor/jobs/operations/index.ts",
+        "resources/js/routes/auditor/jobs/statements/index.ts",
+        "resources/js/routes/auditor/jobs/verification/index.ts",
+        "resources/js/routes/auditor/jobs/verification/operations/index.ts",
         "resources/js/routes/auditor/notices/index.ts",
         "resources/js/routes/auditor/operations/index.ts",
         "resources/js/routes/auditor/portfolio/index.ts",
@@ -447,6 +451,7 @@
         "resources/js/components/auditor/engagement/engagement-banner.tsx",
         "resources/js/components/auditor/engagement/terms-document.tsx",
         "resources/js/components/auditor/file/file-review.tsx",
+        "resources/js/components/auditor/file/statement-verification.tsx",
         "resources/js/components/auditor/home/activity-list.tsx",
         "resources/js/components/auditor/home/hero.tsx",
         "resources/js/components/auditor/home/home-body.tsx",
@@ -793,10 +798,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 765,
-        "generated": 330,
+        "totalTrackedSources": 770,
+        "generated": 334,
         "declarationOnly": 20,
-        "authoredExecutable": 415
+        "authoredExecutable": 416
     },
-    "coverageSetSha256": "54d30d4890aef18fa9648f6bda59e252315415fb125385fe38af739d09216fe0"
+    "coverageSetSha256": "a85ba08e16b308bc27229cc59105de5f09e8bca90d7984ebc89b9e031203305f"
 }

@@ -7811,6 +7811,80 @@ const fr: Catalog = {
         'Une fois par audit terminé',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Seulement à l’échéance de la note',
+    'auditor.outcome.verified.title': 'Relevés vérifiés',
+    'auditor.outcome.verified.body':
+        'Les relevés et les chiffres mensuels de {business} sont maintenant enregistrés comme vérifiés. Ils comptent pour sa demande une fois toutes les autres conditions remplies.',
+    'auditor.verify.title': 'Vérifier les relevés',
+    'auditor.verify.lead':
+        "Ouvrez chaque relevé, comparez-le aux chiffres enregistrés par l'entreprise et indiquez ce que vous avez vérifié. C'est un examen factuel, pas une décision de crédit.",
+    'auditor.verify.waiting_for_figures':
+        "L'entreprise n'a pas encore enregistré ses chiffres mensuels. Vous pourrez vérifier les relevés ensuite.",
+    'auditor.verify.statements': 'Relevés au dossier',
+    'auditor.verify.open': 'Ouvrir',
+    'auditor.verify.reference': "Où vous l'avez vérifié (page, ligne ou note)",
+    'auditor.verify.figures': "Chiffres mensuels de l'entreprise",
+    'auditor.verify.month': 'Mois',
+    'auditor.verify.inflow': 'Entrées',
+    'auditor.verify.outflow': 'Sorties',
+    'auditor.verify.owner_draw': 'Prélèvement du propriétaire',
+    'auditor.verify.debt_service': 'Remboursements de dettes',
+    'auditor.verify.checks': 'Contrôles',
+    'auditor.verify.check.complete_rail_inventory':
+        "Tous les comptes et portefeuilles utilisés par l'entreprise sont listés",
+    'auditor.verify.check.originals_authentic':
+        'Les relevés sont des originaux authentiques',
+    'auditor.verify.check.balances_and_transactions':
+        'Les soldes et les opérations correspondent aux chiffres',
+    'auditor.verify.check.duplicates_and_classification':
+        'Aucun doublon, et les entrées et sorties sont bien classées',
+    'auditor.verify.check.debt_schedules':
+        'Les dettes et leurs échéanciers sont pris en compte',
+    'auditor.verify.check.baseline_and_gaps':
+        'Les mois sont complets et les lacunes expliquées',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        'Les prélèvements, remboursements et éléments inhabituels sont expliqués',
+    'auditor.verify.inventory':
+        'Où la liste complète des comptes est consignée',
+    'auditor.verify.debts': 'Dettes',
+    'auditor.verify.no_debts':
+        "Aucune dette déclarée. Ajoutez tout prêt ou crédit trouvé ; n'en indiquer aucun signifie que l'entreprise n'en a pas.",
+    'auditor.verify.debt': 'Dette {number}',
+    'auditor.verify.debt_name': 'Prêteur et prêt',
+    'auditor.verify.debt_principal': 'Montant restant dû (RWF)',
+    'auditor.verify.debt_service_in': 'Payé en {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Paiement mensuel prévu à partir de {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Dernier paiement prévu',
+    'auditor.verify.debt_last_payment_pick': 'Choisissez un mois',
+    'auditor.verify.debt_beyond': 'Après {month}',
+    'auditor.verify.debt_sources': 'Relevés montrant cette dette',
+    'auditor.verify.add_debt': 'Ajouter une dette',
+    'auditor.verify.remove_debt': 'Retirer cette dette',
+    'auditor.verify.owner': 'Prélèvement du propriétaire et constats',
+    'auditor.verify.owner_draw_amount':
+        'Prélèvement mensuel habituel du propriétaire (RWF)',
+    'auditor.verify.owner_draw_reference': "Où vous l'avez constaté",
+    'auditor.verify.findings': 'Vos constats',
+    'auditor.verify.incomplete':
+        'Cochez chaque contrôle et remplissez chaque champ pour vérifier. Les montants sont en RWF entiers.',
+    'auditor.verify.submit': 'Vérifier les relevés',
+    'auditor.verify.sending': 'Vérification…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Chaque contrôle doit être coché avant de vérifier les relevés.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        "Un relevé du dossier a changé ou n'a pas été examiné. Rechargez le dossier et vérifiez de nouveau chaque relevé.",
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Chaque note doit être un texte simple de 2 000 caractères au plus.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        'Chaque dette doit avoir un nom unique, ses relevés et un paiement pour chaque mois.',
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Les montants doivent être en RWF entiers, sans séparateurs.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        "Les chiffres incluent le mois en cours, qui ne peut être vérifié qu'à sa fin. Demandez à l'entreprise de n'enregistrer que des mois terminés.",
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "Les chiffres de l'entreprise ne concordent plus avec ses relevés. L'entreprise doit les enregistrer de nouveau.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        "L'entreprise a enregistré de nouveaux chiffres depuis l'ouverture du dossier. Rechargez-le et examinez-les.",
 };
 
 export default fr;
