@@ -2958,6 +2958,13 @@ const en = {
     'admin.events.clear_filters': 'Clear filters',
     'admin.events.filtered_empty':
         'Nothing in the trail matches these filters.',
+    'admin.events.load_more': 'Load more',
+    'admin.events.loading_more': 'Loading more…',
+    'admin.events.load_failed':
+        'Unable to load more activity. Please try again.',
+    'admin.events.retry_more': 'Retry',
+    'admin.events.access_revoked':
+        'Your access to the activity trail has changed.',
     'admin.events.empty': 'No actions recorded yet.',
     'admin.events.col.when': 'When',
     'admin.events.col.who': 'Who',

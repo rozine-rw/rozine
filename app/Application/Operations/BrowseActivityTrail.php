@@ -26,7 +26,7 @@ final class BrowseActivityTrail
      * @param  string|null  $to  a `Y-m-d` Kigali date, ignored under a preset
      * @return Trail
      */
-    public function handle(int $actorId, string $search, ?string $preset, ?string $from, ?string $to, int $limit): array
+    public function handle(int $actorId, string $search, ?string $preset, ?string $from, ?string $to, int $limit, ?string $cursor = null, bool $cursorMode = false): array
     {
         $this->staff->check($actorId, 'investors.verify');
         $now = CarbonImmutable::now(BrowseOperationsDashboard::ZONE);
@@ -38,6 +38,6 @@ final class BrowseActivityTrail
                 $to === null ? null : CarbonImmutable::parse($to, BrowseOperationsDashboard::ZONE)->addDay()->startOfDay()],
         };
 
-        return $this->store->trail($search, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String(), $limit);
+        return $this->store->trail($search, $start?->utc()->toIso8601String(), $end?->utc()->toIso8601String(), $limit, $cursor, $cursorMode);
     }
 }

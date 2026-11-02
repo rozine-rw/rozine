@@ -20,7 +20,7 @@ namespace App\Application\Operations\Contracts;
  *     code: string, target_type: string, target_id: string, target_name: string|null, reason: string|null,
  *     before: array<string, mixed>|null, after: array<string, mixed>|null, outcome: array{status: string, code: string}|null
  * }
- * @phpstan-type Trail array{entries: list<TrailEntry>, total: int}
+ * @phpstan-type Trail array{entries: list<TrailEntry>, total: int, next_cursor?: string|null}
  */
 interface ActivityTrailStore
 {
@@ -30,5 +30,5 @@ interface ActivityTrailStore
      *
      * @return Trail
      */
-    public function trail(string $search, ?string $from, ?string $to, int $limit): array;
+    public function trail(string $search, ?string $from, ?string $to, int $limit, ?string $cursor = null, bool $cursorMode = false): array;
 }

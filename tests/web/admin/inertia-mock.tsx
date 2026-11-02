@@ -23,6 +23,7 @@ export const inertia = {
     deferredState: 'ready' as 'ready' | 'loading' | 'error',
     reload: [] as Record<string, unknown>[],
     visits: [] as string[],
+    visitOptions: [] as Record<string, unknown>[],
     posts: [] as { url: string; data: Record<string, unknown> }[],
     errors: {} as Record<string, string>,
     processing: false,
@@ -40,6 +41,7 @@ export function resetInertia() {
     inertia.deferredState = 'ready';
     inertia.reload = [];
     inertia.visits = [];
+    inertia.visitOptions = [];
     inertia.posts = [];
     inertia.errors = {};
     inertia.processing = false;
@@ -136,8 +138,9 @@ export const router = {
         inertia.reload.push(options);
         options.onFinish?.();
     },
-    visit: (url: string) => {
+    visit: (url: string, options: Record<string, unknown> = {}) => {
         inertia.visits.push(url);
+        inertia.visitOptions.push(options);
     },
 };
 

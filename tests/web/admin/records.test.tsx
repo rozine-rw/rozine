@@ -197,6 +197,68 @@ describe('Ledger', () => {
 });
 
 describe('Event log', () => {
+    it('loads the next page and offers retry for a network failure', async () => {
+        const props = eventProps(eventsFixture);
+        props.cursor_pagination = true;
+        props.more = { url: '/admin/activity?cursor=next', method: 'get' };
+        const { user } = renderWithUser(<AdminEvents {...props} />);
+        await user.click(screen.getByRole('button', { name: 'Load more' }));
+        expect(inertia.visits).toEqual(['/admin/activity?cursor=next']);
+        expect(inertia.visitOptions[0]).toMatchObject({
+            only: ['events', 'more', 'total'],
+            preserveScroll: true,
+        });
+        const options = inertia.visitOptions[0] as {
+            onNetworkError: () => void;
+            onFinish: () => void;
+        };
+        fireEvent.click(document.body);
+        await import('@testing-library/react').then(({ act }) =>
+            act(() => {
+                options.onNetworkError();
+                options.onFinish();
+            }),
+        );
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Unable to load more activity',
+        );
+        await user.click(screen.getByRole('button', { name: 'Retry' }));
+        expect(inertia.visits).toHaveLength(2);
+    });
+
+    it('clears the cursor and accumulated rows when a filter changes', async () => {
+        const props = eventProps(eventsFixture);
+        props.cursor_pagination = true;
+        props.more = { url: '/admin/activity?cursor=next', method: 'get' };
+        const { user } = renderWithUser(<AdminEvents {...props} />);
+        await user.click(screen.getByRole('button', { name: '7d' }));
+        expect(inertia.visitOptions[0]).toMatchObject({
+            method: 'get',
+            reset: ['events'],
+            data: { preset: '7d' },
+        });
+    });
+
+    it('hides activity when access is revoked on a later page', async () => {
+        const props = eventProps(eventsFixture);
+        props.cursor_pagination = true;
+        props.more = { url: '/admin/activity?cursor=next', method: 'get' };
+        const { user } = renderWithUser(<AdminEvents {...props} />);
+        await user.click(screen.getByRole('button', { name: 'Load more' }));
+        const options = inertia.visitOptions[0] as {
+            onHttpException: (response: { status: number }) => void;
+        };
+        await import('@testing-library/react').then(({ act }) =>
+            act(() => options.onHttpException({ status: 403 })),
+        );
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Your access to the activity trail has changed.',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Approved RNP' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('says why a reversed date range from the address bar was refused', () => {
         inertia.errors = {
             to: 'The to field must be a date after or equal to from.',
