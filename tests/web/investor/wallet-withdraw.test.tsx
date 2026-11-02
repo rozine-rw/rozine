@@ -236,7 +236,9 @@ describe('Wallet withdrawals (LED-R04)', () => {
         });
 
         expect(inertia.calls[0]).toMatchObject({ method: 'get' });
-        expect(screen.queryByRole('status', { name: /recorded/iu })).toBeNull();
+        expect(
+            screen.queryByRole('status', { name: /recorded/iu }),
+        ).not.toBeInTheDocument();
     });
 
     it('states a quote refusal and keeps the withdrawal closed', () => {

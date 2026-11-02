@@ -140,7 +140,9 @@ describe('Floating checkout hold', () => {
             />,
         );
         const card = screen.getByTestId('floating-hold');
-        expect(card.className).toContain('bottom-[calc(16px');
+        expect(card).toHaveClass(
+            'bottom-[calc(16px+env(safe-area-inset-bottom))]',
+        );
 
         fireEvent.focus(
             screen.getByRole('link', { name: /Held for checkout/ }),
