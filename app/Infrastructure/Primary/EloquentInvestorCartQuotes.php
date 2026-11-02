@@ -32,6 +32,7 @@ use Illuminate\Support\Str;
  * deadline if that is sooner (contract P383-03).
  *
  * @phpstan-import-type QuotedCart from InvestorCartQuotes
+ * @phpstan-import-type QuoteBody from InvestorCartQuotes
  */
 final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
 {
@@ -93,7 +94,24 @@ final readonly class EloquentInvestorCartQuotes implements InvestorCartQuotes
         /** @var non-empty-array<string, DateTimeImmutable> $deadlines A refused empty cart never reaches pricing. */
         $deadlines = array_map(fn (array $input): DateTimeImmutable => $input['expires_at'], $inputs);
         $deadline = min($deadlines);
-        $expiresAt = ReservationWindow::open($createdAt, $deadline)->expiresAt;
+
+        return $this->keep($partyId, $cart, $body, $createdAt, ReservationWindow::open($createdAt, $deadline)->expiresAt);
+    }
+
+    public function replacement(string $partyId, array $cart, array $body, DateTimeImmutable $expiresAt): array
+    {
+        return $this->keep(strtolower($partyId), $cart, $body, now('UTC')->toDateTimeImmutable(), $expiresAt);
+    }
+
+    /**
+     * Gives a priced cart its id, times and digests and keeps it.
+     *
+     * @param  QuotedCart  $cart
+     * @param  QuoteBody  $body
+     * @return array<string, mixed>
+     */
+    private function keep(string $partyId, array $cart, array $body, DateTimeImmutable $createdAt, DateTimeImmutable $expiresAt): array
+    {
         $id = strtolower((string) Str::ulid());
         $disclosure = CartQuoteDisclosure::sha256($this->json, $cart, $body);
         $quote = ['id' => $id, 'revision' => 1, 'contract_version' => self::CONTRACT_VERSION,

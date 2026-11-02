@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Primary\Contracts;
 
 use Closure;
+use DateTimeImmutable;
 
 /**
  * Immutable whole-cart quotes (#383, contract cart-checkout-1 §5). A quote prices the entire saved
@@ -33,4 +34,15 @@ interface InvestorCartQuotes
      * @return Quote
      */
     public function quote(int $userId, int $contextRevision, int $expectedCartRevision, Closure $price): array;
+
+    /**
+     * Keeps a replacement quote a held cart checkout priced again under its own locks (#383 step
+     * 4b): the cart it holds, the body it priced, and the checkout's own deadline, which a requote
+     * never extends. The caller holds every lock `quote()` takes.
+     *
+     * @param  QuotedCart  $cart
+     * @param  QuoteBody  $body
+     * @return Quote
+     */
+    public function replacement(string $partyId, array $cart, array $body, DateTimeImmutable $expiresAt): array;
 }

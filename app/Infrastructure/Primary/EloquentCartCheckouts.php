@@ -12,6 +12,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\CartQuoteDisclosure;
 use App\Application\Primary\Contracts\CartCheckouts;
 use App\Application\Primary\Contracts\InvestorCart;
+use App\Application\Primary\Contracts\InvestorCartQuotes;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
@@ -34,6 +35,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 
 /**
  * The whole-cart checkout (#383 step 4a, contract cart-checkout-1). One `cart.reserve` holds every
@@ -60,6 +62,8 @@ use Ramsey\Uuid\Uuid;
  * settle once the last child window has closed.
  *
  * @phpstan-import-type CartReservation from CartCheckouts
+ * @phpstan-import-type QuotedCart from InvestorCartQuotes
+ * @phpstan-import-type QuoteBody from InvestorCartQuotes
  */
 final readonly class EloquentCartCheckouts implements CartCheckouts
 {
@@ -67,7 +71,8 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     private const string CHILD_NAMESPACE = '6f1d3c2a-8b4e-5f60-9a7b-1c2d3e4f5a6b';
 
     public function __construct(private AuthorizeActiveRole $authority, private PrimaryCampaignSource $campaigns, private OperationJournal $journal,
-        private PrimaryReservations $reservations, private InvestorCart $cart, private ChangeFeed $changes, private CanonicalJson $json) {}
+        private PrimaryReservations $reservations, private InvestorCart $cart, private InvestorCartQuotes $quotes, private ChangeFeed $changes,
+        private CanonicalJson $json) {}
 
     public function reserve(int $userId, int $contextRevision, int $expectedCartRevision, string $quoteId, int $expectedQuoteRevision,
         string $quoteDisclosureSha256, string $requestId, Closure $price): array
@@ -91,14 +96,34 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         }, 3);
     }
 
+    public function confirm(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $quoteId, int $expectedQuoteRevision,
+        string $acknowledgedDisclosureSha256, string $requestId, Closure $price): array
+    {
+        $checkoutId = strtolower($checkoutId);
+
+        return DB::transaction(function () use ($userId, $contextRevision, $checkoutId, $expectedRevision, $quoteId, $expectedQuoteRevision, $acknowledgedDisclosureSha256, $requestId, $price): array {
+            $this->lockCampaignBusinesses($this->checkoutCampaigns($userId, $checkoutId));
+
+            return $this->authority->handle($userId, 'investor', null, $contextRevision,
+                function (array $identity) use ($userId, $contextRevision, $checkoutId, $expectedRevision, $quoteId, $expectedQuoteRevision, $acknowledgedDisclosureSha256, $requestId, $price): array {
+                    $partyId = strtolower((string) $identity['party']['id']);
+                    $checkout = InvestorCartCheckout::query()->whereKey($checkoutId)->where('party_id', $partyId)->first()
+                        ?? throw new CommandRejection('CART_RESERVATION_NOT_FOUND', 404);
+
+                    return $this->journal->execute('party:'.$partyId, $userId, self::CONFIRM_COMMAND, $requestId, 'investor_cart_checkout', $checkout->id,
+                        ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, 'quote_id' => strtolower($quoteId),
+                            'expected_quote_revision' => $expectedQuoteRevision, 'acknowledged_disclosure_sha256' => strtolower($acknowledgedDisclosureSha256)],
+                        function (): void {},
+                        fn (string $operationId): OperationResult => $this->settle($userId, $contextRevision, $partyId, $operationId, $checkout,
+                            $expectedRevision, strtolower($quoteId), $expectedQuoteRevision, strtolower($acknowledgedDisclosureSha256), $price));
+                });
+        }, 3);
+    }
+
     public function reservation(int $userId, int $contextRevision, string $checkoutId): array
     {
         return DB::transaction(function () use ($userId, $contextRevision, $checkoutId): array {
-            $partyId = strtolower((string) User::query()->whereKey($userId)->value('party_id'));
-            $campaignIds = array_values(InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', strtolower($checkoutId))
-                ->whereIn('investor_cart_checkout_id', InvestorCartCheckout::query()->select('id')->where('party_id', $partyId))
-                ->pluck('business_campaign_id')->map(fn (mixed $id): string => (string) $id)->all());
-            $this->lockCampaignBusinesses($campaignIds);
+            $this->lockCampaignBusinesses($this->checkoutCampaigns($userId, strtolower($checkoutId)));
 
             return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($checkoutId): array {
                 $partyId = strtolower((string) $identity['party']['id']);
@@ -117,6 +142,19 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
 
             // The actor key already scopes the receipt to this Party, and every `cart.reserve` targets its own cart.
             return $this->journal->find('party:'.$partyId, self::RESERVE_COMMAND, $requestId, function (): void {});
+        });
+    }
+
+    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array
+    {
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($checkoutId, $requestId): array {
+            $partyId = strtolower((string) $identity['party']['id']);
+
+            return $this->journal->find('party:'.$partyId, self::CONFIRM_COMMAND, $requestId, function (string $type, string $id) use ($checkoutId): void {
+                if ($type !== 'investor_cart_checkout' || $id !== strtolower($checkoutId)) {
+                    throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+                }
+            });
         });
     }
 
@@ -200,6 +238,210 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         }
 
         return $this->retain($partyId, $operationId, $root, $quote, $body['fee_band'], $held);
+    }
+
+    /**
+     * The effect of one new `cart.confirm`, inside the journal's savepoint: every line bought, every
+     * changed line requoted with nothing bought, or a refusal that leaves nothing behind.
+     */
+    private function settle(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartCheckout $checkout, int $expectedRevision,
+        string $quoteId, int $expectedQuoteRevision, string $acknowledgedSha256, Closure $price): OperationResult
+    {
+        $root = InvestorCartRoot::query()->whereKey($checkout->investor_cart_id)->lockForUpdate()->sole();
+        $version = InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->orderByDesc('revision')->firstOrFail();
+        $refusal = ['cart_id' => $root->id, 'checkout_id' => $checkout->id, 'cart_revision' => $root->revision, 'atomic' => true, 'financial_effect' => 'none'];
+        if ($version->revision !== $expectedRevision) {
+            throw new CommandRejection('VERSION_CONFLICT', 409, $version->revision, [], $refusal);
+        }
+        if ($version->state !== 'held') {
+            throw new CommandRejection('CART_RESERVATION_NOT_HELD', 409, $version->revision, [], [...$refusal, 'state' => $version->state]);
+        }
+        if (now('UTC')->greaterThanOrEqualTo($checkout->expires_at)) {
+            throw new CommandRejection('CART_RESERVATION_EXPIRED', 409, $version->revision, [], [...$refusal, 'state' => 'release_pending']);
+        }
+        $quote = InvestorCartQuote::query()->whereKey($version->investor_cart_quote_id)->sole();
+        if ($quoteId !== $quote->id || $expectedQuoteRevision !== 1 || ! hash_equals($quote->disclosure_sha256, $acknowledgedSha256)) {
+            throw new CommandRejection('CART_QUOTE_STALE', 409, $version->revision, [], [...$refusal, 'quote_id' => $quote->id, 'requires_reconfirmation' => true]);
+        }
+        // While the checkout is held the cart cannot change, so the cart now is the cart it holds.
+        $lines = $this->cart->partyLines($partyId);
+        $held = InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkout->id)->orderBy('business_campaign_id')->get();
+        if ($root->revision !== $checkout->cart_revision || count($lines) !== $held->count()) {
+            throw new RuntimeException('CART_CHECKOUT_INTEGRITY_FAILED');
+        }
+        // Each campaign's retained publication prices its line; admitting the line again below refuses a closed or funded raise.
+        $inputs = [];
+        foreach ($held as $line) {
+            $inputs[$line->business_campaign_id] = $this->campaigns->lockRetained($line->business_campaign_id);
+        }
+        $cart = ['id' => $root->id, 'revision' => $root->revision, 'sha256' => $root->sha256, 'lines' => $lines];
+        $body = $price($partyId, $cart, $inputs);
+        $band = ['tier' => $body['fee_band']['tier'], 'rate_bps' => $body['fee_band']['rate_bps'], 'basis' => $body['fee_band']['basis'],
+            'policy_version' => $body['fee_band']['policy_version']];
+        $admit = fn (UnitRights $rights, array $campaign): PrimaryTerms => PrimaryTerms::disclosed($campaign['rate_pct'], $campaign['term_months'],
+            $campaign['policy_version'], PrimaryDisclosure::VERSION, $band, PrimaryTerms::payoutFeeFor($rights, $band['rate_bps']), $rights);
+        $changed = [];
+        $refusals = [];
+        foreach ($held as $line) {
+            try {
+                if ($this->reservations->requotes($line->business_campaign_id, $line->primary_reservation_id, $partyId, $admit)) {
+                    $changed[] = $line;
+                }
+            } catch (CommandRejection $exception) {
+                $refusals[] = self::lineRefusal($line, $exception->reason, $exception->status, $exception->fieldErrors);
+            }
+        }
+        if ($refusals !== []) {
+            throw $this->linesRefused($refusal, $refusals);
+        }
+        if ($changed !== [] || ! hash_equals($quote->disclosure_sha256, CartQuoteDisclosure::sha256($this->json, $cart, $body))) {
+            return $this->requote($userId, $contextRevision, $partyId, $operationId, $checkout, $version, $cart, $body, $changed, $admit);
+        }
+
+        return $this->buy($userId, $contextRevision, $partyId, $operationId, $checkout, $version, $quote, $body['fee_band'], array_values($held->all()), $admit);
+    }
+
+    /**
+     * Confirms every held line under its own `primary.confirm` receipt, takes the bought lines out
+     * of the cart in one revision and closes the checkout `confirmed`.
+     *
+     * @param  array<string, mixed>  $band
+     * @param  list<InvestorCartCheckoutLine>  $held
+     */
+    private function buy(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartCheckout $checkout,
+        InvestorCartCheckoutVersion $version, InvestorCartQuote $quote, array $band, array $held, Closure $admit): OperationResult
+    {
+        $bought = [];
+        foreach ($held as $line) {
+            // Every line was admitted again at its current terms just now, so each one must buy.
+            $child = $this->confirmLine($userId, $contextRevision, $partyId, $operationId, 'confirm', $line, $admit);
+            if ($child['status'] !== 'completed' || $child['code'] !== 'RESERVATION_CONFIRMED') {
+                throw new RuntimeException('CART_CHECKOUT_INTEGRITY_FAILED');
+            }
+            $bought[] = ['line' => $line, 'result' => $child];
+        }
+        $at = now('UTC')->toDateTimeImmutable();
+        $this->appendVersion($checkout, $version->revision + 1, 'confirmed', $quote->id, $operationId, $at);
+        DB::table('investor_cart_live_checkouts')->where('party_id', $partyId)->where('investor_cart_checkout_id', $checkout->id)->delete();
+        $cart = $this->cart->checkedOut($partyId, array_map(fn (array $child): string => $child['line']->investor_cart_line_id, $bought));
+        $lines = [];
+        foreach ($bought as $child) {
+            /** @var array{commitment_id: string, entry_id: string, terms: array{earnings_fee: array{rate_bps: int}}, disclosure_sha256: string} $data */
+            $data = $child['result']['data'];
+            $line = $child['line'];
+            $lines[] = ['cart_line_id' => $line->investor_cart_line_id, 'campaign_id' => $line->business_campaign_id, 'reservation_id' => $line->primary_reservation_id,
+                'commitment_id' => $data['commitment_id'], 'entry_id' => $data['entry_id'],
+                'principal' => self::money((string) PrimaryReservationRecord::query()->whereKey($line->primary_reservation_id)->value('principal')),
+                'fee_rate_bps' => $data['terms']['earnings_fee']['rate_bps'], 'disclosure_sha256' => $data['disclosure_sha256']];
+            $this->recordChange($partyId, $line);
+        }
+
+        return new OperationResult('CART_CONFIRMED', ['checkout_id' => $checkout->id, 'quote_id' => $quote->id, 'disclosure_sha256' => $quote->disclosure_sha256,
+            'fee_band' => $band, 'confirmed_at' => self::time($at), 'total_principal' => self::money($checkout->principal), 'lines' => $lines, 'cart' => $cart],
+            $version->revision + 1);
+    }
+
+    /**
+     * Keeps the replacement quote, gives every changed line its new terms under its own
+     * `primary.confirm` receipt (a requote that buys nothing) and moves the checkout to its next held
+     * revision. Nothing is bought, and every line stays held to the original deadline.
+     *
+     * @param  QuotedCart  $cart
+     * @param  QuoteBody  $body
+     * @param  list<InvestorCartCheckoutLine>  $changed
+     */
+    private function requote(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartCheckout $checkout,
+        InvestorCartCheckoutVersion $version, array $cart, array $body, array $changed, Closure $admit): OperationResult
+    {
+        $replacement = $this->quotes->replacement($partyId, $cart, $body, $checkout->expires_at->toDateTimeImmutable()->setTimezone(new \DateTimeZone('UTC')));
+        foreach ($changed as $line) {
+            $child = $this->confirmLine($userId, $contextRevision, $partyId, $operationId, 'requote', $line, $admit);
+            if ($child['status'] !== 'completed' || $child['code'] !== 'RESERVATION_REQUOTED') {
+                throw new RuntimeException('CART_CHECKOUT_INTEGRITY_FAILED');
+            }
+            $this->changes->record(ChangeScope::party($partyId), 'purchase', $line->primary_reservation_id);
+        }
+        $this->appendVersion($checkout, $version->revision + 1, 'held', (string) $replacement['id'], $operationId, now('UTC')->toDateTimeImmutable());
+
+        return new OperationResult('CART_REQUOTED', ['checkout_id' => $checkout->id, 'state' => 'held', 'revision' => $version->revision + 1,
+            'expires_at' => self::time($checkout->expires_at->toDateTimeImmutable()), 'replacement_quote' => $replacement, 'requires_reconfirmation' => true,
+            'changed_line_ids' => array_map(fn (InvestorCartCheckoutLine $line): string => $line->investor_cart_line_id, $changed)], $version->revision + 1);
+    }
+
+    /**
+     * Confirms one held line as an ordinary `primary.confirm`, with a request id derived from the
+     * parent, the phase and the campaign. At the line's current terms it buys the line; at changed
+     * terms it appends them as a requote and buys nothing.
+     *
+     * @return array<string, mixed>
+     */
+    private function confirmLine(int $userId, int $contextRevision, string $partyId, string $parentId, string $phase, InvestorCartCheckoutLine $line, Closure $admit): array
+    {
+        $facts = $this->reservations->reservationFacts($line->business_campaign_id, $partyId, $line->primary_reservation_id);
+
+        return $this->journal->execute('party:'.$partyId, $userId, 'primary.confirm', self::childRequestId($parentId, $phase, $line->business_campaign_id),
+            'primary_reservation', $line->primary_reservation_id, ['identity_context_revision' => $contextRevision, 'campaign_id' => $line->business_campaign_id,
+                'expected_revision' => $facts['revision'], 'disclosure_version' => PrimaryDisclosure::VERSION, 'disclosure_sha256' => $facts['disclosure_sha256'],
+                'cart_operation_id' => $parentId],
+            function (): void {},
+            function (string $childId) use ($line, $partyId, $parentId, $facts, $admit): OperationResult {
+                $result = $this->reservations->confirm($line->business_campaign_id, $line->primary_reservation_id, $partyId, $childId, $facts['revision'],
+                    PrimaryDisclosure::VERSION, $facts['disclosure_sha256'], $admit);
+
+                return new OperationResult($result->commitmentId === null ? 'RESERVATION_REQUOTED' : 'RESERVATION_CONFIRMED',
+                    ['reservation_id' => $result->id, 'commitment_id' => $result->commitmentId, 'entry_id' => $result->posting?->entryId,
+                        'amount' => (string) $result->reservation->rights->principal, 'terms' => $result->reservation->terms->toArray(),
+                        'disclosure_sha256' => $result->reservation->terms->disclosureSha256,
+                        'expires_at' => $result->reservation->window->expiresAt->format('Y-m-d\TH:i:s.u\Z'), 'cart_operation_id' => $parentId], $result->revision);
+            });
+    }
+
+    private function appendVersion(InvestorCartCheckout $checkout, int $revision, string $state, string $quoteId, string $operationId, DateTimeImmutable $at): void
+    {
+        $version = new InvestorCartCheckoutVersion;
+        $version->forceFill(['id' => strtolower((string) Str::ulid()), 'investor_cart_checkout_id' => $checkout->id, 'revision' => $revision, 'state' => $state,
+            'investor_cart_quote_id' => $quoteId, 'operation_id' => $operationId, 'created_at' => $at])->save();
+    }
+
+    private function recordChange(string $partyId, InvestorCartCheckoutLine $line): void
+    {
+        $campaign = $this->campaigns->lockRetained($line->business_campaign_id);
+        $this->changes->record(ChangeScope::party($partyId), 'purchase', $line->primary_reservation_id);
+        $this->changes->record(ChangeScope::business($campaign['business_id']), 'campaign', $line->business_campaign_id);
+    }
+
+    /**
+     * @param  array<string, list<string>>  $fieldErrors
+     * @return array{cart_line_id: string, campaign_id: string, code: string, http_status: int, field_errors: array<string, list<string>>}
+     */
+    private static function lineRefusal(InvestorCartCheckoutLine $line, string $code, int $httpStatus, array $fieldErrors): array
+    {
+        return ['cart_line_id' => $line->investor_cart_line_id, 'campaign_id' => $line->business_campaign_id, 'code' => $code,
+            'http_status' => $httpStatus, 'field_errors' => $fieldErrors];
+    }
+
+    /**
+     * @param  array<string, mixed>  $refusal
+     * @param  list<array<string, mixed>>  $lines
+     */
+    private function linesRefused(array $refusal, array $lines): CommandRejection
+    {
+        return new CommandRejection('CART_LINES_REFUSED', 409, null, [], [...$refusal, 'line_refusals' => $lines, 'cart_refusals' => []]);
+    }
+
+    /**
+     * The campaigns of the user's own checkout, read without locks only to know which Businesses to
+     * lock; an unknown or foreign checkout has none and is refused once authority is held.
+     *
+     * @return list<string>
+     */
+    private function checkoutCampaigns(int $userId, string $checkoutId): array
+    {
+        $partyId = strtolower((string) User::query()->whereKey($userId)->value('party_id'));
+
+        return array_values(InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkoutId)
+            ->whereIn('investor_cart_checkout_id', InvestorCartCheckout::query()->select('id')->where('party_id', $partyId))
+            ->pluck('business_campaign_id')->map(fn (mixed $id): string => (string) $id)->all());
     }
 
     /**

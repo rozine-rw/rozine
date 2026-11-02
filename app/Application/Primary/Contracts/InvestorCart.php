@@ -69,6 +69,16 @@ interface InvestorCart
     public function bought(string $partyId, string $campaignId): void;
 
     /**
+     * Takes the lines a whole-cart checkout has just bought out of the Party's cart, by line id,
+     * raising its revision once (#383 step 4b). The confirming checkout already holds the Investor's
+     * authority and the cart root, so no lock is taken here.
+     *
+     * @param  list<string>  $lineIds
+     * @return array{revision: int, count: int, removed_line_ids: list<string>}
+     */
+    public function checkedOut(string $partyId, array $lineIds): array;
+
+    /**
      * The Party's lines with their ids, in the order they were added, for a whole-cart checkout that
      * already holds the Party's authority (and, when it needs them exact, the cart root).
      *

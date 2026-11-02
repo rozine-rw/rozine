@@ -25,6 +25,7 @@ use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Primary\PrimaryReservation;
+use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\PrimaryViolation;
 use App\Domain\Primary\ReservationWindow;
 use App\Domain\Primary\UnitOrdinals;
@@ -190,14 +191,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                     throw new CommandRejection('RESERVATION_NOT_HELD', 409, $previous->revision);
                 }
                 try {
-                    $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
-                    $this->campaigns->lock($campaignId);
-                    $this->campaigns->rejectKnownConnections($campaign['business_id'], [$partyId]);
-                    $terms = $admit($reservation->rights, $campaign);
-                    if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
-                        throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
-                    }
-                    $terms->requireRights($reservation->rights);
+                    $terms = $this->admitHeld($reservation, $campaign, $partyId, $admit);
                     $at = now('UTC')->toDateTimeImmutable();
                     if ($terms->disclosureSha256 !== $reservation->terms->disclosureSha256) {
                         $requote = $reservation->requote($at, $terms);
@@ -220,7 +214,10 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                         'amount' => (string) $root->principal, 'currency' => 'RWF', 'units' => (string) $root->units, 'fee_tier' => $terms->earningsFee['tier'],
                         'fee_rate_bps' => (string) $terms->earningsFee['rate_bps'], 'reference' => 'RZC-'.strtoupper(substr((string) $commitment->id, -10)),
                         'commitment_id' => (string) $commitment->id, 'campaign_id' => $campaignId], 'commitment-confirmed:'.$commitment->id);
-                    $this->cart->bought($partyId, $campaignId);
+                    // A cart child's line leaves the cart with its whole checkout, in one cart revision (#383 step 4b).
+                    if (! DB::table('investor_cart_checkout_lines')->where('primary_reservation_id', $root->id)->exists()) {
+                        $this->cart->bought($partyId, $campaignId);
+                    }
 
                     return new ReservationConfirmation($root->id, $version->revision, $confirmed, $commitment->id, $posting);
                 } catch (PrimaryViolation $exception) {
@@ -234,6 +231,48 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
         } catch (PrimaryViolation $exception) {
             throw new CommandRejection($exception->reasonCode);
         }
+    }
+
+    public function requotes(string $campaignId, string $reservationId, string $partyId, Closure $admit): bool
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+        try {
+            $campaign = $this->campaigns->lockRetained($campaignId);
+            $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
+                ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+            [$reservation, $previous] = $this->retainedReservation($root, $campaign);
+            if ($reservation->state !== 'held') {
+                throw new CommandRejection('RESERVATION_NOT_HELD', 409, $previous->revision);
+            }
+
+            return $this->admitHeld($reservation, $campaign, $partyId, $admit)->disclosureSha256 !== $reservation->terms->disclosureSha256;
+        } catch (PrimaryViolation $exception) {
+            throw new CommandRejection($exception->reasonCode);
+        }
+    }
+
+    /**
+     * Admits a held reservation again under the caller's locks: its window is still open, its
+     * campaign still takes purchases from this Party, and the admitted terms keep its campaign's
+     * rate, term, policy and rights.
+     *
+     * @param  CampaignInput  $campaign
+     * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
+     */
+    private function admitHeld(PrimaryReservation $reservation, array $campaign, string $partyId, Closure $admit): PrimaryTerms
+    {
+        $reservation->window->requireOpen(now('UTC')->toDateTimeImmutable());
+        $this->campaigns->lock($campaign['id']);
+        $this->campaigns->rejectKnownConnections($campaign['business_id'], [$partyId]);
+        $terms = $admit($reservation->rights, $campaign);
+        if ($terms->policyVersion !== $campaign['policy_version'] || $terms->ratePercent !== $campaign['rate_pct'] || $terms->termMonths !== $campaign['term_months']) {
+            throw new PrimaryViolation('INVALID_PRIMARY_TERMS');
+        }
+        $terms->requireRights($reservation->rights);
+
+        return $terms;
     }
 
     public function release(string $campaignId, string $reservationId, string $partyId, string $operationId, int $expectedRevision): ReservationRelease
