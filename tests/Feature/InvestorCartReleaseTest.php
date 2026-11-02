@@ -18,6 +18,7 @@ use App\Models\InvestorCartLine;
 use App\Models\InvestorCartQuote;
 use App\Models\User;
 use App\Notifications\Staff\CartSettlementStuck;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -245,7 +246,10 @@ it('records a stuck expiry, alerts the staff who may resolve it once, and lets t
         }));
     $this->travelTo($checkout->settles_at);
     expect($sweep)->toThrow(RuntimeException::class, 'LEDGER_UNAVAILABLE')
-        ->and($sweep)->toThrow(RuntimeException::class, 'LEDGER_UNAVAILABLE')
+        ->and($sweep())->toBe(0);
+    $this->travel(CartCheckouts::RETRY_BACKOFF_MINUTES)->minutes();
+    expect($sweep)->toThrow(RuntimeException::class, 'LEDGER_UNAVAILABLE')
+        ->and($sweep())->toBe(0)
         ->and(($this->versions)())->toBe([])
         ->and((array) DB::table('investor_cart_settlement_failures')->sole())->toMatchArray(['investor_cart_checkout_id' => $checkout->id, 'attempts' => 2,
             'reason_code' => 'SETTLEMENT_FAILED', 'exception_class' => RuntimeException::class]);
@@ -281,6 +285,27 @@ it('records a stuck expiry, alerts the staff who may resolve it once, and lets t
     $retry($treasury)->assertSessionHasErrors(['request_id' => 'This cart was already released. Refresh the list.']);
     $this->actingAs($treasury)->post(route('staff.exceptions.cart-releases.retry', ['checkout' => strtolower((string) Str::ulid())]), ['request_id' => (string) Str::uuid()])
         ->assertSessionHasErrors(['request_id' => 'This cart checkout no longer exists.']);
+});
+
+it('skips a checkout that was settled after the sweep picked it, without recording a failure or alerting', function (): void {
+    Notification::fake();
+    $treasury = ($this->staff)(['treasury']);
+    ['checkout' => $checkout] = ($this->held)();
+    $this->travelTo($checkout->settles_at);
+    $settledElsewhere = false;
+    DB::listen(function (QueryExecuted $query) use (&$settledElsewhere, $checkout, $treasury): void {
+        // The retry query runs after the sweep has picked its fresh candidates, before it locks any.
+        if (! $settledElsewhere && str_contains($query->sql, 'make_interval')) {
+            $settledElsewhere = true;
+            app(CartCheckouts::class)->settleStuck($treasury->id, $checkout->id, (string) Str::uuid());
+        }
+    });
+
+    expect(app(CartCheckouts::class)->expireDue(10))->toBe(0)
+        ->and($settledElsewhere)->toBeTrue()
+        ->and(InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->orderBy('revision')->pluck('state')->all())->toBe(['held', 'expired'])
+        ->and(DB::table('investor_cart_settlement_failures')->count())->toBe(0);
+    Notification::assertNothingSent();
 });
 
 it('shows a checkout the sweep has not reached as stuck, and keeps sweeping when an alert cannot be sent', function (): void {

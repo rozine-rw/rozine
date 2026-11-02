@@ -59,6 +59,12 @@ interface CartCheckouts
     /** A held checkout this long past its last window is stuck even without a recorded failure. */
     public const int STUCK_AFTER_SECONDS = 300;
 
+    /** Minutes a failed group expiry waits per failed attempt before the sweep retries it. */
+    public const int RETRY_BACKOFF_MINUTES = 5;
+
+    /** The longest a failed group expiry waits between sweep retries. */
+    public const int RETRY_BACKOFF_MAX_MINUTES = 60;
+
     /**
      * @param  Closure(string, QuotedCart, array<string, CartCampaign>): QuoteBody  $price
      * @return array<string, mixed>
@@ -105,6 +111,9 @@ interface CartCheckouts
      * child expires and returns its principal together, or none does (contract P383-05). A
      * checkout that fails is recorded as stuck, and its first failure alerts every staff member who
      * may resolve it; the sweep goes on with the next one and then reports the first failure.
+     * A failed checkout is retried after `RETRY_BACKOFF_MINUTES` per attempt, at most
+     * `RETRY_BACKOFF_MAX_MINUTES`, and at least half of each batch is kept for due retries so new
+     * work never starves them. A checkout settled elsewhere after it was picked is skipped.
      */
     public function expireDue(int $limit): int;
 
