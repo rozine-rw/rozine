@@ -82,8 +82,8 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 const exceptions = {
-    cartReleases: Object.assign(cartReleases, cartReleases),
     index: Object.assign(index, index),
+    cartReleases: Object.assign(cartReleases, cartReleases),
 }
 
 export default exceptions
