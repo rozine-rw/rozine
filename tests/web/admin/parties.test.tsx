@@ -1842,6 +1842,47 @@ describe('Party 360', () => {
         );
     });
 
+    it('names a statement review for what it checks and offers withdraw while it waits on Operations', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'statement_review',
+                        status: 'operations',
+                        revision: 2,
+                        attempt: 0,
+                        operations_reason: 'AUDIT_PREMISES_UNVERIFIED',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/withdraw',
+                        method: 'post',
+                    },
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Statement review');
+        expect(audit).not.toHaveTextContent('Monthly audit');
+        expect(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        ).toBeInTheDocument();
+    });
+
     it('says when an audit can no longer be redispatched and shows an accepted audit without actions', async () => {
         const { user, unmount } = renderWithUser(
             <AdminParties
