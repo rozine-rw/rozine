@@ -38,7 +38,8 @@ export type AuditorAllowedAction =
     | 'accreditation.submit'
     | 'accreditation.renew'
     | 'accreditation.withdraw'
-    | 'availability.update';
+    | 'availability.update'
+    | 'statement.verify';
 
 /** What every Auditor page carries (point 1). */
 export type AuditorPageContract = {
@@ -574,7 +575,9 @@ export type AuditorOutcome =
           cosign_due_on: string;
       }
     | { kind: 'changes_requested'; business: string }
-    | { kind: 'report_rejected'; business: string };
+    | { kind: 'report_rejected'; business: string }
+    /** A statement review verified (#396): the Business's figures now count as checked. */
+    | { kind: 'statements_verified'; business: string };
 
 /** The operation lookup: its url holds the literal `{request_id}` token (point 7). */
 export type OperationLookupLinks = { operation: RouteLink };
@@ -761,11 +764,54 @@ export type AuditorFileProps = AuditorPageContract &
         /** Jobs, drawn beneath the sheet on a wide screen. */
         jobs: AuditorJobsProps;
         preview_outcome?: AuditorPreviewOutcome;
+        /**
+         * An accepted statement review (#396): what its verification binds and checks. Null or
+         * absent for any other engagement.
+         */
+        review?: StatementReviewFile | null;
     } & (
         | { file: BusinessFile; blocked: null }
         /** A blocking conflict: the file is withheld and only the partner's receipt remains. */
         | { file: null; blocked: ConflictReceipt }
     );
+
+/** One of the Business's saved monthly figures, as the partner checks it against the statements. */
+export type StatementReviewObservation = {
+    month: string;
+    operating_inflow: string;
+    operating_outflow: string;
+    owner_draw: string;
+    debt_service: string;
+};
+
+/**
+ * A statement review's working file (#396): the revisions its verification binds, each statement
+ * to open, the Business's saved figures and the procedure's checks. `verify` is null until the
+ * Business has saved its figures.
+ */
+export type StatementReviewFile = {
+    assignment_revision: number;
+    evidence_revision: number;
+    verification_revision: number;
+    procedure_version: string;
+    checks: string[];
+    documents: {
+        id: string;
+        filename: string;
+        sha256: string;
+        received_on: string;
+        open: RouteLink;
+    }[];
+    transcription: {
+        id: string;
+        sha256: string;
+        months: string[];
+        observations: StatementReviewObservation[];
+    } | null;
+    verify: RouteAction | null;
+    /** The verification's operation lookup, with the literal `{request_id}` token. */
+    operation: RouteLink;
+};
 
 /* ------------------------------------------------------------------------------------------ */
 /* Audit procedure (MVP-AUDITOR-SCR-03…06, design sheets L1017–1498)                             */

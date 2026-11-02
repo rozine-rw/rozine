@@ -236,6 +236,10 @@ export function useAuditorCommandCenter({
                 show({ kind: 'report_rejected', business: sent.business });
 
                 return;
+            case 'STATEMENT_SOURCE_VERIFIED':
+                show({ kind: 'statements_verified', business: sent.business });
+
+                return;
             case 'AVAILABILITY_UPDATED':
                 /* The switch belongs to the page it is on: redraw it there, in place. */
                 reloadPage(reload);
