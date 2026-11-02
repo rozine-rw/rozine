@@ -2136,7 +2136,12 @@ export type MessageHistoryRow = {
 };
 
 /** Who an automation or email template reaches. */
-export type MessageAudience = 'investor' | 'business' | 'auditor' | 'everyone';
+export type MessageAudience =
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'everyone'
+    | 'staff';
 
 /** One notice the platform sends as its event happens, on these channels. */
 export type MessageAutomation = {

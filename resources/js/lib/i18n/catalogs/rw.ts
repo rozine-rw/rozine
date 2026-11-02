@@ -1406,6 +1406,7 @@ const rw: Catalog = {
     'admin.messaging.audience.business': 'Ibigo',
     'admin.messaging.audience.auditor': 'Abafatanyabikorwa mu igenzura',
     'admin.messaging.audience.everyone': 'Abafite konti bose',
+    'admin.messaging.audience.staff': 'Abakozi ba Rozine',
     'admin.messaging.trigger.verification.approved':
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':

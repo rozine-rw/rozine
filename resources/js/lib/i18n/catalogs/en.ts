@@ -1332,6 +1332,7 @@ const en = {
     'admin.messaging.audience.business': 'Businesses',
     'admin.messaging.audience.auditor': 'Audit Partners',
     'admin.messaging.audience.everyone': 'Everyone with an account',
+    'admin.messaging.audience.staff': 'Rozine staff',
     'admin.messaging.trigger.verification.approved':
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':

@@ -1419,6 +1419,7 @@ const fr: Catalog = {
     'admin.messaging.audience.business': 'Entreprises',
     'admin.messaging.audience.auditor': 'Partenaires d’audit',
     'admin.messaging.audience.everyone': 'Tous les titulaires de compte',
+    'admin.messaging.audience.staff': 'Équipe Rozine',
     'admin.messaging.trigger.verification.approved':
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
