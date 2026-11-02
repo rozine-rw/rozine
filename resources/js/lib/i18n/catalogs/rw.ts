@@ -746,8 +746,12 @@ const rw: Catalog = {
     'business.reports.title': 'Raporo',
     'business.reports.subtitle':
         'Buri genzura ritunguranye n’irya buri kwezi umugenzuzi wawe afunga, bigenzurwa aho ukorera.',
-    'business.reports.guide.title': 'Uko igenzura rya buri kwezi rikorwa',
-    'business.reports.guide.opens.title': 'Kusanya inyandiko zawe',
+    'business.reports.guide.title': 'Uko igenzura rikorwa',
+    'business.reports.guide.flash.title':
+        'Igenzura rya Flash, iyo Rozine irisabye',
+    'business.reports.guide.flash.body':
+        "Mbere yo gushaka igishoro, cyangwa igihe cyose Rozine ikeneye igenzura rishya, Audit Partner aza atabanje kubimenyesha agafunga raporo ya Flash mu masaha 24. Uyishyiraho umukono nk'uko ubigenza kuri raporo ya buri kwezi.",
+    'business.reports.guide.opens.title': 'Buri kwezi, kusanya inyandiko zawe',
     'business.reports.guide.opens.body':
         "Hagati ya tariki ya 20 n'impera z'ukwezi, kusanya inyandiko zose z'imari, izo ku mpapuro n'iz'ikoranabuhanga, witegura igenzura CPA wawe azakorera aho ukorera.",
     'business.reports.guide.visit.title': "Itegure uruzinduko rw'umugenzuzi",
@@ -2912,6 +2916,13 @@ const rw: Catalog = {
     'admin.parties.audit.close.placeholder':
         'urugero: Ubucuruzi bwahagaritse imirimo mbere y’uko umugenzuzi ahagera.',
     'admin.parties.audit.close.cta': 'Funga igenzura',
+    'admin.parties.audit.withdraw.open': 'Kuraho',
+    'admin.parties.audit.withdraw.form': 'Kuraho iri genzura',
+    'admin.parties.audit.withdraw.form_body':
+        'Gukuraho birangiza iri genzura nta raporo kandi bikarivana ku mufatanyabikorwa waryo, hamwe n’umushinga wa raporo utarashyirwaho kashe. Iri genzura ryonyine ni ryo rirangira: nyuma yaho ikigo gishobora gusabirwa irindi genzura rya Flash cyangwa isuzuma ry’inyandiko za konti.',
+    'admin.parties.audit.withdraw.placeholder':
+        'urugero: Umufatanyabikorwa ntiyashyize kashe kuri raporo mbere y’igihe ntarengwa.',
+    'admin.parties.audit.withdraw.cta': 'Kuraho igenzura',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2940,8 +2951,10 @@ const rw: Catalog = {
         'urugero: Imenyekanisha ry’umugenzuzi ryo ku wa 30 Ukwakira n’urutonde rw’abanyamigabane muri RDB.',
     'admin.parties.audit.independence.cta': 'Andika isuzuma',
     'admin.parties.audit.review.title': 'Isuzuma ry’inyandiko za konti',
-    'admin.parties.audit.review.months':
-        'Amezi {count} yanditswe, kuva {first} kugeza {last}.',
+    'admin.parties.audit.review.months': {
+        one: 'Ukwezi {count} kwanditswe, kuva {first} kugeza {last}.',
+        other: 'Amezi {count} yanditswe, kuva {first} kugeza {last}.',
+    },
     'admin.parties.audit.review.no_months':
         'Nta kwezi kw’inyandiko za konti kuranditswa.',
     'admin.parties.audit.review.verified': 'Byemejwe n’Umugenzuzi',

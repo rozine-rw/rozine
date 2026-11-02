@@ -752,8 +752,13 @@ const fr: Catalog = {
     'business.reports.title': 'Rapports',
     'business.reports.subtitle':
         'Chaque audit éclair et mensuel scellé par votre partenaire d’audit, vérifié sur site.',
-    'business.reports.guide.title': 'Comment fonctionnent les audits mensuels',
-    'business.reports.guide.opens.title': 'Rassemblez vos documents',
+    'business.reports.guide.title': 'Comment fonctionnent les audits',
+    'business.reports.guide.flash.title':
+        'Un audit Flash, à la demande de Rozine',
+    'business.reports.guide.flash.body':
+        "Avant une levée de fonds, ou chaque fois que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash dans les 24 heures. Vous le cosignez comme un rapport mensuel.",
+    'business.reports.guide.opens.title':
+        'Chaque mois, rassemblez vos documents',
     'business.reports.guide.opens.body':
         "Entre le 20 et la fin du mois, rassemblez tous vos documents financiers papier et numériques pour l'audit sur place prévu avec votre expert-comptable.",
     'business.reports.guide.visit.title': 'Préparez la visite sur site',
@@ -2926,6 +2931,13 @@ const fr: Catalog = {
     'admin.parties.audit.close.placeholder':
         'p. ex. L’entreprise a cessé son activité avant la visite d’un partenaire.',
     'admin.parties.audit.close.cta': 'Clôturer l’audit',
+    'admin.parties.audit.withdraw.open': 'Retirer',
+    'admin.parties.audit.withdraw.form': 'Retirer cet audit',
+    'admin.parties.audit.withdraw.form_body':
+        'Retirer met fin à cet audit sans rapport et le reprend à son partenaire, avec tout brouillon non scellé. Seul cet audit prend fin : un nouvel audit Flash ou une revue des relevés pourra ensuite être demandé pour l’entreprise.',
+    'admin.parties.audit.withdraw.placeholder':
+        'ex. Le partenaire n’a pas scellé de rapport avant l’échéance.',
+    'admin.parties.audit.withdraw.cta': 'Retirer l’audit',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2954,8 +2966,10 @@ const fr: Catalog = {
         'ex. Déclaration du partenaire du 30 oct. et registre des actionnaires RDB.',
     'admin.parties.audit.independence.cta': 'Enregistrer l’examen',
     'admin.parties.audit.review.title': 'Examen des relevés',
-    'admin.parties.audit.review.months':
-        '{count} mois transcrits, de {first} à {last}.',
+    'admin.parties.audit.review.months': {
+        one: '{count} mois transcrit, de {first} à {last}.',
+        other: '{count} mois transcrits, de {first} à {last}.',
+    },
     'admin.parties.audit.review.no_months':
         'Aucun mois de relevé n’est encore transcrit.',
     'admin.parties.audit.review.verified': 'Vérifiés par un Audit Partner',

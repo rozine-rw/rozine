@@ -60,6 +60,7 @@ class StaffBusinessDirectoryController extends Controller
         'VERSION_CONFLICT' => 'This audit changed since you opened it. Review it again.',
         'ASSIGNMENT_NOT_IN_OPERATIONS' => 'This audit is no longer with Audit Operations.',
         'AUDIT_DISPATCH_EXHAUSTED' => 'This audit has used every dispatch attempt or passed its deadline, so it cannot be redispatched.',
+        'ASSIGNMENT_NOT_WITHDRAWABLE' => 'This audit is no longer overdue or waiting on Audit Operations, so it cannot be withdrawn.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
     ];
 
@@ -181,6 +182,16 @@ class StaffBusinessDirectoryController extends Controller
     public function closeAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits): RedirectResponse
     {
         return $this->resolveAudit($request, $audits, 'close');
+    }
+
+    /**
+     * Withdraw the Business's audit that can't finish: a Flash audit past its deadline with no sealed
+     * report, or one waiting on Audit Operations (#489). Only this audit ends; a new Flash audit or
+     * statement review can be requested afterwards.
+     */
+    public function withdrawAudit(ResolveAuditAssignmentRequest $request, ManageBusinessAudit $audits): RedirectResponse
+    {
+        return $this->resolveAudit($request, $audits, 'withdraw');
     }
 
     /**
