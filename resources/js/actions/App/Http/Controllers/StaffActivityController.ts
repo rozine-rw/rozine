@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 const index8726ce07a177c5d66af63cc44820e1cd = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index8726ce07a177c5d66af63cc44820e1cd.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 index8726ce07a177c5d66af63cc44820e1cd.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index8726ce07a177c5d66af63cc44820e1cd.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 index8726ce07a177c5d66af63cc44820e1cd.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index8726ce07a177c5d66af63cc44820e1cd.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 index8726ce07a177c5d66af63cc44820e1cd.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index8726ce07a177c5d66af63cc44820e1cd.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 const index8726ce07a177c5d66af63cc44820e1cdForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const index8726ce07a177c5d66af63cc44820e1cdForm = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 index8726ce07a177c5d66af63cc44820e1cdForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ index8726ce07a177c5d66af63cc44820e1cdForm.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/api/v1/staff/activity'
 */
 index8726ce07a177c5d66af63cc44820e1cdForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ index8726ce07a177c5d66af63cc44820e1cdForm.head = (options?: RouteQueryOptions): 
 index8726ce07a177c5d66af63cc44820e1cd.form = index8726ce07a177c5d66af63cc44820e1cdForm
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 const index683bf58d8794f19f8147b54b83f171e7 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index683bf58d8794f19f8147b54b83f171e7.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 index683bf58d8794f19f8147b54b83f171e7.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index683bf58d8794f19f8147b54b83f171e7.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 index683bf58d8794f19f8147b54b83f171e7.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index683bf58d8794f19f8147b54b83f171e7.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 index683bf58d8794f19f8147b54b83f171e7.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index683bf58d8794f19f8147b54b83f171e7.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 const index683bf58d8794f19f8147b54b83f171e7Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index683bf58d8794f19f8147b54b83f171e7Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 index683bf58d8794f19f8147b54b83f171e7Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index683bf58d8794f19f8147b54b83f171e7Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\StaffActivityController::index
-* @see app/Http/Controllers/StaffActivityController.php:23
+* @see app/Http/Controllers/StaffActivityController.php:22
 * @route '/admin/activity'
 */
 index683bf58d8794f19f8147b54b83f171e7Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
