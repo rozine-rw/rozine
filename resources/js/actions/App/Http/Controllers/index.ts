@@ -32,7 +32,6 @@ import StaffReconciliationController from './StaffReconciliationController'
 import StaffMessagingController from './StaffMessagingController'
 import StaffLedgerController from './StaffLedgerController'
 import StaffExceptionsController from './StaffExceptionsController'
-import StaffCartReleaseController from './StaffCartReleaseController'
 import StaffPrimaryMarketController from './StaffPrimaryMarketController'
 import StaffPaymentsController from './StaffPaymentsController'
 import StaffCoverageController from './StaffCoverageController'
@@ -68,6 +67,7 @@ import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
 import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
+import StaffCartReleaseController from './StaffCartReleaseController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -105,7 +105,6 @@ const Controllers = {
     StaffMessagingController: Object.assign(StaffMessagingController, StaffMessagingController),
     StaffLedgerController: Object.assign(StaffLedgerController, StaffLedgerController),
     StaffExceptionsController: Object.assign(StaffExceptionsController, StaffExceptionsController),
-    StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),
     StaffPrimaryMarketController: Object.assign(StaffPrimaryMarketController, StaffPrimaryMarketController),
     StaffPaymentsController: Object.assign(StaffPaymentsController, StaffPaymentsController),
     StaffCoverageController: Object.assign(StaffCoverageController, StaffCoverageController),
@@ -141,6 +140,7 @@ const Controllers = {
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
     StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
+    StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 
