@@ -31,11 +31,12 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Brick\Math\BigInteger;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -73,12 +74,6 @@ use Throwable;
  */
 final readonly class EloquentCartCheckouts implements CartCheckouts
 {
-    /** Counts sweeps, so the odd batch slot alternates between fresh checkouts and retries. */
-    public const string SWEEP_TURN_KEY = 'cart-checkouts:sweep-turn';
-
-    /** How long the sweep counter lives; when it lapses the next sweep starts it again at one. */
-    private const int SWEEP_TURN_TTL_SECONDS = 31_536_000;
-
     /** Child request ids are UUIDv5 names under this namespace, derived from the parent operation. */
     private const string CHILD_NAMESPACE = '6f1d3c2a-8b4e-5f60-9a7b-1c2d3e4f5a6b';
 
@@ -204,10 +199,14 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         $fresh = $this->due($now)->whereNull('failures.investor_cart_checkout_id')
             ->orderBy('investor_cart_checkouts.settles_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
         $retries = $this->due($now)->whereNotNull('failures.investor_cart_checkout_id')
-            ->whereRaw('failures.last_attempted_at <= ?::timestamptz - make_interval(mins => least(?, ? * failures.attempts))',
-                [$now, self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
-            ->orderBy('failures.last_attempted_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
-        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), $this->sweepTurn() % 2 === 0);
+            ->selectRaw('failures.last_attempted_at + make_interval(mins => least(?, ? * failures.attempts)) as retry_due_at',
+                [self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
+            ->whereRaw('failures.last_attempted_at + make_interval(mins => least(?, ? * failures.attempts)) <= ?::timestamptz',
+                [self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES, $now])
+            ->orderBy('retry_due_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
+        $oldestRetry = $retries->first()?->getAttribute('retry_due_at');
+        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(),
+            self::retryWaitedLonger($fresh->first()?->settles_at, is_string($oldestRetry) ? CarbonImmutable::parse($oldestRetry) : null));
         $candidates = $retries->take($retriesTaken)->concat($fresh->take($freshTaken));
         $expired = 0;
         $failure = null;
@@ -250,28 +249,25 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     }
 
     /**
+     * Whether the odd sweep slot goes to the retry: the class whose oldest checkout has waited longer
+     * takes it. A fresh checkout waits from its settlement time and a retry from the end of its
+     * backoff. A served retry that fails again waits from its next backoff, and a served fresh checkout
+     * either settles or becomes a retry, so the other class is next however the sweeps are spaced.
+     */
+    public static function retryWaitedLonger(?CarbonInterface $oldestFresh, ?CarbonInterface $oldestRetry): bool
+    {
+        if ($oldestRetry === null) {
+            return false;
+        }
+
+        return $oldestFresh === null || $oldestRetry->lessThan($oldestFresh);
+    }
+
+    /**
      * Live checkouts whose last line window has closed, with their failure row when they have one.
      *
      * @return EloquentBuilder<InvestorCartCheckout>
      */
-    /**
-     * Counts this sweep. Database and Redis stores refuse to increment a missing key, so the counter
-     * is first created at zero with the store's atomic add, which leaves an existing count alone.
-     * When the store still cannot count, the sweep reports it and alternates on the clock minute.
-     */
-    private function sweepTurn(): int
-    {
-        Cache::add(self::SWEEP_TURN_KEY, 0, self::SWEEP_TURN_TTL_SECONDS);
-        $turn = Cache::increment(self::SWEEP_TURN_KEY);
-        if ($turn === false) {
-            report(new RuntimeException('CART_SWEEP_TURN_UNAVAILABLE'));
-
-            return (int) now('UTC')->format('i');
-        }
-
-        return (int) $turn;
-    }
-
     private function due(string $now): EloquentBuilder
     {
         return InvestorCartCheckout::query()->select('investor_cart_checkouts.*')

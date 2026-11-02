@@ -18,6 +18,7 @@ use App\Models\InvestorCartLine;
 use App\Models\InvestorCartQuote;
 use App\Models\User;
 use App\Notifications\Staff\CartSettlementStuck;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -320,8 +321,8 @@ it('skips a checkout that was settled after the sweep picked it, without recordi
 it('shares every sweep between fresh checkouts and due retries so neither starves', function (int $limit, int $fresh, int $retries, bool $retryFirst, array $taken): void {
     expect(EloquentCartCheckouts::shares($limit, $fresh, $retries, $retryFirst))->toBe($taken);
 })->with([
-    'limit 1, both waiting, retry minute' => [1, 5, 60, true, [0, 1]],
-    'limit 1, both waiting, fresh minute' => [1, 5, 60, false, [1, 0]],
+    'limit 1, both waiting, the retry waited longer' => [1, 5, 60, true, [0, 1]],
+    'limit 1, both waiting, the fresh checkout waited longer' => [1, 5, 60, false, [1, 0]],
     'limit 1, only retries' => [1, 0, 60, false, [0, 1]],
     'limit 1, only fresh' => [1, 5, 0, true, [1, 0]],
     'even split' => [10, 50, 50, true, [5, 5]],
@@ -332,52 +333,52 @@ it('shares every sweep between fresh checkouts and due retries so neither starve
     'less than the limit due' => [10, 3, 2, true, [3, 2]],
 ]);
 
-it('alternates the odd sweep slot on every sweep, however the sweeps are spaced', function (): void {
-    $this->freezeTime();
-    $sweep = app(CartCheckouts::class);
-    Cache::forget(EloquentCartCheckouts::SWEEP_TURN_KEY);
+it('gives the odd sweep slot to whichever checkout has waited longer', function (?string $fresh, ?string $retry, bool $retryFirst): void {
+    $at = fn (?string $time): ?CarbonImmutable => $time === null ? null : CarbonImmutable::parse('2026-11-02 '.$time, 'UTC');
 
-    expect($sweep->expireDue(1))->toBe(0)
-        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(1)
-        ->and($sweep->expireDue(1))->toBe(0)
-        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(2)
-        ->and($sweep->expireDue(1))->toBe(0)
-        ->and(Cache::get(EloquentCartCheckouts::SWEEP_TURN_KEY))->toBe(3);
-});
+    expect(EloquentCartCheckouts::retryWaitedLonger($at($fresh), $at($retry)))->toBe($retryFirst);
+})->with([
+    'nothing waiting' => [null, null, false],
+    'only fresh waiting' => ['10:00', null, false],
+    'only a retry waiting' => [null, '10:00', true],
+    'the retry has waited longer' => ['10:05', '10:00', true],
+    'the fresh checkout has waited longer' => ['10:00', '10:05', false],
+    'a tie goes to the fresh checkout' => ['10:00', '10:00', false],
+]);
 
-it('starts the sweep count in the database cache, keeps it across processes and starts again after a reset', function (): void {
-    $this->freezeTime();
-    Cache::setDefaultDriver('database');
-    $key = EloquentCartCheckouts::SWEEP_TURN_KEY;
-    $stored = fn (): int => DB::table('cache')->where('key', config('cache.prefix').$key)->count();
+it('serves a fresh backlog behind retries that keep failing, however the one-slot sweeps are spaced', function (): void {
+    $now = CarbonImmutable::parse('2026-11-02 10:00', 'UTC');
+    $fresh = [$now->subMinutes(30), $now->subMinutes(20), $now->subMinutes(10)];
+    $retries = [['due' => $now->subMinutes(40), 'attempts' => 1], ['due' => $now->subMinutes(35), 'attempts' => 1], ['due' => $now->subMinutes(25), 'attempts' => 1]];
+    $served = ['fresh' => 0, 'retries' => 0];
+    $sweeps = 0;
+    foreach ([0, 0, 0, 2, 2, 2, 0, 1, 1, 0, 2, 0, 2, 0] as $gapMinutes) {
+        $sweeps++;
+        $now = $now->addMinutes($gapMinutes)->addSeconds(1);
+        $dueRetries = array_values(array_filter($retries, fn (array $retry): bool => $retry['due']->lessThanOrEqualTo($now)));
+        usort($dueRetries, fn (array $left, array $right): int => $left['due'] <=> $right['due']);
+        [$freshTaken, $retriesTaken] = EloquentCartCheckouts::shares(1, count($fresh), count($dueRetries),
+            EloquentCartCheckouts::retryWaitedLonger($fresh[0] ?? null, $dueRetries[0]['due'] ?? null));
+        if ($freshTaken === 1) {
+            array_shift($fresh);
+            $served['fresh']++;
+        }
+        if ($retriesTaken === 1) {
+            $failed = $dueRetries[0];
+            $retries = array_values(array_filter($retries, fn (array $retry): bool => $retry !== $failed));
+            $retries[] = ['due' => $now->addMinutes(min(CartCheckouts::RETRY_BACKOFF_MAX_MINUTES, CartCheckouts::RETRY_BACKOFF_MINUTES * ($failed['attempts'] + 1))),
+                'attempts' => $failed['attempts'] + 1];
+            $served['retries']++;
+        }
+        if ($fresh === []) {
+            break;
+        }
+    }
 
-    expect(Cache::get($key))->toBeNull()
-        ->and(app(CartCheckouts::class)->expireDue(1))->toBe(0)
-        ->and(Cache::get($key))->toBe(1)
-        ->and($stored())->toBe(1);
-
-    Cache::forgetDriver('database');
-    app()->forgetInstance(CartCheckouts::class);
-    expect(app(CartCheckouts::class)->expireDue(1))->toBe(0)
-        ->and(Cache::get($key))->toBe(2)
-        ->and(app(CartCheckouts::class)->expireDue(1))->toBe(0)
-        ->and(Cache::get($key))->toBe(3)
-        ->and($stored())->toBe(1);
-
-    Cache::forget($key);
-    expect(app(CartCheckouts::class)->expireDue(1))->toBe(0)
-        ->and(Cache::get($key))->toBe(1);
-});
-
-it('reports a cache that cannot count sweeps and keeps sweeping on the clock', function (): void {
-    $this->travelTo(now('UTC')->setTime(10, 7));
-    $sweep = app(CartCheckouts::class);
-    Exceptions::fake();
-    Cache::shouldReceive('add')->once()->andReturn(false);
-    Cache::shouldReceive('increment')->once()->with(EloquentCartCheckouts::SWEEP_TURN_KEY)->andReturn(false);
-
-    expect($sweep->expireDue(1))->toBe(0);
-    Exceptions::assertReported(fn (RuntimeException $exception): bool => $exception->getMessage() === 'CART_SWEEP_TURN_UNAVAILABLE');
+    expect($fresh)->toBe([])
+        ->and($served['fresh'])->toBe(3)
+        ->and($served['retries'])->toBeGreaterThanOrEqual(3)
+        ->and($sweeps)->toBe(6);
 });
 
 it('shows a checkout the sweep has not reached as stuck, and keeps sweeping when an alert cannot be sent', function (): void {
