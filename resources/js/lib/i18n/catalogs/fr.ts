@@ -7857,6 +7857,9 @@ const fr: Catalog = {
     'auditor.verify.debt_last_payment': 'Dernier paiement prévu',
     'auditor.verify.debt_last_payment_pick': 'Choisissez un mois',
     'auditor.verify.debt_beyond': 'Après {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Chaque mois à venir est rempli à partir du paiement ci-dessus. Modifiez tout mois différent, comme un paiement progressif ou un paiement final ballon.',
+    'auditor.verify.debt_due_in': 'Dû en {month} (RWF)',
     'auditor.verify.debt_sources': 'Relevés montrant cette dette',
     'auditor.verify.add_debt': 'Ajouter une dette',
     'auditor.verify.remove_debt': 'Retirer cette dette',

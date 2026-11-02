@@ -415,6 +415,57 @@ describe('Auditor statement verification', () => {
         ).toEqual(Array(9).fill('50000'));
     });
 
+    it('lets a stepped or final balloon payment differ from the level payment', async () => {
+        inertia.queue.push(
+            answers(operation({ code: 'STATEMENT_SOURCE_VERIFIED' })),
+        );
+        const { user } = renderWithUser(<AuditorFile {...props()} />);
+
+        await fillIn(user);
+
+        const debt = within(form()).getByRole('group', { name: 'Debt 1' });
+        const submit = within(form()).getByRole('button', {
+            name: 'Verify statements',
+        });
+        const november = within(debt).getByLabelText(
+            'Due in November 2026 (RWF)',
+        );
+        const december = within(debt).getByLabelText(
+            'Due in December 2026 (RWF)',
+        );
+
+        expect(november).toHaveValue('50000');
+        expect(
+            within(debt).getByLabelText('Due in January 2027 (RWF)'),
+        ).toHaveValue('0');
+
+        await user.clear(december);
+        expect(submit).toBeDisabled();
+        await user.type(december, '500000');
+        await user.clear(november);
+        await user.type(november, '75000');
+        expect(submit).toBeEnabled();
+        await user.click(submit);
+
+        const body = inertia.calls[0].body as {
+            review: {
+                obligations: { service_by_month: Record<string, string> }[];
+            };
+        };
+
+        expect(body.review.obligations[0].service_by_month).toEqual({
+            '2026-08': '50000',
+            '2026-09': '50000',
+            '2026-10': '50000',
+            '2026-11': '75000',
+            '2026-12': '500000',
+            '2027-01': '0',
+            '2027-02': '0',
+            '2027-03': '0',
+            '2027-04': '0',
+        });
+    });
+
     it('starts the review afresh when the evidence it was made against changes', async () => {
         const { user, rerender } = renderWithUser(<AuditorFile {...props()} />);
 

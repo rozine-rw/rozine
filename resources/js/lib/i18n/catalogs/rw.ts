@@ -7821,6 +7821,9 @@ const rw: Catalog = {
     'auditor.verify.debt_last_payment': 'Ubwishyu buteganyijwe bwa nyuma',
     'auditor.verify.debt_last_payment_pick': 'Hitamo ukwezi',
     'auditor.verify.debt_beyond': 'Nyuma ya {month}',
+    'auditor.verify.debt_schedule_hint':
+        "Buri kwezi kuri imbere kuzuzwa n'ubwishyu buri haruguru. Hindura ukwezi kwose gutandukanye, nk'ubwishyu buzamuka cyangwa ubwishyu bunini bwa nyuma.",
+    'auditor.verify.debt_due_in': 'Bigomba kwishyurwa muri {month} (RWF)',
     'auditor.verify.debt_sources': 'Inyandiko zigaragaza uyu mwenda',
     'auditor.verify.add_debt': 'Ongeraho umwenda',
     'auditor.verify.remove_debt': 'Kuraho uyu mwenda',

@@ -7544,6 +7544,9 @@ const en = {
     'auditor.verify.debt_last_payment': 'Last scheduled payment',
     'auditor.verify.debt_last_payment_pick': 'Choose a month',
     'auditor.verify.debt_beyond': 'After {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Each coming month fills from the payment above. Change any month that differs, such as a stepped or final balloon payment.',
+    'auditor.verify.debt_due_in': 'Due in {month} (RWF)',
     'auditor.verify.debt_sources': 'Statements showing this debt',
     'auditor.verify.add_debt': 'Add a debt',
     'auditor.verify.remove_debt': 'Remove this debt',

@@ -28,10 +28,12 @@ type Obligation = {
     principal: string;
     sources: string[];
     service: Record<string, string>;
-    /** The contractual payment for each month after the statements, until `lastPayment`. */
+    /** A level monthly payment that prefills `due`, until `lastPayment`. */
     scheduled: string;
-    /** The last month the payment falls due, or `BEYOND` when it runs past the schedule. */
+    /** The last month the level payment falls due, or `BEYOND` when it runs past the schedule. */
     lastPayment: string;
+    /** What falls due in each month after the statements; editable for stepped or final payments. */
+    due: Record<string, string>;
 };
 
 /**
@@ -43,6 +45,23 @@ const SCHEDULE_MONTHS = 7;
 
 /** A debt still being repaid after the last month of the schedule. */
 const BEYOND = 'beyond';
+
+/** The months after the statements filled from a level payment, or none until both are given. */
+const levelSchedule = (
+    months: string[],
+    scheduled: string,
+    lastPayment: string,
+): Record<string, string> | undefined =>
+    AMOUNT.test(scheduled) && lastPayment !== ''
+        ? Object.fromEntries(
+              months.map((month) => [
+                  month,
+                  lastPayment === BEYOND || month <= lastPayment
+                      ? scheduled
+                      : '0',
+              ]),
+          )
+        : undefined;
 
 /** The `count` calendar months after `month` (YYYY-MM). */
 const monthsAfter = (month: string, count: number): string[] => {
@@ -128,8 +147,7 @@ export function StatementVerification({
         AMOUNT.test(obligation.principal) &&
         obligation.sources.length > 0 &&
         months.every((month) => AMOUNT.test(obligation.service[month])) &&
-        AMOUNT.test(obligation.scheduled) &&
-        obligation.lastPayment !== '';
+        upcoming.every((month) => AMOUNT.test(obligation.due[month]));
     const complete =
         review.checks.every((check) => checks[check] === true) &&
         review.documents.every((document) => filled(references[document.id])) &&
@@ -147,6 +165,18 @@ export function StatementVerification({
                 at === index ? { ...obligation, ...patch } : obligation,
             ),
         );
+
+    /** A new level payment or last month refills every coming month; single months stay editable. */
+    const changeLevel = (
+        index: number,
+        obligation: Obligation,
+        patch: Pick<Partial<Obligation>, 'scheduled' | 'lastPayment'>,
+    ) => {
+        const next = { ...obligation, ...patch };
+        const due = levelSchedule(upcoming, next.scheduled, next.lastPayment);
+
+        change(index, due === undefined ? patch : { ...patch, due });
+    };
 
     const submit = () => {
         setRefusal(null);
@@ -189,10 +219,7 @@ export function StatementVerification({
                                 ]),
                                 ...upcoming.map((month) => [
                                     month,
-                                    obligation.lastPayment === BEYOND ||
-                                    month <= obligation.lastPayment
-                                        ? obligation.scheduled
-                                        : '0',
+                                    obligation.due[month],
                                 ]),
                             ]),
                         })),
@@ -402,7 +429,7 @@ export function StatementVerification({
                                 className={cn(FIELD, 'mt-1')}
                                 value={obligation.scheduled}
                                 onChange={(event) =>
-                                    change(index, {
+                                    changeLevel(index, obligation, {
                                         scheduled: event.target.value,
                                     })
                                 }
@@ -414,7 +441,7 @@ export function StatementVerification({
                                 className={cn(FIELD, 'mt-1')}
                                 value={obligation.lastPayment}
                                 onChange={(event) =>
-                                    change(index, {
+                                    changeLevel(index, obligation, {
                                         lastPayment: event.target.value,
                                     })
                                 }
@@ -440,6 +467,35 @@ export function StatementVerification({
                                 </option>
                             </select>
                         </label>
+                        <p className="text-[11.5px] leading-[1.5] text-rz-secondary">
+                            {t('auditor.verify.debt_schedule_hint')}
+                        </p>
+                        {upcoming.map((month) => (
+                            <label
+                                key={month}
+                                className="block text-[11.5px] text-rz-secondary"
+                            >
+                                {t('auditor.verify.debt_due_in', {
+                                    month: formatMonthYearLong(
+                                        `${month}-15`,
+                                        locale,
+                                    ),
+                                })}
+                                <input
+                                    inputMode="numeric"
+                                    className={cn(FIELD, 'mt-1')}
+                                    value={obligation.due[month]}
+                                    onChange={(event) =>
+                                        change(index, {
+                                            due: {
+                                                ...obligation.due,
+                                                [month]: event.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </label>
+                        ))}
                         <p className="text-[11.5px] text-rz-secondary">
                             {t('auditor.verify.debt_sources')}
                         </p>
@@ -499,6 +555,9 @@ export function StatementVerification({
                                 ),
                                 scheduled: '',
                                 lastPayment: '',
+                                due: Object.fromEntries(
+                                    upcoming.map((month) => [month, '']),
+                                ),
                             },
                         ])
                     }
