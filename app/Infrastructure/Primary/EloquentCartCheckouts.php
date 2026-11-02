@@ -199,9 +199,9 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         $retries = $this->due($now)->whereNotNull('failures.investor_cart_checkout_id')
             ->whereRaw('failures.last_attempted_at <= ?::timestamptz - make_interval(mins => least(?, ? * failures.attempts))',
                 [$now, self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
-            ->orderBy('failures.last_attempted_at')->orderBy('investor_cart_checkouts.id')
-            ->limit(max(intdiv($limit + 1, 2), $limit - $fresh->count()))->get();
-        $candidates = $retries->concat($fresh->take($limit - $retries->count()));
+            ->orderBy('failures.last_attempted_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
+        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(), now('UTC')->minute % 2 === 0);
+        $candidates = $retries->take($retriesTaken)->concat($fresh->take($freshTaken));
         $expired = 0;
         $failure = null;
         foreach ($candidates as $checkout) {
@@ -223,6 +223,22 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         }
 
         return $expired;
+    }
+
+    /**
+     * How many fresh and retry candidates one sweep takes. Each class gets half the limit, the odd
+     * slot alternating between them (`$retryFirst`, from the sweep's minute), and a class with
+     * fewer due than its share gives the rest to the other. Neither class can starve the other,
+     * even at a limit of 1.
+     *
+     * @return array{int, int} fresh, then retries
+     */
+    public static function shares(int $limit, int $fresh, int $retries, bool $retryFirst): array
+    {
+        $retryShare = intdiv($limit, 2) + ($retryFirst ? $limit % 2 : 0);
+        $retriesTaken = min($retries, max($retryShare, $limit - $fresh));
+
+        return [min($fresh, $limit - $retriesTaken), $retriesTaken];
     }
 
     /**

@@ -308,6 +308,21 @@ it('skips a checkout that was settled after the sweep picked it, without recordi
     Notification::assertNothingSent();
 });
 
+it('shares every sweep between fresh checkouts and due retries so neither starves', function (int $limit, int $fresh, int $retries, bool $retryFirst, array $taken): void {
+    expect(EloquentCartCheckouts::shares($limit, $fresh, $retries, $retryFirst))->toBe($taken);
+})->with([
+    'limit 1, both waiting, retry minute' => [1, 5, 60, true, [0, 1]],
+    'limit 1, both waiting, fresh minute' => [1, 5, 60, false, [1, 0]],
+    'limit 1, only retries' => [1, 0, 60, false, [0, 1]],
+    'limit 1, only fresh' => [1, 5, 0, true, [1, 0]],
+    'even split' => [10, 50, 50, true, [5, 5]],
+    'odd slot to retries' => [5, 50, 50, true, [2, 3]],
+    'odd slot to fresh' => [5, 50, 50, false, [3, 2]],
+    'few retries give the rest to fresh' => [10, 50, 2, true, [8, 2]],
+    'few fresh give the rest to retries' => [10, 1, 50, false, [1, 9]],
+    'less than the limit due' => [10, 3, 2, true, [3, 2]],
+]);
+
 it('shows a checkout the sweep has not reached as stuck, and keeps sweeping when an alert cannot be sent', function (): void {
     ['checkout' => $checkout] = ($this->held)();
     ($this->staff)(['compliance']);

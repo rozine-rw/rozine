@@ -112,8 +112,8 @@ interface CartCheckouts
      * checkout that fails is recorded as stuck, and its first failure alerts every staff member who
      * may resolve it; the sweep goes on with the next one and then reports the first failure.
      * A failed checkout is retried after `RETRY_BACKOFF_MINUTES` per attempt, at most
-     * `RETRY_BACKOFF_MAX_MINUTES`, and at least half of each batch is kept for due retries so new
-     * work never starves them. A checkout settled elsewhere after it was picked is skipped.
+     * `RETRY_BACKOFF_MAX_MINUTES`. Fresh and due retries each get half of every batch, the odd slot
+     * alternating between them, so neither starves the other. A checkout settled elsewhere after it was picked is skipped.
      */
     public function expireDue(int $limit): int;
 
