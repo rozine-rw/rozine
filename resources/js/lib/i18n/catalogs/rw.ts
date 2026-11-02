@@ -3096,6 +3096,13 @@ const rw: Catalog = {
     'admin.events.clear_filters': 'Siba ibyatoranyijwe',
     'admin.events.filtered_empty':
         "Nta kintu mu bubiko gihuye n'ibi byatoranyijwe.",
+    'admin.events.load_more': 'Reba ibindi',
+    'admin.events.loading_more': 'Birimo gukururwa…',
+    'admin.events.load_failed':
+        'Ntibyashobotse gukurura ibindi bikorwa. Ongera ugerageze.',
+    'admin.events.retry_more': 'Ongera ugerageze',
+    'admin.events.access_revoked':
+        'Uburenganzira bwawe bwo kureba ibikorwa bwahindutse.',
     'admin.events.empty': 'Nta gikorwa kiranditswe.',
     'admin.events.col.when': 'Ryari',
     'admin.events.col.who': 'Nde',

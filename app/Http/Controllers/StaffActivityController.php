@@ -29,12 +29,23 @@ class StaffActivityController extends Controller
         $from = $preset === null ? $request->validated('from') : null;
         $to = $preset === null ? $request->validated('to') : null;
         $limit = (int) $request->validated('limit', self::LIMIT);
-        $entries = $trail->handle($actorId, $search, $preset, $from === null ? null : (string) $from, $to === null ? null : (string) $to, $limit);
+        $cursorMode = ! $request->routeIs('api.*') && ! $request->has('limit');
+        $cursor = $cursorMode ? $request->validated('cursor') : null;
+        $entries = $trail->handle($actorId, $search, $preset, $from === null ? null : (string) $from, $to === null ? null : (string) $to, $limit, $cursor, $cursorMode);
         $staff = $access->handle($actorId);
 
         $resource = new StaffActivityResource([...$entries, 'search' => $search, 'preset' => $preset, 'from' => $from === null ? null : (string) $from,
-            'to' => $to === null ? null : (string) $to, 'limit' => $limit, 'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
+            'to' => $to === null ? null : (string) $to, 'limit' => $limit, 'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'cursor_mode' => $cursorMode]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/events', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+
+        $props = $resource->resolve($request);
+        if ($cursorMode && $cursor !== null) {
+            $props['events'] = Inertia::merge($props['events'])->matchOn('cursor_key');
+        }
+
+        return Inertia::render('admin/events', $props);
     }
 }

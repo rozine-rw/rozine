@@ -1150,6 +1150,7 @@ export type AdminLedgerProps = AdminShellProps & {
 
 export type EventRow = {
     id: string;
+    cursor_key?: string;
     at: string;
     actor: string;
     action: { code: string; label: string; tone: Tone };
@@ -1165,6 +1166,7 @@ export type EventExport =
     | { state: 'ready'; requested: Attribution; download: RouteLink };
 
 export type AdminEventsProps = AdminFrameShellProps & {
+    cursor_pagination?: boolean;
     events: EventRow[];
     total: number;
     filters: {

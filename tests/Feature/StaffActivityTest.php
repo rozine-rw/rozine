@@ -8,6 +8,7 @@ use App\Models\CommandOperation;
 use App\Models\IdentityAuditEvent;
 use App\Models\Party;
 use App\Models\RoleMembership;
+use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -158,4 +159,22 @@ test('the trail names the person or Business an entry acted on instead of its ID
             ->where('events.1.target', 'Grace Ingabire')->where('events.1.action.label', 'Reviewed a licence')
             ->where('events.2.target', 'Business · Works Bridge')->where('events.3.target', 'Application · Works Bridge')
             ->where('events.4.target', 'Note · Works Bridge')->where('events.5.target', 'Business · Works Bridge')->where('events.6.target', 'Grace Ingabire'));
+});
+
+test('cursor pages cover both journals without duplicates and recheck access', function (): void {
+    $officer = trailStaff(['compliance']);
+    $sameId = (string) Str::ulid();
+    IdentityAuditEvent::factory()->create(['id' => $sameId, 'action' => 'membership.change', 'created_at' => now()->subMinute()]);
+    CommandOperation::factory()->create(['id' => $sameId, 'command' => 'wallet.deposit', 'created_at' => now()->subMinute()]);
+    CommandOperation::factory()->count(48)->create(['command' => 'wallet.deposit', 'created_at' => now()]);
+    CommandOperation::factory()->count(7)->create(['command' => 'wallet.deposit', 'created_at' => now()->subMinutes(2)]);
+
+    $first = $this->actingAs($officer)->get(route('staff.events.index'))->assertOk()->inertiaPage()['props'];
+    expect($first['events'])->toHaveCount(50)->and($first['more'])->not->toBeNull();
+    $second = $this->actingAs($officer)->get($first['more']['url'])->assertOk()->inertiaPage()['props'];
+    $keys = collect([...$first['events'], ...$second['events']])->pluck('cursor_key');
+    expect($keys)->toHaveCount(58)->and($keys->unique())->toHaveCount(58)->and($second['more'])->toBeNull();
+    $this->actingAs($officer)->get(route('staff.events.index', ['cursor' => 'invalid']))->assertSessionHasErrors('cursor');
+    StaffAccount::query()->findOrFail($officer->id)->forceFill(['enabled' => false])->save();
+    $this->actingAs($officer)->get($first['more']['url'])->assertForbidden();
 });

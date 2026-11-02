@@ -563,7 +563,10 @@ describe('Verification', () => {
             screen.getByLabelText('Upload certificate'),
             new File(['c'], 'c.pdf', { type: 'application/pdf' }),
         );
-        await user.upload(screen.getByLabelText('Upload certificate'), []);
+        // A cancelled picker sends nothing.
+        fireEvent.change(screen.getByLabelText('Upload certificate'), {
+            target: { files: [] },
+        });
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             step: 'entity',
@@ -866,6 +869,9 @@ describe('Verification submission', () => {
             new File(['id'], 'back.jpg', { type: 'image/jpeg' }),
         );
         expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        // A progress event without a measurable size keeps the bare label.
+        act(() => visit?.onProgress(undefined));
+        expect(screen.getByRole('status')).toHaveTextContent(/^Uploading…$/);
         act(() => visit?.onProgress({ percentage: 42 }));
         expect(screen.getByRole('status')).toHaveTextContent('Uploading… 42%');
         act(() => visit?.onProgress({ percentage: 100 }));
