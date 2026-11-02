@@ -180,7 +180,7 @@ test('cursor pages cover both journals without duplicates and recheck access', f
     $staffReads = $queries->filter(fn (array $query): bool => str_contains($query['query'], 'from "staff_accounts"'));
     $trailReads = $queries->filter(fn (array $query): bool => str_contains($query['query'], 'from "identity_audit_events"'));
     DB::disableQueryLog();
-    expect($staffReads)->toHaveCount(1)->and($trailReads)->toHaveCount(1)->and($second['total'])->toBe(58);
+    expect($staffReads->count())->toBe(1)->and($trailReads->count())->toBe(1)->and($second['total'])->toBe(58);
     $keys = collect([...$first['events'], ...$second['events']])->pluck('cursor_key');
     expect($keys)->toHaveCount(58)->and($keys->unique())->toHaveCount(58)->and($second['more'])->toBeNull();
     $this->actingAs($officer)->get(route('staff.events.index', ['cursor' => 'invalid']))->assertSessionHasErrors('cursor');
@@ -200,7 +200,11 @@ test('cursor paging keeps existing rows across concurrent inserts and refreshes 
         'target_id' => 'cursor-concurrent-new', 'created_at' => now()]);
     $backfill = CommandOperation::factory()->create(['command' => 'wallet.deposit', 'target_type' => 'investor_wallet',
         'target_id' => 'cursor-concurrent-backfill', 'created_at' => now()->subMinutes(75)]);
-    $all = collect($initial['events']);
+    $initialEvents = $initial['events'];
+    if (! is_array($initialEvents)) {
+        throw new LogicException('Expected activity rows.');
+    }
+    $all = collect($initialEvents);
     $next = $initial['more'];
     while ($next !== null) {
         $page = $this->actingAs($officer)->get($next['url'])->assertOk()->inertiaPage()['props'];
@@ -212,7 +216,11 @@ test('cursor paging keeps existing rows across concurrent inserts and refreshes 
     expect($keys)->toHaveCount(111)->and($keys->unique())->toHaveCount(111)
         ->and($keys)->toContain('operations:'.$backfill->id)->not->toContain('operations:'.$newest->id);
     $refreshed = $this->actingAs($officer)->get(route('staff.events.index', ['q' => 'cursor-concurrent']))->assertOk()->inertiaPage()['props'];
-    expect(collect($refreshed['events'])->pluck('cursor_key'))->toContain('operations:'.$newest->id);
+    $refreshedEvents = $refreshed['events'];
+    if (! is_array($refreshedEvents)) {
+        throw new LogicException('Expected refreshed activity rows.');
+    }
+    expect(collect($refreshedEvents)->pluck('cursor_key'))->toContain('operations:'.$newest->id);
     $olderThanAll = (new Cursor(['created_at' => '1900-01-01 00:00:00', 'id' => (string) Str::ulid(), 'journal' => 'identity']))->encode();
     $emptyPage = $this->actingAs($officer)->get(route('staff.events.index', ['q' => 'cursor-concurrent', 'cursor' => $olderThanAll]))->assertOk()->inertiaPage()['props'];
     expect($emptyPage['events'])->toBe([])->and($emptyPage['total'])->toBe(112)->and($emptyPage['more'])->toBeNull();
