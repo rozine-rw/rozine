@@ -219,12 +219,14 @@ it('buys every held line at once, each under its own confirmation receipt, and e
 
     $ordered = ($this->ordered)();
     $commitments = PrimaryCommitment::query()->get()->keyBy('primary_reservation_id');
+    $removed = array_column($quote['lines'], 'cart_line_id');
+    sort($removed);
     expect($result)->toMatchArray(['status' => 'completed', 'code' => 'CART_CONFIRMED', 'revision' => 2])
         ->and($result['data'])->toMatchArray(['checkout_id' => $checkout->id, 'quote_id' => $quote['id'], 'disclosure_sha256' => $quote['disclosure_sha256'],
             'fee_band' => $quote['fee_band'], 'confirmed_at' => now('UTC')->format('Y-m-d\TH:i:s.u\Z'), 'total_principal' => ['currency' => 'RWF', 'amount' => '25000']])
-        ->and($result['data']['cart'])->toEqual(['revision' => 3, 'count' => 0, 'removed_line_ids' => collect($quote['lines'])->pluck('cart_line_id')->sort()->values()->all()])
+        ->and($result['data']['cart'])->toEqual(['revision' => 3, 'count' => 0, 'removed_line_ids' => $removed])
         ->and(array_column($result['data']['lines'], 'campaign_id'))->toBe($ordered)
-        ->and(array_column($result['data']['lines'], 'principal'))->toEqual(collect($reserved['data']['lines'])->pluck('principal')->all())
+        ->and(array_column($result['data']['lines'], 'principal'))->toEqual(array_column($reserved['data']['lines'], 'principal'))
         ->and($commitments)->toHaveCount(2)
         ->and(InvestorCartLine::query()->count())->toBe(0)
         ->and(InvestorCartRoot::query()->sole()->revision)->toBe(3)
