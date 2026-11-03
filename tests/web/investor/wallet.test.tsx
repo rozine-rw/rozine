@@ -798,6 +798,35 @@ describe('Wallet (C3)', () => {
         expect(sheet).toHaveTextContent('RZ-CMT-7731');
     });
 
+    it('says the history is loading while a filter, range or older page is on its way', () => {
+        render(<InvestorWallet {...wallet(pagedFixture)} />);
+        const history = screen.getByRole('region', {
+            name: 'Transaction history',
+        });
+        const status = within(history).getByRole('status');
+        const list = within(history).getByRole('list');
+        const links = [
+            within(
+                within(history).getByRole('navigation', {
+                    name: 'Movement type',
+                }),
+            ).getAllByRole('link')[1],
+            within(
+                within(history).getByRole('navigation', { name: 'Time range' }),
+            ).getByRole('link', { name: '30 days' }),
+            within(history).getByRole('link', { name: 'Show older' }),
+        ];
+
+        for (const link of links) {
+            fireEvent.click(link);
+            expect(status).toHaveTextContent('Loading transaction history…');
+            expect(list).toHaveAttribute('aria-busy', 'true');
+            act(() => inertia.linkVisits.shift()?.());
+            expect(status).toBeEmptyDOMElement();
+            expect(list).not.toHaveAttribute('aria-busy');
+        }
+    });
+
     it('pages older history and states a restriction', () => {
         const { unmount } = render(
             <InvestorWallet {...wallet(pagedFixture)} />,
