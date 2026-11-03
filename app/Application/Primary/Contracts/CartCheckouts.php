@@ -29,7 +29,10 @@ use Closure;
  * next held revision and the result is `CART_REQUOTED`, to be confirmed again explicitly. Any line
  * refused refuses the whole cart and changes nothing.
  *
- * `reservation()` reads the Party's own checkout without changing anything. A held checkout past
+ * `reservation()` reads the Party's own checkout without changing anything. Each line carries its
+ * reserved return and earnings fee as its held reservation fixed them (the fee rounded per scheduled
+ * payout), and `reserved` sums them: these, not the quote's indicative figures, are what Confirm all
+ * acknowledges. A held checkout past
  * its deadline reads `release_pending` until expiry settles it; a read never settles.
  *
  * @phpstan-import-type QuotedCart from InvestorCartQuotes
@@ -39,8 +42,12 @@ use Closure;
  * @phpstan-type CartReservation array{id: string, cart_id: string, cart_revision: int, revision: int, state: string,
  *     quote: array<string, mixed>, created_at: string, expires_at: string,
  *     lines: list<array{cart_line_id: string, campaign_id: string, reservation_id: string, reservation_revision: int,
- *         principal: array{currency: string, amount: string}, disclosure_sha256: string}>,
- *     total_held: array{currency: string, amount: string}}
+ *         principal: array{currency: string, amount: string}, contractual_return: array{currency: string, amount: string},
+ *         earnings_fee: array{currency: string, amount: string}, net_return: array{currency: string, amount: string},
+ *         disclosure_sha256: string}>,
+ *     total_held: array{currency: string, amount: string},
+ *     reserved: array{contractual_return: array{currency: string, amount: string}, earnings_fee: array{currency: string, amount: string},
+ *         net_return: array{currency: string, amount: string}}}
  */
 interface CartCheckouts
 {
@@ -81,6 +88,14 @@ interface CartCheckouts
 
     /** @return CartReservation */
     public function reservation(int $userId, int $contextRevision, string $checkoutId): array;
+
+    /**
+     * The Party's live checkout, held or past its deadline and not yet settled, read as
+     * `reservation()` reads it; null when the Party has none. The cart page opens on it.
+     *
+     * @return CartReservation|null
+     */
+    public function live(int $userId, int $contextRevision): ?array;
 
     /**
      * The retained `cart.reserve` result for this Party and request id, or `OPERATION_NOT_FOUND`.

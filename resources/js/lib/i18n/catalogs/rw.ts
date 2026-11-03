@@ -4119,9 +4119,57 @@ const rw: Catalog = {
     'investor.cart.quantity': 'Umubare wa noti muri {name}',
     'investor.cart.checkout': 'Ishyura',
     'investor.cart.checkout_note':
-        'Kuri ubu buri mahirwe yishyurwa ukwayo: fungura aho kuyishyura kugira ngo uyafate kandi uyishyure.',
+        'Ishyura igitebo cyose icyarimwe hepfo, cyangwa ufungure amahirwe imwe uyishyure yonyine.',
     'investor.cart.before_charge':
         'Amafaranga usubizwa ni mbere yo gukuraho igiciro ku nyungu. Buri kwishyura kwerekana amafaranga nyayo.',
+    'investor.cart.whole.band_title': 'IGICIRO KU NYUNGU',
+    'investor.cart.whole.band_next': '{amount} yiyongereye ifungura {rate}',
+    'investor.cart.whole.band_top':
+        'Uri ku cyiciro cy’igiciro gito kurusha ibindi.',
+    'investor.cart.whole.band_basis':
+        'Icyiciro cyawe kibara inyandiko ufite wongeyeho iki gitebo, ntikibara amafaranga ari mu gikapu.',
+    'investor.cart.whole.quoting': 'Turimo kubara igiciro cy’igitebo cyawe…',
+    'investor.cart.whole.checkout': 'Ishyura byose · {amount}',
+    'investor.cart.whole.fine_print':
+        'Bifatira buri nyandiko iri mu gitebo iminota 5 mu gihe wemeza. Nta kintu cyemezwa utaremeza.',
+    'investor.cart.whole.remove_filled':
+        'Kuramo amahirwe yamaze kuzura kugira ngo wishyure igitebo cyose.',
+    'investor.cart.whole.fix_units':
+        'Amahirwe amwe arenze ibyo ushobora gufata ubu. Yahuze cyangwa uyakuremo kugira ngo wishyure igitebo cyose.',
+    'investor.cart.whole.over_cap':
+        'Uyu murongo urenze ibyo ushobora gufata ubu.',
+    'investor.cart.whole.fit': {
+        one: 'Bihuze na nyandiko {count}',
+        other: 'Bihuze n’inyandiko {count}',
+    },
+    'investor.cart.whole.risks_first':
+        'Banza wemeze ibyerekeye ingaruka aho kwishyura amahirwe, hanyuma wishyure igitebo cyose.',
+    'investor.cart.whole.open_checkout': 'Fungura aho kwishyura',
+    'investor.cart.whole.held_title': 'Emeza igitebo cyawe',
+    'investor.cart.whole.held_lead':
+        'Buri nyandiko iri hepfo ifatiwe wowe ku cyiciro kimwe cy’igiciro. Kwemeza byose bizigura hamwe, cyangwa ntihagire n’imwe.',
+    'investor.cart.whole.line': {
+        one: 'Inyandiko {count} · inyungu {rate}%',
+        other: 'Inyandiko {count} · inyungu {rate}%',
+    },
+    'investor.cart.whole.line_return': 'Inyungu {return} · igiciro {fee}',
+    'investor.cart.whole.net_return': 'Inyungu iteganyijwe nyuma y’igiciro',
+    'investor.cart.whole.acknowledge':
+        'Nasomye aya mabwiriza kandi nemeje buri nyandiko iri muri iki gitebo.',
+    'investor.cart.whole.confirm': 'Emeza byose · {amount}',
+    'investor.cart.whole.release': 'Rekura inyandiko zose',
+    'investor.cart.whole.requoted':
+        'Amabwiriza yahindutse mbere y’uko wemeza. Reba igiteranyo gishya n’icyiciro, hanyuma wongere wemeze.',
+    'investor.cart.whole.settling':
+        'Igihe cyo kugufatira cyarangiye. Izi nyandiko zirimo gusubizwa mu gikapu cyawe.',
+    'investor.cart.whole.done_title': 'Igitebo cyishyuwe',
+    'investor.cart.whole.done_body': {
+        one: 'Wiyemeje {amount} ku mahirwe {count}. Inyandiko zawe zitangwa nyuma y’uko ubucuruzi bwishyurwa.',
+        other: 'Wiyemeje {amount} ku mahirwe {count}. Inyandiko zawe zitangwa nyuma y’uko buri bucuruzi bwishyurwa.',
+    },
+    'investor.cart.whole.done_fee': 'Igiciro ku nyungu {rate}',
+    'investor.cart.whole.go_portfolio': 'Jya ku mutungo',
+    'investor.cart.whole.go_deals': 'Jya ku mahirwe',
     'investor.common.back': 'Subira inyuma',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Ikomeye',
@@ -5932,6 +5980,33 @@ const rw: Catalog = {
         'Emeza imeyili yawe kandi ukoreshe kwemeza mu ntambwe ebyiri kugira ngo ukomeze.',
     'settlement.refusal.MFA_REQUIRED': 'Kwemeza mu ntambwe ebyiri birakenewe.',
     'settlement.refusal.NOT_FOUND': 'Ntushobora kongera kureba iyi nyandiko.',
+    'settlement.refusal.CART_REVISION_CONFLICT':
+        'Your cart changed. We refreshed it — check it and try again.',
+    'settlement.refusal.CART_LINES_REFUSED':
+        "Some deals in your cart can't be bought right now, so nothing was held.",
+    'settlement.refusal.CART_QUOTE_STALE':
+        'The terms changed since we priced your cart. Check the new total and try again.',
+    'settlement.refusal.CART_QUOTE_EXPIRED':
+        'Your cart price expired. We priced it again — check it and try again.',
+    'settlement.refusal.CART_QUOTE_NOT_FOUND':
+        "We couldn't find that price for your cart. Try again.",
+    'settlement.refusal.CART_CHECKOUT_ACTIVE':
+        'Your cart is held for checkout. Confirm or release it first.',
+    'settlement.refusal.CART_EXISTING_RESERVATION':
+        'You already hold notes in one of these deals. Confirm or release that hold first.',
+    'settlement.refusal.CART_RESERVATION_EXPIRED':
+        'Your hold ended before you confirmed. Check out again.',
+    'settlement.refusal.CART_RESERVATION_NOT_HELD':
+        'This checkout is no longer held.',
+    'settlement.refusal.CART_RESERVATION_NOT_FOUND':
+        "We couldn't find this checkout.",
+    'settlement.refusal.CART_LINE_UNAVAILABLE':
+        'A deal in your cart is no longer open. Remove it to check out.',
+    'settlement.refusal.CART_UNITS_ABOVE_LIMIT':
+        'Some deals are above what you can take now. Adjust them and try again.',
+    'settlement.refusal.CART_EMPTY': 'Your cart is empty.',
+    'settlement.refusal.RISK_ACKNOWLEDGEMENT_REQUIRED':
+        'Confirm the risk statements before your first investment.',
     'investor.wallet.c3.available_balance': 'Amafaranga aboneka',
     'investor.wallet.c3.total': "Igiteranyo cy'ikofi",
     'investor.wallet.c3.bucket.available': 'Aboneka',
