@@ -4134,9 +4134,56 @@ const fr: Catalog = {
     'investor.cart.quantity': 'Nombre de notes dans {name}',
     'investor.cart.checkout': 'Payer',
     'investor.cart.checkout_note':
-        'Pour le moment, chaque offre se paie séparément : ouvrez son paiement pour la réserver et la payer.',
+        'Payez tout le panier en une fois ci-dessous, ou ouvrez une offre pour la payer seule.',
     'investor.cart.before_charge':
         'Le montant récupéré est avant les frais sur les gains. Chaque paiement indique le montant exact.',
+    'investor.cart.whole.band_title': 'FRAIS SUR LES GAINS',
+    'investor.cart.whole.band_next': '{amount} de plus débloque {rate}',
+    'investor.cart.whole.band_top': 'Vous êtes au palier de frais le plus bas.',
+    'investor.cart.whole.band_basis':
+        'Votre palier compte les titres que vous détenez plus ce panier, jamais le solde du portefeuille.',
+    'investor.cart.whole.quoting': 'Calcul du prix de votre panier…',
+    'investor.cart.whole.checkout': 'Tout payer · {amount}',
+    'investor.cart.whole.fine_print':
+        'Réserve chaque titre du panier pendant 5 minutes, le temps de confirmer. Rien n’est engagé avant votre confirmation.',
+    'investor.cart.whole.remove_filled':
+        'Retirez les offres entièrement financées pour payer tout le panier.',
+    'investor.cart.whole.fix_units':
+        'Certaines offres dépassent ce que vous pouvez prendre maintenant. Ajustez-les ou retirez-les pour payer tout le panier.',
+    'investor.cart.whole.over_cap':
+        'Cette ligne dépasse ce que vous pouvez prendre maintenant.',
+    'investor.cart.whole.fit': {
+        one: 'Ajuster à {count} titre',
+        other: 'Ajuster à {count} titres',
+    },
+    'investor.cart.whole.risks_first':
+        'Confirmez d’abord les déclarations de risque dans le paiement d’une offre, puis payez tout le panier.',
+    'investor.cart.whole.open_checkout': 'Ouvrir le paiement',
+    'investor.cart.whole.held_title': 'Confirmez votre panier',
+    'investor.cart.whole.held_lead':
+        'Chaque titre ci-dessous vous est réservé à un seul palier de frais. Tout confirmer les achète ensemble, ou aucun.',
+    'investor.cart.whole.line': {
+        one: '{count} titre · rendement {rate} %',
+        other: '{count} titres · rendement {rate} %',
+    },
+    'investor.cart.whole.line_return': 'Rendement {return} · frais {fee}',
+    'investor.cart.whole.net_return': 'Rendement attendu après frais',
+    'investor.cart.whole.acknowledge':
+        'J’ai lu ces conditions et je confirme chaque titre de ce panier.',
+    'investor.cart.whole.confirm': 'Tout confirmer · {amount}',
+    'investor.cart.whole.release': 'Libérer tous les titres',
+    'investor.cart.whole.requoted':
+        'Les conditions ont changé avant votre confirmation. Vérifiez le nouveau total et le palier, puis confirmez à nouveau.',
+    'investor.cart.whole.settling':
+        'Votre réservation a pris fin. Ces titres sont en cours de libération vers votre portefeuille.',
+    'investor.cart.whole.done_title': 'Panier payé',
+    'investor.cart.whole.done_body': {
+        one: 'Vous avez engagé {amount} dans {count} offre. Vos titres sont émis après le paiement de l’entreprise.',
+        other: 'Vous avez engagé {amount} dans {count} offres. Vos titres sont émis après le paiement de chaque entreprise.',
+    },
+    'investor.cart.whole.done_fee': 'Frais sur les gains {rate}',
+    'investor.cart.whole.go_portfolio': 'Aller au portefeuille',
+    'investor.cart.whole.go_deals': 'Aller aux offres',
     'investor.common.back': 'Retour',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Solide',
@@ -5958,6 +6005,33 @@ const fr: Catalog = {
         "L'authentification à deux facteurs est requise.",
     'settlement.refusal.NOT_FOUND':
         'Vous ne pouvez plus consulter cet enregistrement.',
+    'settlement.refusal.CART_REVISION_CONFLICT':
+        'Your cart changed. We refreshed it — check it and try again.',
+    'settlement.refusal.CART_LINES_REFUSED':
+        "Some deals in your cart can't be bought right now, so nothing was held.",
+    'settlement.refusal.CART_QUOTE_STALE':
+        'The terms changed since we priced your cart. Check the new total and try again.',
+    'settlement.refusal.CART_QUOTE_EXPIRED':
+        'Your cart price expired. We priced it again — check it and try again.',
+    'settlement.refusal.CART_QUOTE_NOT_FOUND':
+        "We couldn't find that price for your cart. Try again.",
+    'settlement.refusal.CART_CHECKOUT_ACTIVE':
+        'Your cart is held for checkout. Confirm or release it first.',
+    'settlement.refusal.CART_EXISTING_RESERVATION':
+        'You already hold notes in one of these deals. Confirm or release that hold first.',
+    'settlement.refusal.CART_RESERVATION_EXPIRED':
+        'Your hold ended before you confirmed. Check out again.',
+    'settlement.refusal.CART_RESERVATION_NOT_HELD':
+        'This checkout is no longer held.',
+    'settlement.refusal.CART_RESERVATION_NOT_FOUND':
+        "We couldn't find this checkout.",
+    'settlement.refusal.CART_LINE_UNAVAILABLE':
+        'A deal in your cart is no longer open. Remove it to check out.',
+    'settlement.refusal.CART_UNITS_ABOVE_LIMIT':
+        'Some deals are above what you can take now. Adjust them and try again.',
+    'settlement.refusal.CART_EMPTY': 'Your cart is empty.',
+    'settlement.refusal.RISK_ACKNOWLEDGEMENT_REQUIRED':
+        'Confirm the risk statements before your first investment.',
     'investor.wallet.c3.available_balance': 'Solde disponible',
     'investor.wallet.c3.total': 'Total du portefeuille',
     'investor.wallet.c3.bucket.available': 'Disponible',

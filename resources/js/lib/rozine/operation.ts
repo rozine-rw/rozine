@@ -37,8 +37,8 @@ export const refusalRefreshes = (
 export const isUncertainStatus = (status: number): boolean =>
     status === 408 || status >= 500;
 
-/** The stable code in an error body, if the server sent one. */
-export const readErrorCode = (body: unknown): string | null => {
+/** An error body as an object, parsed from JSON when it came as text; null otherwise. */
+const readErrorBody = (body: unknown): Record<string, unknown> | null => {
     let parsed: unknown = body;
 
     if (typeof body === 'string') {
@@ -49,17 +49,24 @@ export const readErrorCode = (body: unknown): string | null => {
         }
     }
 
-    if (
-        typeof parsed === 'object' &&
-        parsed !== null &&
-        'code' in parsed &&
-        typeof parsed.code === 'string'
-    ) {
-        return parsed.code;
-    }
-
-    return null;
+    return typeof parsed === 'object' && parsed !== null
+        ? (parsed as Record<string, unknown>)
+        : null;
 };
+
+/** The stable code in an error body, if the server sent one. */
+export const readErrorCode = (body: unknown): string | null => {
+    const code = readErrorBody(body)?.code;
+
+    return typeof code === 'string' ? code : null;
+};
+
+/**
+ * The `data` an error body carries beside its code (what a refusal names, such as a whole cart's
+ * `line_refusals`), or null when it carries none.
+ */
+export const readErrorData = (body: unknown): unknown =>
+    readErrorBody(body)?.data ?? null;
 
 /**
  * Seconds to wait from a `Retry-After` header given in seconds, or null when it is absent or not a

@@ -240,6 +240,7 @@ describe('Operation lookups', () => {
                 command('d'),
                 code ?? 'ACTION_FORBIDDEN',
                 status,
+                null,
             );
             expect(result.current.unresolved).toBe(false);
         },
