@@ -54,6 +54,10 @@ const en = {
     'identity.denied.withdrawn_audit.body':
         'Audit Operations withdrew this audit, so it is no longer yours to work on and nothing more is needed from you. Your other jobs are in Jobs.',
     'identity.denied.withdrawn_audit.action': 'Go to Jobs',
+    'identity.denied.completed_review.title':
+        'You have verified these statements',
+    'identity.denied.completed_review.body':
+        'This statement review is complete. Your verification is on record and nothing more is needed from you. Your other jobs are in Jobs.',
     'errors.not_found.head_title': 'Not found',
     'errors.not_found.title': "We couldn't find that page",
     'errors.not_found.body':
@@ -362,7 +366,7 @@ const en = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'More verified months of statements are needed before you can continue.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine is completing a policy check before you can continue.',
+        'Rozine is checking your credit history and existing loans, usually within two working days. Nothing is needed from you.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'A restriction on your account stops this application for now.',
     'business.today.blocked.sub.other':
@@ -428,6 +432,8 @@ const en = {
         'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
     'business.apply.business.statements_verified': '✓ Statements verified',
+    'business.apply.business.policy_check_next':
+        'Next, Rozine checks your current credit history and existing loans. You don’t need to do anything. This usually takes up to two working days, and this page updates as soon as it is done.',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
     'business.apply.business.standing': 'Financial standing',
@@ -3273,6 +3279,18 @@ const en = {
         'Take the required photos with the in-app camera inside the premises geofence.',
     'auditor.file.brief.monthly.step_4':
         'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
+    'auditor.file.why_review': 'Why this statement review is required',
+    'auditor.file.mandate_review': 'What you must check',
+    'auditor.file.brief.statement_review.reason':
+        'Before this business can raise, an Audit Partner checks its bank and Mobile Money statements against the monthly figures it saved. This is a factual review of the documents, done from the statements on file. There is no site visit, stock count or photos.',
+    'auditor.file.brief.statement_review.step_1':
+        'Open each statement and note where you checked it.',
+    'auditor.file.brief.statement_review.step_2':
+        'Compare the monthly figures and each account’s opening and closing balances with the statements.',
+    'auditor.file.brief.statement_review.step_3':
+        'Record every debt you find, with what was paid each month and its schedule ahead.',
+    'auditor.file.brief.statement_review.step_4':
+        'Record the usual owner draw and your findings, then verify the statements.',
     'auditor.file.why': 'Why a field audit is required',
     'auditor.file.mandate': 'What you must clear on site',
     'auditor.file.history': 'File history',
@@ -5101,6 +5119,7 @@ const en = {
     'business.apply.statements.reading.reading': 'Reading',
     'business.apply.statements.reading.read': 'Read · awaiting verification',
     'business.apply.statements.reading.needs_review': 'Our team will check it',
+    'business.apply.statements.reading.verified': 'Verified',
     'business.apply.raise.target_required': 'Enter how much you want to raise.',
     'business.apply.raise.resized_reason':
         '{capacity} is the most you can raise right now: your borrowing capacity sets this limit.',
@@ -7569,6 +7588,15 @@ const en = {
     'auditor.verify.owner_draw_amount': 'Usual monthly owner draw (RWF)',
     'auditor.verify.owner_draw_reference': 'Where you saw it',
     'auditor.verify.findings': 'Your findings',
+    'auditor.verify.balances': 'Opening and closing balances',
+    'auditor.verify.account': 'Account',
+    'auditor.verify.opening_balance': 'Opening',
+    'auditor.verify.closing_balance': 'Closing',
+    'auditor.verify.amount_hint': 'Whole RWF, e.g. 150000',
+    'auditor.verify.done.title': 'Verification recorded',
+    'auditor.verify.done.body':
+        '{business}’s statements are now on record as verified. Nothing more is needed from you on this review.',
+    'auditor.verify.done.jobs': 'Back to Jobs',
     'auditor.verify.incomplete':
         'Tick every check and fill in each field to verify. Amounts are whole RWF.',
     'auditor.verify.submit': 'Verify statements',

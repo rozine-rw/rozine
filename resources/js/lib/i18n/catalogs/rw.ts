@@ -55,6 +55,9 @@ const rw: Catalog = {
     'identity.denied.withdrawn_audit.body':
         'Ishami rishinzwe igenzura ryakuyeho iri genzura, ntirikiri iryawe kandi nta kindi usabwa. Indi mirimo yawe iri muri Imirimo.',
     'identity.denied.withdrawn_audit.action': 'Jya ku Mirimo',
+    'identity.denied.completed_review.title': 'Wemeje izi nyandiko',
+    'identity.denied.completed_review.body':
+        'Isuzuma ry’izi nyandiko ryarangiye. Icyemezo cyawe cyabitswe kandi nta kindi ukeneweho. Indi mirimo yawe iri mu Mirimo.',
     'errors.not_found.head_title': 'Ntibibonetse',
     'errors.not_found.title': 'Ntitwabonye uru rupapuro',
     'errors.not_found.body':
@@ -370,7 +373,7 @@ const rw: Catalog = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'Hakenewe amezi menshi ya raporo zagenzuwe mbere yo gukomeza.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine irimo kurangiza igenzura rya politiki mbere yo gukomeza.',
+        'Rozine irimo kugenzura amateka yawe y’inguzanyo n’inguzanyo ufite, bisanzwe mu minsi y’akazi ibiri. Nta cyo ukeneweho.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'Hari ikumira kuri konti yawe rihagaritse ubu busabe ubu.',
     'business.today.blocked.sub.other':
@@ -437,6 +440,8 @@ const rw: Catalog = {
         "Bivuye ku cyemezo cyawe cya RDB n'inyandiko za banki na mobile money zagenzuwe. Bisuzume — niba ari byo, komeza.",
     'business.apply.business.rdb_verified': '✓ Byemejwe na RDB',
     'business.apply.business.statements_verified': '✓ Inyandiko zemejwe',
+    'business.apply.business.policy_check_next':
+        'Ubukurikira, Rozine igenzura amateka yawe y’inguzanyo n’inguzanyo ufite ubu. Nta cyo ugomba gukora. Bisanzwe bifata iminsi y’akazi igera kuri ibiri, kandi iyi paji ihinduka bikimara kurangira.',
     'business.apply.business.active': '● Irakora',
     'business.apply.business.established': 'Yashinzwe {year}',
     'business.apply.business.standing': 'Uko imari ihagaze',
@@ -3415,6 +3420,18 @@ const rw: Catalog = {
         "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera.",
     'auditor.file.brief.monthly.step_4':
         'Funga bitarenze itariki ntarengwa iri kuri raporo: impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali) muri porogaramu ikoreshwa ubu.',
+    'auditor.file.why_review': 'Impamvu isuzuma ry’inyandiko rikenewe',
+    'auditor.file.mandate_review': 'Ibyo ugomba kugenzura',
+    'auditor.file.brief.statement_review.reason':
+        'Mbere y’uko iki kigo gishaka igishoro, Audit Partner agereranya inyandiko za banki na Mobile Money n’imibare ya buri kwezi cyabitse. Ni isuzuma ry’inyandiko gusa, rikorwa hifashishijwe inyandiko ziri muri dosiye. Nta gusura ikibanza, kubara ibicuruzwa cyangwa gufata amafoto.',
+    'auditor.file.brief.statement_review.step_1':
+        'Fungura buri nyandiko kandi wandike aho wayigenzuriye.',
+    'auditor.file.brief.statement_review.step_2':
+        'Gereranya imibare ya buri kwezi n’amafaranga yatangiriweho n’ayasojwe kuri buri konti n’inyandiko.',
+    'auditor.file.brief.statement_review.step_3':
+        'Andika buri deni ubonye, ibyishyuwe buri kwezi n’ingengabihe yaryo iri imbere.',
+    'auditor.file.brief.statement_review.step_4':
+        'Andika ayo nyirayo akuramo buri gihe n’ibyo wabonye, hanyuma wemeze inyandiko.',
     'auditor.file.why': 'Impamvu igenzura ryo ku kibanza rikenewe',
     'auditor.file.mandate': 'Ibyo ugomba kugenzura ku kibanza',
     'auditor.file.history': 'Amateka ya dosiye',
@@ -5297,6 +5314,7 @@ const rw: Catalog = {
     'business.apply.statements.reading.read': 'Yasomwe · itegereje kugenzurwa',
     'business.apply.statements.reading.needs_review':
         'Itsinda ryacu rizayigenzura',
+    'business.apply.statements.reading.verified': 'Byemejwe',
     'business.apply.raise.target_required': 'Andika amafaranga ushaka gushaka.',
     'business.apply.raise.resized_reason':
         '{capacity} ni yo menshi ushobora gushaka ubu: ubushobozi bwawe bwo kuguza ni bwo bushyiraho iki gipimo.',
@@ -7845,6 +7863,15 @@ const rw: Catalog = {
     'auditor.verify.owner_draw_amount': "Ayo nyir'ikigo afata buri kwezi (RWF)",
     'auditor.verify.owner_draw_reference': 'Aho wabibonye',
     'auditor.verify.findings': 'Ibyo wabonye',
+    'auditor.verify.balances': 'Amafaranga yatangiriweho n’ayasojwe',
+    'auditor.verify.account': 'Konti',
+    'auditor.verify.opening_balance': 'Itangiriro',
+    'auditor.verify.closing_balance': 'Isozwa',
+    'auditor.verify.amount_hint': 'RWF yuzuye, urugero 150000',
+    'auditor.verify.done.title': 'Icyemezo cyabitswe',
+    'auditor.verify.done.body':
+        'Inyandiko za {business} ubu zabitswe nk’izemejwe. Nta kindi ukeneweho kuri iri suzuma.',
+    'auditor.verify.done.jobs': 'Subira ku Mirimo',
     'auditor.verify.incomplete':
         'Emeza buri genzura kandi wuzuze buri kibanza kugira ngo wemeze. Amafaranga ni RWF yuzuye.',
     'auditor.verify.submit': 'Emeza imibare',
