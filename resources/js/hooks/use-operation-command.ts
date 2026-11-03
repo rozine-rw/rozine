@@ -6,6 +6,7 @@ import {
     fallbackCode,
     isUncertainStatus,
     readErrorCode,
+    readErrorData,
 } from '@/lib/rozine/operation';
 import type { RouteAction, RouteLink } from '@/types';
 import type { OperationCommand, OperationResource } from '@/types/operation';
@@ -47,7 +48,7 @@ const TIMED_OUT = Symbol('timed out');
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
     | { kind: 'invalid'; errors: Record<string, unknown>; code: string | null }
-    | { kind: 'failed'; status: number; code: string | null }
+    | { kind: 'failed'; status: number; code: string | null; data: unknown }
     | { kind: 'unreachable' };
 
 type Options<C extends OperationCommand, R> = {
@@ -91,7 +92,16 @@ type Options<C extends OperationCommand, R> = {
      */
     refresh: () => Promise<void>;
     onCompleted: (command: C, resource: R, completion: Completion) => void;
-    onRefused: (command: C, code: string, status: number) => void;
+    /**
+     * A definitive refusal. `data` is the refusal's own body data, when it carried one: a
+     * contract that names what it refused (e.g. a whole cart's `line_refusals`) is read from it.
+     */
+    onRefused: (
+        command: C,
+        code: string,
+        status: number,
+        data: unknown,
+    ) => void;
     /**
      * A validation refusal (HTTP 422) left for the page to correct. The page is told, so it does
      * not send the same command again on its own while nothing has changed.
@@ -183,6 +193,7 @@ export function useOperationCommand<
                         kind: 'failed',
                         status: response.status,
                         code: readErrorCode(response.data),
+                        data: readErrorData(response.data),
                     };
                 },
             }) as Promise<R | undefined>;
@@ -217,10 +228,15 @@ export function useOperationCommand<
         }
     };
 
-    const refuse = (command: C, code: string, status: number) => {
+    const refuse = (
+        command: C,
+        code: string,
+        status: number,
+        data: unknown = null,
+    ) => {
         held.current = null;
         setNotice({ kind: 'refused', code, status });
-        onRefused(command, code, status);
+        onRefused(command, code, status, data);
     };
 
     const conclude = (command: C, resource: R, recovered: boolean) => {
@@ -238,7 +254,7 @@ export function useOperationCommand<
             return;
         }
 
-        refuse(command, resource.code, 200);
+        refuse(command, resource.code, 200, readErrorData(resource));
     };
 
     /**
@@ -323,6 +339,7 @@ export function useOperationCommand<
                 command,
                 attempt.code ?? fallbackCode(attempt.status),
                 attempt.status,
+                attempt.data,
             );
 
             return;
@@ -358,6 +375,7 @@ export function useOperationCommand<
                 command,
                 attempt.code ?? fallbackCode(attempt.status),
                 attempt.status,
+                attempt.data,
             );
 
             return;

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Primary\Contracts\HeldNoteCapital;
+use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Domain\Primary\RiskStatements;
 use App\Models\InvestorAccountRestriction;
 use App\Models\InvestorCartCheckout;
@@ -160,6 +161,28 @@ it('holds the whole cart, opens the cart page on the held checkout and finds the
         ->and(($this->as)()->getJson(route('investor.cart_reservation', ['checkout' => $checkout, 'identity_context_revision' => 1]))->assertOk()
             ->json('data'))->toMatchArray(['id' => $checkout, 'state' => 'held', 'revision' => 1]);
     ($this->lookup)((string) Str::uuid(), ['command' => 'cart.reserve'])->assertNotFound()->assertJson(['code' => 'OPERATION_NOT_FOUND']);
+});
+
+it('reads each held line at the return and fee its own reservation fixed, not the indicative quote', function (): void {
+    ['checkout' => $checkout] = ($this->held)();
+
+    $data = ($this->as)()->getJson(route('investor.cart_reservation', ['checkout' => $checkout, 'identity_context_revision' => 1]))->assertOk()->json('data');
+    $return = 0;
+    $fee = 0;
+    foreach ($data['lines'] as $line) {
+        $facts = DB::transaction(fn (): array => app(PrimaryReservations::class)
+            ->reservationFacts($line['campaign_id'], $this->investor['party']->id, $line['reservation_id']));
+        $return += (int) $facts['rights']['total_return']['amount'];
+        $fee += (int) $facts['terms']['payout_fee']['amount'];
+        expect($line)->toMatchArray(['contractual_return' => ['currency' => 'RWF', 'amount' => $facts['rights']['total_return']['amount']],
+            'earnings_fee' => ['currency' => 'RWF', 'amount' => $facts['terms']['payout_fee']['amount']],
+            'net_return' => ['currency' => 'RWF', 'amount' => (string) ((int) $facts['rights']['total_return']['amount'] - (int) $facts['terms']['payout_fee']['amount'])],
+            'disclosure_sha256' => $facts['disclosure_sha256']]);
+    }
+
+    expect($data['reserved'])->toBe(['contractual_return' => ['currency' => 'RWF', 'amount' => (string) $return],
+        'earnings_fee' => ['currency' => 'RWF', 'amount' => (string) $fee], 'net_return' => ['currency' => 'RWF', 'amount' => (string) ($return - $fee)]])
+        ->and(($this->page)()['checkout']['reserved'])->toBe($data['reserved']);
 });
 
 it('confirms the held cart as a whole and finds the confirmation by its request id and checkout', function (): void {

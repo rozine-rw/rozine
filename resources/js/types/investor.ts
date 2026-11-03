@@ -1449,6 +1449,13 @@ export type CartQuote = {
     expires_at: string;
 };
 
+/** One line a whole-cart command refused, as its `line_refusals` names it. */
+export type CartLineRefusal = {
+    cart_line_id: string;
+    campaign_id: string;
+    code: string;
+};
+
 /** The whole-cart checkout: every line held under one deadline, confirmed or released together. */
 export type CartCheckout = {
     id: string;
@@ -1457,13 +1464,24 @@ export type CartCheckout = {
     state: 'held' | 'release_pending' | 'confirmed' | 'released' | 'expired';
     quote: CartQuote;
     expires_at: string;
+    /** Each held line as its reservation fixed it: the exact figures Confirm all acknowledges. */
     lines: {
         cart_line_id: string;
         campaign_id: string;
         reservation_id: string;
         principal: Money;
+        contractual_return: Money;
+        earnings_fee: Money;
+        net_return: Money;
+        disclosure_sha256: string;
     }[];
     total_held: Money;
+    /** The held lines' reserved figures summed; the fee is rounded per scheduled payout. */
+    reserved: {
+        contractual_return: Money;
+        earnings_fee: Money;
+        net_return: Money;
+    };
     actions: { confirm: RouteAction | null; release: RouteAction | null };
 };
 

@@ -15,7 +15,9 @@ import type {
     C3InvestorCartProps,
     CartCheckout,
     CartFeeBand,
+    CartLineRefusal,
     CartQuote,
+    CartQuoteLine,
     InvestorCartLine,
 } from '@/types/investor';
 import type { RouteAction, RouteLink } from '@/types/routing';
@@ -34,6 +36,8 @@ export type CartQuoteState = {
     quote: CartQuote | null;
     code: string | null;
     quoting: boolean;
+    /** Asks for a fresh quote of the same cart, as after a refused hold. */
+    refresh: () => void;
 };
 
 /** A confirmed whole-cart purchase, as its receipt names it (contract `CART_CONFIRMED`). */
@@ -54,8 +58,10 @@ const tierFee = (band: { tier: CartFeeBand['tier']; rate_bps: number }) => ({
 /**
  * Prices the whole saved cart on the server whenever its revision changes (#383, contract
  * `QuoteInvestorCart`): the header's band and the Check out all total come from this quote, never
- * from a client calculation. A quote holds nothing, so it is asked again freely; one still out when
- * the cart changes is ignored. A refusal names its code; a 422 (units above the limit) has no body.
+ * from a client calculation. A quote holds nothing, so it is asked again freely: when it expires,
+ * and whenever `refresh` asks (a refused hold may mean the quote or the Investor's capital moved
+ * on at the same cart revision). One still out when the cart changes is ignored. A refusal names
+ * its code; a 422 (units above the limit) has no body.
  */
 export function useCartQuote({
     action,
@@ -73,14 +79,34 @@ export function useCartQuote({
     paused: boolean;
 }): CartQuoteState {
     const http = useHttp<Record<string, never>, C3ResourceLike<CartQuote>>();
-    const key = `${identityRevision}:${cartRevision}`;
+    /* Each fresh quote of the same cart is its own round, so an old answer never stands for it. */
+    const [round, setRound] = useState(0);
+    const key = `${identityRevision}:${cartRevision}:${round}`;
     /* The newest answer, and the cart it priced; any other cart is still being priced. */
     const [answered, setAnswered] = useState<{
         key: string;
         quote: CartQuote | null;
         code: string | null;
+        /** How long the quote stands, by the server's own clock; null when it does not say. */
+        lasts: number | null;
     } | null>(null);
     const url = action?.url ?? null;
+    const refresh = () => setRound((current) => current + 1);
+    const lasts = answered?.key === key ? answered.lasts : null;
+
+    /* An expired quote is refused on hold, so a fresh one is asked as it expires. */
+    useEffect(() => {
+        if (lasts === null) {
+            return;
+        }
+
+        const timer = window.setTimeout(
+            () => setRound((current) => current + 1),
+            Math.max(0, lasts),
+        );
+
+        return () => window.clearTimeout(timer);
+    }, [lasts, key]);
 
     useEffect(() => {
         if (action === null || !ready || paused) {
@@ -89,9 +115,13 @@ export function useCartQuote({
 
         let current = true;
         let failure: string | null = null;
-        const settle = (quote: CartQuote | null, code: string | null) => {
+        const settle = (
+            quote: CartQuote | null,
+            code: string | null,
+            lasts: number | null = null,
+        ) => {
             if (current) {
-                setAnswered({ key, quote, code });
+                setAnswered({ key, quote, code, lasts });
             }
         };
 
@@ -108,7 +138,15 @@ export function useCartQuote({
                 if (answer === undefined) {
                     settle(null, 'CART_UNITS_ABOVE_LIMIT');
                 } else if (answer.status === 'completed') {
-                    settle(answer.data, null);
+                    const lasts =
+                        Date.parse(answer.data.expires_at) -
+                        Date.parse(answer.server_time ?? '');
+
+                    settle(
+                        answer.data,
+                        null,
+                        Number.isNaN(lasts) ? null : lasts,
+                    );
                 } else {
                     settle(null, answer.code);
                 }
@@ -122,15 +160,73 @@ export function useCartQuote({
     }, [url, ready, paused, key]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!ready) {
-        return { quote: null, code: null, quoting: false };
+        return { quote: null, code: null, quoting: false, refresh };
     }
 
     return answered?.key === key && !paused
-        ? { quote: answered.quote, code: answered.code, quoting: false }
-        : { quote: answered?.quote ?? null, code: null, quoting: true };
+        ? {
+              quote: answered.quote,
+              code: answered.code,
+              quoting: false,
+              refresh,
+          }
+        : {
+              quote: answered?.quote ?? null,
+              code: null,
+              quoting: true,
+              refresh,
+          };
 }
 
-type C3ResourceLike<D> = { status: string; code: string; data: D };
+type C3ResourceLike<D> = {
+    status: string;
+    code: string;
+    data: D;
+    server_time?: string;
+};
+
+/** The lines a refused whole-cart command names, read from its `line_refusals`. */
+export const readLineRefusals = (data: unknown): CartLineRefusal[] => {
+    const named =
+        typeof data === 'object' && data !== null && 'line_refusals' in data
+            ? data.line_refusals
+            : null;
+
+    return Array.isArray(named)
+        ? named.filter(
+              (refusal): refusal is CartLineRefusal =>
+                  typeof refusal === 'object' &&
+                  refusal !== null &&
+                  typeof refusal.campaign_id === 'string' &&
+                  typeof refusal.code === 'string',
+          )
+        : [];
+};
+
+/**
+ * Why one line stopped the whole cart, under that line (#383): the refusal its `line_refusals`
+ * names, such as a deal that filled while the cart was held.
+ */
+export function LineRefusal({
+    refusals,
+    campaignId,
+}: {
+    refusals: CartLineRefusal[];
+    campaignId: string;
+}) {
+    const refusal = useRefusalText();
+    const named = refusals.find((line) => line.campaign_id === campaignId);
+
+    return named === undefined ? null : (
+        <p
+            role="alert"
+            data-testid={`line-refusal-${campaignId}`}
+            className="mt-1 text-[11px] leading-[1.4] font-semibold text-rz-danger-text"
+        >
+            {refusal(named.code)}
+        </p>
+    );
+}
 
 /**
  * The INV-R04 band the whole cart is priced at (design L6390–6475): one bar of the notes already
@@ -323,18 +419,23 @@ export function useCartCommand({
     checkout,
     operation,
     names,
+    requote,
 }: Pick<
     C3InvestorCartProps,
     'identity_context_revision' | 'actions' | 'checkout' | 'operation'
 > & {
     /** The deal names on the page now, kept with a confirmed receipt for the lines it removes. */
     names: Record<string, string>;
+    /** Asks for a fresh quote: a refused hold may mean the quote no longer stands. */
+    requote: () => void;
 }) {
     const [confirmed, setConfirmed] = useState<{
         receipt: CartConfirmed;
         names: Record<string, string>;
     } | null>(null);
     const [requoted, setRequoted] = useState(false);
+    /* The lines the last refusal named, shown under each; a new command clears them. */
+    const [lineRefusals, setLineRefusals] = useState<CartLineRefusal[]>([]);
     const routes: Record<CartCommand, RouteAction | null> = {
         'cart.reserve': actions.reserve,
         'cart.confirm': checkout?.actions.confirm ?? null,
@@ -350,7 +451,12 @@ export function useCartCommand({
         allowed: (Object.keys(routes) as CartCommand[]).filter(
             (name) => routes[name] !== null,
         ),
+        onRefused: (_code, _status, data) => {
+            setLineRefusals(readLineRefusals(data));
+            requote();
+        },
         onCompleted: (resource: C3Resource) => {
+            setLineRefusals([]);
             setRequoted(resource.code === 'CART_REQUOTED');
 
             if (resource.code === 'CART_CONFIRMED') {
@@ -362,8 +468,13 @@ export function useCartCommand({
         },
     });
 
+    const send: typeof command.send = (name, payload) => {
+        setLineRefusals([]);
+
+        return command.send(name, payload);
+    };
     const reserve = (quote: CartQuote) =>
-        command.send('cart.reserve', {
+        send('cart.reserve', {
             identity_context_revision: identityRevision,
             expected_cart_revision: quote.cart_revision,
             quote_id: quote.id,
@@ -371,7 +482,13 @@ export function useCartCommand({
             quote_disclosure_sha256: quote.disclosure_sha256,
         });
 
-    return { command, reserve, confirmed, requoted };
+    return {
+        command: { ...command, send },
+        reserve,
+        confirmed,
+        requoted,
+        lineRefusals,
+    };
 }
 
 /**
@@ -394,9 +511,17 @@ export function HeldCart({
     cart: ReturnType<typeof useCartCommand>;
 }) {
     const { t } = useTranslation();
-    const { command, requoted } = cart;
+    const { command, requoted, lineRefusals } = cart;
     const { quote } = checkout;
-    const key = `${checkout.revision}:${quote.disclosure_sha256}`;
+    /* The acknowledgement binds the exact reserved terms: each line's own disclosure too. */
+    const key = [
+        checkout.revision,
+        quote.disclosure_sha256,
+        ...checkout.lines.map((line) => line.disclosure_sha256),
+    ].join(':');
+    const quotedLines: Record<string, CartQuoteLine> = Object.fromEntries(
+        quote.lines.map((line) => [line.cart_line_id, line]),
+    );
     const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null);
     const acknowledged = acknowledgedKey === key;
     const idle = !command.busy && !command.unresolved;
@@ -443,7 +568,7 @@ export function HeldCart({
             )}
             <C3Notice command={command} className="mt-2.5" />
             <ul className="mt-1.5">
-                {quote.lines.map((line) => (
+                {checkout.lines.map((line) => (
                     <li
                         key={line.cart_line_id}
                         data-testid={`held-line-${line.campaign_id}`}
@@ -455,8 +580,11 @@ export function HeldCart({
                             </p>
                             <p className="mt-0.5 text-[11px] text-rz-secondary">
                                 {t('investor.cart.whole.line', {
-                                    count: Number(line.units),
-                                    rate: line.terms.rate_pct,
+                                    count: Number(
+                                        quotedLines[line.cart_line_id].units,
+                                    ),
+                                    rate: quotedLines[line.cart_line_id].terms
+                                        .rate_pct,
                                 })}
                             </p>
                             <p className="mt-0.5 text-[11px] text-rz-secondary">
@@ -465,6 +593,10 @@ export function HeldCart({
                                     fee: formatRwf(line.earnings_fee),
                                 })}
                             </p>
+                            <LineRefusal
+                                refusals={lineRefusals}
+                                campaignId={line.campaign_id}
+                            />
                         </div>
                         <p className="shrink-0 text-[13.5px] font-bold text-rz-ink tabular-nums">
                             {formatRwf(line.principal)}
@@ -488,7 +620,7 @@ export function HeldCart({
                     {t('investor.cart.whole.net_return')}
                 </span>
                 <span className={cn('font-bold tabular-nums', POSITIVE_TEXT)}>
-                    {formatRwf(quote.net_return)}
+                    {formatRwf(checkout.reserved.net_return)}
                 </span>
             </div>
             <CartBand band={quote.fee_band} next={null} className="mt-3" />

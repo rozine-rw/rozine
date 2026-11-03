@@ -827,16 +827,30 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         $quote = InvestorCartQuote::query()->whereKey($version->investor_cart_quote_id)->firstOrFail();
         $state = $version->state === 'held' && now('UTC')->greaterThanOrEqualTo($checkout->expires_at) ? 'release_pending' : $version->state;
         $lines = [];
+        $totalReturn = BigInteger::zero();
+        $totalFee = BigInteger::zero();
         foreach (InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkout->id)->orderBy('position')->get() as $line) {
             $facts = $this->reservations->reservationFacts($line->business_campaign_id, $partyId, $line->primary_reservation_id);
+            /** @var array{total_return: array{amount: string}} $rights */
+            $rights = $facts['rights'];
+            /** @var array{payout_fee: array{amount: string}} $terms */
+            $terms = $facts['terms'];
+            // The reserved rights and their per-payout fee, not the quote's indicative figures (#383).
+            $return = BigInteger::of($rights['total_return']['amount']);
+            $fee = BigInteger::of($terms['payout_fee']['amount']);
+            $totalReturn = $totalReturn->plus($return);
+            $totalFee = $totalFee->plus($fee);
             $lines[] = ['cart_line_id' => $line->investor_cart_line_id, 'campaign_id' => $line->business_campaign_id,
                 'reservation_id' => $line->primary_reservation_id, 'reservation_revision' => $facts['revision'],
-                'principal' => $facts['principal'], 'disclosure_sha256' => $facts['disclosure_sha256']];
+                'principal' => $facts['principal'], 'contractual_return' => self::money((string) $return), 'earnings_fee' => self::money((string) $fee),
+                'net_return' => self::money((string) $return->minus($fee)), 'disclosure_sha256' => $facts['disclosure_sha256']];
         }
 
         return ['id' => $checkout->id, 'cart_id' => $checkout->investor_cart_id, 'cart_revision' => $checkout->cart_revision,
             'revision' => $version->revision, 'state' => $state, 'quote' => $quote->payload, 'created_at' => self::time($checkout->created_at->toDateTimeImmutable()),
-            'expires_at' => self::time($checkout->expires_at->toDateTimeImmutable()), 'lines' => $lines, 'total_held' => self::money($checkout->principal)];
+            'expires_at' => self::time($checkout->expires_at->toDateTimeImmutable()), 'lines' => $lines, 'total_held' => self::money($checkout->principal),
+            'reserved' => ['contractual_return' => self::money((string) $totalReturn), 'earnings_fee' => self::money((string) $totalFee),
+                'net_return' => self::money((string) $totalReturn->minus($totalFee))]];
     }
 
     /**

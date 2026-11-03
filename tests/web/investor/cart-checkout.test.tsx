@@ -1,7 +1,10 @@
 import type * as InertiaCore from '@inertiajs/core';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
-import { CartBand } from '@/components/investor/cart/whole-cart';
+import {
+    CartBand,
+    readLineRefusals,
+} from '@/components/investor/cart/whole-cart';
 import InvestorCart from '@/pages/investor/cart';
 import type { Money } from '@/types';
 import type {
@@ -111,20 +114,34 @@ const held = (state: CartCheckout['state'] = 'held'): CartCheckout => ({
     quote: quoteData(),
     expires_at: '2026-09-23T07:03:00Z',
     lines: [
+        /* Reserved fees round per scheduled payout, so they can differ from the quote's. */
         {
             cart_line_id: '01jc3line000000000000000a1',
             campaign_id: 'cmp_greenleaf',
             reservation_id: '01jc3res00000000000000000a',
             principal: rwf('50000'),
+            contractual_return: rwf('6750'),
+            earnings_fee: rwf('1014'),
+            net_return: rwf('5736'),
+            disclosure_sha256: 'b'.repeat(64),
         },
         {
             cart_line_id: '01jc3line000000000000000a2',
             campaign_id: 'cmp_volt',
             reservation_id: '01jc3res00000000000000000b',
             principal: rwf('20000'),
+            contractual_return: rwf('540'),
+            earnings_fee: rwf('81'),
+            net_return: rwf('459'),
+            disclosure_sha256: 'c'.repeat(64),
         },
     ],
     total_held: rwf('70000'),
+    reserved: {
+        contractual_return: rwf('7290'),
+        earnings_fee: rwf('1095'),
+        net_return: rwf('6195'),
+    },
     actions:
         state === 'held'
             ? {
@@ -282,9 +299,23 @@ describe('Cart: whole-cart quote', () => {
         expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
     });
 
-    it('names a refused hold as a whole', async () => {
+    it('names a refused hold as a whole, and each line it stopped on', async () => {
         inertia.queue.push(quoted());
-        inertia.queue.push(fails(409, { code: 'CART_LINES_REFUSED' }));
+        inertia.queue.push(
+            fails(409, {
+                code: 'CART_LINES_REFUSED',
+                data: {
+                    line_refusals: [
+                        {
+                            cart_line_id: '01jc3line000000000000000a2',
+                            campaign_id: 'cmp_volt',
+                            code: 'INSUFFICIENT_AVAILABLE_FUNDS',
+                        },
+                    ],
+                },
+            }),
+        );
+        inertia.queue.push(quoted());
         render(<InvestorCart {...page()} />);
         await flush();
 
@@ -298,6 +329,86 @@ describe('Cart: whole-cart quote', () => {
                 "Some deals in your cart can't be bought right now, so nothing was held.",
             ),
         ).toBeInTheDocument();
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+        expect(
+            screen.queryByTestId('line-refusal-cmp_greenleaf'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('prices the same cart again after a refused hold and holds it at the fresh quote', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(fails(409, { code: 'CART_QUOTE_EXPIRED' }));
+        inertia.queue.push(
+            quoted(quoteData({ id: '01jc3quote0000000000000002' })),
+        );
+        inertia.queue.push(completed('CART_RESERVED'));
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+        await flush();
+
+        expect(inertia.calls[2]).toMatchObject({
+            url: QUOTE_URL,
+            body: { expected_cart_revision: 5 },
+        });
+        expect(
+            screen.getByText(
+                'Your cart price expired. We priced it again — check it and try again.',
+            ),
+        ).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+
+        expect(inertia.calls[3]).toMatchObject({
+            url: RESERVE_URL,
+            body: { quote_id: '01jc3quote0000000000000002' },
+        });
+        expect(
+            screen.queryByText(
+                'Your cart price expired. We priced it again — check it and try again.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('prices the cart again as its quote expires, by the server clock', async () => {
+        vi.useFakeTimers();
+        inertia.queue.push(
+            answers({
+                operation_id: null,
+                status: 'completed',
+                code: 'CART_QUOTED',
+                data: quoteData(),
+                server_time: '2026-09-23T07:04:00Z',
+            }),
+        );
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+        expect(inertia.calls).toHaveLength(1);
+
+        await act(async () => {
+            vi.advanceTimersByTime(59_000);
+        });
+        expect(inertia.calls).toHaveLength(1);
+        await act(async () => {
+            vi.advanceTimersByTime(1_000);
+        });
+
+        expect(inertia.calls).toHaveLength(2);
+        expect(inertia.calls[1]).toMatchObject({ url: QUOTE_URL });
+        vi.useRealTimers();
     });
 
     it.each([
@@ -413,7 +524,7 @@ describe('Cart: whole-cart quote', () => {
         vi.useRealTimers();
     });
 
-    it('does not reload the cart when a quantity did not save, and ignores a superseded save', async () => {
+    it('puts an unsaved quantity back and reloads the cart, and ignores a superseded save', async () => {
         vi.useFakeTimers();
         let finishFirst!: (answer: unknown) => void;
         inertia.queue.push(
@@ -446,7 +557,41 @@ describe('Cart: whole-cart quote', () => {
         });
 
         expect(inertia.calls).toHaveLength(2);
-        expect(inertia.reload).not.toHaveBeenCalled();
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        expect(slider).toHaveValue('10');
+        vi.useRealTimers();
+    });
+
+    it('checks out the saved quantity, never an edit that failed to save', async () => {
+        vi.useFakeTimers();
+        inertia.queue.push(quoted());
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await act(async () => {
+            await Promise.resolve();
+        });
+        const slider = screen.getByRole('slider', {
+            name: 'Number of notes in GreenLeaf Agro',
+        });
+
+        fireEvent.change(slider, { target: { value: '30' } });
+        expect(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        ).toBeDisabled();
+        await act(async () => {
+            vi.advanceTimersByTime(400);
+        });
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(slider).toHaveValue('10');
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        expect(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        ).toBeEnabled();
         vi.useRealTimers();
     });
 
@@ -566,7 +711,7 @@ describe('Cart: the held checkout', () => {
             greenleaf.getByText('10 notes · 13.5% return'),
         ).toBeInTheDocument();
         expect(
-            greenleaf.getByText('Return RWF 6,750 · fee RWF 1,013'),
+            greenleaf.getByText('Return RWF 6,750 · fee RWF 1,014'),
         ).toBeInTheDocument();
         expect(greenleaf.getByText('RWF 50,000')).toBeInTheDocument();
         expect(
@@ -577,7 +722,7 @@ describe('Cart: the held checkout', () => {
         expect(screen.getByTestId('held-total')).toHaveTextContent(
             'RWF 70,000',
         );
-        expect(panel).toHaveTextContent('Expected return after feeRWF 6,200');
+        expect(panel).toHaveTextContent('Expected return after feeRWF 6,195');
         expect(
             screen.queryByRole('slider', {
                 name: 'Number of notes in GreenLeaf Agro',
@@ -632,6 +777,51 @@ describe('Cart: the held checkout', () => {
         expect(screen.getByRole('checkbox')).not.toBeChecked();
     });
 
+    it('asks for the acknowledgement again when the reserved terms of one held line change', () => {
+        const props = heldPage();
+        const { rerender } = render(<InvestorCart {...props} />);
+
+        fireEvent.click(screen.getByRole('checkbox'));
+        const changed = structuredClone(props);
+        changed.checkout!.lines[1].disclosure_sha256 = 'd'.repeat(64);
+        rerender(<InvestorCart {...changed} />);
+
+        expect(screen.getByRole('checkbox')).not.toBeChecked();
+    });
+
+    it('names the held line a refused confirmation stopped on', async () => {
+        inertia.queue.push(
+            fails(409, {
+                code: 'CART_LINES_REFUSED',
+                data: {
+                    line_refusals: [
+                        {
+                            cart_line_id: '01jc3line000000000000000a2',
+                            campaign_id: 'cmp_volt',
+                            code: 'INSUFFICIENT_AVAILABLE_FUNDS',
+                        },
+                    ],
+                },
+            }),
+        );
+        render(<InvestorCart {...heldPage()} />);
+
+        fireEvent.click(screen.getByRole('checkbox'));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
+        );
+        await flush();
+
+        expect(
+            within(screen.getByTestId('held-line-cmp_volt')).getByRole('alert'),
+        ).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+        expect(
+            screen.queryByTestId('line-refusal-cmp_greenleaf'),
+        ).not.toBeInTheDocument();
+    });
+
     it('releases every held line at once', async () => {
         inertia.queue.push(completed('CART_RELEASED'));
         render(<InvestorCart {...heldPage()} />);
@@ -671,7 +861,7 @@ describe('Cart: the held checkout', () => {
     it('only waits for an ended hold to settle, on a wide screen too', () => {
         setWide(true);
         const props = heldPage('release_pending');
-        props.checkout!.quote.lines[1].campaign_id = 'cmp_unknown';
+        props.checkout!.lines[1].campaign_id = 'cmp_unknown';
         render(<InvestorCart {...props} />);
 
         expect(
@@ -751,5 +941,30 @@ describe('Cart: the held checkout', () => {
         expect(
             screen.queryByRole('link', { name: 'Go to Deals' }),
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('Cart line refusals', () => {
+    it('reads only well-formed line refusals', () => {
+        const volt = {
+            cart_line_id: '01jc3line000000000000000a2',
+            campaign_id: 'cmp_volt',
+            code: 'CART_LINE_UNAVAILABLE',
+        };
+
+        expect(
+            readLineRefusals({
+                line_refusals: [
+                    null,
+                    'cmp_volt',
+                    { campaign_id: 7, code: 'X' },
+                    { campaign_id: 'cmp_volt', code: 7 },
+                    volt,
+                ],
+            }),
+        ).toEqual([volt]);
+        expect(readLineRefusals({ line_refusals: 'cmp_volt' })).toEqual([]);
+        expect(readLineRefusals({ cart_id: 'c' })).toEqual([]);
+        expect(readLineRefusals(null)).toEqual([]);
     });
 });

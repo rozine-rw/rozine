@@ -4,6 +4,7 @@ import {
     CartCheckedOut,
     CartCheckoutAction,
     HeldCart,
+    LineRefusal,
     useCartCommand,
     useCartQuote,
     cartBlock,
@@ -23,7 +24,11 @@ import {
 } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { Money } from '@/types';
-import type { C3InvestorCartProps, InvestorCartLine } from '@/types/investor';
+import type {
+    C3InvestorCartProps,
+    CartLineRefusal,
+    InvestorCartLine,
+} from '@/types/investor';
 import type { RouteAction } from '@/types/routing';
 
 /** How long a slider rests before its new quantity is saved to the cart. */
@@ -82,12 +87,15 @@ function CartCard({
     onUnits,
     onRemove,
     removing,
+    refusals,
 }: {
     line: InvestorCartLine;
     units: number;
     onUnits: (units: number) => void;
     onRemove: () => void;
     removing: boolean;
+    /** The lines the last whole-cart refusal named; this card shows its own. */
+    refusals: CartLineRefusal[];
 }) {
     const { t } = useTranslation();
     const { deal } = line;
@@ -318,6 +326,7 @@ function CartCard({
                     )}
                 </>
             )}
+            <LineRefusal refusals={refusals} campaignId={line.campaign_id} />
         </article>
     );
 }
@@ -374,6 +383,7 @@ export default function InvestorCart({
         checkout,
         operation,
         names,
+        requote: quote.refresh,
     });
 
     useEffect(() => {
@@ -465,9 +475,20 @@ export default function InvestorCart({
                         [line.campaign_id]: false,
                     }));
 
-                    if (saved) {
-                        router.reload({ only: ['cart'] });
+                    /*
+                     * An unsaved quantity goes back to what the cart holds, so the line, its total
+                     * and the whole-cart quote all read the saved cart again.
+                     */
+                    if (!saved) {
+                        setChosen((current) => {
+                            const { [line.campaign_id]: _unsaved, ...rest } =
+                                current;
+
+                            return rest;
+                        });
                     }
+
+                    router.reload({ only: ['cart'] });
                 });
             }, SAVE_DELAY_MS);
         }
@@ -617,6 +638,7 @@ export default function InvestorCart({
                     onUnits={(next) => change(line, next)}
                     onRemove={() => void remove(line)}
                     removing={removing[line.campaign_id] ?? false}
+                    refusals={whole.lineRefusals}
                 />
             ))}
         </div>
