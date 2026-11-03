@@ -366,7 +366,7 @@ const en = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'More verified months of statements are needed before you can continue.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine is checking your credit history and existing loans, usually within two working days. Nothing is needed from you.',
+        'Rozine needs to check your credit history and existing loans first. Nothing is needed from you.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'A restriction on your account stops this application for now.',
     'business.today.blocked.sub.other':
@@ -433,7 +433,7 @@ const en = {
     'business.apply.business.rdb_verified': '✓ RDB verified',
     'business.apply.business.statements_verified': '✓ Statements verified',
     'business.apply.business.policy_check_next':
-        'Next, Rozine checks your current credit history and existing loans. You don’t need to do anything. This usually takes up to two working days, and this page updates as soon as it is done.',
+        'Next, Rozine needs to check your current credit history and existing loans. You don’t need to do anything, and this page updates once it is done.',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
     'business.apply.business.standing': 'Financial standing',

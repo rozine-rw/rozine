@@ -262,7 +262,7 @@ describe('Statement upload on Apply step 1', () => {
         expect(screen.getByText('Reading')).toBeInTheDocument();
         expect(
             screen.getByText(
-                /^Next, Rozine checks your current credit history and existing loans\./u,
+                /^Next, Rozine needs to check your current credit history and existing loans\./u,
             ),
         ).toBeInTheDocument();
     });

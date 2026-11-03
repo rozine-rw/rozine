@@ -378,7 +378,7 @@ const fr: Catalog = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'Il faut davantage de mois de relevés vérifiés avant de continuer.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine vérifie votre historique de crédit et vos prêts en cours, généralement sous deux jours ouvrables. Rien ne vous est demandé.',
+        'Rozine doit d’abord vérifier votre historique de crédit et vos prêts en cours. Rien ne vous est demandé.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'Une restriction sur votre compte bloque cette demande pour le moment.',
     'business.today.blocked.sub.other':
@@ -448,7 +448,7 @@ const fr: Catalog = {
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
     'business.apply.business.statements_verified': '✓ Relevés vérifiés',
     'business.apply.business.policy_check_next':
-        'Ensuite, Rozine vérifie votre historique de crédit actuel et vos prêts en cours. Vous n’avez rien à faire. Cela prend généralement jusqu’à deux jours ouvrables, et cette page se met à jour dès que c’est fait.',
+        'Ensuite, Rozine doit vérifier votre historique de crédit actuel et vos prêts en cours. Vous n’avez rien à faire, et cette page se met à jour une fois que c’est fait.',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
     'business.apply.business.standing': 'Situation financière',

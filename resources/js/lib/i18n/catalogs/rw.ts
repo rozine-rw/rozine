@@ -373,7 +373,7 @@ const rw: Catalog = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'Hakenewe amezi menshi ya raporo zagenzuwe mbere yo gukomeza.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine irimo kugenzura amateka yawe y’inguzanyo n’inguzanyo ufite, bisanzwe mu minsi y’akazi ibiri. Nta cyo ukeneweho.',
+        'Rozine igomba kubanza kugenzura amateka yawe y’inguzanyo n’inguzanyo ufite. Nta cyo ukeneweho.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'Hari ikumira kuri konti yawe rihagaritse ubu busabe ubu.',
     'business.today.blocked.sub.other':
@@ -441,7 +441,7 @@ const rw: Catalog = {
     'business.apply.business.rdb_verified': '✓ Byemejwe na RDB',
     'business.apply.business.statements_verified': '✓ Inyandiko zemejwe',
     'business.apply.business.policy_check_next':
-        'Ubukurikira, Rozine igenzura amateka yawe y’inguzanyo n’inguzanyo ufite ubu. Nta cyo ugomba gukora. Bisanzwe bifata iminsi y’akazi igera kuri ibiri, kandi iyi paji ihinduka bikimara kurangira.',
+        'Ubukurikira, Rozine igomba kugenzura amateka yawe y’inguzanyo n’inguzanyo ufite ubu. Nta cyo ugomba gukora, kandi iyi paji ihinduka bikimara kurangira.',
     'business.apply.business.active': '● Irakora',
     'business.apply.business.established': 'Yashinzwe {year}',
     'business.apply.business.standing': 'Uko imari ihagaze',
