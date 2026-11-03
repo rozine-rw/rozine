@@ -47,7 +47,12 @@ const TIMED_OUT = Symbol('timed out');
 
 type Attempt<R> =
     | { kind: 'resource'; resource: R }
-    | { kind: 'invalid'; errors: Record<string, unknown>; code: string | null }
+    | {
+          kind: 'invalid';
+          errors: Record<string, unknown>;
+          code: string | null;
+          data: unknown;
+      }
     | { kind: 'failed'; status: number; code: string | null; data: unknown }
     | { kind: 'unreachable' };
 
@@ -162,6 +167,7 @@ export function useOperationCommand<
         let timer: ReturnType<typeof setTimeout> | undefined;
         let fieldErrors: Record<string, unknown> = {};
         let validationCode: string | null = null;
+        let validationData: unknown = null;
         /*
          * useHttp hands a 422 over as field errors only, so the recorded code is read from the
          * response itself while this command's request is out.
@@ -172,6 +178,7 @@ export function useOperationCommand<
                 : transport.onResponse((response) => {
                       if (response.status === 422) {
                           validationCode = readErrorCode(response.data);
+                          validationData = readErrorData(response.data);
                       }
 
                       return response;
@@ -218,7 +225,12 @@ export function useOperationCommand<
 
             /* A 422 resolves without a body: useHttp has put the field errors in `errors`. */
             return resource === undefined
-                ? { kind: 'invalid', errors: fieldErrors, code: validationCode }
+                ? {
+                      kind: 'invalid',
+                      errors: fieldErrors,
+                      code: validationCode,
+                      data: validationData,
+                  }
                 : { kind: 'resource', resource };
         } catch {
             return failure;
@@ -267,9 +279,10 @@ export function useOperationCommand<
         command: C,
         errors: Record<string, unknown>,
         code: string | null,
+        data: unknown,
     ) => {
         if (code !== null && refusals422?.has(code)) {
-            refuse(command, code, 422);
+            refuse(command, code, 422, data);
 
             return;
         }
@@ -309,7 +322,7 @@ export function useOperationCommand<
 
         /* The lookup replayed a recorded 422: the command was refused, not lost. */
         if (attempt.kind === 'invalid') {
-            invalid(command, attempt.errors, attempt.code);
+            invalid(command, attempt.errors, attempt.code, attempt.data);
 
             return;
         }
@@ -365,7 +378,7 @@ export function useOperationCommand<
         }
 
         if (attempt.kind === 'invalid') {
-            invalid(command, attempt.errors, attempt.code);
+            invalid(command, attempt.errors, attempt.code, attempt.data);
 
             return;
         }

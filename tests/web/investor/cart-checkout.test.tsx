@@ -24,9 +24,22 @@ import {
     setWide,
 } from './inertia-mock';
 
+type ResponseReader = (response: { status: number; data: unknown }) => unknown;
+
+/* The response readers the command hook installs while a command is out, as Inertia's http. */
+const responses = vi.hoisted(() => ({ readers: [] as ResponseReader[] }));
+
 vi.mock('@inertiajs/core', async (importOriginal) => ({
     ...(await importOriginal<typeof InertiaCore>()),
-    http: { onResponse: () => () => undefined },
+    http: {
+        onResponse: (reader: ResponseReader) => {
+            responses.readers.push(reader);
+
+            return () => {
+                responses.readers.splice(responses.readers.indexOf(reader), 1);
+            };
+        },
+    },
 }));
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
@@ -174,6 +187,43 @@ const completed = (code: string, receipt: unknown = {}) =>
         field_errors: {},
     });
 
+/** A refusal as the cart commands answer it: an operation resource, its facts in `receipt`. */
+const refusedBody = (code: string) => ({
+    operation_id: '01jc3op0000000000000000000',
+    status: 'rejected',
+    code,
+    data: {
+        receipt: {
+            atomic: true,
+            financial_effect: 'none',
+            line_refusals: [
+                {
+                    cart_line_id: '01jc3line000000000000000a2',
+                    campaign_id: 'cmp_volt',
+                    code: 'INSUFFICIENT_AVAILABLE_FUNDS',
+                    http_status: 422,
+                    field_errors: [],
+                },
+            ],
+            cart_refusals: [],
+        },
+        current: null,
+        next: null,
+    },
+    revision: 5,
+    allowed_actions: [],
+    field_errors: {},
+});
+
+/** A recorded 422 refusal: Inertia hands its body only to response readers, then no answer. */
+const refused422 = (body: unknown) => () => {
+    responses.readers.forEach((read) =>
+        read({ status: 422, data: JSON.stringify(body) }),
+    );
+
+    return Promise.resolve(undefined);
+};
+
 const flush = () =>
     act(async () => {
         await Promise.resolve();
@@ -301,20 +351,7 @@ describe('Cart: whole-cart quote', () => {
 
     it('names a refused hold as a whole, and each line it stopped on', async () => {
         inertia.queue.push(quoted());
-        inertia.queue.push(
-            fails(409, {
-                code: 'CART_LINES_REFUSED',
-                data: {
-                    line_refusals: [
-                        {
-                            cart_line_id: '01jc3line000000000000000a2',
-                            campaign_id: 'cmp_volt',
-                            code: 'INSUFFICIENT_AVAILABLE_FUNDS',
-                        },
-                    ],
-                },
-            }),
-        );
+        inertia.queue.push(fails(409, refusedBody('CART_LINES_REFUSED')));
         inertia.queue.push(quoted());
         render(<InvestorCart {...page()} />);
         await flush();
@@ -335,6 +372,62 @@ describe('Cart: whole-cart quote', () => {
         expect(
             screen.queryByTestId('line-refusal-cmp_greenleaf'),
         ).not.toBeInTheDocument();
+    });
+
+    it('names each line a recorded 422 refusal stopped on', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(
+            refused422(refusedBody('INSUFFICIENT_AVAILABLE_FUNDS')),
+        );
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+    });
+
+    it('names each line a refusal recovered by the operation lookup stopped on', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(offline());
+        inertia.queue.push(fails(409, refusedBody('CART_LINES_REFUSED')));
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+        await flush();
+
+        expect(inertia.calls[2]).toMatchObject({
+            url: expect.stringContaining('/preview/investor-cart-operations/'),
+        });
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+    });
+
+    it('names each line a refusal replayed as a recorded answer stopped on', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(answers(refusedBody('CART_LINES_REFUSED')));
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toBeInTheDocument();
     });
 
     it('prices the same cart again after a refused hold and holds it at the fresh quote', async () => {
@@ -790,20 +883,7 @@ describe('Cart: the held checkout', () => {
     });
 
     it('names the held line a refused confirmation stopped on', async () => {
-        inertia.queue.push(
-            fails(409, {
-                code: 'CART_LINES_REFUSED',
-                data: {
-                    line_refusals: [
-                        {
-                            cart_line_id: '01jc3line000000000000000a2',
-                            campaign_id: 'cmp_volt',
-                            code: 'INSUFFICIENT_AVAILABLE_FUNDS',
-                        },
-                    ],
-                },
-            }),
-        );
+        inertia.queue.push(fails(409, refusedBody('CART_LINES_REFUSED')));
         render(<InvestorCart {...heldPage()} />);
 
         fireEvent.click(screen.getByRole('checkbox'));
@@ -963,6 +1043,10 @@ describe('Cart line refusals', () => {
                 ],
             }),
         ).toEqual([volt]);
+        expect(
+            readLineRefusals({ receipt: { line_refusals: [volt] } }),
+        ).toEqual([volt]);
+        expect(readLineRefusals({ receipt: null })).toEqual([]);
         expect(readLineRefusals({ line_refusals: 'cmp_volt' })).toEqual([]);
         expect(readLineRefusals({ cart_id: 'c' })).toEqual([]);
         expect(readLineRefusals(null)).toEqual([]);

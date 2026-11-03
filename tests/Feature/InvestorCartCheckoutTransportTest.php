@@ -185,6 +185,25 @@ it('reads each held line at the return and fee its own reservation fixed, not th
         ->and(($this->page)()['checkout']['reserved'])->toBe($data['reserved']);
 });
 
+it('answers a refused hold with each refused line in its receipt, directly and from the lookup', function (): void {
+    ($this->add)($this->campaign->id, '1080');
+    ($this->add)($this->second->id, '1080');
+    ($this->acknowledge)();
+    $quote = ($this->quote)()->assertOk()->json('data');
+    $requestId = (string) Str::uuid();
+
+    $refused = ($this->reserve)($quote, $requestId)->assertUnprocessable()->json();
+    ($this->committed)();
+
+    expect($refused)->toMatchArray(['status' => 'rejected', 'code' => 'INSUFFICIENT_AVAILABLE_FUNDS'])
+        ->and($refused['data'])->toMatchArray(['current' => null, 'next' => null])
+        ->and($refused['data']['receipt'])->toMatchArray(['atomic' => true, 'financial_effect' => 'none', 'cart_refusals' => []])
+        ->and($refused['data']['receipt']['line_refusals'])->toHaveCount(1)
+        ->and($refused['data']['receipt']['line_refusals'][0])->toMatchArray(['code' => 'INSUFFICIENT_AVAILABLE_FUNDS', 'http_status' => 422])
+        ->and(($this->lookup)($requestId, ['command' => 'cart.reserve'])->assertUnprocessable()->json('data.receipt.line_refusals'))
+        ->toBe($refused['data']['receipt']['line_refusals']);
+});
+
 it('confirms the held cart as a whole and finds the confirmation by its request id and checkout', function (): void {
     ['quote' => $quote, 'checkout' => $checkout] = ($this->held)();
     $requestId = (string) Str::uuid();

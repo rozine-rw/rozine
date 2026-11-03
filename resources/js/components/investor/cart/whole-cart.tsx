@@ -185,11 +185,16 @@ type C3ResourceLike<D> = {
     server_time?: string;
 };
 
-/** The lines a refused whole-cart command names, read from its `line_refusals`. */
+/** The lines a refused whole-cart command names, read from its `receipt.line_refusals`. */
 export const readLineRefusals = (data: unknown): CartLineRefusal[] => {
+    /* A C3 refusal carries its facts as `data.receipt`, as the cart commands answer. */
+    const facts =
+        typeof data === 'object' && data !== null && 'receipt' in data
+            ? data.receipt
+            : data;
     const named =
-        typeof data === 'object' && data !== null && 'line_refusals' in data
-            ? data.line_refusals
+        typeof facts === 'object' && facts !== null && 'line_refusals' in facts
+            ? facts.line_refusals
             : null;
 
     return Array.isArray(named)
