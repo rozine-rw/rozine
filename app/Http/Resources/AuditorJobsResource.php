@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\AuditEngagementState;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -41,7 +40,7 @@ class AuditorJobsResource extends JsonResource
                         : ($job['deadline'] !== null && $job['deadline']['due_at'] <= now('UTC')->format('Y-m-d\TH:i:s\Z') ? 'overdue' : 'in_progress'),
                     'link' => self::link('auditor.jobs.show', ['assignment' => $job['id']])];
                 // A statement review is not a monthly visit, so it has no window or report to sort (#511).
-                if ($job['kind'] === 'monthly' && $record['work']['assignment']['purpose'] === AuditEngagementState::PURPOSE_MONTHLY) {
+                if ($job['kind'] === 'monthly' && $record['work']['assignment']['purpose'] === 'monthly') {
                     $monthly = self::monthly($monthly, $record, $job);
                 }
             }

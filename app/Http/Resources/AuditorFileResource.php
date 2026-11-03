@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\AuditEngagementState;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -62,7 +61,7 @@ class AuditorFileResource extends JsonResource
                 'sector' => AuditorJobsResource::sector($record['work']['business']['industry']),
                 'use_of_funds' => implode(', ', $record['application']['use_of_funds'] ?? [])],
                 'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
-                'brief' => $record['work']['assignment']['purpose'] === AuditEngagementState::PURPOSE_STATEMENT_REVIEW
+                'brief' => $record['work']['assignment']['purpose'] === 'statement_review'
                     ? 'statement_review' : self::BRIEF[$record['work']['assignment']['kind']] ?? null,
                 'history' => ['last_audit' => null, 'flags' => []]], 'review' => $review];
     }
