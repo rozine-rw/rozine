@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
+import cartReleases from './cart-releases'
 /**
 * @see \App\Http\Controllers\StaffExceptionsController::__invoke
 * @see app/Http/Controllers/StaffExceptionsController.php:24
@@ -82,6 +83,7 @@ index.form = indexForm
 
 const exceptions = {
     index: Object.assign(index, index),
+    cartReleases: Object.assign(cartReleases, cartReleases),
 }
 
 export default exceptions

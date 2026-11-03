@@ -55,6 +55,9 @@ const fr: Catalog = {
     'identity.denied.withdrawn_audit.body':
         'Les Opérations d’audit ont retiré cet audit : il ne vous est plus attribué et vous n’avez plus rien à faire. Vos autres missions sont dans Missions.',
     'identity.denied.withdrawn_audit.action': 'Aller aux missions',
+    'identity.denied.completed_review.title': 'Vous avez vérifié ces relevés',
+    'identity.denied.completed_review.body':
+        'Cette revue des relevés est terminée. Votre vérification est enregistrée et rien de plus ne vous est demandé. Vos autres missions sont dans Missions.',
     'errors.not_found.head_title': 'Page introuvable',
     'errors.not_found.title': 'Nous ne trouvons pas cette page',
     'errors.not_found.body':
@@ -375,7 +378,7 @@ const fr: Catalog = {
     'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
         'Il faut davantage de mois de relevés vérifiés avant de continuer.',
     'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
-        'Rozine termine une vérification de politique avant que vous puissiez continuer.',
+        'Rozine doit d’abord vérifier votre historique de crédit et vos prêts en cours. Rien ne vous est demandé.',
     'business.today.blocked.sub.RESTRICTION_ACTIVE':
         'Une restriction sur votre compte bloque cette demande pour le moment.',
     'business.today.blocked.sub.other':
@@ -444,6 +447,8 @@ const fr: Catalog = {
         'À partir de votre certificat RDB et de vos relevés bancaires et mobile money vérifiés. Vérifiez — si tout est correct, continuez.',
     'business.apply.business.rdb_verified': '✓ Vérifié par le RDB',
     'business.apply.business.statements_verified': '✓ Relevés vérifiés',
+    'business.apply.business.policy_check_next':
+        'Ensuite, Rozine doit vérifier votre historique de crédit actuel et vos prêts en cours. Vous n’avez rien à faire, et cette page se met à jour une fois que c’est fait.',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Fondée en {year}',
     'business.apply.business.standing': 'Situation financière',
@@ -1424,6 +1429,7 @@ const fr: Catalog = {
     'admin.messaging.audience.business': 'Entreprises',
     'admin.messaging.audience.auditor': 'Partenaires d’audit',
     'admin.messaging.audience.everyone': 'Tous les titulaires de compte',
+    'admin.messaging.audience.staff': 'Équipe Rozine',
     'admin.messaging.trigger.verification.approved':
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
@@ -2771,6 +2777,10 @@ const fr: Catalog = {
     'admin.permission.health.view': "Voir l'état du système",
     'admin.permission_detail.health.view':
         "Voir les files, les tâches et l'état des services.",
+    'admin.permission.cart.releases.resolve':
+        'Relancer les libérations de panier bloquées',
+    'admin.permission_detail.cart.releases.resolve':
+        "Libérer une réservation de panier dont l'expiration a échoué, toutes les lignes ensemble.",
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',
@@ -3433,6 +3443,18 @@ const fr: Catalog = {
         "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux.",
     'auditor.file.brief.monthly.step_4':
         'Scellez avant l’échéance du rapport : la fin du 7 du mois suivant (heure de Kigali) dans l’application actuelle.',
+    'auditor.file.why_review': 'Pourquoi cette revue des relevés est requise',
+    'auditor.file.mandate_review': 'Ce que vous devez vérifier',
+    'auditor.file.brief.statement_review.reason':
+        'Avant que cette entreprise puisse lever des fonds, un Audit Partner compare ses relevés bancaires et Mobile Money aux chiffres mensuels qu’elle a enregistrés. C’est une revue factuelle des documents, faite à partir des relevés au dossier. Il n’y a ni visite sur site, ni comptage de stock, ni photos.',
+    'auditor.file.brief.statement_review.step_1':
+        'Ouvrez chaque relevé et notez où vous l’avez vérifié.',
+    'auditor.file.brief.statement_review.step_2':
+        'Comparez les chiffres mensuels et les soldes d’ouverture et de clôture de chaque compte avec les relevés.',
+    'auditor.file.brief.statement_review.step_3':
+        'Enregistrez chaque dette trouvée, avec ce qui a été payé chaque mois et son échéancier à venir.',
+    'auditor.file.brief.statement_review.step_4':
+        'Enregistrez le retrait habituel du propriétaire et vos constats, puis vérifiez les relevés.',
     'auditor.file.why': 'Pourquoi un audit sur site est requis',
     'auditor.file.mandate': 'Ce que vous devez lever sur site',
     'auditor.file.history': 'Historique du dossier',
@@ -5315,6 +5337,7 @@ const fr: Catalog = {
     'business.apply.statements.reading.read': 'Lu · en attente de vérification',
     'business.apply.statements.reading.needs_review':
         'Notre équipe va le vérifier',
+    'business.apply.statements.reading.verified': 'Vérifié',
     'business.apply.raise.target_required':
         'Indiquez le montant que vous souhaitez lever.',
     'business.apply.raise.resized_reason':
@@ -6001,6 +6024,8 @@ const fr: Catalog = {
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.history_loading':
+        'Chargement de l’historique des transactions…',
     'investor.wallet.c3.older': 'Afficher plus ancien',
     'investor.wallet.c3.receipt_policy': 'Version de la règle',
     'investor.wallet.c3.not_credited':
@@ -7237,6 +7262,10 @@ const fr: Catalog = {
     'admin.exceptions.kind.variance': 'Écart',
     'admin.exceptions.kind.audit': 'Audit éclair en retard',
     'admin.exceptions.kind.complaint': 'Réclamation',
+    'admin.exceptions.kind.cart_release': 'Libération de panier',
+    'admin.exceptions.retry': 'Relancer la libération',
+    'admin.exceptions.retry_named': 'Relancer la libération de {reference}',
+    'admin.exceptions.retrying': 'Libération…',
     'admin.exceptions.col.reference': 'Référence',
     'admin.exceptions.col.kind': 'Type',
     'admin.exceptions.col.subject': 'Exception',
@@ -7883,6 +7912,15 @@ const fr: Catalog = {
         'Prélèvement mensuel habituel du propriétaire (RWF)',
     'auditor.verify.owner_draw_reference': "Où vous l'avez constaté",
     'auditor.verify.findings': 'Vos constats',
+    'auditor.verify.balances': 'Soldes d’ouverture et de clôture',
+    'auditor.verify.account': 'Compte',
+    'auditor.verify.opening_balance': 'Ouverture',
+    'auditor.verify.closing_balance': 'Clôture',
+    'auditor.verify.amount_hint': 'RWF entiers, ex. 150000',
+    'auditor.verify.done.title': 'Vérification enregistrée',
+    'auditor.verify.done.body':
+        'Les relevés de {business} sont désormais enregistrés comme vérifiés. Rien de plus ne vous est demandé pour cette revue.',
+    'auditor.verify.done.jobs': 'Retour aux missions',
     'auditor.verify.incomplete':
         'Cochez chaque contrôle et remplissez chaque champ pour vérifier. Les montants sont en RWF entiers.',
     'auditor.verify.submit': 'Vérifier les relevés',

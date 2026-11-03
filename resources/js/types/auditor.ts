@@ -677,7 +677,7 @@ export type BusinessFile = {
      * Which rules the visit answers (BRS v2.0 AUD-R03/R07 for a Flash Audit, AUD-R04 for a monthly
      * visit): the app states why it is needed and what it must clear. Null shows neither.
      */
-    brief: 'flash' | 'monthly' | null;
+    brief: 'flash' | 'monthly' | 'statement_review' | null;
     history: {
         last_audit: {
             on: string;
@@ -789,6 +789,14 @@ export type StatementReviewObservation = {
  * to open, the Business's saved figures and the procedure's checks. `verify` is null until the
  * Business has saved its figures.
  */
+/** One account's balances for one month, as the Business transcribed them. Whole RWF. */
+export type StatementReviewBalance = {
+    account: string;
+    month: string;
+    opening_balance: string;
+    closing_balance: string;
+};
+
 export type StatementReviewFile = {
     assignment_revision: number;
     evidence_revision: number;
@@ -807,6 +815,8 @@ export type StatementReviewFile = {
         sha256: string;
         months: string[];
         observations: StatementReviewObservation[];
+        /** Each account's opening and closing balance for each month, to run the balances check. */
+        balances: StatementReviewBalance[];
     } | null;
     verify: RouteAction | null;
     /** The verification's operation lookup, with the literal `{request_id}` token. */

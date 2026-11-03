@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAuditorCommands } from '@/components/auditor/commands';
@@ -6,6 +7,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
 import { formatMonthYearLong } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
+import { index as auditorJobs } from '@/routes/auditor/jobs';
 import type { StatementReviewFile } from '@/types/auditor';
 
 /** A whole RWF amount, as the review takes it: no sign, separators or decimals. */
@@ -124,6 +126,33 @@ export function StatementVerification({
     const [ownerDrawReference, setOwnerDrawReference] = useState('');
     const [findings, setFindings] = useState('');
     const [refusal, setRefusal] = useState<string | null>(null);
+    /* Once recorded, the form gives way to what happened and the way on (#511). */
+    const [verified, setVerified] = useState(false);
+
+    if (verified) {
+        return (
+            <div
+                role="status"
+                className="mt-5 rounded-2xl border border-rz-border bg-rz-surface p-4"
+            >
+                <p className="text-rz-text text-[14px] font-bold">
+                    {t('auditor.verify.done.title')}
+                </p>
+                <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-secondary">
+                    {t('auditor.verify.done.body', { business })}
+                </p>
+                <Link
+                    href={auditorJobs()}
+                    className={cn(
+                        PRIMARY,
+                        'mt-3 flex h-[46px] w-full items-center justify-center rounded-2xl text-[14px]',
+                    )}
+                >
+                    {t('auditor.verify.done.jobs')}
+                </Link>
+            </div>
+        );
+    }
 
     if (transcription === null || review.verify === null) {
         return (
@@ -139,6 +168,7 @@ export function StatementVerification({
     const route = review.verify;
     const months = transcription.months;
     const upcoming = monthsAfter(months[months.length - 1], SCHEDULE_MONTHS);
+    const amountHint = t('auditor.verify.amount_hint');
     const amount = (value: string) =>
         new Intl.NumberFormat(locale).format(BigInt(value));
     const filled = (text: string) => oneLine(text) !== '';
@@ -230,6 +260,7 @@ export function StatementVerification({
                 },
             },
             {
+                onCompleted: () => setVerified(true),
                 onRefused: (code) => {
                     if (!REFUSALS.includes(code)) {
                         return false;
@@ -324,6 +355,44 @@ export function StatementVerification({
                 </table>
             </Group>
 
+            {transcription.balances.length > 0 && (
+                <Group title={t('auditor.verify.balances')}>
+                    <table className="w-full text-left text-[12px]">
+                        <thead className="text-rz-secondary">
+                            <tr>
+                                <th scope="col">
+                                    {t('auditor.verify.account')}
+                                </th>
+                                <th scope="col">{t('auditor.verify.month')}</th>
+                                <th scope="col">
+                                    {t('auditor.verify.opening_balance')}
+                                </th>
+                                <th scope="col">
+                                    {t('auditor.verify.closing_balance')}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-rz-text">
+                            {transcription.balances.map((balance) => (
+                                <tr key={`${balance.account}:${balance.month}`}>
+                                    <th scope="row" className="font-semibold">
+                                        {balance.account}
+                                    </th>
+                                    <td>
+                                        {formatMonthYearLong(
+                                            `${balance.month}-15`,
+                                            locale,
+                                        )}
+                                    </td>
+                                    <td>{amount(balance.opening_balance)}</td>
+                                    <td>{amount(balance.closing_balance)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </Group>
+            )}
+
             <Group title={t('auditor.verify.checks')}>
                 {review.checks.map((check) => (
                     <label
@@ -382,6 +451,7 @@ export function StatementVerification({
                             {t('auditor.verify.debt_principal')}
                             <input
                                 inputMode="numeric"
+                                placeholder={amountHint}
                                 className={cn(FIELD, 'mt-1')}
                                 value={obligation.principal}
                                 onChange={(event) =>
@@ -404,6 +474,7 @@ export function StatementVerification({
                                 })}
                                 <input
                                     inputMode="numeric"
+                                    placeholder={amountHint}
                                     className={cn(FIELD, 'mt-1')}
                                     value={obligation.service[month]}
                                     onChange={(event) =>
@@ -426,6 +497,7 @@ export function StatementVerification({
                             })}
                             <input
                                 inputMode="numeric"
+                                placeholder={amountHint}
                                 className={cn(FIELD, 'mt-1')}
                                 value={obligation.scheduled}
                                 onChange={(event) =>
@@ -483,6 +555,7 @@ export function StatementVerification({
                                 })}
                                 <input
                                     inputMode="numeric"
+                                    placeholder={amountHint}
                                     className={cn(FIELD, 'mt-1')}
                                     value={obligation.due[month]}
                                     onChange={(event) =>
@@ -571,6 +644,7 @@ export function StatementVerification({
                     {t('auditor.verify.owner_draw_amount')}
                     <input
                         inputMode="numeric"
+                        placeholder={amountHint}
                         className={cn(FIELD, 'mt-1')}
                         value={ownerDraw}
                         onChange={(event) => setOwnerDraw(event.target.value)}

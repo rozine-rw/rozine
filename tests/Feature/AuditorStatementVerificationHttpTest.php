@@ -42,7 +42,8 @@ it('lets the partner open each statement and verify the review from the job file
     $this->actingAs($user)->get('/auditor/jobs/'.$assignment->id)->assertOk()->assertInertia(function (Assert $page) use (&$props): Assert {
         $props = $page->toArray()['props'];
 
-        return $page->component('auditor/file')->where('job.state', 'assigned');
+        // A statement review reads as one: its own brief, and no monthly window for it in Jobs (#511).
+        return $page->component('auditor/file')->where('job.state', 'assigned')->where('file.brief', 'statement_review')->where('jobs.monthly', null);
     });
     $review = $props['review'];
     expect($props['allowed_actions'])->toContain('statement.verify')
@@ -56,7 +57,10 @@ it('lets the partner open each statement and verify the review from the job file
         ->and($review['documents'][0]['filename'])->not->toContain('private-account-reference')
         ->and($review['transcription'])->toMatchArray(['id' => $transcription->id, 'sha256' => $transcription->sha256, 'months' => $transcription->payload['months']])
         ->and($review['transcription']['observations'])->not->toBeEmpty()
-        ->and(array_keys($review['transcription']['observations'][0]))->toBe(['month', 'operating_inflow', 'operating_outflow', 'owner_draw', 'debt_service']);
+        ->and(array_keys($review['transcription']['observations'][0]))->toBe(['month', 'operating_inflow', 'operating_outflow', 'owner_draw', 'debt_service'])
+        ->and($review['transcription']['balances'])->toBe(array_map(fn (array $statement): array => ['account' => $statement['rail_id'], 'month' => $statement['month'],
+            'opening_balance' => $statement['opening_balance'], 'closing_balance' => $statement['closing_balance']], $transcription->payload['statements']))
+        ->and($review['transcription']['balances'])->not->toBeEmpty();
 
     $original = $this->get($review['documents'][0]['open']['url'])->assertOk()->assertHeader('Cache-Control', 'no-store, private');
     expect($original->getContent())->toBe(StatementFixture::csv())
@@ -76,4 +80,10 @@ it('lets the partner open each statement and verify the review from the job file
         ->assertJsonPath('data.report_approval', 'not_cosigned')->assertJsonPath('data.next', ['url' => '/auditor/jobs', 'method' => 'get'])->json();
     $this->getJson(str_replace('{request_id}', $request, $review['operation']['url']).'?command=statement.verify')->assertOk()
         ->assertJsonPath('operation_id', $verified['operation_id'])->assertJsonPath('code', 'STATEMENT_SOURCE_VERIFIED');
+
+    // The finished review's old link says it is done rather than reading as not found (#511).
+    $this->get('/auditor/jobs/'.$assignment->id)->assertStatus(409)
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'STATEMENT_REVIEW_COMPLETED')->where('status', 409));
+    $this->getJson('/auditor/jobs/'.$assignment->id)->assertStatus(409)->assertJsonPath('code', 'STATEMENT_REVIEW_COMPLETED');
 });

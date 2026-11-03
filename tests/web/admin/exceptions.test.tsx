@@ -1,10 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminExceptions from '@/pages/admin/exceptions';
 import type { AdminExceptionsProps } from '@/types/admin';
 import emptyFixture from '../../../resources/fixtures/ui/admin-exceptions-empty.json';
 import exceptionsFixture from '../../../resources/fixtures/ui/admin-exceptions.json';
-import { resetInertia } from './inertia-mock';
+import { inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -271,5 +272,67 @@ describe('Exceptions', () => {
                 screen.getByRole('navigation', { name: 'Filter by kind' }),
             ).getByRole('link', { name: /Overdue flash audit/ }),
         ).toHaveAttribute('href', '/admin/exceptions?kind=audit');
+    });
+
+    it('retries a stuck cart release for a viewer who may, every line together, and says why it could not', async () => {
+        const user = userEvent.setup();
+        const page = props(exceptionsFixture);
+        const stuck = {
+            ...page.exceptions[0],
+            id: '01k0cartcheckout0000000000',
+            kind: 'cart_release' as const,
+            reference: 'CRT-000000',
+            subject: { kind: 'investor' as const, label: 'Aline Uwase' },
+            note_title: null,
+            description:
+                'Cart release failed (SETTLEMENT_FAILED, 2 attempts): 2 lines still held',
+            amount: { currency: 'RWF' as const, amount: '25000' },
+            dpd: null,
+            owner: null,
+            link: null,
+            retry: {
+                url: '/admin/exceptions/cart-releases/01k0cartcheckout0000000000/retry',
+                method: 'post' as const,
+            },
+        };
+
+        page.exceptions = [
+            stuck,
+            { ...stuck, id: 'other', reference: 'CRT-111111', retry: null },
+        ];
+        const { unmount } = render(<AdminExceptions {...page} />);
+
+        expect(rowOf('CRT-000000')).toHaveTextContent('Cart release');
+        expect(rowOf('CRT-000000')).toHaveTextContent('RWF 25,000');
+        expect(
+            within(rowOf('CRT-111111')).queryByRole('button'),
+        ).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole('button', {
+                name: 'Retry the release of CRT-000000',
+            }),
+        );
+
+        expect(inertia.posts).toHaveLength(1);
+        expect(inertia.posts[0].url).toBe(stuck.retry.url);
+        expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/);
+
+        inertia.processing = true;
+        inertia.errors = {
+            request_id: 'This cart was already released. Refresh the list.',
+        };
+        unmount();
+        render(<AdminExceptions {...page} />);
+
+        const pending = screen.getByRole('button', {
+            name: 'Retry the release of CRT-000000',
+        });
+
+        expect(pending).toBeDisabled();
+        expect(pending).toHaveTextContent('Releasing…');
+        expect(rowOf('CRT-000000')).toHaveTextContent(
+            'This cart was already released. Refresh the list.',
+        );
     });
 });

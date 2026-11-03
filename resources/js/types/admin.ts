@@ -772,6 +772,7 @@ export type StaffPermissionKey =
     | 'payments.view'
     | 'complaints.answer'
     | 'health.view'
+    | 'cart.releases.resolve'
     | 'staff.manage'
     | 'accounts.freeze'
     | 'capacity.adjust'
@@ -1581,7 +1582,8 @@ export type ExceptionKind =
     | 'halt'
     | 'variance'
     | 'audit'
-    | 'complaint';
+    | 'complaint'
+    | 'cart_release';
 
 /** A server-counted filter over the open exceptions; `all` is every open one. */
 export type ExceptionChip = {
@@ -1613,6 +1615,11 @@ export type ExceptionItem = {
     owner: Attribution | null;
     /** The record it sits on, null when the viewer may not open it. */
     link: RouteLink | null;
+    /**
+     * Retries a stuck cart release, every line of the cart together (`cart.releases.resolve`);
+     * null for every other kind and for a viewer who may not.
+     */
+    retry: RouteAction | null;
 };
 
 export type AdminExceptionsProps = AdminFrameShellProps &
@@ -2130,7 +2137,12 @@ export type MessageHistoryRow = {
 };
 
 /** Who an automation or email template reaches. */
-export type MessageAudience = 'investor' | 'business' | 'auditor' | 'everyone';
+export type MessageAudience =
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'everyone'
+    | 'staff';
 
 /** One notice the platform sends as its event happens, on these channels. */
 export type MessageAutomation = {

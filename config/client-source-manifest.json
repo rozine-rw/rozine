@@ -86,6 +86,7 @@
         "resources/js/actions/App/Http/Controllers/StaffAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/StaffAuditorDirectoryController.ts",
         "resources/js/actions/App/Http/Controllers/StaffBusinessDirectoryController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffCartReleaseController.ts",
         "resources/js/actions/App/Http/Controllers/StaffComplaintController.ts",
         "resources/js/actions/App/Http/Controllers/StaffCoverageController.ts",
         "resources/js/actions/App/Http/Controllers/StaffDashboardController.ts",
@@ -333,6 +334,7 @@
         "resources/js/routes/staff/disbursements/index.ts",
         "resources/js/routes/staff/disbursements/operations/index.ts",
         "resources/js/routes/staff/events/index.ts",
+        "resources/js/routes/staff/exceptions/cart-releases/index.ts",
         "resources/js/routes/staff/exceptions/index.ts",
         "resources/js/routes/staff/index.ts",
         "resources/js/routes/staff/investor-verifications/index.ts",
@@ -798,8 +800,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 770,
-        "generated": 334,
+        "totalTrackedSources": 772,
+        "generated": 336,
         "declarationOnly": 20,
         "authoredExecutable": 416
     },

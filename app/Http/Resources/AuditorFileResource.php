@@ -61,7 +61,8 @@ class AuditorFileResource extends JsonResource
                 'sector' => AuditorJobsResource::sector($record['work']['business']['industry']),
                 'use_of_funds' => implode(', ', $record['application']['use_of_funds'] ?? [])],
                 'documents' => array_map(self::document(...), $file['documents'] ?? []), 'prescreen' => [],
-                'brief' => self::BRIEF[$record['work']['assignment']['kind']] ?? null,
+                'brief' => $record['work']['assignment']['purpose'] === 'statement_review'
+                    ? 'statement_review' : self::BRIEF[$record['work']['assignment']['kind']] ?? null,
                 'history' => ['last_audit' => null, 'flags' => []]], 'review' => $review];
     }
 
@@ -93,7 +94,11 @@ class AuditorFileResource extends JsonResource
                 'months' => $transcription['payload']['months'],
                 'observations' => array_map(fn (array $observation): array => ['month' => $observation['month'], 'operating_inflow' => $observation['operating_inflow'],
                     'operating_outflow' => $observation['operating_outflow'], 'owner_draw' => $observation['owner_draw'], 'debt_service' => $observation['debt_service']],
-                    $transcription['payload']['observations'])],
+                    $transcription['payload']['observations']),
+                // Each account's own opening and closing balance, so the "balances match" check can be run here (#511).
+                'balances' => array_map(fn (array $statement): array => ['account' => $statement['rail_id'], 'month' => $statement['month'],
+                    'opening_balance' => $statement['opening_balance'], 'closing_balance' => $statement['closing_balance']],
+                    $transcription['payload']['statements'])],
             'verify' => $transcription !== null
                 ? ['url' => route('auditor.jobs.verification.store', ['assignment' => $assignmentId], false), 'method' => 'post'] : null,
             'operation' => $operation];

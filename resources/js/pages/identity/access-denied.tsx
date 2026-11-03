@@ -156,6 +156,9 @@ export default function AccessDenied({ code, status, verification }: Props) {
     const expired = code === 'ASSIGNMENT_ACCEPTANCE_EXPIRED';
     /* An audit Audit Operations withdrew from the partner (#506): not lost access, and Jobs is the way on. */
     const withdrawn = code === 'ASSIGNMENT_WITHDRAWN';
+    /* A statement review the partner already verified (#511): finished work, and Jobs is the way on. */
+    const reviewed = code === 'STATEMENT_REVIEW_COMPLETED';
+    const toJobs = withdrawn || reviewed;
     /* A check already with Compliance is under review: nothing to send again. */
     const underReview =
         code === 'IDENTITY_VERIFICATION_REQUIRED' && verification === 'pending';
@@ -166,15 +169,17 @@ export default function AccessDenied({ code, status, verification }: Props) {
         ? 'identity.denied.expired_offer'
         : withdrawn
           ? 'identity.denied.withdrawn_audit'
-          : underReview
-            ? 'identity.denied.verification_pending'
-            : verificationRequired
-              ? 'identity.denied.verification_required'
-              : code === 'ROLE_NOT_AVAILABLE'
-                ? 'identity.denied.role_not_available'
-                : code === 'STAFF_ACCESS_REQUIRED'
-                  ? 'identity.denied.staff_only'
-                  : 'identity.denied';
+          : reviewed
+            ? 'identity.denied.completed_review'
+            : underReview
+              ? 'identity.denied.verification_pending'
+              : verificationRequired
+                ? 'identity.denied.verification_required'
+                : code === 'ROLE_NOT_AVAILABLE'
+                  ? 'identity.denied.role_not_available'
+                  : code === 'STAFF_ACCESS_REQUIRED'
+                    ? 'identity.denied.staff_only'
+                    : 'identity.denied';
 
     return (
         <ErrorFrame
@@ -182,7 +187,7 @@ export default function AccessDenied({ code, status, verification }: Props) {
             body={t(`${copy}.body`)}
             alert="body"
         >
-            {withdrawn && (
+            {toJobs && (
                 <Link href={auditorJobs()} className={PRIMARY}>
                     {t('identity.denied.withdrawn_audit.action')}
                 </Link>
@@ -194,9 +199,7 @@ export default function AccessDenied({ code, status, verification }: Props) {
             )}
             <Link
                 href={dashboard()}
-                className={
-                    verificationRequired || withdrawn ? SECONDARY : PRIMARY
-                }
+                className={verificationRequired || toJobs ? SECONDARY : PRIMARY}
             >
                 {t('identity.home.back')}
             </Link>

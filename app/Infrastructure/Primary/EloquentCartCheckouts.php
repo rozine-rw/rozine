@@ -6,11 +6,13 @@ namespace App\Infrastructure\Primary;
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\CartQuoteDisclosure;
 use App\Application\Primary\Contracts\CartCheckouts;
+use App\Application\Primary\Contracts\CartSettlementAlerts;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
 use App\Application\Primary\Contracts\PrimaryReservations;
@@ -29,13 +31,18 @@ use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use App\Models\User;
 use Brick\Math\BigInteger;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Closure;
 use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
+use Throwable;
 
 /**
  * The whole-cart checkout (#383 step 4a, contract cart-checkout-1). One `cart.reserve` holds every
@@ -72,7 +79,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
 
     public function __construct(private AuthorizeActiveRole $authority, private PrimaryCampaignSource $campaigns, private OperationJournal $journal,
         private PrimaryReservations $reservations, private InvestorCart $cart, private InvestorCartQuotes $quotes, private ChangeFeed $changes,
-        private CanonicalJson $json) {}
+        private CanonicalJson $json, private AuthorizeStaffPermission $staff, private CartSettlementAlerts $alerts) {}
 
     public function reserve(int $userId, int $contextRevision, int $expectedCartRevision, string $quoteId, int $expectedQuoteRevision,
         string $quoteDisclosureSha256, string $requestId, Closure $price): array
@@ -145,17 +152,308 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         });
     }
 
-    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array
+    public function release(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $requestId): array
     {
-        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($checkoutId, $requestId): array {
+        $checkoutId = strtolower($checkoutId);
+
+        return DB::transaction(function () use ($userId, $contextRevision, $checkoutId, $expectedRevision, $requestId): array {
+            $this->lockCampaignBusinesses($this->checkoutCampaigns($userId, $checkoutId));
+
+            return $this->authority->handle($userId, 'investor', null, $contextRevision,
+                function (array $identity) use ($userId, $contextRevision, $checkoutId, $expectedRevision, $requestId): array {
+                    $partyId = strtolower((string) $identity['party']['id']);
+                    $checkout = InvestorCartCheckout::query()->whereKey($checkoutId)->where('party_id', $partyId)->first()
+                        ?? throw new CommandRejection('CART_RESERVATION_NOT_FOUND', 404);
+
+                    return $this->journal->execute('party:'.$partyId, $userId, self::RELEASE_COMMAND, $requestId, 'investor_cart_checkout', $checkout->id,
+                        ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision], function (): void {},
+                        fn (string $operationId): OperationResult => $this->releaseHeld($userId, $contextRevision, $partyId, $operationId, $checkout, $expectedRevision));
+                });
+        }, 3);
+    }
+
+    public function findOperation(int $userId, int $contextRevision, string $command, string $checkoutId, string $requestId): array
+    {
+        if (! in_array($command, [self::CONFIRM_COMMAND, self::RELEASE_COMMAND], true)) {
+            throw new CommandRejection('OPERATION_NOT_FOUND', 404);
+        }
+
+        return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($command, $checkoutId, $requestId): array {
             $partyId = strtolower((string) $identity['party']['id']);
 
-            return $this->journal->find('party:'.$partyId, self::CONFIRM_COMMAND, $requestId, function (string $type, string $id) use ($checkoutId): void {
-                if ($type !== 'investor_cart_checkout' || $id !== strtolower($checkoutId)) {
+            // Every cart.confirm and cart.release targets a checkout; the request must name this one.
+            return $this->journal->find('party:'.$partyId, $command, $requestId, function (string $type, string $id) use ($checkoutId): void {
+                if ($id !== strtolower($checkoutId)) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
             });
         });
+    }
+
+    public function expireDue(int $limit): int
+    {
+        if ($limit < 1 || $limit > 1000) {
+            throw new CommandRejection('INVALID_SWEEP_LIMIT');
+        }
+        $now = now('UTC')->format('Y-m-d H:i:s.uP');
+        $fresh = $this->due($now)->whereNull('failures.investor_cart_checkout_id')
+            ->orderBy('investor_cart_checkouts.settles_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
+        $retries = $this->due($now)->whereNotNull('failures.investor_cart_checkout_id')
+            ->selectRaw('failures.last_attempted_at + make_interval(mins => least(?, ? * failures.attempts)) as retry_due_at',
+                [self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES])
+            ->whereRaw('failures.last_attempted_at + make_interval(mins => least(?, ? * failures.attempts)) <= ?::timestamptz',
+                [self::RETRY_BACKOFF_MAX_MINUTES, self::RETRY_BACKOFF_MINUTES, $now])
+            ->orderBy('retry_due_at')->orderBy('investor_cart_checkouts.id')->limit($limit)->get();
+        $oldestRetry = $retries->first()?->getAttribute('retry_due_at');
+        [$freshTaken, $retriesTaken] = self::shares($limit, $fresh->count(), $retries->count(),
+            self::retryWaitedLonger($fresh->first()?->settles_at, is_string($oldestRetry) ? CarbonImmutable::parse($oldestRetry) : null));
+        $candidates = $retries->take($retriesTaken)->concat($fresh->take($freshTaken));
+        $expired = 0;
+        $failure = null;
+        foreach ($candidates as $checkout) {
+            try {
+                $settled = DB::transaction(function () use ($checkout): bool {
+                    $this->lockCampaignBusinesses($this->linesOf($checkout->id));
+
+                    return $this->expireHeld($checkout, null) !== null;
+                }, 3);
+                DB::table('investor_cart_settlement_failures')->where('investor_cart_checkout_id', $checkout->id)->delete();
+                $expired += (int) $settled;
+            } catch (Throwable $exception) {
+                $this->stuckFailure($checkout, $exception);
+                $failure ??= $exception;
+            }
+        }
+        if ($failure !== null) {
+            throw $failure;
+        }
+
+        return $expired;
+    }
+
+    /**
+     * How many fresh and retry candidates one sweep takes. Each class gets half the limit, the odd
+     * slot alternating between them (`$retryFirst`, from the sweep turn counter, so successive
+     * sweeps alternate however they are scheduled), and a class with
+     * fewer due than its share gives the rest to the other. Neither class can starve the other,
+     * even at a limit of 1.
+     *
+     * @return array{int, int} fresh, then retries
+     */
+    public static function shares(int $limit, int $fresh, int $retries, bool $retryFirst): array
+    {
+        $retryShare = intdiv($limit, 2) + ($retryFirst ? $limit % 2 : 0);
+        $retriesTaken = min($retries, max($retryShare, $limit - $fresh));
+
+        return [min($fresh, $limit - $retriesTaken), $retriesTaken];
+    }
+
+    /**
+     * Whether the odd sweep slot goes to the retry: the class whose oldest checkout has waited longer
+     * takes it. A fresh checkout waits from its settlement time and a retry from the end of its
+     * backoff. A served retry that fails again waits from its next backoff, and a served fresh checkout
+     * either settles or becomes a retry, so the other class is next however the sweeps are spaced.
+     */
+    public static function retryWaitedLonger(?CarbonInterface $oldestFresh, ?CarbonInterface $oldestRetry): bool
+    {
+        if ($oldestRetry === null) {
+            return false;
+        }
+
+        return $oldestFresh === null || $oldestRetry->lessThan($oldestFresh);
+    }
+
+    /**
+     * Live checkouts whose last line window has closed, with their failure row when they have one.
+     *
+     * @return EloquentBuilder<InvestorCartCheckout>
+     */
+    private function due(string $now): EloquentBuilder
+    {
+        return InvestorCartCheckout::query()->select('investor_cart_checkouts.*')
+            ->join('investor_cart_live_checkouts as live', 'live.investor_cart_checkout_id', 'investor_cart_checkouts.id')
+            ->leftJoin('investor_cart_settlement_failures as failures', 'failures.investor_cart_checkout_id', 'investor_cart_checkouts.id')
+            ->where('investor_cart_checkouts.settles_at', '<=', $now);
+    }
+
+    public function settleStuck(int $staffUserId, string $checkoutId, string $requestId): array
+    {
+        $checkoutId = strtolower($checkoutId);
+        $this->staff->check($staffUserId, 'cart.releases.resolve');
+
+        return DB::transaction(function () use ($staffUserId, $checkoutId, $requestId): array {
+            $this->lockCampaignBusinesses($this->linesOf($checkoutId));
+
+            return $this->journal->execute('staff:'.$staffUserId, $staffUserId, self::SETTLE_COMMAND, $requestId, 'investor_cart_checkout', $checkoutId, [],
+                function (): void {}, function (string $operationId) use ($checkoutId): OperationResult {
+                    $checkout = InvestorCartCheckout::query()->whereKey($checkoutId)->first() ?? throw new CommandRejection('CART_RESERVATION_NOT_FOUND', 404);
+                    $result = $this->expireHeld($checkout, $operationId);
+                    DB::table('investor_cart_settlement_failures')->where('investor_cart_checkout_id', $checkout->id)->delete();
+
+                    return $result;
+                });
+        }, 3);
+    }
+
+    public function stuck(): array
+    {
+        $cutoff = now('UTC')->subSeconds(self::STUCK_AFTER_SECONDS)->format('Y-m-d H:i:s.uP');
+
+        return array_values(InvestorCartCheckout::query()
+            ->select('investor_cart_checkouts.*', 'failures.attempts', 'failures.reason_code', 'failures.last_attempted_at', 'users.name as investor')
+            ->join('investor_cart_live_checkouts as live', 'live.investor_cart_checkout_id', 'investor_cart_checkouts.id')
+            ->leftJoin('users', 'users.party_id', 'investor_cart_checkouts.party_id')
+            ->leftJoin('investor_cart_settlement_failures as failures', 'failures.investor_cart_checkout_id', 'investor_cart_checkouts.id')
+            ->where(fn (EloquentBuilder $query) => $query->whereNotNull('failures.investor_cart_checkout_id')->orWhere('investor_cart_checkouts.settles_at', '<=', $cutoff))
+            ->orderBy('investor_cart_checkouts.settles_at')->orderBy('investor_cart_checkouts.id')->get()
+            ->map(fn (InvestorCartCheckout $checkout): array => ['checkout_id' => $checkout->id, 'party_id' => $checkout->party_id,
+                'investor' => self::nullableString($checkout->getAttribute('investor')), 'total' => $checkout->principal,
+                'lines' => InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkout->id)->count(),
+                'settles_at' => self::time($checkout->settles_at->toDateTimeImmutable()), 'attempts' => (int) $checkout->getAttribute('attempts'),
+                'reason_code' => self::nullableString($checkout->getAttribute('reason_code')),
+                'last_attempted_at' => $checkout->getAttribute('last_attempted_at') === null ? null
+                    : self::time(new DateTimeImmutable((string) $checkout->getAttribute('last_attempted_at')))])->all());
+    }
+
+    /**
+     * The effect of one new `cart.release`, inside the journal's savepoint: every line released and
+     * its principal returned, or a refusal that leaves nothing behind.
+     */
+    private function releaseHeld(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartCheckout $checkout, int $expectedRevision): OperationResult
+    {
+        [, $version] = $this->heldVersion($checkout, $expectedRevision);
+        $released = [];
+        foreach ($this->heldLines($checkout) as $line) {
+            $facts = $this->reservations->reservationFacts($line->business_campaign_id, $partyId, $line->primary_reservation_id);
+            // The checkout is held and inside its window, so every line releases.
+            $child = $this->journal->execute('party:'.$partyId, $userId, 'primary.release', self::childRequestId($operationId, 'release', $line->business_campaign_id),
+                'primary_reservation', $line->primary_reservation_id, ['identity_context_revision' => $contextRevision, 'campaign_id' => $line->business_campaign_id,
+                    'expected_revision' => $facts['revision'], 'cart_operation_id' => $operationId],
+                function (): void {},
+                function (string $childId) use ($line, $partyId, $operationId, $facts): OperationResult {
+                    $result = $this->reservations->release($line->business_campaign_id, $line->primary_reservation_id, $partyId, $childId, $facts['revision']);
+
+                    return new OperationResult('RESERVATION_RELEASED', ['reservation_id' => $result->id, 'entry_id' => $result->posting->entryId,
+                        'origin_operation_id' => (string) PrimaryReservationRecord::query()->whereKey($result->id)->value('origin_operation_id'), 'amount' => $result->posting->amount, 'cart_operation_id' => $operationId],
+                        $result->revision);
+                });
+            if ($child['status'] !== 'completed') {
+                throw new RuntimeException('CART_CHECKOUT_INTEGRITY_FAILED');
+            }
+            $released[] = ['cart_line_id' => $line->investor_cart_line_id, 'campaign_id' => $line->business_campaign_id,
+                'reservation_id' => $line->primary_reservation_id, 'entry_id' => $child['data']['entry_id'], 'amount' => self::money((string) $child['data']['amount'])];
+            $this->recordChange($partyId, $line);
+        }
+        $at = now('UTC')->toDateTimeImmutable();
+        $this->appendVersion($checkout, $version->revision + 1, 'released', $version->investor_cart_quote_id, $operationId, $at);
+        DB::table('investor_cart_live_checkouts')->where('investor_cart_checkout_id', $checkout->id)->delete();
+
+        return new OperationResult('CART_RELEASED', ['checkout_id' => $checkout->id, 'state' => 'released', 'released_at' => self::time($at),
+            'total_returned' => self::money($checkout->principal), 'lines' => $released], $version->revision + 1);
+    }
+
+    /**
+     * Expires one held checkout as a group once its last line window has closed: every child
+     * expires and returns its principal, the checkout appends its `expired` version and is no
+     * longer live. The caller holds the Business locks. A sweep passes no operation, and gets null
+     * for a checkout that was settled after it picked it; a staff retry passes its `cart.settle`
+     * operation and is refused instead.
+     *
+     * @return ($operationId is null ? OperationResult|null : OperationResult)
+     */
+    private function expireHeld(InvestorCartCheckout $checkout, ?string $operationId): ?OperationResult
+    {
+        InvestorCartRoot::query()->whereKey($checkout->investor_cart_id)->lockForUpdate()->sole();
+        $version = InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->orderByDesc('revision')->firstOrFail();
+        if ($version->state !== 'held' && $operationId === null) {
+            return null;
+        }
+        if ($version->state !== 'held') {
+            throw new CommandRejection('CART_RESERVATION_NOT_HELD', 409, $version->revision, [], ['checkout_id' => $checkout->id, 'state' => $version->state]);
+        }
+        if (now('UTC')->lessThan($checkout->settles_at)) {
+            throw new CommandRejection('CART_SETTLEMENT_NOT_DUE', 409, $version->revision, [], ['checkout_id' => $checkout->id,
+                'settles_at' => self::time($checkout->settles_at->toDateTimeImmutable())]);
+        }
+        $expired = [];
+        foreach ($this->heldLines($checkout) as $line) {
+            $result = $this->reservations->expire($line->business_campaign_id, $line->primary_reservation_id)
+                ?? throw new RuntimeException('CART_CHECKOUT_INTEGRITY_FAILED');
+            $expired[] = ['cart_line_id' => $line->investor_cart_line_id, 'campaign_id' => $line->business_campaign_id,
+                'reservation_id' => $line->primary_reservation_id, 'entry_id' => $result->posting->entryId, 'amount' => self::money($result->posting->amount)];
+            $this->recordChange($checkout->party_id, $line);
+        }
+        $at = now('UTC')->toDateTimeImmutable();
+        $this->appendVersion($checkout, $version->revision + 1, 'expired', $version->investor_cart_quote_id, $operationId, $at);
+        DB::table('investor_cart_live_checkouts')->where('investor_cart_checkout_id', $checkout->id)->delete();
+
+        return new OperationResult('CART_EXPIRED', ['checkout_id' => $checkout->id, 'state' => 'expired', 'expired_at' => self::time($at),
+            'total_returned' => self::money($checkout->principal), 'lines' => $expired], $version->revision + 1);
+    }
+
+    /**
+     * Records a failed group expiry. Its first failure alerts every enabled staff member who may
+     * resolve it from the console; a later failure only counts the attempt.
+     */
+    private function stuckFailure(InvestorCartCheckout $checkout, Throwable $exception): void
+    {
+        $reasonCode = $exception instanceof CommandRejection ? $exception->reason : 'SETTLEMENT_FAILED';
+        $at = now('UTC')->format('Y-m-d H:i:s.uP');
+        $first = DB::table('investor_cart_settlement_failures')->insertOrIgnore(['investor_cart_checkout_id' => $checkout->id, 'first_failed_at' => $at,
+            'last_attempted_at' => $at, 'attempts' => 1, 'reason_code' => $reasonCode, 'exception_class' => mb_substr($exception::class, 0, 200)]) === 1;
+        if (! $first) {
+            DB::table('investor_cart_settlement_failures')->where('investor_cart_checkout_id', $checkout->id)->update(['last_attempted_at' => $at,
+                'attempts' => DB::raw('attempts + 1'), 'reason_code' => $reasonCode, 'exception_class' => mb_substr($exception::class, 0, 200)]);
+        }
+        Log::error('Cart checkout expiry failed.', ['checkout_id' => $checkout->id, 'exception_class' => $exception::class, 'reason_code' => $reasonCode]);
+        if ($first) {
+            $this->alerts->stuck($checkout->id, $checkout->principal, $reasonCode);
+        }
+    }
+
+    /**
+     * The latest version of a checkout that is held, at the expected revision and inside its
+     * window, or the refusal that says why not.
+     */
+    /** @return array{InvestorCartRoot, InvestorCartCheckoutVersion, array<string, mixed>} */
+    private function heldVersion(InvestorCartCheckout $checkout, int $expectedRevision): array
+    {
+        $root = InvestorCartRoot::query()->whereKey($checkout->investor_cart_id)->lockForUpdate()->sole();
+        $version = InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->orderByDesc('revision')->firstOrFail();
+        $refusal = ['cart_id' => $root->id, 'checkout_id' => $checkout->id, 'cart_revision' => $root->revision, 'atomic' => true, 'financial_effect' => 'none'];
+        if ($version->revision !== $expectedRevision) {
+            throw new CommandRejection('VERSION_CONFLICT', 409, $version->revision, [], $refusal);
+        }
+        if ($version->state !== 'held') {
+            throw new CommandRejection('CART_RESERVATION_NOT_HELD', 409, $version->revision, [], [...$refusal, 'state' => $version->state]);
+        }
+        if (now('UTC')->greaterThanOrEqualTo($checkout->expires_at)) {
+            throw new CommandRejection('CART_RESERVATION_EXPIRED', 409, $version->revision, [], [...$refusal, 'state' => 'release_pending']);
+        }
+
+        return [$root, $version, $refusal];
+    }
+
+    /** @return list<InvestorCartCheckoutLine> */
+    private function heldLines(InvestorCartCheckout $checkout): array
+    {
+        return array_values(InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkout->id)->orderBy('business_campaign_id')->get()->all());
+    }
+
+    /**
+     * The campaigns of any checkout, read without locks only to know which Businesses to lock.
+     *
+     * @return list<string>
+     */
+    private function linesOf(string $checkoutId): array
+    {
+        return array_values(InvestorCartCheckoutLine::query()->where('investor_cart_checkout_id', $checkoutId)
+            ->pluck('business_campaign_id')->map(fn (mixed $id): string => (string) $id)->all());
+    }
+
+    private static function nullableString(mixed $value): ?string
+    {
+        return is_string($value) ? $value : null;
     }
 
     /**
@@ -247,18 +545,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
     private function settle(int $userId, int $contextRevision, string $partyId, string $operationId, InvestorCartCheckout $checkout, int $expectedRevision,
         string $quoteId, int $expectedQuoteRevision, string $acknowledgedSha256, Closure $price): OperationResult
     {
-        $root = InvestorCartRoot::query()->whereKey($checkout->investor_cart_id)->lockForUpdate()->sole();
-        $version = InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->orderByDesc('revision')->firstOrFail();
-        $refusal = ['cart_id' => $root->id, 'checkout_id' => $checkout->id, 'cart_revision' => $root->revision, 'atomic' => true, 'financial_effect' => 'none'];
-        if ($version->revision !== $expectedRevision) {
-            throw new CommandRejection('VERSION_CONFLICT', 409, $version->revision, [], $refusal);
-        }
-        if ($version->state !== 'held') {
-            throw new CommandRejection('CART_RESERVATION_NOT_HELD', 409, $version->revision, [], [...$refusal, 'state' => $version->state]);
-        }
-        if (now('UTC')->greaterThanOrEqualTo($checkout->expires_at)) {
-            throw new CommandRejection('CART_RESERVATION_EXPIRED', 409, $version->revision, [], [...$refusal, 'state' => 'release_pending']);
-        }
+        [$root, $version, $refusal] = $this->heldVersion($checkout, $expectedRevision);
         $quote = InvestorCartQuote::query()->whereKey($version->investor_cart_quote_id)->sole();
         if ($quoteId !== $quote->id || $expectedQuoteRevision !== 1 || ! hash_equals($quote->disclosure_sha256, $acknowledgedSha256)) {
             throw new CommandRejection('CART_QUOTE_STALE', 409, $version->revision, [], [...$refusal, 'quote_id' => $quote->id, 'requires_reconfirmation' => true]);
@@ -396,7 +683,7 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
             });
     }
 
-    private function appendVersion(InvestorCartCheckout $checkout, int $revision, string $state, string $quoteId, string $operationId, DateTimeImmutable $at): void
+    private function appendVersion(InvestorCartCheckout $checkout, int $revision, string $state, string $quoteId, ?string $operationId, DateTimeImmutable $at): void
     {
         $version = new InvestorCartCheckoutVersion;
         $version->forceFill(['id' => strtolower((string) Str::ulid()), 'investor_cart_checkout_id' => $checkout->id, 'revision' => $revision, 'state' => $state,
