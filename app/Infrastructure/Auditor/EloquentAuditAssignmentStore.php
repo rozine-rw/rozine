@@ -335,7 +335,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions,
             // A monthly visit audits the Kigali month before the one it was first dispatched in.
             'period' => $state['kind'] === 'routine' && AuditEngagementState::purpose($state) === AuditEngagementState::PURPOSE_MONTHLY
-                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null];
+                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null,
+            'purpose' => AuditEngagementState::purpose($state)];
     }
 
     /**
@@ -992,6 +993,11 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         if ($current && ($record->party_id !== $partyId || ! in_array($record->status, $completed ? ['offered', 'accepted', 'completed'] : ['offered', 'accepted'], true))) {
             if ($record->status === 'withdrawn' && $this->heldWhenWithdrawn($record, $partyId)) {
                 throw new CommandRejection('ASSIGNMENT_WITHDRAWN', 409);
+            }
+            // The partner's verified statement review is done, not lost: their old link says so (#511).
+            if ($record->status === 'completed' && $record->party_id === $partyId
+                && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW) {
+                throw new CommandRejection('STATEMENT_REVIEW_COMPLETED', 409);
             }
             $offer = AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('party_id', $partyId)
                 ->where('status', 'offered')->orderByDesc('revision')->first(['revision']);

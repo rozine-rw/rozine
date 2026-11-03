@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
@@ -13,6 +13,7 @@ import {
     TONE_TEXT,
     TableCard,
 } from '@/components/admin/ui';
+import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -32,7 +33,49 @@ const KIND_TONE: Record<ExceptionKind, Tone> = {
     variance: 'amber',
     audit: 'blue',
     complaint: 'green',
+    cart_release: 'red',
 };
+
+/**
+ * Retries a stuck cart release (`cart.releases.resolve`): one request releases every line of the
+ * cart together. The server says why it could not, on the row.
+ */
+function RetryRelease({
+    item,
+    action,
+}: {
+    item: ExceptionItem;
+    action: NonNullable<ExceptionItem['retry']>;
+}) {
+    const { t } = useTranslation();
+    const form = useForm({ request_id: crypto.randomUUID() });
+    const errorId = `retry-error-${item.id}`;
+
+    return (
+        <form
+            onSubmit={(event) => {
+                event.preventDefault();
+                form.post(action.url, { preserveScroll: true });
+            }}
+            className="flex flex-col items-end gap-1"
+        >
+            <button
+                type="submit"
+                disabled={form.processing}
+                aria-label={t('admin.exceptions.retry_named', {
+                    reference: item.reference,
+                })}
+                aria-describedby={errorId}
+                className="shrink-0 rounded-lg bg-[#1e3aff] px-3 py-1.5 text-[11.5px] font-semibold text-white disabled:opacity-50"
+            >
+                {form.processing
+                    ? t('admin.exceptions.retrying')
+                    : t('admin.exceptions.retry')}
+            </button>
+            <FieldError id={errorId}>{form.errors.request_id}</FieldError>
+        </form>
+    );
+}
 
 function Row({ item }: { item: ExceptionItem }) {
     const { t } = useTranslation();
@@ -84,7 +127,10 @@ function Row({ item }: { item: ExceptionItem }) {
                           })}
                 </span>
             </span>
-            <div role="cell" className="flex justify-end">
+            <div role="cell" className="flex items-start justify-end gap-2">
+                {item.retry !== null && (
+                    <RetryRelease item={item} action={item.retry} />
+                )}
                 {item.link !== null && (
                     <Link
                         href={item.link}

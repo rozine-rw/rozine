@@ -93,6 +93,8 @@ export function FileReview({
     const { brief } = file;
     const hasReason = brief !== null;
     const hasMandate = brief !== null;
+    /* A statement review is checked from the statements, not on site, so its headings say so (#511). */
+    const review = brief === 'statement_review';
     /*
      * The introduction claims only what is on record: "everything submitted, screened" needs a
      * submitted raise (its figures, not the draft fallback's nulls) and a published pre-screen.
@@ -353,7 +355,11 @@ export function FileReview({
                                 AMBER_TEXT,
                             )}
                         >
-                            {t('auditor.file.why')}
+                            {t(
+                                review
+                                    ? 'auditor.file.why_review'
+                                    : 'auditor.file.why',
+                            )}
                         </h3>
                     </div>
                     {hasReason && (
@@ -373,7 +379,11 @@ export function FileReview({
                                 AMBER_TEXT,
                             )}
                         >
-                            {t('auditor.file.mandate')}
+                            {t(
+                                review
+                                    ? 'auditor.file.mandate_review'
+                                    : 'auditor.file.mandate',
+                            )}
                         </p>
                     )}
                     {hasMandate && (

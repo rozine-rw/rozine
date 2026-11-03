@@ -68,6 +68,7 @@ import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
 import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
+import StaffCartReleaseController from './StaffCartReleaseController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -141,6 +142,7 @@ const Controllers = {
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
     StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
+    StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 

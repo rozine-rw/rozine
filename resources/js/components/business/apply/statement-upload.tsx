@@ -11,6 +11,8 @@ type StatementUploadProps = {
     identityContextRevision: number;
     /** Only a member who may save the application uploads; anyone else sees the list. */
     canUpload: boolean;
+    /** Whether an Audit Partner has verified the statements on file, so a read one says so (#511). */
+    verified?: boolean;
 };
 
 /**
@@ -23,6 +25,7 @@ export function StatementUpload({
     statements,
     identityContextRevision,
     canUpload,
+    verified = false,
 }: StatementUploadProps) {
     const { t, locale } = useTranslation();
     const [uploading, setUploading] = useState(false);
@@ -102,7 +105,7 @@ export function StatementUpload({
                             </div>
                             <span className="shrink-0 rounded-[10px] border border-rz-border px-2 py-0.5 text-[11px] font-semibold text-rz-slate">
                                 {t(
-                                    `business.apply.statements.reading.${document.reading}`,
+                                    `business.apply.statements.reading.${verified && document.reading === 'read' ? 'verified' : document.reading}`,
                                 )}
                             </span>
                         </li>
