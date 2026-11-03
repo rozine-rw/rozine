@@ -114,8 +114,10 @@ it('onboards a sole trader and gives its owner the Business app in the same step
 it('gives no Business access when the new mandate is not yet in effect', function (): void {
     $party = Party::factory()->verified()->create();
     User::factory()->for($party)->create(['email' => 'trader@example.test']);
-    $input = onboarding(['kind' => 'person', 'rdb_code' => null, 'established_year' => null, 'representative_email' => 'trader@example.test',
-        'effective_at' => now('UTC')->addHour()->format('Y-m-d\\TH:i:s\\Z')]);
+    $input = ['kind' => 'person', 'rdb_code' => null, 'name' => 'Kigali Fresh', 'industry' => 'Agriculture', 'district' => 'Gasabo',
+        'established_year' => null, 'representative_email' => 'trader@example.test', 'evidence_reference' => 'ID checked',
+        'reason' => 'Onboarding for the pilot.', 'effective_at' => now('UTC')->addHour()->format('Y-m-d\\TH:i:s\\Z'),
+        'request_id' => (string) Str::uuid(), 'mandate_request_id' => (string) Str::uuid()];
 
     expect(app(OnboardBusiness::class)->handle($this->officer->id, $input))->toBe(['status' => 'rejected', 'code' => 'MANDATE_REQUIRED'])
         ->and(RoleMembership::query()->where('party_id', $party->id)->where('role', 'business')->exists())->toBeFalse()
