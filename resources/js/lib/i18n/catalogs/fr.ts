@@ -6006,6 +6006,8 @@ const fr: Catalog = {
     'investor.wallet.c3.filter.external': 'Entrées et sorties',
     'investor.wallet.c3.filter.internal': 'Réservations et engagements',
     'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.history_loading':
+        'Chargement de l’historique des transactions…',
     'investor.wallet.c3.older': 'Afficher plus ancien',
     'investor.wallet.c3.receipt_policy': 'Version de la règle',
     'investor.wallet.c3.not_credited':

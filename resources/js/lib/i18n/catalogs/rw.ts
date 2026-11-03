@@ -5982,6 +5982,8 @@ const rw: Catalog = {
     'investor.wallet.c3.filter.external': "Ayinjiye n'ayasohotse",
     'investor.wallet.c3.filter.internal': "Ayafashwe n'ayiyemejwe",
     'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.history_loading':
+        'Turimo kwerekana amateka y’ibikorwa…',
     'investor.wallet.c3.older': 'Erekana ibya kera',
     'investor.wallet.c3.receipt_policy': "Verisiyo y'amabwiriza",
     'investor.wallet.c3.not_credited':
