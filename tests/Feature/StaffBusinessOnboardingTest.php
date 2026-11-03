@@ -104,22 +104,23 @@ it('gives Business access only to a verified person on the mandate, and never re
     $business = BusinessAuthorityFixture::configure($this->fixture)['data']['business']['id'];
     $mandated = $this->fixture['users'][0];
     $outsider = User::factory()->for(Party::factory()->verified())->create();
+    $people = array_column(BusinessMandate::query()->where('business_id', $business)->sole()->terms['people'], 'party_id');
 
-    expect(fn () => $store->grantMandatedBusinessAccess($this->officer->id, (string) $outsider->party_id, $business, 'Onboarding.', (string) Str::uuid()))
+    expect(fn () => $store->grantMandatedBusinessAccess($this->officer->id, (string) $outsider->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
         ->toThrow(IdentityViolation::class, 'PARTY_AUTHORITY_REQUIRED')
-        ->and(fn () => $store->grantMandatedBusinessAccess($this->officer->id, strtolower((string) Str::ulid()), $business, 'Onboarding.', (string) Str::uuid()))
+        ->and(fn () => $store->grantMandatedBusinessAccess($this->officer->id, strtolower((string) Str::ulid()), $business, $people, 'Onboarding.', (string) Str::uuid()))
         ->toThrow(IdentityViolation::class, 'PARTY_AUTHORITY_REQUIRED');
 
     // A Business membership already on record, in whatever state, is reported as it is and never rewritten.
     $existing = RoleMembership::query()->where('party_id', $mandated->party_id)->where('role', 'business')->sole();
-    expect($store->grantMandatedBusinessAccess($this->officer->id, (string) $mandated->party_id, $business, 'Onboarding.', (string) Str::uuid()))
+    expect($store->grantMandatedBusinessAccess($this->officer->id, (string) $mandated->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
         ->toBe(['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $mandated->party_id, 'membership' => ['id' => $existing->id, 'role' => 'business',
             'status' => $existing->status, 'revision' => $existing->revision]])
         ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(0);
 
     $analyst = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($analyst, ['analyst'], 'Reporting.');
-    expect(fn () => $store->grantMandatedBusinessAccess($analyst->id, (string) $mandated->party_id, $business, 'Onboarding.', (string) Str::uuid()))
+    expect(fn () => $store->grantMandatedBusinessAccess($analyst->id, (string) $mandated->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
         ->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
 });
 

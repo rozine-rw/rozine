@@ -49,6 +49,7 @@ final class OnboardBusiness
         private ResolveVerifiedOrganization $organizations,
         private ConfigureBusinessAuthority $authority,
         private IdentityAccessStore $memberships,
+        private WithBusinessReview $review,
     ) {}
 
     /**
@@ -90,8 +91,9 @@ final class OnboardBusiness
         }
         $businessId = $result['data']['business']['id'];
         // The verified, mandated representative gets the Business app in the same step, so neither side is left waiting (#491).
-        $membership = $this->memberships->grantMandatedBusinessAccess($actorId, $partyId, $businessId,
-            'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['membership'];
+        $membership = $this->review->handle($actorId, $businessId, false, fn (array $business): array => $this->memberships->grantMandatedBusinessAccess(
+            $actorId, $partyId, $businessId, array_column($business['mandate']['people'], 'party_id'),
+            'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['membership']);
 
         return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $businessId,
             'representative' => $name, 'business_access' => $membership['status'] === 'active'];

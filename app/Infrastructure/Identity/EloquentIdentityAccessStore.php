@@ -14,7 +14,6 @@ use App\Domain\Identity\InvestorAccessTerms;
 use App\Domain\Identity\MembershipTransitions;
 use App\Domain\Identity\RoleAccess;
 use App\Domain\Identity\StaffPermission;
-use App\Models\BusinessMandate;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
@@ -607,9 +606,9 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
-    public function grantMandatedBusinessAccess(int $actorId, string $partyId, string $businessId, string $reason, string $requestId): array
+    public function grantMandatedBusinessAccess(int $actorId, string $partyId, string $businessId, array $mandatedPartyIds, string $reason, string $requestId): array
     {
-        return DB::transaction(function () use ($actorId, $partyId, $businessId, $reason, $requestId): array {
+        return DB::transaction(function () use ($actorId, $partyId, $businessId, $mandatedPartyIds, $reason, $requestId): array {
             User::query()->whereKey($actorId)->lockForUpdate()->first();
             $this->requireStaffPermission($actorId, 'businesses.verify');
             $hash = $this->requestHash(['membership.mandate_grant', $partyId, $businessId], $reason, $requestId);
@@ -618,9 +617,8 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 return $replay;
             }
             $party = $this->lockParty($partyId);
-            $people = BusinessMandate::query()->where('business_id', $businessId)->orderByDesc('version')->first()?->terms['people'] ?? [];
             if ($party === null || $party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now())
-                || ! $party->verifiedIdentity()->exists() || ! in_array($partyId, array_column($people, 'party_id'), true)) {
+                || ! $party->verifiedIdentity()->exists() || ! in_array($partyId, $mandatedPartyIds, true)) {
                 throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
             }
             $existing = $party->memberships()->where('role', 'business')->first();
