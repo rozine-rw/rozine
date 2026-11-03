@@ -49,6 +49,11 @@ const en = {
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
+    'identity.denied.withdrawn_audit.title':
+        'This audit was withdrawn by Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Audit Operations withdrew this audit, so it is no longer yours to work on and nothing more is needed from you. Your other jobs are in Jobs.',
+    'identity.denied.withdrawn_audit.action': 'Go to Jobs',
     'errors.not_found.head_title': 'Not found',
     'errors.not_found.title': "We couldn't find that page",
     'errors.not_found.body':
@@ -2773,6 +2778,7 @@ const en = {
     'admin.parties.audit.flash.placeholder':
         'e.g. Unusual movement on the revenue account this week.',
     'admin.parties.audit.flash.cta': 'Request Flash audit',
+    'admin.parties.audit.flash.done': 'Flash audit requested.',
     'admin.parties.audit.redispatch.open': 'Redispatch',
     'admin.parties.audit.redispatch.form': 'Redispatch this audit',
     'admin.parties.audit.redispatch.form_body':
@@ -2780,7 +2786,12 @@ const en = {
     'admin.parties.audit.redispatch.placeholder':
         'e.g. A new Audit Partner near this business was approved.',
     'admin.parties.audit.redispatch.cta': 'Redispatch',
-    'admin.parties.audit.close.open': 'Close',
+    'admin.parties.audit.redispatch.done': 'Audit sent back to dispatch.',
+    'admin.parties.audit.close.open': 'Close permanently',
+    'admin.parties.audit.close.hint':
+        'Closing is permanent: it ends this audit and this business can never be audited again. To end only this audit, withdraw it.',
+    'admin.parties.audit.close.done':
+        'Audit closed. This business can no longer be audited.',
     'admin.parties.audit.close.form': 'Close this audit',
     'admin.parties.audit.close.form_body':
         'Closing ends this audit without a report and can’t be undone. This business can never be audited again: no Flash audit or statement review can be requested for it afterwards.',
@@ -2794,6 +2805,8 @@ const en = {
     'admin.parties.audit.withdraw.placeholder':
         'e.g. The partner did not seal a report by the deadline.',
     'admin.parties.audit.withdraw.cta': 'Withdraw audit',
+    'admin.parties.audit.withdraw.done':
+        'Audit withdrawn. You can request a new one.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2854,6 +2867,7 @@ const en = {
     'admin.parties.audit.review.placeholder':
         'e.g. First review of the statements uploaded with the application.',
     'admin.parties.audit.review.cta': 'Request review',
+    'admin.parties.audit.review.done': 'Statement review requested.',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',
@@ -6453,6 +6467,7 @@ const en = {
     'business.audit_cosign.status.signed_on': 'Signed · {date}',
     'business.audit_cosign.status.signed': 'Signed',
     'business.audit_cosign.status.pending': 'Waiting',
+    'business.audit_cosign.status.not_signed': 'Not signed',
     'business.audit_cosign.due': 'Co-sign by {date}',
     'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
     'business.audit_cosign.published': 'Published {date}',
@@ -7552,6 +7567,9 @@ const en = {
     'auditor.verify.debt_last_payment': 'Last scheduled payment',
     'auditor.verify.debt_last_payment_pick': 'Choose a month',
     'auditor.verify.debt_beyond': 'After {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Each coming month fills from the payment above. Change any month that differs, such as a stepped or final balloon payment.',
+    'auditor.verify.debt_due_in': 'Due in {month} (RWF)',
     'auditor.verify.debt_sources': 'Statements showing this debt',
     'auditor.verify.add_debt': 'Add a debt',
     'auditor.verify.remove_debt': 'Remove this debt',

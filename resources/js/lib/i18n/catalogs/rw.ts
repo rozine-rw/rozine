@@ -51,6 +51,10 @@ const rw: Catalog = {
     'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
     'identity.denied.expired_offer.body':
         'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
+    'identity.denied.withdrawn_audit.title': 'Iri genzura ryakuweho na Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Ishami rishinzwe igenzura ryakuyeho iri genzura, ntirikiri iryawe kandi nta kindi usabwa. Indi mirimo yawe iri muri Imirimo.',
+    'identity.denied.withdrawn_audit.action': 'Jya ku Mirimo',
     'errors.not_found.head_title': 'Ntibibonetse',
     'errors.not_found.title': 'Ntitwabonye uru rupapuro',
     'errors.not_found.body':
@@ -2908,6 +2912,7 @@ const rw: Catalog = {
     'admin.parties.audit.flash.placeholder':
         'urugero: Imikoreshereze idasanzwe kuri konti y’amafaranga yinjiye muri iki cyumweru.',
     'admin.parties.audit.flash.cta': 'Saba igenzura ritunguranye',
+    'admin.parties.audit.flash.done': 'Igenzura rya Flash ryasabwe.',
     'admin.parties.audit.redispatch.open': 'Ohereza ukundi',
     'admin.parties.audit.redispatch.form': 'Ohereza iri genzura ukundi',
     'admin.parties.audit.redispatch.form_body':
@@ -2915,7 +2920,12 @@ const rw: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
-    'admin.parties.audit.close.open': 'Funga',
+    'admin.parties.audit.redispatch.done': 'Igenzura ryasubijwe mu itangwa.',
+    'admin.parties.audit.close.open': 'Funga burundu',
+    'admin.parties.audit.close.hint':
+        'Gufunga ni burundu: birangiza iri genzura kandi iki kigo ntikizongera kugenzurwa. Kugira ngo urangize iri genzura gusa, rikureho.',
+    'admin.parties.audit.close.done':
+        'Igenzura ryafunzwe. Iki kigo ntikigishobora kugenzurwa.',
     'admin.parties.audit.close.form': 'Funga iri genzura',
     'admin.parties.audit.close.form_body':
         'Gufunga birangiza iri genzura nta raporo, kandi ntibisubirwaho. Ubu bucuruzi ntibuzongera kugenzurwa: nta genzura ritunguranye cyangwa isuzuma ry’imbonerahamwe rizongera gusabwa.',
@@ -2929,6 +2939,8 @@ const rw: Catalog = {
     'admin.parties.audit.withdraw.placeholder':
         'urugero: Umufatanyabikorwa ntiyashyize kashe kuri raporo mbere y’igihe ntarengwa.',
     'admin.parties.audit.withdraw.cta': 'Kuraho igenzura',
+    'admin.parties.audit.withdraw.done':
+        'Igenzura ryakuweho. Ushobora gusaba irindi.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2990,6 +3002,7 @@ const rw: Catalog = {
     'admin.parties.audit.review.placeholder':
         'urugero: Isuzuma rya mbere ry’inyandiko zoherejwe hamwe n’ubusabe.',
     'admin.parties.audit.review.cta': 'Saba isuzuma',
+    'admin.parties.audit.review.done': "Isuzuma ry'inyandiko ryasabwe.",
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',
@@ -6685,6 +6698,7 @@ const rw: Catalog = {
     'business.audit_cosign.status.signed_on': 'Yasinye · {date}',
     'business.audit_cosign.status.signed': 'Yasinye',
     'business.audit_cosign.status.pending': 'Birategerejwe',
+    'business.audit_cosign.status.not_signed': 'Ntiyasinywe',
     'business.audit_cosign.due': 'Shyiraho umukono bitarenze {date}',
     'business.audit_cosign.overdue':
         'Byarenze igihe — umukono wagombaga gushyirwaho bitarenze {date}',
@@ -7830,6 +7844,9 @@ const rw: Catalog = {
     'auditor.verify.debt_last_payment': 'Ubwishyu buteganyijwe bwa nyuma',
     'auditor.verify.debt_last_payment_pick': 'Hitamo ukwezi',
     'auditor.verify.debt_beyond': 'Nyuma ya {month}',
+    'auditor.verify.debt_schedule_hint':
+        "Buri kwezi kuri imbere kuzuzwa n'ubwishyu buri haruguru. Hindura ukwezi kwose gutandukanye, nk'ubwishyu buzamuka cyangwa ubwishyu bunini bwa nyuma.",
+    'auditor.verify.debt_due_in': 'Bigomba kwishyurwa muri {month} (RWF)',
     'auditor.verify.debt_sources': 'Inyandiko zigaragaza uyu mwenda',
     'auditor.verify.add_debt': 'Ongeraho umwenda',
     'auditor.verify.remove_debt': 'Kuraho uyu mwenda',

@@ -33,6 +33,25 @@ it('replaces denied role pages with an accessible recovery page', () => {
     );
 });
 
+it('says Rozine withdrew an audit and leads its partner back to Jobs (#506)', () => {
+    render(<AccessDenied code="ASSIGNMENT_WITHDRAWN" status={409} />);
+    expect(
+        screen.getByRole('heading', {
+            name: 'This audit was withdrawn by Rozine',
+        }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+        'Audit Operations withdrew this audit',
+    );
+    expect(screen.getByRole('link', { name: 'Go to Jobs' })).toHaveAttribute(
+        'href',
+        '/auditor/jobs',
+    );
+    expect(
+        screen.getByRole('link', { name: 'Choose an app' }),
+    ).toBeInTheDocument();
+});
+
 it('says an offer closed, not that access must be checked, for an expired offer', () => {
     render(<AccessDenied code="ASSIGNMENT_ACCEPTANCE_EXPIRED" />);
     expect(
