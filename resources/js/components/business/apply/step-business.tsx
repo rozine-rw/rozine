@@ -149,6 +149,12 @@ function IneligibleNotice({
             <p className="mt-1.5 text-[12.5px] leading-[1.55] text-rz-ink">
                 {eligibility.message}
             </p>
+            {/* Rozine's own check is next: say who acts and that nothing is owed meanwhile (#511). */}
+            {eligibility.code === 'POLICY_INPUT_REQUIRED' && (
+                <p className="mt-2 text-[12.5px] leading-[1.55] text-rz-body">
+                    {t('business.apply.business.policy_check_next')}
+                </p>
+            )}
             {needsEvidence && (
                 <ul className="mt-2.5 space-y-1.5 text-[12.5px] leading-[1.55] text-rz-ink">
                     {requirement !== undefined && (
@@ -239,6 +245,7 @@ export function StepBusiness({
                         statements={statements}
                         identityContextRevision={identityContextRevision}
                         canUpload={canUpload}
+                        verified={evidence.verified.statements}
                     />
                 )}
 

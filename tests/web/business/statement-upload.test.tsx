@@ -234,4 +234,36 @@ describe('Statement upload on Apply step 1', () => {
             screen.getByText('Not eligible to raise yet'),
         ).toBeInTheDocument();
     });
+
+    it('reads a verified statement as verified, and says who checks credit history next (#511)', () => {
+        const evidence = page().evidence;
+        evidence.verified.statements = true;
+        evidence.eligibility = {
+            status: 'ineligible',
+            code: 'POLICY_INPUT_REQUIRED',
+            message:
+                'Current credit history and obligations must be verified before applying.',
+        };
+
+        render(
+            <StepBusiness
+                evidence={evidence}
+                statements={statements()}
+                identityContextRevision={4}
+                canUpload
+            />,
+        );
+
+        expect(screen.getByText('Verified')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Read · awaiting verification'),
+        ).not.toBeInTheDocument();
+        /* A statement still being read is not verified by the review. */
+        expect(screen.getByText('Reading')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^Next, Rozine needs to check your current credit history and existing loans\./u,
+            ),
+        ).toBeInTheDocument();
+    });
 });

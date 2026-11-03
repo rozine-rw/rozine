@@ -58,6 +58,14 @@ const REVIEW: StatementReviewFile = {
                 debt_service: '50000',
             },
         ],
+        balances: [
+            {
+                account: 'bank-a',
+                month: '2026-08',
+                opening_balance: '1250',
+                closing_balance: '351250',
+            },
+        ],
     },
     verify: {
         url: '/auditor/jobs/fa_huye/statement-verification',
@@ -350,6 +358,47 @@ describe('Auditor statement verification', () => {
         expect(
             screen.getByText(
                 "Huye Motors's statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
+            ),
+        ).toBeInTheDocument();
+        /* The form gives way to what happened and the way back to Jobs (#511). */
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Verification recorded',
+        );
+        expect(
+            screen.queryByRole('form', { name: 'Verify the statements' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Back to Jobs' }),
+        ).toHaveAttribute('href', '/auditor/jobs');
+    });
+
+    it("shows each account's balances to check and a whole-RWF hint on amount fields (#511)", () => {
+        renderWithUser(<AuditorFile {...props()} />);
+
+        const balances = within(form()).getByRole('row', {
+            name: /^bank-a August 2026/u,
+        });
+        expect(balances).toHaveTextContent('1,250');
+        expect(balances).toHaveTextContent('351,250');
+        expect(
+            within(form()).getByLabelText('Usual monthly owner draw (RWF)'),
+        ).toHaveAttribute('placeholder', 'Whole RWF, e.g. 150000');
+    });
+
+    it('describes a statement review, not a site audit, in the file brief (#511)', () => {
+        const file = props();
+        (file.file as { brief: string | null }).brief = 'statement_review';
+        renderWithUser(<AuditorFile {...file} />);
+
+        expect(
+            within(sheet()).getByText('Why this statement review is required'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).getByText('What you must check'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).getByText(
+                'Open each statement and note where you checked it.',
             ),
         ).toBeInTheDocument();
     });
