@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "b86cd8f984e060924e405d0be08fdd3aa7b3e5a170bf260572e9cdd433074761",
-    "coverageSetSha256": "a85ba08e16b308bc27229cc59105de5f09e8bca90d7984ebc89b9e031203305f",
+    "sourceManifestSha256": "19896dc047820000fb6e56f3792ca02de7aeb7d4a3a62955c0b1d39f3d574805",
+    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359",
     "thresholds": {
         "critical": {
             "global": {
@@ -223,6 +223,7 @@
         "resources/js/components/investor/audit-drawer.tsx",
         "resources/js/components/investor/auth/auth-forms.tsx",
         "resources/js/components/investor/auth/auth-frame.tsx",
+        "resources/js/components/investor/cart/whole-cart.tsx",
         "resources/js/components/investor/deals/checkout-sheet.tsx",
         "resources/js/components/investor/deals/deal-bits.tsx",
         "resources/js/components/investor/deals/deal-deck.tsx",
