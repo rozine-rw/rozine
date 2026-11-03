@@ -132,7 +132,7 @@ test('approval refuses a request record whose operation the recipient state cann
     $requester = approvalManager();
     $approver = approvalManager();
     $recipient = User::factory()->withTwoFactor()->create();
-    $proposal = IdentityAuditEvent::query()->findOrFail(requestSuperadmin($requester, $recipient)['proposal_id']);
+    $proposal = IdentityAuditEvent::query()->whereKey(requestSuperadmin($requester, $recipient)['proposal_id'])->sole();
     // The request log is append-only, so a stray record is a new row beside the real one.
     $stray = $proposal->replicate()->forceFill(['id' => strtolower((string) Str::ulid()), 'request_id' => (string) Str::uuid(),
         'after' => [...$proposal->after, 'operation' => $operation]]);

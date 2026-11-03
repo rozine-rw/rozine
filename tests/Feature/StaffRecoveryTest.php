@@ -274,8 +274,9 @@ test('the interactive command uses real password MFA and exact semantic approval
 
 test('a request needs a known kind and exactly two distinct recipient accounts', function (string $kind, array $recipients): void {
     [$first] = Recovery::people();
-    expect(fn () => app(RequestStaffRecovery::class)->handle($first->id, 'password', Recovery::code($first), $kind, $recipients,
-        'Independently reviewed setup.', (string) Str::uuid()))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_INPUT_INVALID');
+    expect(fn () => app(RequestStaffRecovery::class)->handle($first->id, 'password', Recovery::code($first), $kind,
+        array_values(array_map(intval(...), $recipients)), 'Independently reviewed setup.', (string) Str::uuid()))
+        ->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_INPUT_INVALID');
 })->with([
     'unknown kind' => ['promote', [41, 42]],
     'one recipient' => ['genesis', [41]],
