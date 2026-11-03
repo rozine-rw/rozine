@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\OnboardBusiness;
+use App\Application\Identity\ChangeMembership;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
 use App\Models\IdentityAuditEvent;
+use App\Models\IdentityOperator;
 use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
@@ -97,6 +100,26 @@ it('onboards a sole trader and gives its owner the Business app in the same step
     // A retry replays the grant rather than recording it twice.
     $this->post('/admin/businesses/onboard', $input)->assertSessionHas('business_onboarded.business_access', true);
     expect(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(1);
+
+    // Once access is removed, the same retry still replays, but reports access as it is now and never reinstates it.
+    $operator = User::factory()->withTwoFactor()->create();
+    IdentityOperator::factory()->create(['user_id' => $operator->id]);
+    app(ChangeMembership::class)->handle($operator->id, $party->id, 'business', 'revoked', $membership->revision,
+        'case:revocation', 'Withdraw authority.', (string) Str::uuid());
+    $this->actingAs($this->officer)->post('/admin/businesses/onboard', $input)->assertSessionHas('business_onboarded.business_access', false);
+    expect($membership->refresh()->status)->toBe('revoked')
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(1);
+});
+
+it('gives no Business access when the new mandate is not yet in effect', function (): void {
+    $party = Party::factory()->verified()->create();
+    User::factory()->for($party)->create(['email' => 'trader@example.test']);
+    $input = onboarding(['kind' => 'person', 'rdb_code' => null, 'established_year' => null, 'representative_email' => 'trader@example.test',
+        'effective_at' => now('UTC')->addHour()->format('Y-m-d\\TH:i:s\\Z')]);
+
+    expect(app(OnboardBusiness::class)->handle($this->officer->id, $input))->toBe(['status' => 'rejected', 'code' => 'MANDATE_REQUIRED'])
+        ->and(RoleMembership::query()->where('party_id', $party->id)->where('role', 'business')->exists())->toBeFalse()
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->exists())->toBeFalse();
 });
 
 it('gives Business access only to a verified person on the mandate, and never reinstates removed access (#491)', function (): void {
@@ -115,7 +138,7 @@ it('gives Business access only to a verified person on the mandate, and never re
     $existing = RoleMembership::query()->where('party_id', $mandated->party_id)->where('role', 'business')->sole();
     expect($store->grantMandatedBusinessAccess($this->officer->id, (string) $mandated->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
         ->toBe(['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $mandated->party_id, 'membership' => ['id' => $existing->id, 'role' => 'business',
-            'status' => $existing->status, 'revision' => $existing->revision]])
+            'status' => $existing->status, 'revision' => $existing->revision], 'access_active' => $existing->status === 'active'])
         ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(0);
 
     $analyst = User::factory()->withTwoFactor()->create();

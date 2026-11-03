@@ -83,19 +83,19 @@ final class OnboardBusiness
                     'required_signatories' => [$partyId], 'effective_at' => $input['effective_at'], 'expires_at' => null,
                     'status' => 'active', 'attested_complete' => true],
                 0, $input['evidence_reference'], $input['reason'], $input['mandate_request_id']);
+            if ($result['status'] !== 'completed') {
+                return ['status' => 'rejected', 'code' => $result['code']];
+            }
+            $businessId = $result['data']['business']['id'];
+            // The verified representative on the Business's current, valid mandate gets the Business app in the same step (#491).
+            $access = $this->review->handle($actorId, $businessId, true, fn (array $business): bool => $this->memberships->grantMandatedBusinessAccess(
+                $actorId, $partyId, $businessId, array_column($business['mandate']['people'], 'party_id'),
+                'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['access_active']);
         } catch (CommandRejection|IdentityViolation $refusal) {
             return ['status' => 'rejected', 'code' => $refusal->reason];
         }
-        if ($result['status'] !== 'completed') {
-            return ['status' => 'rejected', 'code' => $result['code']];
-        }
-        $businessId = $result['data']['business']['id'];
-        // The verified, mandated representative gets the Business app in the same step, so neither side is left waiting (#491).
-        $membership = $this->review->handle($actorId, $businessId, false, fn (array $business): array => $this->memberships->grantMandatedBusinessAccess(
-            $actorId, $partyId, $businessId, array_column($business['mandate']['people'], 'party_id'),
-            'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['membership']);
 
         return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $businessId,
-            'representative' => $name, 'business_access' => $membership['status'] === 'active'];
+            'representative' => $name, 'business_access' => $access];
     }
 }

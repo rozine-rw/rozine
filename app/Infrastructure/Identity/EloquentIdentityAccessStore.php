@@ -614,7 +614,9 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $hash = $this->requestHash(['membership.mandate_grant', $partyId, $businessId], $reason, $requestId);
             if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
                 /** @var array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}} $replay */
-                return $replay;
+                $current = RoleMembership::query()->whereKey($replay['membership']['id'])->value('status');
+
+                return [...$replay, 'access_active' => $current === 'active'];
             }
             $party = $this->lockParty($partyId);
             if ($party === null || $party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now())
@@ -625,7 +627,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             if ($existing !== null) {
                 return ['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $partyId, 'membership' => [
                     'id' => $existing->id, 'role' => 'business', 'status' => $existing->status, 'revision' => $existing->revision,
-                ]];
+                ], 'access_active' => $existing->status === 'active'];
             }
             [$membership, , $revision] = $this->transitionMembership($party, 'business', 'active', 0);
             $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $partyId, 'membership' => [
@@ -634,7 +636,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.mandate_grant', $reason, $requestId, $hash,
                 [], ['status' => 'active', 'revision' => $revision, 'business_id' => $businessId], $result);
 
-            return $result;
+            return [...$result, 'access_active' => true];
         }, 3);
     }
 
