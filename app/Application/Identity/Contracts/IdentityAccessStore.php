@@ -29,6 +29,15 @@ interface IdentityAccessStore
      */
     public function grantStaff(int $actorId, string $email, string $role, string $reason, string $requestId): array;
 
+    /**
+     * Gives a verified person on a Business's current mandate the Business app (#491), for staff who
+     * verify Businesses. An existing Business membership in any state is left as it is, so this
+     * never reinstates access someone removed.
+     *
+     * @return array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}}
+     */
+    public function grantMandatedBusinessAccess(int $actorId, string $partyId, string $businessId, string $reason, string $requestId): array;
+
     /** Approves the immutable superadmin grant or reactivation request as a second current manager.
      * @return array<string, mixed>
      */

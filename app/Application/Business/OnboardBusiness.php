@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Business;
 
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\ResolveVerifiedOrganization;
@@ -47,6 +48,7 @@ final class OnboardBusiness
         private IdentityRepository $identities,
         private ResolveVerifiedOrganization $organizations,
         private ConfigureBusinessAuthority $authority,
+        private IdentityAccessStore $memberships,
     ) {}
 
     /**
@@ -86,9 +88,12 @@ final class OnboardBusiness
         if ($result['status'] !== 'completed') {
             return ['status' => 'rejected', 'code' => $result['code']];
         }
-        $memberships = array_filter($person['memberships'], fn (array $membership): bool => $membership['role'] === 'business' && $membership['status'] === 'active');
+        $businessId = $result['data']['business']['id'];
+        // The verified, mandated representative gets the Business app in the same step, so neither side is left waiting (#491).
+        $membership = $this->memberships->grantMandatedBusinessAccess($actorId, $partyId, $businessId,
+            'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['membership'];
 
-        return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $result['data']['business']['id'],
-            'representative' => $name, 'business_access' => $memberships !== []];
+        return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $businessId,
+            'representative' => $name, 'business_access' => $membership['status'] === 'active'];
     }
 }

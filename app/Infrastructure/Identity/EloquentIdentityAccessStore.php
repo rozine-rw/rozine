@@ -14,6 +14,7 @@ use App\Domain\Identity\InvestorAccessTerms;
 use App\Domain\Identity\MembershipTransitions;
 use App\Domain\Identity\RoleAccess;
 use App\Domain\Identity\StaffPermission;
+use App\Models\BusinessMandate;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
@@ -603,6 +604,39 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                     return ['membership' => ['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision],
                         'verification' => $approve($party->id)];
                 });
+        }, 3);
+    }
+
+    public function grantMandatedBusinessAccess(int $actorId, string $partyId, string $businessId, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $partyId, $businessId, $reason, $requestId): array {
+            User::query()->whereKey($actorId)->lockForUpdate()->first();
+            $this->requireStaffPermission($actorId, 'businesses.verify');
+            $hash = $this->requestHash(['membership.mandate_grant', $partyId, $businessId], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                /** @var array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}} $replay */
+                return $replay;
+            }
+            $party = $this->lockParty($partyId);
+            $people = BusinessMandate::query()->where('business_id', $businessId)->orderByDesc('version')->first()?->terms['people'] ?? [];
+            if ($party === null || $party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now())
+                || ! $party->verifiedIdentity()->exists() || ! in_array($partyId, array_column($people, 'party_id'), true)) {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            $existing = $party->memberships()->where('role', 'business')->first();
+            if ($existing !== null) {
+                return ['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $partyId, 'membership' => [
+                    'id' => $existing->id, 'role' => 'business', 'status' => $existing->status, 'revision' => $existing->revision,
+                ]];
+            }
+            [$membership, , $revision] = $this->transitionMembership($party, 'business', 'active', 0);
+            $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $partyId, 'membership' => [
+                'id' => $membership->id, 'role' => 'business', 'status' => 'active', 'revision' => $revision,
+            ]];
+            $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.mandate_grant', $reason, $requestId, $hash,
+                [], ['status' => 'active', 'revision' => $revision, 'business_id' => $businessId], $result);
+
+            return $result;
         }, 3);
     }
 
