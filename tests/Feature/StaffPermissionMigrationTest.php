@@ -33,8 +33,9 @@ const ORIGINAL_STAFF_PERMISSIONS = [
         'disbursements.view', 'staging.mail.testers.manage', 'staff.manage', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
 ];
 
-it('preserves the complete existing permission matrix in Spatie', function (string $role): void {
-    expect(StaffFixture::permissions([$role]))->toEqualCanonicalizing(['admin.open', ...ORIGINAL_STAFF_PERMISSIONS[$role]]);
+it('preserves the complete existing permission matrix in Spatie, with the cart release retry added later', function (string $role): void {
+    $later = in_array($role, ['treasury', 'compliance', 'superadmin'], true) ? ['cart.releases.resolve'] : [];
+    expect(StaffFixture::permissions([$role]))->toEqualCanonicalizing(['admin.open', ...ORIGINAL_STAFF_PERMISSIONS[$role], ...$later]);
 })->with(['analyst', 'approver', 'treasury', 'compliance', 'superadmin']);
 
 it('migrates existing enabled disabled and entry-only accounts and restores assignments on rollback', function (): void {

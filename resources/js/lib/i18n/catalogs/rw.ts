@@ -1410,6 +1410,7 @@ const rw: Catalog = {
     'admin.messaging.audience.business': 'Ibigo',
     'admin.messaging.audience.auditor': 'Abafatanyabikorwa mu igenzura',
     'admin.messaging.audience.everyone': 'Abafite konti bose',
+    'admin.messaging.audience.staff': 'Abakozi ba Rozine',
     'admin.messaging.trigger.verification.approved':
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
@@ -2756,6 +2757,10 @@ const rw: Catalog = {
     'admin.permission.health.view': 'Kureba ubuzima bwa sisitemu',
     'admin.permission_detail.health.view':
         "Kureba imirongo y'ibitegereje, imirimo n'uko serivisi zihagaze.",
+    'admin.permission.cart.releases.resolve':
+        'Kongera kurekura ibyo mu gakapu byahagamye',
+    'admin.permission_detail.cart.releases.resolve':
+        'Kurekura ibyafashwe byose byo mu gakapu igihe kurangira kwabyo kwanze, imirongo yose icyarimwe.',
     'admin.parties.you': 'Wowe',
     'admin.parties.drawer_label': "{name}, amakuru y'uruhande",
     'admin.parties.type.business': 'Ikigo',
@@ -7206,6 +7211,10 @@ const rw: Catalog = {
     'admin.exceptions.kind.variance': 'Ikinyuranyo',
     'admin.exceptions.kind.audit': 'Igenzura ryihuse ryatinze',
     'admin.exceptions.kind.complaint': 'Ikirego',
+    'admin.exceptions.kind.cart_release': "Irekurwa ry'agakapu",
+    'admin.exceptions.retry': 'Ongera urekure',
+    'admin.exceptions.retry_named': 'Ongera urekure {reference}',
+    'admin.exceptions.retrying': 'Birarekurwa…',
     'admin.exceptions.col.reference': 'Indango',
     'admin.exceptions.col.kind': 'Ubwoko',
     'admin.exceptions.col.subject': 'Ikidasanzwe',

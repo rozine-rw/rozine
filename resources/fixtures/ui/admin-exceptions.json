@@ -216,7 +216,8 @@
                 "link": {
                     "url": "/preview/admin-book",
                     "method": "get"
-                }
+                },
+                "retry": null
             },
             {
                 "id": "exc_0431",
@@ -243,7 +244,8 @@
                 "link": {
                     "url": "/preview/admin-book",
                     "method": "get"
-                }
+                },
+                "retry": null
             },
             {
                 "id": "exc_0433",
@@ -266,7 +268,8 @@
                 "link": {
                     "url": "/preview/admin-repayments-requery-unknown",
                     "method": "get"
-                }
+                },
+                "retry": null
             },
             {
                 "id": "exc_0437",
@@ -289,7 +292,8 @@
                 "link": {
                     "url": "/preview/admin-repayments-exception-mismatch",
                     "method": "get"
-                }
+                },
+                "retry": null
             },
             {
                 "id": "exc_0439",
@@ -312,7 +316,8 @@
                 "link": {
                     "url": "/preview/admin-reconciliation",
                     "method": "get"
-                }
+                },
+                "retry": null
             },
             {
                 "id": "exc_0355",
@@ -336,7 +341,8 @@
                 "link": {
                     "url": "/preview/admin-businesses-frozen",
                     "method": "get"
-                }
+                },
+                "retry": null
             }
         ],
         "pagination": {

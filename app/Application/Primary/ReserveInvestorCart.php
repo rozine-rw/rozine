@@ -62,9 +62,19 @@ final readonly class ReserveInvestorCart
         return $this->checkouts->findReservation($userId, $contextRevision, $requestId);
     }
 
-    /** @return array<string, mixed> */
-    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array
+    /**
+     * Returns every held line's principal at once (#383 step 4c, contract `ReleaseCartReservation`).
+     *
+     * @return array<string, mixed>
+     */
+    public function release(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $requestId): array
     {
-        return $this->checkouts->findConfirmation($userId, $contextRevision, $checkoutId, $requestId);
+        return $this->checkouts->release($userId, $contextRevision, $checkoutId, $expectedRevision, $requestId);
+    }
+
+    /** @return array<string, mixed> */
+    public function findOperation(int $userId, int $contextRevision, string $command, string $checkoutId, string $requestId): array
+    {
+        return $this->checkouts->findOperation($userId, $contextRevision, $command, $checkoutId, $requestId);
     }
 }

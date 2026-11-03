@@ -9,6 +9,7 @@ use App\Application\Identity\Contracts\Complaints;
 use App\Application\Operations\Contracts\AccountHolds;
 use App\Application\Operations\Contracts\OverdueAudits;
 use App\Application\Operations\Contracts\ReconciliationStore;
+use App\Application\Primary\Contracts\CartCheckouts;
 use Carbon\CarbonImmutable;
 
 /**
@@ -16,8 +17,10 @@ use Carbon\CarbonImmutable;
  * open variance, halt and overdue audit, aged in Kigali days. A variance is an open reconciliation
  * break; a halt is an Investor account case in force; an overdue audit is a Flash Audit still
  * unfinished after its 24-hour clock (BRS AUD-R07); a late complaint is one not acknowledged within 4
- * hours or not resolved within 48 (BRS CMP-R03). Arrears wait on the servicing schedule, so none is read
- * yet. Nothing here can be assigned, escalated or resolved.
+ * hours or not resolved within 48 (BRS CMP-R03); a stuck cart release is a whole-cart checkout whose group
+ * expiry failed or has not run (#383 step 4c), the one exception a viewer with `cart.releases.resolve`
+ * can retry here. Arrears wait on the servicing schedule, so none is read yet. Nothing here can be
+ * assigned or escalated.
  *
  * @phpstan-import-type BreakRecord from ReconciliationStore
  * @phpstan-import-type Hold from AccountHolds
@@ -32,6 +35,10 @@ use Carbon\CarbonImmutable;
  * @phpstan-type Audit array{
  *     id: string, business_id: string, business: string, partner: string|null, status: 'offered'|'accepted'|'operations', due_at: string, age_days: int
  * }
+ * @phpstan-type StuckCartRelease array{
+ *     checkout_id: string, party_id: string, investor: string|null, total: string, lines: int, settles_at: string, attempts: int,
+ *     reason_code: string|null, last_attempted_at: string|null, age_days: int
+ * }
  * @phpstan-type LateComplaint array{
  *     id: string, reference: string, party_id: string, role: 'investor'|'business', customer: string, stage: 'acknowledge'|'resolve', due_at: string, age_days: int
  * }
@@ -41,9 +48,9 @@ final readonly class BrowseExceptions
     private const string ZONE = 'Africa/Kigali';
 
     public function __construct(private ReconciliationStore $reconciliation, private AccountHolds $holds, private OverdueAudits $audits, private Complaints $complaints,
-        private AuthorizeStaffPermission $staff) {}
+        private AuthorizeStaffPermission $staff, private CartCheckouts $checkouts) {}
 
-    /** @return array{variances: list<Variance>, halts: list<Halt>, audits: list<Audit>, complaints: list<LateComplaint>} */
+    /** @return array{variances: list<Variance>, halts: list<Halt>, audits: list<Audit>, complaints: list<LateComplaint>, cart_releases: list<StuckCartRelease>} */
     public function handle(int $actorId): array
     {
         $this->staff->check($actorId, 'exceptions.view');
@@ -75,6 +82,12 @@ final readonly class BrowseExceptions
             $complaints[] = [...$complaint, 'due_at' => $due->toIso8601String(), 'age_days' => $age($due)];
         }
 
-        return ['variances' => $variances, 'halts' => $halts, 'audits' => $audits, 'complaints' => $complaints];
+        $releases = [];
+        foreach ($this->checkouts->stuck() as $release) {
+            $due = $kigali($release['settles_at']);
+            $releases[] = [...$release, 'settles_at' => $due->toIso8601String(), 'age_days' => $age($due)];
+        }
+
+        return ['variances' => $variances, 'halts' => $halts, 'audits' => $audits, 'complaints' => $complaints, 'cart_releases' => $releases];
     }
 }

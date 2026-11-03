@@ -1337,6 +1337,7 @@ const en = {
     'admin.messaging.audience.business': 'Businesses',
     'admin.messaging.audience.auditor': 'Audit Partners',
     'admin.messaging.audience.everyone': 'Everyone with an account',
+    'admin.messaging.audience.staff': 'Rozine staff',
     'admin.messaging.trigger.verification.approved':
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
@@ -2623,6 +2624,9 @@ const en = {
     'admin.permission.health.view': 'View system health',
     'admin.permission_detail.health.view':
         'See queues, jobs and service status.',
+    'admin.permission.cart.releases.resolve': 'Retry stuck cart releases',
+    'admin.permission_detail.cart.releases.resolve':
+        'Release a whole-cart hold whose expiry failed, every line together.',
     'admin.parties.you': 'You',
     'admin.parties.drawer_label': '{name}, party record',
     'admin.parties.type.business': 'Business',
@@ -6954,6 +6958,10 @@ const en = {
     'admin.exceptions.kind.variance': 'Variance',
     'admin.exceptions.kind.audit': 'Overdue flash audit',
     'admin.exceptions.kind.complaint': 'Complaint',
+    'admin.exceptions.kind.cart_release': 'Cart release',
+    'admin.exceptions.retry': 'Retry release',
+    'admin.exceptions.retry_named': 'Retry the release of {reference}',
+    'admin.exceptions.retrying': 'Releasing…',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
     'admin.exceptions.col.subject': 'Exception',
