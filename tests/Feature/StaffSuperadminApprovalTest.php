@@ -128,6 +128,21 @@ test('approval refuses stale recipient access and rechecks eligibility', functio
     expect(app(GetStaffAccess::class)->handle($recipient->id)['allowed_actions'])->not->toContain('staff.manage');
 })->with(['staff', 'context', 'mfa', 'participant']);
 
+test('approval refuses a request record whose operation the recipient state cannot take', function (string $operation): void {
+    $requester = approvalManager();
+    $approver = approvalManager();
+    $recipient = User::factory()->withTwoFactor()->create();
+    $proposal = IdentityAuditEvent::query()->findOrFail(requestSuperadmin($requester, $recipient)['proposal_id']);
+    // The request log is append-only, so a stray record is a new row beside the real one.
+    $stray = $proposal->replicate()->forceFill(['id' => strtolower((string) Str::ulid()), 'request_id' => (string) Str::uuid(),
+        'after' => [...$proposal->after, 'operation' => $operation]]);
+    $stray->save();
+
+    expect(fn () => app(ApproveStaffAccess::class)->handle($approver->id, $stray->id, 'Review.', (string) Str::uuid()))
+        ->toThrow(StaffAccessRefused::class, 'STAFF_APPROVAL_STALE')
+        ->and(StaffAccount::query()->find($recipient->id))->toBeNull();
+})->with(['reactivate', 'demote']);
+
 test('reactivating a superadmin preserves roles and remains disabled until independent approval', function (): void {
     $requester = approvalManager();
     $approver = approvalManager();

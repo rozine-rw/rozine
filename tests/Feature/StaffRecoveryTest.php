@@ -13,6 +13,7 @@ use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -269,4 +270,73 @@ test('the interactive command uses real password MFA and exact semantic approval
         ->expectsConfirmation('Approve the exact recipients and payload digest you independently reviewed?', 'yes')->assertSuccessful();
     $approve->run();
     expect(IdentityAuditEvent::query()->where('action', 'staff.recovery.complete')->count())->toBe(1);
+});
+
+test('a request needs a known kind and exactly two distinct recipient accounts', function (string $kind, array $recipients): void {
+    [$first] = Recovery::people();
+    expect(fn () => app(RequestStaffRecovery::class)->handle($first->id, 'password', Recovery::code($first), $kind, $recipients,
+        'Independently reviewed setup.', (string) Str::uuid()))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_INPUT_INVALID');
+})->with([
+    'unknown kind' => ['promote', [41, 42]],
+    'one recipient' => ['genesis', [41]],
+    'the same recipient twice' => ['genesis', [41, 41]],
+    'a non-positive account' => ['genesis', [0, 42]],
+]);
+
+test('an account outside the enrolled operator registry cannot request recovery', function (): void {
+    [, $second, $a, $b] = Recovery::people();
+    expect(fn () => recoveryRequest($a, $b, $second))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_NOT_ENROLLED')
+        ->and(IdentityAuditEvent::query()->where('action', 'staff.recovery.request')->count())->toBe(0);
+});
+
+test('a recipient account that does not exist is ineligible', function (): void {
+    [$first, , $a] = Recovery::people();
+    $missing = User::factory()->make(['id' => (int) User::query()->max('id') + 1000]);
+    expect(fn () => recoveryRequest($first, $a, $missing))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_ACCOUNT_INELIGIBLE');
+});
+
+test('approving a proposal that was never requested is refused', function (): void {
+    [, $second, $a, $b] = Recovery::people();
+    expect(fn () => recoveryApprove($second, ['proposal_id' => strtolower((string) Str::ulid()), 'payload_sha256' => str_repeat('a', 64),
+        'kind' => 'genesis', 'recipients' => [$a->id, $b->id]]))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_NOT_FOUND');
+});
+
+test('a manager roster that changes while recovery takes its locks makes the request stale', function (): void {
+    [$first, , $a, $b] = Recovery::people();
+    $joined = false;
+    DB::listen(function (QueryExecuted $query) use (&$joined): void {
+        if (! $joined && str_contains($query->sql, 'from "users"') && str_contains($query->sql, 'for update')) {
+            $joined = true;
+            StaffFixture::provision(User::factory()->withTwoFactor()->create(), ['superadmin'], 'A manager added by another session.');
+        }
+    });
+
+    expect(fn () => recoveryRequest($first, $a, $b))->toThrow(IdentityViolation::class, 'STAFF_RECOVERY_STALE')
+        ->and($joined)->toBeTrue()
+        ->and(IdentityAuditEvent::query()->where('action', 'staff.recovery.request')->count())->toBe(0);
+});
+
+test('the interactive command refuses malformed input and an approval the operator does not confirm', function (): void {
+    [$first, , $a, $b] = Recovery::people();
+    $command = function (array $options) use ($first, $a, $b): PendingCommand {
+        $command = $this->artisan('identity:staff-recovery', [...['operation' => 'request', '--operator' => (string) $first->id, '--kind' => 'genesis',
+            '--recipient' => [(string) $a->id, (string) $b->id], '--reason' => 'Interactive request.'], ...$options]);
+        if (! $command instanceof PendingCommand) {
+            throw new LogicException('Interactive command testing must be enabled.');
+        }
+
+        return $command;
+    };
+    $authenticated = fn (PendingCommand $command): PendingCommand => $command->expectsQuestion('Current account password', 'password')
+        ->expectsQuestion('Current authenticator code', '000000');
+
+    $command(['--operator' => 'first'])->expectsOutputToContain('STAFF_RECOVERY_INPUT_INVALID')->assertFailed()->run();
+    $command(['operation' => 'grant'])->expectsOutputToContain('STAFF_RECOVERY_INPUT_INVALID')->assertFailed()->run();
+    $authenticated($command(['--recipient' => [(string) $a->id, 'b']]))->expectsOutputToContain('STAFF_RECOVERY_INPUT_INVALID')->assertFailed()->run();
+    $authenticated($command(['--kind' => 'promote']))->expectsOutputToContain('STAFF_RECOVERY_INPUT_INVALID')->assertFailed()->run();
+    $authenticated($command(['operation' => 'approve', '--proposal' => strtolower((string) Str::ulid()), '--payload-sha256' => str_repeat('a', 64)]))
+        ->expectsOutput('Expected operation: genesis; recipient account IDs: '.$a->id.', '.$b->id)
+        ->expectsConfirmation('Approve the exact recipients and payload digest you independently reviewed?', 'no')
+        ->expectsOutputToContain('STAFF_RECOVERY_APPROVAL_REQUIRED')->assertFailed()->run();
+    expect(IdentityAuditEvent::query()->where('action', 'like', 'staff.recovery.%')->count())->toBe(0);
 });

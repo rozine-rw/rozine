@@ -31,17 +31,12 @@ class StaffDashboardController extends Controller
         $from = $from === null ? null : (string) $from;
         $to = $to === null ? null : (string) $to;
         $includeActivity = $request->routeIs('api.*');
-        $page = null;
-        $resolvePage = function () use ($dashboard, $reconciliation, $ledger, $staff, $actorId, $from, $to, $includeActivity, &$page): array {
-            if ($page !== null) {
-                return $page;
-            }
-
+        $resolvePage = function () use ($dashboard, $reconciliation, $ledger, $staff, $actorId, $from, $to, $includeActivity): array {
             $board = $dashboard->handle($actorId, $from, $to);
             $breaks = in_array('reconciliation.view', $staff['allowed_actions'], true) ? $reconciliation->handle($actorId)['breaks'] : null;
             $activity = $includeActivity && in_array('ledger.view', $staff['allowed_actions'], true) ? $ledger->latest($actorId, 6) : null;
 
-            return $page = ['dashboard' => $board, 'breaks' => $breaks, 'activity' => $activity, 'roles' => $staff['roles'],
+            return ['dashboard' => $board, 'breaks' => $breaks, 'activity' => $activity, 'roles' => $staff['roles'],
                 'permissions' => $staff['allowed_actions']];
         };
 
