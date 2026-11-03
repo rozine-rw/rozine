@@ -142,6 +142,14 @@ final readonly class EloquentCartCheckouts implements CartCheckouts
         });
     }
 
+    public function live(int $userId, int $contextRevision): ?array
+    {
+        $checkoutId = $this->authority->handle($userId, 'investor', null, $contextRevision, fn (array $identity): mixed => DB::table('investor_cart_live_checkouts')
+            ->where('party_id', strtolower((string) $identity['party']['id']))->value('investor_cart_checkout_id'));
+
+        return is_string($checkoutId) ? $this->reservation($userId, $contextRevision, $checkoutId) : null;
+    }
+
     public function findReservation(int $userId, int $contextRevision, string $requestId): array
     {
         return $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($requestId): array {

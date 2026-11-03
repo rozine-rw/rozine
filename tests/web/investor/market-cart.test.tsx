@@ -407,7 +407,7 @@ describe('Cart with notes', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Each deal checks out on its own for now: open its checkout to reserve and pay.',
+                'Check out the whole cart at once below, or open one deal to buy it on its own.',
             ),
         ).toBeInTheDocument();
 

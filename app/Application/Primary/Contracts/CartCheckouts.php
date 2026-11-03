@@ -83,6 +83,14 @@ interface CartCheckouts
     public function reservation(int $userId, int $contextRevision, string $checkoutId): array;
 
     /**
+     * The Party's live checkout, held or past its deadline and not yet settled, read as
+     * `reservation()` reads it; null when the Party has none. The cart page opens on it.
+     *
+     * @return CartReservation|null
+     */
+    public function live(int $userId, int $contextRevision): ?array;
+
+    /**
      * The retained `cart.reserve` result for this Party and request id, or `OPERATION_NOT_FOUND`.
      *
      * @return array<string, mixed>

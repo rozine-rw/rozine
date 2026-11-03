@@ -56,6 +56,12 @@ final readonly class ReserveInvestorCart
         return $this->checkouts->reservation($userId, $contextRevision, $checkoutId);
     }
 
+    /** @return CartReservation|null */
+    public function live(int $userId, int $contextRevision): ?array
+    {
+        return $this->checkouts->live($userId, $contextRevision);
+    }
+
     /** @return array<string, mixed> */
     public function find(int $userId, int $contextRevision, string $requestId): array
     {
