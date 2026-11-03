@@ -306,3 +306,10 @@ it('adds no writes or financial effects when reading the selected queue', functi
         expect($query['query'])->toStartWith('select ')->not->toContain('for update');
     }
 });
+
+it('refuses the Business read of an application that has no submission', function (): void {
+    $draft = BusinessApplication::factory()->create();
+
+    expect(fn () => app(RetainedStaffUnderwritingBasis::class)->forBusiness($draft))
+        ->toThrow(RuntimeException::class, 'APPLICATION_SUBMISSION_INTEGRITY_FAILED');
+});

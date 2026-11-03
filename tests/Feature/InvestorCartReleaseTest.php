@@ -292,6 +292,20 @@ it('records a stuck expiry, alerts the staff who may resolve it once, and lets t
         ->assertSessionHasErrors(['request_id' => 'This cart checkout no longer exists.']);
 });
 
+it('refuses a group expiry whose child no longer expires, and keeps every line held for a retry', function (): void {
+    Notification::fake();
+    ['checkout' => $checkout] = ($this->held)();
+    app()->instance(PrimaryReservations::class, new DecoratedPrimaryReservations(app(PrimaryReservations::class),
+        expiring: fn (string $campaignId, Closure $expire): mixed => $campaignId === $this->second->id ? null : $expire()));
+    $this->travelTo($checkout->settles_at);
+
+    expect(fn () => app(CartCheckouts::class)->expireDue(10))->toThrow(RuntimeException::class, 'CART_CHECKOUT_INTEGRITY_FAILED')
+        ->and(($this->versions)())->toBe([])
+        ->and(InvestorCartCheckoutVersion::query()->where('investor_cart_checkout_id', $checkout->id)->count())->toBe(1)
+        ->and((array) DB::table('investor_cart_settlement_failures')->sole())->toMatchArray(['investor_cart_checkout_id' => $checkout->id, 'attempts' => 1,
+            'reason_code' => 'SETTLEMENT_FAILED', 'exception_class' => RuntimeException::class]);
+});
+
 it('skips a checkout that was settled after the sweep picked it, without recording a failure or alerting', function (): void {
     Notification::fake();
     $treasury = ($this->staff)(['treasury']);

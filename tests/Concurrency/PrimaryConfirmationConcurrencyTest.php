@@ -25,6 +25,11 @@ it('requires an outer transaction for confirmation persistence', function (): vo
         ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED');
 });
 
+it('requires an outer transaction to requote a held reservation', function (): void {
+    expect(fn () => app(PrimaryReservations::class)->requotes('campaign', 'reservation', 'party', PrimaryReservationFixture::terms(...)))
+        ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED');
+});
+
 it('retains Business current caller campaign reservation and wallet locks through confirmation commit', function (string $action): void {
     $this->freezeSecond();
     InvestorWalletFixture::policy(maximum: null);
