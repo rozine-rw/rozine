@@ -127,6 +127,7 @@ it('renders the live file summary with the component and prop shape of the file 
     jobsUiSameShape($props, jobsUiFixture('auditor-file-live-minimal'));
     expect($props['job']['state'])->toBe('assigned')
         ->and($props['blocked'])->toBeNull()
+        ->and($props['review'])->toBeNull()
         ->and($props['links']['procedure'])->toBeNull()
         ->and($props['links']['close'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
 });
