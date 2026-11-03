@@ -334,7 +334,8 @@ it('keeps the statement review request to staff who manage audits', function ():
 it('withdraws an accepted Flash audit past its deadline from its partner, and then lets a new Flash audit be requested (#489)', function (): void {
     $fixture = Fixture::make(1);
     $assignment = Fixture::request($fixture);
-    Fixture::respond(Fixture::recipient($fixture, $assignment)['user'], $assignment);
+    $partner = Fixture::recipient($fixture, $assignment)['user'];
+    Fixture::respond($partner, $assignment);
     $id = $fixture['business'];
     $page = route('staff.businesses.index', ['business' => $id]);
     $url = '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/withdraw';
@@ -358,6 +359,13 @@ it('withdraws an accepted Flash audit past its deadline from its partner, and th
         ->and($assignment->state['operations_reason'])->toBe('AUDIT_OPERATIONS_WITHDRAWN');
     $version = AuditAssignmentVersion::query()->where('assignment_id', $assignment->id)->where('revision', $assignment->revision)->sole();
     expect($version->command)->toBe('audit.assignment.withdraw')->and($version->actor_user_id)->toBe($fixture['staff']->id);
+
+    // The partner's old link says the audit was withdrawn rather than reading as not found (#506).
+    $this->actingAs($partner)->get('/auditor/jobs/'.$assignment->id)->assertStatus(409)
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')
+            ->where('code', 'ASSIGNMENT_WITHDRAWN')->where('status', 409));
+    $this->getJson('/auditor/jobs/'.$assignment->id)->assertStatus(409)->assertJsonPath('code', 'ASSIGNMENT_WITHDRAWN');
+    $this->actingAs($fixture['staff']);
 
     // Only this audit ended: the Business is free for a new one, unlike after a closure.
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)

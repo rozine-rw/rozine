@@ -138,7 +138,7 @@ it('drops the same withdrawn record on Jobs and recovery without hiding actor re
     RoleMembership::query()->where('party_id', $partner['party']->id)->where('role', 'auditor')->update(['status' => 'revoked']);
     expect(fn () => $jobs->handle($partner['user']->id, 1))->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED')
         ->and(fn () => $outcomes->handle($partner['user']->id, 1, $receipt))->toThrow(IdentityViolation::class, 'ROLE_MEMBERSHIP_REQUIRED');
-})->with(['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ASSIGNMENT_NOT_FOUND', 'ASSIGNMENT_ACCEPTANCE_EXPIRED',
+})->with(['BUSINESS_NOT_FOUND', 'MANDATE_REQUIRED', 'ASSIGNMENT_NOT_FOUND', 'ASSIGNMENT_ACCEPTANCE_EXPIRED', 'ASSIGNMENT_WITHDRAWN',
     'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED', 'ACCREDITATION_REQUIRED', 'ACCREDITATION_EXPIRED', 'ACCREDITATION_SUSPENDED', 'STANDING_CHECK_REQUIRED']);
 
 it('propagates an unexpected failure consistently from Jobs and a recovered operation', function (): void {

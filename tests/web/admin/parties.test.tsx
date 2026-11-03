@@ -1922,7 +1922,7 @@ describe('Party 360', () => {
             within(audit)
                 .getAllByRole('button')
                 .map((button) => button.textContent),
-        ).toEqual(['Close']);
+        ).toEqual(['Close permanently']);
         unmount();
 
         const view = renderWithUser(
@@ -2002,7 +2002,13 @@ describe('Party 360', () => {
         expect(
             within(audit).getByRole('link', { name: 'Open Audit Partners' }),
         ).toHaveAttribute('href', '/admin/auditors');
-        await user.click(within(audit).getByRole('button', { name: 'Close' }));
+        /* Close is permanent, so it sits apart from the other actions with a warning (#506). */
+        expect(audit).toHaveTextContent(
+            'Closing is permanent: it ends this audit and this business can never be audited again.',
+        );
+        await user.click(
+            within(audit).getByRole('button', { name: 'Close permanently' }),
+        );
         const form = within(audit).getByRole('form', {
             name: 'Close this audit',
         });
@@ -2034,6 +2040,9 @@ describe('Party 360', () => {
         expect(
             within(audit).queryByRole('form', { name: 'Close this audit' }),
         ).not.toBeInTheDocument();
+        expect(within(audit).getByRole('status')).toHaveTextContent(
+            'Audit closed. This business can no longer be audited.',
+        );
     });
 
     it('withdraws an overdue Flash audit its partner accepted, without closing the business to audits (#489)', async () => {
@@ -2071,7 +2080,7 @@ describe('Party 360', () => {
         await user.click(screen.getByRole('tab', { name: 'Controls' }));
         const audit = screen.getByRole('region', { name: 'Audit' });
         expect(
-            within(audit).queryByRole('button', { name: 'Close' }),
+            within(audit).queryByRole('button', { name: 'Close permanently' }),
         ).not.toBeInTheDocument();
         await user.click(
             within(audit).getByRole('button', { name: 'Withdraw' }),
@@ -2101,6 +2110,14 @@ describe('Party 360', () => {
                 },
             },
         ]);
+        /* The withdrawal is confirmed in place until another action opens (#506). */
+        expect(within(audit).getByRole('status')).toHaveTextContent(
+            'Audit withdrawn. You can request a new one.',
+        );
+        await user.click(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        );
+        expect(within(audit).queryByRole('status')).not.toBeInTheDocument();
     });
 
     it('holds the Flash audit request while it is being sent', async () => {
