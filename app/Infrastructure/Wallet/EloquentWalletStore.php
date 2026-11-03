@@ -437,9 +437,23 @@ final class EloquentWalletStore implements WalletStore
         usort($movements, fn (Model $left, Model $right): int => strcmp((string) $right->getKey(), (string) $left->getKey()));
         $page = array_slice($movements, 0, 20);
 
-        return ['items' => array_map(fn (WalletDepositCredit|LedgerEntry $movement): array => $movement instanceof WalletDepositCredit
-            ? $this->historyEntry($movement) : $this->payoutEntry($movement), $page),
-            'next_before' => count($movements) > 20 ? (string) $page[19]->getKey() : null];
+        $pageCredits = collect($page)->filter(fn (Model $entry): bool => $entry instanceof WalletDepositCredit);
+        $pagePayouts = collect($page)->filter(fn (Model $entry): bool => $entry instanceof LedgerEntry);
+        $intents = WalletDepositIntent::query()->whereKey($pageCredits->pluck('intent_id')->all())->get()->keyBy('id');
+        $withdrawals = WalletWithdrawal::query()->whereKey($pagePayouts->pluck('source_id')->all())->get()->keyBy('id');
+        $methodIds = [...$intents->pluck('method_id')->all(), ...$withdrawals->pluck('method_id')->all()];
+        $methods = InvestorFundingMethod::query()->whereKey($methodIds)->get()->keyBy('id');
+
+        return ['items' => array_map(function (WalletDepositCredit|LedgerEntry $movement) use ($intents, $withdrawals, $methods): array {
+            if ($movement instanceof WalletDepositCredit) {
+                $intent = $intents->get($movement->intent_id) ?? throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED');
+
+                return $this->historyEntry($movement, $intent, $methods->get($intent->method_id) ?? throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED'));
+            }
+            $withdrawal = $withdrawals->get($movement->source_id) ?? throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED');
+
+            return $this->payoutEntry($movement, $withdrawal, $methods->get($withdrawal->method_id) ?? throw new RuntimeException('WALLET_WITHDRAWAL_INTEGRITY_FAILED'));
+        }, $page), 'next_before' => count($movements) > 20 ? (string) $page[19]->getKey() : null];
     }
 
     /**
@@ -457,8 +471,10 @@ final class EloquentWalletStore implements WalletStore
             ->orderByDesc('id')->limit(21)->get();
         $page = $entries->take(20);
         $labels = $this->purchases->walletLabels($wallet->party_id, array_values(array_unique($page->pluck('source_id')->all())));
+        $debits = LedgerLine::query()->whereIn('entry_id', $page->modelKeys())->where('direction', 'debit')->get()->groupBy('entry_id');
 
-        return ['items' => array_values($page->map(fn (LedgerEntry $entry): array => $this->internalEntry($entry, $labels))->all()),
+        return ['items' => array_values($page->map(fn (LedgerEntry $entry): array => $this->internalEntry($entry, $labels,
+            (string) ($debits->get($entry->id)?->first()->amount ?? '')))->all()),
             'next_before' => $entries->count() > 20 ? $page->last()?->id : null];
     }
 
@@ -466,12 +482,12 @@ final class EloquentWalletStore implements WalletStore
      * @param  array<string, array{campaign_id: string, deal_name: string, units: string, policy_version: string}>  $labels
      * @return array<string, mixed>
      */
-    private function internalEntry(LedgerEntry $entry, array $labels): array
+    private function internalEntry(LedgerEntry $entry, array $labels, ?string $debit = null): array
     {
         [$kind, $from, $to] = self::INTERNAL[$entry->kind];
 
         return ['id' => $entry->id, 'movement' => 'internal', 'kind' => $kind, 'from' => $from, 'to' => $to,
-            'amount' => WalletMoney::of($this->debited($entry))->money(),
+            'amount' => WalletMoney::of($debit ?? $this->debited($entry))->money(),
             'deal_name' => ($labels[$entry->source_id] ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED'))['deal_name'],
             'occurred_at' => (string) $entry->payload['recorded_at']];
     }
@@ -501,12 +517,13 @@ final class EloquentWalletStore implements WalletStore
     }
 
     /** @return array<string, mixed> */
-    private function historyEntry(WalletDepositCredit $credit): array
+    private function historyEntry(WalletDepositCredit $credit, ?WalletDepositIntent $intent = null, ?InvestorFundingMethod $method = null): array
     {
-        $intent = WalletDepositIntent::query()->whereKey($credit->intent_id)->sole();
+        $intent ??= WalletDepositIntent::query()->whereKey($credit->intent_id)->sole();
+        $method ??= InvestorFundingMethod::query()->whereKey($intent->method_id)->sole();
 
         return ['id' => $credit->id, 'movement' => 'external', 'kind' => 'deposit', 'direction' => 'in', 'amount' => WalletMoney::of($credit->amount)->money(),
-            'counterparty' => InvestorFundingMethod::query()->whereKey($intent->method_id)->sole()->label, 'occurred_at' => $this->creditReceipt($credit)['recorded_at']];
+            'counterparty' => $method->label, 'occurred_at' => $this->creditReceipt($credit)['recorded_at']];
     }
 
     /**
@@ -884,12 +901,13 @@ final class EloquentWalletStore implements WalletStore
      *
      * @return array<string, mixed>
      */
-    private function payoutEntry(LedgerEntry $entry): array
+    private function payoutEntry(LedgerEntry $entry, ?WalletWithdrawal $withdrawal = null, ?InvestorFundingMethod $method = null): array
     {
-        $withdrawal = WalletWithdrawal::query()->whereKey($entry->source_id)->sole();
+        $withdrawal ??= WalletWithdrawal::query()->whereKey($entry->source_id)->sole();
+        $method ??= InvestorFundingMethod::query()->whereKey($withdrawal->method_id)->sole();
 
         return ['id' => $entry->id, 'movement' => 'external', 'kind' => 'withdrawal', 'direction' => 'out', 'amount' => WalletMoney::of($withdrawal->amount)->money(),
-            'counterparty' => InvestorFundingMethod::query()->whereKey($withdrawal->method_id)->sole()->label, 'occurred_at' => (string) $entry->payload['recorded_at']];
+            'counterparty' => $method->label, 'occurred_at' => (string) $entry->payload['recorded_at']];
     }
 
     /**

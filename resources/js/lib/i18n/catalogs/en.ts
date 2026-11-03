@@ -5729,6 +5729,7 @@ const en = {
     'investor.wallet.c3.filter.external': 'Cash in and out',
     'investor.wallet.c3.filter.internal': 'Holds and commitments',
     'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.history_loading': 'Loading transaction history…',
     'investor.wallet.c3.older': 'Show older',
     'investor.wallet.c3.receipt_policy': 'Policy version',
     'investor.wallet.c3.not_credited':
