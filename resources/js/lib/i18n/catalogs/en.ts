@@ -3956,9 +3956,55 @@ const en = {
     'investor.cart.quantity': 'Number of notes in {name}',
     'investor.cart.checkout': 'Check out',
     'investor.cart.checkout_note':
-        'Each deal checks out on its own for now: open its checkout to reserve and pay.',
+        'Check out the whole cart at once below, or open one deal to buy it on its own.',
     'investor.cart.before_charge':
         'Get back is before the charge on earnings. Each checkout shows the exact amount.',
+    'investor.cart.whole.band_title': 'FEE ON EARNINGS',
+    'investor.cart.whole.band_next': '{amount} more unlocks {rate}',
+    'investor.cart.whole.band_top': "You're on the lowest fee band.",
+    'investor.cart.whole.band_basis':
+        'Your band counts the notes you hold plus this cart, never wallet cash.',
+    'investor.cart.whole.quoting': 'Pricing your cart…',
+    'investor.cart.whole.checkout': 'Check out all · {amount}',
+    'investor.cart.whole.fine_print':
+        'Holds every note in your cart for 5 minutes while you confirm. Nothing is committed until you confirm.',
+    'investor.cart.whole.remove_filled':
+        'Remove the fully funded deals to check out the whole cart.',
+    'investor.cart.whole.fix_units':
+        'Some deals are above what you can take now. Fit them, or remove them, to check out the whole cart.',
+    'investor.cart.whole.over_cap': 'This line is above what you can take now.',
+    'investor.cart.whole.fit': {
+        one: 'Fit to {count} note',
+        other: 'Fit to {count} notes',
+    },
+    'investor.cart.whole.risks_first':
+        'Confirm the risk statements on a deal’s checkout first, then check out the whole cart.',
+    'investor.cart.whole.open_checkout': 'Open checkout',
+    'investor.cart.whole.held_title': 'Confirm your cart',
+    'investor.cart.whole.held_lead':
+        'Every note below is held for you at one fee band. Confirm all buys them together, or none.',
+    'investor.cart.whole.line': {
+        one: '{count} note · {rate}% return',
+        other: '{count} notes · {rate}% return',
+    },
+    'investor.cart.whole.line_return': 'Return {return} · fee {fee}',
+    'investor.cart.whole.net_return': 'Expected return after fee',
+    'investor.cart.whole.acknowledge':
+        'I have read these terms and confirm every note in this cart.',
+    'investor.cart.whole.confirm': 'Confirm all · {amount}',
+    'investor.cart.whole.release': 'Release all notes',
+    'investor.cart.whole.requoted':
+        'The terms changed before you confirmed. Check the new total and band, then confirm again.',
+    'investor.cart.whole.settling':
+        'Your hold has ended. These notes are being released back to your wallet.',
+    'investor.cart.whole.done_title': 'Cart checked out',
+    'investor.cart.whole.done_body': {
+        one: 'You committed {amount} to {count} deal. Your notes are issued after the business is paid.',
+        other: 'You committed {amount} across {count} deals. Your notes are issued after each business is paid.',
+    },
+    'investor.cart.whole.done_fee': 'Fee on earnings {rate}',
+    'investor.cart.whole.go_portfolio': 'Go to Portfolio',
+    'investor.cart.whole.go_deals': 'Go to Deals',
     'investor.common.back': 'Back',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Strong',
@@ -5667,6 +5713,33 @@ const en = {
         'Verify your email and turn on two-factor authentication to continue.',
     'settlement.refusal.MFA_REQUIRED': 'Two-factor authentication is required.',
     'settlement.refusal.NOT_FOUND': 'You can no longer view this record.',
+    'settlement.refusal.CART_REVISION_CONFLICT':
+        'Your cart changed. We refreshed it — check it and try again.',
+    'settlement.refusal.CART_LINES_REFUSED':
+        "Some deals in your cart can't be bought right now, so nothing was held.",
+    'settlement.refusal.CART_QUOTE_STALE':
+        'The terms changed since we priced your cart. Check the new total and try again.',
+    'settlement.refusal.CART_QUOTE_EXPIRED':
+        'Your cart price expired. We priced it again — check it and try again.',
+    'settlement.refusal.CART_QUOTE_NOT_FOUND':
+        "We couldn't find that price for your cart. Try again.",
+    'settlement.refusal.CART_CHECKOUT_ACTIVE':
+        'Your cart is held for checkout. Confirm or release it first.',
+    'settlement.refusal.CART_EXISTING_RESERVATION':
+        'You already hold notes in one of these deals. Confirm or release that hold first.',
+    'settlement.refusal.CART_RESERVATION_EXPIRED':
+        'Your hold ended before you confirmed. Check out again.',
+    'settlement.refusal.CART_RESERVATION_NOT_HELD':
+        'This checkout is no longer held.',
+    'settlement.refusal.CART_RESERVATION_NOT_FOUND':
+        "We couldn't find this checkout.",
+    'settlement.refusal.CART_LINE_UNAVAILABLE':
+        'A deal in your cart is no longer open. Remove it to check out.',
+    'settlement.refusal.CART_UNITS_ABOVE_LIMIT':
+        'Some deals are above what you can take now. Adjust them and try again.',
+    'settlement.refusal.CART_EMPTY': 'Your cart is empty.',
+    'settlement.refusal.RISK_ACKNOWLEDGEMENT_REQUIRED':
+        'Confirm the risk statements before your first investment.',
     'investor.wallet.c3.available_balance': 'Available balance',
     'investor.wallet.c3.total': 'Wallet total',
     'investor.wallet.c3.bucket.available': 'Available',

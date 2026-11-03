@@ -66,6 +66,32 @@ final readonly class QuoteInvestorCart
     }
 
     /**
+     * The quote as the cart page and API answer it, since a quote is not journaled and has no
+     * receipt to look up: `CART_QUOTED` with the quote, or the whole-cart refusal with the facts it
+     * names (the lines out of reach, the most each may take). The quote also names the band the
+     * next threshold would bring, for the header's "RWF X more unlocks Y%".
+     *
+     * @return array{status: 'completed'|'rejected', code: string, data: array<string, mixed>, revision: int|null, http_status: int,
+     *     field_errors: array<string, list<string>>}
+     */
+    public function answer(int $userId, int $contextRevision, int $expectedCartRevision): array
+    {
+        try {
+            $quote = $this->handle($userId, $contextRevision, $expectedCartRevision);
+        } catch (CommandRejection $rejection) {
+            return ['status' => 'rejected', 'code' => $rejection->reason, 'data' => $rejection->data, 'revision' => $rejection->revision,
+                'http_status' => $rejection->status, 'field_errors' => $rejection->fieldErrors];
+        }
+        /** @var array{next_band_at: array{amount: string}|null} $band */
+        $band = $quote['fee_band'];
+        $next = $band['next_band_at'] === null ? null : EarningsFeeBand::forActiveCapital(BigInteger::of($band['next_band_at']['amount']));
+
+        return ['status' => 'completed', 'code' => 'CART_QUOTED', 'data' => [...$quote, 'next_fee_band' => $next === null ? null
+            : ['tier' => $next['tier'], 'rate_bps' => $next['rate_bps'], 'rate_pct' => EarningsFeeBand::percent($next['rate_bps'])]],
+            'revision' => (int) $quote['revision'], 'http_status' => 200, 'field_errors' => []];
+    }
+
+    /**
      * Prices the cart under the caller's locks. The cart checkout calls it again at reserve to
      * prove the quote still stands, and at confirm, `$held`, to see whether its terms still stand:
      * a held cart's units are already its own, so their raise capacity is not checked again.

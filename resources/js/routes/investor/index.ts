@@ -880,6 +880,464 @@ cart_removeForm.post = (args: { campaign: string | number } | [campaign: string 
 cart_remove.form = cart_removeForm
 
 /**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_quote
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:27
+* @route '/investor/cart/quote'
+*/
+export const cart_quote = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_quote.url(options),
+    method: 'post',
+})
+
+cart_quote.definition = {
+    methods: ["post"],
+    url: '/investor/cart/quote',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_quote
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:27
+* @route '/investor/cart/quote'
+*/
+cart_quote.url = (options?: RouteQueryOptions) => {
+    return cart_quote.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_quote
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:27
+* @route '/investor/cart/quote'
+*/
+cart_quote.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_quote.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_quote
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:27
+* @route '/investor/cart/quote'
+*/
+const cart_quoteForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_quote.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_quote
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:27
+* @route '/investor/cart/quote'
+*/
+cart_quoteForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_quote.url(options),
+    method: 'post',
+})
+
+cart_quote.form = cart_quoteForm
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reserve
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:33
+* @route '/investor/cart/reservations'
+*/
+export const cart_reserve = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_reserve.url(options),
+    method: 'post',
+})
+
+cart_reserve.definition = {
+    methods: ["post"],
+    url: '/investor/cart/reservations',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reserve
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:33
+* @route '/investor/cart/reservations'
+*/
+cart_reserve.url = (options?: RouteQueryOptions) => {
+    return cart_reserve.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reserve
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:33
+* @route '/investor/cart/reservations'
+*/
+cart_reserve.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_reserve.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reserve
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:33
+* @route '/investor/cart/reservations'
+*/
+const cart_reserveForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_reserve.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reserve
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:33
+* @route '/investor/cart/reservations'
+*/
+cart_reserveForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_reserve.url(options),
+    method: 'post',
+})
+
+cart_reserve.form = cart_reserveForm
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+export const cart_reservation = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cart_reservation.url(args, options),
+    method: 'get',
+})
+
+cart_reservation.definition = {
+    methods: ["get","head"],
+    url: '/investor/cart/reservations/{checkout}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+cart_reservation.url = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { checkout: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            checkout: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        checkout: args.checkout,
+    }
+
+    return cart_reservation.definition.url
+            .replace('{checkout}', parsedArgs.checkout.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+cart_reservation.get = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cart_reservation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+cart_reservation.head = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cart_reservation.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+const cart_reservationForm = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_reservation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+cart_reservationForm.get = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_reservation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_reservation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:40
+* @route '/investor/cart/reservations/{checkout}'
+*/
+cart_reservationForm.head = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_reservation.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+cart_reservation.form = cart_reservationForm
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_confirm
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:45
+* @route '/investor/cart/reservations/{checkout}/confirm'
+*/
+export const cart_confirm = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_confirm.url(args, options),
+    method: 'post',
+})
+
+cart_confirm.definition = {
+    methods: ["post"],
+    url: '/investor/cart/reservations/{checkout}/confirm',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_confirm
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:45
+* @route '/investor/cart/reservations/{checkout}/confirm'
+*/
+cart_confirm.url = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { checkout: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            checkout: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        checkout: args.checkout,
+    }
+
+    return cart_confirm.definition.url
+            .replace('{checkout}', parsedArgs.checkout.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_confirm
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:45
+* @route '/investor/cart/reservations/{checkout}/confirm'
+*/
+cart_confirm.post = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_confirm.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_confirm
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:45
+* @route '/investor/cart/reservations/{checkout}/confirm'
+*/
+const cart_confirmForm = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_confirm.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_confirm
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:45
+* @route '/investor/cart/reservations/{checkout}/confirm'
+*/
+cart_confirmForm.post = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_confirm.url(args, options),
+    method: 'post',
+})
+
+cart_confirm.form = cart_confirmForm
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_release
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:52
+* @route '/investor/cart/reservations/{checkout}/release'
+*/
+export const cart_release = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_release.url(args, options),
+    method: 'post',
+})
+
+cart_release.definition = {
+    methods: ["post"],
+    url: '/investor/cart/reservations/{checkout}/release',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_release
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:52
+* @route '/investor/cart/reservations/{checkout}/release'
+*/
+cart_release.url = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { checkout: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            checkout: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        checkout: args.checkout,
+    }
+
+    return cart_release.definition.url
+            .replace('{checkout}', parsedArgs.checkout.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_release
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:52
+* @route '/investor/cart/reservations/{checkout}/release'
+*/
+cart_release.post = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: cart_release.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_release
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:52
+* @route '/investor/cart/reservations/{checkout}/release'
+*/
+const cart_releaseForm = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_release.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_release
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:52
+* @route '/investor/cart/reservations/{checkout}/release'
+*/
+cart_releaseForm.post = (args: { checkout: string | number } | [checkout: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: cart_release.url(args, options),
+    method: 'post',
+})
+
+cart_release.form = cart_releaseForm
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+export const cart_operation = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cart_operation.url(args, options),
+    method: 'get',
+})
+
+cart_operation.definition = {
+    methods: ["get","head"],
+    url: '/investor/cart/operations/{request_id}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+cart_operation.url = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { request_id: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            request_id: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        request_id: args.request_id,
+    }
+
+    return cart_operation.definition.url
+            .replace('{request_id}', parsedArgs.request_id.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+cart_operation.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: cart_operation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+cart_operation.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: cart_operation.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+const cart_operationForm = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_operation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+cart_operationForm.get = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_operation.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorCartCheckoutController::cart_operation
+* @see app/Http/Controllers/InvestorCartCheckoutController.php:58
+* @route '/investor/cart/operations/{request_id}'
+*/
+cart_operationForm.head = (args: { request_id: string | number } | [request_id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: cart_operation.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+cart_operation.form = cart_operationForm
+
+/**
 * @see \App\Http\Controllers\InvestorDealsController::checkout
 * @see app/Http/Controllers/InvestorDealsController.php:35
 * @route '/investor/deals/{campaign}/checkout'
@@ -1154,6 +1612,12 @@ const investor = {
     cart_add: Object.assign(cart_add, cart_add),
     cart_units: Object.assign(cart_units, cart_units),
     cart_remove: Object.assign(cart_remove, cart_remove),
+    cart_quote: Object.assign(cart_quote, cart_quote),
+    cart_reserve: Object.assign(cart_reserve, cart_reserve),
+    cart_reservation: Object.assign(cart_reservation, cart_reservation),
+    cart_confirm: Object.assign(cart_confirm, cart_confirm),
+    cart_release: Object.assign(cart_release, cart_release),
+    cart_operation: Object.assign(cart_operation, cart_operation),
     checkout: Object.assign(checkout, checkout),
     wallet: Object.assign(wallet, wallet0fdd46),
     risks: Object.assign(risks, risks),

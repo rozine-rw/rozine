@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Primary\Contracts\CartCheckouts;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Domain\Primary\UnitRights;
@@ -17,19 +18,23 @@ use RuntimeException;
  * checkout's capacity rule, INV-R01) and the flat return one unit earns, so the page can show
  * invest + interest = get back for any quantity. A line whose deal has filled, closed or no longer
  * lists stays in the cart marked filled, and is left out of any total. A person whose identity is
- * not yet verified has no cart. Nothing here quotes fees or reserves; each line opens the deal's
- * own checkout. The cart's id, revision and snapshot hash (#383) say which cart a later whole-cart
- * quote priced, and the counts name deals and notes separately.
+ * not yet verified has no cart. Nothing here quotes fees or reserves: the whole-cart quote and
+ * checkout are their own commands (#383), and each line still opens the deal's own checkout. The
+ * cart's id, revision and snapshot hash say which cart a whole-cart quote priced, and the counts
+ * name deals and notes separately. The Party's live whole-cart checkout, if one is held, comes
+ * with it, since the cart cannot change until it is confirmed, released or expired.
+ *
+ * @phpstan-import-type CartReservation from CartCheckouts
  *
  * @phpstan-type CartPage array{identity_context_revision: int, verification: 'required'|'pending'|null, eligible: bool,
  *     cart: array{id: string|null, revision: int, sha256: string, deals: int, units: string}|null,
  *     lines: list<array{campaign_id: string, deal: array<string, mixed>, units: string, max_units: string, binding: string, filled: bool,
- *     unit_return: array{currency: string, amount: string}}>|null}
+ *     unit_return: array{currency: string, amount: string}}>|null, checkout: CartReservation|null}
  */
 final readonly class GetInvestorCart
 {
     public function __construct(private GetInvestorViewer $viewer, private InvestorCart $cart, private InvestorDealCatalogue $catalogue,
-        private InvestorCheckoutFacts $facts) {}
+        private InvestorCheckoutFacts $facts, private CartCheckouts $checkouts) {}
 
     /** How many lines the user's cart holds, for the Cart tab's badge. */
     public function count(int $userId): int
@@ -43,7 +48,7 @@ final readonly class GetInvestorCart
         $viewer = $this->viewer->handle($userId, $contextRevision);
         $wallet = $viewer['wallet'];
         $page = ['identity_context_revision' => $viewer['identity_context_revision'], 'verification' => $viewer['verification'],
-            'eligible' => $wallet !== null && $wallet['wallet']['status'] === 'active', 'cart' => null, 'lines' => null];
+            'eligible' => $wallet !== null && $wallet['wallet']['status'] === 'active', 'cart' => null, 'lines' => null, 'checkout' => null];
         if ($wallet === null) {
             return $page;
         }
@@ -51,7 +56,8 @@ final readonly class GetInvestorCart
 
         return [...$page, 'cart' => ['id' => $snapshot['cart_id'], 'revision' => $snapshot['revision'], 'sha256' => $snapshot['sha256'],
             'deals' => count($snapshot['lines']), 'units' => (string) array_sum(array_column($snapshot['lines'], 'units'))],
-            'lines' => array_map(fn (array $line): array => $this->line($userId, $line['campaign_id'], $line['units'], $page['eligible']), $snapshot['lines'])];
+            'lines' => array_map(fn (array $line): array => $this->line($userId, $line['campaign_id'], $line['units'], $page['eligible']), $snapshot['lines']),
+            'checkout' => $this->checkouts->live($userId, $viewer['identity_context_revision'])];
     }
 
     /**
