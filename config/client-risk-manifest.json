@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "98c460e8bc83af274020b2ad8ff7cd6e3ee44de67e3c2a73191ac4c7e1f8085f",
-    "coverageSetSha256": "54d30d4890aef18fa9648f6bda59e252315415fb125385fe38af739d09216fe0",
+    "sourceManifestSha256": "4062b7144f68e097cdfd7944429f92ad083a707e1a447dd2f53d564060afdf47",
+    "coverageSetSha256": "a85ba08e16b308bc27229cc59105de5f09e8bca90d7984ebc89b9e031203305f",
     "thresholds": {
         "critical": {
             "global": {
@@ -119,6 +119,7 @@
         "resources/js/components/auditor/engagement/engagement-banner.tsx",
         "resources/js/components/auditor/engagement/terms-document.tsx",
         "resources/js/components/auditor/file/file-review.tsx",
+        "resources/js/components/auditor/file/statement-verification.tsx",
         "resources/js/components/auditor/home/activity-list.tsx",
         "resources/js/components/auditor/home/hero.tsx",
         "resources/js/components/auditor/home/home-body.tsx",

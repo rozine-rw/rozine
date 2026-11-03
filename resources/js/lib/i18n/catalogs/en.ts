@@ -49,6 +49,11 @@ const en = {
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
+    'identity.denied.withdrawn_audit.title':
+        'This audit was withdrawn by Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Audit Operations withdrew this audit, so it is no longer yours to work on and nothing more is needed from you. Your other jobs are in Jobs.',
+    'identity.denied.withdrawn_audit.action': 'Go to Jobs',
     'errors.not_found.head_title': 'Not found',
     'errors.not_found.title': "We couldn't find that page",
     'errors.not_found.body':
@@ -2769,6 +2774,7 @@ const en = {
     'admin.parties.audit.flash.placeholder':
         'e.g. Unusual movement on the revenue account this week.',
     'admin.parties.audit.flash.cta': 'Request Flash audit',
+    'admin.parties.audit.flash.done': 'Flash audit requested.',
     'admin.parties.audit.redispatch.open': 'Redispatch',
     'admin.parties.audit.redispatch.form': 'Redispatch this audit',
     'admin.parties.audit.redispatch.form_body':
@@ -2776,7 +2782,12 @@ const en = {
     'admin.parties.audit.redispatch.placeholder':
         'e.g. A new Audit Partner near this business was approved.',
     'admin.parties.audit.redispatch.cta': 'Redispatch',
-    'admin.parties.audit.close.open': 'Close',
+    'admin.parties.audit.redispatch.done': 'Audit sent back to dispatch.',
+    'admin.parties.audit.close.open': 'Close permanently',
+    'admin.parties.audit.close.hint':
+        'Closing is permanent: it ends this audit and this business can never be audited again. To end only this audit, withdraw it.',
+    'admin.parties.audit.close.done':
+        'Audit closed. This business can no longer be audited.',
     'admin.parties.audit.close.form': 'Close this audit',
     'admin.parties.audit.close.form_body':
         'Closing ends this audit without a report and can’t be undone. This business can never be audited again: no Flash audit or statement review can be requested for it afterwards.',
@@ -2790,6 +2801,8 @@ const en = {
     'admin.parties.audit.withdraw.placeholder':
         'e.g. The partner did not seal a report by the deadline.',
     'admin.parties.audit.withdraw.cta': 'Withdraw audit',
+    'admin.parties.audit.withdraw.done':
+        'Audit withdrawn. You can request a new one.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2850,6 +2863,7 @@ const en = {
     'admin.parties.audit.review.placeholder':
         'e.g. First review of the statements uploaded with the application.',
     'admin.parties.audit.review.cta': 'Request review',
+    'admin.parties.audit.review.done': 'Statement review requested.',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',
@@ -6449,6 +6463,7 @@ const en = {
     'business.audit_cosign.status.signed_on': 'Signed · {date}',
     'business.audit_cosign.status.signed': 'Signed',
     'business.audit_cosign.status.pending': 'Waiting',
+    'business.audit_cosign.status.not_signed': 'Not signed',
     'business.audit_cosign.due': 'Co-sign by {date}',
     'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
     'business.audit_cosign.published': 'Published {date}',
@@ -7499,6 +7514,81 @@ const en = {
         'Once per completed audit',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Only when the note matures',
+    'auditor.outcome.verified.title': 'Statements verified',
+    'auditor.outcome.verified.body':
+        "{business}'s statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
+    'auditor.verify.title': 'Verify the statements',
+    'auditor.verify.lead':
+        'Open each statement, compare it with the figures the business saved, and record what you checked. This is a factual review, not a credit decision.',
+    'auditor.verify.waiting_for_figures':
+        "The business hasn't saved its monthly figures yet. You can verify the statements once it has.",
+    'auditor.verify.statements': 'Statements on file',
+    'auditor.verify.open': 'Open',
+    'auditor.verify.reference': 'Where you checked it (page, line or note)',
+    'auditor.verify.figures': "The business's monthly figures",
+    'auditor.verify.month': 'Month',
+    'auditor.verify.inflow': 'Money in',
+    'auditor.verify.outflow': 'Money out',
+    'auditor.verify.owner_draw': 'Owner draw',
+    'auditor.verify.debt_service': 'Debt payments',
+    'auditor.verify.checks': 'Checks',
+    'auditor.verify.check.complete_rail_inventory':
+        'Every account and wallet the business uses is listed',
+    'auditor.verify.check.originals_authentic':
+        'The statements are genuine originals',
+    'auditor.verify.check.balances_and_transactions':
+        'Balances and transactions match the figures',
+    'auditor.verify.check.duplicates_and_classification':
+        'No duplicates, and money in and out is classed correctly',
+    'auditor.verify.check.debt_schedules':
+        'Debts and their payment schedules are accounted for',
+    'auditor.verify.check.baseline_and_gaps':
+        'The months are complete, with any gaps explained',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        'Owner draws, refunds and unusual items are explained',
+    'auditor.verify.inventory': 'Where the full list of accounts is recorded',
+    'auditor.verify.debts': 'Debts',
+    'auditor.verify.no_debts':
+        'No debts declared. Add any loan or credit you found; leaving none says the business has none.',
+    'auditor.verify.debt': 'Debt {number}',
+    'auditor.verify.debt_name': 'Lender and loan',
+    'auditor.verify.debt_principal': 'Amount still owed (RWF)',
+    'auditor.verify.debt_service_in': 'Paid in {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Scheduled monthly payment from {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Last scheduled payment',
+    'auditor.verify.debt_last_payment_pick': 'Choose a month',
+    'auditor.verify.debt_beyond': 'After {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Each coming month fills from the payment above. Change any month that differs, such as a stepped or final balloon payment.',
+    'auditor.verify.debt_due_in': 'Due in {month} (RWF)',
+    'auditor.verify.debt_sources': 'Statements showing this debt',
+    'auditor.verify.add_debt': 'Add a debt',
+    'auditor.verify.remove_debt': 'Remove this debt',
+    'auditor.verify.owner': 'Owner draw and findings',
+    'auditor.verify.owner_draw_amount': 'Usual monthly owner draw (RWF)',
+    'auditor.verify.owner_draw_reference': 'Where you saw it',
+    'auditor.verify.findings': 'Your findings',
+    'auditor.verify.incomplete':
+        'Tick every check and fill in each field to verify. Amounts are whole RWF.',
+    'auditor.verify.submit': 'Verify statements',
+    'auditor.verify.sending': 'Verifying…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Every check must be ticked before the statements can be verified.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        "A statement on file changed or wasn't reviewed. Reload the file and check each statement again.",
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Each note must be plain text of up to 2,000 characters.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        'Each debt needs a unique name, its statements and a payment for every month.',
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Amounts must be whole RWF, without separators.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        "The figures include the current month, which can't be verified until it ends. Ask the business to save completed months only.",
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "The business's figures no longer reconcile with its statements. The business needs to save them again.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        'The business saved new figures since you opened the file. Reload it and review them.',
 } as const;
 
 export default en;

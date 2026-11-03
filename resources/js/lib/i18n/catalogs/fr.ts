@@ -50,6 +50,11 @@ const fr: Catalog = {
     'identity.denied.expired_offer.title': 'Cette offre est close',
     'identity.denied.expired_offer.body':
         'Le délai pour accepter cette mission est dépassé : elle ne vous est plus ouverte. Choisissez une application pour voir vos missions en cours.',
+    'identity.denied.withdrawn_audit.title':
+        'Cet audit a été retiré par Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Les Opérations d’audit ont retiré cet audit : il ne vous est plus attribué et vous n’avez plus rien à faire. Vos autres missions sont dans Missions.',
+    'identity.denied.withdrawn_audit.action': 'Aller aux missions',
     'errors.not_found.head_title': 'Page introuvable',
     'errors.not_found.title': 'Nous ne trouvons pas cette page',
     'errors.not_found.body':
@@ -2918,6 +2923,7 @@ const fr: Catalog = {
     'admin.parties.audit.flash.placeholder':
         'p. ex. Mouvements inhabituels sur le compte de recettes cette semaine.',
     'admin.parties.audit.flash.cta': 'Demander un audit éclair',
+    'admin.parties.audit.flash.done': 'Audit Flash demandé.',
     'admin.parties.audit.redispatch.open': 'Réaffecter',
     'admin.parties.audit.redispatch.form': 'Réaffecter cet audit',
     'admin.parties.audit.redispatch.form_body':
@@ -2925,7 +2931,12 @@ const fr: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'p. ex. Un nouveau Partenaire d’audit proche de cette entreprise a été approuvé.',
     'admin.parties.audit.redispatch.cta': 'Réaffecter',
-    'admin.parties.audit.close.open': 'Clôturer',
+    'admin.parties.audit.redispatch.done': 'Audit renvoyé à l’attribution.',
+    'admin.parties.audit.close.open': 'Clôturer définitivement',
+    'admin.parties.audit.close.hint':
+        'La clôture est définitive : elle met fin à cet audit et cette entreprise ne pourra plus jamais être auditée. Pour ne mettre fin qu’à cet audit, retirez-le.',
+    'admin.parties.audit.close.done':
+        'Audit clôturé. Cette entreprise ne peut plus être auditée.',
     'admin.parties.audit.close.form': 'Clôturer cet audit',
     'admin.parties.audit.close.form_body':
         'La clôture met fin à cet audit sans rapport et est irréversible. Cette entreprise ne pourra plus jamais être auditée : aucun audit éclair ni examen des relevés ne pourra ensuite être demandé pour elle.',
@@ -2939,6 +2950,8 @@ const fr: Catalog = {
     'admin.parties.audit.withdraw.placeholder':
         'ex. Le partenaire n’a pas scellé de rapport avant l’échéance.',
     'admin.parties.audit.withdraw.cta': 'Retirer l’audit',
+    'admin.parties.audit.withdraw.done':
+        'Audit retiré. Vous pouvez en demander un nouveau.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -3000,6 +3013,7 @@ const fr: Catalog = {
     'admin.parties.audit.review.placeholder':
         'ex. Premier examen des relevés téléversés avec la demande.',
     'admin.parties.audit.review.cta': 'Demander l’examen',
+    'admin.parties.audit.review.done': 'Examen des relevés demandé.',
     'admin.parties.licence_status': 'Statut de vérification',
     'admin.parties.licence.verified': 'Vérifiée',
     'admin.parties.licence.pending': 'En attente',
@@ -6712,6 +6726,7 @@ const fr: Catalog = {
     'business.audit_cosign.status.signed_on': 'Signé · {date}',
     'business.audit_cosign.status.signed': 'Signé',
     'business.audit_cosign.status.pending': 'En attente',
+    'business.audit_cosign.status.not_signed': 'Non signé',
     'business.audit_cosign.due': 'À cosigner avant le {date}',
     'business.audit_cosign.overdue':
         'En retard — la cosignature était due avant le {date}',
@@ -7811,6 +7826,83 @@ const fr: Catalog = {
         'Une fois par audit terminé',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Seulement à l’échéance de la note',
+    'auditor.outcome.verified.title': 'Relevés vérifiés',
+    'auditor.outcome.verified.body':
+        'Les relevés et les chiffres mensuels de {business} sont maintenant enregistrés comme vérifiés. Ils comptent pour sa demande une fois toutes les autres conditions remplies.',
+    'auditor.verify.title': 'Vérifier les relevés',
+    'auditor.verify.lead':
+        "Ouvrez chaque relevé, comparez-le aux chiffres enregistrés par l'entreprise et indiquez ce que vous avez vérifié. C'est un examen factuel, pas une décision de crédit.",
+    'auditor.verify.waiting_for_figures':
+        "L'entreprise n'a pas encore enregistré ses chiffres mensuels. Vous pourrez vérifier les relevés ensuite.",
+    'auditor.verify.statements': 'Relevés au dossier',
+    'auditor.verify.open': 'Ouvrir',
+    'auditor.verify.reference': "Où vous l'avez vérifié (page, ligne ou note)",
+    'auditor.verify.figures': "Chiffres mensuels de l'entreprise",
+    'auditor.verify.month': 'Mois',
+    'auditor.verify.inflow': 'Entrées',
+    'auditor.verify.outflow': 'Sorties',
+    'auditor.verify.owner_draw': 'Prélèvement du propriétaire',
+    'auditor.verify.debt_service': 'Remboursements de dettes',
+    'auditor.verify.checks': 'Contrôles',
+    'auditor.verify.check.complete_rail_inventory':
+        "Tous les comptes et portefeuilles utilisés par l'entreprise sont listés",
+    'auditor.verify.check.originals_authentic':
+        'Les relevés sont des originaux authentiques',
+    'auditor.verify.check.balances_and_transactions':
+        'Les soldes et les opérations correspondent aux chiffres',
+    'auditor.verify.check.duplicates_and_classification':
+        'Aucun doublon, et les entrées et sorties sont bien classées',
+    'auditor.verify.check.debt_schedules':
+        'Les dettes et leurs échéanciers sont pris en compte',
+    'auditor.verify.check.baseline_and_gaps':
+        'Les mois sont complets et les lacunes expliquées',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        'Les prélèvements, remboursements et éléments inhabituels sont expliqués',
+    'auditor.verify.inventory':
+        'Où la liste complète des comptes est consignée',
+    'auditor.verify.debts': 'Dettes',
+    'auditor.verify.no_debts':
+        "Aucune dette déclarée. Ajoutez tout prêt ou crédit trouvé ; n'en indiquer aucun signifie que l'entreprise n'en a pas.",
+    'auditor.verify.debt': 'Dette {number}',
+    'auditor.verify.debt_name': 'Prêteur et prêt',
+    'auditor.verify.debt_principal': 'Montant restant dû (RWF)',
+    'auditor.verify.debt_service_in': 'Payé en {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Paiement mensuel prévu à partir de {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Dernier paiement prévu',
+    'auditor.verify.debt_last_payment_pick': 'Choisissez un mois',
+    'auditor.verify.debt_beyond': 'Après {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Chaque mois à venir est rempli à partir du paiement ci-dessus. Modifiez tout mois différent, comme un paiement progressif ou un paiement final ballon.',
+    'auditor.verify.debt_due_in': 'Dû en {month} (RWF)',
+    'auditor.verify.debt_sources': 'Relevés montrant cette dette',
+    'auditor.verify.add_debt': 'Ajouter une dette',
+    'auditor.verify.remove_debt': 'Retirer cette dette',
+    'auditor.verify.owner': 'Prélèvement du propriétaire et constats',
+    'auditor.verify.owner_draw_amount':
+        'Prélèvement mensuel habituel du propriétaire (RWF)',
+    'auditor.verify.owner_draw_reference': "Où vous l'avez constaté",
+    'auditor.verify.findings': 'Vos constats',
+    'auditor.verify.incomplete':
+        'Cochez chaque contrôle et remplissez chaque champ pour vérifier. Les montants sont en RWF entiers.',
+    'auditor.verify.submit': 'Vérifier les relevés',
+    'auditor.verify.sending': 'Vérification…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Chaque contrôle doit être coché avant de vérifier les relevés.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        "Un relevé du dossier a changé ou n'a pas été examiné. Rechargez le dossier et vérifiez de nouveau chaque relevé.",
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Chaque note doit être un texte simple de 2 000 caractères au plus.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        'Chaque dette doit avoir un nom unique, ses relevés et un paiement pour chaque mois.',
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Les montants doivent être en RWF entiers, sans séparateurs.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        "Les chiffres incluent le mois en cours, qui ne peut être vérifié qu'à sa fin. Demandez à l'entreprise de n'enregistrer que des mois terminés.",
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "Les chiffres de l'entreprise ne concordent plus avec ses relevés. L'entreprise doit les enregistrer de nouveau.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        "L'entreprise a enregistré de nouveaux chiffres depuis l'ouverture du dossier. Rechargez-le et examinez-les.",
 };
 
 export default fr;

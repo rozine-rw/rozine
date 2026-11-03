@@ -51,6 +51,10 @@ const rw: Catalog = {
     'identity.denied.expired_offer.title': 'Iki cyifuzo cyarafunzwe',
     'identity.denied.expired_offer.body':
         'Igihe cyo kwemera uyu murimo cyarangiye, ntukiwufunguriwe. Hitamo porogaramu urebe imirimo yawe iriho.',
+    'identity.denied.withdrawn_audit.title': 'Iri genzura ryakuweho na Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Ishami rishinzwe igenzura ryakuyeho iri genzura, ntirikiri iryawe kandi nta kindi usabwa. Indi mirimo yawe iri muri Imirimo.',
+    'identity.denied.withdrawn_audit.action': 'Jya ku Mirimo',
     'errors.not_found.head_title': 'Ntibibonetse',
     'errors.not_found.title': 'Ntitwabonye uru rupapuro',
     'errors.not_found.body':
@@ -2903,6 +2907,7 @@ const rw: Catalog = {
     'admin.parties.audit.flash.placeholder':
         'urugero: Imikoreshereze idasanzwe kuri konti y’amafaranga yinjiye muri iki cyumweru.',
     'admin.parties.audit.flash.cta': 'Saba igenzura ritunguranye',
+    'admin.parties.audit.flash.done': 'Igenzura rya Flash ryasabwe.',
     'admin.parties.audit.redispatch.open': 'Ohereza ukundi',
     'admin.parties.audit.redispatch.form': 'Ohereza iri genzura ukundi',
     'admin.parties.audit.redispatch.form_body':
@@ -2910,7 +2915,12 @@ const rw: Catalog = {
     'admin.parties.audit.redispatch.placeholder':
         'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
-    'admin.parties.audit.close.open': 'Funga',
+    'admin.parties.audit.redispatch.done': 'Igenzura ryasubijwe mu itangwa.',
+    'admin.parties.audit.close.open': 'Funga burundu',
+    'admin.parties.audit.close.hint':
+        'Gufunga ni burundu: birangiza iri genzura kandi iki kigo ntikizongera kugenzurwa. Kugira ngo urangize iri genzura gusa, rikureho.',
+    'admin.parties.audit.close.done':
+        'Igenzura ryafunzwe. Iki kigo ntikigishobora kugenzurwa.',
     'admin.parties.audit.close.form': 'Funga iri genzura',
     'admin.parties.audit.close.form_body':
         'Gufunga birangiza iri genzura nta raporo, kandi ntibisubirwaho. Ubu bucuruzi ntibuzongera kugenzurwa: nta genzura ritunguranye cyangwa isuzuma ry’imbonerahamwe rizongera gusabwa.',
@@ -2924,6 +2934,8 @@ const rw: Catalog = {
     'admin.parties.audit.withdraw.placeholder':
         'urugero: Umufatanyabikorwa ntiyashyize kashe kuri raporo mbere y’igihe ntarengwa.',
     'admin.parties.audit.withdraw.cta': 'Kuraho igenzura',
+    'admin.parties.audit.withdraw.done':
+        'Igenzura ryakuweho. Ushobora gusaba irindi.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
         'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
@@ -2985,6 +2997,7 @@ const rw: Catalog = {
     'admin.parties.audit.review.placeholder':
         'urugero: Isuzuma rya mbere ry’inyandiko zoherejwe hamwe n’ubusabe.',
     'admin.parties.audit.review.cta': 'Saba isuzuma',
+    'admin.parties.audit.review.done': "Isuzuma ry'inyandiko ryasabwe.",
     'admin.parties.licence_status': 'Uko kwemeza bimeze',
     'admin.parties.licence.verified': 'Rwemejwe',
     'admin.parties.licence.pending': 'Rutegereje',
@@ -6680,6 +6693,7 @@ const rw: Catalog = {
     'business.audit_cosign.status.signed_on': 'Yasinye · {date}',
     'business.audit_cosign.status.signed': 'Yasinye',
     'business.audit_cosign.status.pending': 'Birategerejwe',
+    'business.audit_cosign.status.not_signed': 'Ntiyasinywe',
     'business.audit_cosign.due': 'Shyiraho umukono bitarenze {date}',
     'business.audit_cosign.overdue':
         'Byarenze igihe — umukono wagombaga gushyirwaho bitarenze {date}',
@@ -7777,6 +7791,80 @@ const rw: Catalog = {
         'Rimwe kuri buri genzura rirangiye',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Igihe inyandiko irangiye gusa',
+    'auditor.outcome.verified.title': 'Imibare yemejwe',
+    'auditor.outcome.verified.body':
+        "Imibare y'ukwezi ya {business} yanditswe nk'iyagenzuwe. Izitabwaho mu busabe bwacyo ibindi byose bisabwa nibimara kuzuzwa.",
+    'auditor.verify.title': 'Genzura imibare',
+    'auditor.verify.lead':
+        "Fungura buri nyandiko, uyigereranye n'imibare ikigo cyabitse, wandike ibyo wagenzuye. Ni isuzuma ry'ukuri, si icyemezo cy'inguzanyo.",
+    'auditor.verify.waiting_for_figures':
+        "Ikigo ntikirabika imibare y'ukwezi. Uzagenzura imibare nicyamara kuyibika.",
+    'auditor.verify.statements': 'Inyandiko ziri muri dosiye',
+    'auditor.verify.open': 'Fungura',
+    'auditor.verify.reference':
+        'Aho wabigenzuriye (urupapuro, umurongo cyangwa icyitonderwa)',
+    'auditor.verify.figures': "Imibare y'ukwezi y'ikigo",
+    'auditor.verify.month': 'Ukwezi',
+    'auditor.verify.inflow': 'Amafaranga yinjiye',
+    'auditor.verify.outflow': 'Amafaranga yasohotse',
+    'auditor.verify.owner_draw': "Ayo nyir'ikigo yafashe",
+    'auditor.verify.debt_service': "Ubwishyu bw'imyenda",
+    'auditor.verify.checks': 'Igenzura',
+    'auditor.verify.check.complete_rail_inventory':
+        "Konti zose n'ikofi ikigo gikoresha byanditswe",
+    'auditor.verify.check.originals_authentic': 'Inyandiko ni umwimerere nyawo',
+    'auditor.verify.check.balances_and_transactions':
+        "Amafaranga asigaye n'ibikorwa bihura n'imibare",
+    'auditor.verify.check.duplicates_and_classification':
+        "Nta byisubiramo, kandi amafaranga yinjiye n'ayasohotse ashyizwe aho akwiye",
+    'auditor.verify.check.debt_schedules': "Imyenda n'uko yishyurwa byitaweho",
+    'auditor.verify.check.baseline_and_gaps':
+        'Amezi yuzuye, kandi ibyabuze bisobanuwe',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        "Ayo nyir'ikigo yafashe, ayasubijwe n'ibidasanzwe birasobanuwe",
+    'auditor.verify.inventory': 'Aho urutonde rwuzuye rwa konti rwanditse',
+    'auditor.verify.debts': 'Imyenda',
+    'auditor.verify.no_debts':
+        'Nta mwenda wavuzwe. Ongeraho inguzanyo wabonye; kutagira na kimwe bivuga ko ikigo nta mwenda gifite.',
+    'auditor.verify.debt': 'Umwenda {number}',
+    'auditor.verify.debt_name': "Uwatanze inguzanyo n'inguzanyo",
+    'auditor.verify.debt_principal': 'Amafaranga asigaye kwishyurwa (RWF)',
+    'auditor.verify.debt_service_in': 'Ayishyuwe muri {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Ubwishyu buteganyijwe buri kwezi guhera {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Ubwishyu buteganyijwe bwa nyuma',
+    'auditor.verify.debt_last_payment_pick': 'Hitamo ukwezi',
+    'auditor.verify.debt_beyond': 'Nyuma ya {month}',
+    'auditor.verify.debt_schedule_hint':
+        "Buri kwezi kuri imbere kuzuzwa n'ubwishyu buri haruguru. Hindura ukwezi kwose gutandukanye, nk'ubwishyu buzamuka cyangwa ubwishyu bunini bwa nyuma.",
+    'auditor.verify.debt_due_in': 'Bigomba kwishyurwa muri {month} (RWF)',
+    'auditor.verify.debt_sources': 'Inyandiko zigaragaza uyu mwenda',
+    'auditor.verify.add_debt': 'Ongeraho umwenda',
+    'auditor.verify.remove_debt': 'Kuraho uyu mwenda',
+    'auditor.verify.owner': "Ayo nyir'ikigo afata n'ibyagaragaye",
+    'auditor.verify.owner_draw_amount': "Ayo nyir'ikigo afata buri kwezi (RWF)",
+    'auditor.verify.owner_draw_reference': 'Aho wabibonye',
+    'auditor.verify.findings': 'Ibyo wabonye',
+    'auditor.verify.incomplete':
+        'Emeza buri genzura kandi wuzuze buri kibanza kugira ngo wemeze. Amafaranga ni RWF yuzuye.',
+    'auditor.verify.submit': 'Emeza imibare',
+    'auditor.verify.sending': 'Biremezwa…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Buri genzura rigomba kwemezwa mbere yo kwemeza imibare.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        'Inyandiko iri muri dosiye yahindutse cyangwa ntiyasuzumwe. Ongera ufungure dosiye ugenzure buri nyandiko.',
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Buri cyitonderwa kigomba kuba inyandiko isanzwe itarenze inyuguti 2.000.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        "Buri mwenda ukeneye izina ryihariye, inyandiko zawo n'ubwishyu bwa buri kwezi.",
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Amafaranga agomba kuba RWF yuzuye, nta tumenyetso.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        'Imibare irimo ukwezi kuriho, kutagenzurwa kutarangiye. Saba ikigo kubika amezi yarangiye gusa.',
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "Imibare y'ikigo ntigihura n'inyandiko zacyo. Ikigo kigomba kongera kuyibika.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        'Ikigo cyabitse imibare mishya kuva ufunguye dosiye. Ongera uyifungure uyisuzume.',
 };
 
 export default rw;

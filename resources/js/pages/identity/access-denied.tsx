@@ -4,6 +4,7 @@ import { Icon, IconGradients } from '@/components/rozine/icon';
 import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard, home } from '@/routes';
+import { index as auditorJobs } from '@/routes/auditor/jobs';
 import { verification as investorVerification } from '@/routes/investor';
 
 type Props = {
@@ -153,6 +154,8 @@ export default function AccessDenied({ code, status, verification }: Props) {
     }
 
     const expired = code === 'ASSIGNMENT_ACCEPTANCE_EXPIRED';
+    /* An audit Audit Operations withdrew from the partner (#506): not lost access, and Jobs is the way on. */
+    const withdrawn = code === 'ASSIGNMENT_WITHDRAWN';
     /* A check already with Compliance is under review: nothing to send again. */
     const underReview =
         code === 'IDENTITY_VERIFICATION_REQUIRED' && verification === 'pending';
@@ -161,15 +164,17 @@ export default function AccessDenied({ code, status, verification }: Props) {
     /* An app the account never had, or a staff page, is not access it lost. */
     const copy = expired
         ? 'identity.denied.expired_offer'
-        : underReview
-          ? 'identity.denied.verification_pending'
-          : verificationRequired
-            ? 'identity.denied.verification_required'
-            : code === 'ROLE_NOT_AVAILABLE'
-              ? 'identity.denied.role_not_available'
-              : code === 'STAFF_ACCESS_REQUIRED'
-                ? 'identity.denied.staff_only'
-                : 'identity.denied';
+        : withdrawn
+          ? 'identity.denied.withdrawn_audit'
+          : underReview
+            ? 'identity.denied.verification_pending'
+            : verificationRequired
+              ? 'identity.denied.verification_required'
+              : code === 'ROLE_NOT_AVAILABLE'
+                ? 'identity.denied.role_not_available'
+                : code === 'STAFF_ACCESS_REQUIRED'
+                  ? 'identity.denied.staff_only'
+                  : 'identity.denied';
 
     return (
         <ErrorFrame
@@ -177,6 +182,11 @@ export default function AccessDenied({ code, status, verification }: Props) {
             body={t(`${copy}.body`)}
             alert="body"
         >
+            {withdrawn && (
+                <Link href={auditorJobs()} className={PRIMARY}>
+                    {t('identity.denied.withdrawn_audit.action')}
+                </Link>
+            )}
             {verificationRequired && (
                 <Link href={investorVerification()} className={PRIMARY}>
                     {t('identity.denied.verification_required.action')}
@@ -184,7 +194,9 @@ export default function AccessDenied({ code, status, verification }: Props) {
             )}
             <Link
                 href={dashboard()}
-                className={verificationRequired ? SECONDARY : PRIMARY}
+                className={
+                    verificationRequired || withdrawn ? SECONDARY : PRIMARY
+                }
             >
                 {t('identity.home.back')}
             </Link>

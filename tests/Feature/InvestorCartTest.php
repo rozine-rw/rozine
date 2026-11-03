@@ -239,6 +239,11 @@ it('refuses a new line once the cart is full', function (): void {
 
         public function bought(string $partyId, string $campaignId): void {}
 
+        public function checkedOut(string $partyId, array $lineIds): array
+        {
+            return ['revision' => 0, 'count' => 0, 'removed_line_ids' => []];
+        }
+
         public function partyLines(string $partyId): array
         {
             return [];

@@ -97,6 +97,20 @@ final readonly class EloquentInvestorCart implements InvestorCart
         }
     }
 
+    public function checkedOut(string $partyId, array $lineIds): array
+    {
+        $partyId = strtolower($partyId);
+        $removed = array_values(InvestorCartLine::query()->where('party_id', $partyId)->whereIn('id', $lineIds)->orderBy('id')->pluck('id')
+            ->map(fn (mixed $id): string => (string) $id)->all());
+        InvestorCartLine::query()->where('party_id', $partyId)->whereIn('id', $removed)->delete();
+        if ($removed !== []) {
+            $this->changed($partyId);
+        }
+
+        return ['revision' => (int) InvestorCartRoot::query()->where('party_id', $partyId)->value('revision'), 'count' => $this->countFor($partyId),
+            'removed_line_ids' => $removed];
+    }
+
     /**
      * While a whole-cart checkout is held, the cart it reserved cannot change (#383 P383-02): the
      * Investor confirms, releases or waits for expiry first.

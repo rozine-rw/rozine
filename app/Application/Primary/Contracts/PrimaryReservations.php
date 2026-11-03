@@ -74,6 +74,16 @@ interface PrimaryReservations
         int $expectedRevision, string $disclosureVersion, string $disclosureSha256, Closure $admit): ReservationConfirmation;
 
     /**
+     * Same transaction, authority, admission and lock requirements as confirm(), and writes nothing.
+     * Whether admitting the held reservation again now would change its disclosed terms, so a
+     * whole-cart confirmation can requote every changed line without confirming any other. A
+     * reservation that is no longer held or admissible refuses exactly as confirm() would.
+     *
+     * @param  Closure(UnitRights, array<string, mixed>): PrimaryTerms  $admit
+     */
+    public function requotes(string $campaignId, string $reservationId, string $partyId, Closure $admit): bool;
+
+    /**
      * Requires current caller authority, its outer transaction and journal operation.
      * A release returns the original held principal without new admission. A confirmed
      * commitment refuses; a released hold is idempotent. Expiry refuses for the caller

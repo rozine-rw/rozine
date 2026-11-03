@@ -990,6 +990,9 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
         }
         if ($current && ($record->party_id !== $partyId || ! in_array($record->status, $completed ? ['offered', 'accepted', 'completed'] : ['offered', 'accepted'], true))) {
+            if ($record->status === 'withdrawn' && $this->heldWhenWithdrawn($record, $partyId)) {
+                throw new CommandRejection('ASSIGNMENT_WITHDRAWN', 409);
+            }
             $offer = AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('party_id', $partyId)
                 ->where('status', 'offered')->orderByDesc('revision')->first(['revision']);
             $exit = $offer === null ? null : AuditAssignmentVersion::query()->where('assignment_id', $record->id)
@@ -999,6 +1002,16 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             }
             throw new CommandRejection('ASSIGNMENT_NOT_FOUND', 404);
         }
+    }
+
+    /** Whether the partner held this audit when Audit Operations withdrew it, so their old link can say so (#506). */
+    private function heldWhenWithdrawn(AuditAssignment $record, string $partyId): bool
+    {
+        $withdrawal = AuditAssignmentVersion::query()->where('assignment_id', $record->id)
+            ->where('command', 'audit.assignment.withdraw')->orderByDesc('revision')->value('revision');
+
+        return AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', '<', $withdrawal)
+            ->orderByDesc('revision')->value('party_id') === $partyId;
     }
 
     private function actorPartyId(int $userId): string

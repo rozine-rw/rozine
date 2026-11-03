@@ -35,6 +35,21 @@ final readonly class ReserveInvestorCart
             $requestId, fn (string $partyId, array $cart, array $campaigns): array => $this->quote->price($userId, $partyId, $cart, $campaigns));
     }
 
+    /**
+     * Buys every held line of the Investor's checkout at once, or none (#383 step 4b, contract
+     * `confirmAll`). The Investor names the checkout revision, its current quote and the hash they
+     * acknowledged; if the terms changed since, the checkout is requoted and nothing is bought.
+     *
+     * @return array<string, mixed>
+     */
+    public function confirm(int $userId, int $contextRevision, string $checkoutId, int $expectedRevision, string $quoteId, int $expectedQuoteRevision,
+        string $acknowledgedDisclosureSha256, string $requestId): array
+    {
+        return $this->checkouts->confirm($userId, $contextRevision, $checkoutId, $expectedRevision, $quoteId, $expectedQuoteRevision,
+            $acknowledgedDisclosureSha256, $requestId,
+            fn (string $partyId, array $cart, array $campaigns): array => $this->quote->price($userId, $partyId, $cart, $campaigns, held: true));
+    }
+
     /** @return CartReservation */
     public function reservation(int $userId, int $contextRevision, string $checkoutId): array
     {
@@ -45,5 +60,11 @@ final readonly class ReserveInvestorCart
     public function find(int $userId, int $contextRevision, string $requestId): array
     {
         return $this->checkouts->findReservation($userId, $contextRevision, $requestId);
+    }
+
+    /** @return array<string, mixed> */
+    public function findConfirmation(int $userId, int $contextRevision, string $checkoutId, string $requestId): array
+    {
+        return $this->checkouts->findConfirmation($userId, $contextRevision, $checkoutId, $requestId);
     }
 }
