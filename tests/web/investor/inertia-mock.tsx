@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { ComponentProps, FormEvent, ReactNode } from 'react';
+import type { ComponentProps, FormEvent, MouseEvent, ReactNode } from 'react';
 import { vi } from 'vite-plus/test';
 
 /**
@@ -41,6 +41,8 @@ export const inertia = {
     httpErrors: {} as Record<string, string>,
     /** The shared page props `usePage` returns, such as the Cart tab's count. */
     shared: {} as Record<string, unknown>,
+    /** The `onFinish` of each link visit a click started, so a test can end one when it chooses. */
+    linkVisits: [] as (() => void)[],
 };
 
 export function resetInertia(): void {
@@ -54,6 +56,7 @@ export function resetInertia(): void {
     inertia.queue = [];
     inertia.httpErrors = {};
     inertia.shared = {};
+    inertia.linkVisits = [];
     inertia.reload.mockReset();
     inertia.visit.mockReset();
     inertia.replace.mockReset();
@@ -138,17 +141,31 @@ export function Head({ title }: { title: string }) {
     return <span data-testid="head">{title}</span>;
 }
 
+/** A link whose click starts a visit that stays open until the test ends it from `inertia.linkVisits`. */
 export function Link({
     href,
     children,
     preserveScroll: _preserveScroll,
+    onStart,
+    onFinish,
     ...props
 }: Omit<ComponentProps<'a'>, 'href'> & {
     href: { url: string };
     preserveScroll?: boolean;
+    onStart?: () => void;
+    onFinish?: () => void;
 }) {
+    const start =
+        onStart === undefined
+            ? props.onClick
+            : (event: MouseEvent<HTMLAnchorElement>) => {
+                  event.preventDefault();
+                  onStart();
+                  inertia.linkVisits.push(() => onFinish?.());
+              };
+
     return (
-        <a href={href.url} {...props}>
+        <a href={href.url} {...props} onClick={start}>
             {children}
         </a>
     );
