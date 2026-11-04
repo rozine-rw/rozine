@@ -3600,9 +3600,12 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
 
     def test_delayed_192_peer_multipage_discovery_keeps_final_guards_within_cap(self):
         # Conservative serialized synthetic command latency; no live API timing.
-        old, before, old_seconds = self.measured_snapshot_selection(189, legacy=True, delay=1)
+        # Immutable commit reuse saves another three commands in both paths.
+        # At 1.1s per command the legacy extra history read still exceeds the
+        # unchanged deadline, while the complete shared snapshot fits.
+        old, before, old_seconds = self.measured_snapshot_selection(189, legacy=True, delay=1.1)
         self.setUp()
-        new, after, new_seconds = self.measured_snapshot_selection(189, delay=1)
+        new, after, new_seconds = self.measured_snapshot_selection(189, delay=1.1)
         self.assertEqual(old[0], "refusal")
         self.assertEqual(old_seconds, 45)
         self.assertEqual((new[0], new[1]["source_run"]), ("decision", "200"))
