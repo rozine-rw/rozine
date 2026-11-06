@@ -415,6 +415,30 @@ describe('Cart: whole-cart quote', () => {
         );
     });
 
+    it('names each line a recorded 422 refusal recovered by the operation lookup stopped on', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(offline());
+        inertia.queue.push(
+            refused422(refusedBody('INSUFFICIENT_AVAILABLE_FUNDS')),
+        );
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+        await flush();
+
+        expect(inertia.calls[2]).toMatchObject({
+            url: expect.stringContaining('/preview/investor-cart-operations/'),
+        });
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+    });
+
     it('names each line a refusal replayed as a recorded answer stopped on', async () => {
         inertia.queue.push(quoted());
         inertia.queue.push(answers(refusedBody('CART_LINES_REFUSED')));
