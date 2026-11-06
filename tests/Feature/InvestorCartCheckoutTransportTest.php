@@ -192,7 +192,9 @@ it('answers a refused hold with each refused line in its receipt, directly and f
     $quote = ($this->quote)()->assertOk()->json('data');
     $requestId = (string) Str::uuid();
     $refusedCampaign = max($this->campaign->id, $this->second->id);
-    $refusedLine = collect($quote['lines'])->firstWhere('campaign_id', $refusedCampaign);
+    /** @var list<array{cart_line_id: string, campaign_id: string}> $quotedLines */
+    $quotedLines = $quote['lines'];
+    $refusedLine = array_values(array_filter($quotedLines, fn (array $line): bool => $line['campaign_id'] === $refusedCampaign))[0];
 
     $refused = ($this->reserve)($quote, $requestId)->assertUnprocessable()->json();
     ($this->committed)();
