@@ -89,9 +89,9 @@ it('executes save evaluate lower selection review submit and immutable lookup wi
         ->assertJsonPath('data.evidence.totals.revenue.amount', '144000000')->assertJsonPath('data.evidence.years.0.months', 4)
         ->assertJsonPath('data.evidence.existing_debt.amount', '0')->assertJsonPath('data.evidence.debt_verified', false)
         ->assertJsonPath('data.evidence.eligibility.status', 'eligible')->json('data');
-    $save = $this->postJson($path.'/save', [...applicationHttpEnvelope(2), ...DraftFixture::fields('12000000')])->assertOk()
+    $save = $this->postJson($path.'/save', [...applicationHttpEnvelope(2), ...DraftFixture::fields('10800000')])->assertOk()
         ->assertJsonPath('data.quote', null)->assertJsonPath('data.acceptance.required_signatures', 1)->json();
-    $evaluate = [...applicationHttpEnvelope($save['revision']), 'target' => '12000000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
+    $evaluate = [...applicationHttpEnvelope($save['revision']), 'target' => '10800000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
     $quote = $this->postJson($path.'/evaluate', $evaluate)->assertOk()->assertJsonPath('code', 'APPLICATION_EVALUATED')
         ->assertJsonPath('data.quote.principal.amount', '10800000')->assertJsonPath('data.quote.rate_pct', '11.1')
         ->assertJsonPath('data.quote.rate_basis.band', 'strong')->assertJsonPath('data.quote.reserve', null)
@@ -99,7 +99,7 @@ it('executes save evaluate lower selection review submit and immutable lookup wi
     $lower = $this->postJson($path.'/evaluate', [...$evaluate, ...applicationHttpEnvelope($quote['revision']), 'accepted_principal' => '5000000'])
         ->assertOk()->assertJsonPath('data.quote.principal.amount', '5000000')->assertJsonPath('data.quote.offered_principal.amount', '10800000')
         ->assertJsonPath('data.quote.total.amount', '5555000')->json();
-    $review = $this->postJson($path.'/save', [...applicationHttpEnvelope($lower['revision']), ...DraftFixture::fields('12000000'), 'step' => 'review'])
+    $review = $this->postJson($path.'/save', [...applicationHttpEnvelope($lower['revision']), ...DraftFixture::fields('10800000'), 'step' => 'review'])
         ->assertOk()->assertJsonPath('data.quote.quote_id', $lower['data']['quote']['quote_id'])->json();
     $this->getJson($path)->assertOk()->assertJsonPath('data.step', 'review')->assertJsonCount(2, 'data.acceptance.documents');
     $submit = [...applicationHttpEnvelope($review['revision']), ...QuoteFixture::acceptance($fixture)];
@@ -144,7 +144,7 @@ it('records stale evaluation echoes without using any client financial facts', f
     Sanctum::actingAs($fixture['audit']['authority']['users'][0], ['business:read', 'business:command']);
     $path = '/api/v1/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
     $page = $this->getJson($path)->assertOk()->json('data');
-    $body = [...applicationHttpEnvelope(2), 'target' => '12000000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version'], $field => $value];
+    $body = [...applicationHttpEnvelope(2), 'target' => '10800000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version'], $field => $value];
     $receipt = $this->postJson($path.'/evaluate', $body)->assertConflict()->assertJsonPath('code', 'QUOTE_STALE')->json();
     $this->getJson('/api/v1/business/application-operations/'.$body['request_id'].'?command=evaluate&identity_context_revision=1')->assertConflict()
         ->assertJsonPath('operation_id', $receipt['operation_id']);
@@ -157,7 +157,7 @@ it('keeps historical receipts while removing stale capabilities and preserving c
     Sanctum::actingAs($fixture['audit']['authority']['users'][0], ['business:read', 'business:command']);
     $path = '/api/v1/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
     $page = $this->getJson($path)->json('data');
-    $body = [...applicationHttpEnvelope(2), 'target' => '12000000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
+    $body = [...applicationHttpEnvelope(2), 'target' => '10800000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
     $receipt = $this->postJson($path.'/evaluate', $body)->assertOk()->json();
     app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 1, null,
         'synthetic:withdrawn', 'Withdraw inaccurate synthetic facts.', (string) Str::uuid());
@@ -195,13 +195,13 @@ it('serializes empty error maps as JSON objects and absent operation data as nul
         $this->actingAs($user);
     }
     $path = $prefix.'/business/'.$fixture['business']->id.'/applications/'.$fixture['application']->id;
-    $success = $this->postJson($path.'/save', [...applicationHttpEnvelope(1), ...DraftFixture::fields('12000000')])->assertOk();
+    $success = $this->postJson($path.'/save', [...applicationHttpEnvelope(1), ...DraftFixture::fields('10800000')])->assertOk();
     $completed = json_decode((string) $success->getContent(), flags: JSON_THROW_ON_ERROR);
     expect($completed->data)->toBeInstanceOf(stdClass::class)
         ->and($completed->field_errors)->toBeInstanceOf(stdClass::class)
         ->and($completed->errors)->toBeInstanceOf(stdClass::class)
         ->and(get_object_vars($completed->field_errors))->toBe([])->and(get_object_vars($completed->errors))->toBe([]);
-    $body = [...applicationHttpEnvelope(1), ...DraftFixture::fields('12000000')];
+    $body = [...applicationHttpEnvelope(1), ...DraftFixture::fields('10800000')];
     $denied = $this->postJson($path.'/save', $body)->assertConflict()->assertJsonPath('code', 'VERSION_CONFLICT');
     $lookup = $this->getJson($prefix.'/business/application-operations/'.$body['request_id'].'?command=save&identity_context_revision=1')->assertConflict();
     foreach ([$denied, $lookup] as $response) {

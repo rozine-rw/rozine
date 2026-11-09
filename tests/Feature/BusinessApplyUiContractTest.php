@@ -120,7 +120,7 @@ function applyUiLookup(string $requestId, string $command): string
  *
  * @return array<string, mixed>
  */
-function applyUiDraft(string $target = '12000000', ?string $step = null): array
+function applyUiDraft(string $target = '10800000', ?string $step = null): array
 {
     return [...DraftFixture::fields($target), ...($step === null ? [] : ['step' => $step])];
 }
@@ -275,7 +275,7 @@ it('answers the create, save and evaluate the pages send with the operation and 
     applyUiSameShape($save['data']['acceptance'], $page['acceptance'], 'save.data.acceptance');
     expect($fixture['application']->refresh()->step)->toBe('raise');
 
-    $evaluate = [...applyUiEnvelope($save['revision']), 'target' => '12000000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
+    $evaluate = [...applyUiEnvelope($save['revision']), 'target' => '10800000', 'term_months' => 6, 'evidence_version' => $page['evidence']['version']];
     $evaluated = $this->postJson("{$path}/evaluate", $evaluate)->assertOk()->assertJsonPath('code', 'APPLICATION_EVALUATED')->json();
     expect(array_keys($evaluated['data']))->toEqualCanonicalizing(APPLY_UI_SNAPSHOT_KEYS);
     applyUiSameShape($evaluated['data']['quote'], applyUiFixture('business-apply-live')['quote'], 'evaluate.data.quote');
@@ -328,7 +328,7 @@ it('recovers a receipt that later facts overtook with empty capabilities, while 
     $user = $fixture['audit']['authority']['users'][0];
     $path = '/business/'.$fixture['audit']['business'].'/applications/'.$fixture['application']->id;
     $page = applyUiProps($user, $path);
-    $evaluate = [...applyUiEnvelope($page['application']['revision']), 'target' => '12000000', 'term_months' => 6,
+    $evaluate = [...applyUiEnvelope($page['application']['revision']), 'target' => '10800000', 'term_months' => 6,
         'evidence_version' => $page['evidence']['version']];
     $receipt = actingAs($user)->postJson("{$path}/evaluate", $evaluate)->assertOk()->json();
     app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 1, null,
@@ -353,7 +353,7 @@ it('shows a legacy ready draft its pending application beside a submitted one, w
     QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture));
     $pendingId = $fixture['application']->id;
     $legacy = BusinessApplication::factory()->create(['business_id' => $business, 'revision' => 1,
-        'step' => 'review', 'draft' => DraftFixture::fields('12000000'), 'mandate_version' => 1]);
+        'step' => 'review', 'draft' => DraftFixture::fields('10800000'), 'mandate_version' => 1]);
     $prior = BusinessApplicationQuote::query()->where('business_application_id', $pendingId)->firstOrFail();
     $quoteId = (string) Str::ulid();
     $payload = [...$prior->payload, 'quote_id' => $quoteId, 'application_id' => $legacy->id, 'application_revision' => 1];

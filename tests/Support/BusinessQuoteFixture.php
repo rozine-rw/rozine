@@ -28,14 +28,14 @@ final class BusinessQuoteFixture
      * @param  list<ObligationInput>  $auditedObligations
      * @return Fixture
      */
-    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = [], string $auditKind = 'flash', ?int $requiredSignatories = null): array
+    public static function make(bool $credit = true, string $kind = 'person', int $signatories = 1, int $historyMonths = 36, array $auditedObligations = [], string $auditKind = 'flash', ?int $requiredSignatories = null, string $requestedPrincipal = '10800000'): array
     {
         $audit = AuditAssignmentFixture::make(1, $kind, $signatories, $requiredSignatories);
         $owner = $audit['authority']['users'][0];
         $created = app(CreateBusinessApplication::class)->handle($owner->id, 1, $audit['business'], 0, (string) Str::uuid());
         $application = BusinessApplication::query()->whereKey($created['data']['application']['id'])->firstOrFail();
         app(SaveBusinessApplication::class)->handle($owner->id, 1, $audit['business'], $application->id, 1,
-            BusinessApplicationFixture::fields('12000000'), 'raise', (string) Str::uuid());
+            BusinessApplicationFixture::fields($requestedPrincipal), 'raise', (string) Str::uuid());
         $first = now('Africa/Kigali')->toImmutable()->startOfMonth()->subMonths($historyMonths);
         $csv = "date,reference,amount\n";
         for ($index = 0; $index < $historyMonths; $index++) {
@@ -100,7 +100,7 @@ final class BusinessQuoteFixture
         }
         self::evaluate($fixture);
         app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
-            $fixture['application']->id, 3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+            $fixture['application']->id, 3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
         $fixture['application']->refresh();
 
         return $fixture;

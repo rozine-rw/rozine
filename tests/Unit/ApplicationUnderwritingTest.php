@@ -42,7 +42,7 @@ it('retains the maximum offer while recalculating a lower accepted principal', f
         ->and($result['capacity']['offer']['contractual_return']['amount'])->toBe('555000')
         ->and($result['capacity']['offer']['instalments'])->toHaveCount(6)
         ->and($result['capacity']['offer']['instalments'][5]['amount'])->toBe('925835')
-        ->and($result['inputs']['requested_principal'])->toBe('12000000');
+        ->and($result['inputs']['requested_principal'])->toBe('10800000');
 });
 
 it('does not use a lower accepted amount to bypass the original-request rejection', function (): void {

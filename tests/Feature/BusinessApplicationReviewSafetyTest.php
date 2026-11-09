@@ -44,7 +44,7 @@ it('withholds evaluation and submission for a legacy draft while linking the pen
     BusinessQuoteFixture::submit($fixture, $accepted);
     $pendingId = $fixture['application']->id;
     $legacy = BusinessApplication::factory()->create(['business_id' => $fixture['audit']['business'], 'revision' => 1,
-        'step' => 'review', 'draft' => BusinessApplicationFixture::fields('12000000'), 'mandate_version' => 1]);
+        'step' => 'review', 'draft' => BusinessApplicationFixture::fields('10800000'), 'mandate_version' => 1]);
     $prior = BusinessApplicationQuote::query()->where('business_application_id', $pendingId)->firstOrFail();
     $quoteId = (string) Str::ulid();
     $payload = [...$prior->payload, 'quote_id' => $quoteId, 'application_id' => $legacy->id, 'application_revision' => 1];
@@ -57,7 +57,7 @@ it('withholds evaluation and submission for a legacy draft while linking the pen
     expect(BusinessQuoteFixture::evaluate($fixture, 1)['code'])->toBe('APPLICATION_PENDING_REVIEW')
         ->and(BusinessQuoteFixture::submit($fixture, $accepted)['code'])->toBe('APPLICATION_PENDING_REVIEW')
         ->and(app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $legacy->id,
-            1, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid())['code'])->toBe('QUOTE_STALE')
+            1, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid())['code'])->toBe('QUOTE_STALE')
         ->and(app(BusinessApplicationStore::class)->page($owner->id, 1, $fixture['audit']['business'], $legacy->id)['allowed_actions'])->toBe(['application.save']);
     $home = app(ListBusinessApplications::class)->handle($owner->id, 1);
     expect($home['entries'][0]['application']['id'])->toBe($pendingId)->and($home['entries'][0]['allowed_actions'])->toBe([])
@@ -77,7 +77,7 @@ it('withholds evaluation and submission for a legacy draft while linking the pen
 it('revalidates Review fields after an omitted-step autosave and requote without changing the saved navigation pointer', function (string $missing): void {
     $fixture = BusinessQuoteFixture::ready();
     $owner = $fixture['audit']['authority']['users'][0];
-    $fields = BusinessApplicationFixture::fields('12000000');
+    $fields = BusinessApplicationFixture::fields('10800000');
     if ($missing === 'title') {
         $fields['title'] = '  ';
     } else {
@@ -97,7 +97,7 @@ it('revalidates Review fields after an omitted-step autosave and requote without
     $this->assertDatabaseCount('business_application_signatures', 0);
     $this->assertDatabaseCount('business_application_submissions', 0);
     app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $fixture['application']->id,
-        6, BusinessApplicationFixture::fields('12000000'), null, (string) Str::uuid());
+        6, BusinessApplicationFixture::fields('10800000'), null, (string) Str::uuid());
     BusinessQuoteFixture::evaluate($fixture, 7);
     expect(BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SUBMITTED')
         ->and(BusinessQuoteFixture::submit($fixture, $accepted, revision: 6, request: $request))->toBe($refused);
@@ -115,7 +115,7 @@ it('advertises signing only after Review and records a recoverable step error fo
     $refused = $this->postJson($path.'/submit', $body)->assertUnprocessable()->assertJsonPath('code', 'APPLICATION_STEP_INVALID')
         ->assertJsonPath('allowed_actions', [])->json();
     app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $fixture['application']->id,
-        3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
     $this->getJson($path)->assertOk()->assertJsonPath('data.allowed_actions', ['application.save', 'application.evaluate', 'application.submit']);
     $this->postJson($path.'/submit', $body)->assertUnprocessable()->assertExactJson($refused);
     $this->assertDatabaseCount('business_application_signatures', 0);
