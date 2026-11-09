@@ -118,7 +118,7 @@ test('Engines and Ratings show underwriters the engine settings and the scorecar
 
     $engines = array_column(EngineSettings::engines(), 'value', 'key');
     $scorecard = array_column(EngineSettings::scorecard(), 'value', 'key');
-    expect($engines)->toBe(['target_dscr' => '1.50×', 'minimum_dscr' => '1.25×', 'repeat_monthly_dscr' => '1.35×',
+    expect($engines)->toBe(['target_dscr' => '1.50×', 'minimum_dscr' => '1.50×', 'repeat_monthly_dscr' => '1.50×',
         'min_principal' => 'RWF 3,000,000', 'max_principal' => 'RWF 100,000,000', 'issuance_unit' => 'RWF 5,000',
         'first_issue_months' => '36', 'repeat_issue_months' => '12', 'tenors' => '3–6', 'rate_band' => '10–15%',
         'platform_fee' => '3%', 'cpa_share' => '40%'])
